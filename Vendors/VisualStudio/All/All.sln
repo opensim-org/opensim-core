@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "suCFSQP", "..\..\CFSQP\suCFSQP\suCFSQP.vcproj", "{44225F67-01EF-4481-B510-AC0D2324B218}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{44225F67-01EF-4481-B510-AC0D2324B218}.Debug.ActiveCfg = Debug|Win32
+		{44225F67-01EF-4481-B510-AC0D2324B218}.Debug.Build.0 = Debug|Win32
+		{44225F67-01EF-4481-B510-AC0D2324B218}.Release.ActiveCfg = Release|Win32
+		{44225F67-01EF-4481-B510-AC0D2324B218}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
