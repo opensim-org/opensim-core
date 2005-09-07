@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="ACPP"
+	ProjectGUID="{8E948F2A-2C5E-4C17-B8B1-220478A7BEF2}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -24,7 +25,7 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="TRUE"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\obj/ACPP.pch"
