@@ -1,11 +1,14 @@
 PROJECT (NMBLApp)
 IF(NOT LIBRARY_OUTPUT_PATH)
-  SET(LIBRARY_OUTPUT_PATH ${NMBLApp_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all libraries.")
+  SET(LIBRARY_OUTPUT_PATH ${NMBLApp_BINARY_DIR}/$ENV{RDI_ARCH} CACHE INTERNAL "Single output directory for building all libraries.")
 ENDIF(NOT LIBRARY_OUTPUT_PATH)
 IF(NOT EXECUTABLE_OUTPUT_PATH)
-  SET(EXECUTABLE_OUTPUT_PATH ${NMBLApp_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all executables.")
+  SET(EXECUTABLE_OUTPUT_PATH ${NMBLApp_BINARY_DIR}/$ENV{RDI_ARCH} CACHE INTERNAL "Single output directory for building all executables.")
 ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
 SET(NMBLApp_LIBRARY_DIR ${LIBRARY_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
 SET(NMBLApp_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR})
+
+LINK_DIRECTORIES($ENV{RDI_INSTALL}/Lib/$ENV{RDI_ARCH})
+
 #-----------------------------------------------------------------------------
 SUBDIRS(Vendors NMBLTK)
