@@ -11,5 +11,6 @@ SET(CMAKE_DEBUG_POSTFIX "_D" CACHE INTERNAL "" FORCE)
 
 LINK_DIRECTORIES($ENV{NMBL_INSTALL}/Lib/$ENV{RDI_ARCH})
 
+INCLUDE (Dart)
 #-----------------------------------------------------------------------------
 SUBDIRS(Vendors NMBLTK)
