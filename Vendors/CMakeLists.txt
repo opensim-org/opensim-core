@@ -1,2 +1,3 @@
 #-----------------------------------------------------------------------------
-SUBDIRS(CFSQP MotionAnalysis)
+
+SUBDIRS(CFSQP MotionAnalysis xerces-c-src2_4_0)
