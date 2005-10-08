@@ -14,6 +14,6 @@ SET(CMAKE_DEBUG_POSTFIX "_D" CACHE INTERNAL "" FORCE)
 #LINK_DIRECTORIES($ENV{NMBL_INSTALL}/Lib/$ENV{RDI_ARCH})
 LINK_DIRECTORIES(${NMBLApp_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/Build/Win32/VC7/${CMAKE_CFG_INTDIR})
 
-#INCLUDE (Dart)
+INCLUDE (Dart)
 #-----------------------------------------------------------------------------
 SUBDIRS(Vendors NMBLTK)
