@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+  <PolyData>
+    <Piece NumberOfPoints="24" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="6">
+      <PointData Normals="Normals">
+        <DataArray type="Float32" Name="Normals" NumberOfComponents="3" format="ascii">
+          -1 0 0 -1 0 0
+          -1 0 0 -1 0 0
+          1 0 0 1 0 0
+          1 0 0 1 0 0
+          0 -1 0 0 -1 0
+          0 -1 0 0 -1 0
+          0 1 0 0 1 0
+          0 1 0 0 1 0
+          0 0 -1 0 0 -1
+          0 0 -1 0 0 -1
+          0 0 1 0 0 1
+          0 0 1 0 0 1
+        </DataArray>
+      </PointData>
+      <CellData>
+      </CellData>
+      <Points>
+        <DataArray type="Float32" NumberOfComponents="3" format="ascii">
+          -.5 -.05 -1.1 -.5 -.05 0.2
+          -.5 0.00 -1.1 -.5 0.00 0.2
+          2.2 -.05 -1.1 2.2 -.05 0.2
+          2.2 0.00 -1.1 2.2 0.00 0.2
+          -.5 -.05 -1.1 -.5 -.05 0.2
+          2.2 -.05 -1.1 2.2 -.05 0.2
+          -.5 0.00 -1.1 -.5 0.00 0.2
+          2.2 0.00 -1.1 2.2 0.00 0.2
+          -.5 -.05 -1.1 2.2 -.05 -1.1
+          -.5 0.00 -1.1 2.2 0.00 -1.1
+          -.5 -.05 0.2 2.2 -.05 0.2
+          -.5 0.00 0.2 2.2 0.00 0.2
+        </DataArray>
+      </Points>
+      <Verts>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+        </DataArray>
+      </Verts>
+      <Lines>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+        </DataArray>
+      </Lines>
+      <Strips>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+        </DataArray>
+      </Strips>
+      <Polys>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+          0 1 3 2 4 6
+          7 5 8 10 11 9
+          12 13 15 14 16 18
+          19 17 20 21 23 22
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+          4 8 12 16 20 24
+        </DataArray>
+      </Polys>
+    </Piece>
+  </PolyData>
+</VTKFile>

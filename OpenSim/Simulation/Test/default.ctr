@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdControlSet name="test">
+	<rdControlConstant name="default">
+		<is_actuator_control> true </is_actuator_control>
+		<value>   0.00000000e+00 </value>
+	</rdControlConstant>
+	<rdControlLinear name="default">
+		<is_actuator_control> true </is_actuator_control>
+		<time>   0.00000000e+00 </time>
+		<value>   0.00000000e+00 </value>
+		<min>   0.00000000e+00 </min>
+		<max>   1.00000000e+00 </max>
+	</rdControlLinear>
+</rdControlSet>
+

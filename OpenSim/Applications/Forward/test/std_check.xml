@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InvestigationForward name="test">
+	<defaults>
+		<ControlLinear name="default">
+			<is_model_control> true </is_model_control>
+			<extrapolate> true </extrapolate>
+			<default_min>      -1.00000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> false </use_steps>
+			<nodes/>
+		</ControlLinear>
+		<ControlLinearNode name="default">
+			<t>       0.00000000 </t>
+			<x>       0.00000000 </x>
+			<min>      -1.00000000 </min>
+			<max>       1.00000000 </max>
+		</ControlLinearNode>
+		<Force name="default">
+			<area>       1.00000000 </area>
+			<min_force> -100000000.00000000 </min_force>
+			<max_force> 100000000.00000000 </max_force>
+			<optimal_force>       1.00000000 </optimal_force>
+			<body_A> 0 </body_A>
+			<point_A>       0.00000000       0.00000000       0.00000000 </point_A>
+			<direction_A>       1.00000000       0.00000000       0.00000000 </direction_A>
+			<body_B> 0 </body_B>
+			<point_B>       0.00000000       0.00000000       0.00000000 </point_B>
+		</Force>
+		<GeneralizedForce name="default">
+			<area>       1.00000000 </area>
+			<min_force> -100000000.00000000 </min_force>
+			<max_force> 100000000.00000000 </max_force>
+			<optimal_force>       1.00000000 </optimal_force>
+			<qid> -1 </qid>
+		</GeneralizedForce>
+	</defaults>
+	<model_library> rdBlock </model_library>
+	<model_file>  </model_file>
+	<actuator_set_file> block_actuators.xml </actuator_set_file>
+	<contact_force_set_file> block_contacts.xml </contact_force_set_file>
+	<params_file>  </params_file>
+	<library_list> rdActuators suAnalyses </library_list>
+	<results_directory> . </results_directory>
+	<output_precision> 8 </output_precision>
+	<initial_time>       0.00000000 </initial_time>
+	<final_time>      10.00000000 </final_time>
+	<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+	<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
+	<integrator_error_tolerance>       0.00100000 </integrator_error_tolerance>
+	<integrator_fine_tolerance>       0.00001000 </integrator_fine_tolerance>
+	<AnalysisSet name="Analyses">
+		<objects>
+			<Kinematics name="Kinematics">
+				<on> true </on>
+				<start_time>      -0.00000000 </start_time>
+				<end_time> 1000000000000000000000000000000.00000000 </end_time>
+				<step_interval> 1 </step_interval>
+				<in_degrees> true </in_degrees>
+			</Kinematics>
+			<Actuation name="Actuation">
+				<on> true </on>
+				<start_time>   -1000.00000000 </start_time>
+				<end_time>    1000.00000000 </end_time>
+				<step_interval> 1 </step_interval>
+				<in_degrees> true </in_degrees>
+			</Actuation>
+			<ActuatorGeneralizedForces name="ActuatorGeneralizedForces">
+				<on> true </on>
+				<start_time>       0.00000000 </start_time>
+				<end_time>      10.00000000 </end_time>
+				<step_interval> 1 </step_interval>
+				<in_degrees> true </in_degrees>
+				<actuators_list> actuator </actuators_list>
+			</ActuatorGeneralizedForces>
+			<BodyKinematics name="BodyKinematics">
+				<on> true </on>
+				<start_time>     -10.00000000 </start_time>
+				<end_time>     100.00000000 </end_time>
+				<step_interval> 1 </step_interval>
+				<in_degrees> true </in_degrees>
+				<angular_velocity_local> true </angular_velocity_local>
+			</BodyKinematics>
+		</objects>
+	</AnalysisSet>
+	<controls_file_name> block_controls.xml </controls_file_name>
+	<initial_states_file_name> block_states.sto </initial_states_file_name>
+	<!--Set of analyses to be run during the investigation.-->
+</InvestigationForward>
+

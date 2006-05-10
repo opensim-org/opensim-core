@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdSet xmlns="http://tempuri.org/markerSet.xsd" name="simmMarkerSet">
+	<defaults>
+		<marker name="default">
+			<location>0.00000000   0.00000000   0.00000000 </location>
+			<body> unnamed_segment </body>
+			<weight>       1.00000000 </weight>
+		</marker>
+	</defaults>
+    <objects>
+        <marker name="asis_r_mrk">
+            <location> 0.0000       0.0000       0.0895 </location>
+            <body>pelvis</body>
+            <weight>       1.00000000 </weight>
+        </marker>
+        <marker name="asis_l_mrk">
+            <location>0.0000       0.0000      -0.0895</location>
+            <body>pelvis</body>
+				<weight>       1.00000000 </weight>
+        </marker>
+        <marker name="sacral_wand_mrk">
+            <location>-0.1828       0.0000       0.0000</location>
+            <body>pelvis</body>
+				<weight>       1.00000000 </weight>
+        </marker>
+        <marker name="hip_r_mrk">
+            <location>0.00000000  0.00000000   0.00000000 </location>
+            <body>femur_r</body>
+				<weight>       1.00000000 </weight>
+        </marker>
+        <marker name="thigh_wand_r_mrk">
+            <location>0.0000      -0.1938       0.0614</location>
+            <body>femur_r</body>
+        </marker>
+        <marker name="knee_r_mrk">
+            <location>0.0000      -0.2842       0.0000 </location>
+            <body>femur_r</body>
+        </marker>
+        <marker name="shank_wand_r_mrk">
+            <location>0.0000      -0.1951       0.0582</location>
+            <body>tibia_r</body>
+        </marker>
+        <marker name="ankle_r_mrk">
+            <defaults />
+            <location>0.0341       0.0293      -0.0055</location>
+            <body>calcn_r</body>
+        </marker>
+        <marker name="toe_r_mrk">
+            <location>0.1262      -0.0141      -0.0055</location>
+            <body>calcn_r</body>
+        </marker>
+        <marker name="hip_l_mrk">
+            <location> 0.00       0.00000000    0.00000000 </location>
+            <body>femur_l</body>
+			<weight>       1.00000000 </weight>
+        </marker>
+        <marker name="thigh_wand_l_mrk">
+            <location>0.0000      -0.1938      -0.0614</location>
+            <body>femur_l</body>
+        </marker>
+        <marker name="knee_l_mrk">
+            <location>0.0000      -0.2842       0.0000</location>
+            <body>femur_l</body>
+        </marker>
+        <marker name="shank_wand_l_mrk">
+            <location>0.0000      -0.1951      -0.0582</location>
+            <body>tibia_l</body>
+        </marker>
+        <marker name="ankle_l_mrk">
+            <location>0.0341       0.0293      -0.0055</location>
+            <body>calcn_l</body>
+        </marker>
+        <marker name="toe_l_mrk">
+            <location>0.1230       0.0002      -0.0055</location>
+            <body>calcn_l</body>
+				<weight>1.000000</weight>
+        </marker>
+    </objects>
+</rdSet>

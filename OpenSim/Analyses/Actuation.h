@@ -1,0 +1,125 @@
+#ifndef _Actuation_h_
+#define _Actuation_h_
+// Actuation.h
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//	AUTHOR: Frank C. Anderson
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//=============================================================================
+// INCLUDES
+//=============================================================================
+#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Analysis.h>
+#include "suAnalysesDLL.h"
+
+
+#ifdef SWIG
+	#ifdef SUANALYSES_API
+		#undef SUANALYSES_API
+		#define SUANALYSES_API
+	#endif
+#endif
+//=============================================================================
+//=============================================================================
+/**
+ * A class for recording the basic actuator information for a model
+ * during a simulation.
+ *
+ * @author Frank C. Anderson
+ * @version 1.0
+ */
+namespace OpenSim { 
+
+class SUANALYSES_API Actuation : public Analysis 
+{
+//=============================================================================
+// DATA
+//=============================================================================
+private:
+
+protected:
+	/** Number of actuators. */
+	int _na;
+	/** Work array for storing forces, speeds, or powers. */
+	double *_fsp;
+	/** Force storage. */
+	Storage *_forceStore;
+	/** Speed storage. */
+	Storage *_speedStore;
+	/** Power storage. */
+	Storage *_powerStore;
+
+//=============================================================================
+// METHODS
+//=============================================================================
+public:
+	Actuation(Model *aModel=0);
+	Actuation(const std::string &aFileName);
+	Actuation(DOMElement *aElement);
+	// Copy constrctor and virtual copy 
+	Actuation(const Actuation &aObject);
+	virtual Object* copy() const;
+	virtual Object* copy(DOMElement *aElement) const;
+	virtual ~Actuation();
+private:
+	void setNull();
+	void constructDescription();
+	void constructColumnLabels();
+	void allocateStorage();
+	void deleteStorage();
+
+public:
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+#ifndef SWIG
+	Actuation& operator=(const Actuation &aActuation);
+#endif
+	//--------------------------------------------------------------------------
+	// GET AND SET
+	//--------------------------------------------------------------------------
+	// STORAGE
+	void setStorageCapacityIncrements(int aIncrement);
+	Storage* getForceStorage() const;
+	Storage* getSpeedStorage() const;
+	Storage* getPowerStorage() const;
+	// MODEL
+	virtual void setModel(Model *aModel);
+
+	//--------------------------------------------------------------------------
+	// ANALYSIS
+	//--------------------------------------------------------------------------
+	virtual int
+		begin(int aStep,double aDT,double aT,double *aX,double *aY,
+		void *aClientData=NULL);
+	virtual int
+		step(double *aXPrev,double *aYPrev,
+		int aStep,double aDT,double aT,double *aX,double *aY,
+		void *aClientData=NULL);
+	virtual int
+		end(int aStep,double aDT,double aT,double *aX,double *aY,
+		void *aClientData=NULL);
+protected:
+	virtual int
+		record(double aT,double *aX,double *aY);
+
+	//--------------------------------------------------------------------------
+	// IO
+	//--------------------------------------------------------------------------
+public:
+	virtual int
+		printResults(const char *aBaseName,const char *aDir=NULL,
+		double aDT=-1.0,const char *aExtension=".sto");
+
+//=============================================================================
+};	// END of class Actuation
+
+}; //namespace
+//=============================================================================
+//=============================================================================
+
+
+#endif // #ifndef __Actuation_h__

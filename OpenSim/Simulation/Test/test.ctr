@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdControlSet name="test">
+	<rdControlConstant name="default">
+		<is_actuator_control> true </is_actuator_control>
+		<value>  0.00000000e+000 </value>
+	</rdControlConstant>
+	<rdControlLinear name="default">
+		<is_actuator_control> true </is_actuator_control>
+		<time>  0.00000000e+000 </time>
+		<value>  0.00000000e+000 </value>
+		<min>  0.00000000e+000 </min>
+		<max>  1.00000000e+000 </max>
+	</rdControlLinear>
+
+	<rdControlLinear name="hipExtension">
+		<is_actuator_control> true </is_actuator_control>
+		<time>  0.0 0.1 0.2 0.3 </time>
+		<value> 0.0 1.0 2.0 3.0 </value>
+		<min>   0.0 0.0 0.0 0.0 </min>
+		<max>   1.0 1.0 1.0 1.0 </max>
+	</rdControlLinear>
+
+	<rdControlLinear name="hipInternalRotation">
+		<is_actuator_control> true </is_actuator_control>
+		<time>  0.0 0.1 0.2 0.3 </time>
+		<value> 0.0 1.0 2.0 3.0 </value>
+		<min>   0.0 0.0 0.0 0.0 </min>
+		<max>   1.0 1.0 1.0 1.0 </max>
+	</rdControlLinear>
+
+	<rdControlConstant name="ankleVelocity">
+		<is_actuator_control> false </is_actuator_control>
+		<value>  1.21 </value>
+	</rdControlConstant>
+
+</rdControlSet>
+

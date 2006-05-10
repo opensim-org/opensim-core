@@ -1,0 +1,3 @@
+Command SimtkFileOpenByNameCmd[ EnvName=SimEnv1 FileName=simtksuS26Pkg.suS26Loader]
+Command SimtkLoadControlSetCmd[ EnvName=SimEnv1 FileName=C:\Work\DemoFiles\s26cmc.ctr]
+Command SimtkSimulationStartCmd[ EnvName=SimEnv1]

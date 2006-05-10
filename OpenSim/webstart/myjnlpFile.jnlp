@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+  codebase="http://171.65.102.149/app"
+  href="http://171.65.102.149/app/myjnlpFile.jnlp">
+  <information>
+    <title>NMBL Application</title>
+    <vendor>Stanford University</vendor>
+    <description>Application for modeling Neuromuscular Biomechanics</description>
+    <icon href="simtkui/nmbltk.GIF"/>
+    <offline-allowed/>
+  </information>
+  <security>
+    <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.4+"/>
+    <jar href="signedNmbltk.jar"/>
+    <jar href="signedplot.jar"/>
+    <jar href="signedvtk44ForWin32.jar"/>
+    <jar href="signedNmblvc71ForWin32.jar"/>
+  </resources>
+  <resources os="Windows">
+    <nativelib href="signedvtk44ForWin32.jar"/>
+    <nativelib href="signedNmblvc71ForWin32.jar"/>
+  </resources>
+  <application-desc main-class="simtkui.SimtkApp"/>
+</jnlp>
+

@@ -41,4 +41,4 @@ INCLUDE (Dart)
 #
 
 #-----------------------------------------------------------------------------
-SUBDIRS(Vendors NMBLTK)
+SUBDIRS(Vendors OpenSim)

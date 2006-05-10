@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suScaleSet name="ScaleSet">
+	<defaults>
+		<suScale name="default">
+			<scales>1.00000000       1.00000000       1.00000000</scales>
+			<segment>unnamed_segment</segment>
+		</suScale>
+	</defaults>
+	<objects>
+		<suScale name="">
+			<scales>0.85   0.75   0.85</scales>
+			<segment>pelvis</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.85   0.85   0.85</scales>
+			<segment>femur_r</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.95</scales>
+			<segment>tibia_r</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.85   0.85   0.85</scales>
+			<segment>patella_r</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.85</scales>
+			<segment>foot_r</segment>
+		</suScale>
+		<suScale name="">
+			<scales>1.1 1.1 1.1</scales>
+			<segment>toes_r</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.85</scales>
+			<segment>femur_l</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.85   0.95   0.85</scales>
+			<segment>tibia_l</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.95</scales>
+			<segment>patella_l</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.95</scales>
+			<segment>foot_l</segment>
+		</suScale>
+		<suScale name="">
+			<scales>0.95   0.95   0.85</scales>
+			<segment>toes_l</segment>
+		</suScale>
+		<suScale name="">
+			<scales>1.1 0.95 0.90</scales>
+			<segment>HeadArmsTrunk</segment>
+		</suScale>
+	</objects>
+</suScaleSet>

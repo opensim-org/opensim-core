@@ -1,0 +1,501 @@
+// PolynomialSetPoint.cpp
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/*
+* Copyright (c) 2005, Stanford University. All rights reserved. 
+* Redistribution and use in source and binary forms, with or without 
+* modification, are permitted provided that the following conditions
+* are met: 
+*  - Redistributions of source code must retain the above copyright 
+*    notice, this list of conditions and the following disclaimer. 
+*  - Redistributions in binary form must reproduce the above copyright 
+*    notice, this list of conditions and the following disclaimer in the 
+*    documentation and/or other materials provided with the distribution. 
+*  - Neither the name of the Stanford University nor the names of its 
+*    contributors may be used to endorse or promote products derived 
+*    from this software without specific prior written permission. 
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+* COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+* ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+* POSSIBILITY OF SUCH DAMAGE. 
+*/
+
+/* Note: This code was originally developed by Realistic Dynamics Inc. 
+ * Author: Frank C. Anderson 
+ */
+
+
+//=============================================================================
+// INCLUDES
+//=============================================================================
+#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Tools/PropertyDbl.h>
+#include "PolynomialSetPoint.h"
+
+
+
+
+using namespace OpenSim;
+using namespace std;
+
+
+//=============================================================================
+// STATICS
+//=============================================================================
+
+
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Destructor.
+ */
+PolynomialSetPoint::~PolynomialSetPoint()
+{
+}
+//_____________________________________________________________________________
+/**
+ * Default constructor.
+ */
+PolynomialSetPoint::PolynomialSetPoint(int aBodyA,int aBodyB) :
+	SetPoint(aBodyA,aBodyB),
+	_kNP(_propKNP.getValueDbl()),
+	_kNV(_propKNV.getValueDbl()),
+	_powNP(_propPowerNP.getValueDbl()),
+	_powNV(_propPowerNV.getValueDbl())
+{
+	// NULL
+	setNull();
+}
+//_____________________________________________________________________________
+/**
+ * Construct an actuator from an XML element.
+ *
+ * @param aElement XML element.
+ */
+PolynomialSetPoint::PolynomialSetPoint(DOMElement *aElement) :
+	SetPoint(aElement),
+	_kNP(_propKNP.getValueDbl()),
+	_kNV(_propKNV.getValueDbl()),
+	_powNP(_propPowerNP.getValueDbl()),
+	_powNV(_propPowerNV.getValueDbl())
+{
+	setNull();
+	updateFromXMLNode();
+}
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aContact Contact to be copied.
+ */
+PolynomialSetPoint::PolynomialSetPoint(const PolynomialSetPoint &aContact) :
+	SetPoint(aContact),
+	_kNP(_propKNP.getValueDbl()),
+	_kNV(_propKNV.getValueDbl()),
+	_powNP(_propPowerNP.getValueDbl()),
+	_powNV(_propPowerNV.getValueDbl())
+{
+	setNull();
+
+	// STIFFNESS
+	setNormalStiffnessConstant(aContact.getNormalStiffnessConstant());
+
+	// VISCOSITY
+	setNormalViscosityConstant(aContact.getNormalViscosityConstant());
+
+	// POWERS
+	setStiffnessPower(aContact.getStiffnessPower());
+	setViscosityPower(aContact.getViscosityPower());
+}
+//_____________________________________________________________________________
+/**
+ * Copy this actuator and return a pointer to the copy.
+ * The copy constructor for this class is used.
+ *
+ * @return Pointer to a copy of this actuator.
+ */
+Object* PolynomialSetPoint::
+copy() const
+{
+	Actuator *act = new PolynomialSetPoint(*this);
+	return(act);
+}
+//_____________________________________________________________________________
+/**
+ * Copy this actuator and modify the copy so that it is consistent
+ * with a specified XML element node.
+ *
+ * The copy is constructed by first using
+ * Force::Force(DOMElement*,int,int) in order to establish the
+ * relationship of the Force object with the XML node.  Then, the
+ * assignment operator is used to set all data members of the copy to the
+ * values of this Force object.  Finally, the data members of the copy are
+ * updated using Force::updateObject().
+ *
+ * @param aElement XML element. 
+ * @return Pointer to a copy of this actuator.
+ */
+Object* PolynomialSetPoint::
+copy(DOMElement *aElement) const
+{
+	PolynomialSetPoint *act = new PolynomialSetPoint(aElement);
+	*act = *this;
+	act->updateFromXMLNode();
+	return(act);
+}
+
+
+//=============================================================================
+// CONSTRUCTION
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the data members of this actuator to their null values.
+ */
+void PolynomialSetPoint::
+setNull()
+{
+	setupProperties();
+	setType("PolynomialSetPoint");
+
+	// MEMBER VARIABLES
+	_kNP = 0.0;
+	_kNV = 0.0;
+	_powNP = 1.0;
+	_powNV = 1.0;
+}
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void PolynomialSetPoint::
+setupProperties()
+{
+	_propKNP.setName("normal_stiffness");
+	_propKNP.setValue(0.0);
+	_propertySet.append( &_propKNP );
+
+	_propKNV.setName("normal_viscosity");
+	_propKNV.setValue(0.0);
+	_propertySet.append( &_propKNV );
+
+	_propPowerNP.setName("stiffness_power");
+	_propPowerNP.setValue(0.0);
+	_propertySet.append( &_propPowerNP );
+
+	_propPowerNV.setName("viscosity_power");
+	_propPowerNV.setValue(0.0);
+	_propertySet.append( &_propPowerNV );
+}
+
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @param aActuator Actuator to which to set this actuator equal.
+ * @return Reference to this object.
+ */
+PolynomialSetPoint& PolynomialSetPoint::
+operator=(const PolynomialSetPoint &aActuator)
+{
+	// BASE CLASS
+	SetPoint::operator=(aActuator);
+
+	// MEMBER VARIABLES
+	_kNP = aActuator.getNormalStiffnessConstant();
+	_kNV = aActuator.getNormalViscosityConstant();
+	_powNP = aActuator.getStiffnessPower();
+	_powNV = aActuator.getViscosityPower();
+
+	return(*this);
+}
+
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//-----------------------------------------------------------------------------
+// NORMAL IMPEDANCE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the stiffness of the spring in the direction normal to the surface.
+ *
+ * @return Normal stiffness.
+ */
+double PolynomialSetPoint::
+getInstantaneousNormalStiffness() const
+{
+	return(_knp);
+}
+//_____________________________________________________________________________
+/**
+ * Get the instantaneous viscosity of the contact element in the direction
+ * normal to the surface.
+ *
+ * @return Normal viscosity.
+ */
+double PolynomialSetPoint::
+getInstantaneousNormalViscosity() const
+{
+	return(_knv);
+}
+
+//-----------------------------------------------------------------------------
+// STIFFNESS
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set normal stiffness.
+ *
+ * @param aKTP Normal stiffness- must be positive.
+ */
+void PolynomialSetPoint::
+setNormalStiffnessConstant(double aKNP)
+{
+	_kNP = aKNP;
+	if(_kNP<0) _kNP=0.0;
+}
+//_____________________________________________________________________________
+/**
+ * Get normal stiffness.
+ *
+ * @return Normal stiffness.
+ */
+double PolynomialSetPoint::
+getNormalStiffnessConstant() const
+{
+	return(_kNP);
+}
+
+//-----------------------------------------------------------------------------
+// VISCOSITY
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set normal viscosity.
+ *
+ * @param aKNV Normal viscosity- must be positive.
+ */
+void PolynomialSetPoint::
+setNormalViscosityConstant(double aKNV)
+{
+	_kNV = aKNV;
+	if(_kNV<0) _kNV=0.0;
+}
+//_____________________________________________________________________________
+/**
+ * Get normal viscosity.
+ *
+ * @return Normal viscosity.
+ */
+double PolynomialSetPoint::
+getNormalViscosityConstant() const
+{
+	return(_kNV);
+}
+
+//-----------------------------------------------------------------------------
+// STIFFNESS POWER
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the power to which the normal displacement of the spring is raised.
+ *
+ * @param aPower Power to which the normal displacement of the spring is
+ * raised.
+ */
+void PolynomialSetPoint::
+setStiffnessPower(double aPower)
+{
+	_powNP = aPower;
+}
+//_____________________________________________________________________________
+/**
+ * Get the power to which the normal displacement of the spring is raised.
+ *
+ * @return Power to which the normal displacement of the spring is raised.
+ */
+double PolynomialSetPoint::
+getStiffnessPower() const
+{
+	return(_powNP);
+}
+
+//-----------------------------------------------------------------------------
+// VISCOSITY POWER
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the power to which the normal velocity of the spring is raised.
+ *
+ * @param aPower Power to which the normal velocity of the spring is raised.
+ */
+void PolynomialSetPoint::
+setViscosityPower(double aPower)
+{
+	_powNV = aPower;
+}
+//_____________________________________________________________________________
+/**
+ * Get the power to which the normal velocity of the spring is raised.
+ *
+ * @return Power to which the normal velocity of the spring is raised.
+ */
+double PolynomialSetPoint::
+getViscosityPower() const
+{
+	return(_powNV);
+}
+
+
+
+//=============================================================================
+// COMPUTATIONS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Compute the spring forces.
+ *
+ * @todo The instantaneous viscosities and stiffnesses are no longer correct
+ * because of the addition of the "c" coefficient.
+ */
+void PolynomialSetPoint::
+computeActuation()
+{
+	// UPDATE SPRING POINTS
+	updatePointA();
+	updatePointB();
+	
+	// DISPLACEMENTS AND VELOCITIES
+	computeDisplacements();
+	computeVelocities();
+
+	// NORMAL FORCE
+	// Stiffness term
+	double fnp = 0.0;
+	double d = getNormalDistance();
+	if(d<0.0) {
+		d = fabs(d);
+		fnp = _kNP * pow(d,_powNP);
+	}
+	// Viscosity term
+	double fnv = 0.0;
+	double fnvTmp = 0.0;
+	double s = getNormalSpeed();
+	if((fnp>0.0)&&(_powNV>0.0)) {
+		fnvTmp = _kNV*pow(fabs(s),_powNV);
+		fnvTmp = rdMath::CopySign(fnvTmp,-s);
+		double c = rdMath::SigmaUp(4.0,20.0,fnp);
+		fnv = c * fnvTmp;
+		//cout<<"fnp,c,fnv="<<fnp<<", "<<c<<", "<<fnv<<endl;
+	}
+	_fnMag = fnp + fnv;
+	if(_fnMag<0.0) _fnMag = 0.0;
+	Mtx::Multiply(1,3,&_nA[0],fnp,_fnp);
+	Mtx::Multiply(1,3,&_nA[0],fnv,_fnv);
+	Mtx::Multiply(1,3,&_nA[0],_fnMag,_fn);
+
+	// INSTANTANEOUS NORMAL STIFFNESS
+	_knp = 0.0;
+	if(fnp!=0.0) {
+		_knp = _kNP*_powNP*pow(d,_powNP-1.0)*(1.0 + fnvTmp);
+	}
+
+	// INSTANTANEOUS NORMAL VISCOSITY
+	_knv = 0.0;
+	if(fnp!=0.0) {
+		_knv = fnp*_kNV*_powNV*pow(fabs(s),_powNV-1.0);
+	}
+
+	// TANGENTIAL FORCE
+	_ftMag = computeTangentialForce(_fnMag,_ft,_dfFric);
+
+	// RESULTANT FORCE
+	double fA[3],uA[3];
+	Mtx::Add(1,3,_fn,_ft,fA);
+	double f = Mtx::Normalize(3,fA,uA);
+	Mtx::Multiply(1,3,uA,-1.0,uA);
+	if(f==0.0) {
+		Mtx::Add(1,3,_rtA,_rnA,uA);
+		Mtx::Normalize(3,uA,uA);
+	}
+
+	// FORCE AND DIRECTION
+	setForce(f);
+	setForceDirectionA(uA);
+
+	// SPEED
+	double v[3];
+	Mtx::Add(1,3,_vnA,_vtA,v);
+	_speed = -Mtx::DotProduct(3,uA,v);
+
+	// BODY B
+	computeForceDirectionForBodyB();
+}
+
+
+//=============================================================================
+// APPLICATION
+//=============================================================================
+
+
+//=============================================================================
+// CHECK
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Check that this force actuator has a valid set of states.
+ */
+bool PolynomialSetPoint::
+check() const
+{
+	bool status = SetPoint::check();
+
+	return(status);
+}
+
+
+//=============================================================================
+// XML
+//=============================================================================
+//-----------------------------------------------------------------------------
+// UPDATE FROM XML NODE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Update this object based on its XML node.
+ *
+ * This method simply calls Object::updateFromXMLNode() and then calls
+ * a few methods in this class to ensure that variable members have been
+ * set in a consistent manner.
+ */
+void PolynomialSetPoint::
+updateFromXMLNode()
+{
+	SetPoint::updateFromXMLNode();
+
+	setNormalStiffnessConstant(_kNP);
+	setNormalViscosityConstant(_kNV);
+	setStiffnessPower(_powNP);
+	setViscosityPower(_powNV);
+}	
+

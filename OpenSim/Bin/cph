@@ -1,0 +1,9 @@
+echo ""
+echo "Copying .h files from and below..."
+pwd
+echo ""
+echo "to..."
+echo "$I"
+
+
+find . -name '*.h' -exec cp {} $I \;

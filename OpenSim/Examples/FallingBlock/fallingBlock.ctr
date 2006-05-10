@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdControlSet name="test">
+
+	<defaults>
+
+		<rdControlConstant name="default">
+			<is_model_control> false </is_model_control>
+			<default_min>  0.0 </default_min>
+			<default_max> 20.0 </default_max>
+			<value>  0.0 </value>
+		</rdControlConstant>
+
+		<rdControlLinearNode name="default">
+			<t>0.0</t> 
+			<x>0.0</x> 
+			<min>-10000.0</min> 
+			<max>10000.0</max> 
+		</rdControlLinearNode>
+
+		<rdControlLinear name="default">
+			<is_model_control> true </is_model_control>
+			<default_min> -10000.0 </default_min>
+			<default_max>  10000.0 </default_max>
+			<nodes>
+				<rdControlLinearNode name="0">
+					<t>0.00000000</t> 
+					<x>0.00000000</x> 
+					<min>-10000.0</min> 
+					<max>10000.0</max> 
+				</rdControlLinearNode>
+			</nodes>
+		</rdControlLinear>
+
+	</defaults>
+
+	<objects>
+		<rdControlConstant name="ti">
+			<value> 0.0 </value>
+		</rdControlConstant>
+
+		<rdControlConstant name="tf">
+			<value> 8.0 </value>
+		</rdControlConstant>
+
+		<rdControlLinear name="muscle_1">
+			<nodes>
+				<rdControlLinearNode name="0">
+					<t>0.0</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="1">
+					<t>5.0</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="2">
+					<t>6.0</t> 
+					<x>200.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="3">
+					<t>7.0</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="4">
+					<t>10.0</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+			</nodes>
+		</rdControlLinear>
+
+		<rdControlLinear name="muscle_2">
+			<nodes>
+				<rdControlLinearNode name="0">
+					<t>0.0</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="1">
+					<t>6.5</t> 
+					<x>0.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="2">
+					<t>6.51</t> 
+					<x>50.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="3">
+					<t>7.0</t> 
+					<x>50.0</x> 
+				</rdControlLinearNode>
+				<rdControlLinearNode name="4">
+					<t>10.0</t> 
+					<x>50.0</x> 
+				</rdControlLinearNode>
+			</nodes>
+		</rdControlLinear>
+
+	</objects>
+
+</rdControlSet>
+

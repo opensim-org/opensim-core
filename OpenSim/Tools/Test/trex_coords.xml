@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Tyrannosaurus Rex specimen MOR555.  Mounted cast at UCMP.
+3D coordinate measurements by John R. Hutchinson and Frank C. Anderson.
+Collected using a level, plumb bob, and floor grid on May 8, 2002.
+All points and distances are in meters.
+-->
+<rdGModel date="2002_05_08" name="Tyrannosaurus MOR 555" shortName="trex555">
+	<authors>
+		<author>
+			<name>John R. Hutchinson </name>
+			<email>jrhutch@stanford.edu</email>
+		</author>
+
+		<author>
+			<name>Frank C. Anderson </name>
+			<email>fca@stanford.edu</email>
+		</author>
+	</authors>
+
+	<rdGBodies name="">
+		<rdGBody name="trunk">
+			<!-- TrunkHipBottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- TrunkFrontBottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail5Bottom">      -0.837       0.070      -0.019 </rdV3D>
+
+				<rdV3D name="Tail5LSide">      -0.815       0.750      -0.314 </rdV3D>
+
+				<rdV3D name="Tail5RSide">      -0.839       0.750       0.282 </rdV3D>
+
+				<rdV3D name="Tail5Top">      -0.923       1.430      -0.043 </rdV3D>
+
+				<rdV3D name="TrunkHipBottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="TrunkHipLSide">       0.008       1.300      -0.174 </rdV3D>
+
+				<rdV3D name="TrunkHipRSide">      -0.002       1.300       0.155 </rdV3D>
+
+				<rdV3D name="TrunkHipTop">       0.000       1.990       0.000 </rdV3D>
+
+				<rdV3D name="TrunkPubisBottom">       0.695      -0.090      -0.032 </rdV3D>
+
+				<rdV3D name="TrunkPubisLSide">       0.669       0.910      -0.382 </rdV3D>
+
+				<rdV3D name="TrunkPubisRSide">       0.690       0.910       0.278 </rdV3D>
+
+				<rdV3D name="TrunkPubisTop">       0.676       1.920      -0.037 </rdV3D>
+
+				<rdV3D name="TrunkCenterBottom">       1.408       0.160      -0.017 </rdV3D>
+
+				<rdV3D name="TrunkCenterLSide">       1.424       1.030      -0.626 </rdV3D>
+
+				<rdV3D name="TrunkCenterRSide">       1.407       1.030       0.575 </rdV3D>
+
+				<rdV3D name="TrunkCenterTop">       1.408       1.630      -0.017 </rdV3D>
+
+				<rdV3D name="TrunkFrontBottom">       2.203       0.440       0.000 </rdV3D>
+
+				<rdV3D name="TrunkFrontLSide">       2.228       0.920      -0.419 </rdV3D>
+
+				<rdV3D name="TrunkFrontRSide">       2.181       0.920       0.409 </rdV3D>
+
+				<rdV3D name="TrunkFrontTop">       2.203       1.910       0.000 </rdV3D>
+
+				<rdV3D name="TrunkCoracoidLSide">       2.571       0.490      -0.052 </rdV3D>
+
+				<rdV3D name="TrunkCoracoidRSide">       2.528       0.490       0.102 </rdV3D>
+
+				<rdV3D name="NeckBaseBottom">       2.691       0.960       0.003 </rdV3D>
+
+				<rdV3D name="NeckBaseLSide">       2.571       1.460      -0.270 </rdV3D>
+
+				<rdV3D name="NeckBaseRSide">       2.821       1.460       0.279 </rdV3D>
+
+				<rdV3D name="NeckBaseTop">       2.691       1.960       0.003 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail Cap -->
+				<rdTriangle name=""> Tail5Bottom Tail5RSide Tail5Top </rdTriangle>
+				<rdTriangle name=""> Tail5Top Tail5LSide Tail5Bottom </rdTriangle>
+				<!-- Tail to Hip -->
+				<rdTriangle name=""> Tail5Bottom TrunkHipBottom TrunkHipRSide </rdTriangle>
+				<rdTriangle name=""> Tail5Bottom TrunkHipRSide Tail5RSide </rdTriangle>
+				<rdTriangle name=""> Tail5RSide TrunkHipRSide TrunkHipTop </rdTriangle>
+				<rdTriangle name=""> Tail5RSide TrunkHipTop Tail5Top </rdTriangle>
+				<rdTriangle name=""> Tail5Bottom TrunkHipLSide TrunkHipBottom </rdTriangle>
+				<rdTriangle name=""> Tail5Bottom Tail5LSide TrunkHipLSide </rdTriangle>
+				<rdTriangle name=""> Tail5LSide TrunkHipTop TrunkHipLSide </rdTriangle>
+				<rdTriangle name=""> Tail5LSide Tail5Top TrunkHipTop </rdTriangle>
+				<!-- Hip to Pubis -->
+				<rdTriangle name=""> TrunkHipBottom TrunkPubisBottom TrunkPubisRSide </rdTriangle>
+				<rdTriangle name=""> TrunkHipBottom TrunkPubisRSide TrunkHipRSide </rdTriangle>
+				<rdTriangle name=""> TrunkHipRSide TrunkPubisRSide TrunkPubisTop </rdTriangle>
+				<rdTriangle name=""> TrunkHipRSide TrunkPubisTop TrunkHipTop </rdTriangle>
+				<rdTriangle name=""> TrunkHipBottom TrunkPubisLSide TrunkPubisBottom </rdTriangle>
+				<rdTriangle name=""> TrunkHipBottom TrunkHipLSide TrunkPubisLSide </rdTriangle>
+				<rdTriangle name=""> TrunkHipLSide TrunkPubisTop TrunkPubisLSide </rdTriangle>
+				<rdTriangle name=""> TrunkHipLSide TrunkHipTop TrunkPubisTop </rdTriangle>
+				<!-- Publis to Center -->
+				<rdTriangle name=""> TrunkPubisBottom TrunkCenterBottom TrunkCenterRSide </rdTriangle>
+				<rdTriangle name=""> TrunkPubisBottom TrunkCenterRSide TrunkPubisRSide </rdTriangle>
+				<rdTriangle name=""> TrunkPubisRSide TrunkCenterRSide TrunkPubisTop </rdTriangle>
+				<rdTriangle name=""> TrunkPubisTop TrunkCenterRSide TrunkCenterTop </rdTriangle>
+				<rdTriangle name=""> TrunkPubisBottom TrunkCenterLSide TrunkCenterBottom </rdTriangle>
+				<rdTriangle name=""> TrunkPubisBottom TrunkPubisLSide TrunkCenterLSide </rdTriangle>
+				<rdTriangle name=""> TrunkPubisLSide TrunkPubisTop TrunkCenterLSide </rdTriangle>
+				<rdTriangle name=""> TrunkPubisTop TrunkCenterTop TrunkCenterLSide </rdTriangle>
+				<!-- Center to Front -->
+				<rdTriangle name=""> TrunkCenterBottom TrunkFrontBottom TrunkFrontRSide </rdTriangle>
+				<rdTriangle name=""> TrunkCenterBottom TrunkFrontRSide TrunkCenterRSide </rdTriangle>
+				<rdTriangle name=""> TrunkCenterRSide TrunkFrontRSide TrunkFrontTop </rdTriangle>
+				<rdTriangle name=""> TrunkCenterRSide TrunkFrontTop TrunkCenterTop </rdTriangle>
+				<rdTriangle name=""> TrunkCenterBottom TrunkFrontLSide TrunkFrontBottom </rdTriangle>
+				<rdTriangle name=""> TrunkCenterBottom TrunkCenterLSide TrunkFrontLSide </rdTriangle>
+				<rdTriangle name=""> TrunkCenterLSide TrunkFrontTop TrunkFrontLSide </rdTriangle>
+				<rdTriangle name=""> TrunkCenterLSide TrunkCenterTop TrunkFrontTop </rdTriangle>
+				<!-- Front to Coracoid -->
+				<rdTriangle name=""> TrunkFrontBottom TrunkCoracoidRSide TrunkFrontRSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontRSide TrunkCoracoidRSide NeckBaseRSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontRSide NeckBaseRSide TrunkFrontTop </rdTriangle>
+				<rdTriangle name=""> TrunkFrontTop NeckBaseRSide NeckBaseTop </rdTriangle>
+				<rdTriangle name=""> TrunkCoracoidRSide NeckBaseBottom NeckBaseRSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontBottom TrunkFrontLSide TrunkCoracoidLSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontLSide NeckBaseLSide TrunkCoracoidLSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontLSide TrunkFrontTop NeckBaseLSide </rdTriangle>
+				<rdTriangle name=""> TrunkFrontTop NeckBaseTop NeckBaseLSide </rdTriangle>
+				<rdTriangle name=""> TrunkCoracoidLSide NeckBaseLSide NeckBaseBottom </rdTriangle>
+				<rdTriangle name=""> TrunkFrontBottom TrunkCoracoidLSide TrunkCoracoidRSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseBottom TrunkCoracoidRSide TrunkCoracoidLSide </rdTriangle>
+				<!-- Neck Cap -->
+				<rdTriangle name=""> NeckBaseBottom  NeckBaseTop NeckBaseRSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseTop  NeckBaseBottom NeckBaseLSide </rdTriangle>
+			</rdTriangles>
+		<!-- end trunk -->
+		</rdGBody>
+
+		<rdGBody name="tail5">
+			<!-- Tail4Bottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Tail5Bottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail4Bottom">      -1.715       0.560       0.000 </rdV3D>
+
+				<rdV3D name="Tail4LSide">      -1.731       0.820      -0.120 </rdV3D>
+
+				<rdV3D name="Tail4RSide">      -1.661       0.820       0.131 </rdV3D>
+
+				<rdV3D name="Tail4Top">      -1.715       1.080       0.000 </rdV3D>
+
+				<rdV3D name="Tail5Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Tail5LSide">       0.027       0.680      -0.295 </rdV3D>
+
+				<rdV3D name="Tail5RSide">      -0.009       0.680       0.301 </rdV3D>
+
+				<rdV3D name="Tail5Top">      -0.087       1.360      -0.026 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail4 Cap -->
+				<rdTriangle name=""> Tail4Bottom Tail4RSide Tail4Top </rdTriangle>
+				<rdTriangle name=""> Tail4Top Tail4LSide Tail4Bottom </rdTriangle>
+				<!-- Tail4 to Tail5 -->
+				<rdTriangle name=""> Tail4Bottom Tail5Bottom Tail5RSide </rdTriangle>
+				<rdTriangle name=""> Tail4Bottom Tail5RSide Tail4RSide </rdTriangle>
+				<rdTriangle name=""> Tail4RSide Tail5RSide Tail5Top </rdTriangle>
+				<rdTriangle name=""> Tail4RSide Tail5Top Tail4Top </rdTriangle>
+				<rdTriangle name=""> Tail4Top Tail5Top Tail5LSide </rdTriangle>
+				<rdTriangle name=""> Tail4Top Tail5LSide Tail4LSide </rdTriangle>
+				<rdTriangle name=""> Tail4LSide Tail5LSide Tail5Bottom </rdTriangle>
+				<rdTriangle name=""> Tail4LSide Tail5Bottom Tail4Bottom </rdTriangle>
+				<!-- Tail5 Cap -->
+				<rdTriangle name=""> Tail5Bottom Tail5Top Tail5RSide </rdTriangle>
+				<rdTriangle name=""> Tail5Top Tail5Bottom Tail5LSide </rdTriangle>
+			</rdTriangles>
+		<!-- end tail5 -->
+		</rdGBody>
+
+		<rdGBody name="tail4">
+			<!-- Tail3Bottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Tail4Bottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail3Bottom">      -0.757      -0.090       0.000 </rdV3D>
+
+				<rdV3D name="Tail3LSide">      -0.793       0.120      -0.108 </rdV3D>
+
+				<rdV3D name="Tail3RSide">      -0.710       0.120       0.089 </rdV3D>
+
+				<rdV3D name="Tail3Top">      -0.757       0.340       0.000 </rdV3D>
+
+				<rdV3D name="Tail4Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Tail4LSide">       0.064       0.260      -0.103 </rdV3D>
+
+				<rdV3D name="Tail4RSide">      -0.041       0.260       0.136 </rdV3D>
+
+				<rdV3D name="Tail4Top">       0.000       0.520       0.000 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail4 Cap -->
+				<rdTriangle name=""> Tail3Bottom Tail3RSide Tail3Top </rdTriangle>
+				<rdTriangle name=""> Tail3Top Tail3LSide Tail3Bottom </rdTriangle>
+				<!-- Tail3 to Tail4 -->
+				<rdTriangle name=""> Tail3Bottom Tail4Bottom Tail4RSide </rdTriangle>
+				<rdTriangle name=""> Tail3Bottom Tail4RSide Tail3RSide </rdTriangle>
+				<rdTriangle name=""> Tail3RSide Tail4RSide Tail4Top </rdTriangle>
+				<rdTriangle name=""> Tail3RSide Tail4Top Tail3Top </rdTriangle>
+				<rdTriangle name=""> Tail3Top Tail4Top Tail4LSide </rdTriangle>
+				<rdTriangle name=""> Tail3Top Tail4LSide Tail3LSide </rdTriangle>
+				<rdTriangle name=""> Tail3LSide Tail4LSide Tail4Bottom </rdTriangle>
+				<rdTriangle name=""> Tail3LSide Tail4Bottom Tail3Bottom </rdTriangle>
+				<!-- Tail4 Cap -->
+				<rdTriangle name=""> Tail4Bottom Tail4Top Tail4RSide </rdTriangle>
+				<rdTriangle name=""> Tail4Top Tail4Bottom Tail4LSide </rdTriangle>
+			</rdTriangles>
+		<!-- end tail4 -->
+		</rdGBody>
+
+		<rdGBody name="tail3">
+			<!-- Tail2Bottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Tail3Bottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail2Bottom">      -1.109       0.020       0.000 </rdV3D>
+
+				<rdV3D name="Tail2LSide">      -1.145       0.160      -0.035 </rdV3D>
+
+				<rdV3D name="Tail2RSide">      -1.083       0.160       0.034 </rdV3D>
+
+				<rdV3D name="Tail2Top">      -1.109       0.310       0.000 </rdV3D>
+
+				<rdV3D name="Tail3Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Tail3LSide">       0.044       0.210      -0.105 </rdV3D>
+
+				<rdV3D name="Tail3RSide">      -0.023       0.210       0.098 </rdV3D>
+
+				<rdV3D name="Tail3Top">       0.000       0.430       0.000 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail2 Cap -->
+				<rdTriangle name=""> Tail2Bottom Tail2RSide Tail2Top </rdTriangle>
+				<rdTriangle name=""> Tail2Top Tail2LSide Tail2Bottom </rdTriangle>
+				<!-- Tail2 to Tail3 -->
+				<rdTriangle name=""> Tail2Bottom Tail3Bottom Tail3RSide </rdTriangle>
+				<rdTriangle name=""> Tail2Bottom Tail3RSide Tail2RSide </rdTriangle>
+				<rdTriangle name=""> Tail2RSide Tail3RSide Tail3Top </rdTriangle>
+				<rdTriangle name=""> Tail2RSide Tail3Top Tail2Top </rdTriangle>
+				<rdTriangle name=""> Tail2Top Tail3Top Tail3LSide </rdTriangle>
+				<rdTriangle name=""> Tail2Top Tail3LSide Tail2LSide </rdTriangle>
+				<rdTriangle name=""> Tail2LSide Tail3LSide Tail3Bottom </rdTriangle>
+				<rdTriangle name=""> Tail2LSide Tail3Bottom Tail2Bottom </rdTriangle>
+				<!-- Tail3 Cap -->
+				<rdTriangle name=""> Tail3Bottom Tail3Top Tail3RSide </rdTriangle>
+				<rdTriangle name=""> Tail3Top Tail3Bottom Tail3LSide </rdTriangle>
+			</rdTriangles>
+		<!-- end tail3 -->
+		</rdGBody>
+
+		<rdGBody name="tail2">
+			<!-- Tail1Bottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Tail2Bottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail1Bottom">      -0.747       0.050       0.000 </rdV3D>
+
+				<rdV3D name="Tail1LSide">      -0.750       0.120      -0.028 </rdV3D>
+
+				<rdV3D name="Tail1RSide">      -0.725       0.120       0.005 </rdV3D>
+
+				<rdV3D name="Tail1Top">      -0.747       0.190       0.000 </rdV3D>
+
+				<rdV3D name="Tail2Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Tail2LSide">      -0.013       0.140      -0.048 </rdV3D>
+
+				<rdV3D name="Tail2RSide">       0.004       0.140       0.042 </rdV3D>
+
+				<rdV3D name="Tail2Top">       0.000       0.290       0.000 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail1 Cap -->
+				<rdTriangle name=""> Tail1Bottom Tail1RSide Tail1Top </rdTriangle>
+				<rdTriangle name=""> Tail1Top Tail1LSide Tail1Bottom </rdTriangle>
+				<!-- Tail1 to Tail2 -->
+				<rdTriangle name=""> Tail1Bottom Tail2Bottom Tail2RSide </rdTriangle>
+				<rdTriangle name=""> Tail1Bottom Tail2RSide Tail1RSide </rdTriangle>
+				<rdTriangle name=""> Tail1RSide Tail2RSide Tail2Top </rdTriangle>
+				<rdTriangle name=""> Tail1RSide Tail2Top Tail1Top </rdTriangle>
+				<rdTriangle name=""> Tail1Top Tail2Top Tail2LSide </rdTriangle>
+				<rdTriangle name=""> Tail1Top Tail2LSide Tail1LSide </rdTriangle>
+				<rdTriangle name=""> Tail1LSide Tail2LSide Tail2Bottom </rdTriangle>
+				<rdTriangle name=""> Tail1LSide Tail2Bottom Tail1Bottom </rdTriangle>
+				<!-- Tail2 Cap -->
+				<rdTriangle name=""> Tail2Bottom Tail2Top Tail2RSide </rdTriangle>
+				<rdTriangle name=""> Tail2Top Tail2Bottom Tail2LSide </rdTriangle>
+			</rdTriangles>
+			<!-- end tail2 -->
+		</rdGBody>
+
+		<rdGBody name="tail1">
+			<!-- TailTip -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Tail1Bottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Tail1Tip">      -0.894       0.050       0.000 </rdV3D>
+
+				<rdV3D name="Tail1Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Tail1LSide">       0.006       0.070      -0.028 </rdV3D>
+
+				<rdV3D name="Tail1RSide">       0.019       0.070       0.012 </rdV3D>
+
+				<rdV3D name="Tail1Top">       0.000       0.140       0.000 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Tail1 to Tail2 -->
+				<rdTriangle name=""> Tail1Tip Tail1Bottom Tail1RSide </rdTriangle>
+				<rdTriangle name=""> Tail1Tip Tail1RSide Tail1Top </rdTriangle>
+				<rdTriangle name=""> Tail1Tip Tail1Top Tail1LSide </rdTriangle>
+				<rdTriangle name=""> Tail1Tip Tail1LSide Tail1Bottom </rdTriangle>
+				<!-- Tail1 Cap -->
+				<rdTriangle name=""> Tail1Bottom Tail1Top Tail1RSide </rdTriangle>
+				<rdTriangle name=""> Tail1Top Tail1Bottom Tail1LSide </rdTriangle>
+			</rdTriangles>
+		<!-- end tail1 -->
+		</rdGBody>
+
+		<rdGBody name="neck">
+			<!-- NeckBaseBottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- NeckEndBottom -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="NeckBaseBottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="NeckBaseLSide">       0.166       0.500      -0.248 </rdV3D>
+
+				<rdV3D name="NeckBaseRSide">      -0.163       0.500       0.257 </rdV3D>
+
+				<rdV3D name="NeckBaseTop">       0.000       1.000       0.000 </rdV3D>
+
+				<rdV3D name="NeckEndBottom">       0.490       0.470       0.000 </rdV3D>
+
+				<rdV3D name="NeckEndLSide">       0.403       0.520      -0.224 </rdV3D>
+
+				<rdV3D name="NeckEndRSide">       0.595       0.520       0.177 </rdV3D>
+
+				<rdV3D name="NeckEndTop">       0.490       1.420       0.000 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- NeckBase Cap -->
+				<rdTriangle name=""> NeckBaseBottom NeckBaseRSide NeckBaseTop </rdTriangle>
+				<rdTriangle name=""> NeckBaseTop NeckBaseLSide NeckBaseBottom </rdTriangle>
+				<!-- NeckBase to NeckEnd -->
+				<rdTriangle name=""> NeckBaseBottom NeckEndBottom NeckEndRSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseBottom NeckEndRSide NeckBaseRSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseRSide NeckEndRSide NeckEndTop </rdTriangle>
+				<rdTriangle name=""> NeckBaseRSide NeckEndTop NeckBaseTop </rdTriangle>
+				<rdTriangle name=""> NeckBaseBottom NeckEndLSide NeckEndBottom </rdTriangle>
+				<rdTriangle name=""> NeckBaseBottom NeckBaseLSide NeckEndLSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseLSide NeckEndTop NeckEndLSide </rdTriangle>
+				<rdTriangle name=""> NeckBaseLSide NeckBaseTop NeckEndTop </rdTriangle>
+				<!-- NeckEnd Cap -->
+				<rdTriangle name=""> NeckEndBottom NeckEndTop NeckEndRSide </rdTriangle>
+				<rdTriangle name=""> NeckEndTop NeckEndBottom NeckEndLSide </rdTriangle>
+			</rdTriangles>
+		<!-- end neck -->
+		</rdGBody>
+
+		<rdGBody name="head">
+			<!-- Head1Bottom -->
+			<origin>       0.000       0.000       0.000 </origin>
+
+			<!-- Head5BottomSnout -->
+			<px>       0.000       0.000       0.000 </px>
+
+			<rdVertices name="">
+				<rdV3D name="Head1Bottom">       0.000       0.000       0.000 </rdV3D>
+
+				<rdV3D name="Head1LSide">      -0.048       0.360      -0.508 </rdV3D>
+
+				<rdV3D name="Head1RSide">       0.022       0.360       0.465 </rdV3D>
+
+				<rdV3D name="Head1Top">       0.000       0.720       0.000 </rdV3D>
+
+				<rdV3D name="Head2Bottom">       0.334      -0.290      -0.025 </rdV3D>
+
+				<rdV3D name="Head2LSide">       0.299       0.260      -0.361 </rdV3D>
+
+				<rdV3D name="Head2RSide">       0.369       0.260       0.320 </rdV3D>
+
+				<rdV3D name="Head2Top">       0.334       0.710      -0.025 </rdV3D>
+
+				<rdV3D name="Head3Bottom">       0.734      -0.240      -0.004 </rdV3D>
+
+				<rdV3D name="Head3LSide">       0.759       0.220      -0.243 </rdV3D>
+
+				<rdV3D name="Head3RSide">       0.709       0.220       0.235 </rdV3D>
+
+				<rdV3D name="Head3Top">       0.734       0.680      -0.004 </rdV3D>
+
+				<rdV3D name="Head4Bottom">       1.107      -0.240      -0.005 </rdV3D>
+
+				<rdV3D name="Head4LSideBelow">       1.098      -0.240      -0.117 </rdV3D>
+
+				<rdV3D name="Head4RSideBelow">       1.115      -0.240       0.106 </rdV3D>
+
+				<rdV3D name="Head4LSideAbove">       1.081       0.450      -0.239 </rdV3D>
+
+				<rdV3D name="Head4RSideAbove">       1.124       0.450       0.218 </rdV3D>
+
+				<rdV3D name="Head4Top">       1.098       0.650      -0.016 </rdV3D>
+
+				<rdV3D name="Head5BottomSnout">       1.448      -0.070       0.000 </rdV3D>
+
+				<rdV3D name="Head5TopSnout">       1.417       0.090       0.007 </rdV3D>
+			</rdVertices>
+
+			<rdTriangles name="">
+				<!-- Head1 Cap -->
+				<rdTriangle name=""> Head1Bottom Head1RSide Head1Top </rdTriangle>
+				<rdTriangle name=""> Head1Top Head1LSide Head1Bottom </rdTriangle>
+				<!-- Head1 to Head2 -->
+				<rdTriangle name=""> Head1Bottom Head2Bottom Head2RSide </rdTriangle>
+				<rdTriangle name=""> Head1Bottom Head2RSide Head1RSide </rdTriangle>
+				<rdTriangle name=""> Head1RSide Head2RSide Head2Top </rdTriangle>
+				<rdTriangle name=""> Head1RSide Head2Top Head1Top </rdTriangle>
+				<rdTriangle name=""> Head1Bottom Head2LSide Head2Bottom </rdTriangle>
+				<rdTriangle name=""> Head1Bottom Head1LSide Head2LSide </rdTriangle>
+				<rdTriangle name=""> Head1LSide Head2Top Head2LSide </rdTriangle>
+				<rdTriangle name=""> Head1LSide Head1Top Head2Top </rdTriangle>
+				<!-- Head2 to Head3 -->
+				<rdTriangle name=""> Head2Bottom Head3Bottom Head3RSide </rdTriangle>
+				<rdTriangle name=""> Head2Bottom Head3RSide Head2RSide </rdTriangle>
+				<rdTriangle name=""> Head2RSide Head3RSide Head3Top </rdTriangle>
+				<rdTriangle name=""> Head2RSide Head3Top Head2Top </rdTriangle>
+				<rdTriangle name=""> Head2Bottom Head3LSide Head3Bottom </rdTriangle>
+				<rdTriangle name=""> Head2Bottom Head2LSide Head3LSide </rdTriangle>
+				<rdTriangle name=""> Head2LSide Head3Top Head3LSide </rdTriangle>
+				<rdTriangle name=""> Head2LSide Head2Top Head3Top </rdTriangle>
+				<!-- Head3 to Head4 -->
+				<rdTriangle name=""> Head3Top Head4RSideAbove Head4Top </rdTriangle>
+				<rdTriangle name=""> Head3Top Head3RSide Head4RSideAbove </rdTriangle>
+				<rdTriangle name=""> Head3RSide Head4RSideBelow Head4RSideAbove </rdTriangle>
+				<rdTriangle name=""> Head3RSide Head3Bottom Head4RSideBelow </rdTriangle>
+				<rdTriangle name=""> Head3Top Head4Top Head4LSideAbove </rdTriangle>
+				<rdTriangle name=""> Head3Top Head4LSideAbove Head3LSide </rdTriangle>
+				<rdTriangle name=""> Head3LSide Head4LSideAbove Head4LSideBelow </rdTriangle>
+				<rdTriangle name=""> Head3LSide Head4LSideBelow Head3Bottom </rdTriangle>
+				<rdTriangle name=""> Head3Bottom Head4Bottom Head4RSideBelow </rdTriangle>
+				<rdTriangle name=""> Head3Bottom Head4LSideBelow Head4Bottom </rdTriangle>
+				<!-- Head4 to Snout -->
+				<rdTriangle name=""> Head4Top Head4RSideAbove Head5TopSnout </rdTriangle>
+				<rdTriangle name=""> Head4RSideAbove Head4RSideBelow Head5TopSnout </rdTriangle>
+				<rdTriangle name=""> Head4RSideBelow Head5BottomSnout Head5TopSnout </rdTriangle>
+				<rdTriangle name=""> Head4Top Head5TopSnout Head4LSideAbove </rdTriangle>
+				<rdTriangle name=""> Head4LSideAbove Head5TopSnout Head4LSideBelow </rdTriangle>
+				<rdTriangle name=""> Head4LSideBelow Head5TopSnout Head5BottomSnout </rdTriangle>
+				<rdTriangle name=""> Head4Bottom Head5BottomSnout Head4RSideBelow </rdTriangle>
+				<rdTriangle name=""> Head4Bottom Head4LSideBelow Head5BottomSnout </rdTriangle>
+			</rdTriangles>
+		<!-- end head -->
+		</rdGBody>
+	</rdGBodies>
+</rdGModel>
+

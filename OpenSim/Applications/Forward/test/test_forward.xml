@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AnalysisSet name="test">
+	<defaults>
+		
+	</defaults>
+	<objects>
+		<Kinematics name="Kinematics">
+			<on> true </on>
+			<StartTime> -1000000000000000000000000000000.00000000 </StartTime>
+			<EndTime> 1000000000000000000000000000000.00000000 </EndTime>
+			<StepInterval>
+				1 
+			</StepInterval>
+			<InDegrees> true </InDegrees>
+		</Kinematics>
+	</objects>
+</AnalysisSet>
+

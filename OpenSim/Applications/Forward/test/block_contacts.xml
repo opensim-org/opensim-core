@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Contacts file for simulating a block dropping on to the ground. -->
+
+<rdContacts name="World Congress 2002 Decomposition Poster">
+
+	<defaults>
+		<LinearSetPoint name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<body_A> 0 </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 0.000 0.000 </direction_A>
+			<body_B> 0 </body_B>
+			<point_B> 0.000 0.000 0.000 </point_B>
+			<normal_A> 0.000 1.000 0.000 </normal_A>
+			<normal_B> 0.000 1.000 0.000 </normal_B>
+			<tangential_stiffness> 100.000 </tangential_stiffness>
+			<tangential_viscosity> 0.000 </tangential_viscosity>
+			<coefficient_of_friction> 0.000 </coefficient_of_friction>
+			<normal_stiffness> 10000.000 </normal_stiffness>
+			<normal_viscosity> 0.000 </normal_viscosity>
+		</LinearSetPoint>
+		<PolynomialSetPoint name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<body_A> 0 </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 0.000 0.000 </direction_A>
+			<body_B> 0 </body_B>
+			<point_B> 0.000 0.000 0.000 </point_B>
+			<normal_A> 0.000 1.000 0.000 </normal_A>
+			<normal_B> 0.000 1.000 0.000 </normal_B>
+			<coefficient_of_friction> 0.000 </coefficient_of_friction>
+			<tangential_stiffness> 100.000 </tangential_stiffness>
+			<tangential_viscosity> 0.000 </tangential_viscosity>
+			<normal_stiffness> 1000.000 </normal_stiffness>
+			<normal_viscosity> 0.000 </normal_viscosity>
+			<stiffness_power> 1.000 </stiffness_power>
+			<viscosity_power> 1.000 </viscosity_power>
+		</PolynomialSetPoint>
+	</defaults>
+
+	<objects>
+		<PolynomialSetPoint name="origin">
+			<body_A> -1 </body_A>
+			<body_B> 0 </body_B>
+			<normal_A> 0.000 1.000 0.000 </normal_A>
+			<normal_B> 0.000 -1.000 0.000 </normal_B>
+			<coefficient_of_friction> 0.3  </coefficient_of_friction>
+			<tangential_stiffness> 2000.000 </tangential_stiffness>
+			<tangential_viscosity> 20.000 </tangential_viscosity>
+			<normal_stiffness> 800000.000 </normal_stiffness>
+			<normal_viscosity> 0.400 </normal_viscosity>
+			<stiffness_power> 2.000 </stiffness_power>
+			<viscosity_power> 1.000 </viscosity_power>
+		</PolynomialSetPoint>
+	</objects>
+</rdContacts>
+

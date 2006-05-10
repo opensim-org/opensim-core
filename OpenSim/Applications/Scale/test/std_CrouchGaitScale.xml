@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScaleSet name="ScaleSet">
+	<defaults/>
+	<objects>
+		<Scale name="">
+			<scales>       1.00000000       1.00000000       1.00000000 </scales>
+			<segment> ground </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.20851690       1.09820458       1.09820458 </scales>
+			<segment> pelvis </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.92234543       0.92234543       1.09711968 </scales>
+			<segment> torso </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.00000000       1.00000000       1.00000000 </scales>
+			<segment> neckhead </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.00000000       1.00000000       1.00000000 </scales>
+			<segment> OT_head </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.92234543       0.92234543       1.09711968 </scales>
+			<segment> clavicle_marker_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.79982243       0.79982243       0.79982243 </scales>
+			<segment> humerus_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.79982243       0.79982243       0.79982243 </scales>
+			<segment> elbow_marker_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> ulna_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> radius_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> wrist_marker_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> hand_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.92234543       0.92234543       1.09711968 </scales>
+			<segment> clavicle_marker_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.79982243       0.79982243       0.79982243 </scales>
+			<segment> humerus_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.79982243       0.79982243       0.79982243 </scales>
+			<segment> elbow_marker_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> ulna_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> radius_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> wrist_marker_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.99147738       0.99147738       0.99147738 </scales>
+			<segment> hand_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.95178761       0.95178761       0.95178761 </scales>
+			<segment> femur_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.01670719       1.01670719       1.01670719 </scales>
+			<segment> tibia_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.01670719       1.01670719       1.01670719 </scales>
+			<segment> patella_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> talus_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> foot_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> foot_marker_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> toes_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.95178761       0.95178761       0.95178761 </scales>
+			<segment> femur_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.01670719       1.01670719       1.01670719 </scales>
+			<segment> tibia_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       1.01670719       1.01670719       1.01670719 </scales>
+			<segment> patella_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> talus_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> foot_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> foot_marker_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+			<scales>       0.90813575       0.90813575       0.90813575 </scales>
+			<segment> toes_l </segment>
+			<apply> true </apply>
+		</Scale>
+	</objects>
+</ScaleSet>
+
