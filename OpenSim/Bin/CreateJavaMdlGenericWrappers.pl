@@ -14,7 +14,7 @@ chomp($userLibName);
 print "Got userCurModel[".$userCurModel."]";
 
 # This is the place for the standard swig template file
-my $swigTemplate =$ENV{RDI_DEV}.'/Source/Native/SU/Resources/Swig/genericTemplate.i';
+my $swigTemplate ='C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Swig/genericTemplate.i';
 
 print "Building Swig interface file for model ".$userCurModel."\n\n\n";
 
@@ -52,7 +52,7 @@ print "Generating Swig wrapper classes for java\n\n";
 # Makeup a name for the Package 
 $modelPkg = "simtkModel";
 
-`swig -v -c++ -java -package $modelPkg -I"$ENV{RDI_DEV}"/Source/Native -I"$ENV{RDI_DEV}"/Source/Native/SU/Resources/Swig $interfaceFileName`;
+`swig -v -c++ -java -package $modelPkg -I'C:/cygwin/home/Ayman/ReWrap/Trunk/' -I'C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Swig' $interfaceFileName`;
 
 # Now move all java generated files into $modelPkg directory for better directory mgmt.
 use File::Copy;
@@ -75,7 +75,7 @@ for $fil(@files){
 chdir $modelPkg;
 
 # Create a Loader file to contain the system.loadLibrary and as a main file for the jar
-my $LoaderTemplate =$ENV{RDI_DEV}.'/Source/SU/Resources/Java/ModelLoaderTemplate.java';
+my $LoaderTemplate ='C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Java/ModelLoaderTemplate.java';
 
 print "Building Java main file for model ".$userCurModel."\n\n\n";
 

@@ -1,85 +1,88 @@
-%module Model
+%module OpenSimModel
 %{
-#include <NMBLTK/Tools/rdToolsDLL.h>
-#include <NMBLTK/Simulation/rdSimulationDLL.h>
-#include <NMBLTK/Tools/rdException.h>
-#include <NMBLTK/Tools/rdArray.h>
-#include <NMBLTK/Tools/rdArrayPtrs.h>
-#include <NMBLTK/Tools/rdProperty.h>
-#include <NMBLTK/Tools/rdPropertySet.h>
-#include <NMBLTK/Tools/rdObject.h>
-#include <NMBLTK/Tools/rdMaterial.h>
-#include <NMBLTK/Tools/rdVisibleProperties.h>
-#include <NMBLTK/Tools/rdTransform.h>
-#include <NMBLTK/Tools/rdVisibleObject.h>
+#include <OpenSim/Tools/rdToolsDLL.h>
+#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/Exception.h>
+#include <OpenSim/Tools/Array.h>
+#include <OpenSim/Tools/ArrayPtrs.h>
+#include <OpenSim/Tools/Property.h>
+#include <OpenSim/Tools/PropertySet.h>
+#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Tools/Material.h>
+#include <OpenSim/Tools/VisibleProperties.h>
+#include <OpenSim/Tools/Transform.h>
+#include <OpenSim/Tools/VisibleObject.h>
 
-#include <NMBLTK/Tools/rdSet.h>
-#include <NMBLTK/Simulation/Model/rdBody.h>
-#include <NMBLTK/Simulation/Model/rdBodySet.h>
+#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Simulation/Model/Body.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
-#include <NMBLTK/Tools/rdMaterialSet.h>
+#include <OpenSim/Tools/MaterialSet.h>
 
-#include <NMBLTK/Simulation/Model/rdActuator.h>
-#include <NMBLTK/Simulation/Model/rdActuatorSet.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
 
-#include <NMBLTK/Simulation/Model/rdContactForceSet.h>
+#include <OpenSim/Simulation/Model/ContactForceSet.h>
 
-#include <NMBLTK/Tools/rdStateVector.h>
-#include <NMBLTK/Tools/rdStorage.h>
+#include <OpenSim/Tools/StateVector.h>
+#include <OpenSim/Tools/Storage.h>
 
-#include <NMBLTK/Simulation/Model/rdModel.h>
-#include <NMBLTK/Simulation/Control/rdControl.h>
-#include <NMBLTK/Simulation/Control/rdControlSet.h>
-#include <NMBLTK/Simulation/Control/rdControlConstant.h>
-#include <NMBLTK/Simulation/Control/rdControlLinear.h>
-#include <NMBLTK/Simulation/Integrator/Integrand.h>
-#include <NMBLTK/Simulation/Integrator/rdRKF.h>
-#include <NMBLTK/Simulation/Integrator/rdIntegRKF.h>
-#include <NMBLTK/Simulation/Model/rdModelIntegrand.h>
-#include <NMBLTK/Simulation/Manager/rdManager.h>
-#include <NMBLTK/Simulation/Model/rdCallback.h>
-#include <NMBLTK/Simulation/Model/rdCallbackSet.h>
-#include <NMBLTK/Simulation/Model/rdIntegCallback.h>
-#include <NMBLTK/Simulation/Simtk/rdSimtkAnimationCallback.h>
-#include <NMBLTK/Simulation/Model/rdAnalysis.h>
-#include <NMBLTK/Simulation/Model/rdAnalysisSet.h>
-#include <NMBLTK/Simulation/Model/rdAnalysisFactory.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Control/Control.h>
+#include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Control/ControlConstant.h>
+#include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/Simulation/Integrator/Integrand.h>
+#include <OpenSim/Simulation/Integrator/RKF.h>
+#include <OpenSim/Simulation/Integrator/IntegRKF.h>
+#include <OpenSim/Simulation/Model/ModelIntegrand.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/Callback.h>
+#include <OpenSim/Simulation/Model/CallbackSet.h>
+#include <OpenSim/Simulation/Model/IntegCallback.h>
+#include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
+#include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Model/AnalysisFactory.h>
 
-#include <NMBLTK/Analyses/suAnalysisFactory.h>
-#include <NMBLTK/Analyses/suActuation.h>
-#include <NMBLTK/Analyses/suIndAcc.h>
-#include <NMBLTK/Analyses/suKinematics.h>
-#include <NMBLTK/Analyses/suGeneralizedForces.h>
+#include <OpenSim/Analyses/AnalysisFactory.h>
+#include <OpenSim/Analyses/Actuation.h>
+#include <OpenSim/Analyses/IndAcc.h>
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/GeneralizedForces.h>
 
-#include <NMBLTK/Simulation/Model/suMarker.h>
-#include <NMBLTK/Simulation/Model/suMarkerSet.h>
-#include <NMBLTK/Tools/suRange.h>
-#include <NMBLTK/Tools/suScale.h>
-#include <NMBLTK/Tools/suScaleSet.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Tools/Range.h>
+#include <OpenSim/Tools/Scale.h>
+#include <OpenSim/Tools/ScaleSet.h>
 
 	/* This group of headers added by KMS 3/22/06 */
-#include <NMBLTK/Simulation/Model/nmblKinematicsEngine.h>
-#include <NMBLTK/Simulation/SIMM/simmBody.h>
-#include <NMBLTK/Simulation/SIMM/simmBone.h>
-#include <NMBLTK/Simulation/SIMM/simmConstant.h>
-#include <NMBLTK/Simulation/SIMM/simmCoordinate.h>
-#include <NMBLTK/Simulation/SIMM/simmDof.h>
-#include <NMBLTK/Simulation/SIMM/simmJoint.h>
-#include <NMBLTK/Simulation/SIMM/simmKinematicsEngine.h>
-#include <NMBLTK/Simulation/SIMM/simmMarker.h>
-#include <NMBLTK/Simulation/SIMM/simmModel.h>
-#include <NMBLTK/Simulation/SIMM/simmMuscle.h>
-#include <NMBLTK/Simulation/SIMM/simmMuscleGroup.h>
-#include <NMBLTK/Simulation/SIMM/simmMusclePoint.h>
-#include <NMBLTK/Simulation/SIMM/simmMuscleViaPoint.h>
-#include <NMBLTK/Simulation/SIMM/simmPath.h>
-#include <NMBLTK/Simulation/SIMM/simmPathMatrix.h>
-#include <NMBLTK/Simulation/SIMM/simmPoint.h>
-#include <NMBLTK/Simulation/SIMM/simmRotationDof.h>
-#include <NMBLTK/Simulation/SIMM/simmStep.h>
-#include <NMBLTK/Simulation/SIMM/simmTranslationDof.h>
-#include <NMBLTK/Simulation/SIMM/simmUnits.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/SimmBody.h>
+#include <OpenSim/Simulation/SIMM/SimmBone.h>
+#include <OpenSim/Tools/Function.h>
+#include <OpenSim/Simulation/SIMM/Constant.h>
+#include <OpenSim/Simulation/SIMM/Coordinate.h>
+#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+#include <OpenSim/Simulation/SIMM/SimmDof.h>
+#include <OpenSim/Simulation/SIMM/SimmJoint.h>
+#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/Simulation/SIMM/SimmMarker.h>
+#include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Simulation/SIMM/SimmMuscle.h>
+#include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
+#include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
+#include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
+#include <OpenSim/Simulation/SIMM/SimmPath.h>
+#include <OpenSim/Simulation/SIMM/SimmPathMatrix.h>
+#include <OpenSim/Simulation/SIMM/SimmPoint.h>
+#include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
+#include <OpenSim/Simulation/SIMM/SimmStep.h>
+#include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
+#include <OpenSim/Simulation/SIMM/SimmUnits.h>
 
+using namespace OpenSim;
 %}
 
 /* This file is for creation/handling of arrays */
@@ -90,11 +93,11 @@
 %include "std_string.i"
 
 /* inline code for rdObject.java */
-%typemap(javacode) rdObject %{
+%typemap(javacode) Object %{
   public boolean equals(Object aObject) {
-    if (! (aObject instanceof rdObject))
+    if (! (aObject instanceof Object))
       return false;
-    rdObject rObj = (rdObject) aObject;
+    Object rObj = (Object) aObject;
     return (this.getName().equals(rObj.getName()) &&
             this.getType().equals(rObj.getType()));
   }
@@ -114,125 +117,113 @@
 
 %include "exception.i"
 // Exception handler (intended for JNI calls that have a non void return)
-%exception {
-  try {
-    $function
-  }
-  catch (rdException) {
-    jclass clazz = jenv->FindClass("simtkModel/rdException");
-    jenv->ThrowNew(clazz, "Native Exception");
-    return NULL;
-  }
-}
-
-// This overrides anything in the %except(java) typemap
-// Used for JNI calls that return void
-%typemap(except) void {
-  try {
-    $function
-  }
-  catch (rdException) {
-    jclass clazz = jenv->FindClass("simtkModel/rdException");
-    jenv->ThrowNew(clazz, "Native Exception");
-    return;
-  }
-}
-
+//%exception {
+//  try {
+//    $function
+//  }
+//  catch (Exception) {
+//    jclass clazz = jenv->FindClass("simtkModel/Exception");
+//    jenv->ThrowNew(clazz, "Native Exception");
+//    return NULL;
+//  }
+//}
 
 /* rest of header files to be wrapped */
-%include <NMBLTK/Tools/rdToolsDLL.h>
-%include <NMBLTK/Simulation/rdSimulationDLL.h>
-%include <NMBLTK/Tools/rdException.h>
-%include <NMBLTK/Tools/rdArray.h>
-%include <NMBLTK/Tools/rdArrayPtrs.h>
-%include <NMBLTK/Tools/rdProperty.h>
-%include <NMBLTK/Tools/rdPropertySet.h>
-%include <NMBLTK/Tools/rdObject.h>
-%include <NMBLTK/Tools/rdMaterial.h>
-%include <NMBLTK/Tools/rdVisibleProperties.h>
-%include <NMBLTK/Tools/rdTransform.h>
-%include <NMBLTK/Tools/rdVisibleObject.h>
+%include <OpenSim/Tools/rdToolsDLL.h>
+%include <OpenSim/Simulation/rdSimulationDLL.h>
+%include <OpenSim/Tools/Exception.h>
+%include <OpenSim/Tools/Array.h>
+%include <OpenSim/Tools/ArrayPtrs.h>
+%include <OpenSim/Tools/Property.h>
+%include <OpenSim/Tools/PropertySet.h>
+%include <OpenSim/Tools/Object.h>
+%include <OpenSim/Tools/Material.h>
+%include <OpenSim/Tools/VisibleProperties.h>
+%include <OpenSim/Tools/Transform.h>
+%include <OpenSim/Tools/VisibleObject.h>
 
-%include <NMBLTK/Tools/rdSet.h>
+%include <OpenSim/Tools/Set.h>
 
-%include <NMBLTK/Simulation/Model/rdBody.h>
-%template(rdSetBodies) rdSet<rdBody>;
-%include <NMBLTK/Simulation/Model/rdBodySet.h>
+%include <OpenSim/Simulation/Model/Body.h>
+%template(SetBodies) OpenSim::Set<OpenSim::Body>;
+%include <OpenSim/Simulation/Model/BodySet.h>
 
-%template(rdSetMaterials) rdSet<rdMaterial>;
-%include <NMBLTK/Tools/rdMaterialSet.h>
+%template(SetMaterials) OpenSim::Set<OpenSim::Material>;
+%include <OpenSim/Tools/MaterialSet.h>
 
-%include <NMBLTK/Simulation/Model/rdActuator.h>
-%template(rdSetActuators) rdSet<rdActuator>;
-%include <NMBLTK/Simulation/Model/rdActuatorSet.h>
+%include <OpenSim/Simulation/Model/Actuator.h>
+%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
+%include <OpenSim/Simulation/Model/ActuatorSet.h>
 
-%include <NMBLTK/Simulation/Model/rdContactForceSet.h>
-%include <NMBLTK/Tools/rdStateVector.h>
-%include <NMBLTK/Tools/rdStorage.h>
+%include <OpenSim/Simulation/Model/ContactForceSet.h>
+%include <OpenSim/Tools/StateVector.h>
+%include <OpenSim/Tools/Storage.h>
 
-%include <NMBLTK/Simulation/Model/rdModel.h>
+%include <OpenSim/Simulation/Model/Model.h>
 
-%include <NMBLTK/Simulation/Control/rdControl.h>
-%template(rdSetControls) rdSet<rdControl>;
-%include <NMBLTK/Simulation/Control/rdControlSet.h>
-%include <NMBLTK/Simulation/Control/rdControlConstant.h>
-%include <NMBLTK/Simulation/Control/rdControlLinear.h>
+%include <OpenSim/Simulation/Control/Control.h>
+%template(SetControls) OpenSim::Set<OpenSim::Control>;
+%include <OpenSim/Simulation/Control/ControlSet.h>
+%include <OpenSim/Simulation/Control/ControlConstant.h>
+%include <OpenSim/Simulation/Control/ControlLinear.h>
 
-%include <NMBLTK/Simulation/Integrator/Integrand.h>
-%include <NMBLTK/Simulation/Model/rdModelIntegrand.h>
-%include <NMBLTK/Simulation/Integrator/rdRKF.h>
-%include <NMBLTK/Simulation/Integrator/rdIntegRKF.h>
-%include <NMBLTK/Simulation/Manager/rdManager.h>
-%include <NMBLTK/Simulation/Model/rdCallback.h>
-%template(rdSetCallback) rdSet<rdCallback>;
-%include <NMBLTK/Simulation/Model/rdCallbackSet.h>
-%include <NMBLTK/Simulation/Model/rdIntegCallback.h>
-%include <NMBLTK/Simulation/Simtk/rdSimtkAnimationCallback.h>
-%template(rdArrayStorage) rdArrayPtrs<rdStorage>;
-%include <NMBLTK/Simulation/Model/rdAnalysis.h>
-%template(rdArrayAnalysis) rdArrayPtrs<rdAnalysis>;
-%template(rdSetAnalysis) rdSet<rdAnalysis>;
-%include <NMBLTK/Simulation/Model/rdAnalysisFactory.h>
+%include <OpenSim/Simulation/Integrator/Integrand.h>
+%include <OpenSim/Simulation/Model/ModelIntegrand.h>
+%include <OpenSim/Simulation/Integrator/RKF.h>
+%include <OpenSim/Simulation/Integrator/IntegRKF.h>
+%include <OpenSim/Simulation/Manager/Manager.h>
+%include <OpenSim/Simulation/Model/Callback.h>
+%template(SetCallback) OpenSim::Set<OpenSim::Callback>;
+%include <OpenSim/Simulation/Model/CallbackSet.h>
+%include <OpenSim/Simulation/Model/IntegCallback.h>
+%include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
+%template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
+%include <OpenSim/Simulation/Model/Analysis.h>
+%template(ArrayAnalysis) OpenSim::ArrayPtrs<OpenSim::Analysis>;
+%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%include <OpenSim/Simulation/Model/AnalysisFactory.h>
 
-%include <NMBLTK/Analyses/suAnalysesDLL.h>
-%include <NMBLTK/Analyses/suAnalysisFactory.h>
-%include <NMBLTK/Analyses/suKinematics.h>
-%include <NMBLTK/Analyses/suActuation.h>
-%include <NMBLTK/Analyses/suIndAcc.h>
-%include <NMBLTK/Analyses/suGeneralizedForces.h>
+%include <OpenSim/Analyses/suAnalysesDLL.h>
+%include <OpenSim/Analyses/AnalysisFactory.h>
+%include <OpenSim/Analyses/Kinematics.h>
+%include <OpenSim/Analyses/Actuation.h>
+%include <OpenSim/Analyses/IndAcc.h>
+%include <OpenSim/Analyses/GeneralizedForces.h>
 
-%template(rdArrayBool) rdArray<bool>;
-%template(rdArrayDouble) rdArray<double>;
-%template(rdArrayInt) rdArray<int>;
-%template(rdArrayStr) rdArray<std::string>;
-%template(rdArrayPtrsObj) rdArrayPtrs<rdObject>;
-%include <NMBLTK/Simulation/Model/suMarker.h>
-%template(suSetMarkers) rdSet<suMarker>;
-%include <NMBLTK/Simulation/Model/suMarkerSet.h>
-%include <NMBLTK/Tools/suRange.h>
-%include <NMBLTK/Tools/suScale.h>
-%template(suSetScales) rdSet<suScale>;
-%include <NMBLTK/Tools/suScaleSet.h>
+%template(ArrayBool) OpenSim::Array<bool>;
+%template(ArrayDouble) OpenSim::Array<double>;
+%template(ArrayInt) OpenSim::Array<int>;
+%template(ArrayStr) OpenSim::Array<std::string>;
+%template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
+%include <OpenSim/Simulation/Model/Marker.h>
+%template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%include <OpenSim/Simulation/Model/MarkerSet.h>
+%include <OpenSim/Tools/Range.h>
+%include <OpenSim/Tools/Scale.h>
+%template(SetScales) OpenSim::Set<OpenSim::Scale>;
+%include <OpenSim/Tools/ScaleSet.h>
 
 	/* This group of headers added by KMS 3/22/06 */
-%include <NMBLTK/Simulation/Model/nmblKinematicsEngine.h>
-%include <NMBLTK/Simulation/SIMM/simmBody.h>
-%include <NMBLTK/Simulation/SIMM/simmBone.h>
-%include <NMBLTK/Simulation/SIMM/simmConstant.h>
-%include <NMBLTK/Simulation/SIMM/simmCoordinate.h>
-%include <NMBLTK/Simulation/SIMM/simmDof.h>
-%include <NMBLTK/Simulation/SIMM/simmJoint.h>
-%include <NMBLTK/Simulation/SIMM/simmKinematicsEngine.h>
-%include <NMBLTK/Simulation/SIMM/simmMarker.h>
-%include <NMBLTK/Simulation/SIMM/simmModel.h>
-%include <NMBLTK/Simulation/SIMM/simmMuscle.h>
-%include <NMBLTK/Simulation/SIMM/simmMuscleGroup.h>
-%include <NMBLTK/Simulation/SIMM/simmMusclePoint.h>
-%include <NMBLTK/Simulation/SIMM/simmMuscleViaPoint.h>
-%include <NMBLTK/Simulation/SIMM/simmPath.h>
-%include <NMBLTK/Simulation/SIMM/simmPathMatrix.h>
-%include <NMBLTK/Simulation/SIMM/simmPoint.h>
-%include <NMBLTK/Simulation/SIMM/simmRotationDof.h>
-%include <NMBLTK/Simulation/SIMM/simmStep.h>
-%include <NMBLTK/Simulation/SIMM/simmTranslationDof.h>
-%include <NMBLTK/Simulation/SIMM/simmUnits.h>
+%include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+%include <OpenSim/Simulation/SIMM/SimmBody.h>
+%include <OpenSim/Simulation/SIMM/SimmBone.h>
+%include <OpenSim/Tools/Function.h>
+%include <OpenSim/Simulation/SIMM/Constant.h>
+%include <OpenSim/Simulation/SIMM/Coordinate.h>
+%include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+%include <OpenSim/Simulation/SIMM/SimmDof.h>
+%include <OpenSim/Simulation/SIMM/SimmJoint.h>
+%include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+%include <OpenSim/Simulation/SIMM/SimmMarker.h>
+%include <OpenSim/Simulation/SIMM/SimmModel.h>
+%include <OpenSim/Simulation/SIMM/SimmMuscle.h>
+%include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
+%include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
+%include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
+%include <OpenSim/Simulation/SIMM/SimmPath.h>
+%include <OpenSim/Simulation/SIMM/SimmPathMatrix.h>
+%include <OpenSim/Simulation/SIMM/SimmPoint.h>
+%include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
+%include <OpenSim/Simulation/SIMM/SimmStep.h>
+%include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
+%include <OpenSim/Simulation/SIMM/SimmUnits.h>
