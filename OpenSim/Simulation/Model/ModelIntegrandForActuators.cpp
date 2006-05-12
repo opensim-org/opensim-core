@@ -36,7 +36,7 @@
 #include "IntegCallbackSet.h"
 #include "AnalysisSet.h"
 #include "DerivCallbackSet.h"
-#include "rdModelIntegrandForActuators.h"
+#include "ModelIntegrandForActuators.h"
 
 
 
