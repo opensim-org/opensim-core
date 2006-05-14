@@ -110,10 +110,12 @@ public:
 	// COLUMN LABLES
 	void setColumnLabels(const char *aLabels);
 	const char* getColumnLabels() const;
+#ifndef SWIG
+	// These symbols are swigged out because they are not defined and never used!
 	// STORAGE INTERVAL
 	void setStorageInterval(int aInterval);
 	int getStorageInterval() const;
-
+#endif
 	virtual ArrayPtrs<Storage>& getStorageList();
 	//--------------------------------------------------------------------------
 	// ANALYSIS

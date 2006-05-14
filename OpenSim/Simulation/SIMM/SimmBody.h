@@ -60,6 +60,7 @@ class RDSIMULATION_API SimmBody : public Object
 // DATA
 //=============================================================================
 public:
+#ifndef SWIG
 	typedef struct
 	{
 		bool used;
@@ -69,7 +70,7 @@ public:
 	} sdfastBodyInfo;
 
 	sdfastBodyInfo _sdfastInfo;
-
+#endif
 protected:
 	PropertyDbl _massProp;
 	double &_mass;

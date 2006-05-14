@@ -66,6 +66,7 @@ class RDSIMULATION_API SimmJoint : public Object
 // DATA
 //=============================================================================
 public:
+#ifndef SWIG
 	typedef struct
 	{
 		bool used;
@@ -79,7 +80,7 @@ public:
 	} sdfastJointInfo;
 
 	sdfastJointInfo _sdfastInfo;
-
+#endif
 protected:
 	PropertyStrArray _bodiesProp;
 	Array<std::string>& _bodies;

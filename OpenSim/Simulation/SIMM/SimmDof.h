@@ -63,7 +63,7 @@ public:
 		Translational,
 		Rotational
 	};
-
+#ifndef SWIG
 	typedef struct
 	{
 		std::string name;           /* name as dof appears in SD/FAST code */
@@ -80,7 +80,7 @@ public:
 	} sdfastDofInfo;
 
 	sdfastDofInfo _sdfastInfo;
-
+#endif
 protected:
 	PropertyObjArray _functionsProp;
 	ArrayPtrs<Function> &_functions;

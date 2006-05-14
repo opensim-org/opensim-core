@@ -64,6 +64,7 @@ class RDSIMULATION_API SimmCoordinate : public OpenSim::Coordinate
 // DATA
 //=============================================================================
 public:
+#ifndef SWIG
 	typedef struct
 	{
 		int restraintFuncNum;
@@ -72,7 +73,7 @@ public:
 	} sdfastCoordinateInfo;
 
 	sdfastCoordinateInfo _sdfastInfo;
-
+#endif
 protected:
 	PropertyDbl _defaultValueProp;
 	double &_defaultValue;
