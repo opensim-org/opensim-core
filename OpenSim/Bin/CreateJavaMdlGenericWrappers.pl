@@ -1,43 +1,22 @@
 #!/usr/bin/perl -w
 #
 
+use File::Copy;
+
 use Cwd;
 $curFolder = cwd;
 print "Enter name for Model to use (corresponds to C++ Class to use):";
 my $userCurModel = <STDIN>;
 chomp($userCurModel);
-
-print "Enter name of the dll/shared_library that represents the model:";
-my $userLibName = <STDIN>;
-chomp($userLibName);
-
-print "Got userCurModel[".$userCurModel."]";
-
 # This is the place for the standard swig template file
+
 my $swigTemplate ='C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Swig/genericTemplate.i';
 
 print "Building Swig interface file for model ".$userCurModel."\n\n\n";
 
 my $interfaceFileName = $userCurModel . "JNI.i";
-if(open(SWIG_FH, "<$swigTemplate")) {
-    if(open(SWIGI_FH, ">$interfaceFileName")) {
-	#Loop thru and substitute _MODEL_NAME_HERE_ with $userCurModel
-	while(<SWIG_FH>){
-	    $nextLine = $_;
-	    $nextLine =~ s/_MODEL_NAME_HERE_/$userCurModel/;
-	    print SWIGI_FH $nextLine;
-	}
-	close(SWIGI_FH);
-    }
-    else {
-		die "Cannot open swig interface file";
-    }
-    close(SWIG_FH);
-	
-}
-else {
-	die "Cannot find swig template file";
-}
+
+copy($swigTemplate, $interfaceFileName);
 
 # Now that the file $userCurModel.i is generated, build the dll for the model
 # This is done on four steps:
@@ -50,9 +29,9 @@ else {
 print "Generating Swig wrapper classes for java\n\n";
 
 # Makeup a name for the Package 
-$modelPkg = "simtkModel";
+$modelPkg = "opensimModel";
 
-`swig -v -c++ -java -package $modelPkg -I'C:/cygwin/home/Ayman/ReWrap/Trunk/' -I'C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Swig' $interfaceFileName`;
+`swig -v -c++ -java -package $modelPkg -I"C:/cygwin/home/Ayman/ReWrap/Trunk/" -I"C:/cygwin/home/Ayman/ReWrap/Trunk/OpenSim/Resources/Swig" $interfaceFileName`;
 
 # Now move all java generated files into $modelPkg directory for better directory mgmt.
 use File::Copy;
