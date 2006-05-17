@@ -55,12 +55,13 @@ public:
 	Coordinate::Coordinate(DOMElement *aElement) :
 		Object(aElement)
 		{}
-
+#ifndef SWIG
 	Coordinate& Coordinate::operator=(const Coordinate &aKE)
 	{
 		Object::operator=(aKE);
 		return(*this);
 	}
+#endif
 	virtual double getRangeMin() const
 	{
 				std::cout<< "Error, RangeMin not implemented for Coordinate.\n";
