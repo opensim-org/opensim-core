@@ -1,4 +1,5 @@
-%module OpenSimModel
+%module opensimModel
+
 %{
 #include <OpenSim/Tools/rdToolsDLL.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
@@ -86,18 +87,18 @@ using namespace OpenSim;
 %}
 
 /* This file is for creation/handling of arrays */
-%include "sarrays.i"
+%include "arrays_java.i";
 
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"
 
-/* inline code for rdObject.java */
-%typemap(javacode) Object %{
+/* inline code for OpenSimObject.java */
+%typemap(javacode) OpenSimObject %{
   public boolean equals(Object aObject) {
-    if (! (aObject instanceof Object))
+    if (! (aObject instanceof OpenSimObject))
       return false;
-    Object rObj = (Object) aObject;
+    OpenSimObject rObj = (OpenSimObject) aObject;
     return (this.getName().equals(rObj.getName()) &&
             this.getType().equals(rObj.getType()));
   }
@@ -115,18 +116,22 @@ using namespace OpenSim;
 %typemap(javaptrconstructormodifiers) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)  %{
   public %}
 
-%include "exception.i"
-// Exception handler (intended for JNI calls that have a non void return)
-//%exception {
-//  try {
-//    $function
-//  }
-//  catch (Exception) {
-//    jclass clazz = jenv->FindClass("simtkModel/Exception");
-//    jenv->ThrowNew(clazz, "Native Exception");
-//    return NULL;
-//  }
-//}
+%pragma(java) jniclassclassmodifiers="public class"
+
+%pragma(java) jniclasscode=%{
+  static {
+    try {
+        System.loadLibrary("rdModelDll");
+    } catch (UnsatisfiedLinkError e) {
+      System.err.println("Native code library failed to load. \n" + e);
+      System.exit(1);
+    }
+  }
+%}
+
+%rename(OpenSimObject) OpenSim::Object;
+%rename(OpenSimException) OpenSim::Exception;
+
 
 /* rest of header files to be wrapped */
 %include <OpenSim/Tools/rdToolsDLL.h>
