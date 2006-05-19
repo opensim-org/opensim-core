@@ -147,11 +147,11 @@ void SimmGenericModelParams::setNull()
 void SimmGenericModelParams::setupProperties()
 {
 	_fileNameProp.setName("file_name");
-	_fileNameProp.setComment("Name of xml file for nominal model (unscaled generic model)"); 
+	_fileNameProp.setComment("Name of the file for the OpenSim model (unscaled generic model)"); 
 	_propertySet.append(&_fileNameProp);
 
 	_markerSetProp.setName("MarkerSet");
-	_markerSetProp.setComment("Name of xml file specifying Markers used by the gaitlab.");
+	_markerSetProp.setComment("Name of xml file specifying markers used by the gaitlab.");
 	ArrayPtrs<Object> markers;
 	_markerSetProp.setValue(markers);
 	_propertySet.append(&_markerSetProp);

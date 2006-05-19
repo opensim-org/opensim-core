@@ -182,7 +182,7 @@ void SimmScalingParams::setupProperties()
 {
 	_scalingOrderProp.setName("scaling_order");
 	Array<string> sorder("");
-	_scalingOrderProp.setComment("Valid options are 'measurements', 'manual' possibly in sequence. Required for scaling.");
+	_scalingOrderProp.setComment("Valid options are 'measurements', 'manual', possibly in sequence.");
 	_scalingOrderProp.setValue(sorder);
 	_propertySet.append(&_scalingOrderProp);
 
@@ -195,37 +195,37 @@ void SimmScalingParams::setupProperties()
 	_scaleSetProp.setName("ScaleSet");
 	ArrayPtrs<Object> ss;
 	_scaleSetProp.setValue(ss);
-	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling .. Used only in 'maunal' scaling.");
+	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling. Used only in 'maunal' scaling.");
 	_propertySet.append(&_scaleSetProp);
 
-	_markerFileNameProp.setName("marker_file");
-	_markerFileNameProp.setComment("Name of marker file *.trc for static pose. Used only in 'measurement' based scaling.");
+	_markerFileNameProp.setName("marker_trial");
+	_markerFileNameProp.setComment("Name of .trc file containing the time history of marker positions. Used only in 'measurement' based scaling.");
 	_propertySet.append(&_markerFileNameProp);
 
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setComment("Range of time in markers file to use for static pose solution in 'measurement' based scaling.");
+	_timeRangeProp.setComment("Range of time in the markers trial to use for measurement-based scaling.");
 	_timeRangeProp.setValue(2, defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
 	_preserveMassDistProp.setName("preserve_mass_distribution");
-	_preserveMassDistProp.setComment("Whether to preserve relative mass between segments");
+	_preserveMassDistProp.setComment("Whether to preserve relative mass between segments.");
 	_propertySet.append(&_preserveMassDistProp);
 
 	_outputJointFileNameProp.setName("output_joint_file");
-	_outputJointFileNameProp.setComment("name of SIMM joint file to write when done scaling.");
+	_outputJointFileNameProp.setComment("Name of SIMM joint file to write when done scaling.");
 	_propertySet.append(&_outputJointFileNameProp);
 
 	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_outputMuscleFileNameProp.setComment("name of SIMM muscle file to write when done scaling.");
+	_outputMuscleFileNameProp.setComment("Name of SIMM muscle file to write when done scaling.");
 	_propertySet.append(&_outputMuscleFileNameProp);
 
 	_outputModelFileNameProp.setName("output_model_file");
-	_outputModelFileNameProp.setComment("name of OpenSim xml file to write when done scaling.");
+	_outputModelFileNameProp.setComment("Name of OpenSim xml file to write when done scaling.");
 	_propertySet.append(&_outputModelFileNameProp);
 
 	_outputScaleFileNameProp.setName("output_scale_file");
-	_outputScaleFileNameProp.setComment("name of scales file to write when done scaling.");
+	_outputScaleFileNameProp.setComment("Name of scales file to write when done scaling.");
 	_propertySet.append(&_outputScaleFileNameProp);
 }
 

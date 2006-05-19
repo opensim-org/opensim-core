@@ -179,50 +179,50 @@ void SimmMarkerPlacementParams::setNull()
  */
 void SimmMarkerPlacementParams::setupProperties()
 {
-	_markerFileNameProp.setName("marker_file");
-	_markerSetProp.setComment("Markers to be used by the marker placement step");
+	_markerFileNameProp.setName("marker_trial");
+	_markerFileNameProp.setComment("Name of the .trc file containing the time history of marker positions. This is usually a static trial.");
 	_propertySet.append(&_markerFileNameProp);
 
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setComment("Static pose time range to use for averaging: min max");
+	_timeRangeProp.setComment("Time range for averaging marker positions.");
 	_timeRangeProp.setValue(2, defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
-	_coordinateFileNameProp.setName("coordinate_file");
-	_coordinateFileNameProp.setComment("Name of coordinate file used to initialize marker placement solution.");
+	_coordinateFileNameProp.setName("coordinate_trial");
+	_coordinateFileNameProp.setComment("Name of file containing the joint angles used to set the initial configuration of the model for the purpose of relocating the non-fixed markers.");
 	_propertySet.append(&_coordinateFileNameProp);
 
 	_coordinateSetProp.setName("CoordinateSet");
-	_coordinateSetProp.setComment("List of coordinates and corresponding values to initialize solution.");
+	_coordinateSetProp.setComment("Name of the .mot file containing the joint angles used to set the initial configuration of the model for the purpose of relocating the non-fixed marker locations.");
 	ArrayPtrs<Object> cs;
 	_coordinateSetProp.setValue(cs);
 	_propertySet.append(&_coordinateSetProp);
 
 	_markerSetProp.setName("MarkerSet");
-	_markerSetProp.setComment("Markers to use if different from generic model.");
+	_markerSetProp.setComment("Markers to use if different from or in addition to the generic model.");
 	ArrayPtrs<Object> ms;
 	_markerSetProp.setValue(ms);
 	_propertySet.append(&_markerSetProp);
 
 	_outputJointFileNameProp.setName("output_joint_file");
-	_outputJointFileNameProp.setComment("SIMM Joint file to write when finished with marker placement.");
+	_outputJointFileNameProp.setComment("Name of the new SIMM Joint file after scaling and marker relocation.");
 	_propertySet.append(&_outputJointFileNameProp);
 
 	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_outputMuscleFileNameProp.setComment("SIMM muscle file to write when finished with marker placement.");
+	_outputMuscleFileNameProp.setComment("Name of the SIMM muscle file after scaling and marker relocation.");
 	_propertySet.append(&_outputMuscleFileNameProp);
 
 	_outputModelFileNameProp.setName("output_model_file");
-	_outputModelFileNameProp.setComment("OpenSim xml file to write when finished with marker placement.");
+	_outputModelFileNameProp.setComment("Name of the new OpenSim model file after scaling and maker relocation.");
 	_propertySet.append(&_outputModelFileNameProp);
 
 	_outputMarkerFileNameProp.setName("output_marker_file");
-	_outputMarkerFileNameProp.setComment("Markers file to write when finished with marker placement.");
+	_outputMarkerFileNameProp.setComment("Name of the xml file containing the marker set after the non-fixed markers have been moved.");
 	_propertySet.append(&_outputMarkerFileNameProp);
 
 	_outputMotionFileNameProp.setName("output_motion_file");
-	_outputMotionFileNameProp.setComment("SIMM motion file to write when finished with marker placement.");
+	_outputMotionFileNameProp.setComment("Name of the motion file written after marker relocation.");
 	_propertySet.append(&_outputMotionFileNameProp);
 }
 

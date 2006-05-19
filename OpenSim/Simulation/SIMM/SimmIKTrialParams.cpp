@@ -175,10 +175,12 @@ void SimmIKTrialParams::setNull()
  */
 void SimmIKTrialParams::setupProperties()
 {
-	_inputMarkerFileNameProp.setName("input_marker_file");
+	_inputMarkerFileNameProp.setName("marker_trial");
+	_inputMarkerFileNameProp.setComment("Name of the .trc file containing the marker trial data.");
 	_propertySet.append(&_inputMarkerFileNameProp);
 
-	_inputCoordinateFileNameProp.setName("input_coordinate_file");
+	_inputCoordinateFileNameProp.setName("coordinate_trial");
+	_inputCoordinateFileNameProp.setComment("Name of the .mot file containing precomputed joint angles for the trial.  These are used to guide and weight the IK solution.");
 	_propertySet.append(&_inputCoordinateFileNameProp);
 
 	_inputAnalogFileNameProp.setName("input_analog_file");
@@ -186,23 +188,28 @@ void SimmIKTrialParams::setupProperties()
 
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
+	_timeRangeProp.setComment("Time range over which to solve the IK problem.");
 	_timeRangeProp.setValue(2, defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
 	_kinematicsSmoothingProp.setName("kinematics_smoothing");
+	_kinematicsSmoothingProp.setComment("Cutoff frequency for a low-pass filter on the kinematics.");
 	_kinematicsSmoothingProp.setValue(-1.0);
 	_propertySet.append(&_kinematicsSmoothingProp);
 
 	_groundReactionSmoothingProp.setName("ground_reaction_smoothing");
+	_groundReactionSmoothingProp.setComment("Cutoff frequency for a low-pass filter on the ground reaction forces.");
 	_groundReactionSmoothingProp.setValue(-1.0);
 	_propertySet.append(&_groundReactionSmoothingProp);
 
+	_outputMotionFileNameProp.setName("output_motion_file");
+	_outputMotionFileNameProp.setComment("Name of the .mot file containing the IK solution for the joint angles.");
+	_propertySet.append(&_outputMotionFileNameProp);
+
 	_includeMarkersProp.setName("include_markers");
+	_includeMarkersProp.setComment("Flag for whether or not to includ marker positions in the output .mot file.");
 	_includeMarkersProp.setValue(false);
 	_propertySet.append(&_includeMarkersProp);
-
-	_outputMotionFileNameProp.setName("output_motion_file");
-	_propertySet.append(&_outputMotionFileNameProp);
 
 	_notesProp.setName("notes");
 	_propertySet.append(&_notesProp);

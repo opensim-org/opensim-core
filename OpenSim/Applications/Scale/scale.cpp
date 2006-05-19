@@ -110,6 +110,7 @@ int main(int argc,char **argv)
 		// Construct model and read parameters file
 		SimmSubject* subject = new SimmSubject(inName);
 		SimmModel* model = subject->createModel();
+		model->print("gait_test.osim");
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
 			ScalerInterface *scaler = new SimmScalerImpl(*model);

@@ -149,19 +149,23 @@ void SimmMeasurement::setNull()
  */
 void SimmMeasurement::setupProperties()
 {
+	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
+	_applyProp.setName("apply");
+	_applyProp.setValue(true);
+	_propertySet.append(&_applyProp);
+
+	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
 	_markerPairSetProp.setName("MarkerPairSet");
 	ArrayPtrs<Object> mps;
 	_markerPairSetProp.setValue(mps);
 	_propertySet.append(&_markerPairSetProp);
 
+	_bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
 	_bodyScaleSetProp.setName("BodyScaleSet");
 	ArrayPtrs<Object> bss;
 	_bodyScaleSetProp.setValue(bss);
 	_propertySet.append(&_bodyScaleSetProp);
 
-	_applyProp.setName("apply");
-	_applyProp.setValue(true);
-	_propertySet.append(&_applyProp);
 }
 
 void SimmMeasurement::registerTypes()

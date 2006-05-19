@@ -164,7 +164,7 @@ void SimmIKParams::setupProperties()
 	_propertySet.append(&_markerSetProp);
 
 	_coordinateSetProp.setName("CoordinateSet");
-	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial value. Filename is specified in the corresponding trial block.");
+	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial values. Filename is specified in the appropriate trial block.");
 	ArrayPtrs<Object> cs;
 	_coordinateSetProp.setValue(cs);
 	_propertySet.append(&_coordinateSetProp);
