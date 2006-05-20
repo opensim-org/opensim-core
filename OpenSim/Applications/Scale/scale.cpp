@@ -65,12 +65,10 @@ int main(int argc,char **argv)
 	// PARSE COMMAND LINE
 	string inName;
 	string option = "";
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		PrintUsage(cout);
 		exit(-1);
-	}
-	else {		// Don't know maybe user needs help or have special needs
+	} else {
 		int i;
 		for(i=1;i<=(argc-1);i++) {
 			option = argv[i];
@@ -80,7 +78,8 @@ int main(int argc,char **argv)
 				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
 					PrintUsage(cout);
 					return(0);
-					// IDENTIFY SETUP FILE
+
+				// Identify the setup file
 				} else if((option=="-S")||(option=="-Setup")) {
 					if (argv[i+1]==0){
 						PrintUsage(cout);
@@ -88,8 +87,9 @@ int main(int argc,char **argv)
 					}
 					inName = argv[i+1];
 					break;
-				}
-				else if((option=="-PrintSetup")||(option=="-PS")) {
+
+				// Print a default setup file
+				} else if((option=="-PrintSetup")||(option=="-PS")) {
 					SimmSubject *subject = new SimmSubject();
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
@@ -97,20 +97,27 @@ int main(int argc,char **argv)
 					subject->print("default_subject.xml");
 					Object::setSerializeAllDefaults(false);
 					cout << "Created file default_subject.xml with default setup" << endl;
-					return(0); 
-				}
-				else {
+					return(0);
+
+				// Unrecognized
+				} else {
 					cout << "Unrecognized option " << option << " on command line... Ignored" << endl;
 					PrintUsage(cout);
 					return(0);
 				}
 		}
 	}
+
+
 	try {
-		// Construct model and read parameters file
-		SimmSubject* subject = new SimmSubject(inName);
-		SimmModel* model = subject->createModel();
-		model->print("gait_test.osim");
+
+		// Construct subject instance
+		SimmSubject *subject = new SimmSubject(inName);
+
+		// Construct a model
+		SimmModel *model = subject->createModel();
+		Object *modelCopy = model->copy();
+		modelCopy->print("gait_test.osim");
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
 			ScalerInterface *scaler = new SimmScalerImpl(*model);

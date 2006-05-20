@@ -65,7 +65,7 @@ static vector<std::string> recognizedTypes;
 // CONSTANTS
 //============================================================================
 const string Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-static const bool Object_DEBUG = true;
+static const bool Object_DEBUG = false;
 
 void stripExtraWhiteSpace(std::string &aBuffer)
 {
