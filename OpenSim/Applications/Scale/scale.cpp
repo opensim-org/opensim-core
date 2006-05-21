@@ -46,9 +46,8 @@
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
 
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 
 static void PrintUsage(ostream &aOStream);
@@ -62,6 +61,9 @@ static void PrintUsage(ostream &aOStream);
 */
 int main(int argc,char **argv)
 {
+	// SET OUTPUT FORMATTING
+	IO::SetDigitsPad(4);
+
 	// PARSE COMMAND LINE
 	string inName;
 	string option = "";
