@@ -477,8 +477,9 @@ void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double 
 		{
 			/* Assume that the first column is 'time'. */
 			time = _rows[j][0];
-			if (EQUAL_WITHIN_ERROR(time, stateTime))
-			{
+			if(rdMath::IsEqual(time,stateTime,0.0001)) {
+			//if(EQUAL_WITHIN_ERROR(time, stateTime))
+			//{
 				Array<double>& states = aStorage.getStateVector(i)->getData();
 				for (int k = 0; k < _numColumns; k++)
 					states.append(_rows[j][k]);

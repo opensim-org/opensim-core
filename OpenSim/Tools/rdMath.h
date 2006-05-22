@@ -73,6 +73,7 @@ public:
 	// ARITHMATIC
 	//--------------------------------------------------------------------------
 	static double CopySign(double aMag,double aSign);
+	static bool IsEqual(double aValue1,double aValue2,double aTol);
 	static bool IsZero(double aValue);
 	
 	//--------------------------------------------------------------------------

@@ -88,6 +88,23 @@ CopySign(double aMag,double aSign)
 }
 //_____________________________________________________________________________
 /**
+ * Return wheter or not two values are equal to within a specified
+ * tolerance.
+ *
+ * @param aValue1 Value 1.
+ * @param aValue2 Value 2.
+ * @param aTol Equality tolerance.
+ * @return True if the absolute value of the difference between value 1 and 2
+ * is less then or equal to aTol, false if not.
+ */
+bool rdMath::
+IsEqual(double aValue1,double aValue2,double aTol)
+{
+	double diff = fabs(aValue1 - aValue2);
+	return(diff<=aTol);
+}
+//_____________________________________________________________________________
+/**
  * Return wheter or not an argument is closer to zero than the constant
  * rdMath::ZERO.
  *
