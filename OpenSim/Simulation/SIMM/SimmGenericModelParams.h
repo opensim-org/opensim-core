@@ -88,7 +88,13 @@ public:
 	static void registerTypes();
 
 	void peteTest() const;
-
+	/** 
+	 * Manually add a marker to the markerSet 
+	 */
+	void addMarker (SimmMarker *aSimmMarker) 
+	{
+		_markerSet.append(aSimmMarker);
+	};
 protected:
 
 private:

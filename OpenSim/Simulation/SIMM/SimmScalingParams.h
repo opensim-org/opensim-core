@@ -145,7 +145,20 @@ public:
 	static void registerTypes();
 
 	void peteTest() const;
-
+	/**
+	 * add a measurement
+	 */
+	void addMeasurement(SimmMeasurement* aMeasurement)
+	{
+		_measurementSet.append(aMeasurement);
+	}
+	/**
+	 * add a sclae factor to current scaleSet
+	 */
+	void addScale(Scale *aScale)
+	{
+		_scaleSet.append(aScale);
+	}
 protected:
 
 private:

@@ -86,6 +86,9 @@
 using namespace OpenSim;
 %}
 
+%rename(OpenSimObject) OpenSim::Object;
+%rename(OpenSimException) OpenSim::Exception;
+
 /* This file is for creation/handling of arrays */
 %include "arrays_java.i";
 
@@ -93,7 +96,24 @@ using namespace OpenSim;
 %include "typemaps.i"
 %include "std_string.i"
 
-/* inline code for OpenSimObject.java */
+
+/* make getCPtr public not package private */
+%typemap(javabody) SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) %{
+  private long swigCPtr;
+
+  public $javaclassname(long cPtr, boolean bFutureUse) {
+    swigCPtr = cPtr;
+  }
+
+  protected $javaclassname() {
+    swigCPtr = 0;
+  }
+
+  public static long getCPtr($javaclassname obj) {
+    return (obj == null) ? 0 : obj.swigCPtr;
+  }
+%}
+
 %typemap(javacode) OpenSimObject %{
   public boolean equals(Object aObject) {
     if (! (aObject instanceof OpenSimObject))
@@ -106,15 +126,6 @@ using namespace OpenSim;
     return( this.getName().hashCode()+10000 * getType().hashCode());
   }
 %}
-/* make getCPtr public not package private */
-%typemap(javagetcptr) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)  %{
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-%}
-/* make constructor(log, <type>) public as well */
-%typemap(javaptrconstructormodifiers) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)  %{
-  public %}
 
 %pragma(java) jniclassclassmodifiers="public class"
 
@@ -123,14 +134,11 @@ using namespace OpenSim;
     try {
         System.loadLibrary("rdModelDll");
     } catch (UnsatisfiedLinkError e) {
-      System.err.println("Native code library failed to load. \n" + e);
+      System.err.println("Native code library failed to load. Check that the dynamic library rdModelDll is in the PATH\n" + e);
       System.exit(1);
     }
   }
 %}
-
-%rename(OpenSimObject) OpenSim::Object;
-%rename(OpenSimException) OpenSim::Exception;
 
 
 /* rest of header files to be wrapped */

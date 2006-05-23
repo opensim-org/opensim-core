@@ -218,7 +218,7 @@ public:
 	// IO
 	//--------------------------------------------------------------------------
 	void print();
-	int print(const char *aFileName,const char *aMode="w");
+	bool print(const char *aFileName,const char *aMode="w");
 	int print(const char *aFileName,double aDT,const char *aMode="w");
 private:
 	int writeHeader(FILE *rFP,double aDT=-1);

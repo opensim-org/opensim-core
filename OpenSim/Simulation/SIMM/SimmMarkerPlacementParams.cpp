@@ -29,6 +29,7 @@
 #include "SimmMarkerPlacementParams.h"
 #include "SimmMarkerData.h"
 #include "SimmMotionData.h"
+#include "SimmCoordinate.h"
 
 //=============================================================================
 // STATICS
@@ -382,4 +383,12 @@ void SimmMarkerPlacementParams::writeOutputFiles(SimmModel* aModel, Storage& aSt
 		motionData.writeSIMMMotionFile(_outputMotionFileName, aModel->getName());
 
 
+}
+//_____________________________________________________________________________
+/**
+ * Manually add a SimmCoordinate to a coordinateSet used for marker placement.
+ */
+void SimmMarkerPlacementParams::addCoordinate(SimmCoordinate* aCoordinate)
+{
+	_coordinateSet.append(aCoordinate);
 }

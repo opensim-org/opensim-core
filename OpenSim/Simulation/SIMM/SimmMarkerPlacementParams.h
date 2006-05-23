@@ -142,6 +142,9 @@ public:
 		startTime = _timeRange[0];
 		endTime = _timeRange[1];
 	}
+
+	/** Add a coordinate to the coordinate set */
+	void addCoordinate(SimmCoordinate *aCoordinate);
 	void writeOutputFiles(SimmModel* aModel, Storage& aStorage) const;
 protected:
 

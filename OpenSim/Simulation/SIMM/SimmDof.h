@@ -113,7 +113,7 @@ public:
 	virtual void getAxis(double axis[3]) const = 0;
 	virtual const double* getAxisPtr(void) const = 0;
 	virtual double getValue(void) = 0;
-	virtual DofType getType(void) const = 0;
+	virtual DofType getDofType(void) const = 0;
 	const SimmCoordinate* getCoordinate(void) const { return _coordinate; }
 	Function* getFunction(void) const;
 

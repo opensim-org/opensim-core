@@ -250,14 +250,14 @@ void SimmJoint::calcTransforms()
 
    for (i = 0; i < _dofs.getSize(); i++)
    {
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			SimmTranslationDof* td = dynamic_cast<SimmTranslationDof*>(_dofs[i]);
 			td->getTranslation(t);
 			Mtx::Multiply(1, 4, 4, t, mat.getMatrix(), t);
 			Mtx::Add(4, 1, translation, t, translation);
 		}
-		else if (_dofs[i]->getType() == SimmDof::Rotational)
+		else if (_dofs[i]->getDofType() == SimmDof::Rotational)
 		{
 			SimmRotationDof* rd = dynamic_cast<SimmRotationDof*>(_dofs[i]);
 			Transform m;
@@ -318,7 +318,7 @@ bool SimmJoint::isSdfastCompatible(void)
 
 	for (int i = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			if (_dofs[i]->getName() == TX_NAME)
 				numTx++;
@@ -350,7 +350,7 @@ bool SimmJoint::hasXYZAxes(void)
 
    for (int i = 0; i < _dofs.getSize(); i++)
    {
-		if (_dofs[i]->getType() == SimmDof::Rotational)
+		if (_dofs[i]->getDofType() == SimmDof::Rotational)
 		{
 			const double* axis = _dofs[i]->getAxisPtr();
 
@@ -388,7 +388,7 @@ SimmRotationDof* SimmJoint::findNthFunctionRotation(int n) const
 {
 	for (int i = 0, count = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Rotational &&
+		if (_dofs[i]->getDofType() == SimmDof::Rotational &&
 			(_dofs[i]->getCoordinate() != NULL || NOT_EQUAL_WITHIN_ERROR(_dofs[i]->getValue(), 0.0)))
 		{
 			if (count++ == n)
@@ -409,7 +409,7 @@ SimmTranslationDof* SimmJoint::findNthFunctionTranslation(int n) const
 {
 	for (int i = 0, count = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational && _dofs[i]->getCoordinate() != NULL)
+		if (_dofs[i]->getDofType() == SimmDof::Translational && _dofs[i]->getCoordinate() != NULL)
 		{
 			if (count++ == n)
 				break;
@@ -433,7 +433,7 @@ SimmTranslationDof* SimmJoint::findMatchingTranslationDof(SimmRotationDof* rotDo
 
 	for (int i = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			_dofs[i]->getAxis(transAxis);
 			if (axesAreParallel(rotAxis, transAxis, false))
@@ -510,7 +510,7 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
     */
 	for (i = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			if (_dofs[i]->getCoordinate() == NULL)
 				numConstantTranslations++;
@@ -579,9 +579,9 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
        */
       if (!hasXYZAxes())
          _sdfastInfo.type = dpUnknownJoint;
-      else if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+      else if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
          _sdfastInfo.type = dpBushing;
-      else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+      else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
          _sdfastInfo.type = dpReverseBushing;
       else
          _sdfastInfo.type = dpUnknownJoint;
@@ -597,12 +597,12 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
        */
 		for (i = 0; i < _dofs.getSize(); i++)
 		{
-			if (_dofs[i]->getType() == SimmDof::Rotational &&
+			if (_dofs[i]->getDofType() == SimmDof::Rotational &&
 				 (_dofs[i]->getCoordinate() != NULL || NOT_EQUAL_WITHIN_ERROR(_dofs[i]->getValue(), 0.0)))
 			{
-				if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+				if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
 					_sdfastInfo.type = dpPin;
-				else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+				else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
 					_sdfastInfo.type = dpReversePin;
 				else
 					_sdfastInfo.type = dpUnknownJoint;
@@ -623,9 +623,9 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
 
    if (numFunctionRotations == 3 && numFunctionTranslations == 0)
    {
-      if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+      if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
          _sdfastInfo.type = dpGimbal;
-      else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+      else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
          _sdfastInfo.type = dpReverseGimbal;
       else
          _sdfastInfo.type = dpUnknownJoint;
@@ -634,9 +634,9 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
 
    if (numFunctionRotations == 2 && numFunctionTranslations == 0)
    {
-      if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+      if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
          _sdfastInfo.type = dpUniversal;
-      else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+      else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
          _sdfastInfo.type = dpReverseUniversal;
       else
          _sdfastInfo.type = dpUnknownJoint;
@@ -660,9 +660,9 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
 				 * before, then this is a reverse cylinder joint, and the
 				 * translations have to be added to the other body segment.
 				 */
-				if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+				if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
 					_sdfastInfo.type = dpCylindrical;
-				else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+				else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
 					_sdfastInfo.type = dpReverseCylindrical;
 				else
 					_sdfastInfo.type = dpUnknownJoint;
@@ -697,9 +697,9 @@ void SimmJoint::identifyDpType(SimmModel* aModel)
 			}
 			else
 			{
-				if (_dofs[0]->getType() == SimmDof::Translational) // translation first
+				if (_dofs[0]->getDofType() == SimmDof::Translational) // translation first
 					_sdfastInfo.type = dpPlanar;
-				else if (_dofs[0]->getType() == SimmDof::Rotational) // rotation first
+				else if (_dofs[0]->getDofType() == SimmDof::Rotational) // rotation first
 					_sdfastInfo.type = dpReversePlanar;
 				else
 					_sdfastInfo.type = dpUnknownJoint;
@@ -836,7 +836,7 @@ void SimmJoint::makeSdfastPlanar(ofstream& out, int* dofCount, int* constrainedC
 		 */
 		for (i = 0; i < _dofs.getSize(); i++)
 		{
-			if (_dofs[i]->getType() == SimmDof::Translational &&
+			if (_dofs[i]->getDofType() == SimmDof::Translational &&
 				 _dofs[i]->getCoordinate() != NULL)
 			{
 				if (writeFile)
@@ -965,7 +965,7 @@ void SimmJoint::makeSdfastPlanar(ofstream& out, int* dofCount, int* constrainedC
 		 */
 		for (i = _dofs.getSize() - 1; i >= 0; i--)
 		{
-			if (_dofs[i]->getType() == SimmDof::Translational &&
+			if (_dofs[i]->getDofType() == SimmDof::Translational &&
 				 _dofs[i]->getCoordinate() != NULL)
 			{
 				if (writeFile)
@@ -1017,7 +1017,7 @@ void SimmJoint::makeSdfastUniversal(ofstream& out, int* dofCount, int* constrain
 
 		const SimmCoordinate* coord = dof->getCoordinate();
 
-		if (dof->getType() == SimmDof::Rotational &&
+		if (dof->getDofType() == SimmDof::Rotational &&
 			(coord != NULL || NOT_EQUAL_WITHIN_ERROR(dof->getValue(), 0.0)))
 		{
 			if (writeFile)
@@ -1168,7 +1168,7 @@ void SimmJoint::makeSdfastGimbal(ofstream& out, int* dofCount, int* constrainedC
 
 		const SimmCoordinate* coord = dof->getCoordinate();
 
-		if (dof->getType() == SimmDof::Rotational &&
+		if (dof->getDofType() == SimmDof::Rotational &&
 			(coord != NULL || NOT_EQUAL_WITHIN_ERROR(dof->getValue(), 0.0)))
 		{
 			if (writeFile)
@@ -1455,7 +1455,7 @@ SimmTranslationDof* SimmJoint::getTranslationDof(int axis) const
 {
 	for (int i = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			double vec[3];
 			_dofs[i]->getAxis(vec);
@@ -1751,7 +1751,7 @@ void SimmJoint::scale(const ScaleSet& aScaleSet)
 	 */
    for (i = 0; i < _dofs.getSize(); i++)
    {
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			SimmTranslationDof* transDof = dynamic_cast<SimmTranslationDof*>(_dofs[i]);
 			Function* function = transDof->getFunction();
@@ -1807,7 +1807,7 @@ void SimmJoint::writeSIMM(ofstream& out, int& aFunctionIndex) const
 	out << "segments " << _parentBody->getName() << " " << _childBody->getName() << endl;
 	for (i = 0; i < _dofs.getSize(); i++)
 	{
-		if (_dofs[i]->getType() == SimmDof::Translational)
+		if (_dofs[i]->getDofType() == SimmDof::Translational)
 		{
 			SimmTranslationDof* td = dynamic_cast<SimmTranslationDof*>(_dofs[i]);
 			SimmTranslationDof::AxisIndex axis = td->getAxisIndex();
@@ -1822,7 +1822,7 @@ void SimmJoint::writeSIMM(ofstream& out, int& aFunctionIndex) const
 			if (transDofIndex++ == 0)
 				order += " t";
 		}
-		else if (_dofs[i]->getType() == SimmDof::Rotational)
+		else if (_dofs[i]->getDofType() == SimmDof::Rotational)
 		{
 			char buffer[5];
 			SimmRotationDof* rd = dynamic_cast<SimmRotationDof*>(_dofs[i]);

@@ -91,7 +91,7 @@ public:
 	virtual void getAxis(double axis[3]) const;
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
-	virtual DofType getType() const { return DofType::Translational; }
+	virtual DofType getDofType() const { return DofType::Translational; }
 	void getTranslation(double vec[4]);
 	AxisIndex getAxisIndex() const { return _axisIndex; }
 

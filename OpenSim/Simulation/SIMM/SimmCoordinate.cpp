@@ -323,7 +323,7 @@ void SimmCoordinate::determineType(SimmKinematicsEngine* aEngine)
 
    if ((dof = aEngine->markUnconstrainedDof(this)))
    {
-		_RTtype = dof->getType();
+		_RTtype = dof->getDofType();
    }
    else
    {
@@ -335,7 +335,7 @@ void SimmCoordinate::determineType(SimmKinematicsEngine* aEngine)
 
 			for (int j = 0; j < dofList.getSize(); j++)
          {
-				if (dofList[i]->getCoordinate() == this && dofList[i]->getType() == SimmDof::Rotational)
+				if (dofList[i]->getCoordinate() == this && dofList[i]->getDofType() == SimmDof::Rotational)
             {
 					/* You've found one rotational DOF: set the coordinate's type
 					 * to rotational and you're done.

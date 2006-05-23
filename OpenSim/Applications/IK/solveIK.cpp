@@ -80,6 +80,19 @@ int main(int argc,char **argv)
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
 					Object::setSerializeAllDefaults(true);
+
+					// Add instances of objects that matter as examples
+					SimmGenericModelParams& params  = subject->getGenericModelParams();
+					params.addMarker(new SimmMarker());
+					// Add a measurement
+					SimmScalingParams& params2 = subject->getScalingParams();
+					SimmMeasurement* meas = new SimmMeasurement();
+					meas->addBodyScale(new BodyScale());
+					meas->addMarkerPair(new SimmMarkerPair());
+					meas->setApply(false);
+					params2.addMeasurement(meas);
+					params2.addScale(new Scale());
+
 					subject->print("default_subject.xml");
 					Object::setSerializeAllDefaults(false);
 					cout << "Created file default_subject.xml with default setup" << endl;

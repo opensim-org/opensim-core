@@ -32,7 +32,7 @@
   <property category="sys" name="Libraries" value=""/>
   <property category="sys" name="MakeStable" value="0"/>
   <property category="sys" name="OutPath" value="classes"/>
-  <property category="sys" name="SourcePath" value="src;test;../../../../../../../../VTK/vtkbin/java;src/source-boot;../../../../../../../../Downloads/ptplot5.3/ptplot5.3"/>
+  <property category="sys" name="SourcePath" value="src;test"/>
   <property category="sys" name="TestPath" value="test"/>
   <property category="sys" name="Title" value="UI for Simtk Prototype"/>
   <property category="sys" name="TitleLabel" value="Title:"/>
@@ -43,9 +43,9 @@
   <property category="sys" name="uidesign.size.simtkView.SimtkVisibilityControlDlg" value="293,202"/>
   <property category="sys" name="uidesign.size.simtkView.plot.SimtkPtPlotDialog" value="602,626"/>
   <property category="sys" name="uidesign.size.simtkui.SimDlgModelName" value="237,80"/>
+  <file path="build.xml"/>
   <file path="src/simtkView/plot/NmblPlotOffsetFilter.java"/>
   <file path="src/simtkCommands/SimtkFileOpenIF.java"/>
   <file path="src/simtkui/SimtkPropMenu.java"/>
   <file path="SimtkUI.html"/>
-  <file path="../../../../../../../../VTK/vtkbin/java/vtk/vtkWebstart.java"/>
 </project>

@@ -262,7 +262,8 @@ SimmMotionData *SimmIKTrialParams::getCoordinateValues(SimmModel& aModel) const
 		{
 			for (int i = 0; i < aModel.getCoordinates().getSize(); i++)
 			{
-				double value = coordinateValues->getValue(aModel.getCoordinates()[i]->getName(), 0);
+				const string& coordinateName = aModel.getCoordinates()[i]->getName();
+				double value = coordinateValues->getValue(coordinateName, 0);
 
 				/* If the coordinate was not found in the file, NAN is returned. */
 				if (value == rdMath::NAN)

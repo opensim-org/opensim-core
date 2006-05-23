@@ -92,10 +92,24 @@ public:
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
 	const SimmMarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
 	bool getApply() const { return _apply; }
+	void setApply(bool aApply) { _apply = aApply; }
+
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
 	/* Register types to be used when reading a SimmMeasurement object from xml file. */
 	static void registerTypes();
+
+	/** Programmatically add a SimmMarkerPair to SimmMeasurement */
+	void addMarkerPair(SimmMarkerPair *aMarkerPair)
+	{
+		_markerPairSet.append(aMarkerPair);
+	}
+
+	/** Programmatically add a BodyScale to SimmMeasurement */
+	void addBodyScale(BodyScale *aBodyScale)
+	{
+		_bodyScaleSet.append(aBodyScale);
+	}
 
 	void peteTest() const;
 

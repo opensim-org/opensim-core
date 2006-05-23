@@ -2354,14 +2354,14 @@ print()
  * @param aFileName Name of file to which to save.
  * @param aMode Writing mode: "w" means write and "a" means append.  The 
  * default is "w".
- * @return 
+ * @return true on success
  */
-int Storage::
+bool Storage::
 print(const char *aFileName,const char *aMode)
 {
 	// OPEN THE FILE
 	FILE *fp = IO::OpenFile(aFileName,aMode);
-	if(fp==NULL) return(0);
+	if(fp==NULL) return(false);
 
 	// WRITE THE HEADER
 	int n=0,nTotal=0;
@@ -2371,7 +2371,7 @@ print(const char *aFileName,const char *aMode)
 	if(n<0) {
 		printf("Storage.print(const char*,const char*): failed to\n");
 		printf(" write header to file %s\n",aFileName);
-		return(n);
+		return(false);
 	}
 
 	// WRITE SIMM HEADER
@@ -2380,7 +2380,7 @@ print(const char *aFileName,const char *aMode)
 		if(n<0) {
 			printf("Storage.print(const char*,const char*): failed to\n");
 			printf(" write SIMM header to file %s\n",aFileName);
-			return(n);
+			return(false);
 		}
 	}
 	
@@ -2389,7 +2389,7 @@ print(const char *aFileName,const char *aMode)
 	if(n<0) {
 		printf("Storage.print(const char*,const char*): failed to\n");
 		printf(" write description to file %s\n",aFileName);
-		return(n);
+		return(false);
 	}
 
 	// WRITE THE COLUMN LABELS
@@ -2397,7 +2397,7 @@ print(const char *aFileName,const char *aMode)
 	if(n<0) {
 		printf("Storage.print(const char*,const char*): failed to\n");
 		printf(" write column labels to file %s\n",aFileName);
-		return(n);
+		return(false);
 	}
 
 	// VECTORS
@@ -2406,7 +2406,7 @@ print(const char *aFileName,const char *aMode)
 		if(n<0) {
 			printf("Storage.print(const char*,const char*): error printing to %s",
 			 aFileName);
-			return(n);
+			return(false);
 		}
 		nTotal += n;		
 	}

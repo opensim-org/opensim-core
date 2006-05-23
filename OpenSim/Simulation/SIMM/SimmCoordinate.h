@@ -173,7 +173,13 @@ public:
 	void writeSIMM(std::ofstream& out, int& aFunctionIndex) const;
 
 	void peteTest(void) const;
-
+	/**
+	 * Manually set restraint function for coordinate
+	 */
+	void setRestraintFunction(Function* aFunction)
+	{
+		_restraintFunction.append(aFunction);
+	}
 protected:
 
 private:
