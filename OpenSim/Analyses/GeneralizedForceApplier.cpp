@@ -158,6 +158,7 @@ setNull()
 	setEndTime(1.0);
 	_genForceIndex = 0;
 	_generalizedForceStorage = NULL;
+	_recordAppliedLoads = false;
 	_appliedGeneralizedForceStore = NULL;
 	_aTSet = -1.0;
 }
@@ -187,9 +188,7 @@ void GeneralizedForceApplier::
 constructColumnLabels()
 {
 	char labels[2048];
-
 	strcpy(labels,"time\tGenForce\n");
-
 	_appliedGeneralizedForceStore->setColumnLabels(labels);
 }
 
@@ -208,8 +207,6 @@ allocateStorage()
 	_appliedGeneralizedForceStore = new Storage(1000,title);
 	_appliedGeneralizedForceStore->setDescription(getDescription());
 	_appliedGeneralizedForceStore->setColumnLabels(_appliedGeneralizedForceStore->getColumnLabels());
-
-//
 }
 
 
@@ -366,6 +363,33 @@ getGeneralizedForceIndex() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
+ * Set whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @param aTrueFalse Flag to turn on and off recording of the applied loads.
+ */
+void GeneralizedForceApplier::
+setRecordAppliedLoads(bool aTrueFalse)
+{
+	_recordAppliedLoads = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @return True if the applied loads are being stored, false otherwise.
+ */
+bool GeneralizedForceApplier::
+getRecordAppliedLoads() const
+{
+	return(_recordAppliedLoads);
+}//_____________________________________________________________________________
+/**
  * Get the generalized force storage.
  *
  * @return Applied generalized force storage.
@@ -434,7 +458,7 @@ applyActuation(double aT,double *aX,double *aY)
 
 		genForceToStore[0] = _generalizedForce;
 
-		_appliedGeneralizedForceStore->append(aT,1,genForceToStore);
+		if(_recordAppliedLoads) _appliedGeneralizedForceStore->append(aT,1,genForceToStore);
 
 	}	
 }

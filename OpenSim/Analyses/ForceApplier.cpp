@@ -22,12 +22,8 @@
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include "ForceApplier.h"
 
-
-
-
 using namespace OpenSim;
 using namespace std;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -63,8 +59,6 @@ ForceApplier(Model *aModel,int aBody) :
 	// DESCRIPTION AND LABELS
 	constructDescription();
 	constructColumnLabels();
-
-
 }
 
 
@@ -85,6 +79,8 @@ setNull()
 	_forceFunction = NULL;
 	_pointFunction = NULL;
 	_inputForcesInGlobalFrame = true;
+	_recordAppliedLoads = false;
+	_appliedForceStore = NULL;
 }
 
 //_____________________________________________________________________________
@@ -115,7 +111,6 @@ constructColumnLabels()
 	char labels[2048];
 
 	strcpy(labels,"time\tForce_x\tForce_y\tForce_z\n");
-
 	_appliedForceStore->setColumnLabels(labels);
 }
 
@@ -134,8 +129,6 @@ allocateStorage()
 	_appliedForceStore = new Storage(1000,title);
 	_appliedForceStore->setDescription(getDescription());
 	_appliedForceStore->setColumnLabels(_appliedForceStore->getColumnLabels());
-
-//
 }
 
 
@@ -333,6 +326,34 @@ getForceFunction() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
+ * Set whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @param aTrueFalse Flag to turn on and off recording of the applied loads.
+ */
+void ForceApplier::
+setRecordAppliedLoads(bool aTrueFalse)
+{
+	_recordAppliedLoads = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @return True if the applied loads are being stored, false otherwise.
+ */
+bool ForceApplier::
+getRecordAppliedLoads() const
+{
+	return(_recordAppliedLoads);
+}
+//_____________________________________________________________________________
+/**
  * Get the applied force storage.
  *
  * @return Applied force storage.
@@ -490,7 +511,7 @@ applyActuation(double aT,double *aX,double *aY)
 		} else {
 			_model->applyForce(_body,_point,_force);
 		}
-		_appliedForceStore->append(aT,3,_force);
+		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 	}
 }
 	

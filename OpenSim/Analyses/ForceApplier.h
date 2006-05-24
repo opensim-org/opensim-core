@@ -51,6 +51,11 @@ protected:
 	VectorFunction* _forceFunction;
 	/** Flag to set reference frame of input force */
 	bool _inputForcesInGlobalFrame;
+	/** Flag to indicate whether or not to record the loads that are applied
+	during an integration.  Recording these loads takes a lot of memory as they
+	are stored every time the derivatives are evaluated (e.g., 6 times per
+	integration step). */
+	bool _recordAppliedLoads;
 	/** Storage for the force that was actually applied during the simulation */
 	Storage *_appliedForceStore;
 
@@ -86,6 +91,8 @@ public:
 	void setInputForcesInGlobalFrame(bool aTrueFalse);
 	bool getInputForcesInGlobalFrame() const;
 
+	void setRecordAppliedLoads(bool aTrueFalse);
+	bool getRecordAppliedLoads() const;
 	Storage* getAppliedForceStorage();
 	void setStorageCapacityIncrements(int aIncrement);
 

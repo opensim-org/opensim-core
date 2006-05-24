@@ -46,6 +46,11 @@ protected:
 	Storage* _generalizedForceStorage;
 	/** Index of collumn in Storage where generalized force is stored */
 	int _genForceIndex;
+	/** Flag to indicate whether or not to record the loads that are applied
+	during an integration.  Recording these loads takes a lot of memory as they
+	are stored every time the derivatives are evaluated (e.g., 6 times per
+	integration step). */
+	bool _recordAppliedLoads;
 	/** Storage for the generalized force that was actually applied during 
 	the simulation */
 	Storage *_appliedGeneralizedForceStore;
@@ -84,10 +89,10 @@ public:
 	Storage* getGeneralizedForceStorage() const;
 	void setGeneralizedForceIndex(int aIndex);
 	int getGeneralizedForceIndex() const;
+	void setRecordAppliedLoads(bool aTrueFalse);
+	bool getRecordAppliedLoads() const;
 	Storage* getAppliedGeneralizedForceStorage();
 	void setStorageCapacityIncrements(int aIncrement);
-
-
 	
 	//--------------------------------------------------------------------------
 	// CALLBACKS

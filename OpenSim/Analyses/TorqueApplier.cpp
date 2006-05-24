@@ -73,6 +73,7 @@ setNull()
 	_torque[0] = _torque[1] = _torque[2] = 0.0;
 	_torqueFunction = NULL;
 	_inputTorquesInGlobalFrame = true;
+	_recordAppliedLoads = false;
 	_appliedTorqueStore = NULL;
 }
 //_____________________________________________________________________________
@@ -170,7 +171,6 @@ getBody() const
 	return(_body);
 }
 
-
 //-----------------------------------------------------------------------------
 // TORQUE
 //-----------------------------------------------------------------------------
@@ -234,6 +234,34 @@ getTorqueFunction() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
+ * Set whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @param aTrueFalse Flag to turn on and off recording of the applied loads.
+ */
+void TorqueApplier::
+setRecordAppliedLoads(bool aTrueFalse)
+{
+	_recordAppliedLoads = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to record the loads that are applied during an
+ * integration.  Recording these loads takes a lot of memory as they
+ * are stored every time the derivatives are evaluated (e.g., 6 times per
+ * integration step).
+ *
+ * @return True if the applied loads are being stored, false otherwise.
+ */
+bool TorqueApplier::
+getRecordAppliedLoads() const
+{
+	return(_recordAppliedLoads);
+}
+//_____________________________________________________________________________
+/**
  * Get the applied torque storage.
  *
  * @return Applied torque storage.
@@ -243,6 +271,7 @@ getAppliedTorqueStorage()
 {
 	return(_appliedTorqueStore);
 }
+
 //-----------------------------------------------------------------------------
 // STORAGE CAPACITY
 //-----------------------------------------------------------------------------
@@ -327,7 +356,7 @@ applyActuation(double aT,double *aX,double *aY)
 			_model->applyTorque(_body,_torque);
 		}
 
-		_appliedTorqueStore->append(aT,3,_torque);
+		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
 
 	}	
 }

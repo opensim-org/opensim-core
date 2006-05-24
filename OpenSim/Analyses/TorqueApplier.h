@@ -46,6 +46,11 @@ protected:
 	VectorFunction* _torqueFunction;
 	/** Flag to set reference frame of input torque */
 	bool _inputTorquesInGlobalFrame;
+	/** Flag to indicate whether or not to record the loads that are applied
+	during an integration.  Recording these loads takes a lot of memory as they
+	are stored every time the derivatives are evaluated (e.g., 6 times per
+	integration step). */
+	bool _recordAppliedLoads;
 	/** Storage for the torque that was actually applied during the simulation */
 	Storage *_appliedTorqueStore;
 
@@ -74,6 +79,8 @@ public:
 	void setTorqueFunction(VectorFunction* aTorqueFunction);
 	VectorFunction* getTorqueFunction() const;
 
+	void setRecordAppliedLoads(bool aTrueFalse);
+	bool getRecordAppliedLoads() const;
 	Storage* getAppliedTorqueStorage();
 	void setStorageCapacityIncrements(int aIncrement);
 
