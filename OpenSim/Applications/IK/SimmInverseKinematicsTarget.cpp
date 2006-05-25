@@ -116,8 +116,6 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 	for (i = 0; i < _numUnconstrainedQs; i++)
 	{
 		_unconstrainedQs[i]->setValue(x[i]);
-		if (debug)
-			cout << _unconstrainedQs[i]->getName() << " = " << x[i] << endl;
 	}
 
 	int numCalls = 0;
@@ -167,7 +165,7 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 				worstMarker = i;
 			}
 			weight = _markers[i]->marker->getWeight();
-			if (debug)
+			if (0)
 			{
 				cout << _markers[i]->marker->getName() << " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2] <<
 					" comp + " << _markers[i]->computedPosition[0] << " " << _markers[i]->computedPosition[1] << " " << _markers[i]->computedPosition[2] << endl;
@@ -365,7 +363,7 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 						markerToSolve *newMarker = new markerToSolve;
 						newMarker->marker = bodies[j]->getMarker(k);
 						newMarker->body = bodies[j];
-						newMarker->experimentalColumn = i;
+						newMarker->experimentalColumn = i-1;	// make it i-1 to account for time column
 						_markers.append(newMarker);
 						foundIt = true;
 						j = bodies.getSize(); // to break out of outer loop
@@ -403,7 +401,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 		{
 			if (_unconstrainedQs[i]->getName() == aNameArray[j])
 			{
-				_unconstrainedQsIndices[i] = j;
+				_unconstrainedQsIndices[i] = j-1;		// Account for time column
 				break;
 			}
 		}
@@ -426,7 +424,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 			{
 				if (coords[i]->getName() == aNameArray[j])
 				{
-					_prescribedQsIndices[_numPrescribedQs++] = j;
+					_prescribedQsIndices[_numPrescribedQs++] = j-1;		// Account for time column
 					_prescribedQs.append(coords[i]);
 					break;
 				}

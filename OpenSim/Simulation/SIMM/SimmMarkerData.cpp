@@ -674,13 +674,13 @@ void SimmMarkerData::makeRdStorage(Storage& aStorage)
 	aStorage.reset(0);
 
 	/* Make the column labels. */
-	string columnLabels;
+	string columnLabels = "time\t";
 	int i;
 	for (i = 0; i < _numMarkers; i++)
 	{
-		columnLabels += _markerNames[i] + "_tx	";
-		columnLabels += _markerNames[i] + "_ty	";
-		columnLabels += _markerNames[i] + "_tz	";
+		columnLabels += _markerNames[i] + "_tx\t";
+		columnLabels += _markerNames[i] + "_ty\t";
+		columnLabels += _markerNames[i] + "_tz\t";
 	}
 	aStorage.setColumnLabels(columnLabels.c_str());
 

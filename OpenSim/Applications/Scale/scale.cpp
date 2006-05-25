@@ -168,6 +168,33 @@ int main(int argc,char **argv)
 			// Update markers to correspond to those specified in IKParams block
 			model->updateMarkers(params.getMarkerSet());
 
+			// begin code restore
+            SimmMotionData coordinateValues(params.getCoordinateFileName());
+
+            /* For each coordinate whose "value" field the user specified
+             * as "fromFile", read the value from the first frame in the
+             * coordinate file (a SIMM motion file) and use it to overwrite
+             * the "fromFile" specification.
+             */
+            ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
+
+            if (coordinateValues.getNumColumns() > 0)
+            {
+                for (int i = 0; i < coordinateSet.getSize(); i++)
+                {
+                    if (coordinateSet[i]->getValueStr() == "fromFile")
+                    {
+                        double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
+                        coordinateSet[i]->setValue(newValue);
+                    }
+                }
+                /* Update the model with the coordinates specified
+                * by the user in the params section.
+                */
+                model->updateCoordinates(coordinateSet);
+            }
+            // end code restore
+
 			/* Load the static pose marker file, and average all the
 			* frames in the user-specified time range.
 			*/

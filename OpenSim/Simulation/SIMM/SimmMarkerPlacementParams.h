@@ -142,6 +142,16 @@ public:
 		startTime = _timeRange[0];
 		endTime = _timeRange[1];
 	}
+	std::string &SimmMarkerPlacementParams::getCoordinateFileName() const
+    {
+        return _coordinateFileName;
+    }
+    
+    ArrayPtrs<SimmCoordinate> &getCoordinateSet()
+    {
+        return _coordinateSet;
+    }
+
 
 	/** Add a coordinate to the coordinate set */
 	void addCoordinate(SimmCoordinate *aCoordinate);
