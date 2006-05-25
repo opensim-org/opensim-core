@@ -1512,6 +1512,27 @@ void Model::
 computeConstrainedCoordinates(double* y)
 { // Do nothing
 }
+//_____________________________________________________________________________
+/**
+ * From a potentially partial specification of the generalized coordinates,
+ * form a complete storage of the generalized coordinates (q's) and
+ * speeds (u's).
+ *
+ * @param aQIn Storage containing the q's or a subset of the q's.
+ * @param rQComplete Storage containing all the q's.  If q's were not
+ * in aQIn, the values are set to 0.0.  When a q is constrained, its value
+ * is altered to be consistent with the constraint.
+ * @param rUComplete Storage containing all the u's.  The generalized speeds
+ * are obtained by spline fitting the q's and differentiating the splines.
+ * When a u is constrained, its value is altered to be consisten with the
+ * constraint.
+ */
+void Model::
+formCompleteStorages(const OpenSim::Storage &aQIn,
+	OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete)
+{
+}
+
 
 //=============================================================================
 // PRINT

@@ -586,10 +586,12 @@ public:
 	void addDerivCallback(DerivCallback *aCallback);
 
 	//--------------------------------------------------------------------------
-	// FOR RRA - ADDED BY CHAND, 2/3/2006
+	// FOR RRA AND CMC - ADDED BY CHAND AND CLAY, 2/3/2006 and 5/24/2006
 	//--------------------------------------------------------------------------
 	virtual void setIncludePipelineActuators(bool include);
 	virtual void computeConstrainedCoordinates(double* y);
+	virtual void formCompleteStorages(const OpenSim::Storage &aQIn,
+		OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete);
 
 	//--------------------------------------------------------------------------
 	// PRINT
