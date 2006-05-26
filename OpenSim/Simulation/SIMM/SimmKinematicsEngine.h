@@ -187,7 +187,7 @@ public:
 	SimmMotionData* solveInverseKinematics(const SimmIKTrialParams& aIKOptions, SimmMarkerData& aMarkerData);
 	SimmMotionData* solveInverseKinematics(const SimmIKTrialParams& aIKOptions, SimmMarkerData& aMarkerData, SimmMotionData& aCoordinateData);
 */
-	void moveMarkersToCloud(SimmMarkerData& aMarkerData);
+	void moveMarkersToCloud(Storage& aMarkerStorage);
 	int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
 	int replaceMarkerSet(SimmMarkerSet& aMarkerSet);
 	void updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray);

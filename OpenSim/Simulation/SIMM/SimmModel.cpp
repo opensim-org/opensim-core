@@ -333,9 +333,9 @@ void SimmModel::setup()
 
 	cout << "Created model " << getName() << " from file " << _fileName << endl;
 }
-void SimmModel::moveMarkersToCloud(SimmMarkerData& aMarkerData)
+void SimmModel::moveMarkersToCloud(Storage& aMarkerStorage)
 {
-	getSimmKinematicsEngine().moveMarkersToCloud(aMarkerData);
+	getSimmKinematicsEngine().moveMarkersToCloud(aMarkerStorage);
 }
 
 int SimmModel::deleteUnusedMarkers(const Array<string>& aMarkerNames)

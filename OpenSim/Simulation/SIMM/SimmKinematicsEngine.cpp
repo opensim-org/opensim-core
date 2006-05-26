@@ -2170,11 +2170,10 @@ void SimmKinematicsEngine::getUnlockedCoordinates(SimmCoordinateArray& aUnlocked
  * current pose the marker coincides with the marker's global position
  * in the passed-in SimmMarkerData.
  */
-void SimmKinematicsEngine::moveMarkersToCloud(SimmMarkerData& aMarkerData)
+void SimmKinematicsEngine::moveMarkersToCloud(Storage& aMarkerStorage)
 {
-	aMarkerData.averageFrames(0.01);
-	SimmMarkerFrame* frame = aMarkerData.getFrame(0);
 
+	string markerComponentNames[] = {"_px", "_py", "_pz"};
 	for (int i = 0; i < _bodies.getSize(); i++)
 	{
 		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++)
@@ -2182,30 +2181,21 @@ void SimmKinematicsEngine::moveMarkersToCloud(SimmMarkerData& aMarkerData)
 			SimmMarker* localMarker = _bodies[i]->getMarker(j);
 			if (!localMarker->getFixed())
 			{
-				int index = aMarkerData.getMarkerIndex(localMarker->getName());
-				if (index >= 0)
-				{
-					SimmPoint& globalMarker = frame->getMarker(index);
-					if (globalMarker.isVisible())
+				double pt[3];
+				for ( int k = 0; k < 3; k++) {
+					int index = aMarkerStorage.getColumnIndex(localMarker->getName()+markerComponentNames[k]);
+					if (index >= 0)
 					{
-						double pt[3], *globalPt = globalMarker.get();
-						double conversionFactor = aMarkerData.getUnits().convertTo(getLengthUnits());
-						for (int k = 0; k < 3; k++)
-							pt[k] = globalPt[k] * conversionFactor;
-						convertPoint(pt, getGroundBodyPtr(), _bodies[i]);
-						localMarker->setOffset(pt);
-					}
-					else
-					{
-						cout << "___WARNING___: marker " << localMarker->getName() << " does not have valid coordinates in " << aMarkerData.getFileName() << endl;
-						cout << "               It will not be moved to match location in marker file." << endl;
+						aMarkerStorage.getData(0, index, pt[k]);
 					}
 				}
+				convertPoint(pt, getGroundBodyPtr(), _bodies[i]);
+				localMarker->setOffset(pt);
 			}
 		}
 	}
 
-	cout << "Moved markers in model " << _model->getName() << " to match locations in marker file " << aMarkerData.getFileName() << endl;
+	cout << "Moved markers in model " << _model->getName() << endl;
 }
 
 /* Remove all markers from the model that are not in the passed-in list. */

@@ -237,6 +237,7 @@ SimmMarkerPlacementParams& SimmMarkerPlacementParams::operator=(const SimmMarker
 	return(*this);
 }
 
+#if 0
 /* This method creates a simmMotionTrial instance with the markerFile and timeRange
 parameters. It also creates a SimmMotionData instance with the coordinateFile
 parameter. Then it calls model->updateCoordinateSet() with the coordinate set
@@ -328,6 +329,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 
 	return true;
 }
+#endif
 
 void SimmMarkerPlacementParams::peteTest() const
 {

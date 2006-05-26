@@ -110,7 +110,7 @@ int main(int argc,char **argv)
 		Storage	outputStorage; outputStorage.setName(staticPose.getFileName());
 		ikSolver->solveFrames(options, inputStorage, outputStorage);
 
-		model->moveMarkersToCloud(staticPose);
+		model->moveMarkersToCloud(outputStorage);
 
 		markerPlacementParams.writeOutputFiles(model, outputStorage);
 
