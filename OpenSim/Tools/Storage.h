@@ -158,7 +158,7 @@ public:
 	void setHeaderToken(const char *aToken);
 	const char* getHeaderToken() const;
 	// COLUMN LABELS
-	const int getColumnIndex(const std::string &aColumnName) const;
+	const int getColumnIndex(const std::string &aColumnName, int startIndex=0) const;
 	void setColumnLabels(const char *aLabels=NULL);
 	const char* getColumnLabels() const;
 	const Array<std::string> &getColumnLabelsArray() const;

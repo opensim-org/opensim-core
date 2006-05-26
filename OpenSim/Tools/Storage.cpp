@@ -451,13 +451,15 @@ getHeaderToken() const
  * time) -1 would be returned.  For the second colunn in a storage (the first
  * state) 0 would be returned.
  * @todo Rename this method getStateIndex()
+ * 
+ * added a default Parameter for startIndex. -Ayman
  */
 const int Storage::
-getColumnIndex(const std::string &aColumnName) const
+getColumnIndex(const std::string &aColumnName, int startIndex) const
 {
 	int i;
 	int size = _columnLabelsArray.getSize();
-	for(i=0;i<size;i++)
+	for(i=startIndex;i<size;i++)
 		if(_columnLabelsArray[i]==aColumnName)
 			return(i-1);
 
