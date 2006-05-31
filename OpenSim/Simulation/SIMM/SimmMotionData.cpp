@@ -481,7 +481,7 @@ void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double 
 			//if(EQUAL_WITHIN_ERROR(time, stateTime))
 			//{
 				Array<double>& states = aStorage.getStateVector(i)->getData();
-				for (int k = 0; k < _numColumns; k++)
+				for (int k = 1; k < _numColumns; k++)	// Start at 1 to avoid duplicate time column
 					states.append(_rows[j][k]);
 				addedData = true;
 				break;
@@ -502,7 +502,7 @@ void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double 
 	if (addedData)
 	{
 		string columnLabels(aStorage.getColumnLabels());
-		for (int i = 0; i < _columnNames.getSize(); i++)
+		for (int i = 1; i < _columnNames.getSize(); i++) // Start at 1 to avoid duplicate time label
 			columnLabels += _columnNames[i] + '\t';
 		aStorage.setColumnLabels(columnLabels.c_str());
 	}

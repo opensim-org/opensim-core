@@ -155,6 +155,9 @@ int main(int argc,char **argv)
 				* be solved, or it is a fatal error.
 				*/
 				coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
+
+				//inputStorage.setWriteSIMMHeader(true);
+				//inputStorage.print("preIK.mot");
 			}
 			// Create target
 			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);

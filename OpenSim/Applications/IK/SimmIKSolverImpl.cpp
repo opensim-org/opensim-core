@@ -202,6 +202,8 @@ void SimmIKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
 			userHeaders += nextLabel+"\t";
 			// Keep track of indices to match data with labels
 			userDataColumnIndices.append(i);
+
+			// cout << "Column:" << nextLabel << " index" << i << endl;
 		}
 	}
 }
@@ -215,7 +217,8 @@ void SimmIKSolverImpl::appendUserData(Array<double>& outputRow, Array<int>& indi
 	int i;
 	for(i=0; i< indices.getSize(); i++){
 		double userValue=rdMath::NAN;
-		inputRow->getDataValue(indices[i], userValue);
+		int index = indices[i]-1;
+		inputRow->getDataValue(index, userValue);
 		outputRow.append(userValue);
 	}
 }
