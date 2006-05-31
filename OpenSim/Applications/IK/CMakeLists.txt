@@ -33,4 +33,5 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH .)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
-SUBDIRS(test)
+# Disable this testing for now since it's accounted for by Scaling
+# SUBDIRS(test)
