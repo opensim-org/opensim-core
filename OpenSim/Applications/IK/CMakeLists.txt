@@ -34,4 +34,4 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
 # Disable this testing for now since it's accounted for by Scaling
-# SUBDIRS(test)
+SUBDIRS(test)

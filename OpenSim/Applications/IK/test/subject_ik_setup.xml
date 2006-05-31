@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SimmSubject name="testSubject">
+
+	<!--Mass of the subject in kg.-->
+	<mass> 66.0 </mass>
+	<!--Height of the subject in mm.-->
+	<height> 1680.0 </height>
+	<!--Age of the subject in years.-->
+	<age> 14.6 </age>
+	<!--Save record-keeping info. here.-->
+	<notes> birth date = 3/8/90, exam date = 10/22/04 </notes>
+	
+	<!--File name for the (nominal model).osim to use is specified here.-->
+	<SimmGenericModelParams name="">
+		<!--Name of the file for the OpenSim model (unscaled generic model)-->
+		<file_name> subject.osim </file_name>
+	</SimmGenericModelParams>
+
+	<!--Parameters for solving the inverse kinematics problem (IK).-->
+	<SimmIKParams name="">
+		<!--Name of the OpenSim model file after scaling and marker relocation.-->
+		<!--Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial values. Filename is specified in the appropriate trial block.-->
+		<CoordinateSet>
+			<SimmCoordinate name="pelvis_tx">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="pelvis_ty">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="pelvis_tz">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="pelvis_tilt">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="pelvis_list">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="pelvis_rotation">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_flexion_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_adduction_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_rotation_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="knee_angle_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="ankle_angle_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="subtalar_angle_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+				<weight>1.00</weight> 
+			</SimmCoordinate>
+			<SimmCoordinate name="mtp_angle_r">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+				<weight>1.00</weight> 
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_flexion_l">
+				<value>fromFile</value> 
+				<locked>false</locked>
+				<weight>1.00</weight>
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_adduction_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="hip_rotation_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="knee_angle_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+				<weight>1.00</weight>
+			</SimmCoordinate>
+			<SimmCoordinate name="ankle_angle_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="subtalar_angle_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+				<weight>1.00</weight> 
+			</SimmCoordinate>
+			<SimmCoordinate name="mtp_angle_l">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+				<weight>1.00</weight> 
+			</SimmCoordinate>
+			<SimmCoordinate name="lumbar_extension">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="lumbar_bending">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+			<SimmCoordinate name="lumbar_rotation">
+				<value>fromFile</value> 
+				<locked>false</locked> 
+			</SimmCoordinate>
+		</CoordinateSet>
+		<!--Trial paramaters, one block per trial-->
+		<IKTrialSet>
+			<SimmIKTrialParams name="first trial">
+				<!--Name of the .trc file containing the marker trail data.-->
+				<marker_trial> subject_trial.trc </marker_trial>
+				<!--Name of the .mot file containing precomputed joint angles for the trial.  These are used to guide and weight the IK solution.-->
+				<coordinate_trial> subject_trial.mot </coordinate_trial>
+				<!--Time range over which to solve the IK problem.-->
+				<time_range> 0.0 0.2</time_range> 
+				<!--Cutoff frequency for a low-pass filter on the kinematics.-->
+				<kinematics_smoothing> 10.0 </kinematics_smoothing>
+				<!--Cutoff frequency for a low-pass filter on the ground reaction forces.-->
+				<ground_reaction_smoothing> 1000.0 </ground_reaction_smoothing>
+				<!--Name of the .mot file containing the IK solution for the joint angles.-->
+				<output_motion_file> subject_trial_ik.mot </output_motion_file>
+				<!--Flag for whether or not to includ marker positions in the output .mot file.-->
+				<include_markers> true </include_markers>
+			</SimmIKTrialParams>
+		</IKTrialSet>
+	</SimmIKParams>
+</SimmSubject>

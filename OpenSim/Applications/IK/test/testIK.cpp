@@ -28,6 +28,7 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ScaleSet.h>
+#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Simulation/SIMM/SimmModel.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
@@ -44,7 +45,7 @@ using namespace OpenSim;
 using namespace std;
 
 string filesToCompare[] = {
-	"walk1.mot"
+	"subject_trial_ik.mot"
 };
 //______________________________________________________________________________
 /**
@@ -57,66 +58,10 @@ int main(int argc,char **argv)
 {
 
 	// Construct model and read parameters file
-	SimmSubject* subject = new SimmSubject("CrouchGait.xml");
+	SimmSubject* subject = new SimmSubject("subject_ik_setup.xml");
 	SimmModel* model = subject->createModel();
+	model->setup();
 
-	SimmScalingParams& params = subject->getScalingParams();
-	ScalerInterface *scaler = new SimmScalerImpl(*model);
-
-	if (!scaler->scaleModel(params.getScaleSet(*model), params.getPreserveMassDist(), subject->getMass()))
-	{
-		cout << "===ERROR===: Unable to scale generic model." << endl;
-		return 0;
-	}
-	params.writeOutputFiles(model);
-
-	delete scaler;
-
-	//----------------------- Marker placement section
-	{
-		SimmMarkerPlacementParams& markerPlacementParams = subject->getMarkerPlacementParams();
-		// Update markers to correspond to those specified in IKParams block 
-		model->updateMarkers(markerPlacementParams.getMarkerSet());
-
-		/* Load the static pose marker file, and average all the
-		* frames in the user-specified time range.
-		*/
-		SimmMarkerData staticPose(markerPlacementParams.getStaticPoseFilename());
-		// Convert the marker data into the model's units.
-		double startTime, endTime;
-		markerPlacementParams.getTimeRange(startTime, endTime);
-		staticPose.averageFrames(0.01, startTime, endTime);
-		staticPose.convertToUnits(model->getLengthUnits());
-
-		/* Delete any markers from the model that are not in the static
-		* pose marker file.
-		*/
-		model->deleteUnusedMarkers(staticPose.getMarkerNames());
-
-		/* Now solve the static pose by making a SimmIKTrialParams*/
-		SimmIKTrialParams options;
-		options.setStartTime(startTime);
-		options.setEndTime(startTime);
-		options.setIncludeMarkers(true);
-
-		// Convert read trc fil into "common" rdStroage format
-		Storage inputStorage;
-		staticPose.makeRdStorage(inputStorage);
-		// Create target
-		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
-		// Create solver
-		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target, subject->getIKParams());
-		// Solve
-		Storage	outputStorage; outputStorage.setName(staticPose.getFileName());
-		ikSolver->solveFrames(options, inputStorage, outputStorage);
-
-		model->moveMarkersToCloud(outputStorage);
-
-		markerPlacementParams.writeOutputFiles(model, outputStorage);
-
-		delete ikSolver;
-		delete target;
-	}
 	//--------------------- IK proper section
 	{
 		try 
@@ -124,6 +69,7 @@ int main(int argc,char **argv)
 			model->updateMarkers(subject->getIKParams().getMarkerSet());
 			// Initialize coordinates based on user input
 			model->updateCoordinates(subject->getIKParams().getCoordinateSet());
+
 			// Get trial params
 			SimmIKTrialParams& trialParams = subject->getIKParams().getTrialParams(0);
 			// Handle coordinates file
@@ -154,6 +100,7 @@ int main(int argc,char **argv)
 				*/
 				coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
 			}
+
 			// Create target
 			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
 			// Create solver
@@ -161,6 +108,8 @@ int main(int argc,char **argv)
 			// Solve
 			Storage	outputStorage; 
 			ikSolver->solveFrames(trialParams, inputStorage, outputStorage);
+
+			OpenSim::IO::SetPrecision(6);
 			outputStorage.setWriteSIMMHeader(true);
 			outputStorage.print(trialParams.getOutputMotionFilename().c_str());
 
