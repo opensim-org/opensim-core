@@ -46,7 +46,6 @@
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/AnalysisFactory.h>
 
-#include <OpenSim/Analyses/AnalysisFactory.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/IndAcc.h>
 #include <OpenSim/Analyses/Kinematics.h>
@@ -197,7 +196,6 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/AnalysisFactory.h>
 
 %include <OpenSim/Analyses/suAnalysesDLL.h>
-%include <OpenSim/Analyses/AnalysisFactory.h>
 %include <OpenSim/Analyses/Kinematics.h>
 %include <OpenSim/Analyses/Actuation.h>
 %include <OpenSim/Analyses/IndAcc.h>
