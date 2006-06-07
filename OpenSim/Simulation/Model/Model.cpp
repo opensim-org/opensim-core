@@ -212,8 +212,9 @@ Model& Model::operator=(const Model &aModel)
 {
 	_b = aModel._b;
 	_materialSet = aModel._materialSet;
+	int i=0;
 
-	for (int i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		_g[i] = aModel._g[i];
 
 	_t = aModel._t;

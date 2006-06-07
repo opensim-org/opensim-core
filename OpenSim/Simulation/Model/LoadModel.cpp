@@ -52,7 +52,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 {
 	string actualLibFileName(lpLibFileName);
 	string debugSuffix="_d";
-	char* locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
+	const char* locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
 	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
 
 	HINSTANCE libraryHandle = NULL;

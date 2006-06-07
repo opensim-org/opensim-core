@@ -80,7 +80,7 @@ public:
 	const Array<double>& getAxis() const { return _axis; }
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
-	virtual DofType getDofType() const { return DofType::Rotational; }
+	virtual DofType getDofType() const { return Rotational; }
 
 	virtual void peteTest();
 

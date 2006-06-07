@@ -469,11 +469,12 @@ void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double 
 	 */
 	int startIndex = aStorage.findIndex(0, startTime);
 	int endIndex = aStorage.findIndex(aStorage.getSize() - 1, endTime);
+	int j=0;
 
 	for (int i = startIndex; i <= endIndex; i++)
 	{
 		aStorage.getTime(i, stateTime);
-		for (int j = 0; j < _numRows; j++)
+		for (j = 0; j < _numRows; j++)
 		{
 			/* Assume that the first column is 'time'. */
 			time = _rows[j][0];

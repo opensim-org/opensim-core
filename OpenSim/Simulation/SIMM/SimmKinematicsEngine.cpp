@@ -918,7 +918,7 @@ string makeSdfastBodyName(string bodyName, int timesSplit)
 	string sdfastName = bodyName;
 
    if (sdfastName[0] >= '0' && sdfastName[0] <= '9')
-		sdfastName.insert(0, '_');
+		sdfastName.insert(0, "_");
 
 	for (int i = 0; i < timesSplit; i++)
 		sdfastName.append("p");
@@ -1597,6 +1597,8 @@ void SimmKinematicsEngine::writeSdfastConstraintCode(ofstream& out)
    out << " * for the joints which have user-defined constraints.\n */" << endl << endl;
 
    out << "void init_joint_functions(void)\n{\n\n   int i, numpts;" << endl << endl;
+
+   int count=0;
 
 	for (int i = 0, count = 0; i < _sdfastInfo._jointOrder.getSize(); i++)
    {

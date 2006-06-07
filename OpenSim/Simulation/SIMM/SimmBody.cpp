@@ -251,9 +251,12 @@ void SimmBody::deleteMarker(const SimmMarker* aMarker)
 /* Remove all markers from the body that are not in the passed-in list. */
 int SimmBody::deleteUnusedMarkers(const Array<string>& aMarkerNames)
 {
-	for (int i = 0, numDeleted = 0; i < _markers.getSize(); i++)
+	int j=0;
+	int numDeleted = 0;
+
+	for (int i = 0; i < _markers.getSize(); i++)
 	{
-		for (int j = 0; j < aMarkerNames.getSize(); j++)
+		for (j = 0; j < aMarkerNames.getSize(); j++)
 		{
 			if (aMarkerNames[j] == _markers[i]->getName())
 				break;
