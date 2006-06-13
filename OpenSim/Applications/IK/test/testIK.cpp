@@ -91,8 +91,8 @@ int main(int argc,char **argv)
 				*/
 				double firstStateTime = inputStorage.getFirstTime();
 				double lastStateTime = inputStorage.getLastTime();
-				double startTime = max<double>(firstStateTime, trialParams.getStartTime());
-				double endTime = min<double>(lastStateTime, trialParams.getEndTime());
+				double startTime = (firstStateTime>trialParams.getStartTime()) ? firstStateTime : trialParams.getStartTime();
+				double endTime =  (lastStateTime<trialParams.getEndTime()) ? lastStateTime : trialParams.getEndTime();
 
 				/* Add the coordinate data to the marker data. There must be a row of
 				* corresponding coordinate data for every row of marker data that will
