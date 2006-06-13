@@ -1598,13 +1598,13 @@ void SimmKinematicsEngine::writeSdfastConstraintCode(ofstream& out)
 
    out << "void init_joint_functions(void)\n{\n\n   int i, numpts;" << endl << endl;
 
-   int count=0;
+   int i,count,j;
 
-	for (int i = 0, count = 0; i < _sdfastInfo._jointOrder.getSize(); i++)
+	for (i=0,count=0; i < _sdfastInfo._jointOrder.getSize(); i++)
    {
 		ArrayPtrs<SimmDof>& dofs = _sdfastInfo._jointOrder[i]->getDofs();
 
-		for (int j = 0; j < dofs.getSize(); j++)
+		for (j=0; j < dofs.getSize(); j++)
       {
 			if (dofs[j]->getCoordinate() != NULL && dofs[j]->_sdfastInfo.constrained)
 			{

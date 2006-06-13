@@ -387,13 +387,14 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
  */
 void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameArray)
 {
+	int i;
 	// The unconstrained Qs are the unlocked coordinates in the kinematics engine.
 	_model.getSimmKinematicsEngine().getUnlockedCoordinates(_unconstrainedQs);
 	_numUnconstrainedQs = _unconstrainedQs.getSize();
 
 	_unconstrainedQsIndices = new int[_numUnconstrainedQs];
 
-	for (int i = 0; i < _numUnconstrainedQs; i++)
+	for (i = 0; i < _numUnconstrainedQs; i++)
 	{
 		_unconstrainedQsIndices[i] = -1;
 
@@ -409,14 +410,14 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 
 #if 0
 	cout << "Unconstrained Qs:" << endl;
-	for (int i = 0; i < _unconstrainedQs.getSize(); i++)
+	for (i = 0; i < _unconstrainedQs.getSize(); i++)
 		cout << _unconstrainedQs[i]->getName() << " index = " << _unconstrainedQsIndices[i] << endl;
 #endif
 
 	_numPrescribedQs = 0;
 	_prescribedQsIndices = new int[_model.getKinematicsEngine().getNumCoordinates()];
 	ArrayPtrs<SimmCoordinate>& coords = _model.getSimmKinematicsEngine().getCoordinates();
-	for (int i = 0; i < coords.getSize(); i++)
+	for (i = 0; i < coords.getSize(); i++)
 	{
 		if (coords[i]->isLocked())
 		{
@@ -434,7 +435,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 
 #if 0
 	cout << "Prescribed Qs:" << endl;
-	for (int i = 0; i < _prescribedQs.getSize(); i++)
+	for (i = 0; i < _prescribedQs.getSize(); i++)
 		cout << _prescribedQs[i]->getName() << " index = " << _prescribedQsIndices[i] << endl;
 #endif
 }

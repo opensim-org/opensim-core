@@ -35,6 +35,8 @@ IKSolverInterface(aOptimizationTarget, aIKParams)
  */
 void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData)
 {
+	int i;
+
 	// Instantiate the optimizer
 	rdFSQP *optimizer = new rdFSQP(&_ikTarget);
 
@@ -57,13 +59,13 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 	_ikTarget.getOutputMarkerNames(markerNames);
 
 	string resultsHeader = "time\t";
-	for (int i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
+	for (i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
 	{
 		resultsHeader += *(unconstrainedCoordinateNames[i]);
 		resultsHeader += "\t";
 	}
 
-	for (int i = 0; i < prescribedCoordinateNames.getSize(); i++)
+	for (i = 0; i < prescribedCoordinateNames.getSize(); i++)
 	{
 		resultsHeader += *(prescribedCoordinateNames[i]);
 		resultsHeader += "\t";
@@ -73,7 +75,7 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 	// Include markers for visual verification in SIMM
 	if (aIKOptions.getIncludeMarkers())
 	{
-		for (int i = 0; i < markerNames.getSize(); i++)
+		for (i = 0; i < markerNames.getSize(); i++)
 		{
 			for (int j = 0; j < 3; j++)
 			{
@@ -98,7 +100,7 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 	// Set the lower and upper bounds on the unconstrained Q array
 	// TODO: shouldn't have to search for coordinates by name
 	SimmKinematicsEngine &eng = (SimmKinematicsEngine&)_ikTarget.getModel().getSimmKinematicsEngine();
-	for (int i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
+	for (i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
 	{
 		Coordinate* coord = eng.getCoordinate(*(unconstrainedCoordinateNames[i]));
 		optimizer->setLowerBound(i, coord->getRangeMin());
