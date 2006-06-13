@@ -62,6 +62,10 @@
     #define GET_DEBUG_STRING "release"
 #endif
 
+
+using namespace std;
+
+
 extern "C" {
 
 void opensim_version_rdsimulation(int* major, int* minor, int* build) {
@@ -91,7 +95,7 @@ void opensim_about_rdsimulation(const char* key, int maxlen, char* value) {
     // downshift the key
     std::string skey(key);
     for (size_t i=0; i<skey.size(); ++i)
-        skey[i] = std::tolower(skey[i]);
+        skey[i] = tolower(skey[i]);
 
     char* v = 0;
     if      (skey == "version")   v = GET_VERSION_STRING;
@@ -102,7 +106,7 @@ void opensim_about_rdsimulation(const char* key, int maxlen, char* value) {
     else if (skey == "debug")     v = GET_DEBUG_STRING;
 
     if (v) {
-        std::strncpy(value,v,maxlen-1);
+        strncpy(value,v,maxlen-1);
         value[maxlen-1] = '\0'; // in case we ran out of room
     }
 }
