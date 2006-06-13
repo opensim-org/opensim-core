@@ -43,21 +43,18 @@
 #include "Material.h"
 
 
-
-
-
 using namespace OpenSim;
 #ifdef WIN32
 
-template class RDTOOLS_API Array<bool>;
-template class RDTOOLS_API Array<int>;
-template class RDTOOLS_API Array<double>;
-template class RDTOOLS_API Array<std::string>;
+//template class RDTOOLS_API Array<bool>;
+//template class RDTOOLS_API Array<int>;
+//template class RDTOOLS_API Array<double>;
+//template class RDTOOLS_API Array<std::string>;
 
-template class RDTOOLS_API NamedValueArray<int>;
-template class RDTOOLS_API NamedValueArray<double>;
+//template class RDTOOLS_API NamedValueArray<int>;
+//template class RDTOOLS_API NamedValueArray<double>;
 
-template class RDTOOLS_API Set<Material>;
+//template class RDTOOLS_API Set<Material>;
 
 #endif  // WIN32
 
