@@ -82,6 +82,12 @@
 #include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
 #include <OpenSim/Simulation/SIMM/SimmUnits.h>
 
+#include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
+#include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
+#include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
+#include <OpenSim/Simulation/SIMM/SimmIKParams.h>
+#include <OpenSim/Simulation/SIMM/SimmSubject.h>
+
 using namespace OpenSim;
 %}
 
@@ -96,33 +102,15 @@ using namespace OpenSim;
 %include "std_string.i"
 
 
-/* make getCPtr public not package private */
-%typemap(javabody) SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) %{
-  private long swigCPtr;
-
-  public $javaclassname(long cPtr, boolean bFutureUse) {
-    swigCPtr = cPtr;
-  }
-
-  protected $javaclassname() {
-    swigCPtr = 0;
-  }
-
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-%}
-
-%typemap(javacode) OpenSimObject %{
-  public boolean equals(Object aObject) {
-    if (! (aObject instanceof OpenSimObject))
-      return false;
-    OpenSimObject rObj = (OpenSimObject) aObject;
-    return (this.getName().equals(rObj.getName()) &&
-            this.getType().equals(rObj.getType()));
+%typemap(javacode) OpenSim::Object %{
+  public boolean equals(Object obj) {
+    boolean equal = false;
+    if (obj instanceof $javaclassname)
+      equal = ((($javaclassname)obj).swigCPtr == this.swigCPtr);
+    return equal;
   }
   public int hashCode() {
-    return( this.getName().hashCode()+10000 * getType().hashCode());
+    return( getName().hashCode()+10000 * getType().hashCode());
   }
 %}
 
@@ -136,6 +124,23 @@ using namespace OpenSim;
       System.err.println("Native code library failed to load. Check that the dynamic library rdModelDll is in the PATH\n" + e);
       System.exit(1);
     }
+  }
+%}
+
+/* make getCPtr public not package private */
+%typemap(javabody) SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)  %{
+  private long swigCPtr;
+
+  public $javaclassname(long cPtr, boolean bFutureUse) {
+    swigCPtr = cPtr;
+  }
+
+  protected $javaclassname() {
+    swigCPtr = 0;
+  }
+
+  public static long getCPtr($javaclassname obj) {
+    return (obj == null) ? 0 : obj.swigCPtr;
   }
 %}
 
@@ -238,3 +243,9 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmStep.h>
 %include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
 %include <OpenSim/Simulation/SIMM/SimmUnits.h>
+
+%include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
+%include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
+%include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
+%include <OpenSim/Simulation/SIMM/SimmIKParams.h>
+%include <OpenSim/Simulation/SIMM/SimmSubject.h>
