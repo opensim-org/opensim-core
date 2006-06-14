@@ -52,7 +52,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 {
 	string actualLibFileName(lpLibFileName);
 	string debugSuffix="_d";
-	const char* locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
+	char *locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
 	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
 
 	HINSTANCE libraryHandle = NULL;
@@ -93,7 +93,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		cout << "WARNING: SUSPECT LOADING DEBUG LIB INTO RELEASE rdSimulation";
 		cout << "Trying ";
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
-			*locationOf_D= '\0';	// Strip trailing _D and retry (can we do that with const!)
+			*locationOf_D = '\0';	// Strip trailing _D and retry (can we do that with const!)
 			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
