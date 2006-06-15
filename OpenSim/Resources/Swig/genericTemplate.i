@@ -81,6 +81,7 @@
 #include <OpenSim/Simulation/SIMM/SimmStep.h>
 #include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
 #include <OpenSim/Simulation/SIMM/SimmUnits.h>
+#include <OpenSim/Simulation/SIMM/SimmModelIterator.h>
 
 #include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
 #include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
@@ -244,6 +245,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
 %include <OpenSim/Simulation/SIMM/SimmUnits.h>
 
+%include <OpenSim/Simulation/SIMM/SimmModelIterator.h>
 %include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
 %include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
 %include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>

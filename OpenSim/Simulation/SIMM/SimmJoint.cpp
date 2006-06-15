@@ -198,7 +198,7 @@ void SimmJoint::setup(SimmKinematicsEngine* aEngine)
 {
 	string errorMessage;
 
-	_forwaTransform.setIdentity();
+	_forwardTransform.setIdentity();
 	_inverseTransform.setIdentity();
 
 	/* Look up the parent and child bodies by name in the
@@ -223,12 +223,12 @@ void SimmJoint::setup(SimmKinematicsEngine* aEngine)
 		_dofs[i]->setup(aEngine, this);
 }
 
-const Transform& SimmJoint::getForwaTransform()
+const Transform& SimmJoint::getForwardTransform()
 {
 	if (!_transformsValid)
 		calcTransforms();
 
-	return _forwaTransform;
+	return _forwardTransform;
 }
 
 const Transform& SimmJoint::getInverseTransform()
@@ -269,7 +269,7 @@ void SimmJoint::calcTransforms()
    /* now apply the translation that you calculated earlier */
    mat.translate(translation);
 
-   _forwaTransform = mat;
+   _forwardTransform = mat;
 	Mtx::Invert(4, mat.getMatrix(), _inverseTransform.getMatrix());
 
    _transformsValid = true;
@@ -1874,7 +1874,7 @@ void SimmJoint::peteTest()
 	}
 
 	calcTransforms();
-	_forwaTransform.printMatrix();
+	_forwardTransform.printMatrix();
 }
 
 

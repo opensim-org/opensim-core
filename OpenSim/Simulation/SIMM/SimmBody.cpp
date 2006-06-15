@@ -471,3 +471,8 @@ void SimmBody::peteTest() const
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->peteTest();
 }
+
+SimmBone* SimmBody::getBone(int index) const
+{
+	return dynamic_cast<SimmBone*>(_bones.get(index));
+}

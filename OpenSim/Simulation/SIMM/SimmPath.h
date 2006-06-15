@@ -60,7 +60,7 @@ private:
 	JointPath _path;
 	const SimmBody* _from;
 	const SimmBody* _to;
-	Transform _forwaTransform;
+	Transform _forwardTransform;
 	Transform _inverseTransform;
 	bool _transformsValid;
 
@@ -79,7 +79,7 @@ public:
 	const SimmBody* getFromBody() { return _from; }
 	const SimmBody* getToBody() { return _to; }
 	const JointPath& getPath() const { return _path; }
-	Transform& getForwaTransform();
+	Transform& getForwardTransform();
 	Transform& getInverseTransform();
 
 	void peteTest() const;

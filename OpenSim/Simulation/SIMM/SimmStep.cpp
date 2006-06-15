@@ -69,7 +69,7 @@ SimmStep::~SimmStep()
 Transform& SimmStep::getJointTransform()
 {
 	if (_direction == forward)
-		_transformCache = _joint->getForwaTransform();
+		_transformCache = _joint->getForwardTransform();
 	else
 		_transformCache = _joint->getInverseTransform();
 

@@ -70,12 +70,12 @@ SimmPath::~SimmPath()
 {
 }
 
-Transform& SimmPath::getForwaTransform()
+Transform& SimmPath::getForwardTransform()
 {
 	if (!_transformsValid)
 		calcTransforms();
 
-	return _forwaTransform;
+	return _forwardTransform;
 }
 
 Transform& SimmPath::getInverseTransform()
@@ -91,22 +91,22 @@ void SimmPath::calcTransforms()
 	if (_path.size() >= 1)
 	{
 		/* Get the transform for the first joint in the path. Copying it right into
-		 * _forwaTransform saves the step of multiplying it by the identity matrix
+		 * _forwardTransform saves the step of multiplying it by the identity matrix
 		 * as the first iteration in the 'for' loop that follows.
 		 */
-		_forwaTransform = _path[0].getJointTransform();
+		_forwardTransform = _path[0].getJointTransform();
 
 		/* Now get the remaining joint transforms and append them onto the current stack,
-		 * stored in _forwaTransform.
+		 * stored in _forwardTransform.
 		 */
 		for (unsigned int i = 1; i < _path.size(); i++)
 		{
 			Mtx::Multiply(4, 4, 4, _path[i].getJointTransform().getMatrix(),
-				_forwaTransform.getMatrix(), _forwaTransform.getMatrix());
+				_forwardTransform.getMatrix(), _forwardTransform.getMatrix());
 		}
 
 		/* Invert the forward transform to get the inverse. */
-		Mtx::Invert(4, _forwaTransform.getMatrix(), _inverseTransform.getMatrix());
+		Mtx::Invert(4, _forwardTransform.getMatrix(), _inverseTransform.getMatrix());
 	}
 
    _transformsValid = true;

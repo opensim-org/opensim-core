@@ -91,7 +91,7 @@ protected:
    SimmBody *_childBody;
    SimmBody *_parentBody;
 
-	Transform _forwaTransform;
+	Transform _forwardTransform;
 	Transform _inverseTransform;
 
 	bool _transformsValid;
@@ -122,7 +122,7 @@ public:
 	ArrayPtrs<SimmDof>& getDofs() const { return _dofs; }
 	SimmBody* getChildBody() const { return _childBody; }
 	SimmBody* getParentBody() const { return _parentBody; }
-	const Transform& getForwaTransform();
+	const Transform& getForwardTransform();
 	const Transform& getInverseTransform();
 	bool isCoordinateUsed(SimmCoordinate* aCoordinate) const;
 	void identifyDpType(SimmModel* aModel);

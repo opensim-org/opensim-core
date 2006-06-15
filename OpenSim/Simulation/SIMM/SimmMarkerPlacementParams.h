@@ -122,9 +122,6 @@ public:
 #endif
    void SimmMarkerPlacementParams::copyData(const SimmMarkerPlacementParams &aMarkerPlacementParams);
 
-	bool processModel(SimmModel* aModel);
-
-
 	void peteTest() const;
 
 	bool isDefault() const;
