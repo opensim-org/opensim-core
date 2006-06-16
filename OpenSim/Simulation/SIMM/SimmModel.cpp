@@ -31,6 +31,14 @@
 #include <math.h>
 #include "SimmModel.h"
 #include "SimmKinematicsEngine.h"
+// PATH stuff from Kenny
+#ifdef _MSC_VER
+	#include <direct.h>
+	
+	#define PATH_MAX _MAX_PATH
+#else
+	#include <unistd.h>
+#endif
 
 //=============================================================================
 // STATICS
@@ -284,6 +292,27 @@ SimmMuscleGroup* SimmModel::enterGroup(const string& aName)
  */
 void SimmModel::setup()
 {
+	// Set the current directory to the directory containing the model
+	// file.  This is allow files (i.e. bone files) to be specified using
+	// relative paths in the model file.  KMS 4/26/06
+	char origDirPath[PATH_MAX] = "";
+	
+	string::size_type dirSep = _fileName.rfind('/'); // Unix/Mac dir separator
+	
+	if (dirSep == string::npos)
+		dirSep = _fileName.rfind('\\'); // DOS dir separator
+	
+	if (dirSep != string::npos) // if '_fileName' contains path information...
+	{
+		string dirPath(_fileName, 0, dirSep);
+		
+		if (dirPath.length() > 0)
+		{
+			getcwd(origDirPath, PATH_MAX);
+			chdir(dirPath.c_str());
+		}
+	}
+
 	int i;
 
 	/* Muscle groups are set up with these steps:
@@ -330,6 +359,10 @@ void SimmModel::setup()
 		/* Copy number of bodies to base class. */
 		_nb = _kinematicsEngine[0]->getNumBodies();
 	}
+	
+	// Restore the current directory.
+	if (origDirPath[0] != '\0')
+		chdir(origDirPath);
 
 	cout << "Created model " << getName() << " from file " << _fileName << endl;
 }

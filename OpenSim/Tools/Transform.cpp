@@ -535,6 +535,13 @@ void Transform::transformVector(double vec[3]) const
 	vec[Y] = ty;
 }
 
+void Transform::getMatrix(double aMat[]) const
+{
+	for(int i=0; i < 4; i++)
+		for(int j=0; j < 4; j++)
+			aMat[i*4+j] = _matrix4[i][j];
+}
+
 /**
  * Debugging 
  */
