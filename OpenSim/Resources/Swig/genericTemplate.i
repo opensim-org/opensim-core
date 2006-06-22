@@ -144,8 +144,11 @@ using namespace OpenSim;
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 %}
+/*
+%typemap(javacode) OpenSim::ActuatorSet, OpenSim::ContactForceSet %{
 
-
+%}
+*/
 /* rest of header files to be wrapped */
 %include <OpenSim/Tools/rdToolsDLL.h>
 %include <OpenSim/Simulation/rdSimulationDLL.h>
