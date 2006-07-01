@@ -95,6 +95,14 @@ public:
 	{
 		_markerSet.append(aSimmMarker);
 	};
+
+	/**
+	 * Get file name for generic model
+	 */
+	const std::string& getModelFileName() const
+	{
+		return _fileName;
+	};
 protected:
 
 private:
