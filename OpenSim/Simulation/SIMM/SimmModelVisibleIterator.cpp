@@ -35,14 +35,12 @@ using namespace OpenSim;
 /* -------------------------------------------------------------------------
 	SimmModelVisibleIterator::SimmModelVisibleIterator
 ---------------------------------------------------------------------------- */
-SimmModelVisibleIterator::SimmModelVisibleIterator(SimmModel& model, Object* traversalRoot) :
+SimmModelVisibleIterator::SimmModelVisibleIterator(SimmModel& model) :
 	_model(model),
-	_traversalRoot(traversalRoot),
+	_traversalRoot(model),
 	_traversalStarted(false),
 	_traversalFinished(false)
 {
-	if (traversalRoot==0)
-		_traversalRoot=&_model;
 } // SimmModelVisibleIterator::SimmModelVisibleIterator
 
 /* -------------------------------------------------------------------------
