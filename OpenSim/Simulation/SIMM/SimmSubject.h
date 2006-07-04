@@ -140,6 +140,11 @@ public:
 	/* Register types to be used when reading a SimmSubject object from xml file. */
 	static void registerTypes();
 
+	/** Accessor methods to obtain model attributes */
+	const double& getSubjectMass { return _mass; };
+	const double& getSubjectAge { return _age; };
+	const double& getSubjectHeight { return _height; };
+	const 
 	void peteTest() const;
 
 protected:
@@ -158,5 +163,3 @@ public:
 //=============================================================================
 
 #endif // __SimmSubject_h__
-
-
