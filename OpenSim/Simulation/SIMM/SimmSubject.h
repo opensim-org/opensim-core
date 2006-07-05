@@ -141,10 +141,10 @@ public:
 	static void registerTypes();
 
 	/** Accessor methods to obtain model attributes */
-	const double& getSubjectMass { return _mass; };
-	const double& getSubjectAge { return _age; };
-	const double& getSubjectHeight { return _height; };
-	const 
+	const double& getSubjectMass() { return _mass; }
+	const double& getSubjectAge() { return _age; }
+	const double& getSubjectHeight() { return _height; }
+
 	void peteTest() const;
 
 protected:

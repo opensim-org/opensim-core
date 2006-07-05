@@ -37,7 +37,7 @@ using namespace OpenSim;
 ---------------------------------------------------------------------------- */
 SimmModelVisibleIterator::SimmModelVisibleIterator(SimmModel& model) :
 	_model(model),
-	_traversalRoot(model),
+	_traversalRoot(&model),
 	_traversalStarted(false),
 	_traversalFinished(false)
 {
