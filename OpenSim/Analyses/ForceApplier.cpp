@@ -42,6 +42,7 @@ ForceApplier::~ForceApplier()
  * during an integration.
  *
  * @param aModel Model for which external forces are to be applied.
+ * @param aBody Index of the body to which an external force should be applied.
  */
 ForceApplier::
 ForceApplier(Model *aModel,int aBody) :
@@ -60,7 +61,70 @@ ForceApplier(Model *aModel,int aBody) :
 	constructDescription();
 	constructColumnLabels();
 }
+//_____________________________________________________________________________
+/**
+ * Construct a derivative callback instance for applying external forces
+ * during an integration from the specified force data.
+ *
+ * NOTE: This function computes the force and point functions from the
+ * given data as order-3 generalized cross-validated spline functions.
+ *
+ * @param aModel Model for which external forces are to be applied.
+ * @param bodyFrom Index of body that applies the force.
+ * @param bodyTo Index of body to which force is applied.
+ * @param forceData Storage object containing force and point of application.
+ * @param fxNum Column index of applied force's x coordinate in storage object.
+ * @param fyNum Column index of applied force's y coordinate in storage object.
+ * @param fzNum Column index of applied force's z coordinate in storage object.
+ * @param pxNum Column index of application point's x coordinate in storage object.
+ * @param pyNum Column index of application point's y coordinate in storage object.
+ * @param pzNum Column index of application point's z coordinate in storage object.
+ * @param aQStore Storage containing the time history of generalized
+ * coordinates for the model. Note that all generalized coordinates must
+ * be specified and in radians and Euler parameters.
+ * @param aUStore Storage containing the time history of generalized
+ * speeds for the model.  Note that all generalized speeds must
+ * be specified and in radians.
+ */
+ForceApplier::
+ForceApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *forceData,
+             int fxNum, int fyNum, int fzNum,
+			 int pxNum, int pyNum, int pzNum,
+			 Storage *aQStore, Storage *aUStore) :
+	DerivCallback(aModel)
+{
+	setNull();
 
+	// BASE-CLASS MEMBER VARIABLES
+	setType("ForceApplier");
+	
+	// STORAGE
+	setBody(bodyTo);
+	allocateStorage();
+
+	// DESCRIPTION AND LABELS
+	constructDescription();
+	constructColumnLabels();
+
+	// COMPUTE POINT FUNCTION
+	double *t=0,*x=0,*y=0,*z=0;
+	int forceSize = forceData->getSize();
+	forceData->getTimeColumn(t);
+	forceData->getDataColumn(pxNum,x);
+	forceData->getDataColumn(pyNum,y);
+	forceData->getDataColumn(pzNum,z);
+	VectorGCVSplineR1R3 *pointFunc;
+	pointFunc = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
+	computePointFunction(aQStore, aUStore, *pointFunc);
+
+	// COMPUTE FORCE FUNCTION
+	forceData->getDataColumn(fxNum,x);
+	forceData->getDataColumn(fyNum,y);
+	forceData->getDataColumn(fzNum,z);
+	VectorGCVSplineR1R3 *forceFunc;
+	forceFunc = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
+	setForceFunction(forceFunc);
+}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -155,7 +219,7 @@ deleteStorage()
 /**
  * Set to which body an external force should be applied.
  *
- * @param aIndex Index of the body to which an external force should be applied.
+ * @param aBody Index of the body to which an external force should be applied.
  */
 void ForceApplier::
 setBody(int aBody)
@@ -166,7 +230,7 @@ setBody(int aBody)
 /**
  * Get to which body an external force should be applied.
  *
- * @return aIndex Index of the body to which an external force should be applied.
+ * @return aBody Index of the body to which an external force should be applied.
  */
 int ForceApplier::
 getBody() const
@@ -410,7 +474,7 @@ reset()
  * @param aQStore Storage containing the time history of generalized
  * coordinates for the model. Note that all generalized coordinates must
  * be specified and in radians and Euler parameters.
- * @param aUStore Stoarge containing the time history of generalized
+ * @param aUStore Storage containing the time history of generalized
  * speeds for the model.  Note that all generalized speeds must
  * be specified and in radians.
  * @param aPStore Storage containing the time history of the position at

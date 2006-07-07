@@ -59,6 +59,8 @@ protected:
 //=============================================================================
 public:
 	TorqueApplier(Model *aModel,int aBody);
+	TorqueApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *torqueData,
+	              int txNum, int tyNum, int tzNum);
 	virtual ~TorqueApplier();
 private:
 	void setNull();

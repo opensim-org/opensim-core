@@ -63,7 +63,11 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ForceApplier(Model *aModel,int aBody);	
+	ForceApplier(Model *aModel,int aBody);
+	ForceApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *forceData,
+	             int fxNum, int fyNum, int fzNum,
+				 int pxNum, int pyNum, int pzNum,
+				 Storage *aQStore, Storage *aUStore);
 	virtual ~ForceApplier();
 private:
 	void setNull();

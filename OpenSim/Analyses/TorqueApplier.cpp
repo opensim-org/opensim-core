@@ -17,6 +17,7 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/VectorFunction.h>
+#include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include "TorqueApplier.h"
 
 //=============================================================================
@@ -56,6 +57,50 @@ TorqueApplier(Model *aModel,int aBody) :
 	// DESCRIPTION AND LABELS
 	constructDescription();
 	constructColumnLabels();
+}
+//_____________________________________________________________________________
+/**
+ * Construct a derivative callback instance for applying external torques
+ * during an integration.
+ *
+ * NOTE: This function computes the torque functions from the given
+ * data as order-3 generalized cross-validated spline functions.
+ *
+ * @param aModel Model for which external forces are to be applied.
+ * @param bodyFrom Index of body that applies the force.
+ * @param bodyTo Index of body to which force is applied.
+ * @param torqueData Storage object containing torque data.
+ * @param txNum Column index of applied torque's x coordinate in storage object.
+ * @param tyNum Column index of applied torque's y coordinate in storage object.
+ * @param tzNum Column index of applied torque's z coordinate in storage object.
+ */
+TorqueApplier::
+TorqueApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *torqueData,
+              int txNum, int tyNum, int tzNum) :
+	DerivCallback(aModel)
+{
+	setNull();
+
+	// MEMBER VARIABLES
+	setBody(bodyTo);
+
+	// STORAGE
+	allocateStorage();
+
+	// DESCRIPTION AND LABELS
+	constructDescription();
+	constructColumnLabels();
+
+	// COMPUTE TORQUE FUNCTION
+	double *t=0,*x=0,*y=0,*z=0;
+	int torqueSize = torqueData->getSize();
+	torqueData->getTimeColumn(t);
+	torqueData->getDataColumn(txNum,x);
+	torqueData->getDataColumn(tyNum,y);
+	torqueData->getDataColumn(tzNum,z);
+	VectorGCVSplineR1R3 *torqueFunc;
+	torqueFunc = new VectorGCVSplineR1R3(3,torqueSize,t,x,y,z);
+	setTorqueFunction(torqueFunc);
 }
 
 //=============================================================================
