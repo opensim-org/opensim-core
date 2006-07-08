@@ -221,17 +221,14 @@ allocateStorage()
 	// ACCELERATIONS
 	_forceStore = new Storage(1000,"ActuatorForces");
 	_forceStore->setDescription(getDescription());
-	_forceStore->setColumnLabels(getColumnLabels());
 
 	// VELOCITIES
 	_speedStore = new Storage(1000,"ActuatorSpeeds");
 	_speedStore->setDescription(getDescription());
-	_speedStore->setColumnLabels(getColumnLabels());
 
 	// POSITIONS
 	_powerStore = new Storage(1000,"ActuatorPowers");
 	_powerStore->setDescription(getDescription());
-	_powerStore->setColumnLabels(getColumnLabels());
 }
 
 //-----------------------------------------------------------------------------
@@ -280,7 +277,7 @@ constructDescription()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Construct the column labels for the Actuation files.
+ * Construct the column labels for the actuation storage files.
  */
 void Actuation::
 constructColumnLabels()
@@ -295,6 +292,9 @@ constructColumnLabels()
 	labels += "\n";
 
 	setColumnLabels(labels.c_str());
+	_forceStore->setColumnLabels(getColumnLabels());
+	_speedStore->setColumnLabels(getColumnLabels());
+	_powerStore->setColumnLabels(getColumnLabels());
 }
 
 
