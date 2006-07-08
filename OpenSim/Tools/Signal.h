@@ -80,6 +80,8 @@ public:
 	//--------------------------------------------------------------------------
 	static double*
 		Pad(int aPad,int aN,const double aSignal[]);
+	static void
+		Pad(int aPad,OpenSim::Array<double> &aSignal);
 
 	//--------------------------------------------------------------------------
 	// POINT REDUCTION

@@ -2143,45 +2143,42 @@ integrate(double aTI,double aTF)
 void Storage::
 pad(int aPadSize)
 {
-	// GET TIME COLUMN
-	double *time=NULL;
-	int n = getTimeColumn(time);
-
 	// PAD THE TIME COLUMN
-	delete[] time;  time = NULL;
+	double *time=NULL;
 	int size = getTimeColumn(time);
-	double *paddedTime = Signal::Pad(aPadSize,size,time);
+	Array<double> paddedTime(0.0);
+	paddedTime.append(size,time);
+	Signal::Pad(aPadSize,paddedTime);
+	int newSize = paddedTime.getSize();
 
 	// PAD EACH COLUMN
 	int i,j;
 	int nc = getSmallestNumberOfStates();
 	double *signal=NULL;
-	double **paddedSignals = new double*[nc];
-	Array<double> filt(0.0,size);
+	Array<double> paddedSignal(0.0);
+	StateVector *vecs = new StateVector[newSize];
 	for(i=0;i<nc;i++) {
 		getDataColumn(i,signal);
-		paddedSignals[i] = Signal::Pad(aPadSize,size,signal);
+		paddedSignal.setSize(0);
+		paddedSignal.append(size,signal);
+		Signal::Pad(aPadSize,paddedSignal);
+		for(j=0;j<newSize;j++) {
+			if(i==0) {
+				vecs[j].getData().setSize(nc);
+				vecs[j].setTime(paddedTime[j]);
+			}
+			vecs[j].setDataValue(i,paddedSignal[j]);
+		}
 	}
 
-	// REMAKE THE STATEVECTORS
+	// APPEND THE STATEVECTORS
 	_storage.setSize(0);
-	int newSize = size + aPadSize + aPadSize;
-	StateVector vec;
-	for(i=0;i<newSize;i++) {
-		vec.setTime(paddedTime[i]);
-		vec.getData().setSize(nc);
-		for(j=0;j<nc;j++) {
-			vec.setDataValue(j,paddedSignals[j][i]);
-		}
-		_storage.append(vec);
-	}
+	for(i=0;i<newSize;i++) _storage.append(vecs[i]);
 
 	// CLEANUP
 	delete time;
-	delete paddedTime;
 	delete signal;
-	for(i=0;i<nc;i++) delete[] paddedSignals[i];
-	delete[] paddedSignals;
+	delete[] vecs;
 }
 
 //_____________________________________________________________________________

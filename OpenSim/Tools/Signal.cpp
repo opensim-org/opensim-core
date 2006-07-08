@@ -289,7 +289,7 @@ double *s;
  * and slope of the signal.
  *
  * PARAMETERS
- *	@param aPad Size of the pad-- number of points prepend and append.
+ *	@param aPad Size of the pad-- number of points to prepend and append.
  *	@param aN Number of data points in the signal.
  *	@param aSignal Signal to be padded.
  *	@return Padded signal.  The size is aN + 2*aPad.  NULL is returned
@@ -301,8 +301,14 @@ Pad(int aPad,int aN,const double aSignal[])
 {
 	if(aPad<=0) return(NULL);
 
-	// ALLOCATE
+	// COMPUTE FINAL SIZE
 	int size = aN + 2*aPad;
+	if(aPad>aN) {
+		cout<<"\nSignal.Pad(double[]): ERROR- requested pad size ("<<aPad<<") is greater than the number of points ("<<aN<<").\n";
+		return(NULL);
+	}
+
+	// ALLOCATE
 	double *s = new double[size];
 	if (s == NULL) {
 		printf("\n\nSignal.Pad: Failed to allocate memory.\n");
@@ -322,6 +328,57 @@ Pad(int aPad,int aN,const double aSignal[])
 	for(i=aPad+aN;i<aPad+aPad+aN;i++)  s[i] = 2.0*aSignal[aN-1] - s[i];
  
 	return(s);
+}
+//_____________________________________________________________________________
+/**
+ * Pad a signal with a specified number of data points.
+ *
+ * The signal is prepended and appended with a reflected and negated
+ * portion of the signal of the appropriate size so as to preserve the value
+ * and slope of the signal.
+ *
+ * PARAMETERS
+ *	@param aPad Size of the pad-- number of points to prepend and append.
+ *	@param rSignal Signal to be padded.
+ */
+void Signal::
+Pad(int aPad,Array<double> &rSignal)
+{
+	if(aPad<=0) return;
+
+	// COMPUTE NEW SIZE
+	int size = rSignal.getSize();
+	int newSize = size + 2*aPad;
+
+	// HANDLE PAD GREATER THAN SIZE
+	if(aPad>=size) {
+		int pad = size - 1;
+		while(size<newSize) {
+			Pad(pad,rSignal);
+			size = rSignal.getSize();
+			pad = (newSize - size) / 2;
+			if(pad>=size) pad = size - 1;
+		}
+		return;
+	}
+
+	// ALLOCATE
+	Array<double> s(0.0,newSize);
+
+	// PREPEND
+	int i,j;
+	for(i=0,j=aPad;i<aPad;i++,j--)  s[i] = rSignal[j];
+	for(i=0;i<aPad;i++)  s[i] = 2.0*rSignal[0] - s[i];
+
+	// SIGNAL
+	for(i=aPad,j=0;i<aPad+size;i++,j++)  s[i] = rSignal[j];
+
+	// APPEND
+	for(i=aPad+size,j=size-2;i<aPad+aPad+size;i++,j--)  s[i] = rSignal[j];
+	for(i=aPad+size;i<aPad+aPad+size;i++)  s[i] = 2.0*rSignal[size-1] - s[i];
+
+	// ALTER SIGNAL
+	rSignal = s;
 }
 
 
