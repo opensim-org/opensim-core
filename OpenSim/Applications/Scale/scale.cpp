@@ -139,86 +139,86 @@ int main(int argc,char **argv)
 
 	try {
 
-		// Construct subject instance
+		// CONSTRUCT SUBJECT INSTANCE
 		SimmSubject *subject = new SimmSubject(inName);
 
-		// Construct a model
+		// CONSTRUCT THE MODEL
 		SimmModel *model = subject->createModel();
+
+		// WRITE MODEL TO FILE
 		Object *modelCopy = model->copy();
 		modelCopy->print("gait_test.osim");
+
+		// SCALE THE MODEL BASE ON PARAMETERS SPECIFIED IN THE SUBJECT FILE
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
 			ScalerInterface *scaler = new SimmScalerImpl(*model);
-			if (!scaler->scaleModel(params.getScaleSet(*model), params.getPreserveMassDist(), subject->getMass()))
-			{
+			if (!scaler->scaleModel(params.getScaleSet(*model), params.getPreserveMassDist(), subject->getMass())) {
 				cout << "===ERROR===: Unable to scale generic model." << endl;
 				return 0;
-			}
-			else {
+			} else {
 				cout << "Scaled model "<< inName << "Successfully" << endl;
 			}
 			params.writeOutputFiles(model);
 			delete scaler;
-		}
-		else {
+
+		// NO SCALING PARAMETERS SET
+		} else {
 			cout << "Scaling parameters not set. Model is not scaled." << endl;
 		}
+
+
+		// ADJUST MARKERS TO AGREE WITH THE STATIC TRIAL
 		if (!subject->isDefaultMarkerPlacementParams()){
+
 			SimmMarkerPlacementParams& params = subject->getMarkerPlacementParams();
 			// Update markers to correspond to those specified in IKParams block
 			model->updateMarkers(params.getMarkerSet());
 
-			// begin code restore
-            SimmMotionData coordinateValues(params.getCoordinateFileName());
+			// begin code restore  (What is a code restore?)
+			SimmMotionData coordinateValues(params.getCoordinateFileName());
 
-            /* For each coordinate whose "value" field the user specified
-             * as "fromFile", read the value from the first frame in the
-             * coordinate file (a SIMM motion file) and use it to overwrite
-             * the "fromFile" specification.
-             */
-            ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
+			// For each coordinate whose "value" field the user specified
+			// as "fromFile", read the value from the first frame in the
+			// coordinate file (a SIMM motion file) and use it to overwrite
+			// the "fromFile" specification.
+			ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
+			if (coordinateValues.getNumColumns() > 0) {
+				for (int i = 0; i < coordinateSet.getSize(); i++) {
+					if (coordinateSet[i]->getValueStr() == "fromFile"){
+						double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
+						coordinateSet[i]->setValue(newValue);
+					}
+				}
+				// Update the model with the coordinates specified
+				// by the user in the params section.
+				model->updateCoordinates(coordinateSet);
+			}
+			// end code restore
 
-            if (coordinateValues.getNumColumns() > 0)
-            {
-                for (int i = 0; i < coordinateSet.getSize(); i++)
-                {
-                    if (coordinateSet[i]->getValueStr() == "fromFile")
-                    {
-                        double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
-                        coordinateSet[i]->setValue(newValue);
-                    }
-                }
-                /* Update the model with the coordinates specified
-                * by the user in the params section.
-                */
-                model->updateCoordinates(coordinateSet);
-            }
-            // end code restore
-
-			/* Load the static pose marker file, and average all the
-			* frames in the user-specified time range.
-			*/
+			// Load the static pose marker file, and average all the
+			// frames in the user-specified time range.
 			SimmMarkerData staticPose(params.getStaticPoseFilename());
+
 			// Convert read trc fil into "common" rdStroage format
 			Storage inputStorage;
 			staticPose.makeRdStorage(inputStorage);
+
 			// Convert the marker data into the model's units.
 			double startTime, endTime;
 			params.getTimeRange(startTime, endTime);
 			staticPose.averageFrames(0.01, startTime, endTime);
 			staticPose.convertToUnits(model->getLengthUnits());
 
-			/* Delete any markers from the model that are not in the static
-			* pose marker file.
-			*/
+			// Delete any markers from the model that are not in the static
+			// pose marker file.
 			model->deleteUnusedMarkers(staticPose.getMarkerNames());
 
-			/* Now solve the static pose. */
+			// SOLVE THE IK PROBLEM FOR THE STATIC POSE
 			SimmIKTrialParams options;
 			options.setStartTime(startTime);
 			options.setEndTime(endTime);
 			options.setIncludeMarkers(true);
-
 			// Convert read trc fil into "common" rdStroage format
 			staticPose.makeRdStorage(inputStorage);
 			// Create target
@@ -229,20 +229,26 @@ int main(int argc,char **argv)
 			Storage	outputStorage;
 			ikSolver->solveFrames(options, inputStorage, outputStorage);
 
+			// MOVE THE MARKERS TO CORRESPOND TO EXPERIMENTAL LOCATIONS
 			model->moveMarkersToCloud(outputStorage);
 	
+			// WRITE THE FILES
 			params.writeOutputFiles(model, outputStorage);
 
 			delete ikSolver;
 			delete target;
-		}
-		else {
+
+		// DO NOT MOVE MARKERS
+		} else {
 			cout << "Marker placement parameters not set. No markers have been moved." << endl;
 		}
+
+		// CLEAN UP
 		delete model;
 		delete subject;
-	}
-	catch(Exception &x) {
+
+	// HANDLE ANY EXCEPTIONS
+	} catch(Exception &x) {
 		x.print(cout);
 	}
 
