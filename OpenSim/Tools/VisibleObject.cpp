@@ -1,4 +1,5 @@
 // VisibleObject.cpp
+// Author: Ayman Habib
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -42,7 +43,7 @@
 #include "PropertyObj.h"
 #include "PropertyStrArray.h"
 #include "PropertyDblArray.h"
-
+#include "Geometry.h"
 
 
 using namespace OpenSim;
@@ -71,9 +72,11 @@ VisibleObject::~VisibleObject()
  */
 VisibleObject::VisibleObject():
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_propVisibleProp(PropertyObj("VisibleProperties", VisibleProperties())),
+_propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray())
+_scaleFactors(1.0, 3),
+_dependents(0),
+_allGeometry(0)
 {
 	// NULL STATES
 	setNull();
@@ -95,9 +98,11 @@ _scaleFactors(_propScaleFactors.getValueDblArray())
 VisibleObject::VisibleObject(const string &aFileName):
 Object(aFileName),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_propVisibleProp(PropertyObj("VisibleProperties", VisibleProperties())),
+_propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray())
+_scaleFactors(1.0, 3),
+_dependents(0),
+_allGeometry(0)
 {
 	// NULL STATES
 	setNull();
@@ -111,9 +116,11 @@ _scaleFactors(_propScaleFactors.getValueDblArray())
 VisibleObject::VisibleObject(DOMElement *aElement):
 Object(aElement),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_propVisibleProp(PropertyObj("VisibleProperties", VisibleProperties())),
+_propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray())
+_scaleFactors(1.0, 3),
+_dependents(0),
+_allGeometry(0)
 {
 	// NULL STATES
 	setNull();
@@ -159,9 +166,11 @@ _scaleFactors(_propScaleFactors.getValueDblArray())
 VisibleObject::VisibleObject(const VisibleObject &aObject):
 Object(aObject),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_propVisibleProp(PropertyObj("VisibleProperties", VisibleProperties())),
+_propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray())
+_scaleFactors(1.0, 3),
+_dependents(0),
+_allGeometry(0)
 {
 	// NULL MEMBER VARIABLES
 	setNull();
@@ -182,6 +191,12 @@ void VisibleObject::
 setNull()
 {
 	setupProperties();
+
+	Array<double> unit3(1.0, 3);
+	_scaleFactors = unit3;
+
+	_owner = 0;
+
 }
 /**
  * virtual copy constructor
@@ -212,16 +227,14 @@ copy(DOMElement *aElement) const
 void VisibleObject::setupProperties()
 {
 
-	_propertySet.append(&_propGeometryFileNames);
 	_propGeometryFileNames.setName("geometry_files");
+	Array<string> filenames("");
+	_propGeometryFileNames.setValue(filenames);
+	_propertySet.append(&_propGeometryFileNames);
 
-	_propertySet.append(&_propVisibleProp);
 	_propVisibleProp.setName("visible_properties");
+	_propertySet.append(&_propVisibleProp);
 
-	Array<double> unit3(1.0, 3);
-	_propertySet.append(&_propScaleFactors);
-	_propScaleFactors.setName("scale_factors");
-	_propScaleFactors.setValue(unit3);
 }
 
 //=============================================================================
@@ -300,10 +313,10 @@ setGeometryFileName(int i, const string &aGeometryFileName)
  * Get the name of ith geometry files associated with visible object
  */
 
-const char *VisibleObject::
+const std::string& VisibleObject::
 getGeometryFileName(int i) const
 {
-	return _geometryFileNames[i].c_str();
+	return _geometryFileNames[i];
 }
 
 /**
@@ -475,5 +488,4 @@ translate(const double t[3])
 {
 	getTransform().translate(t);
 }
-
 

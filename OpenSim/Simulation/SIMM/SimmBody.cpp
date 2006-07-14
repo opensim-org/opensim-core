@@ -27,7 +27,6 @@
 // INCLUDES
 //=============================================================================
 #include "SimmBody.h"
-#include "SimmBone.h"
 #include "SimmKinematicsEngine.h"
 #include "simmMacros.h"
 
@@ -50,7 +49,8 @@ SimmBody::SimmBody() :
    _mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
-   _bones((ArrayPtrs<VisibleObject>&)_bonesProp.getValueObjArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
 {
 	setNull();
@@ -64,7 +64,8 @@ SimmBody::SimmBody(DOMElement *aElement) :
    _mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
-   _bones((ArrayPtrs<VisibleObject>&)_bonesProp.getValueObjArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
 {
 	setNull();
@@ -91,7 +92,8 @@ SimmBody::SimmBody(const SimmBody &aBody) :
    _mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
-   _bones((ArrayPtrs<VisibleObject>&)_bonesProp.getValueObjArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
 {
 	setupProperties();
@@ -137,7 +139,7 @@ void SimmBody::copyData(const SimmBody &aBody)
 	_mass = aBody._mass;
 	_massCenter = aBody._massCenter;
 	_inertia = aBody._inertia;
-	_bones = aBody._bones;
+	_displayer = aBody._displayer;
 	_markers = aBody._markers;
 }
 
@@ -174,10 +176,8 @@ void SimmBody::setupProperties()
 	_inertiaProp.setValue(9, defaultInertia);
 	_propertySet.append(&_inertiaProp);
 
-	_bonesProp.setName("Bones");
-	ArrayPtrs<Object> bones;
-	_bonesProp.setValue(bones);
-	_propertySet.append(&_bonesProp);
+	_displayerProp.setName("Displayer");
+	_propertySet.append(&_displayerProp);
 
 	_markersProp.setName("Markers");
 	ArrayPtrs<Object> markers;
@@ -200,20 +200,39 @@ SimmBody& SimmBody::operator=(const SimmBody &aBody)
  */
 void SimmBody::setup(SimmKinematicsEngine* aEngine)
 {
-	SimmBone* sb;
+	//SimmBone* sb;
 
 	/* The _bones array can contain any VisibleObject.
 	 * Check for ones of type SimmBone and call the
 	 * setup function for them (to read in the VTK
 	 * files, etc.).
-	 */
+	 *
 	int i;
 	for (i = 0; i < _bones.getSize(); i++)
 	{
 		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
 			sb->setup(aEngine);
 	}
+	*/
+	int i;
+	for (i = 0; i < _displayer.getNumGeometryFiles(); i++)
+	{
+		_displayer.addGeometry(new PolyhedralGeometry(_displayer.getGeometryFileName(i)));
+	}
 
+	for (i = 0; i < _markers.getSize(); i++)
+	{
+		_markers.get(i)->setup(aEngine);
+		// This should happen inside setup
+		_displayer.addDependent(_markers.get(i)->getDisplayer());
+		Transform position;
+		position.translate(_markers.get(i)->getOffset());
+		_markers.get(i)->getDisplayer()->setTransform(position);
+
+	}
+
+	_displayer.setOwner(this);
+	
 	for (i = 0; i < 3; i++)
 		_scaleFactor[i] = 1.0;
 }
@@ -285,13 +304,14 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aPreserveMassDist)
 	if (!aPreserveMassDist)
 		scaleInertialProperties(aScaleFactors);
 
+	/*
 	SimmBone* sb;
 	for (i = 0; i < _bones.getSize(); i++)
 	{
 		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
 			sb->scale(aScaleFactors);
 	}
-
+	*/
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->scale(aScaleFactors);
 }
@@ -411,7 +431,7 @@ void SimmBody::scaleInertialProperties(Array<double>& aScaleFactors)
 void SimmBody::writeSIMM(ofstream& out) const
 {
 	int i;
-	SimmBone* sb;
+	//SimmBone* sb;
 
 	out << "beginsegment " << getName() << endl;
 	out << "mass " << _mass << endl;
@@ -419,11 +439,13 @@ void SimmBody::writeSIMM(ofstream& out) const
 	out << "inertia " << _inertia[0] << " " << _inertia[1] << " " << _inertia[2] << endl;
 	out << "        " << _inertia[3] << " " << _inertia[4] << " " << _inertia[5] << endl;
 	out << "        " << _inertia[6] << " " << _inertia[7] << " " << _inertia[8] << endl;
+	/*
 	for (i = 0; i < _bones.getSize(); i++)
 	{
 		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
 			sb->writeSIMM(out);
 	}
+	*/
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->writeSIMM(out);
 
@@ -457,22 +479,19 @@ void SimmBody::writeMarkers(ofstream& out) const
 void SimmBody::peteTest() const
 {
 	int i;
-	SimmBone* sb;
+	//SimmBone* sb;
 
 	cout << "Body: " << getName() << endl;
 	cout << "   mass: " << _mass << endl;
 	cout << "   massCenter: " << _massCenter << endl;
 	cout << "   inertia: " << _inertia << endl;
+	/*
 	for (i = 0; i < _bones.getSize(); i++)
 	{
 		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
 			sb->peteTest();
 	}
+	*/
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->peteTest();
-}
-
-SimmBone* SimmBody::getBone(int index) const
-{
-	return dynamic_cast<SimmBone*>(_bones.get(index));
 }

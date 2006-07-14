@@ -1,0 +1,249 @@
+#
+# An unexpected error has been detected by HotSpot Virtual Machine:
+#
+#  Internal Error (0xe06d7363), pid=3284, tid=2504
+#
+# Java VM: Java HotSpot(TM) Client VM (1.5.0_06-b05 mixed mode)
+# Problematic frame:
+# C  [kernel32.dll+0x1eb33]
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0b212118):  JavaThread "Module-Actions" daemon [_thread_in_native, id=2504]
+
+siginfo: ExceptionCode=0xe06d7363, ExceptionInformation=0x19930520 0x0b86f910 0x0bd3801c 
+
+Registers:
+EAX=0x0b86f7f4, EBX=0x00000000, ECX=0x00000000, EDX=0xffffffff
+ESP=0x0b86f7f0, EBP=0x0b86f844, ESI=0x0b86f884, EDI=0x0b86f884
+EIP=0x7c81eb33, EFLAGS=0x00000206
+
+Top of Stack: (sp=0x0b86f7f0)
+0x0b86f7f0:   7c380edc e06d7363 00000001 00000000
+0x0b86f800:   7c81eb33 00000003 19930520 0b86f910
+0x0b86f810:   0bd3801c 0b86f878 7c3cda1f 00000000
+0x0b86f820:   0b86f850 7c3a4f7c 7c3a4fab 00000000
+0x0b86f830:   0b86f8d8 00000000 7c3a55bd 00000000
+0x0b86f840:   00000000 0b86f884 7c359aed e06d7363
+0x0b86f850:   00000001 00000003 0b86f878 0b86f8bc
+0x0b86f860:   21398d98 e06d7363 00000001 00000000 
+
+Instructions: (pc=0x7c81eb33)
+0x7c81eb23:   8d 7d c4 f3 a5 5f 8d 45 b0 50 ff 15 04 15 80 7c
+0x7c81eb33:   5e c9 c2 10 00 85 ff 0f 8e e6 d0 fe ff 8b 55 fc 
+
+
+Stack: [0x0b830000,0x0b870000),  sp=0x0b86f7f0,  free space=253k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [kernel32.dll+0x1eb33]
+C  [MSVCR71.dll+0x19aed]
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  org.opensim.modeling.opensimModelJNI.SimmModel_setup(J)V+0
+j  org.opensim.modeling.SimmModel.setup()V+4
+j  org.opensim.view.OpenOsimModelAction.loadModel(Ljava/lang/String;)V+10
+j  org.opensim.view.OpenOsimModelAction.performAction()V+39
+j  org.openide.util.actions.CallableSystemAction$1.run()V+4
+j  org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.actionPerformed(Ljava/awt/event/ActionEvent;)V+1
+j  org.netbeans.core.ModuleActions.invokeAction(Ljavax/swing/Action;Ljava/awt/event/ActionEvent;)V+23
+j  org.netbeans.modules.openide.actions.ActionsBridgeImpl.invokeAction(Ljavax/swing/Action;Ljava/awt/event/ActionEvent;)V+5
+j  org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable.doRun()V+41
+j  org.netbeans.modules.openide.util.ActionsBridge$1.run()V+4
+j  org.openide.util.RequestProcessor$Task.run()V+15
+j  org.openide.util.RequestProcessor$Processor.run()V+236
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x0af57d08 JavaThread "Inactive RequestProcessor thread [Was:System clipboard synchronizer/org.netbeans.core.NbClipboard]" daemon [_thread_blocked, id=2576]
+  0x00038c50 JavaThread "DestroyJavaVM" [_thread_blocked, id=1460]
+  0x0b1a4408 JavaThread "AWT-EventQueue-1" [_thread_blocked, id=4568]
+  0x0b2122a0 JavaThread "TimerQueue" daemon [_thread_blocked, id=4224]
+=>0x0b212118 JavaThread "Module-Actions" daemon [_thread_in_native, id=2504]
+  0x0b1742e8 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=2364]
+  0x0b144a48 JavaThread "AWT-Windows" daemon [_thread_in_native, id=4648]
+  0x0b0bbe28 JavaThread "AWT-Shutdown" [_thread_blocked, id=128]
+  0x0b16a170 JavaThread "Timer-0" daemon [_thread_blocked, id=4812]
+  0x0addb9c8 JavaThread "CLI Requests Server" daemon [_thread_in_native, id=2528]
+  0x0add4f48 JavaThread "Active Reference Queue Daemon" daemon [_thread_blocked, id=5844]
+  0x00a9df80 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=4764]
+  0x00a9c668 JavaThread "CompilerThread0" daemon [_thread_blocked, id=1096]
+  0x00a9b938 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=5920]
+  0x00a99e30 JavaThread "JDWP Command Reader" daemon [_thread_in_native, id=5848]
+  0x00a98f80 JavaThread "JDWP Event Helper Thread" daemon [_thread_blocked, id=4392]
+  0x000394b0 JavaThread "JDWP Transport Listener: dt_socket" daemon [_thread_blocked, id=4940]
+  0x00a894b0 JavaThread "Finalizer" daemon [_thread_blocked, id=5812]
+  0x00a88018 JavaThread "Reference Handler" daemon [_thread_blocked, id=260]
+
+Other Threads:
+  0x00a485e8 VMThread [id=1448]
+  0x00a9f1d0 WatcherThread [id=5536]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ def new generation   total 768K, used 336K [0x02ad0000, 0x02ba0000, 0x02fb0000)
+  eden space 704K,  47% used [0x02ad0000, 0x02b22f48, 0x02b80000)
+  from space 64K,   7% used [0x02b80000, 0x02b81450, 0x02b90000)
+  to   space 64K,   0% used [0x02b90000, 0x02b90000, 0x02ba0000)
+ tenured generation   total 9196K, used 7519K [0x02fb0000, 0x038ab000, 0x06ad0000)
+   the space 9196K,  81% used [0x02fb0000, 0x03707ce0, 0x03707e00, 0x038ab000)
+ compacting perm gen  total 18944K, used 18844K [0x06ad0000, 0x07d50000, 0x0aad0000)
+   the space 18944K,  99% used [0x06ad0000, 0x07d373e0, 0x07d37400, 0x07d50000)
+No shared spaces configured.
+
+Dynamic libraries:
+0x00400000 - 0x0040c000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\java.exe
+0x7c900000 - 0x7c9b0000 	C:\WINDOWS\system32\ntdll.dll
+0x7c800000 - 0x7c8f4000 	C:\WINDOWS\system32\kernel32.dll
+0x77dd0000 - 0x77e6b000 	C:\WINDOWS\system32\ADVAPI32.dll
+0x77e70000 - 0x77f01000 	C:\WINDOWS\system32\RPCRT4.dll
+0x77c10000 - 0x77c68000 	C:\WINDOWS\system32\MSVCRT.dll
+0x6d6e0000 - 0x6d874000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\client\jvm.dll
+0x77d40000 - 0x77dd0000 	C:\WINDOWS\system32\USER32.dll
+0x77f10000 - 0x77f57000 	C:\WINDOWS\system32\GDI32.dll
+0x76b40000 - 0x76b6d000 	C:\WINDOWS\system32\WINMM.dll
+0x6d2f0000 - 0x6d2f8000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\hpi.dll
+0x76bf0000 - 0x76bfb000 	C:\WINDOWS\system32\PSAPI.DLL
+0x6d3f0000 - 0x6d425000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\jdwp.dll
+0x6d6b0000 - 0x6d6bc000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\verify.dll
+0x6d370000 - 0x6d38d000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\java.dll
+0x6d6d0000 - 0x6d6df000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\zip.dll
+0x6d290000 - 0x6d297000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\dt_socket.dll
+0x71ab0000 - 0x71ac7000 	C:\WINDOWS\system32\WS2_32.dll
+0x71aa0000 - 0x71aa8000 	C:\WINDOWS\system32\WS2HELP.dll
+0x71a50000 - 0x71a8f000 	C:\WINDOWS\System32\mswsock.dll
+0x76f20000 - 0x76f47000 	C:\WINDOWS\system32\DNSAPI.dll
+0x76fb0000 - 0x76fb8000 	C:\WINDOWS\System32\winrnr.dll
+0x76f60000 - 0x76f8c000 	C:\WINDOWS\system32\WLDAP32.dll
+0x76fc0000 - 0x76fc6000 	C:\WINDOWS\system32\rasadhlp.dll
+0x43000000 - 0x43005000 	C:\Program Files\Google\Google Desktop Search\GoogleDesktopNetwork1.dll
+0x77fe0000 - 0x77ff1000 	C:\WINDOWS\system32\Secur32.dll
+0x662b0000 - 0x66308000 	C:\WINDOWS\system32\hnetcfg.dll
+0x71a90000 - 0x71a98000 	C:\WINDOWS\System32\wshtcpip.dll
+0x0ffd0000 - 0x0fff8000 	C:\WINDOWS\system32\rsaenh.dll
+0x769c0000 - 0x76a73000 	C:\WINDOWS\system32\USERENV.dll
+0x5b860000 - 0x5b8b4000 	C:\WINDOWS\system32\netapi32.dll
+0x6d530000 - 0x6d543000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\net.dll
+0x76d60000 - 0x76d79000 	C:\WINDOWS\system32\iphlpapi.dll
+0x76d40000 - 0x76d58000 	C:\WINDOWS\system32\MPRAPI.dll
+0x77cc0000 - 0x77cf2000 	C:\WINDOWS\system32\ACTIVEDS.dll
+0x76e10000 - 0x76e35000 	C:\WINDOWS\system32\adsldpc.dll
+0x76b20000 - 0x76b31000 	C:\WINDOWS\system32\ATL.DLL
+0x774e0000 - 0x7761d000 	C:\WINDOWS\system32\ole32.dll
+0x77120000 - 0x771ac000 	C:\WINDOWS\system32\OLEAUT32.dll
+0x76e80000 - 0x76e8e000 	C:\WINDOWS\system32\rtutils.dll
+0x71bf0000 - 0x71c03000 	C:\WINDOWS\system32\SAMLIB.dll
+0x77920000 - 0x77a13000 	C:\WINDOWS\system32\SETUPAPI.dll
+0x6d070000 - 0x6d1d7000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\awt.dll
+0x73000000 - 0x73026000 	C:\WINDOWS\system32\WINSPOOL.DRV
+0x76390000 - 0x763ad000 	C:\WINDOWS\system32\IMM32.dll
+0x5ad70000 - 0x5ada8000 	C:\WINDOWS\system32\uxtheme.dll
+0x73760000 - 0x737a9000 	C:\WINDOWS\system32\ddraw.dll
+0x73bc0000 - 0x73bc6000 	C:\WINDOWS\system32\DCIMAN32.dll
+0x73940000 - 0x73a10000 	C:\WINDOWS\system32\D3DIM700.DLL
+0x74720000 - 0x7476b000 	C:\WINDOWS\system32\MSCTF.dll
+0x7c9c0000 - 0x7d1d5000 	C:\WINDOWS\system32\shell32.dll
+0x77f60000 - 0x77fd6000 	C:\WINDOWS\system32\SHLWAPI.dll
+0x773d0000 - 0x774d2000 	C:\WINDOWS\WinSxS\x86_Microsoft.Windows.Common-Controls_6595b64144ccf1df_6.0.2600.2180_x-ww_a84f1ff9\comctl32.dll
+0x5d090000 - 0x5d127000 	C:\WINDOWS\system32\comctl32.dll
+0x6d2b0000 - 0x6d2ed000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\fontmanager.dll
+0x6d550000 - 0x6d559000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\nio.dll
+0x10000000 - 0x10011000 	C:\WINDOWS\system32\ctagent.dll
+0x605d0000 - 0x605d9000 	C:\WINDOWS\system32\mslbui.dll
+0x0b970000 - 0x0ba35000 	C:\Projects\OpenSim06Build\VC71\Release\rdModelDll.dll
+0x0ba40000 - 0x0bac2000 	C:\Projects\OpenSim06Build\VC71\Release\rdTools.dll
+0x0bad0000 - 0x0bc9f000 	C:\Projects\OpenSim06Build\VC71\Release\xerces-c_2_4_0.dll
+0x7c340000 - 0x7c396000 	C:\WINDOWS\system32\MSVCR71.dll
+0x7c3a0000 - 0x7c41b000 	C:\WINDOWS\system32\MSVCP71.dll
+0x0bca0000 - 0x0bd85000 	C:\Projects\OpenSim06Build\VC71\Release\rdSimulation.dll
+0x0b680000 - 0x0b6ed000 	C:\Projects\OpenSim06Build\VC71\Release\suAnalyses.dll
+0x0b460000 - 0x0b470000 	C:\Projects\OpenSim06Build\VC71\Release\rdSQP.dll
+0x0b8f0000 - 0x0b913000 	C:\Projects\OpenSim06Build\VC71\Release\suCFSQP.dll
+0x0bd90000 - 0x0bdfb000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkCommonJava.dll
+0x0cd30000 - 0x0cebd000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkCommon.dll
+0x0cec0000 - 0x0cf66000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkFilteringJava.dll
+0x0cf70000 - 0x0d179000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkFiltering.dll
+0x0d180000 - 0x0d1cb000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkIOJava.dll
+0x0d1d0000 - 0x0d46f000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkIO.dll
+0x0d470000 - 0x0d49d000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkDICOMParser.dll
+0x0d4a0000 - 0x0d4c3000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkpng.dll
+0x0be00000 - 0x0be14000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkzlib.dll
+0x0d4d0000 - 0x0d4f5000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkjpeg.dll
+0x0d500000 - 0x0d54f000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtktiff.dll
+0x0d550000 - 0x0d573000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkexpat.dll
+0x73b50000 - 0x73b67000 	C:\WINDOWS\system32\AVIFIL32.dll
+0x77be0000 - 0x77bf5000 	C:\WINDOWS\system32\MSACM32.dll
+0x75a70000 - 0x75a91000 	C:\WINDOWS\system32\MSVFW32.dll
+0x0d580000 - 0x0d599000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkMPEG2Encode.dll
+0x0d5a0000 - 0x0d5eb000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkImagingJava.dll
+0x0d5f0000 - 0x0d8db000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkImaging.dll
+0x0d8e0000 - 0x0d98e000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkGraphicsJava.dll
+0x0d990000 - 0x0ded1000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkGraphics.dll
+0x0dee0000 - 0x0df54000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkRenderingJava.dll
+0x0df60000 - 0x0e194000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkRendering.dll
+0x0e1a0000 - 0x0e1b2000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkftgl.dll
+0x5ed00000 - 0x5edcc000 	C:\WINDOWS\system32\OPENGL32.dll
+0x68b20000 - 0x68b40000 	C:\WINDOWS\system32\GLU32.dll
+0x0e1c0000 - 0x0e22b000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkfreetype.dll
+0x6d3d0000 - 0x6d3d6000 	C:\Program Files\Java\jdk1.5.0_06\jre\bin\jawt.dll
+0x0e230000 - 0x0e270000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkHybridJava.dll
+0x0e270000 - 0x0e409000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkHybrid.dll
+0x0e410000 - 0x0e445000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkexoIIc.dll
+0x0e450000 - 0x0e47a000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkNetCDF.dll
+0x73b80000 - 0x73b92000 	C:\WINDOWS\system32\AVICAP32.dll
+0x77c00000 - 0x77c08000 	C:\WINDOWS\system32\VERSION.dll
+0x0e480000 - 0x0e4a2000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkVolumeRenderingJava.dll
+0x0e4b0000 - 0x0e9ae000 	C:\VTK50\vtk-5.0.0\VTKBuild\bin\release\vtkVolumeRendering.dll
+0x69500000 - 0x698a7000 	C:\WINDOWS\system32\nvoglnt.dll
+0x71b20000 - 0x71b32000 	C:\WINDOWS\system32\MPR.dll
+0x75f60000 - 0x75f67000 	C:\WINDOWS\System32\drprov.dll
+0x71c10000 - 0x71c1e000 	C:\WINDOWS\System32\ntlanman.dll
+0x71cd0000 - 0x71ce7000 	C:\WINDOWS\System32\NETUI0.dll
+0x71c90000 - 0x71cd0000 	C:\WINDOWS\System32\NETUI1.dll
+0x71c80000 - 0x71c87000 	C:\WINDOWS\System32\NETRAP.dll
+0x75f70000 - 0x75f79000 	C:\WINDOWS\System32\davclnt.dll
+0x77b40000 - 0x77b62000 	C:\WINDOWS\system32\appHelp.dll
+0x76fd0000 - 0x7704f000 	C:\WINDOWS\system32\CLBCATQ.DLL
+0x77050000 - 0x77115000 	C:\WINDOWS\system32\COMRes.dll
+0x76980000 - 0x76988000 	C:\WINDOWS\system32\LINKINFO.dll
+0x76990000 - 0x769b5000 	C:\WINDOWS\system32\ntshrui.dll
+0x0fc30000 - 0x0fc99000 	C:\Program Files\TortoiseSVN\bin\tortoisesvn.dll
+0x771b0000 - 0x77256000 	C:\WINDOWS\system32\WININET.dll
+0x77a80000 - 0x77b14000 	C:\WINDOWS\system32\CRYPT32.dll
+0x77b20000 - 0x77b32000 	C:\WINDOWS\system32\MSASN1.dll
+0x6eec0000 - 0x6eee0000 	C:\Program Files\TortoiseSVN\bin\libapr.dll
+0x6ee60000 - 0x6ee89000 	C:\Program Files\TortoiseSVN\bin\libaprutil.dll
+0x0fca0000 - 0x0fd47000 	C:\Program Files\TortoiseSVN\bin\libdb43.dll
+0x6ee50000 - 0x6ee5d000 	C:\Program Files\TortoiseSVN\bin\libapriconv.dll
+0x0f960000 - 0x0f96f000 	C:\Program Files\TortoiseSVN\bin\intl3_svn.dll
+
+VM Arguments:
+jvm_args: -Dnetbeans.logger.console=true -Dorg.netbeans.CLIHandler.fast.random=true -ea -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=localhost:2971 -Dnetbeans.osenv=C:\DOCUME~1\Ayman\LOCALS~1\Temp\nbenv30 -Dnetbeans.osenv.nullsep=true -Djdk.home=C:\Program Files\Java\jdk1.5.0_06 -Dnetbeans.home=C:\Program Files\netbeans-5.0\platform6 -Dnetbeans.dirs=C:\Projects\OpenSim06\OpenSim\Applications\Gui\opensim\build\cluster;C:\Program Files\netbeans-5.0\harness -Dnetbeans.user=C:\Projects\OpenSim06\OpenSim\Applications\Gui\opensim\build\testuserdir -Dnetbeans.system_http_proxy=DIRECT -Dsun.awt.keepWorkingSetOnMinimize=true
+java_command: org/netbeans/Main --branding opensim
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=C:\JBuilderX
+CLASSPATH=.
+PATH=C:\VTK50\vtk-5.0.0\VTKBuild\bin\release;C:\Projects\OpenSim06Build\VC71\Release;C:\Program Files\CMake 2.4\bin;C:\swigwin-1.3.29;C:\JBuilderX\jdk1.4\jre\bin;C:\VTK\vtkbin\bin\debug;C:\Program Files\CMake 2.2\bin;C:\VTK\vtkbin\bin\Debug;C:\PROGRA~1\CMake20\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Common Files\Adaptec Shared\System;C:\PROGRA~1\SecureFX;C:\Program Files\SecureCRT\;C:\Program Files\Stanford\PC-Leland\;C:\cygwin\bin;C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\bin;C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\IDE;ANT_HOME\bin;C:\cygwin\bin;C:\Program Files\Rational\common;C:\cygwin\bin;C:\Program Files\QuickTime\QTSystem\
+USERNAME=Ayman
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=x86 Family 15 Model 2 Stepping 9, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows XP Build 2600 Service Pack 2
+
+CPU:total 2 family 15, cmov, cx8, fxsr, mmx, sse, sse2, ht
+
+Memory: 4k page, physical 2097151k(2093612k free), swap 4194303k(3602164k free)
+
+vm_info: Java HotSpot(TM) Client VM (1.5.0_06-b05) for windows-x86, built on Nov 10 2005 11:12:14 by "java_re" with MS VC++ 6.0
+

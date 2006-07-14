@@ -43,7 +43,6 @@
 namespace OpenSim { 
 
 class SimmKinematicsEngine;
-class SimmBone;
 //=============================================================================
 //=============================================================================
 /**
@@ -81,8 +80,9 @@ protected:
 	PropertyDblArray _inertiaProp;
 	Array<double> &_inertia;
 
-	PropertyObjArray _bonesProp;
-	ArrayPtrs<VisibleObject> &_bones;
+	// Support of display.
+	PropertyObj		_displayerProp;
+	VisibleObject	&_displayer;
 
 	PropertyObjArray _markersProp;
 	ArrayPtrs<SimmMarker> &_markers;
@@ -117,9 +117,8 @@ public:
 	double getMass() const { return _mass; }
 	void getMassCenter(double vec[3]) { vec[0] = _massCenter[0]; vec[1] = _massCenter[1]; vec[2] = _massCenter[2]; }
 	const Array<double>& getInertia() { return _inertia; }
-	ArrayPtrs<VisibleObject>& getBones() const { return _bones; }
-	int getNumBones() { return _bones.getSize(); }
-	SimmBone* getBone(int index) const;
+	virtual VisibleObject *getDisplayer() { return &_displayer; };
+
 	int getNumMarkers() { return _markers.getSize(); }
 	SimmMarker* getMarker(int index) const;
 	int deleteAllMarkers();

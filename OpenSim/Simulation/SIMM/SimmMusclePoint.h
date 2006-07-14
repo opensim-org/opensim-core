@@ -52,7 +52,7 @@ class SimmKinematicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMusclePoint : public VisibleObject  
+class RDSIMULATION_API SimmMusclePoint : public Object  
 {
 
 //=============================================================================
@@ -67,7 +67,12 @@ protected:
 	PropertyStr _bodyNameProp;
    std::string &_bodyName;
 
-   const SimmBody *_body;
+
+	// Support for Display
+	PropertyObj		_displayerProp;
+	VisibleObject	&_displayer;
+
+	/* const*/ SimmBody *_body; // Not const anymore since the body'd displayer is not const
 
 //=============================================================================
 // METHODS

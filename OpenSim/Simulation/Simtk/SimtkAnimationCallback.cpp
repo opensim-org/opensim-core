@@ -94,7 +94,7 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 		_model->convertDirectionCosinesToAngles(dirCos,
 			&rot[0],&rot[1],&rot[2]);
 		// Initialize xform to identity
-		_model->getBody(i)->getTransform().setOrientation(rot);
+		// take this out and use full transform instead _model->getBody(i)->getTransform().setOrientation(rot);
 		_model->getBody(i)->getTransform().setPosition(t);
 		_transforms.append(&_model->getBody(i)->getTransform());
 	}
@@ -193,7 +193,7 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 		_model->convertDirectionCosinesToAngles(dirCos,
 			&rot[0],&rot[1],&rot[2]);
 		// Initialize xform to identity
-		_transforms[i]->setOrientation(rot);
+		// Replace with original transform instead _transforms[i]->setOrientation(rot);
 		_transforms[i]->setPosition(t);
 		/* Create a transform change event and notify observers
 		TransformChangeEvent	*xformChangeEvnt = new TransformChangeEvent(*body);

@@ -45,8 +45,11 @@ class Mtx;
  *
  * @authors Ayman Habib, Peter Loan
  * @version 1.0
+ *
+ * Removed inheritance from Object since none of this is used and transforms are 
+ * created a ton of times during display and simulation
  */
-class RDTOOLS_API Transform: public Object
+class RDTOOLS_API Transform /* : public Object*/
 {
 public:
 	enum AxisName {
@@ -69,7 +72,8 @@ public:
 private:
 	/** A 4x4 matrix representing the homogenized transformation */
 	double	_matrix4[4][4];
-	double	_angles[3];
+	/** Addede a flag to avoid doing matrix multiplication when 3 additions suffice -Ayman 7/06*/
+	bool _translationOnly;
 protected:
 
 //=============================================================================
@@ -86,7 +90,7 @@ public:
 	// Construct a transform to rotate around an arbitrary axis with specified angle
 	Transform(const double r, const AnglePreference preference, const double axis[3]);
 	virtual ~Transform();
-	Object* copy() const;
+	Transform* copy() const;
 
 private:
 	void setNull();
@@ -105,8 +109,6 @@ public:
 	//--------------------------------------------------------------------------
 	void getPosition(double pos[3]) const;
 	void setPosition(const double pos[3]);
-	void getOrientation(double orientation[3]) const;
-	void setOrientation(const double orientation[3]);
 	void setIdentity();
 
 	void rotate(const double r[3], const AnglePreference preference, const RotationOrder order);
@@ -128,7 +130,7 @@ public:
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
-	virtual void setupSerializedMembers();
+	//virtual void setupSerializedMembers();
 
 //=============================================================================
 };	// END of class Transform

@@ -96,6 +96,11 @@ protected:
 	Array<std::string>& _groupNames;
 	Array<SimmMuscleGroup*> _groups;
 
+	
+	// Support for Display
+	PropertyObj		_displayerProp;
+	VisibleObject	&_displayer;
+
 //=============================================================================
 // METHODS
 //=============================================================================

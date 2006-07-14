@@ -89,6 +89,8 @@ const char ObjectDEFAULT_NAME[] = "default";
  */
 namespace OpenSim { 
 
+class VisibleObject;
+
 class RDTOOLS_API Object  
 {
 
@@ -162,6 +164,7 @@ public:
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aNode) const;
 //	static Object* ConstructObject(DOMElement *aNode);
+	virtual VisibleObject *getDisplayer() { return 0; };
 private:
 	void setNull();
 	void setupProperties();

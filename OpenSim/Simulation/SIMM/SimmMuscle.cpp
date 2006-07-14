@@ -59,6 +59,8 @@ SimmMuscle::SimmMuscle() :
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
 	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray()),
+ 	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
 	_groups(NULL)
 {
@@ -81,6 +83,8 @@ SimmMuscle::SimmMuscle(DOMElement *aElement) :
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
 	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
 	_groups(NULL)
 {
@@ -115,6 +119,8 @@ SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
 	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
 	_groups(NULL)
 {
@@ -170,6 +176,7 @@ void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 	_forceVelocityCurve = aMuscle._forceVelocityCurve;
 	_groupNames = aMuscle._groupNames;
 	_groups = aMuscle._groups;
+	_displayer = aMuscle._displayer;
 }
 
 
@@ -235,6 +242,9 @@ void SimmMuscle::setupProperties()
 	_forceVelocityCurveProp.setValue(func);
 	_propertySet.append(&_forceVelocityCurveProp);
 
+	_displayerProp.setName("display");
+	_propertySet.append(&_displayerProp);
+
 	_groupNamesProp.setName("groups");
 	_propertySet.append(&_groupNamesProp);
 }
@@ -290,6 +300,7 @@ void SimmMuscle::setup(SimmModel* model, SimmKinematicsEngine* ke)
 	_groups.setSize(0);
 	for (i = 0; i < _groupNames.getSize(); i++)
 		_groups.append(model->enterGroup(_groupNames[i]));
+	_displayer.setOwner(this);
 }
 
 double SimmMuscle::getLength(SimmKinematicsEngine* ke) const

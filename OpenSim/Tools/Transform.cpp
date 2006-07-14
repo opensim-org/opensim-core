@@ -59,16 +59,11 @@ Transform::~Transform()
  */
 Transform::Transform()
 {
-	setNull();
-
-	// TYPE
-	setType("Transform");
-
 	for(int i=0; i < 4; i++)
 		for(int j=0; j < 4; j++)
 			_matrix4[i][j] = (i==j)?1.0:0.0;
+	_translationOnly = true;
 
-	_angles[0] = _angles[1] = _angles[2] = 0.0;
 }
 
 //_____________________________________________________________________________
@@ -76,27 +71,23 @@ Transform::Transform()
  * Copy constructor
  *
  */
-Transform::Transform(const Transform &aTransform):
-Object(aTransform)
+Transform::Transform(const Transform &aTransform)
 {
-	setNull();
-
 	//Assignment
 	(*this) = aTransform;
 
-	for(int i=0; i<3; i++)
-		_angles[i] = aTransform._angles[i];
 }
-
 //_____________________________________________________________________________
 /**
- * Construct a copy of this Transform.
+ * Copy method to be used by ArrayPtrs if needed.
+ *
  */
-Object* Transform::
+Transform* Transform::
 copy() const
 {
 	return(new Transform(*this));
 }
+
 // Construct a transform to rotate around an arbitrary axis with specified angle
 Transform::Transform(const double r, const AnglePreference preference, const double axis[3])
 {
@@ -122,29 +113,14 @@ Transform::Transform(const double r, const AnglePreference preference, const dou
 	_matrix4[X][W] = _matrix4[Y][W] = _matrix4[Z][W] = 0.0;
 	_matrix4[W][X] = _matrix4[W][Y] = _matrix4[W][Z] = 0.0;
 	_matrix4[W][W] = 1.0;
+
+	_translationOnly = false;
+
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Set NULL values for all member variables.
- */
-void Transform::
-setNull()
-{
-	setupSerializedMembers();
-
-}
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void Transform::
-setupSerializedMembers()
-{
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -153,14 +129,12 @@ setupSerializedMembers()
 //-----------------------------------------------------------------------------
 Transform& Transform::operator=(const Transform &aTransform)
 {
-	setNull();
 	int i;
 	for(i=0; i < 4; i++)
 		for(int j=0; j < 4; j++)
 			_matrix4[i][j]= aTransform._matrix4[i][j];
 
-	for(i=0; i<3; i++)
-		_angles[i] = aTransform._angles[i];
+	_translationOnly = aTransform._translationOnly;
 	return (*this);
 
 }
@@ -190,105 +164,6 @@ setPosition(const double pos[3])
 		_matrix4[3][i]=pos[i];  //JPL 9/15/05: moved translation from last column to last row
 
 }
-
-//_____________________________________________________________________________
-/**
- * Get orientation vector from matrix
- *
- * Actually vtk specifies transform using translations and rotations
- * so it's more efficient to store them in this format.
- *
- * @todo check if it's more efficient to make and maintain the matrix and 
- *  if there's an API to set the transformation matrix directly in vtk.
- */
-void Transform::
-getOrientation(double orientation[3]) const
-{
-  int i;
-
-  // first rotate about y axis
-/*  double x2 = _matrix4[2][0];
-  double y2 = _matrix4[2][1];
-  double z2 = _matrix4[2][2];
-
-  double x3 = _matrix4[1][0];
-  double y3 = _matrix4[1][1];
-  double z3 = _matrix4[1][2];
-
-  double d1 = sqrt(x2*x2 + z2*z2);
-
-  double cosTheta, sinTheta;
-  if (d1 < rdMath::SMALL) 
-    {
-    cosTheta = 1.0;
-    sinTheta = 0.0;
-    }
-  else 
-    {
-    cosTheta = z2/d1;
-    sinTheta = x2/d1;
-    }
-
-  double theta = atan2(sinTheta, cosTheta);
-  orientation[1] = -theta/rdMath::DTR;
-
-  // now rotate about x axis
-  double d = sqrt(x2*x2 + y2*y2 + z2*z2);
-
-  double sinPhi, cosPhi;
-  if (d < rdMath::SMALL) 
-    {
-    sinPhi = 0.0;
-    cosPhi = 1.0;
-    }
-  else if (d1 < rdMath::SMALL) 
-    {
-    sinPhi = y2/d;
-    cosPhi = z2/d;
-    }
-  else 
-    {
-    sinPhi = y2/d;
-    cosPhi = (x2*x2 + z2*z2)/(d1*d);
-    }
-
-  double phi = atan2(sinPhi, cosPhi);
-  orientation[0] = phi/rdMath::DTR;
-
-  // finally, rotate about z
-  double x3p = x3*cosTheta - z3*sinTheta;
-  double y3p = - sinPhi*sinTheta*x3 + cosPhi*y3 - sinPhi*cosTheta*z3;
-  double d2 = sqrt(x3p*x3p + y3p*y3p);
-
-  double cosAlpha, sinAlpha;
-  if (d2 < rdMath::SMALL) 
-    {
-    cosAlpha = 1.0;
-    sinAlpha = 0.0;
-    }
-  else 
-    {
-    cosAlpha = y3p/d2;
-    sinAlpha = x3p/d2;
-    }
-
-  double alpha = atan2(sinAlpha, cosAlpha);
-  orientation[2] = alpha/rdMath::DTR;*/
-	
-	for(i=0; i<3; i++)
-		orientation[i]=_angles[i]/rdMath::DTR;
-
-
-}
-// Do we need to pass in Order? This may need to be removed in favor of actual
-// translate/rotate combinations
-void Transform::
-setOrientation(const double orientation[3])
-{
-	for(int i=0; i<3; i++)
-		_angles[i]=orientation[i];
-
-}
 //_____________________________________________________________________________
 /**
  * Set transform matrix to identity
@@ -298,6 +173,7 @@ void Transform::
 setIdentity()
 {
 	Mtx::Identity(4, (double *)_matrix4);
+	_translationOnly = true;
 }
 //_____________________________________________________________________________
 /**
@@ -325,6 +201,7 @@ rotate(const double r[3], const AnglePreference preference, const RotationOrder 
 
 		}
 	}
+	_translationOnly = false;
 }
 //_____________________________________________________________________________
 /**
@@ -345,6 +222,7 @@ rotateX(double r, const AnglePreference preference)
 	RotationMatrix[1][2] = s;
 	RotationMatrix[2][1] = -s;
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, (double *)RotationMatrix, (double *)_matrix4);
+	_translationOnly = false;
 
 }
 //_____________________________________________________________________________
@@ -366,6 +244,7 @@ rotateY(double r, const AnglePreference preference)
 	RotationMatrix[2][0] = s;
 	RotationMatrix[0][2] = -s;
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, (double *)RotationMatrix, (double *)_matrix4);
+	_translationOnly = false;
 }
 //_____________________________________________________________________________
 /**
@@ -386,6 +265,7 @@ rotateZ(double r, const AnglePreference preference)
 	RotationMatrix[0][1] = s;
 	RotationMatrix[1][0] = -s;
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, (double *)RotationMatrix, (double *)_matrix4);
+	_translationOnly = false;
 }
 //_____________________________________________________________________________
 /**
@@ -398,6 +278,7 @@ rotateAxis(double r, const AnglePreference preference, const double axis[3])
 {
 	Transform RotationMatrix(r, preference, axis);
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, RotationMatrix.getMatrix(), (double *)_matrix4);
+	_translationOnly = false;
 }
 //_____________________________________________________________________________
 /**

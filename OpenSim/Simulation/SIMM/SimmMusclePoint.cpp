@@ -47,6 +47,8 @@ using namespace std;
  */
 SimmMusclePoint::SimmMusclePoint() :
    _attachment(_attachmentProp.getValueDblArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
@@ -57,8 +59,10 @@ SimmMusclePoint::SimmMusclePoint() :
  * Constructor from an XML node
  */
 SimmMusclePoint::SimmMusclePoint(DOMElement *aElement) :
-   VisibleObject(aElement),
+   Object(aElement),
    _attachment(_attachmentProp.getValueDblArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
@@ -81,8 +85,10 @@ SimmMusclePoint::~SimmMusclePoint()
  * @param aPoint SimmMusclePoint to be copied.
  */
 SimmMusclePoint::SimmMusclePoint(const SimmMusclePoint &aPoint) :
-   VisibleObject(aPoint),
+   Object(aPoint),
    _attachment(_attachmentProp.getValueDblArray()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_bodyName(_bodyNameProp.getValueStr())
 {
 	setupProperties();
@@ -128,6 +134,7 @@ void SimmMusclePoint::copyData(const SimmMusclePoint &aPoint)
 	_attachment = aPoint._attachment;
 	_bodyName = aPoint._bodyName;
 	_body = aPoint._body;
+	_displayer = aPoint._displayer;
 }
 
 
@@ -157,12 +164,16 @@ void SimmMusclePoint::setupProperties()
 
 	_bodyNameProp.setName("body");
 	_propertySet.append(&_bodyNameProp);
+
+	_displayerProp.setName("display");
+	_propertySet.append(&_displayerProp);
+
 }
 
 SimmMusclePoint& SimmMusclePoint::operator=(const SimmMusclePoint &aPoint)
 {
 	// BASE CLASS
-	VisibleObject::operator=(aPoint);
+	Object::operator=(aPoint);
 
 	copyData(aPoint);
 
@@ -189,6 +200,9 @@ void SimmMusclePoint::setup(SimmModel* model, SimmKinematicsEngine* ke)
 	 * store a pointer to it.
 	 */
 	_body = ke->getBody(_bodyName);
+	_displayer.setOwner(this);
+
+	//_body->getDisplayer()->addDependent(&_displayer);
 }
 
 void SimmMusclePoint::peteTest() const

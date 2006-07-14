@@ -178,6 +178,7 @@ public:
 	void makePaths();
 	SimmBody* getGroundBodyPtr() const { return _groundBody; }
 	void convertPoint(double aPoint[3], const SimmBody* aFrom, const SimmBody* aTo) const;
+	void convertVector(double aVector[3], const SimmBody* aFrom, const SimmBody* aTo) const;
 	void convertPoint(Array<double>& aPoint, const SimmBody* aFrom, const SimmBody* aTo) const;
 	double calcDistance(Array<double>& aPoint1, const SimmBody* aBody1, Array<double>& aPoint2, const SimmBody* aBody2) const;
 	double calcDistance(const double aPoint1[3], const SimmBody* aBody1, const double aPoint2[3], const SimmBody* aBody2) const;

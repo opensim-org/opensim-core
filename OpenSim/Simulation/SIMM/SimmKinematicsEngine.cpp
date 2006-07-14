@@ -281,6 +281,8 @@ void SimmKinematicsEngine::setup(SimmModel* aModel)
 	for (i = 0; i < _bodies.getSize(); i++)
 		_bodies[i]->setup(this);
 
+	Object* shouldbeBody1 = (_bodies[1]->getDisplayer())->getOwner();
+
 	_groundBody = identifyGroundBody();
 
 	for (i = 0; i < _coordinates.getSize(); i++)
@@ -356,11 +358,20 @@ void SimmKinematicsEngine::convertPoint(double aPoint[3], const SimmBody* aFrom,
 	if (aFrom == aTo)
 		return;
 
-	Transform& transform = _path.getSimmPath(aFrom, aTo)->getInverseTransform();	// Suspect, Transform by value
+	Transform& transform = _path.getSimmPath(aFrom, aTo)->getInverseTransform();	
 
 	transform.transformPoint(aPoint);
 }
 
+void SimmKinematicsEngine::convertVector(double aVector[3], const SimmBody* aFrom, const SimmBody* aTo) const
+{
+	if (aFrom == aTo)
+		return;
+
+	Transform& transform = _path.getSimmPath(aFrom, aTo)->getInverseTransform();	
+
+	transform.transformVector(aVector);
+}
 
 void SimmKinematicsEngine::convertPoint(Array<double>& aPoint, const SimmBody* aFrom, const SimmBody* aTo) const
 {

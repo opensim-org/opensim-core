@@ -511,7 +511,7 @@ void Model::RegisterTypes()
 {
 	Object::RegisterType(VisibleObject());
 	Object::RegisterType(VisibleProperties());
-	Object::RegisterType(Transform());
+	//Object::RegisterType(Transform());
 	Object::RegisterType(Material());
 	Object::RegisterType(Body());
 

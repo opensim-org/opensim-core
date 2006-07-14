@@ -48,9 +48,13 @@ SimmMarker::SimmMarker() :
    _weight(_weightProp.getValueDbl()),
    _attachment(_attachmentProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr())
+	_bodyName(_bodyNameProp.getValueStr()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
+
 {
 	setNull();
+	_displayer.setOwner(this);
 }
 //_____________________________________________________________________________
 /**
@@ -61,11 +65,14 @@ SimmMarker::SimmMarker(DOMElement *aElement) :
    _weight(_weightProp.getValueDbl()),
    _attachment(_attachmentProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr())
+	_bodyName(_bodyNameProp.getValueStr()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 
 	updateFromXMLNode();
+	_displayer.setOwner(this);
 }
 
 //_____________________________________________________________________________
@@ -87,10 +94,13 @@ SimmMarker::SimmMarker(const SimmMarker &aMarker) :
    _weight(_weightProp.getValueDbl()),
    _attachment(_attachmentProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr())
+	_bodyName(_bodyNameProp.getValueStr()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+  _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setupProperties();
 	copyData(aMarker);
+	_displayer.setOwner(this);
 }
 //_____________________________________________________________________________
 /**
@@ -133,6 +143,7 @@ void SimmMarker::copyData(const SimmMarker &aMarker)
 	_weight = aMarker._weight;
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
+	_displayer = aMarker._displayer;
 }
 
 /* Update an existing marker with parameter values from a
@@ -163,6 +174,7 @@ void SimmMarker::setNull()
 	setupProperties();
 	setType("SimmMarker");
 	setName("");
+
 }
 //_____________________________________________________________________________
 /**
@@ -185,6 +197,10 @@ void SimmMarker::setupProperties()
 
 	_bodyNameProp.setName("body");
 	_propertySet.append(&_bodyNameProp);
+
+	_displayerProp.setName("Displayer");
+	_propertySet.append(&_displayerProp);
+
 }
 
 SimmMarker& SimmMarker::operator=(const SimmMarker &aMarker)
@@ -223,6 +239,18 @@ void SimmMarker::scale(Array<double>& aScaleFactors)
  */
 void SimmMarker::setup(SimmKinematicsEngine* aEngine)
 {
+	getBodyName();
+	if (_bodyName != ""){
+		SimmBody* ownerBody = aEngine->getBody(_bodyName);
+		VisibleObject* ownerBodyDisplayer;
+		if (ownerBody && (ownerBodyDisplayer = ownerBody->getDisplayer())){
+			ownerBodyDisplayer->addDependent(&_displayer);
+
+		}
+		_displayer.setOwner(this);
+		_displayer.addGeometry(AnalyticGeometry::createSphere(0.1));
+	}
+
 }
 
 const string* SimmMarker::getBodyName() const

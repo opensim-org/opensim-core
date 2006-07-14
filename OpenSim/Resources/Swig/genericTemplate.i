@@ -12,6 +12,7 @@
 #include <OpenSim/Tools/Material.h>
 #include <OpenSim/Tools/VisibleProperties.h>
 #include <OpenSim/Tools/Transform.h>
+#include <OpenSim/Tools/Geometry.h>
 #include <OpenSim/Tools/VisibleObject.h>
 
 #include <OpenSim/Tools/Set.h>
@@ -144,6 +145,23 @@ using namespace OpenSim;
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 %}
+
+%exception OpenSim::AnalyticGeometry::dynamic_cast(Geometry *geometry) {
+    $action
+    if (!result) {
+        jclass excep = jenv->FindClass("java/lang/ClassCastException");
+        if (excep) {
+            jenv->ThrowNew(excep, "dynamic_cast exception");
+        }
+    }
+}
+%extend OpenSim::AnalyticGeometry {
+    static AnalyticGeometry *dynamic_cast(Geometry *geometry) {
+        return dynamic_cast<AnalyticGeometry *>(geometry);
+    }
+};
+
+
 /*
 %typemap(javacode) OpenSim::ActuatorSet, OpenSim::ContactForceSet %{
 
@@ -157,11 +175,12 @@ using namespace OpenSim;
 %include <OpenSim/Tools/ArrayPtrs.h>
 %include <OpenSim/Tools/Property.h>
 %include <OpenSim/Tools/PropertySet.h>
+%include <OpenSim/Tools/VisibleObject.h>
 %include <OpenSim/Tools/Object.h>
 %include <OpenSim/Tools/Material.h>
 %include <OpenSim/Tools/VisibleProperties.h>
 %include <OpenSim/Tools/Transform.h>
-%include <OpenSim/Tools/VisibleObject.h>
+%include <OpenSim/Tools/Geometry.h>
 
 %include <OpenSim/Tools/Set.h>
 

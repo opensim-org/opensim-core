@@ -36,6 +36,7 @@
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
+#include <OpenSim/Tools/VisibleObject.h>
 
 namespace OpenSim { 
 
@@ -72,6 +73,10 @@ protected:
 	PropertyStr _bodyNameProp;
 	std::string &_bodyName;
 
+	// Support for Display
+	PropertyObj		_displayerProp;
+	VisibleObject	&_displayer;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -104,7 +109,7 @@ public:
 	void writeSIMM(std::ofstream& out) const;
 
 	void peteTest() const;
-
+	virtual VisibleObject* getDisplayer() { return &_displayer; };
 protected:
 
 private:

@@ -2,9 +2,18 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 					${OpenSim_SOURCE_DIR}/Vendors 
 					${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src)
 
-LINK_LIBRARIES( debug xerces-c_2D optimized   xerces-c_2 rdTools)
+LINK_LIBRARIES( debug xerces-c_2D optimized   xerces-c_2 
+				debug rdTools_d	optimized rdTools
+				debug rdSimulation_d optimized rdSimulation)
+				
 ADD_EXECUTABLE(testRootSolver testRootSolver.cpp ExampleVectorFunctionUncoupledNxN.cpp)
 ADD_TEST(testRootSolver ${TEST_PATH}/testRootSolver)
 
 ADD_EXECUTABLE(testSerialization testSerialization.cpp rdSerializableObject.cpp rdSerializableObject2.cpp)
 ADD_TEST(testSerialization ${TEST_PATH}/testSerialization)
+
+ADD_EXECUTABLE(testDisplay1 testDisplay1.cpp)
+ADD_TEST(testDisplay1 ${TEST_PATH}/testDisplay1)
+
+ADD_EXECUTABLE(testDisplay2 testDisplay2.cpp)
+ADD_TEST(testDisplay1 ${TEST_PATH}/testDisplay2)

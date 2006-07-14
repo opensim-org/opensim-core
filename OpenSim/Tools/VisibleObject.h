@@ -42,13 +42,14 @@
 #include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
+#include "Geometry.h"
 
 namespace OpenSim { 
 
 class XMLNode;
 class XMLDocument;
 
-
+class Geometry;
 // CONSTANTS
 
 //=============================================================================
@@ -61,6 +62,7 @@ class XMLDocument;
  * @version 1.0
  * @author Ayman Habib
  */
+
 class RDTOOLS_API VisibleObject: public Object
 {
 
@@ -72,20 +74,22 @@ private:
 	// PROPERTIES
 	/** Name of geometry file name(s) */
 	PropertyStrArray	_propGeometryFileNames;
+	Array<std::string>&	_geometryFileNames;	
+
+	Array<Geometry*>   _allGeometry;
 	/** Object that represents shading, material, colors */
 	PropertyObj		_propVisibleProp;
-	/** Scale factors for geometry */
-	PropertyDblArray	_propScaleFactors;
-
-	// REFERENCES
-	Array<std::string>&	_geometryFileNames;	
 	VisibleProperties&	_visibleProp;
-	Array<double>&		_scaleFactors;
 
-	/** transform relative to global frame. unserialized */
-	Transform			_transform;
+	/** Scale factors for geometry. unserialized */
+	Array<double>		_scaleFactors;
+
+	// In general these can use the Observable mechanism but that would be slow for display purposes.
+	ArrayPtrs<VisibleObject>	_dependents;
+
 protected:
-
+	Object*				_owner;	// Actual object that owns this VisibleObject, for debugging only as of now
+	Transform			_transform; /** transform relative to _owner's frame. unserialized */
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -115,10 +119,20 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
+
+	void setOwner(Object *aObject)
+	{
+		_owner = aObject;
+	}
+
+	Object* getOwner()
+	{
+		return _owner;
+	}
 	void setNumGeometryFiles(int n);
 	void setGeometryFileName(int i, const std::string &aGeometryFileName);
 	const int getNumGeometryFiles() const;
-	const char *getGeometryFileName(int i) const;
+	const std::string& getGeometryFileName(int i) const;
 
 	void setVisibleProperties(const VisibleProperties &aVisibleProperties);
 	VisibleProperties& getVisibleProperties();
@@ -143,7 +157,29 @@ public:
 	void rotateDegreesZ(const double rR);
 	void rotateDegreesAxis(const double rR, const double axis[3]);
 	void translate(const double t[3]);
-
+	
+	void addDependent(VisibleObject *aChild){ _dependents.append(aChild); };
+	void removeDependent(VisibleObject *aChild){ _dependents.remove(aChild); };
+	int countDependents(){ return _dependents.getSize(); };
+	VisibleObject *getDependent(int i) { 
+		return _dependents.get(i); 
+	};
+	void addGeometry(Geometry* aGeometry)
+	{
+		_allGeometry.append(aGeometry);
+	};
+	const Geometry* getGeometry(int i)
+	{
+		return _allGeometry.get(i);
+	}
+	int countGeometry()
+	{
+		return _allGeometry.getSize();
+	};
+	const Geometry* getDefaultGeometry()
+	{
+		return AnalyticGeometry::createSphere(0.1);
+	}
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------

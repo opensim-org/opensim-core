@@ -31,10 +31,6 @@
 
 
 using namespace OpenSim;
-#ifdef BUILD_GUI
-#include <vtkPointData.h>
-#include <vtkDataArray.h>
-#endif
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -47,12 +43,9 @@ using namespace std;
 /**
  * Default constructor.
  */
-SimmBone::SimmBone() 
-#ifdef BUILD_GUI
-:
-   _vtkBones(0),
-	_vtkReaders(0)
-#endif
+SimmBone::SimmBone():
+_geometryFiles(_geometryFilesProp.getValueStrArray())
+
 {
 	setNull();
 
@@ -62,12 +55,8 @@ SimmBone::SimmBone()
  * Constructor from an XML node
  */
 SimmBone::SimmBone(DOMElement *aElement) :
-   VisibleObject(aElement)
-#ifdef BUILD_GUI
-	   ,
-	_vtkBones(0),
-	_vtkReaders(0)
-#endif
+  Object(aElement),
+  _geometryFiles(_geometryFilesProp.getValueStrArray())
 {
 	setNull();
 
@@ -80,10 +69,6 @@ SimmBone::SimmBone(DOMElement *aElement) :
  */
 SimmBone::~SimmBone()
 {
-#ifdef BUILD_GUI
-	for (int i = 0; i < _vtkReaders.getSize(); i++)
-		_vtkReaders[i]->Delete();
-#endif
 }
 
 //_____________________________________________________________________________
@@ -93,12 +78,8 @@ SimmBone::~SimmBone()
  * @param aBone Bone to be copied.
  */
 SimmBone::SimmBone(const SimmBone &aBone) :
-   VisibleObject(aBone)
-#ifdef BUILD_GUI
-	   ,
-	_vtkBones(0),
-	_vtkReaders(0)
-#endif
+   Object(aBone),
+_geometryFiles(_geometryFilesProp.getValueStrArray())
 {
 	setupProperties();
 	copyData(aBone);
@@ -143,10 +124,6 @@ void SimmBone::copyData(const SimmBone &aBone)
 	// TODO: should probably copy the vtkPolyData/vtkXMLPolyDataReader
 	// objects themselves, not just the pointers, but can't figure out
 	// how to do that.
-#ifdef BUILD_GUI
-	_vtkBones = aBone._vtkBones;
-	_vtkReaders = aBone._vtkReaders;
-#endif
 }
 
 
@@ -174,7 +151,7 @@ void SimmBone::setupProperties()
 SimmBone& SimmBone::operator=(const SimmBone &aBone)
 {
 	// BASE CLASS
-	VisibleObject::operator=(aBone);
+	Object::operator=(aBone);
 
 	copyData(aBone);
 
@@ -248,7 +225,7 @@ void SimmBone::writeSIMM(ofstream& out) const
 
 	for (int i = 0; i < getNumGeometryFiles(); i++)
 	{
-		fileName = string(getGeometryFileName(i));
+		fileName = getGeometryFileName(i);
 		int dot = fileName.find_last_of(".");
 		if (dot > 0)
 			fileName.erase(dot, 4);

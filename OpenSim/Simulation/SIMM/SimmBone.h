@@ -33,12 +33,9 @@
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
-#ifdef BUILD_GUI
-	#include <vtkXMLPolyDataReader.h>
-	#include <vtkPolyData.h>
-#endif
+
 namespace OpenSim { 
 
 class SimmKinematicsEngine;
@@ -49,24 +46,22 @@ class SimmKinematicsEngine;
  * A class implementing a SIMM bone. Because the user can interact with the
  * geometry of a bone while manipulating the model, it needs to be accesible
  * within the simm/rd framework (not just on the Java side). SimmBone is
- * a type of VisibleObject, with additional private data members for holding
+ * a type of Object, with additional private data members for holding
  * the bone geometry.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmBone : public VisibleObject  
+class RDSIMULATION_API SimmBone : public Object  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-#ifdef BUILD_GUI
-	Array<vtkPolyData*> _vtkBones;
-	Array<vtkXMLPolyDataReader*> _vtkReaders;
-#endif
 protected:
+	PropertyStrArray _geometryFilesProp;
+	Array<std::string>& _geometryFiles;
 
 //=============================================================================
 // METHODS
@@ -81,7 +76,18 @@ public:
 	virtual ~SimmBone();
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
-
+	std::string& getGeometryFileName(int i) const
+	{
+		return _geometryFiles.get(i);
+	}
+	int getNumGeometryFiles() const
+	{
+		return _geometryFiles.getSize();
+	}
+	void addGeometryFile(std::string& geomFile)
+	{
+		_geometryFiles.append(geomFile);
+	}
 #ifndef SWIG
 	SimmBone& operator=(const SimmBone &aBone);
 #endif
