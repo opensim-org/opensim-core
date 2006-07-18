@@ -154,6 +154,7 @@ public:
 	virtual void getStates(double rY[]) const = 0;
 	virtual double getState(int aIndex) const = 0;
 	virtual double getState(const std::string &aName) const = 0;
+	virtual void applyDefaultPose() { }
 
 	//--------------------------------------------------------------------------
 	// INITIAL PSEUDO STATES

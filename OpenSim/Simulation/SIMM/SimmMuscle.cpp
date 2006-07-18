@@ -62,7 +62,9 @@ SimmMuscle::SimmMuscle() :
  	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL)
+	_groups(NULL),
+	_preScaleLength(0.0),
+	_kinematicsEngine(NULL)
 {
 	setNull();
 
@@ -86,7 +88,9 @@ SimmMuscle::SimmMuscle(DOMElement *aElement) :
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL)
+	_groups(NULL),
+	_preScaleLength(0.0),
+	_kinematicsEngine(NULL)
 {
 	setNull();
 
@@ -122,7 +126,9 @@ SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL)
+	_groups(NULL),
+	_preScaleLength(0.0),
+	_kinematicsEngine(NULL)
 {
 	setupProperties();
 	copyData(aMuscle);
@@ -177,6 +183,8 @@ void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 	_groupNames = aMuscle._groupNames;
 	_groups = aMuscle._groups;
 	_displayer = aMuscle._displayer;
+	_preScaleLength = 0.0;
+	_kinematicsEngine = aMuscle._kinematicsEngine;
 }
 
 
@@ -265,12 +273,13 @@ void SimmMuscle::registerTypes()
 	Object::RegisterType(SimmMuscleViaPoint());
 }
 
+void SimmMuscle::preScale(const ScaleSet& aScaleSet)
+{
+	_preScaleLength = getLength();
+}
+
 void SimmMuscle::scale(const ScaleSet& aScaleSet)
 {
-	// TODO: this method should possibly scale force
-	// parameters (e.g., resting tendon length based
-	// on total muscle length change).
-
 	for (int i = 0; i < _attachments.getSize(); i++)
 	{
 		const string& bodyName = _attachments[i]->getBodyName();
@@ -287,12 +296,28 @@ void SimmMuscle::scale(const ScaleSet& aScaleSet)
 	}
 }
 
+void SimmMuscle::postScale(const ScaleSet& aScaleSet)
+{
+	if (_preScaleLength > 0.0)
+	{
+		double scaleFactor = getLength() / _preScaleLength;
+
+		_optimalFiberLength *= scaleFactor;
+		_tendonSlackLength *= scaleFactor;
+		//_maxIsometricForce *= scaleFactor;
+
+		_preScaleLength = 0.0;
+	}
+}
+
 /* Perform some set up functions that happen after the
  * object has been deserialized or copied.
  */
 void SimmMuscle::setup(SimmModel* model, SimmKinematicsEngine* ke)
 {
 	int i;
+
+	_kinematicsEngine = ke;
 
 	for (i = 0; i < _attachments.getSize(); i++)
 		_attachments[i]->setup(model, ke);
@@ -303,7 +328,7 @@ void SimmMuscle::setup(SimmModel* model, SimmKinematicsEngine* ke)
 	_displayer.setOwner(this);
 }
 
-double SimmMuscle::getLength(SimmKinematicsEngine* ke) const
+double SimmMuscle::getLength() const
 {
 	double length = 0.0;
 	SimmMusclePoint *start, *end;
@@ -327,10 +352,10 @@ double SimmMuscle::getLength(SimmKinematicsEngine* ke) const
       }
       else
       {
-         length += ke->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
+         length += _kinematicsEngine->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
       }
 #else
-		length += ke->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
+		length += _kinematicsEngine->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
 #endif
    }
 
@@ -405,5 +430,5 @@ void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 		cout << "   passiveForceLengthCurve: " << *(_passiveForceLengthCurve[0]) << endl;
 	if (_forceVelocityCurve.getSize() > 0)
 		cout << "   forceVelocityCurve: " << *(_forceVelocityCurve[0]) << endl;
-	cout << "   current length: " << getLength(ke) << endl;
+	cout << "   current length: " << getLength() << endl;
 }

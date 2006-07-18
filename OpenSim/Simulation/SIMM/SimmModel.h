@@ -226,6 +226,7 @@ public:
 	virtual void getStates(double rY[]) const;
 	virtual double getState(int aIndex) const;
 	virtual double getState(const std::string &aName) const;
+	void applyDefaultPose();
 
 	//--------------------------------------------------------------------------
 	// INITIAL PSEUDO STATES

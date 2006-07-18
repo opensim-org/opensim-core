@@ -2567,7 +2567,7 @@ void SimmKinematicsEngine::peteTest() const
 		for (i = 0; i < _bodies.getSize(); i++)
 			_bodies[i]->peteTest();
 	}
-#if 0
+
 	if (_coordinates.getSize() < 1)
 	{
 		cout << "no coordinates" << endl;
@@ -2589,7 +2589,6 @@ void SimmKinematicsEngine::peteTest() const
 	}
 
 	_path.peteTest();
-#endif
 }
 
 //--------------------------------------------------------------------------
@@ -2670,14 +2669,20 @@ string SimmKinematicsEngine::getPseudoStateName(int aIndex) const
 //--------------------------------------------------------------------------
 int SimmKinematicsEngine::getBodyIndex(const string &aName) const
 {
-	// TODO
-	return 0;
+	for (int i = 0; i < _bodies.getSize(); i++)
+		if (_bodies.get(i)->getName() == aName)
+			return i;
+
+	return -1;
 }
 
 int SimmKinematicsEngine::getCoordinateIndex(const string &aName) const
 {
-	// TODO
-	return 0;
+	for (int i = 0; i < _coordinates.getSize(); i++)
+		if (_coordinates.get(i)->getName() == aName)
+			return i;
+
+	return -1;
 }
 
 int SimmKinematicsEngine::getSpeedIndex(const string &aName) const
@@ -2744,24 +2749,44 @@ double SimmKinematicsEngine::getInitialState(const string &aName) const
 //--------------------------------------------------------------------------
 void SimmKinematicsEngine::setStates(const double aY[])
 {
-	// TODO
+	if (aY)
+	{
+		for (int i = 0; i < _coordinates.getSize(); i++)
+			_coordinates.get(i)->setValue(aY[i]);
+	}
 }
 
 void SimmKinematicsEngine::getStates(double rY[]) const
 {
-	// TODO
+	if (rY)
+	{
+		for (int i = 0; i < _coordinates.getSize(); i++)
+			rY[i] = _coordinates.get(i)->getValue();
+	}
 }
 
 double SimmKinematicsEngine::getState(int aIndex) const
 {
-	// TODO
+	if (aIndex >= 0 && aIndex < _coordinates.getSize())
+		return _coordinates.get(aIndex)->getValue();
+
 	return 0.0;
 }
 
 double SimmKinematicsEngine::getState(const string &aName) const
 {
-	// TODO
+	int index = getCoordinateIndex(aName);
+
+	if (index >= 0)
+		return _coordinates.get(index)->getValue();
+
 	return 0.0;
+}
+
+void SimmKinematicsEngine::applyDefaultPose()
+{
+	for (int i = 0; i < _coordinates.getSize(); i++)
+		_coordinates.get(i)->setValue(_coordinates.get(i)->getDefaultValue());
 }
 
 //--------------------------------------------------------------------------

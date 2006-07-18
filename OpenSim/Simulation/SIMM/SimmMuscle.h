@@ -60,6 +60,11 @@ class RDSIMULATION_API SimmMuscle : public Actuator
 // DATA
 //=============================================================================
 private:
+	// used for scaling tendon and fiber lengths
+	double _preScaleLength;
+
+	// engine used by the model that contains this muscle
+	SimmKinematicsEngine* _kinematicsEngine;
 
 protected:
 	PropertyObjArray _attachmentsProp;
@@ -128,13 +133,15 @@ public:
 	virtual void computeActuation() { }
 	virtual void apply() { }
 
-	double getLength(SimmKinematicsEngine* ke) const;
+	double getLength() const;
 	const Array<std::string>& getGroupNames() const { return _groupNames; }
 
 	/* Register types to be used when reading an SimmModel object from xml file. */
 	static void registerTypes();
 
+	void preScale(const ScaleSet& aScaleSet);
 	void scale(const ScaleSet& aScaleSet);
+	void postScale(const ScaleSet& aScaleSet);
 	void setup(SimmModel* model, SimmKinematicsEngine* ke);
 
 	void writeSIMM(std::ofstream& out) const;
