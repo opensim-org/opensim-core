@@ -894,16 +894,51 @@ bool SimmModel::scale(const ScaleSet& aScaleSet)
 
 bool SimmModel::scale(const ScaleSet& aScaleSet, bool aPreserveMassDist, double aFinalMass)
 {
-	// Scale the muscles
+	// 1. Save the current pose of the model, then put it in a
+	//    default pose, so pre- and post-scale muscle lengths
+	//    can be found.
+	double *savedStates = new double[getNQ()];
+	getStates(savedStates);
+	applyDefaultPose();
+
+	// 2. For each SimmMuscle, call its preScale method so it
+	//    can calculate and store its pre-scale length in the
+	//    current position, and then call its scale method to
+	//    scale all of the muscle properties except tendon and
+	//    fiber length.
+	int i;
 	SimmMuscle* sm;
-	for (int i = 0; i < _muscles.getSize(); i++)
+	for (i = 0; i < _muscles.getSize(); i++)
 	{
 		if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
+		{
+			sm->preScale(aScaleSet);
 			sm->scale(aScaleSet);
+		}
 	}
 
-	// Scale the rest of the model
-	return getKinematicsEngine().scale(aScaleSet, aPreserveMassDist, aFinalMass);
+	// 3. Scale the rest of the model
+	bool returnVal = getKinematicsEngine().scale(aScaleSet, aPreserveMassDist, aFinalMass);
+
+	// 4. If the dynamics engine was scaled successfully,
+	//    call each SimmMuscle's postScale method so it
+	//    can calculate its post-scale length in the current
+	//    position and then scale the tendon and fiber length
+	//    properties.
+	if (returnVal)
+	{
+		for (i = 0; i < _muscles.getSize(); i++)
+		{
+			if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
+				sm->postScale(aScaleSet);
+		}
+	}
+
+	// 5. Put the model back in whatever pose it was in.
+	setStates(savedStates);
+	delete savedStates;
+
+	return returnVal;
 }
 
 //--------------------------------------------------------------------------
