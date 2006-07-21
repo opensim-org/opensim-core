@@ -117,32 +117,32 @@ public:
 	{
 		return _analyticType;
 	}
-	void getSphereRadius(double& radius) const
+	const double& getSphereRadius() const
 	{
-		assert(_analyticType==Sphere);
-		radius = _attributes[0];
+		//assert(_analyticType==Sphere);
+		return _attributes[0];
 	}
-	void setSphereRadius(double& radius)
+	void setSphereRadius(double radius)
 	{
-		assert(_analyticType==Sphere);
+		//assert(_analyticType==Sphere);
 		_attributes[0] = radius;
 	}
 	void getCylinderParams(double& radius, double& height) const
 	{
-		assert(_analyticType==Cylinder);
+		//assert(_analyticType==Cylinder);
 		radius = _attributes[0];
 		height = _attributes[1];
 	}
 	void getConeParams(double& baseRadius, double& topRadius, double& height) const
 	{
-		assert(_analyticType==Cone);
+		//assert(_analyticType==Cone);
 		baseRadius = _attributes[0];
 		topRadius = _attributes[1];
 		height = _attributes[2];
 	}
 	void getEllipsoidParams(double& radiusX, double& radiusY, double& radiusZ) const
 	{
-		assert(_analyticType==Ellipsoid);
+		//assert(_analyticType==Ellipsoid);
 		radiusX = _attributes[0];
 		radiusY = _attributes[1];
 		radiusZ = _attributes[2];

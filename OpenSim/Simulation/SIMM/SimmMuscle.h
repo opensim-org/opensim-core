@@ -135,6 +135,8 @@ public:
 
 	double getLength() const;
 	const Array<std::string>& getGroupNames() const { return _groupNames; }
+	// Visible Object Support
+	virtual VisibleObject* getDisplayer() { return &_displayer; };
 
 	/* Register types to be used when reading an SimmModel object from xml file. */
 	static void registerTypes();

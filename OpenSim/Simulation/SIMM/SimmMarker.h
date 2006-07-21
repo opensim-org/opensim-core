@@ -77,6 +77,7 @@ protected:
 	PropertyObj		_displayerProp;
 	VisibleObject	&_displayer;
 
+	static Geometry *_defaultGeometry;
 //=============================================================================
 // METHODS
 //=============================================================================

@@ -38,6 +38,8 @@
 using namespace OpenSim;
 using namespace std;
 
+Geometry *SimmMusclePoint::_defaultGeometry= AnalyticGeometry::createSphere(0.005);
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -201,8 +203,14 @@ void SimmMusclePoint::setup(SimmModel* model, SimmKinematicsEngine* ke)
 	 */
 	_body = ke->getBody(_bodyName);
 	_displayer.setOwner(this);
-
-	//_body->getDisplayer()->addDependent(&_displayer);
+	// Muscle points depend on body
+	_body->getDisplayer()->addDependent(&_displayer);
+	_displayer.addGeometry(_defaultGeometry);
+	double defaultColor[3] = { 1.0, 0.0, 0.0 };
+	_displayer.getVisibleProperties().setColor(defaultColor);
+	Transform position;
+	position.translate(_attachment.get());
+	getDisplayer()->setTransform(position);
 }
 
 void SimmMusclePoint::peteTest() const

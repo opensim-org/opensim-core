@@ -32,6 +32,7 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Array.h>
+#include <OpenSim/Tools/Geometry.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyStr.h>
@@ -74,6 +75,7 @@ protected:
 
 	/* const*/ SimmBody *_body; // Not const anymore since the body'd displayer is not const
 
+	static Geometry *_defaultGeometry;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -100,7 +102,8 @@ public:
 
 	virtual void writeSIMM(std::ofstream& out) const;
 	virtual void setup(SimmModel* model, SimmKinematicsEngine* ke);
-
+	// Visible Object Support
+	virtual VisibleObject* getDisplayer() { return &_displayer; };
 	virtual void peteTest() const;
 
 protected:

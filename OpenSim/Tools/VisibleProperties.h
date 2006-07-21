@@ -88,7 +88,7 @@ private:
 	bool&				_showNormals;
 	bool&				_showAxes;
 	std::string&		_materialName;
-
+	double				_color[3];
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -131,6 +131,16 @@ public:
 	void setMaterialName(const char *matName);
 	const char *getMaterialName() const;
 	
+	void getColor(double aColor[3]) 
+	{
+		for(int i=0; i< 3; i++)
+			aColor[i] = _color[i];
+	}
+	void setColor(double aColor[3])
+	{
+		for(int i=0; i< 3; i++)
+			_color[i] = aColor[i];
+	}
 private:
 	const Material &getMaterial(const char *matName) const;
 	//--------------------------------------------------------------------------

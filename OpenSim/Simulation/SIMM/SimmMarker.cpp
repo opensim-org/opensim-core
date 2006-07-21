@@ -37,6 +37,7 @@
 using namespace OpenSim;
 using namespace std;
 
+Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -248,7 +249,9 @@ void SimmMarker::setup(SimmKinematicsEngine* aEngine)
 
 		}
 		_displayer.setOwner(this);
-		_displayer.addGeometry(AnalyticGeometry::createSphere(0.1));
+		_displayer.addGeometry(_defaultGeometry);
+		double defaultColor[3] = { 0.0, 0.0, 1.0 };
+		_displayer.getVisibleProperties().setColor(defaultColor);
 	}
 
 }
