@@ -262,9 +262,9 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel)
 
 	const ArrayPtrs<SimmBody>& bodies = aModel.getBodies();
 
-	/* Make a scale set with an Scale for each body.
-	 * Initialize all factors to 1.0.
-	 */
+	// Make a scale set with an Scale for each body.
+	//Initialize all factors to 1.0.
+	//
 	for (i = 0; i < bodies.getSize(); i++)
 	{
 		Scale* bodyScale = new Scale();

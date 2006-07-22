@@ -141,6 +141,8 @@ int main(int argc,char **argv)
 
 		// CONSTRUCT SUBJECT INSTANCE
 		SimmSubject *subject = new SimmSubject(inName);
+		Object *subjectCopy = subject->copy();
+		subjectCopy->print("test_subject.xml");
 
 		// CONSTRUCT THE MODEL
 		SimmModel *model = subject->createModel();
@@ -153,9 +155,13 @@ int main(int argc,char **argv)
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
 			ScalerInterface *scaler = new SimmScalerImpl(*model);
-			if (!scaler->scaleModel(params.getScaleSet(*model), params.getPreserveMassDist(), subject->getMass())) {
+			const ScaleSet &scaleSet = params.getScaleSet(*model);
+			bool preserveMassDistribution = params.getPreserveMassDist();
+			double mass = subject->getMass();
+			bool success = scaler->scaleModel(scaleSet,preserveMassDistribution, mass);
+			if (!success) {
 				cout << "===ERROR===: Unable to scale generic model." << endl;
-				return 0;
+				return -1;
 			} else {
 				cout << "Scaled model "<< inName << "Successfully" << endl;
 			}
@@ -244,7 +250,7 @@ int main(int argc,char **argv)
 		}
 
 		// CLEAN UP
-		delete model;
+		//delete model;
 		delete subject;
 
 	// HANDLE ANY EXCEPTIONS
