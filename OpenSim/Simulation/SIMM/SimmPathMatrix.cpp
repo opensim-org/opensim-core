@@ -101,6 +101,13 @@ void SimmPathMatrix::initTable(int size)
 	}
 }
 
+void SimmPathMatrix::invalidate()
+{
+	for (int i = 0; i < _size; i++)
+		if (_hashTable[i])
+			_hashTable[i]->invalidate();
+}
+
 int SimmPathMatrix::hash(const SimmBody* aFromBody, const SimmBody* aToBody) const
 {
 	int hash_value = ((int)aFromBody / cHash1 + (int)aToBody) / cHash2 % _size;

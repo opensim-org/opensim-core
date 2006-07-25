@@ -61,7 +61,7 @@ int main(int argc,char **argv)
 {
 
 	// Construct model and read parameters file
-	SimmSubject* subject = new SimmSubject("CrouchGait.xml");
+	SimmSubject* subject = new SimmSubject("900045_setup_scale_ik.xml");
 	SimmModel* model = subject->createModel();
 	SimmScalingParams& params = subject->getScalingParams();
 	ScalerInterface *scaler = new SimmScalerImpl(*model);

@@ -1875,6 +1875,7 @@ void SimmJoint::peteTest()
 
 	calcTransforms();
 	_forwardTransform.printMatrix();
+	_inverseTransform.printMatrix();
 }
 
 

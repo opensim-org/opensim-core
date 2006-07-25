@@ -73,6 +73,7 @@ public:
 	virtual ~SimmPathMatrix();
 
 	void initTable(int size);
+	void invalidate();
 	SimmPath* getSimmPath(const SimmBody* aFromBody, const SimmBody* aToBody) const;
 	const JointPath* getPath(const SimmBody* aFromBody, const SimmBody* aToBody) const;
 	void setPath(const SimmBody* aFromBody, const SimmBody* aToBody, JointPath p);

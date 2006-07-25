@@ -2939,6 +2939,9 @@ bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet)
 	for (i = 0; i < _joints.getSize(); i++)
 		_joints[i]->scale(aScaleSet);
 
+	// Invalidate all of the body->body paths
+	_path.invalidate();
+
 	return true;
 }
 
@@ -2980,9 +2983,12 @@ bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet, bool aPreserveMassDi
 	}
 
 	// Now scale the joints.
-	for (i = 0; i < getNumJoints(); i++){
+	for (i = 0; i < getNumJoints(); i++)
 		getJoint(i)->scale(aScaleSet); 
-	}
+
+	// Invalidate all of the body->body paths
+	_path.invalidate();
+
 	return true;
 }
 
