@@ -104,7 +104,7 @@ public:
 #endif
 
 	int getNumberOfMuscles() const {	return _muscles.getSize(); }
-	Object* getMuscle(int index) { return _muscles.get(index); }
+	SimmMuscle* getMuscle(int index) { return _muscles.get(index); }
 
 	int getNumberOfMuscleGroups() const {	return _muscleGroups.getSize(); }
 	SimmMuscleGroup* enterGroup(const std::string& aName);

@@ -257,6 +257,9 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmModel.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscle.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
+
+%template(ArrayPtrsSimmMusclePoint) OpenSim::ArrayPtrs<OpenSim::SimmMusclePoint>;
+
 %include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
 %include <OpenSim/Simulation/SIMM/SimmPath.h>

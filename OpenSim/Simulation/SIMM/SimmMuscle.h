@@ -124,11 +124,8 @@ public:
 	SimmMuscle& operator=(const SimmMuscle &aMuscle);
 #endif
 
-   void SimmMuscle::copyData(const SimmMuscle &aMuscle);
-
-#ifndef SWIG
+    void SimmMuscle::copyData(const SimmMuscle &aMuscle);
 	const ArrayPtrs<SimmMusclePoint>& getAttachmentArray() const { return _attachments; }
-#endif
 
 	virtual void computeActuation() { }
 	virtual void apply() { }
