@@ -196,6 +196,7 @@ setNull()
 	_scaleFactors = unit3;
 
 	_owner = 0;
+	_dependents.setMemoryOwner(false);
 
 }
 /**

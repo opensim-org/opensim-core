@@ -439,13 +439,18 @@ void SimmBody::writeSIMM(ofstream& out) const
 	out << "inertia " << _inertia[0] << " " << _inertia[1] << " " << _inertia[2] << endl;
 	out << "        " << _inertia[3] << " " << _inertia[4] << " " << _inertia[5] << endl;
 	out << "        " << _inertia[6] << " " << _inertia[7] << " " << _inertia[8] << endl;
-	/*
-	for (i = 0; i < _bones.getSize(); i++)
+	
+	string fileName;
+	for (i = 0; i < _displayer.getNumGeometryFiles()  ; i++)
 	{
-		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
-			sb->writeSIMM(out);
+		fileName = _displayer.getGeometryFileName(i);
+		int dot = fileName.find_last_of(".");
+		if (dot > 0)
+			fileName.erase(dot, 4);
+		fileName += ".asc";
+		out << "bone " << fileName << endl;
 	}
-	*/
+	
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->writeSIMM(out);
 
