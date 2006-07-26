@@ -226,7 +226,7 @@ void SimmCoordinate::setupProperties(void)
 	_toleranceProp.setValue(0.0);
 	_propertySet.append(&_toleranceProp);
 
-	_PDStiffnessProp.setName("PDstiffness");
+	_PDStiffnessProp.setName("stiffness");
 	_PDStiffnessProp.setValue(0.0);
 	_propertySet.append(&_PDStiffnessProp);
 

@@ -199,7 +199,7 @@ void SimmModel::setNull()
 
 void SimmModel::setupProperties()
 {
-	_kinematicsEngineProp.setName("KinematicsEngines");
+	_kinematicsEngineProp.setName("DynamicsEngine");
 	ArrayPtrs<Object> kes;
 	_kinematicsEngineProp.setValue(kes);
 	_propertySet.append(&_kinematicsEngineProp);

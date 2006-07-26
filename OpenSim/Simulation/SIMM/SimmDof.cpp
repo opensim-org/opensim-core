@@ -118,7 +118,7 @@ void SimmDof::setNull(void)
  */
 void SimmDof::setupProperties(void)
 {
-	_functionsProp.setName("Values");
+	_functionsProp.setName("Value");
 	ArrayPtrs<Object> func;
 	_functionsProp.setValue(func);
 	_propertySet.append(&_functionsProp);
