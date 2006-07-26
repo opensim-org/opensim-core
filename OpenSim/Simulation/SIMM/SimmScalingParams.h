@@ -103,6 +103,10 @@ protected:
 	PropertyStr _outputScaleFileNameProp;
 	std::string &_outputScaleFileName;
 
+	// amount of allowable motion for each marker when averaging frames of the static trial
+	PropertyDbl _maxMarkerMovementProp;
+	double &_maxMarkerMovement;
+
 	// Cache for aggregate scale set
 	ScaleSet _theScaleSet;
 

@@ -210,6 +210,7 @@
       </ScaleSet>
       <scaling_order>measurements</scaling_order> <!-- order of scaling -->
       <marker_trial>init100.trc</marker_trial>
+      <max_marker_movement>10.0</max_marker_movement>
       <time_range>0.0 0.25</time_range>
       <preserve_mass_distribution>false</preserve_mass_distribution>
       <output_joint_file>CrouchGaitSP.jnt</output_joint_file> <!-- optional -->
@@ -221,6 +222,7 @@
    <!-- Info on how markers are placed on the scaled model.  Just for the static trial. -->
    <SimmMarkerPlacementParams>
       <marker_trial>init100.trc</marker_trial>
+      <max_marker_movement>10.0</max_marker_movement>
       <time_range>0.0 0.5</time_range> <!-- optional, default = all frames -->
       <output_joint_file>CrouchGaitMP.jnt</output_joint_file> <!-- optional -->
       <output_muscle_file>CrouchGaitMP.msl</output_muscle_file> <!-- optional -->

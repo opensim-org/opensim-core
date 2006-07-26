@@ -56,7 +56,8 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams() :
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 }
@@ -75,7 +76,8 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams(DOMElement *aElement) :
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 	updateFromXMLNode();
@@ -106,7 +108,8 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams(const SimmMarkerPlacementPa
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setupProperties();
 	copyData(aMarkerPlacementParams);
@@ -158,6 +161,7 @@ void SimmMarkerPlacementParams::copyData(const SimmMarkerPlacementParams &aMarke
 	_outputModelFileName = aMarkerPlacementParams._outputModelFileName;
 	_outputMarkerFileName = aMarkerPlacementParams._outputMarkerFileName;
 	_outputMotionFileName = aMarkerPlacementParams._outputMotionFileName;
+	_maxMarkerMovement = aMarkerPlacementParams._maxMarkerMovement;
 }
 
 
@@ -225,6 +229,11 @@ void SimmMarkerPlacementParams::setupProperties()
 	_outputMotionFileNameProp.setName("output_motion_file");
 	_outputMotionFileNameProp.setComment("Name of the motion file written after marker relocation.");
 	_propertySet.append(&_outputMotionFileNameProp);
+
+	_maxMarkerMovementProp.setName("max_marker_movement");
+	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
+	_maxMarkerMovementProp.setComment("Maximum amount of movement allowed in marker data when averaging frames of the static trial.");
+	_propertySet.append(&_maxMarkerMovementProp);
 }
 
 SimmMarkerPlacementParams& SimmMarkerPlacementParams::operator=(const SimmMarkerPlacementParams &aMarkerPlacementParams)
@@ -290,7 +299,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 		 * frames in the user-specified time range.
 		 */
 		SimmMarkerData staticPose(_markerFileName);
-		staticPose.averageFrames(0.01, _timeRange[0], _timeRange[1]);
+		staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 		staticPose.convertToUnits(aModel->getLengthUnits());
 
 		/* Delete any markers from the model that are not in the static
@@ -348,6 +357,7 @@ void SimmMarkerPlacementParams::peteTest() const
 	cout << "      outputModelFile: " << _outputModelFileName << endl;
 	cout << "      outputMarkerFile: " << _outputMarkerFileName << endl;
 	cout << "      outputMotionFile: " << _outputMotionFileName << endl;
+	cout << "      maxMarkerMovement: " << _maxMarkerMovement << endl;
 }
 /**
  * Check if the values in an instance of SimmMarkerPlacementParams are different from those put by default.

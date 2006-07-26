@@ -213,7 +213,7 @@ int main(int argc,char **argv)
 			// Convert the marker data into the model's units.
 			double startTime, endTime;
 			params.getTimeRange(startTime, endTime);
-			staticPose.averageFrames(0.01, startTime, endTime);
+			staticPose.averageFrames(params.getMaxMarkerMovement(), startTime, endTime);
 			staticPose.convertToUnits(model->getLengthUnits());
 
 			// Delete any markers from the model that are not in the static

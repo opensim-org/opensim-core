@@ -103,6 +103,10 @@ protected:
 	PropertyStr _outputMotionFileNameProp;
 	std::string &_outputMotionFileName;
 
+	// amount of allowable motion for each marker when averaging frames of the static trial
+	PropertyDbl _maxMarkerMovementProp;
+	double &_maxMarkerMovement;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -149,6 +153,10 @@ public:
         return _coordinateSet;
     }
 
+	 double getMaxMarkerMovement() const
+	 {
+		 return _maxMarkerMovement;
+	 }
 
 	/** Add a coordinate to the coordinate set */
 	void addCoordinate(SimmCoordinate *aCoordinate);

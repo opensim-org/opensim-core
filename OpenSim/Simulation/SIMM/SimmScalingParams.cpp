@@ -56,7 +56,8 @@ SimmScalingParams::SimmScalingParams() :
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
+	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 }
@@ -75,7 +76,8 @@ SimmScalingParams::SimmScalingParams(DOMElement *aElement) :
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
+	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 	updateFromXMLNode();
@@ -106,7 +108,8 @@ SimmScalingParams::SimmScalingParams(const SimmScalingParams &aScalingParams) :
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
+	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setupProperties();
 	copyData(aScalingParams);
@@ -158,6 +161,7 @@ void SimmScalingParams::copyData(const SimmScalingParams &aScalingParams)
 	_outputMuscleFileName = aScalingParams._outputMuscleFileName;
 	_outputModelFileName = aScalingParams._outputModelFileName;
 	_outputScaleFileName = aScalingParams._outputScaleFileName;
+	_maxMarkerMovement = aScalingParams._maxMarkerMovement;
 }
 
 
@@ -227,6 +231,11 @@ void SimmScalingParams::setupProperties()
 	_outputScaleFileNameProp.setName("output_scale_file");
 	_outputScaleFileNameProp.setComment("Name of scales file to write when done scaling.");
 	_propertySet.append(&_outputScaleFileNameProp);
+
+	_maxMarkerMovementProp.setName("max_marker_movement");
+	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
+	_maxMarkerMovementProp.setComment("Maximum amount of movement allowed in marker data when averaging frames of the static trial.");
+	_propertySet.append(&_maxMarkerMovementProp);
 }
 
 void SimmScalingParams::registerTypes()
@@ -247,7 +256,7 @@ SimmScalingParams& SimmScalingParams::operator=(const SimmScalingParams &aScalin
 }
 //______________________________________________________________________________
 /**
-* Get final scale set to be applied to the model. This could come form measurements.
+* Get final scale set to be applied to the model. This could come from measurements
 * or be specified manually.
 *
 * @param Model to be scaled (used to retrieve body names)
@@ -262,8 +271,8 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel)
 
 	const ArrayPtrs<SimmBody>& bodies = aModel.getBodies();
 
-	// Make a scale set with an Scale for each body.
-	//Initialize all factors to 1.0.
+	// Make a scale set with a Scale for each body.
+	// Initialize all factors to 1.0.
 	//
 	for (i = 0; i < bodies.getSize(); i++)
 	{
@@ -294,7 +303,7 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel)
 				 * frames in the user-specified time range.
 			    */
 				SimmMarkerData staticPose(_markerFileName);
-				staticPose.averageFrames(0.01, _timeRange[0], _timeRange[1]);
+				staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 				staticPose.convertToUnits(aModel.getLengthUnits());
 
 				/* Now take and apply the measurements. */

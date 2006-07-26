@@ -535,18 +535,21 @@ void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double 
 				double* coords = pt.get();
 				avePt += pt;
 				numFrames++;
-				if (coords[0] < minX[i])
-					minX[i] = coords[0];
-				if (coords[0] > maxX[i])
-					maxX[i] = coords[0];
-				if (coords[1] < minY[i])
-					minY[i] = coords[1];
-				if (coords[1] > maxY[i])
-					maxY[i] = coords[1];
-				if (coords[2] < minZ[i])
-					minZ[i] = coords[2];
-				if (coords[2] > maxZ[i])
-					maxZ[i] = coords[2];
+				if (aThreshold > 0.0)
+				{
+					if (coords[0] < minX[i])
+						minX[i] = coords[0];
+					if (coords[0] > maxX[i])
+						maxX[i] = coords[0];
+					if (coords[1] < minY[i])
+						minY[i] = coords[1];
+					if (coords[1] > maxY[i])
+						maxY[i] = coords[1];
+					if (coords[2] < minZ[i])
+						minZ[i] = coords[2];
+					if (coords[2] > maxZ[i])
+						maxZ[i] = coords[2];
+				}
 			}
 		}
 
@@ -571,11 +574,6 @@ void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double 
 
 	if (aThreshold > 0.0)
 	{
-		/* Convert aThreshold from meters to the units of the
-		 * marker data.
-		 */
-		double threshold = aThreshold / _units.convertTo(SimmUnits::simmMeters);
-
 		for (int i = 0; i < _numMarkers; i++)
 		{
 			SimmPoint& pt = _frames[0]->getMarker(i);
@@ -585,15 +583,15 @@ void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double 
 				cout << "___WARNING___: marker " << _markerNames[i] << " is missing in frames " << startUserIndex
 					  << " to " << endUserIndex << ". Coordinates will be set to NAN." << endl;
 			}
-			else if (maxX[i] - minX[i] > threshold ||
-				      maxY[i] - minY[i] > threshold ||
-				      maxZ[i] - minZ[i] > threshold)
+			else if (maxX[i] - minX[i] > aThreshold ||
+				      maxY[i] - minY[i] > aThreshold ||
+				      maxZ[i] - minZ[i] > aThreshold)
 			{
 				double maxDim = maxX[i] - minX[i];
 				maxDim = MAX(maxDim, (maxY[i] - minY[i]));
 				maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
 				cout << "___WARNING___: movement of marker " << _markerNames[i] << " in " << _fileName
-					  << " is " << maxDim << " (threshold = " << threshold << ")" << endl;
+					  << " is " << maxDim << " (threshold = " << aThreshold << ")" << endl;
 			}
 		}
 	}

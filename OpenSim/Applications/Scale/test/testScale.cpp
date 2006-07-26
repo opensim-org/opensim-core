@@ -61,7 +61,7 @@ int main(int argc,char **argv)
 {
 
 	// Construct model and read parameters file
-	SimmSubject* subject = new SimmSubject("900045_setup_scale_ik.xml");
+	SimmSubject* subject = new SimmSubject("CrouchGait.xml");
 	SimmModel* model = subject->createModel();
 	SimmScalingParams& params = subject->getScalingParams();
 	ScalerInterface *scaler = new SimmScalerImpl(*model);
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 		// Convert the marker data into the model's units.
 		double startTime, endTime;
 		markerPlacementParams.getTimeRange(startTime, endTime);
-		staticPose.averageFrames(0.01, startTime, endTime);
+		staticPose.averageFrames(markerPlacementParams.getMaxMarkerMovement(), startTime, endTime);
 		staticPose.convertToUnits(model->getLengthUnits());
 
 		/* Delete any markers from the model that are not in the static
