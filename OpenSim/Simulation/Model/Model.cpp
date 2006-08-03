@@ -41,6 +41,7 @@
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Tools/GCVSplineSet.h>
 #include "BodySet.h"
 #include "Model.h"
 #include "Body.h"
@@ -1517,21 +1518,96 @@ computeConstrainedCoordinates(double* y)
 /**
  * From a potentially partial specification of the generalized coordinates,
  * form a complete storage of the generalized coordinates (q's) and
- * speeds (u's).
+ * generalized speeds (u's).
  *
- * @param aQIn Storage containing the q's or a subset of the q's.
+ * @param aQIn Storage containing the q's or a subset of the q's.  Rotational
+ * q's should be in degrees.
  * @param rQComplete Storage containing all the q's.  If q's were not
  * in aQIn, the values are set to 0.0.  When a q is constrained, its value
- * is altered to be consistent with the constraint.
+ * is altered to be consistent with the constraint.  The caller is responsible
+ * for deleting the memory associated with this storage.
  * @param rUComplete Storage containing all the u's.  The generalized speeds
  * are obtained by spline fitting the q's and differentiating the splines.
  * When a u is constrained, its value is altered to be consisten with the
- * constraint.
+ * constraint.  The caller is responsible for deleting the memory
+ * associated with this storage.
  */
 void Model::
 formCompleteStorages(const OpenSim::Storage &aQIn,
 	OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete)
 {
+		int i;
+	int nq = getNQ();
+	int nu = getNU();
+
+	// Get coordinate file indices
+	string qName,columnLabels;
+	Array<int> index(-1,nq);
+	columnLabels = "time";
+	for(i=0;i<nq;i++) {
+		qName = getCoordinateName(i);
+		columnLabels += "\t";
+		columnLabels += qName;
+		index[i] = aQIn.getColumnIndex(qName);
+	}
+
+	// Extract Coordinates
+	double time;
+	Array<double> data(0.0);
+	Array<double> q(0.0,nq);
+	Storage *qStore = new Storage();
+	qStore->setName("GeneralizedCoordinates");
+	qStore->setColumnLabels(columnLabels.c_str());
+	int size = aQIn.getSize();
+	StateVector *vector;
+	int j;
+	for(i=0;i<size;i++)
+	{
+		vector = aQIn.getStateVector(i);
+		data = vector->getData();
+		time = vector->getTime();
+
+		for(j=0;j<nq;j++) {
+			q[j] = 0.0;
+			if(index[j]<0) continue;
+			q[j] = data[index[j]];
+		}
+
+		qStore->append(time,nq,&q[0]);
+	}
+
+	// Convert to radians
+	convertDegreesToRadians(qStore);
+
+	// Compute generalized speeds
+	GCVSplineSet tempQset(5,qStore);
+	Storage *uStore = tempQset.constructStorage(1);
+
+	// Compute constraints
+	Array<double> qu(0.0,nq+nu);
+	int qSize = qStore->getSize();
+	int uSize = uStore->getSize();
+	cout<<"qSize = "<<qSize<<endl<<endl;
+	cout<<"uSize = "<<uSize<<endl<<endl;
+	rQComplete = new Storage();
+	rUComplete = new Storage();
+	for(i=0;i<size;i++)
+	{
+		qStore->getTime(i,time);
+		qStore->getData(i,nq,&qu[0]);
+		uStore->getData(i,nq,&qu[nq]);
+		computeConstrainedCoordinates(&qu[0]);
+		rQComplete->append(time,nq,&qu[0]);
+		rUComplete->append(time,nu,&qu[nq]);
+	}
+
+	// Convert back to degrees
+	convertRadiansToDegrees(rQComplete);
+	convertRadiansToDegrees(rUComplete);
+
+	// Compute storage object for simulation
+	rQComplete->setColumnLabels(columnLabels.c_str());
+	rUComplete->setColumnLabels(columnLabels.c_str());
 }
 
 
