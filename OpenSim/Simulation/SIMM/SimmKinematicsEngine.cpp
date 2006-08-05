@@ -2187,18 +2187,14 @@ void SimmKinematicsEngine::moveMarkersToCloud(Storage& aMarkerStorage)
 {
 
 	string markerComponentNames[] = {"_px", "_py", "_pz"};
-	for (int i = 0; i < _bodies.getSize(); i++)
-	{
-		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++)
-		{
+	for (int i = 0; i < _bodies.getSize(); i++) {
+		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++) {
 			SimmMarker* localMarker = _bodies[i]->getMarker(j);
-			if (!localMarker->getFixed())
-			{
+			if (!localMarker->getFixed()) {
 				double pt[3];
 				for ( int k = 0; k < 3; k++) {
 					int index = aMarkerStorage.getColumnIndex(localMarker->getName()+markerComponentNames[k]);
-					if (index >= 0)
-					{
+					if (index >= 0) {
 						aMarkerStorage.getData(0, index, pt[k]);
 					}
 				}

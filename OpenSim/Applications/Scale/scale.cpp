@@ -189,9 +189,9 @@ int main(int argc,char **argv)
 			// coordinate file (a SIMM motion file) and use it to overwrite
 			// the "fromFile" specification.
 			ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
-			if (coordinateValues.getNumColumns() > 0) {
-				for (int i = 0; i < coordinateSet.getSize(); i++) {
-					if (coordinateSet[i]->getValueStr() == "fromFile"){
+			if(coordinateValues.getNumColumns() > 0) {
+				for(int i=0;i<coordinateSet.getSize();i++) {
+					if(coordinateSet[i]->getValueStr() == "fromFile"){
 						double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
 						coordinateSet[i]->setValue(newValue);
 					}
@@ -208,7 +208,7 @@ int main(int argc,char **argv)
 
 			// Convert read trc fil into "common" rdStroage format
 			Storage inputStorage;
-			staticPose.makeRdStorage(inputStorage);
+			staticPose.makeRdStorage(inputStorage);  // Take out?
 
 			// Convert the marker data into the model's units.
 			double startTime, endTime;
@@ -227,6 +227,8 @@ int main(int argc,char **argv)
 			options.setIncludeMarkers(true);
 			// Convert read trc fil into "common" rdStroage format
 			staticPose.makeRdStorage(inputStorage);
+			coordinateValues.addToRdStorage(inputStorage,startTime,endTime);
+			inputStorage.print("markers_coords.sto");
 			// Create target
 			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
 			// Create solver
@@ -250,7 +252,7 @@ int main(int argc,char **argv)
 		}
 
 		// CLEAN UP
-		//delete model;
+		delete model;
 		delete subject;
 
 	// HANDLE ANY EXCEPTIONS
