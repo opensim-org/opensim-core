@@ -29,6 +29,8 @@
 #include "SimmBody.h"
 #include "SimmKinematicsEngine.h"
 #include "simmMacros.h"
+#include <OpenSim/Tools/VisibleObject.h>
+
 
 //=============================================================================
 // STATICS
@@ -139,7 +141,7 @@ void SimmBody::copyData(const SimmBody &aBody)
 	_mass = aBody._mass;
 	_massCenter = aBody._massCenter;
 	_inertia = aBody._inertia;
-	_displayer = aBody._displayer;
+	_displayer = aBody._displayer; //? Do we need a dep copy here? when is this invoked?
 	_markers = aBody._markers;
 }
 
@@ -232,9 +234,10 @@ void SimmBody::setup(SimmKinematicsEngine* aEngine)
 	}
 
 	_displayer.setOwner(this);
-	
+	/*
 	for (i = 0; i < 3; i++)
 		_scaleFactor[i] = 1.0;
+		*/
 }
 
 void SimmBody::addMarker(SimmMarker* aMarker)
@@ -295,11 +298,16 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aPreserveMassDist)
 {
 	int i;
 
+	double oldScaleFactors[3];
+	getDisplayer()->getScaleFactors(oldScaleFactors);
+
 	for (i = 0; i < 3; i++)
 	{
 		_massCenter[i] *= aScaleFactors[i];
-		_scaleFactor[i] *= aScaleFactors[i];
+		oldScaleFactors[i] *= aScaleFactors[i];
 	}
+	// Update scale factors for displayer
+	getDisplayer()->setScaleFactors(aScaleFactors.get());
 
 	if (!aPreserveMassDist)
 		scaleInertialProperties(aScaleFactors);
@@ -454,7 +462,10 @@ void SimmBody::writeSIMM(ofstream& out) const
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->writeSIMM(out);
 
-	out << "scale " << _scaleFactor[0] << " " << _scaleFactor[1] << " " << _scaleFactor[2] << endl;
+	double scaleFactors[3];
+	_displayer.getScaleFactors(scaleFactors);
+
+	out << "scale " << scaleFactors[0] << " " << scaleFactors[1] << " " << scaleFactors[2] << endl;
 	out << "endsegment" << endl << endl;
 }
 
@@ -499,4 +510,15 @@ void SimmBody::peteTest() const
 	*/
 	for (i = 0; i < _markers.getSize(); i++)
 		_markers[i]->peteTest();
+}
+
+void SimmBody::getScaleFactors(Array<double>& scales) const
+{
+
+	double scaleFactors[3];
+	_displayer.getScaleFactors(scaleFactors);
+
+	for (int i=0; i<3; i++)
+		scales[i] = scaleFactors[i];
+
 }

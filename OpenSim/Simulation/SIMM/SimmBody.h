@@ -91,7 +91,8 @@ protected:
 	 * a SIMM joint file is written (so SIMM knows how much to
 	 * scale the bones.
 	 */
-	double _scaleFactor[3];
+	// Moved down to the Displayer object since its purpose is display and to scale vtk objects as well
+	//double _scaleFactor[3];
 
 //=============================================================================
 // METHODS
@@ -132,7 +133,7 @@ public:
 	void writeMarkers(std::ofstream& out) const;
 
 	void peteTest() const;
-
+	void getScaleFactors(Array<double>& aScaleFactors) const;
 protected:
 
 private:
