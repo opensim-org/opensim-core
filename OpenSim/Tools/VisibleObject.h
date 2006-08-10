@@ -82,7 +82,8 @@ private:
 	VisibleProperties&	_visibleProp;
 
 	/** Scale factors for geometry. unserialized */
-	Array<double>		_scaleFactors;
+	PropertyDblArray	_propScaleFactors;
+	Array<double>&		_scaleFactors;
 
 	// In general these can use the Observable mechanism but that would be slow for display purposes.
 	ArrayPtrs<VisibleObject>	_dependents;

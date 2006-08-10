@@ -74,7 +74,7 @@ VisibleObject::VisibleObject():
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(1.0, 3),
+_scaleFactors(_propScaleFactors.getValueDblArray()),
 _dependents(0),
 _allGeometry(0)
 {
@@ -100,7 +100,7 @@ Object(aFileName),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(1.0, 3),
+_scaleFactors(_propScaleFactors.getValueDblArray()),
 _dependents(0),
 _allGeometry(0)
 {
@@ -118,7 +118,7 @@ Object(aElement),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(1.0, 3),
+_scaleFactors(_propScaleFactors.getValueDblArray()),
 _dependents(0),
 _allGeometry(0)
 {
@@ -168,7 +168,7 @@ Object(aObject),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(1.0, 3),
+_scaleFactors(_propScaleFactors.getValueDblArray()),
 _dependents(0),
 _allGeometry(0)
 {
@@ -236,6 +236,8 @@ void VisibleObject::setupProperties()
 	_propVisibleProp.setName("visible_properties");
 	_propertySet.append(&_propVisibleProp);
 
+	_propScaleFactors.setName("scale_factors");
+	_propertySet.append(&_propScaleFactors);
 }
 
 //=============================================================================
@@ -263,6 +265,7 @@ operator=(const VisibleObject &aObject)
 	_transform = aObject._transform;
 	_visibleProp = aObject._visibleProp;
 
+	_scaleFactors = aObject._scaleFactors;
 	return(*this);
 }
 
