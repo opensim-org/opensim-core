@@ -87,8 +87,18 @@
 #include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
 #include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
+#include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
 #include <OpenSim/Simulation/SIMM/SimmIKParams.h>
 #include <OpenSim/Simulation/SIMM/SimmSubject.h>
+#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
+#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
+
+#include <OpenSim/Applications/Workflow/workflowDLL.h>
+#include <OpenSim/Simulation/SIMM/ScalerInterface.h>
+#include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
+#include <OpenSim/Applications/Scale/SimmScalerImpl.h>
+#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
+#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
 using namespace OpenSim;
 %}
@@ -254,6 +264,8 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmJoint.h>
 %include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 %include <OpenSim/Simulation/SIMM/SimmMarker.h>
+
+%template(ArrayPtrsSimmMarker) OpenSim::ArrayPtrs<OpenSim::SimmMarker>;
 %include <OpenSim/Simulation/SIMM/SimmModel.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscle.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
@@ -274,5 +286,15 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmGenericModelParams.h>
 %include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
 %include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
+%include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
 %include <OpenSim/Simulation/SIMM/SimmIKParams.h>
 %include <OpenSim/Simulation/SIMM/SimmSubject.h>
+%include <OpenSim/Simulation/SIMM/SimmMotionData.h>
+%include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
+
+%include <OpenSim/Applications/Workflow/workflowDLL.h>
+%include <OpenSim/Simulation/SIMM/ScalerInterface.h>
+%include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
+%include <OpenSim/Applications/Scale/SimmScalerImpl.h>
+%include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
+%include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
