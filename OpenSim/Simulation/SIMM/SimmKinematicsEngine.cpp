@@ -145,6 +145,7 @@ SimmKinematicsEngine::SimmKinematicsEngine(DOMElement *aElement) :
  * Copy constructor.
  */
 SimmKinematicsEngine::SimmKinematicsEngine(const SimmKinematicsEngine& aKE) :
+   AbstractDynamicsEngine(aKE),
 	_bodies((ArrayPtrs<SimmBody>&)_bodiesProp.getValueObjArray()),
 	_coordinates((ArrayPtrs<SimmCoordinate>&)_coordinatesProp.getValueObjArray()),
 	_joints((ArrayPtrs<SimmJoint>&)_jointsProp.getValueObjArray()),
@@ -158,10 +159,7 @@ SimmKinematicsEngine::SimmKinematicsEngine(const SimmKinematicsEngine& aKE) :
 	// NULL
 	setNull();
 
-	// DESERIALIZE
-	//updateFromXMLNode();
-
-	//setup(NULL);
+	copyData(aKE);
 }
 
 Object* SimmKinematicsEngine::copy() const
@@ -178,8 +176,6 @@ Object* SimmKinematicsEngine::copy(DOMElement *aElement) const
 	*object = *this;
 
 	object->updateFromXMLNode();
-
-	//object->setup(_model);
 
 	return object;
 }
@@ -2563,7 +2559,7 @@ void SimmKinematicsEngine::peteTest() const
 		for (i = 0; i < _bodies.getSize(); i++)
 			_bodies[i]->peteTest();
 	}
-
+#if 0
 	if (_coordinates.getSize() < 1)
 	{
 		cout << "no coordinates" << endl;
@@ -2585,6 +2581,7 @@ void SimmKinematicsEngine::peteTest() const
 	}
 
 	_path.peteTest();
+#endif
 }
 
 //--------------------------------------------------------------------------

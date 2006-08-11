@@ -114,6 +114,7 @@ SimmModel::~SimmModel()
  */
 
 SimmModel::SimmModel(const SimmModel &aModel) :
+   Model(aModel),
    _muscles((ArrayPtrs<SimmMuscle>&)_musclesProp.getValueObjArray()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),

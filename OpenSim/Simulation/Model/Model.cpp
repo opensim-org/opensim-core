@@ -138,6 +138,23 @@ Model::Model(DOMElement *aElement) :
 	init();
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aElement XML element.
+ */
+Model::Model(const Model &aModel) :
+   Object(aModel),
+	_propBodySet(PropertyObj("Bodies", BodySet())),
+	_b((BodySet&)_propBodySet.getValueObj()),
+	_propMaterialSet(PropertyObj("Materials", MaterialSet())),
+	_materialSet( (MaterialSet&)_propMaterialSet.getValueObj())
+{
+	setNull();
+	setupProperties();
+	copyData(aModel);
+}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -151,7 +168,7 @@ setNull()
 {
 	_nb = 0;
 	_g[0] = _g[1] = _g[2] = 0.0;
-   setName("Model");
+   //setName("Model");
 	_t = 0.0;
 	_tNormConst = 1.0;
 	_analysisSet = NULL;
@@ -192,24 +209,13 @@ setupProperties()
 	_materialSet.setName("Materials");
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Assign this object to the values of another.  The XML-associated variable
- * members are not copied-- the XML nodes and/or document must be generated
- * anew for a copied object.
+ * Copy data.
  *
- * @return Reference to this object.
- * @see updateXMLNode()
- * @see generateXMLNode()
+ * @param aModel Model to be copied.
  */
-Model& Model::operator=(const Model &aModel)
+void Model::copyData(const Model &aModel)
 {
 	_b = aModel._b;
 	_materialSet = aModel._materialSet;
@@ -258,6 +264,31 @@ Model& Model::operator=(const Model &aModel)
 	}
 
 	_modelDescriptionFileName = aModel._modelDescriptionFileName;
+}
+
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assign this object to the values of another.  The XML-associated variable
+ * members are not copied-- the XML nodes and/or document must be generated
+ * anew for a copied object.
+ *
+ * @return Reference to this object.
+ * @see updateXMLNode()
+ * @see generateXMLNode()
+ */
+Model& Model::operator=(const Model& aModel)
+{
+	// BASE CLASS
+	Object::operator=(aModel);
+
+	copyData(aModel);
 
 	return *this;
 }

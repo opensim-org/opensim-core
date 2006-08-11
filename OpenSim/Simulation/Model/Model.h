@@ -125,12 +125,13 @@ public:
 	Model();
 	Model(const std::string &aFileName);
 	Model(DOMElement *aElement);
+	Model(const Model &aModel);
 	virtual ~Model();
-private: // Not implemented
-	Model(const Model& aModel);
+private:
 	void setNull();
 	virtual void init();	
 	void setupProperties();
+	void copyData(const Model &aModel);
 protected:
 	/* Register types to be used when reading an ActuatedModel_SDFast object
 	from xml file. */
