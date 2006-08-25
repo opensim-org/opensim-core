@@ -328,7 +328,7 @@ add(int aN,double aY[])
 void StateVector::
 add(int aN,double aValue)
 {
-	if(aValue==NULL) return;
+	if(aValue==0) return;
 	if(aN>_data.getSize()) return;
 	_data[aN] += aValue;
 }

@@ -424,7 +424,7 @@ setHeaderToken(const char *aToken)
 	}
 
 	// NULL TERMINATE
-	_headerToken[n] = NULL;
+	_headerToken[n] = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -517,7 +517,7 @@ setColumnLabels(const char *aLabels)
 	_columnLabels = new char[len+1];
 	if(stripReturn) {
 		strncpy(_columnLabels,aLabels,len-1);
-		_columnLabels[len-1] = NULL;
+		_columnLabels[len-1] = 0;
 	} else {
 		strcpy(_columnLabels,aLabels);
 	}

@@ -161,7 +161,7 @@ setName(const char *aName)
 	} else {
 		strncpy(_name,aName,NAME_LENGTH-2);
 	}
-	_name[NAME_LENGTH-1] = NULL;
+	_name[NAME_LENGTH-1] = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -192,7 +192,7 @@ setDescription(const char *aDescrip)
 	} else {
 		strncpy(_descrip,aDescrip,DESCRIP_LENGTH-2);
 	}
-	_descrip[DESCRIP_LENGTH-1] = NULL;
+	_descrip[DESCRIP_LENGTH-1] = 0;
 }
 //_____________________________________________________________________________
 /**
