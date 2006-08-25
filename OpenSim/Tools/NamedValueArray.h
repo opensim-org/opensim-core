@@ -156,7 +156,7 @@ public:
 	void getValues(T* aValuesArray) const
 	{
 		int idx = 0;
-		for(std::vector<T>::const_iterator iter = _values.begin(); 
+		for(typename std::vector<T>::const_iterator iter = _values.begin(); 
 								 iter != _values.end(); 
 								 iter++, idx++){
 			aValuesArray[idx] = _values[idx];
@@ -199,7 +199,7 @@ public:
 	void setValueNames(std::string* & aValuesArray)
 	{
 		int idx = 0;
-		for(std::vector<T>::iterator iter = _values.begin(); 
+		for(typename std::vector<T>::iterator iter = _values.begin(); 
 								 iter != _values.end(); 
 								 iter++, idx++){
 			_names[idx] = aValuesArray[idx];
@@ -233,7 +233,7 @@ public:
 	{
 		T *returnValue=0;
 
-		std::vector<T>::const_iterator valIterator = _values.begin();
+		typename std::vector<T>::const_iterator valIterator = _values.begin();
 		for(std::vector<std::string>::const_iterator iter = _names.begin(); 
 								 iter != _names.end() && valIterator != _values.end(); 
 								 iter++, valIterator++){
