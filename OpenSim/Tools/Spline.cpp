@@ -34,7 +34,6 @@
 
 // INCLUDES
 #include "Spline.h"
-#include "Math.h"
 
 
 // DEFINES

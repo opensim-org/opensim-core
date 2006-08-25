@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "Math.h"
 #include "Mtx.h"
 #include "PointConstraint.h"
 

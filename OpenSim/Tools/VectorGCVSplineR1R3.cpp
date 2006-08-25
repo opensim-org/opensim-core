@@ -34,7 +34,6 @@
 
 
 // C++ INCLUDES
-#include "Math.h"
 #include "VectorGCVSplineR1R3.h"
 
 

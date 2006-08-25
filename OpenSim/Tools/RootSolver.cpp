@@ -36,7 +36,6 @@
 #include <iostream>
 #include <string>
 #include <float.h>
-#include "Math.h"
 #include "RootSolver.h"
 
 
