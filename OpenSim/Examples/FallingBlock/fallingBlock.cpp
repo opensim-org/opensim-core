@@ -27,7 +27,7 @@ using namespace std;
  * Run a simulation with a falling block acted on by contact elements
  * and actuators.
  */
-void main()
+int main()
 {
 	// STEP 1
 	// Set output precision
@@ -122,4 +122,5 @@ void main()
 	// Print the analysis results.
 	model.getAnalysisSet()->printResults("fallingBlock","./");
 
+	return 0;
 }
