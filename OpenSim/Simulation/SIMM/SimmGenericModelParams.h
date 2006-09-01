@@ -82,7 +82,7 @@ public:
 #endif
 	void copyData(const SimmGenericModelParams &aGenericModelParams);
 
-	SimmModel* processModel();
+	SimmModel* processModel(const char*pathToSubject=0);
 
 	/* Register types to be used when reading a SimmGenericModelParams object from xml file. */
 	static void registerTypes();
@@ -103,7 +103,17 @@ public:
 	{
 		return _fileName;
 	};
-protected:
+
+	// Set model file name
+	void setModelFileName(const std::string& aFileName)
+	{
+		_fileName=aFileName;
+	};
+
+	ArrayPtrs<SimmMarker>& getMarkerSet()
+	{
+		return _markerSet;
+	}
 
 private:
 	void setNull();

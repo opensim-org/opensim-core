@@ -246,7 +246,7 @@ SimmMarkerPlacementParams& SimmMarkerPlacementParams::operator=(const SimmMarker
 	return(*this);
 }
 
-#if 0
+
 /* This method creates a simmMotionTrial instance with the markerFile and timeRange
 parameters. It also creates a SimmMotionData instance with the coordinateFile
 parameter. Then it calls model->updateCoordinateSet() with the coordinate set
@@ -256,7 +256,7 @@ the static pose. Then it calls model->moveMarkers(simmMotionTrial) which uses th
 current model pose to relocate all non-fixed markers according to their locations
 in the simmMotionTrial. Then it writes the output files selected by the user.
 */
-bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
+bool SimmMarkerPlacementParams::processModel(SimmModel* aModel, const std::string& pathToSubject)
 {
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
@@ -267,7 +267,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 		/* Load the coordinate file. */
 		if (!_coordinateFileNameProp.getUseDefault())
 		{
-			SimmMotionData coordinateValues(_coordinateFileName);
+			SimmMotionData coordinateValues(pathToSubject+_coordinateFileName);
 
 			/* For each coordinate whose "value" field the user specified
 			 * as "fromFile", read the value from the first frame in the
@@ -298,7 +298,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 		/* Load the static pose marker file, and average all the
 		 * frames in the user-specified time range.
 		 */
-		SimmMarkerData staticPose(_markerFileName);
+		SimmMarkerData staticPose(pathToSubject+_markerFileName);
 		staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 		staticPose.convertToUnits(aModel->getLengthUnits());
 
@@ -306,7 +306,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 		 * pose marker file.
 		 */
 		aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
-
+#if 0
 		/* Now solve the static pose. */
 		SimmIKTrialParams options;
 		options.setStartTime(_timeRange[0]);
@@ -320,6 +320,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 		 * the proper configuration so the coordinates do not need to be changed.
 		 */
 		aModel->moveMarkersToCloud(staticPose);
+#endif
 	}
 	catch (Exception &x)
 	{
@@ -338,7 +339,7 @@ bool SimmMarkerPlacementParams::processModel(SimmModel* aModel)
 
 	return true;
 }
-#endif
+
 
 void SimmMarkerPlacementParams::peteTest() const
 {
@@ -370,29 +371,30 @@ bool SimmMarkerPlacementParams::isDefault() const
  * Write output simm and xml files if desired.
  */
 
-void SimmMarkerPlacementParams::writeOutputFiles(SimmModel* aModel, Storage& aStorage) const
+void SimmMarkerPlacementParams::writeOutputFiles(SimmModel* aModel, Storage& aStorage, const char* aPath) const
 {
+	string path=(aPath==0)?"":string(aPath);
 	// write output files, if names specified by the user
 	if (!_outputJointFileNameProp.getUseDefault())
-		aModel->writeSIMMJointFile(_outputJointFileName);
+		aModel->writeSIMMJointFile(path+_outputJointFileName);
 
 	if (!_outputMuscleFileNameProp.getUseDefault())
-		aModel->writeSIMMMuscleFile(_outputMuscleFileName);
+		aModel->writeSIMMMuscleFile(path+_outputMuscleFileName);
 
 	if (!_outputModelFileNameProp.getUseDefault())
 	{
-		aModel->print(_outputModelFileName);
+		aModel->print(path+_outputModelFileName);
 		cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 	}
 
 	if (!_outputMarkerFileNameProp.getUseDefault())
 	{
-		aModel->writeMarkerFile(_outputMarkerFileName);
+		aModel->writeMarkerFile(path+_outputMarkerFileName);
 		cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 	}
 	SimmMotionData motionData(aStorage);
 	if (!_outputMotionFileNameProp.getUseDefault())
-		motionData.writeSIMMMotionFile(_outputMotionFileName, aModel->getName());
+		motionData.writeSIMMMotionFile(path+_outputMotionFileName, aModel->getName());
 
 
 }

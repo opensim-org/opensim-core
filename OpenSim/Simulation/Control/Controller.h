@@ -39,8 +39,8 @@
 #include "ControlSet.h"
 
 
-const int Controller_NAME_LENGTH = 64;
-const int Controller_DESCRIP_LENGTH = 8192;
+const int ControllerNAME_LENGTH = 64;
+const int ControllerDESCRIP_LENGTH = 8192;
 
 
 //=============================================================================
@@ -69,9 +69,9 @@ protected:
 	/** Flag to indicate on or off state. */
 	bool _on;
 	/** Name. */
-	char _name[Controller_NAME_LENGTH];
+	char _name[ControllerNAME_LENGTH];
 	/** Description. */
-	char _descrip[Controller_DESCRIP_LENGTH];
+	char _descrip[ControllerDESCRIP_LENGTH];
 
 //=============================================================================
 // METHODS

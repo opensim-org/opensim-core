@@ -127,7 +127,7 @@ public:
 	void setEndTime(double aTime) { _timeRange[1] = aTime; }
 	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
 	void findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const;
-	SimmMotionData *getCoordinateValues(SimmModel& aModel) const;
+	SimmMotionData *getCoordinateValues(SimmModel& aModel, const char*path=0) const;
 
 	void peteTest() const;
 	std::string getMarkerDataFilename() const

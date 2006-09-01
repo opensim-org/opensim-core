@@ -36,12 +36,18 @@
 #include "rdTools.h"
 #include <time.h>
 #include "IO.h"
-#include <direct.h>
+#ifdef _MSC_VER
+	#include <direct.h>
+#else
+	#include <unistd.h>
+#endif
 
 // CONSTANTS
 
 
 using namespace OpenSim;
+using namespace std;
+
 const int IO::STRLEN = IO_STRLEN;
 const int IO::STRING_INCREMENT = IO_STRING_INCREMENT;
 
@@ -474,3 +480,26 @@ makeDir(const char *aDirName)
 	return _mkdir(aDirName);
 }
 
+//_____________________________________________________________________________
+/**
+ * Get parent directory of the passed in fileName.
+ * 
+*/
+string IO::
+getParentDirectory(const string& fileName)
+{
+	string	result="";
+
+	string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
+	
+	if (dirSep == string::npos)
+		dirSep = fileName.rfind('\\'); // DOS dir separator
+	
+	if (dirSep != string::npos) // if '_fileName' contains path information...
+	{
+		string dirPath(fileName, 0, dirSep+1);	// include trailing slashes
+		result=dirPath;
+	}
+
+	return result;
+}

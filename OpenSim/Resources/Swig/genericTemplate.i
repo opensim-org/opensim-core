@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
 #include <OpenSim/Simulation/Integrator/RKF.h>
 #include <OpenSim/Simulation/Integrator/IntegRKF.h>
@@ -46,6 +47,7 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/AnalysisFactory.h>
+#include <OpenSim/Simulation/Model/Investigation.h>
 
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/IndAcc.h>
@@ -216,6 +218,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Control/ControlSet.h>
 %include <OpenSim/Simulation/Control/ControlConstant.h>
 %include <OpenSim/Simulation/Control/ControlLinear.h>
+%include <OpenSim/Simulation/Control/Controller.h>
 
 %include <OpenSim/Simulation/Integrator/Integrand.h>
 %include <OpenSim/Simulation/Model/ModelIntegrand.h>
@@ -232,6 +235,7 @@ using namespace OpenSim;
 %template(ArrayAnalysis) OpenSim::ArrayPtrs<OpenSim::Analysis>;
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
 %include <OpenSim/Simulation/Model/AnalysisFactory.h>
+%include <OpenSim/Simulation/Model/Investigation.h>
 
 %include <OpenSim/Analyses/suAnalysesDLL.h>
 %include <OpenSim/Analyses/Kinematics.h>

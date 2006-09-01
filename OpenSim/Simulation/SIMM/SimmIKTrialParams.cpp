@@ -235,7 +235,7 @@ SimmIKTrialParams& SimmIKTrialParams::operator=(const SimmIKTrialParams &aIKTria
  * @param aModel SimmModel to use. 
  * @return Pointer to a SimmMotionData.
  */
-SimmMotionData *SimmIKTrialParams::getCoordinateValues(SimmModel& aModel) const
+SimmMotionData *SimmIKTrialParams::getCoordinateValues(SimmModel& aModel, const char* path) const
 {
 	SimmMotionData* outputMotionData=0;
 	/* Update the model with the coordinates specified
@@ -246,7 +246,11 @@ SimmMotionData *SimmIKTrialParams::getCoordinateValues(SimmModel& aModel) const
 
 	if (!_inputCoordinateFileNameProp.getUseDefault())
 	{
-		SimmMotionData* coordinateValues = new SimmMotionData(_inputCoordinateFileName);
+		string fullCordinateFileName = _inputCoordinateFileName;
+		if (path != 0)
+			fullCordinateFileName = string(path)+fullCordinateFileName;
+
+		SimmMotionData* coordinateValues = new SimmMotionData(fullCordinateFileName);
 
 		/* For each coordinate whose "value" field the user specified
 		* as "fromFile", read the value from the first frame in the

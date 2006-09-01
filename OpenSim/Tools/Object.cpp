@@ -35,6 +35,7 @@
 //============================================================================
 // INCLUDES
 //============================================================================
+#include <fstream>
 #include "Object.h"
 #include "Exception.h"
 #include "Property.h"
@@ -119,6 +120,19 @@ Object::Object(const string &aFileName)
 	setNull();
 
 	// CREATE DOCUMENT
+	{
+		// Check file exists before trying to parse it. Is there a faster way to do this?
+		// This maybe slower than we like but definitely faster than 
+		// going all the way down to the parser to throw an exception for null document!
+		// -Ayman 8/06
+		ifstream fileExists(aFileName.c_str(), ios_base::in);
+		if (fileExists.good()==false){
+			string msg =
+				"Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
+		fileExists.close();	
+	}
 	_document = new XMLDocument(aFileName);
 
 	//try {
@@ -694,13 +708,14 @@ updateFromXMLNode()
 		// Str
 		case(Property::Str) : {
 			property->setUseDefault(true);
-			char *value;
+			// Did code transformation to avoid trying to parse elmt
+			// if it's known to be NULL to avoid exception throwing overhead.
+			// -Ayman 8/06
+			char *value=0;
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			value = XMLNode::GetStr(elmt);
-			if(value==NULL) {
-				property->setValue("");
-				property->setUseDefault(false);
-			} else {
+			if (elmt != 0)
+				value = XMLNode::GetStr(elmt);
+			if(value!=0) {
 				string valueStr = value;
 				stripExtraWhiteSpace(valueStr);
 				property->setValue(valueStr);
@@ -763,7 +778,10 @@ updateFromXMLNode()
 					// Make sure this is not the default
 					DOMNode *parent = elmt->getParentNode();
 					char *parentName = XMLString::transcode(parent->getNodeName());
-					if (string(parentName)=="defaults")
+					// Add check for _type so that only nodes with proper parent are used.
+					// A more robust solution is traversing only immediate children of _node
+					// outside the loop.
+					if (string(parentName)=="defaults" || string(parentName)!=_type)
 						continue;
 					// NAME ATTRIBUTE
 					char *elmtName =

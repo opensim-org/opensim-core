@@ -26,6 +26,7 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/XMLDocument.h>
@@ -151,11 +152,13 @@ int main(int argc,char **argv)
 		Object *modelCopy = model->copy();
 		modelCopy->print("gait_test.osim");
 
+		delete model;
+		delete modelCopy;
 		// SCALE THE MODEL BASE ON PARAMETERS SPECIFIED IN THE SUBJECT FILE
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
 			ScalerInterface *scaler = new SimmScalerImpl(*model);
-			const ScaleSet &scaleSet = params.getScaleSet(*model);
+			const ScaleSet &scaleSet = params.getScaleSet(*model, subject->getPathToSubject().c_str());
 			bool preserveMassDistribution = params.getPreserveMassDist();
 			double mass = subject->getMass();
 			bool success = scaler->scaleModel(scaleSet,preserveMassDistribution, mass);
@@ -189,9 +192,9 @@ int main(int argc,char **argv)
 			// coordinate file (a SIMM motion file) and use it to overwrite
 			// the "fromFile" specification.
 			ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
-			if(coordinateValues.getNumColumns() > 0) {
-				for(int i=0;i<coordinateSet.getSize();i++) {
-					if(coordinateSet[i]->getValueStr() == "fromFile"){
+			if (coordinateValues.getNumColumns() > 0) {
+				for (int i = 0; i < coordinateSet.getSize(); i++) {
+					if (coordinateSet[i]->getValueStr() == "fromFile"){
 						double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
 						coordinateSet[i]->setValue(newValue);
 					}
@@ -211,9 +214,8 @@ int main(int argc,char **argv)
 			staticPose.makeRdStorage(inputStorage);  // Take out?
 
 			// Convert the marker data into the model's units.
-			double startTime, endTime;
-			params.getTimeRange(startTime, endTime);
-			staticPose.averageFrames(params.getMaxMarkerMovement(), startTime, endTime);
+			Array<double> timeRange = params.getTimeRange();
+			staticPose.averageFrames(0.01, timeRange[0], timeRange[1]);
 			staticPose.convertToUnits(model->getLengthUnits());
 
 			// Delete any markers from the model that are not in the static
@@ -222,12 +224,12 @@ int main(int argc,char **argv)
 
 			// SOLVE THE IK PROBLEM FOR THE STATIC POSE
 			SimmIKTrialParams options;
-			options.setStartTime(startTime);
-			options.setEndTime(endTime);
+			options.setStartTime(timeRange[0]);
+			options.setEndTime(timeRange[1]);
 			options.setIncludeMarkers(true);
 			// Convert read trc fil into "common" rdStroage format
 			staticPose.makeRdStorage(inputStorage);
-			coordinateValues.addToRdStorage(inputStorage,startTime,endTime);
+			coordinateValues.addToRdStorage(inputStorage,timeRange[0],timeRange[1]);
 			inputStorage.print("markers_coords.sto");
 			// Create target
 			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);

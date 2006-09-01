@@ -76,7 +76,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmMarkerData();
-	SimmMarkerData(std::string& aFileName);
+	SimmMarkerData(const std::string& aFileName);
 	virtual ~SimmMarkerData();
 	void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
 	void averageFrames(double aThreshold = -1.0, double aStartTime = rdMath::MINUS_INFINITY, double aEndTime = rdMath::PLUS_INFINITY);
@@ -92,9 +92,9 @@ public:
 	void peteTest() const;
 
 private:
-	void readTRCFile(std::string& aFileName, SimmMarkerData& data);
-	void readTRCFileHeader(std::ifstream &in, std::string& aFileName, SimmMarkerData& data);
-	void readTRBFile(std::string& aFileName, SimmMarkerData& data);
+	void readTRCFile(const std::string& aFileName, SimmMarkerData& data);
+	void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, SimmMarkerData& data);
+	void readTRBFile(const std::string& aFileName, SimmMarkerData& data);
 
 //=============================================================================
 };	// END of class SimmMarkerData

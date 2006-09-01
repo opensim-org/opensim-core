@@ -277,8 +277,6 @@ void SimmKinematicsEngine::setup(SimmModel* aModel)
 	for (i = 0; i < _bodies.getSize(); i++)
 		_bodies[i]->setup(this);
 
-	Object* shouldbeBody1 = (_bodies[1]->getDisplayer())->getOwner();
-
 	_groundBody = identifyGroundBody();
 
 	for (i = 0; i < _coordinates.getSize(); i++)
@@ -1158,7 +1156,7 @@ void SimmKinematicsEngine::makeSdfastModel(string filename, bool writeFile)
    }
 }
 
-void SimmKinematicsEngine::writeSDHeaderFile(string filename)
+void SimmKinematicsEngine::writeSDHeaderFile(const string filename)
 {
    int i;
 	ofstream out;
@@ -2365,7 +2363,7 @@ double SimmKinematicsEngine::takeMeasurement(const SimmMeasurement& aMeasurement
 	}
 }
 
-void SimmKinematicsEngine::writeSIMMJointFile(string& aFileName) const
+void SimmKinematicsEngine::writeSIMMJointFile(const string& aFileName) const
 {
    ofstream out;
 	int functionIndex = 1;
@@ -2523,7 +2521,7 @@ void SimmKinematicsEngine::writeSIMMJointFile(string& aFileName) const
  * MarkerSet definition inside a SimmMarkerPlacementParams,
  * or a SimmGenericModelParams.
  */
-void SimmKinematicsEngine::writeMarkerFile(string& aFileName) const
+void SimmKinematicsEngine::writeMarkerFile(const string& aFileName) const
 {
    ofstream out;
 

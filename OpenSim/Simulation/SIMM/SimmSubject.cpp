@@ -27,8 +27,8 @@
 // INCLUDES
 //=============================================================================
 #include "SimmSubject.h"
-
-
+#include "simmIO.h"
+#include <OpenSim/Tools/IO.h>
 
 using namespace OpenSim;
 const double SimmSubject::DefaultMass=-1.0;
@@ -83,6 +83,8 @@ SimmSubject::SimmSubject(const string &aFileName) :
 	setNull();
 
 	updateFromXMLNode();
+
+	_pathToSubject = IO::getParentDirectory(aFileName);
 }
 
 //_____________________________________________________________________________
@@ -271,7 +273,8 @@ SimmModel* SimmSubject::createModel()
 	/* Make the generic model. */
 	if (!_genericModelParamsProp.getUseDefault())
 	{
-		SimmModel *model = _genericModelParams.processModel();
+		
+		SimmModel *model = _genericModelParams.processModel(_pathToSubject.c_str());
 		if (model==0)
 		{
 			cout << "===ERROR===: Unable to load generic model." << endl;
@@ -300,3 +303,22 @@ bool SimmSubject::isDefaultMarkerPlacementParams() const
 	
 	return (_markerPlacementParamsProp.getUseDefault()==true || _markerPlacementParams.isDefault()); 
 }
+/*
+string SimmSubject::getParentDirectory(const string& fileName)
+{
+	string	result="";
+
+	string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
+	
+	if (dirSep == string::npos)
+		dirSep = fileName.rfind('\\'); // DOS dir separator
+	
+	if (dirSep != string::npos) // if '_fileName' contains path information...
+	{
+		string dirPath(fileName, 0, dirSep+1);	// include trailing slashes
+		result=dirPath;
+	}
+
+	return result;	// Eventually this will be moved to simmIO as a platform specific thing
+}
+*/

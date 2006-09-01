@@ -12,6 +12,8 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 
 # SET(EXECUTABLE_OUTPUT_PATH ${OpenSim_SOURCE_DIR}/OpenSim/Applications/IK/test)
 
+ADD_DEFINITIONS(-Dworkflow_EXPORTS)
+
 ADD_EXECUTABLE(testIK ${SOURCE_FILES} ${INCLUDE_FILES})
 
 SET(TEST_FILES subject.osim subject_ik_setup.xml subject_trial.trc subject_trial.mot std_subject_trial_ik.mot)

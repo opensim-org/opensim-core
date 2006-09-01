@@ -44,8 +44,11 @@
 
 
 using namespace OpenSim;
-const int Controller::NAME_LENGTH = Controller_NAME_LENGTH;
-const int Controller::DESCRIP_LENGTH = Controller_DESCRIP_LENGTH;
+
+const int Controller::NAME_LENGTH = ControllerNAME_LENGTH;	
+// Remove _ before NAME_LENGTH to make SWIG happy since Controller::NAME_LENGTH gets
+// wrapped as Controller_NAME_LENGTH. -Ayman 8/08
+const int Controller::DESCRIP_LENGTH = ControllerDESCRIP_LENGTH;
 
 
 //=============================================================================

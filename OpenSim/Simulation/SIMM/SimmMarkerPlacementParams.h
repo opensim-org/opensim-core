@@ -134,16 +134,16 @@ public:
 	{
 		return _markerSet;
 	}
-	std::string &getStaticPoseFilename() const
+	const std::string &getStaticPoseFilename() const
 	{
 		return _markerFileName;
 	}
-	void getTimeRange(double& startTime, double &endTime) const
-	{
-		startTime = _timeRange[0];
-		endTime = _timeRange[1];
-	}
-	std::string &SimmMarkerPlacementParams::getCoordinateFileName() const
+
+    Array<double> getTimeRange() {
+        return _timeRange;
+    }
+
+	const std::string &SimmMarkerPlacementParams::getCoordinateFileName() const
     {
         return _coordinateFileName;
     }
@@ -159,8 +159,51 @@ public:
 	 }
 
 	/** Add a coordinate to the coordinate set */
+	bool processModel(SimmModel* aModel, const std::string& path);
 	void addCoordinate(SimmCoordinate *aCoordinate);
-	void writeOutputFiles(SimmModel* aModel, Storage& aStorage) const;
+	void writeOutputFiles(SimmModel* aModel, Storage& aStorage, const char* path=0) const;
+    const std::string& getOutputModelFileName() {
+        return _outputModelFileName;
+    }
+
+    void setOutputModelFileName(const std::string& aOutputModelFileName) {
+        _outputModelFileName = aOutputModelFileName;
+    }
+
+	const std::string& getOutputJointFileName() {
+        return _outputJointFileName;
+    }
+	/**
+	 * Expose file names for access from the GUI
+	 */
+    void setOutputJointFileName(const std::string& outputJointFileName) {
+        _outputJointFileName = outputJointFileName;
+    }
+
+    const std::string& getOutputMuscleFileName() {
+        return _outputMuscleFileName;
+    }
+
+    void setOutputMuscleFileName(const std::string& outputMuscleFileName) {
+        _outputMuscleFileName = outputMuscleFileName;
+    }
+
+    const std::string& getOutputMarkerFileName() {
+        return _outputMarkerFileName;
+    }
+
+    void setOutputMarkerFileName(const std::string& outputMarkerFileName) {
+        _outputMarkerFileName = outputMarkerFileName;
+    }
+
+    const std::string& getOutputMotionFileName() {
+        return _outputMotionFileName;
+    }
+
+    void setOutputMotionFileName(const std::string& outputMotionFileName) {
+        _outputMotionFileName = outputMotionFileName;
+    }
+
 protected:
 
 private:

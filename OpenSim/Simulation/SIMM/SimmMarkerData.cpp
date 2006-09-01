@@ -58,7 +58,7 @@ SimmMarkerData::SimmMarkerData() :
 {
 }
 
-SimmMarkerData::SimmMarkerData(string& aFileName) :
+SimmMarkerData::SimmMarkerData(const string& aFileName) :
 	_numFrames(0),
 	_numMarkers(0),
 	_markerNames(""),
@@ -98,7 +98,7 @@ SimmMarkerData::~SimmMarkerData()
 {
 }
 
-void SimmMarkerData::readTRCFile(string& aFileName, SimmMarkerData& data)
+void SimmMarkerData::readTRCFile(const string& aFileName, SimmMarkerData& data)
 {
    ifstream in;
    string line, buffer;
@@ -237,7 +237,7 @@ void SimmMarkerData::readTRCFile(string& aFileName, SimmMarkerData& data)
    in.close();
 }
 
-void SimmMarkerData::readTRCFileHeader(ifstream &in, string& aFileName, SimmMarkerData& data)
+void SimmMarkerData::readTRCFileHeader(ifstream &in, const string& aFileName, SimmMarkerData& data)
 {
    string line, buffer;
    int pathFileType, markersRead;
@@ -366,7 +366,7 @@ void SimmMarkerData::readTRCFileHeader(ifstream &in, string& aFileName, SimmMark
       getline(in, line);
 }
 
-void SimmMarkerData::readTRBFile(string& aFileName, SimmMarkerData& data)
+void SimmMarkerData::readTRBFile(const string& aFileName, SimmMarkerData& data)
 {
 #if 0
    int i, j, index, headerSize, numMarkersThisFrame;

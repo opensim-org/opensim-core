@@ -1,12 +1,20 @@
 #ifndef _SimmScalerImpl_h_
 #define _SimmScalerImpl_h_
 
+#include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Simulation/SIMM/ScalerInterface.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 
 namespace OpenSim { 
 
 class ScaleSet;
+
+#ifdef SWIG
+	#ifdef workflow_API
+		#undef workflow_API
+		#define workflow_API
+	#endif
+#endif
 
 // SimmScalerImpl.h
 // Author: Ayman Habib
@@ -32,7 +40,7 @@ class ScaleSet;
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class SimmScalerImpl : public ScalerInterface 
+class workflow_API SimmScalerImpl : public ScalerInterface 
 {
 public:
 	SimmScalerImpl(Model &aModel);

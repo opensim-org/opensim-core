@@ -63,7 +63,7 @@ SimmMotionData::SimmMotionData() :
 {
 }
 
-SimmMotionData::SimmMotionData(string& aFileName) :
+SimmMotionData::SimmMotionData(const string& aFileName) :
 	_numRows(0),
 	_numColumns(0),
 	_keys(""),
@@ -171,7 +171,7 @@ SimmMotionData::~SimmMotionData()
 {
 }
 
-void SimmMotionData::readMotionFileHeader(ifstream &in, string& aFileName, SimmMotionData& data)
+void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName, SimmMotionData& data)
 {
    string line, buffer, str, str2, str3;
 	double eventColor[3];

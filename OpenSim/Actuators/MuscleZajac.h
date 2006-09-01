@@ -10,12 +10,10 @@
 // INCLUDES
 //=============================================================================
 #include <RD/Tools/rdTools.h>
-#include <RD/Tools/Math.h>
 #include <RD/Tools/PropertyDbl.h> //added
 #include <RD/Tools/Storage.h>
 #include <RD/Simulation/Model/Model.h>
 #include <RD/Simulation/Model/Force.h>
-// #include <Muscle.h>  // Not used?
 #include "Actuators.h"
 
 

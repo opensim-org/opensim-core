@@ -1,3 +1,4 @@
+
 #ifndef _SimmInverseKinematicsTarget_h_
 #define _SimmInverseKinematicsTarget_h_
 // SimmInverseKinematicsTarget.h
@@ -23,7 +24,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+#include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
@@ -35,6 +36,13 @@ class SimmBody;
 class Storage;
 class SimmModel;
 
+#ifdef SWIG
+	#ifdef workflow_API
+		#undef workflow_API
+		#define workflow_API
+	#endif
+#endif
+
 //=============================================================================
 /**
  * A Class that represents an inverse kinematics optimization target. This solves the problem
@@ -45,7 +53,7 @@ class SimmModel;
  * @version 1.0
  */
 
-class SimmInverseKinematicsTarget : public rdOptimizationTarget
+class workflow_API SimmInverseKinematicsTarget : public rdOptimizationTarget
 {
 //==============================================================================
 // DATA
@@ -94,7 +102,7 @@ public:
 	//---------------------------------------------------------------------------
 	SimmInverseKinematicsTarget(SimmModel &aModel, Storage& aExperimentalDataStorage);
 
-	virtual ~SimmInverseKinematicsTarget(void);
+	virtual ~SimmInverseKinematicsTarget();
 
 	//---------------------------------------------------------------------------
 	// SET AND GET

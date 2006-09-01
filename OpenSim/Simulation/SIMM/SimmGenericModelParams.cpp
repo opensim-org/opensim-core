@@ -172,7 +172,7 @@ SimmGenericModelParams& SimmGenericModelParams::operator=(const SimmGenericModel
 	return(*this);
 }
 
-SimmModel* SimmGenericModelParams::processModel()
+SimmModel* SimmGenericModelParams::processModel(const char*pathToSubject)
 {
 	SimmModel* model = NULL;
 
@@ -180,6 +180,9 @@ SimmModel* SimmGenericModelParams::processModel()
 
 	try
 	{
+		if (pathToSubject!=0)
+			_fileName = string(pathToSubject)+_fileName;
+
 		model = new SimmModel(_fileName);
 		model->setup();
 

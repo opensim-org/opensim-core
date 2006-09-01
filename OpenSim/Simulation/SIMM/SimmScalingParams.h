@@ -137,14 +137,14 @@ public:
 	/**
 	 * Set and retrieve the final scaleSet to be applied to the model 
 	 */
- 	const ScaleSet& getScaleSet(SimmModel& aModel);	
+ 	const ScaleSet& getScaleSet(SimmModel& aModel, const char* subjectDirectory);	
  
 	ArrayPtrs<OpenSim::Scale> &getScales()
 	{
 		return _scaleSet;
 	};
 
-	void writeOutputFiles(SimmModel* aModel);
+	void writeOutputFiles(SimmModel* aModel, const char* dirToWriteOutputFiles=0);
 	/* Register types to be used when reading a SimmScalingParams object from xml file. */
 	static void registerTypes();
 
@@ -157,12 +157,87 @@ public:
 		_measurementSet.append(aMeasurement);
 	}
 	/**
-	 * add a sclae factor to current scaleSet
+	 * add a scale factor to current scaleSet
 	 */
 	void addScale(Scale *aScale)
 	{
 		_scaleSet.append(aScale);
 	}
+     ArrayPtrs<SimmMeasurement> getMeasurementSet() {
+        return _measurementSet;
+    }
+
+     void setMeasurementSet(ArrayPtrs<SimmMeasurement> measurementSet) {
+        _measurementSet = measurementSet;
+    }
+
+     ArrayPtrs<Scale> getScaleSet() {
+        return _scaleSet;
+    }
+
+     void setScaleSet(ArrayPtrs<Scale> aScaleSet) {
+        _scaleSet = aScaleSet;
+    }
+
+     Array<double> getTimeRange() {
+        return _timeRange;
+    }
+
+     void setTimeRange(Array<double> timeRange) {
+        _timeRange = timeRange;
+    }
+
+     void setPreserveMassDist(bool preserveMassDist) {
+        _preserveMassDist = preserveMassDist;
+    }
+
+    Array<std::string> getScalingOrder() {
+        return _scalingOrder;
+    }
+
+    void setScalingOrder(Array<std::string>& scalingOrder) {
+        _scalingOrder = scalingOrder;
+    }
+
+    const std::string& getMarkerFileName() {
+        return _markerFileName;
+    }
+
+    void setMarkerFileName(const std::string& aMarkerFileName) {
+        _markerFileName = aMarkerFileName;
+    }
+
+    const std::string& getOutputJointFileName() {
+        return _outputJointFileName;
+    }
+
+    void setOutputJointFileName(const std::string& outputJointFileName) {
+        _outputJointFileName = outputJointFileName;
+    }
+
+    const std::string& getOutputMuscleFileName() {
+        return _outputMuscleFileName;
+    }
+
+    void setOutputMuscleFileName(const std::string& aOutputMuscleFileName) {
+        _outputMuscleFileName = aOutputMuscleFileName;
+    }
+
+    const std::string& getOutputModelFileName() {
+        return _outputModelFileName;
+    }
+
+    void setOutputModelFileName(const std::string& aOutputModelFileName) {
+        _outputModelFileName = aOutputModelFileName;
+    }
+
+    const std::string& getOutputScaleFileName() {
+        return _outputScaleFileName;
+    }
+
+    void setOutputScaleFileName(const std::string& aOutputScaleFileName) {
+        _outputScaleFileName = aOutputScaleFileName;
+    }
 protected:
 
 private:

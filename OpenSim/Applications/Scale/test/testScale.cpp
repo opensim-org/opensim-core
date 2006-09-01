@@ -66,7 +66,7 @@ int main(int argc,char **argv)
 	SimmScalingParams& params = subject->getScalingParams();
 	ScalerInterface *scaler = new SimmScalerImpl(*model);
 
-	if (!scaler->scaleModel(params.getScaleSet(*model), params.getPreserveMassDist(), subject->getMass()))
+	if (!scaler->scaleModel(params.getScaleSet(*model, ""), params.getPreserveMassDist(), subject->getMass()))
 	{
 		cout << "===ERROR===: Unable to scale generic model." << endl;
 		return 0;
@@ -90,7 +90,8 @@ int main(int argc,char **argv)
 		staticPose.makeRdStorage(inputStorage);
 		// Convert the marker data into the model's units.
 		double startTime, endTime;
-		markerPlacementParams.getTimeRange(startTime, endTime);
+		Array<double> range = markerPlacementParams.getTimeRange();
+		startTime=range[0]; endTime=range[1];
 		staticPose.averageFrames(markerPlacementParams.getMaxMarkerMovement(), startTime, endTime);
 		staticPose.convertToUnits(model->getLengthUnits());
 

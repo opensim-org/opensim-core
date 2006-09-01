@@ -12,7 +12,10 @@ LINK_LIBRARIES(
 	debug rdSimulation_d optimized rdSimulation
 	debug rdSQP_d optimized rdSQP)
 
+ADD_DEFINITIONS(-Dworkflow_EXPORTS)
+
 ADD_EXECUTABLE(ik ${SOURCE_FILES} ${INCLUDE_FILES})
+
 
 INSTALL_TARGETS(/bin/ ik)
 

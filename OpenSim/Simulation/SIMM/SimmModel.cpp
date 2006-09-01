@@ -435,12 +435,12 @@ ArrayPtrs<SimmCoordinate>& SimmModel::getCoordinates()
 	return getSimmKinematicsEngine().getCoordinates();
 }
 
-void SimmModel::writeSIMMJointFile(string& aFileName) const
+void SimmModel::writeSIMMJointFile(const string& aFileName) const
 {
 	getSimmKinematicsEngine().writeSIMMJointFile(aFileName);
 }
 
-void SimmModel::writeSIMMMuscleFile(string& aFileName) const
+void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
 {
    ofstream out;
 	int functionIndex = 1;
@@ -474,7 +474,7 @@ void SimmModel::writeSIMMMuscleFile(string& aFileName) const
  * MarkerSet definition inside a SimmMarkerPlacementParams
  * or a SimmGenericModelParams.
  */
-void SimmModel::writeMarkerFile(string& aFileName) const
+void SimmModel::writeMarkerFile(const string& aFileName) const
 {
    getSimmKinematicsEngine().writeMarkerFile(aFileName);
 }

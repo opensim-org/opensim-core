@@ -263,7 +263,7 @@ SimmScalingParams& SimmScalingParams::operator=(const SimmScalingParams &aScalin
 * @returns ScaleSet to be used for scaling the model (one entry per segment)
 */
 
-const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel) 
+const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel, const char* subjectDirectory) 
 {
 
 	int i;
@@ -302,7 +302,8 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel)
 				/* Load the static pose marker file, and average all the
 				 * frames in the user-specified time range.
 			    */
-				SimmMarkerData staticPose(_markerFileName);
+
+				SimmMarkerData staticPose(string(subjectDirectory)+_markerFileName);
 				staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 				staticPose.convertToUnits(aModel.getLengthUnits());
 
@@ -378,24 +379,26 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel)
  *
  * @params aModel: scaled model
  */
-void SimmScalingParams::writeOutputFiles(SimmModel *aModel)
+void SimmScalingParams::writeOutputFiles(SimmModel *aModel, const char* aPath)
 {
+	string path=(aPath==0)?"":string(aPath);
+
 	/* Write output files, if names specified by the user. */
 	if (!_outputJointFileNameProp.getUseDefault())
-		aModel->writeSIMMJointFile(_outputJointFileName);
+		aModel->writeSIMMJointFile(path+_outputJointFileName);
 
 	if (!_outputMuscleFileNameProp.getUseDefault())
-		aModel->writeSIMMMuscleFile(_outputMuscleFileName);
+		aModel->writeSIMMMuscleFile(path+_outputMuscleFileName);
 
 	if (!_outputModelFileNameProp.getUseDefault())
 	{
-		if (aModel->print(_outputModelFileName))
+		if (aModel->print(path+_outputModelFileName))
 			cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 	}
 
 	if (!_outputScaleFileNameProp.getUseDefault())
 	{
-		if (_theScaleSet.print(_outputScaleFileName))
+		if (_theScaleSet.print(path+_outputScaleFileName))
 			cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
 	}
 }

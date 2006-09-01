@@ -73,8 +73,8 @@ protected:
 	PropertyObj		_displayerProp;
 	VisibleObject	&_displayer;
 
-	/* const*/ SimmBody *_body; // Not const anymore since the body'd displayer is not const
-
+	/* const*/ SimmBody *_body; // Not const anymore since the body's displayer is not const
+	/** A temporary kluge until the default mechanism is working */
 	static Geometry *_defaultGeometry;
 //=============================================================================
 // METHODS

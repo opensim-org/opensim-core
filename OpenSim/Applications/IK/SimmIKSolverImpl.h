@@ -1,6 +1,7 @@
 #ifndef _SimmIKSolverImpl_h_
 #define _SimmIKSolverImpl_h_
 
+#include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Tools/Storage.h>
@@ -13,6 +14,12 @@ class SimmIKParams;
 class SimmIKTrialParams;
 class SimmInverseKinematicsTarget;
 
+#ifdef SWIG
+	#ifdef workflow_API
+		#undef workflow_API
+		#define workflow_API
+	#endif
+#endif
 // SimmIKSolverImpl.h
 // Author: Ayman Habib
 /* Copyright (c) 2005, Stanford University and Ayman Habib
@@ -37,7 +44,7 @@ class SimmInverseKinematicsTarget;
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class SimmIKSolverImpl : public IKSolverInterface 
+class workflow_API SimmIKSolverImpl : public IKSolverInterface 
 {
 public:
 	SimmIKSolverImpl(SimmInverseKinematicsTarget&	aOptimizationTarget,
@@ -60,5 +67,6 @@ private:
 }; //namespace
 
 #endif // __SimmIKSolverImpl_h__
+
 
 

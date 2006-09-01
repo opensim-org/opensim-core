@@ -103,6 +103,7 @@ public:
 	static char* ReadCharacters(FILE *aFP,int aNChar);
 	static FILE* OpenFile(const char *aFileName,const char *aMode);
 	static int makeDir(const char *aDirName);
+	static std::string getParentDirectory(const std::string& fileName);
 //=============================================================================
 };	// END CLASS IO
 

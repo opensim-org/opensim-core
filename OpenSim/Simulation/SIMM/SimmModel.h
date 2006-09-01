@@ -97,6 +97,13 @@ public:
 	SimmModel(const SimmModel &aModel);
 	virtual ~SimmModel();
 	virtual Object* copy() const;
+	/**
+	 * Dynamic casting across JNI is messy. This method does the upCasting on C++ side
+	 */
+	SimmModel* clone()
+	{
+		return reinterpret_cast<SimmModel*>(this->copy()); 
+	}
 	virtual Object* copy(DOMElement *aElement) const;
 	void copyData(const SimmModel &aModel);
 #ifndef SWIG
@@ -138,9 +145,9 @@ public:
 	virtual void getJointInfo(int aJoint,int rInfo[50],int rSlider[6]) const;
 
 	const std::string& getInputFileName() const { return _fileName; }
-	void writeSIMMJointFile(std::string& aFileName) const;
-	void writeSIMMMuscleFile(std::string& aFileName) const;
-	void writeMarkerFile(std::string& aFileName) const;
+	void writeSIMMJointFile(const std::string& aFileName) const;
+	void writeSIMMMuscleFile(const std::string& aFileName) const;
+	void writeMarkerFile(const std::string& aFileName) const;
 
 	/* Register types to be used when reading a SimmModel object from xml file. */
 	static void registerTypes();

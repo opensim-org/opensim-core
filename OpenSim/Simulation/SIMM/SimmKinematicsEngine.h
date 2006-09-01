@@ -197,8 +197,8 @@ public:
 	const SimmUnits& getLengthUnits() const { return _lengthUnits; }
 	const SimmUnits& getForceUnits() const { return _forceUnits; }
 
-	void writeSIMMJointFile(std::string& aFileName) const;
-	void writeMarkerFile(std::string& aFileName) const;
+	void writeSIMMJointFile(const std::string& aFileName) const;
+	void writeMarkerFile(const std::string& aFileName) const;
 
 	void peteTest() const;
 

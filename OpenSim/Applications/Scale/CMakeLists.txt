@@ -10,7 +10,10 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 		debug rdSimulation_d optimized rdSimulation
 		debug rdSQP_d optimized rdSQP)
 
+ADD_DEFINITIONS(-Dworkflow_EXPORTS)
+
 ADD_EXECUTABLE(scale ${SOURCE_FILES} ${INCLUDE_FILES})
+
 
 INSTALL_TARGETS(/bin/ scale)
 

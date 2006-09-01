@@ -84,7 +84,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmMotionData();
-	SimmMotionData(std::string& aFileName);
+	SimmMotionData(const std::string& aFileName);
 	SimmMotionData(Storage& aData);
 	virtual ~SimmMotionData();
 
@@ -101,7 +101,7 @@ public:
 	void peteTest() const;
 
 private:
-	void readMotionFileHeader(std::ifstream &in, std::string& aFileName, SimmMotionData& data);
+	void readMotionFileHeader(std::ifstream &in, const std::string& aFileName, SimmMotionData& data);
 
 //=============================================================================
 };	// END of class SimmMotionData

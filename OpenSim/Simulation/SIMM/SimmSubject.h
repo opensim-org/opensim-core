@@ -89,6 +89,12 @@ protected:
 	PropertyObj _IKParamsProp;
 	SimmIKParams &_IKParams;
 
+	/** All files in workflow are specified relative to
+	 * where the subject file is. Need to keep track of that in case absolute
+	 * path is needed later
+	 */
+	std::string	 _pathToSubject;	
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -144,6 +150,20 @@ public:
 	const double& getSubjectMass() { return _mass; }
 	const double& getSubjectAge() { return _age; }
 	const double& getSubjectHeight() { return _height; }
+	/**
+	 * Accessor methods to set and get path to Subject. This is needed
+	 * since all file names referred to in the subject file are relative
+	 * to subject file
+	 */
+	const std::string& getPathToSubject()
+	{
+		return _pathToSubject;
+	}
+	void setPathToSubject(const std::string& aPath)
+	{
+		_pathToSubject=aPath;
+	}
+	//std::string getParentDirectory(const std::string& fileName);
 
 	void peteTest() const;
 
