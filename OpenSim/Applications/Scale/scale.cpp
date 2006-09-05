@@ -152,8 +152,6 @@ int main(int argc,char **argv)
 		Object *modelCopy = model->copy();
 		modelCopy->print("gait_test.osim");
 
-		delete model;
-		delete modelCopy;
 		// SCALE THE MODEL BASE ON PARAMETERS SPECIFIED IN THE SUBJECT FILE
 		if (!subject->isDefaultScalingParams()){
 			SimmScalingParams& params = subject->getScalingParams();
