@@ -766,7 +766,7 @@ PrintInform(int aInform,ostream &aOStream)
 		case(1):
 			aOStream<<"rdFSQP(1): User-provided initial guess is infeasible ";
 			aOStream<<"for linear constraints\n";
-			aOStream<<"and CFSQP is unable to geerate a point satisfying these ";
+			aOStream<<"and CFSQP is unable to generate a point satisfying these ";
 			aOStream<<"conditions.\n";
 			break;
 		case(2):
