@@ -67,10 +67,10 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		actualLibFileName = string(lpLibFileName)+debugSuffix;
 		// if that fails we'll try the one with no _D 
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
-			cout << "Loading of Debug library " << actualLibFileName << "Failed. Trying lpLibFileName .." << endl;
+			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << string(lpLibFileName) << endl;
 			// library with _D loading failed, try non _D version
 			actualLibFileName = string(lpLibFileName);
-			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
+			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
 			else
@@ -94,7 +94,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		cout << "Trying ";
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
 			*locationOf_D = '\0';	// Strip trailing _D and retry (can we do that with const!)
-			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
+			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
 			else
@@ -245,10 +245,17 @@ RDSIMULATION_API Model* LoadModel(int argc,char **argv)
 	}
 
 	// CONSTRUCT ACTUATOR SET
-	ActuatorSet *actuatorSet=NULL;
+	ActuatorSet *actuatorSet=0;
 	if(actuators!="") {
-		actuatorSet = new ActuatorSet(actuators.c_str());
-		if(actuatorSet==NULL) {
+		try {	// the constructor never returns NULL, either succeeds or throws an exception
+			actuatorSet = new ActuatorSet(actuators.c_str());
+		}
+		catch (Exception &x)
+		{
+			actuatorSet=0;
+		}
+
+		if(actuatorSet==0) {
 			cout<<"ERROR- actuator set "<<actuators<<" could not be constructed.\n\n";
 		} else {
 			cout<<"Constructed actuator set from file "<<actuators<<".\n";
@@ -258,8 +265,14 @@ RDSIMULATION_API Model* LoadModel(int argc,char **argv)
 	// CONSTRUCT CONTACT FORCE SET
 	ContactForceSet *contactForceSet=NULL;
 	if(contacts!="") {
-		contactForceSet = new ContactForceSet(contacts.c_str());
-		if(contactForceSet==NULL) {
+		try {	// the constructor never returns NULL, either succeeds or throws an exception
+			contactForceSet = new ContactForceSet(contacts.c_str());
+		}
+		catch (Exception &x)
+		{
+			contactForceSet=0;
+		}
+		if(contactForceSet==0) {
 			cout<<"ERROR- contact force set "<<contacts<<" could not be constructed.\n\n";
 		} else {
 			cout<<"Constructed contact force set from file "<<contacts<<".\n";
