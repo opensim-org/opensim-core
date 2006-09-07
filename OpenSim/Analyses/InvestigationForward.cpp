@@ -239,37 +239,43 @@ void InvestigationForward::run()
 
 	// INITIAL AND FINAL TIMES
 	// From initial states...
+	int index;
 	double ti,tf;
-	int index = yiStore->findIndex(_ti);
-	if(index<0) {
-		_ti = yiStore->getFirstTime();
-		cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
-		cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
-		cout<<"in the initial states file (ti = "<<_ti<<").\n\n";
-	} else {
-		yiStore->getTime(index,ti);
-		if(_ti!=ti) {
-			_ti = ti;
-			cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<_ti<<endl;
-			cout<<"to agree exactly with the time stamp of the closest initial states in file ";
-			cout<<_initialStatesFileName<<".\n\n";
+	if(yiStore!=NULL) {
+		index = yiStore->findIndex(_ti);
+		if(index<0) {
+			_ti = yiStore->getFirstTime();
+			cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
+			cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
+			cout<<"in the initial states file (ti = "<<_ti<<").\n\n";
+		} else {
+			yiStore->getTime(index,ti);
+			if(_ti!=ti) {
+				_ti = ti;
+				cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<_ti<<endl;
+				cout<<"to agree exactly with the time stamp of the closest initial states in file ";
+				cout<<_initialStatesFileName<<".\n\n";
+			}
 		}
 	}
+
 	// Check controls...
-	int first = 0;
-	Control *control = controlSet->get(first);
-	ti = control->getFirstTime();
-	tf = control->getLastTime();
-	if(_ti<ti) {
-		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-		cout<<"overlap the requested initial time of the simulation.  Controls are being extrapolated\n";
-		cout<<"rather than interpolated.\n";
-	}
-	if(_tf>tf) {
-		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-		cout<<"overlap the requested final time of the simulation.  Changing the final time of the\n";
-		cout<<"forward integration from "<<_tf<<" to "<<tf<<".\n";
-		_tf = tf;
+	if(controlSet!=NULL) {
+		int first = 0;
+		Control *control = controlSet->get(first);
+		ti = control->getFirstTime();
+		tf = control->getLastTime();
+		if(_ti<ti) {
+			cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
+			cout<<"overlap the requested initial time of the simulation.  Controls are being extrapolated\n";
+			cout<<"rather than interpolated.\n";
+		}
+		if(_tf>tf) {
+			cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
+			cout<<"overlap the requested final time of the simulation.  Changing the final time of the\n";
+			cout<<"forward integration from "<<_tf<<" to "<<tf<<".\n";
+			_tf = tf;
+		}
 	}
 
 	// ASSIGN NUMBERS OF THINGS
@@ -292,7 +298,7 @@ void InvestigationForward::run()
 	// SETUP SIMULATION
 	// Manager
 	ModelIntegrand integrand(_model);
-	integrand.setControlSet(*controlSet);
+	if(controlSet!=NULL) integrand.setControlSet(*controlSet);
 	Manager manager(&integrand);
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
@@ -307,7 +313,7 @@ void InvestigationForward::run()
 
 	// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
 	Array<double> yi(0.0,ny);
-	yiStore->getData(index,ny,&yi[0]);
+	if(yiStore!=NULL) yiStore->getData(index,ny,&yi[0]);
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
 	_model->setInitialStates(&yi[0]);
