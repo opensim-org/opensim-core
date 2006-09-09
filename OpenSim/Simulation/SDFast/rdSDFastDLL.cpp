@@ -38,6 +38,7 @@
 #include "rdSDFastDLL.h"
 #include <stdio.h>
 
+#ifdef WIN32
 
 //=============================================================================
 // DLL Main Entry Point
@@ -70,4 +71,4 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
     return TRUE;
 }
-
+#endif
