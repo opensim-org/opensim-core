@@ -25,7 +25,7 @@
  */
 
 
-#include "RDACTUATORSDLL.h"
+#include "rdActuatorsDLL.h"
 
 #include <string>
 #include <cstring>
