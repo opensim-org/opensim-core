@@ -36,6 +36,14 @@
 
 #include "rdTools.h"
 
+// Need these undefined to make this work on linux
+#ifdef NAN
+#undef NAN
+#endif
+#ifdef INFINITY
+#undef INFINITY
+#endif
+
 
 namespace OpenSim { 
 
