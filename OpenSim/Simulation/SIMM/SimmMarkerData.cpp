@@ -53,16 +53,14 @@ using namespace std;
 SimmMarkerData::SimmMarkerData() :
 	_numFrames(0),
 	_numMarkers(0),
-	_markerNames(""),
-	_frames(NULL)
+	_markerNames("")
 {
 }
 
 SimmMarkerData::SimmMarkerData(const string& aFileName) :
 	_numFrames(0),
 	_numMarkers(0),
-	_markerNames(""),
-	_frames(NULL)
+	_markerNames("")
 {
 
 #if 0

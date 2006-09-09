@@ -37,7 +37,7 @@ using namespace OpenSim;
 using namespace std;
 
 SimmSdfastInfo::SimmSdfastInfo() :
-	_bodies(NULL),
+	_bodies(),
 	_jointOrder(NULL)
 {
 }

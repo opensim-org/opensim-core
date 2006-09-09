@@ -58,8 +58,7 @@ SimmMotionData::SimmMotionData() :
 	_enforceLoops(false),
 	_enforceConstraints(false),
 	_showCursor(false),
-	_slidingTimeScale(false),
-	_events(NULL)
+	_slidingTimeScale(false)
 {
 }
 
@@ -74,8 +73,7 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 	_enforceLoops(false),
 	_enforceConstraints(false),
 	_showCursor(false),
-	_slidingTimeScale(false),
-	_events(NULL)
+	_slidingTimeScale(false)
 {
 
 #if 0
@@ -133,8 +131,7 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 	_enforceLoops(false),
 	_enforceConstraints(false),
 	_showCursor(false),
-	_slidingTimeScale(false),
-	_events(NULL)
+	_slidingTimeScale(false)
 {
 	/* Copy the column labels. */
 	const Array<string>& columnLabels = aData.getColumnLabelsArray();
@@ -439,7 +436,7 @@ int SimmMotionData::getColumnIndex(const string& aName) const
 	return -1;
 }
 
-void SimmMotionData::setColumnLabel(int aIndex, std::string& aLabel)
+void SimmMotionData::setColumnLabel(int aIndex, const std::string& aLabel)
 {
 	if (aIndex >= 0 && aIndex < _columnNames.getSize())
 		_columnNames[aIndex] = aLabel;
@@ -491,7 +488,12 @@ void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double 
 		if (j == _numRows)
 		{
 			char timeText[8];
+			// TODO: use sprintf (recommended) instead of gcvt
+#ifdef __linux__
+			gcvt(stateTime, 6, timeText);
+#else
 			_gcvt(stateTime, 6, timeText);
+#endif
 			string errorMessage = "Error: no coordinate data found at time " + string(timeText) + " in " + _fileName;
 			throw (Exception(errorMessage.c_str()));
 		}

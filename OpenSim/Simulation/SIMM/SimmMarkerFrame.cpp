@@ -46,7 +46,6 @@ using namespace std;
 SimmMarkerFrame::SimmMarkerFrame() :
 	_numMarkers(0),
 	_frameNumber(-1),
-	_markers(NULL),
 	_units()
 {
 }
@@ -55,7 +54,6 @@ SimmMarkerFrame::SimmMarkerFrame(int aNumMarkers, int aFrameNumber, double aTime
 	_numMarkers(aNumMarkers),
 	_frameNumber(aFrameNumber),
 	_frameTime(aTime),
-	_markers(NULL),
 	_units(aUnits)
 {
 }

@@ -90,7 +90,7 @@ public:
 
 	int getNumColumns() const { return _numColumns; }
 	int getColumnIndex(const std::string& aName) const;
-	void setColumnLabel(int aIndex, std::string& aLabel);
+	void setColumnLabel(int aIndex, const std::string& aLabel);
 	double getValue(const std::string& aName, int aFrameIndex);
 	double getRangeMin() const { return _rangeMin; }
 	double getRangeMax() const { return _rangeMax; }
