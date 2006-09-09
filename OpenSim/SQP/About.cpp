@@ -24,7 +24,7 @@
  * Define the standard SimTK compliant "version" and "about" routines.
  */
 
-#include "RDSQPDLL.h"
+#include "rdSQPDLL.h"
 
 #include <string>
 #include <cstring>
