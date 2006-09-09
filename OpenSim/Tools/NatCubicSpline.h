@@ -126,7 +126,7 @@ public:
 	virtual void updateFromXMLNode();
 
 	void writeSIMM(std::ofstream& out, int aFunctionIndex) const;
-	void writeSIMM(std::ofstream& out, std::string& aLabel) const;
+	void writeSIMM(std::ofstream& out, const std::string& aLabel) const;
 
 private:
 	void calcCoefficients();

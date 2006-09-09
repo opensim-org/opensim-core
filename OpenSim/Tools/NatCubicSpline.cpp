@@ -487,10 +487,10 @@ double NatCubicSpline::evaluate(double aX, double velocity,
 												double acceleration, int aDerivOrder)
 {
 	// NOT A NUMBER
-	if(_y==NULL) return(rdMath::NAN);
-	if(_b==NULL) return(rdMath::NAN);
-	if(_c==NULL) return(rdMath::NAN);
-	if(_d==NULL) return(rdMath::NAN);
+	if(!_y.getSize()) return(rdMath::NAN);
+	if(!_b.getSize()) return(rdMath::NAN);
+	if(!_c.getSize()) return(rdMath::NAN);
+	if(!_d.getSize()) return(rdMath::NAN);
 	if(aDerivOrder<0) return(rdMath::NAN);
 
    int i, j, k;
@@ -608,7 +608,7 @@ void NatCubicSpline::writeSIMM(ofstream& out, int aFunctionIndex) const
 	out << "endfunction" << endl << endl;
 }
 
-void NatCubicSpline::writeSIMM(ofstream& out, string& aLabel) const
+void NatCubicSpline::writeSIMM(ofstream& out, const string& aLabel) const
 {
 	out << "begin" << aLabel << endl;
 	for (int i = 0; i < _x.getSize(); i++)
