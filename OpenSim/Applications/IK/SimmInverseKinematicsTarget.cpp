@@ -54,9 +54,7 @@ static bool calcDerivs = true;
 SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(SimmModel &aModel, Storage& aExperimentalDataStorage):
 _model(aModel),
 _experimentalDataStorage(aExperimentalDataStorage),
-_markers(NULL),
-_unconstrainedQs(NULL),
-_prescribedQs(NULL)
+_markers(NULL)
 {
 	// Mark these arrays as not owned so that we don't free the model's Qs 
 	_unconstrainedQs.setMemoryOwner(false);
