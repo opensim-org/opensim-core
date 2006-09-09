@@ -73,13 +73,13 @@ ArrayPtrs<VisibleObject>* SimmModelVisibleIterator::getVisibleObjects(Object* tr
 	for(int i=0; i < rootProps.getSize(); i++){
 		Property* nextProp = rootProps.get(i);
 		switch(nextProp->getType()){
-			case Property::PropertyType::Obj:
+			case Property::Obj:
 				{	// Recur
 					Object& propObj = nextProp->getValueObj();
 					collectVisibleObjects->append(*getVisibleObjects(&propObj));
 					break;
 				}
-			case Property::PropertyType::ObjArray:
+			case Property::ObjArray:
 				{
 					ArrayPtrs<Object>& propObjArray = nextProp->getValueObjArray();
 					for(int j=0; j< propObjArray.getSize(); j++){
