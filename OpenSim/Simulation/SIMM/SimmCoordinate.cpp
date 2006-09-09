@@ -371,7 +371,12 @@ bool SimmCoordinate::setValue(double value)
 
 		// Potential source of slowdown!
 		/* Store the updated value as a string in the value property. */
+		// TODO: use sprintf (recommended) instead of gcvt
+#ifdef __linux__
+		gcvt(value, 8, (char*)_valueStr.c_str());
+#else
 		_gcvt(value, 8, (char*)_valueStr.c_str());
+#endif
 	}
 
 	return true;
