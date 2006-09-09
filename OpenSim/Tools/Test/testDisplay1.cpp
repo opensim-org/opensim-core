@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 				if (ag = (AnalyticGeometry*) g){
 					AnalyticGeometry::AnalyticGeometryType analyticType = ag->getShape();
 					Transform& trans = Dependent->getTransform();
-					if (analyticType == AnalyticGeometry::AnalyticGeometryType::Sphere){
+					if (analyticType == AnalyticGeometry::Sphere){
 						/*
 						System.out.println("Sphere for object "+Dependent.getOwner().getName());
 						vtkSphereSource sphere = new vtkSphereSource();
