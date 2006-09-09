@@ -1843,7 +1843,8 @@ void SimmJoint::writeSIMM(ofstream& out, int& aFunctionIndex) const
 			}
 			const double* axis = rd->getAxisPtr();
 			out << "axis" << rotDofIndex << " " << axis[0] << " " << axis[1] << " " << axis[2] << endl;
-			order += " r" + string(itoa(rotDofIndex, buffer, 10));
+			sprintf(buffer, "%d", rotDofIndex);
+			order += " r" + string(buffer);
 		}
 	}
 	out << "order" << order << endl;
