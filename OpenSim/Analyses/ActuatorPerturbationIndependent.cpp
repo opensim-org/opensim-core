@@ -204,7 +204,7 @@ getPerturbedForceStorage()
 {
 //	char name[Object::NAME_LENGTH];
 	char name[500]; // needs to be changed to [Object::NAME LENGTH]
-	sprintf(name,"PerturbedForce_%s",_model->getActuatorName(getActuator()));
+	sprintf(name,"PerturbedForce_%s",_model->getActuatorName(getActuator()).c_str());
 	_perturbedForceStorage->setName(name);
 	return(_perturbedForceStorage);
 }

@@ -170,7 +170,7 @@ setNull()
 	// POINTERS
 	_dqdt = NULL;
 	_dudt = NULL;
-	_actuatorList = NULL;
+	_actuatorList = Array<int>(0);
 	_actuatorGenForces = NULL;
 	_actuatorGenForcesStore = NULL;
 

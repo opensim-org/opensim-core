@@ -458,13 +458,13 @@ compute(double *aXPrev,double *aYPrev,
 			_du[i] = dud + dudd + duddd;
 			if(c==-1) {
 				printf("t=%lf  %s  du's = %le %le %le\n",
-				 aT-aDT,_cNames[c],dud,dudd,duddd);
+				 aT-aDT,_cNames[c].c_str(),dud,dudd,duddd);
 			}
 		}
 
 		// PRINT OUT DIAGNOSTICS
 		if(c==-1) {
-			printf("t=%lf Component=%s\nForce:        ",tReal,_cNames[c]);
+			printf("t=%lf Component=%s\nForce:        ",tReal,_cNames[c].c_str());
 			for(i=0;i<np;i++) {
 				I = Mtx::ComputeIndex(c,np,i,3,1);
 				printf("%lf ",_f[c][i][1]);
@@ -672,13 +672,13 @@ initializeForceElements()
 	for(c=0;c<=getVelocityIndex();c++) {
 
 		// LOAD DATA
-		sprintf(fileName,"./DecompInit/fs_%s.xls",_cNames[c]);
+		sprintf(fileName,"./DecompInit/fs_%s.xls",_cNames[c].c_str());
 		store = new Storage(fileName);
 		if(store->getSize()<1) {
 			printf("DecompTaylor.integBeginCallback: WARN- failed to open ");
 			printf("file %s\n",fileName);
 			printf("\tInitial force values for component %s were set to zero.\n",
-			 _cNames[c]);
+			 _cNames[c].c_str());
 			if(store!=NULL) { delete store;  store=NULL; }
 			continue;
 		}
@@ -1033,7 +1033,7 @@ computeHigherOrderDerivatives(int c,double t,double *dudt,
 		// PRINT
 		if(c==-1) {
 			printf("%lf %s dudt[%d] = %lf %lf %lf\n",
-			t,_cNames[c],i,dudt[i],ddudt[i],dddudt[i]);
+			t,_cNames[c].c_str(),i,dudt[i],ddudt[i],dddudt[i]);
 		}
 	}
 }

@@ -769,7 +769,7 @@ printResults(const char *aBaseName,const char *aDir,double aDT,
 		strcpy(baseName,"null");
 	} else {
 		strncpy(baseName,aBaseName,NAME_LENGTH);
-		baseName[NAME_LENGTH-1] = NULL;
+		baseName[NAME_LENGTH-1] = 0;
 	}
 
 	// CONSTRUCT PATH

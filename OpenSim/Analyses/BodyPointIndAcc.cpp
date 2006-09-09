@@ -339,7 +339,7 @@ void BodyPointIndAcc::
 setPointName(const char *aName)
 {
 	strncpy(_pointName,aName,NAME_LENGTH);
-	_pointName[NAME_LENGTH-1] = NULL;
+	_pointName[NAME_LENGTH-1] = 0;
 }
 //_____________________________________________________________________________
 /**
