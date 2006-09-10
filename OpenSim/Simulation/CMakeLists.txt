@@ -45,8 +45,14 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO RD${UKIT}_EXPORTS)
 
+IF(WIN32)
 LINK_LIBRARIES(debug rdTools_d optimized rdTools
 		debug xerces-c_2D optimized  xerces-c_2)
+ELSE(WIN32)
+LINK_LIBRARIES(debug rdTools_d optimized rdTools
+		debug xerces-c_2D optimized  xerces-c_2
+		dl)
+ENDIF(WIN32)
 
 ADD_LIBRARY(rd${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
