@@ -146,7 +146,7 @@ Storage::Storage(const char *aFileName) :
 		}
 		if((strcmp(key,"nr")==0)||(strcmp(key,"nRows")==0)||(strcmp(key,"datarows")==0)) {
 			if (strcmp(key,"datarows")==0){
-				sscanf(tok, "%s %d\n", key, &nr);
+				sscanf(tok, "%s %d", key, &nr);
 			}
 			else {
 				val = strtok(NULL,"=");
