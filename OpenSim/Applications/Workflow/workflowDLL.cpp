@@ -33,44 +33,60 @@
 
 using namespace std;
 
-#ifdef WIN32
+//
+// Define Plugin_Attach and Plugin_Detach below to be called by both windows and linux
+//
+static void Plugin_Attach()
+{
+	cout<<"\n-------------------------------------------------------\n";
+	cout<<"Library workflow...\n";
+	cout<<"This product includes software developed by the\n";
+	cout<<"Apache Software Foundation (http://www.apache.org/).\n";
+	cout<<"-------------------------------------------------------\n\n";
+}
 
+static void Plugin_Detach()
+{
+}
+
+//
+// The code below handles both windows and linux library entrypoints
+//
+#if defined(WIN32)
 //=============================================================================
 // DLL Main Entry Point
 //=============================================================================
 //_____________________________________________________________________________
 /**
- *	This routine is called when the dll is loaded I believe.
+ * This routine is called when the dll is loaded I believe.
  */
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved)
+                       LPVOID lpReserved
+                )
 {
-    switch (ul_reason_for_call)
-	{
-		case DLL_PROCESS_ATTACH:
-			cout<<"\n-------------------------------------------------------\n";
-			cout<<"Library workflow...\n";
-			cout<<"This product includes software developed by the\n";
-			cout<<"Apache Software Foundation (http://www.apache.org/).\n";
-			cout<<"-------------------------------------------------------\n\n";
-			break;
+   switch (ul_reason_for_call)
+   {
+      case DLL_PROCESS_ATTACH:
+      case DLL_THREAD_ATTACH:
+         Plugin_Attach();
+         break;
 
-		case DLL_THREAD_ATTACH:
-			cout<<"\n-------------------------------------------------------\n";
-			cout<<"Library workflow...\n";
-			cout<<"This product includes software developed by the\n";
-			cout<<"Apache Software Foundation (http://www.apache.org/).\n";
-			cout<<"-------------------------------------------------------\n\n";
-			break;
-
-		case DLL_THREAD_DETACH:
-			break;
-
-		case DLL_PROCESS_DETACH:
-			break;
+      case DLL_PROCESS_DETACH:
+      case DLL_THREAD_DETACH:
+         Plugin_Detach();
+         break;
     }
 
-    return(TRUE);
+    return TRUE;
+}
+#elif defined(__linux__)
+static void __attribute__((constructor)) Shared_Object_Constructor()
+{
+   Plugin_Attach();
+}
+static void __attribute__((destructor)) Shared_Object_Destructor()
+{
+   Plugin_Detach();
 }
 #endif
