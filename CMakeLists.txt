@@ -1,10 +1,17 @@
 PROJECT (OpenSim)
 
+IF(NOT WIN32)
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug CACHE STRING
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
+
+# Linux needs -D_DEBUG explicitly added
+IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+ADD_DEFINITIONS(-D_DEBUG)
+ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+ENDIF(NOT WIN32)
 
 SET(RDI_ARCH $ENV{RDI_ARCH})
 IF(WIN32)
