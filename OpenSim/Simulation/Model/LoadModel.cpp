@@ -8,6 +8,21 @@
 #include "ActuatorSet.h"
 #include "ContactForceSet.h"
 
+#ifdef __linux__
+// Current solution for linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
+// using macros.  Also use macros for portable handles.
+#include <dlfcn.h>
+#define PORTABLE_HMODULE void *
+#define PORTABLE_HINSTANCE void *
+#define WINAPI
+#define LoadLibrary(name) dlopen(name, RTLD_LAZY)
+#define GetProcAddress(handle, proc) dlsym(handle, proc)
+#else
+#define PORTABLE_HMODULE HMODULE
+#define PORTABLE_HINSTANCE HINSTNACE
+#endif
+
+
 
 
 using namespace OpenSim;
@@ -46,16 +61,20 @@ static void PrintUsage(ostream &aOStream);
  */
 
 RDSIMULATION_API
-HMODULE
+PORTABLE_HMODULE
 WINAPI
 LoadOpenSimLibrary(const char *lpLibFileName)
 {
-	string actualLibFileName(lpLibFileName);
+	string libraryExtension;
+#ifdef __linux__
+	libraryExtension=".so";
+#endif
+	string actualLibFileName(lpLibFileName+libraryExtension);
 	string debugSuffix="_d";
 	char *locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
 	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
 
-	HINSTANCE libraryHandle = NULL;
+	PORTABLE_HINSTANCE libraryHandle = NULL;
 #ifdef _DEBUG
 	// NO _D SUFFIX
 	// if library name has no trailing _D try to append it and load
@@ -64,12 +83,12 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		// Append _D to lpLibFileName;
 		cout << "WARNING: SUSPECT LOADING RELEASE LIB INTO DEBUG Simulation library." << endl;
 		cout << "Trying to load a debug version ..." << endl;
-		actualLibFileName = string(lpLibFileName)+debugSuffix;
+		actualLibFileName = string(lpLibFileName)+debugSuffix+libraryExtension;
 		// if that fails we'll try the one with no _D 
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
 			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << string(lpLibFileName) << endl;
 			// library with _D loading failed, try non _D version
-			actualLibFileName = string(lpLibFileName);
+			actualLibFileName = string(lpLibFileName)+libraryExtension;
 			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
@@ -128,7 +147,7 @@ LoadOpenSimLibraries(int argc,char **argv)
 {
 	int i;
 	string option,value;
-	HINSTANCE library;
+	PORTABLE_HINSTANCE library;
 	for(i=0;i<argc;i++) {
 		if(argv[i][0]!='-') continue;
 		option = argv[i];
@@ -160,7 +179,7 @@ LoadOpenSimLibraries(int argc,char **argv)
 RDSIMULATION_API Model* LoadModel(const string &aModelLibraryName)
 {
 	// LOAD MODEL LIBRARY
-	HINSTANCE modelLibrary = LoadOpenSimLibrary(aModelLibraryName.c_str());
+	PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(aModelLibraryName.c_str());
 	if(modelLibrary==NULL) {
 		cout<<"ERROR- library for model "<<aModelLibraryName<<" could not be loaded.\n\n";
 		return(NULL);
@@ -281,7 +300,7 @@ RDSIMULATION_API Model* LoadModel(int argc,char **argv)
 
 
 	// LOAD MODEL LIBRARY
-	HINSTANCE modelLibrary = LoadOpenSimLibrary(modelLibraryName.c_str());
+	PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(modelLibraryName.c_str());
 	if(modelLibrary==NULL) {
 		cout<<"ERROR- library for model "<<modelLibraryName<<" could not be loaded.\n\n";
 		return(NULL);
