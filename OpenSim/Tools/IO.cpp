@@ -36,7 +36,10 @@
 #include "rdTools.h"
 #include <time.h>
 #include "IO.h"
-#ifdef _MSC_VER
+#if defined(__linux__)
+	#include <sys/stat.h>
+	#include <sys/types.h>
+#elif defined(_MSC_VER)
 	#include <direct.h>
 #else
 	#include <unistd.h>
@@ -295,7 +298,7 @@ ReadToTokenLine(FILE *aFP,const char *aToken)
 			// COPY IF NEEDED
 			if(s!=NULL) {
 				if(sCopy!=NULL) delete[] sCopy;
-				sCopy = new char[sizeof(s)+1];
+				sCopy = new char[strlen(s)+1];
 				strcpy(sCopy,s);
 			}
 
@@ -434,12 +437,12 @@ ReadCharacters(FILE *aFP,int aNChar)
 		c = getc(aFP);
 		if(c==EOF) {
 			printf("IO.ReadCharacters: ERROR- premature end of file.\n");
-			s[i] = NULL;
+			s[i] = 0;
 			break;
 		}
 		s[i] = c;
 	}
-	s[aNChar] = NULL;
+	s[aNChar] = 0;
 
 	return(s);
 }
@@ -477,7 +480,14 @@ OpenFile(const char *aFileName,const char *aMode)
 int IO::
 makeDir(const char *aDirName)
 {
+
+#ifdef __linux__
+	return mkdir(aDirName,S_IRWXU);
+#else
 	return _mkdir(aDirName);
+#endif
+
+
 }
 
 //_____________________________________________________________________________
