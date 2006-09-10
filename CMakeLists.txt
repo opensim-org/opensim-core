@@ -1,5 +1,11 @@
 PROJECT (OpenSim)
 
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Debug CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
 SET(RDI_ARCH $ENV{RDI_ARCH})
 IF(WIN32)
 	IF(${RDI_ARCH} MATCHES ".+")
