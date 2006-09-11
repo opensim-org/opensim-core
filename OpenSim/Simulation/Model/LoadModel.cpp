@@ -19,7 +19,7 @@
 #define GetProcAddress(handle, proc) dlsym(handle, proc)
 #else
 #define PORTABLE_HMODULE HMODULE
-#define PORTABLE_HINSTANCE HINSTNACE
+#define PORTABLE_HINSTANCE HINSTANCE
 #endif
 
 
