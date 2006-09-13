@@ -176,10 +176,10 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	if(_y!=NULL) { delete[] _y;  _y=NULL; }
 	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
 
-	if (_model){
-		// ALLOCATE STATE VECTOR
+	if(_model) {
 		_y = new double[_model->getNY()];
 		_dy = new double[_model->getNY()];
+		constructColumnLabels();
 	}
 	deleteStorage();
 	allocateStorage();
@@ -283,6 +283,9 @@ constructColumnLabels()
 	labels += "\n";
 
 	setColumnLabels(labels.c_str());
+	_pStore->setColumnLabels(getColumnLabels());
+	_vStore->setColumnLabels(getColumnLabels());
+	_aStore->setColumnLabels(getColumnLabels());
 }
 
 
@@ -340,7 +343,8 @@ void Kinematics::setModel(Model *aModel)
 		_y = new double[_model->getNY()];
 		_dy = new double[_model->getNY()];
 	}
-	
+
+	constructColumnLabels();
 }
 
 //-----------------------------------------------------------------------------

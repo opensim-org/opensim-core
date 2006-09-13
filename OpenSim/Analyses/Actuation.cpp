@@ -187,7 +187,6 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 		_fsp = new double[_na];
 
 		constructColumnLabels();
-
 	}
 	deleteStorage();
 	allocateStorage();
