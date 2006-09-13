@@ -1580,6 +1580,12 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 		columnLabels += "\t";
 		columnLabels += qName;
 		index[i] = aQIn.getColumnIndex(qName);
+		if(index[i]<0) {
+			string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
+			msg += qName;
+			msg += " in storage object.\n";
+			cout<<msg;
+		}
 	}
 
 	// Extract Coordinates
