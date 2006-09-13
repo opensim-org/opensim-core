@@ -2585,7 +2585,7 @@ writeDescription(FILE *rFP)
 	const char *descrip = getDescription().c_str();
 	if(descrip!=NULL) {
 		len = strlen(descrip);
-		if(descrip[len-1]!='\n') {
+		if((len>0)&&(descrip[len-1]!='\n')) {
 			fprintf(rFP,"%s\n",descrip);
 		} else {
 			fprintf(rFP,"%s",descrip);

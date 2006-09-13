@@ -323,6 +323,7 @@ setNull()
 	_refNode = NULL;
 	_inLined = true;
 	_propertySet.clear();
+	_description = "";
 
 	_observable=0;
 }
