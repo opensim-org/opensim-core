@@ -51,7 +51,7 @@ Actuation::Actuation(Model *aModel) :
 	// NULL
 	setNull();
 
-	// Description (doesn't need a model to set)
+	// DESCRIPTION
 	constructDescription();
 
 	// STORAGE
@@ -67,7 +67,7 @@ Actuation::Actuation(Model *aModel) :
 	// WORK ARRAY
 	_fsp = new double[_na];
 
-	// DESCRIPTION AND LABELS
+	// LABELS
 	constructColumnLabels();
 }
 //_____________________________________________________________________________
@@ -87,7 +87,7 @@ Analysis(aFileName)
 	// Serialize from XML
 	updateFromXMLNode();
 
-	// CONSTRUCT DESCRIPTION AND LABELS
+	// DESCRIPTION
 	constructDescription();
 
 	// STORAGE
@@ -180,16 +180,17 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 	// Deallocate _fsp if already allocated
 	if(_fsp!=NULL) { delete[] _fsp;  _fsp=NULL; }
 
-	if(_model!=NULL) {
-		// NUMBER OF ACTUATORS
-		_na = _model->getNA();
-		// WORK ARRAY
-		_fsp = new double[_na];
-
-		constructColumnLabels();
-	}
+	// STORAGE
 	deleteStorage();
 	allocateStorage();
+
+	// CHECK MODEL
+	if(_model!=NULL) {
+		_na = _model->getNA();
+		_fsp = new double[_na];
+		constructColumnLabels();
+	}
+
 	return (*this);
 }
 //_____________________________________________________________________________

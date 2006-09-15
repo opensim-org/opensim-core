@@ -50,19 +50,24 @@ Kinematics::~Kinematics()
 Kinematics::Kinematics(Model *aModel) :
 	Analysis(aModel)
 {
+	// NULL
 	setNull();
 
-	if (_model != 0){
-		// ALLOCATE STATE VECTOR
-		_y = new double[_model->getNY()];
-		_dy = new double[_model->getNY()];
-	}
-	// CONSTRUCT DESCRIPTION AND LABELS
+	// DESCRIPTION
 	constructDescription();
-	constructColumnLabels();
 
 	// STORAGE
 	allocateStorage();
+
+	// CHECK MODEL
+	if(_model==NULL) return;
+
+	// ALLOCATE ARRAYS
+	_y = new double[_model->getNY()];
+	_dy = new double[_model->getNY()];
+
+	// LABELS
+	constructColumnLabels();
 }
 //=============================================================================
 // Object Overrides
@@ -86,7 +91,6 @@ Analysis(aFileName)
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
-	constructColumnLabels();
 
 	// STORAGE
 	allocateStorage();
@@ -155,14 +159,10 @@ void Kinematics::
 setNull()
 {
 	setType("Kinematics");
-
 	setName("Kinematics");
-
 	_y=0;
 	_dy=0;
-
 	_pStore=_vStore=_aStore=0;
-
 }
 //--------------------------------------------------------------------------
 // OPERATORS
@@ -176,14 +176,18 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	if(_y!=NULL) { delete[] _y;  _y=NULL; }
 	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
 
-	if(_model) {
+	// STORAGE
+	deleteStorage();
+	allocateStorage();
+
+	// CHECK MODEL
+	if(_model!=NULL) {
 		_y = new double[_model->getNY()];
 		_dy = new double[_model->getNY()];
 		constructColumnLabels();
 	}
-	deleteStorage();
-	allocateStorage();
-	return (*this);
+
+	return(*this);
 }
 
 //=============================================================================
@@ -199,19 +203,16 @@ allocateStorage()
 	// ACCELERATIONS
 	_aStore = new Storage(1000,"Accelerations");
 	_aStore->setDescription(getDescription());
-	_aStore->setColumnLabels(getColumnLabels());
 	_storageList.append(_aStore);
 
 	// VELOCITIES
 	_vStore = new Storage(1000,"Speeds");
 	_vStore->setDescription(getDescription());
-	_vStore->setColumnLabels(getColumnLabels());
 	_storageList.append(_vStore);
 
 	// POSITIONS
 	_pStore = new Storage(1000,"Coordinates");
 	_pStore->setDescription(getDescription());
-	_pStore->setColumnLabels(getColumnLabels());
 	_storageList.append(_pStore);
 }
 
