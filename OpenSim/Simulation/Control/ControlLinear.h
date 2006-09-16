@@ -161,8 +161,8 @@ public:
 	virtual const double getLastTime() const;
 
 	// SIMPLIFY
-	virtual void
-		simplify(const PropertySet &aProperties);
+	virtual void simplify(const PropertySet &aProperties);
+	virtual void filter(double aT);
 
 	OpenSim_DERIVED(ControlLinear, Control)
 
