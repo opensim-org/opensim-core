@@ -96,6 +96,8 @@ protected:
 	PropertyDbl _propDefaultMin;
 	/** Default parameter maximum. */
 	PropertyDbl _propDefaultMax;
+	/** Flat that indicates whether PD follower filter is on. */
+	PropertyBool _propFilterOn;
 
 	// REFERENCES TO PROPERTY VALUES
 	/** Reference to the value of the IsModelControl property. */
@@ -106,6 +108,8 @@ protected:
 	double &_defaultMin;
 	/** Reference to the value of the DefaultMax property. */
 	double &_defaultMax;
+	/** Reference to the value of the PropFilterOn property. */
+	bool &_filterOn;
 
 
 //=============================================================================
@@ -136,6 +140,9 @@ public:
 	bool getIsModelControl() const;
 	void setExtrapolate(bool aTrueFalse);
 	bool getExtrapolate() const;
+	// Flag indicating whether PD follower filter is on
+	void setFilterOn(bool aTrueFalse);
+	bool getFilterOn() const;
 	// PARAMETERS
 	// Number
 	virtual int getNumParameters() const = 0;

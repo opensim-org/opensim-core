@@ -133,6 +133,7 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	void simplify(const PropertySet &aProperties);
+	void filter(double aT);
 	Storage*
 		constructStorage(int aN,double aT1,double aT2,bool aForModelControls);
 	int mapParameterToControl(int aIndex) const;

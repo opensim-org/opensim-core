@@ -64,7 +64,8 @@ Control::Control(const char *aName) :
 	_isModelControl( _propIsModelControl.getValueBool() ),
 	_extrapolate( _propExtrapolate.getValueBool() ),
 	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() )
+	_defaultMax( _propDefaultMax.getValueDbl() ),
+	_filterOn( _propFilterOn.getValueBool() )
 {
 	setNull();
 	setName(aName);
@@ -80,7 +81,8 @@ Control::Control(DOMElement *aElement) :
 	_isModelControl( _propIsModelControl.getValueBool() ),
 	_extrapolate( _propExtrapolate.getValueBool() ),
 	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() )
+	_defaultMax( _propDefaultMax.getValueDbl() ),
+	_filterOn( _propFilterOn.getValueBool() )
 {
 	setNull();
 	updateFromXMLNode();
@@ -96,7 +98,8 @@ Control::Control(const Control &aControl) :
 	_isModelControl( _propIsModelControl.getValueBool() ),
 	_extrapolate( _propExtrapolate.getValueBool() ),
 	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() )
+	_defaultMax( _propDefaultMax.getValueDbl() ),
+	_filterOn( _propFilterOn.getValueBool() )
 {
 	setNull();
 	copyData(aControl);
@@ -139,6 +142,10 @@ setupProperties()
 	_propDefaultMax.setName("default_max");
 	_propDefaultMax.setValue(1.0);
 	_propertySet.append(&_propDefaultMax);
+
+	_propFilterOn.setName("filter_on");
+	_propFilterOn.setValue(false);
+	_propertySet.append( &_propFilterOn );
 }
 //_____________________________________________________________________________
 /**
@@ -151,6 +158,7 @@ copyData(const Control &aControl)
 	_extrapolate = aControl._extrapolate;
 	_defaultMin = aControl._defaultMin;
 	_defaultMax = aControl._defaultMax;
+	_filterOn = aControl.getFilterOn();
 }
 
 
@@ -318,6 +326,33 @@ getDefaultParameterMax() const
 	return(_defaultMax);
 }
 
+//-----------------------------------------------------------------------------
+// FILTER ON
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set whether or not to apply a filter to the control values.
+ *
+ * @param aTrueFalse If true, will apply a filter to the control
+ * values.  If false, a filter will not be used.
+ */
+void Control::
+setFilterOn(bool aTrueFalse)
+{
+	_filterOn = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to apply a filter to the control values.
+ *
+ * @return True if a filter will be used.  False otherwise.
+ */
+bool Control::
+getFilterOn() const
+{
+	return(_filterOn);
+}
+
 // Convenience methods
 //_____________________________________________________________________________
 /**
@@ -368,4 +403,19 @@ simplify(const PropertySet &aProperties)
 {
 	string msg = "Control.simplify: This method must be overriden.";
 	throw(Exception(msg,__FILE__,__LINE__));
+}
+
+
+//-----------------------------------------------------------------------------
+// FILTER
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Filter the control curve at a particular time.
+ *
+ * @param aT Time at which to compute a new, filtered control value
+ */
+void Control::
+filter(double aT)
+{
 }

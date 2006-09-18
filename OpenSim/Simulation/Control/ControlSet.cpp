@@ -917,6 +917,39 @@ simplify(const PropertySet &aProperties)
 	}
 }
 //-----------------------------------------------------------------------------
+// FILTER
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Filter all the control curves in a control set.
+ * Currently implemented only for ControlLinear controls.
+ *
+ * @param aT Time at which each control's value is filtered.
+ */
+void ControlSet::
+filter(double aT)
+{
+	int i;
+	int size = getSize();
+	Control *control;
+	for(i=0;i<size;i++) {
+
+		// GET CONTROL
+		control = get(i);
+		if(control==0) continue;
+
+		// FILTER
+		try {
+			if (control->getFilterOn())
+			{
+				control->filter(aT);
+			}
+		} catch(Exception x) {
+			x.print(cout);
+		}
+	}
+}
+//-----------------------------------------------------------------------------
 // STORAGE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________

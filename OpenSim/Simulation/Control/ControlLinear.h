@@ -75,10 +75,16 @@ protected:
 	PropertyBool _propUseSteps;
 	/** Array of control nodes. */
 	PropertyObjArray _propNodes;
+	/** Position gain for PD follower filter. */
+	PropertyDbl _propKp;
+	/** Velocity gain for PD follower filter. */
+	PropertyDbl _propKv;
 
 	// REFERENCES
 	bool &_useSteps;
 	ArrayPtrs<ControlLinearNode> &_nodes;
+	double &_kp;
+	double &_kv;
 
 
 	/** Utility node for speeding up searches for control values in
@@ -123,8 +129,17 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	// PROPERTIES
+	// Flag indicating whether to interpolate between nodes using step functions
+	// or linear interpolation
 	void setUseSteps(bool aTrueFalse);
 	bool getUseSteps() const;
+	// Kp
+	void setKp(double aT);
+	double getKp() const;
+	// Kv
+	void setKv(double aT);
+	double getKv() const;
 	// PARAMETERS
 	// Number
 	virtual int getNumParameters() const;
