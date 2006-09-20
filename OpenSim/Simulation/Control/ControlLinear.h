@@ -135,10 +135,10 @@ public:
 	void setUseSteps(bool aTrueFalse);
 	bool getUseSteps() const;
 	// Kp
-	void setKp(double aT);
+	void setKp(double aKp);
 	double getKp() const;
 	// Kv
-	void setKv(double aT);
+	void setKv(double aKv);
 	double getKv() const;
 	// PARAMETERS
 	// Number

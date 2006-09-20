@@ -1311,18 +1311,6 @@ simplify(const PropertySet &aProperties)
 void ControlLinear::
 filter(double aT)
 {
-	// TO DO - there are some lines in this function that call
-	// setControlValue which can take unnecessary extra time in re-figuring
-	// out whether or not to create a new control node in getting or setting a
-	// control value at time aT.  This function can be rewritten to speed up
-	// these computations by exploiting the fact that we only have to decide
-	// once whether or not to create a new control node.  This decision is
-	// essentially complete when we compute the "nodeOccursAtGivenTime" bool
-	// variable.  I've labeled the lines that call setControlValue with a
-	// "TO DO" comment.
-	//
-	// - Chand T. John
-
 	// CHECK WHETHER FILTER IS ON
 	// TO DO - should we print some error/warning message here?
 	if (!_filterOn) return;
@@ -1341,92 +1329,61 @@ filter(double aT)
 	// i.e. the node whose index (i) was returned is the node
 	// that occurs immediately before, or exactly at, the time aT.
 	// An equivalent property is that
-	// _searchNode == (*_nodes.get(i))
+	// _searchNode >= (*_nodes.get(i))
 	// which is computed below as the "nodeOccursAtGivenTime" variable.
 
 	// COMPUTE AND SET CONTROL VALUE
 
 	// HANDLE CASE WITH LESS THAN TWO PREVIOUS CONTROL NODES
 	// If there are less than two control nodes occurring before
-	// time aT, then return the value zero.  The PD follower needs
+	// time aT, then set the value zero.  The PD follower needs
 	// at least two nodes to occur before the time aT in order to
 	// compute a new control value for the time aT.
 	// The first if statement represents the following cases:
 	// i < 0: aT occurs before the first node
 	// i == 0: the first node occurs before or at aT
-	if (i <= 0)
-	{
-		setControlValue(aT, 0.0); // TO DO - Can speed this up!
+	if (i <= 0) {
+		setControlValue(aT, 0.0);
 		return;
 	}
-	// True iff node at index i occurs at aT
+	// True iff _nodes[i] occurs at aT
 	bool nodeOccursAtGivenTime = (_searchNode == (*_nodes.get(i)));
 	// This if statement represents the case where the second
 	// node occurs at aT.
-	if ((i == 1) && nodeOccursAtGivenTime)
-	{
-		setControlValue(aT, 0.0); // TO DO - Can speed this up!
+	if ((i == 1) && nodeOccursAtGivenTime) {
+		setControlValue(aT, 0.0);
 		return;
 	}
 
 	// HANDLE ALL OTHER CASES
-	double dt, dtPrev, axPrev, axPrevPrev;
+	double dt, dtPrev, xPrev, xPrevPrev;
 	// If the time of the node at index i is equal to aT (where
 	// "equal" is determined by the operator== function of the
 	// ControlLinearNode class):
-	if (nodeOccursAtGivenTime) // i >= 2 (i <= 1 cases were handled above)
-	{
+	// (i <= 1 cases were handled above)
+	if (nodeOccursAtGivenTime) {
 		dt = _nodes[i]->getTime() - _nodes[i-1]->getTime();
 		dtPrev = _nodes[i-1]->getTime() - _nodes[i-2]->getTime();
-		axPrev = _nodes[i-1]->getValue();
-		axPrevPrev = _nodes[i-2]->getValue();
-	}
+		xPrev = _nodes[i-1]->getValue();
+		xPrevPrev = _nodes[i-2]->getValue();
+
 	// If the time of the node at index i is less than aT:
-	else // i >= 1
-	{
+	} else {
 		dt = aT - _nodes[i]->getTime();
 		dtPrev = _nodes[i]->getTime() - _nodes[i-1]->getTime();
-		axPrev = _nodes[i]->getValue();
-		axPrevPrev = _nodes[i-1]->getValue();
+		xPrev = _nodes[i]->getValue();
+		xPrevPrev = _nodes[i-1]->getValue();
 	}
 
 	// GET CURRENT CONTROL VALUE
 	// aT occurs before first node
-	double axDes;
-	if(i<0) {
-		if(getExtrapolate()) {
-			axDes = extrapolateBefore(aT);
-		} else {
-			axDes = _nodes[0]->getValue();
-		}
-	// aT occurs after last node
-	} else if(i>=(size-1)) {
-		if(getExtrapolate()) {
-			axDes = extrapolateAfter(aT);
-		} else {
-			axDes = _nodes.getLast()->getValue();
-		}
-	// aT occurs in between two nodes
-	} else {
-		// If this control uses linear interpolation
-		if(!_useSteps) {
-			double t1,v1,t2,v2;
-			t1 = _nodes[i]->getTime();
-			v1 = _nodes[i]->getValue();
-			t2 = _nodes[i+1]->getTime();
-			v2 = _nodes[i+1]->getValue();
-			axDes = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-		// If this control uses step functions
-		} else {
-			axDes = _nodes[i+1]->getValue();
-		}
-	}
+	double xDes = getControlValue(aT);
 
 	// COMPUTE AND SET NEW FILTERED CONTROL VALUE
-	double axDotPrev = (axPrev - axPrevPrev) / dtPrev;
-	double axDotDotPrev = -_kv * axDotPrev + _kp * (axDes - axPrev);
-	double aX = axPrev + axDotPrev * dt + 0.5 * axDotDotPrev * dt * dt;
+	double xDotPrev = (xPrev - xPrevPrev) / dtPrev;
+	double xDotDotPrev = -_kv*xDotPrev + _kp*(xDes - xPrev);
+	double x = xPrev + xDotPrev*dt + 0.5*xDotDotPrev*dt*dt;
+
 	// Set the control value to the newly computed value
-	setControlValue(aT, aX); // TO DO - Can speed this up!
+	setControlValue(aT, x);
 }
