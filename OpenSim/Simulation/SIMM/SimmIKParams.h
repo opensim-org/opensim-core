@@ -32,17 +32,16 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 
-#include "SimmCoordinate.h"
-#include "SimmMarker.h"
-#include "SimmIKTrialParams.h"
-#include "SimmModel.h"
+#include "SimmCoordinateSet.h"
+#include "SimmMarkerSet.h"
+#include "SimmIKTrialParamsSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -69,16 +68,16 @@ protected:
 	std::string &_modelFileName;
 
 	// marker set for updating markers in model before doing IK
-	PropertyObjArray _markerSetProp;
-	ArrayPtrs<SimmMarker> &_markerSet;
+	PropertyObj _markerSetProp;
+	SimmMarkerSet &_markerSet;
 
 	// coordinate set for updating coordinates in model before doing IK
-	PropertyObjArray _coordinateSetProp;
-	ArrayPtrs<SimmCoordinate> &_coordinateSet;
+	PropertyObj _coordinateSetProp;
+	SimmCoordinateSet &_coordinateSet;
 
 	// parameters for the set of IK trials to perform
-	PropertyObjArray _IKTrialParamsSetProp;
-	ArrayPtrs<SimmIKTrialParams> &_IKTrialParamsSet;
+	PropertyObj _IKTrialParamsSetProp;
+	SimmIKTrialParamsSet &_IKTrialParamsSet;
 
 //=============================================================================
 // METHODS
@@ -100,7 +99,7 @@ public:
    void SimmIKParams::copyData(const SimmIKParams &aIKParams);
 
 	//bool solveIK(IKSolverInterface *aSolver,SimmModel* aModel);
-   ArrayPtrs<SimmMarker>& getMarkerSet()
+   SimmMarkerSet& getMarkerSet()
    {
 	   return _markerSet;
    }
@@ -115,7 +114,7 @@ public:
 		return (*(_IKTrialParamsSet.get(aIndex)));
 	}
 
-	ArrayPtrs<SimmCoordinate> &getCoordinateSet() const
+	SimmCoordinateSet &getCoordinateSet() const
 	{
 		return (_coordinateSet);
 	}

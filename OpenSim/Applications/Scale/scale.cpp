@@ -189,12 +189,12 @@ int main(int argc,char **argv)
 			// as "fromFile", read the value from the first frame in the
 			// coordinate file (a SIMM motion file) and use it to overwrite
 			// the "fromFile" specification.
-			ArrayPtrs<SimmCoordinate> &coordinateSet = params.getCoordinateSet();
+			SimmCoordinateSet &coordinateSet = params.getCoordinateSet();
 			if (coordinateValues.getNumColumns() > 0) {
 				for (int i = 0; i < coordinateSet.getSize(); i++) {
-					if (coordinateSet[i]->getValueStr() == "fromFile"){
-						double newValue = coordinateValues.getValue(coordinateSet[i]->getName(), 0);
-						coordinateSet[i]->setValue(newValue);
+					if (coordinateSet.get(i)->getValueStr() == "fromFile"){
+						double newValue = coordinateValues.getValue(coordinateSet.get(i)->getName(), 0);
+						coordinateSet.get(i)->setValue(newValue);
 					}
 				}
 				// Update the model with the coordinates specified

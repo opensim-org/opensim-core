@@ -34,7 +34,6 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
 
 namespace OpenSim { 
 

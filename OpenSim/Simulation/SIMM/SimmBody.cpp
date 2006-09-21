@@ -53,7 +53,8 @@ SimmBody::SimmBody() :
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setNull();
 }
@@ -68,7 +69,8 @@ SimmBody::SimmBody(DOMElement *aElement) :
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setNull();
 
@@ -96,7 +98,8 @@ SimmBody::SimmBody(const SimmBody &aBody) :
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markers((ArrayPtrs<SimmMarker>&)_markersProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setupProperties();
 	copyData(aBody);
@@ -142,7 +145,7 @@ void SimmBody::copyData(const SimmBody &aBody)
 	_massCenter = aBody._massCenter;
 	_inertia = aBody._inertia;
 	_displayer = aBody._displayer; //? Do we need a dep copy here? when is this invoked?
-	_markers = aBody._markers;
+	_markerSet = aBody._markerSet;
 }
 
 
@@ -181,10 +184,8 @@ void SimmBody::setupProperties()
 	_displayerProp.setName("Displayer");
 	_propertySet.append(&_displayerProp);
 
-	_markersProp.setName("Markers");
-	ArrayPtrs<Object> markers;
-	_markersProp.setValue(markers);
-	_propertySet.append(&_markersProp);
+	_markerSetProp.setName("SimmMarkerSet");
+	_propertySet.append(&_markerSetProp);
 }
 
 SimmBody& SimmBody::operator=(const SimmBody &aBody)
@@ -222,14 +223,14 @@ void SimmBody::setup(SimmKinematicsEngine* aEngine)
 		_displayer.addGeometry(new PolyhedralGeometry(_displayer.getGeometryFileName(i)));
 	}
 
-	for (i = 0; i < _markers.getSize(); i++)
+	for (i = 0; i < _markerSet.getSize(); i++)
 	{
-		_markers.get(i)->setup(aEngine);
+		_markerSet.get(i)->setup(aEngine);
 		// This should happen inside setup
-		_displayer.addDependent(_markers.get(i)->getDisplayer());
+		_displayer.addDependent(_markerSet.get(i)->getDisplayer());
 		Transform position;
-		position.translate(_markers.get(i)->getOffset());
-		_markers.get(i)->getDisplayer()->setTransform(position);
+		position.translate(_markerSet.get(i)->getOffset());
+		_markerSet.get(i)->getDisplayer()->setTransform(position);
 
 	}
 
@@ -245,29 +246,29 @@ void SimmBody::addMarker(SimmMarker* aMarker)
 	// newMarker will be deleted when the _markers array
 	// is deleted because _memoryOwner is set to true.
 	SimmMarker* newMarker = new SimmMarker(*aMarker);
-	_markers.append(newMarker);
+	_markerSet.append(newMarker);
 }
 
 SimmMarker* SimmBody::getMarker(int index) const
 {
-	if (index >= 0 && index < _markers.getSize())
-		return _markers[index];
+	if (index >= 0 && index < _markerSet.getSize())
+		return _markerSet.get(index);
 
 	return NULL;
 }
 
 int SimmBody::deleteAllMarkers()
 {
-	int numDeleted = _markers.getSize();
+	int numDeleted = _markerSet.getSize();
 
-	_markers.clearAndDestroy();
+	_markerSet.setSize(0);
 
 	return numDeleted;
 }
 
 void SimmBody::deleteMarker(const SimmMarker* aMarker)
 {
-	_markers.remove(aMarker);
+	_markerSet.remove(aMarker);
 }
 
 /* Remove all markers from the body that are not in the passed-in list. */
@@ -276,16 +277,16 @@ int SimmBody::deleteUnusedMarkers(const Array<string>& aMarkerNames)
 	int j=0;
 	int numDeleted = 0;
 
-	for (int i = 0; i < _markers.getSize(); i++)
+	for (int i = 0; i < _markerSet.getSize(); i++)
 	{
 		for (j = 0; j < aMarkerNames.getSize(); j++)
 		{
-			if (aMarkerNames[j] == _markers[i]->getName())
+			if (aMarkerNames[j] == _markerSet.get(i)->getName())
 				break;
 		}
 		if (j == aMarkerNames.getSize())
 		{
-			_markers.remove(i);
+			_markerSet.remove(i);
 			numDeleted++;
 			i--; // decrement i so the next marker will not be skipped
 		}
@@ -320,8 +321,8 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aPreserveMassDist)
 			sb->scale(aScaleFactors);
 	}
 	*/
-	for (i = 0; i < _markers.getSize(); i++)
-		_markers[i]->scale(aScaleFactors);
+	for (i = 0; i < _markerSet.getSize(); i++)
+		_markerSet.get(i)->scale(aScaleFactors);
 }
 
 void SimmBody::scaleInertialProperties(Array<double>& aScaleFactors)
@@ -459,8 +460,8 @@ void SimmBody::writeSIMM(ofstream& out) const
 		out << "bone " << fileName << endl;
 	}
 	
-	for (i = 0; i < _markers.getSize(); i++)
-		_markers[i]->writeSIMM(out);
+	for (i = 0; i < _markerSet.getSize(); i++)
+		_markerSet.get(i)->writeSIMM(out);
 
 	double scaleFactors[3];
 	_displayer.getScaleFactors(scaleFactors);
@@ -479,16 +480,16 @@ void SimmBody::writeMarkers(ofstream& out) const
 	 * The bodyName field is needed for this, and
 	 * bodyName is not used by every marker in the model.
 	 */
-	for (int i = 0; i < _markers.getSize(); i++)
+	for (int i = 0; i < _markerSet.getSize(); i++)
 	{
-		const double* pos = _markers[i]->getOffset();
+		const double* pos = _markerSet.get(i)->getOffset();
 
-		out << "   <marker name=\"" << _markers[i]->getName() << "\">" << endl;
+		out << "   <SimmMarker name=\"" << _markerSet.get(i)->getName() << "\">" << endl;
 		out << "      <body>" << getName() << "</body>" << endl;
 		out << "      <location>" << pos[0] << " " << pos[1] << " " << pos[2] << "</location>" << endl;
-		out << "      <weight>" << _markers[i]->getWeight() << "</weight>" << endl;
-		out << "      <fixed>" << ((_markers[i]->getFixed()) ? ("true") : ("false")) << "</fixed>" << endl;
-		out << "   </marker>" << endl;
+		out << "      <weight>" << _markerSet.get(i)->getWeight() << "</weight>" << endl;
+		out << "      <fixed>" << ((_markerSet.get(i)->getFixed()) ? ("true") : ("false")) << "</fixed>" << endl;
+		out << "   </SimmMarker>" << endl;
 	}
 }
 
@@ -508,8 +509,8 @@ void SimmBody::peteTest() const
 			sb->peteTest();
 	}
 	*/
-	for (i = 0; i < _markers.getSize(); i++)
-		_markers[i]->peteTest();
+	for (i = 0; i < _markerSet.getSize(); i++)
+		_markerSet.get(i)->peteTest();
 }
 
 void SimmBody::getScaleFactors(Array<double>& scales) const

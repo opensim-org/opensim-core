@@ -32,13 +32,14 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include "SimmBody.h"
-#include "SimmMuscle.h"
-#include "SimmMuscleGroup.h"
+#include "SimmMuscleSet.h"
+#include "SimmBodySet.h"
+#include "SimmMuscleGroupSet.h"
 #include "SimmMusclePoint.h"
 #include "SimmMuscleViaPoint.h"
 #include "SimmMarkerSet.h"
@@ -51,6 +52,7 @@
 namespace OpenSim { 
 
 class SimmKinematicsEngine;
+class SimmCoordinateSet;
 
 //=============================================================================
 //=============================================================================
@@ -67,10 +69,10 @@ class RDSIMULATION_API SimmModel : public Model
 // DATA
 //=============================================================================
 private:
-	PropertyObjArray _musclesProp;
-	ArrayPtrs<SimmMuscle> &_muscles;
+	PropertyObj _muscleSetProp;
+	SimmMuscleSet &_muscleSet;
 
-	ArrayPtrs<SimmMuscleGroup> _muscleGroups;
+	SimmMuscleGroupSet _muscleGroupSet;
 
 	PropertyObjArray _kinematicsEngineProp;
 	ArrayPtrs<AbstractDynamicsEngine> &_kinematicsEngine;
@@ -110,10 +112,9 @@ public:
 	SimmModel& operator=(const SimmModel &aModel);
 #endif
 
-	int getNumberOfMuscles() const {	return _muscles.getSize(); }
-	SimmMuscle* getMuscle(int index) { return _muscles.get(index); }
+	SimmMuscle* getMuscle(int index) { return _muscleSet.get(index); }
 
-	int getNumberOfMuscleGroups() const {	return _muscleGroups.getSize(); }
+	int getNumberOfMuscleGroups() const {	return _muscleGroupSet.getSize(); }
 	SimmMuscleGroup* enterGroup(const std::string& aName);
 
 	void setKinematicsEngine(AbstractDynamicsEngine& aKE);
@@ -127,8 +128,8 @@ public:
 	void moveMarkersToCloud(Storage& aMarkerStorage);
 	int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
 	int replaceMarkerSet(SimmMarkerSet& aMarkerSet);
-	void updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray);
-	void updateCoordinates(ArrayPtrs<SimmCoordinate>& aCoordinateArray);
+	void updateMarkers(SimmMarkerSet& aMarkerArray);
+	void updateCoordinates(SimmCoordinateSet& aCoordinateArray);
 	double takeMeasurement(const SimmMeasurement& aMeasurement);
 	const SimmUnits& getLengthUnits() const;
 	const SimmUnits& getForceUnits() const;
@@ -137,8 +138,8 @@ public:
 	const char* getGravityLabel() const;
 	bool bodyNeededForDynamics(SimmBody* aBody);
 
-	ArrayPtrs<SimmBody>& getBodies();
-	ArrayPtrs<SimmCoordinate>& getCoordinates();
+	SimmBodySet& getBodies();
+	SimmCoordinateSet& getCoordinates();
 
 	virtual void setPin(int aBody,int aPinNumber,const double aPin[3]);
 	virtual void getPin(int aBody,int aPinNumber,double rPin[3]) const;

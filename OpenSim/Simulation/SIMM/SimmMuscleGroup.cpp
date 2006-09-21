@@ -153,17 +153,13 @@ void SimmMuscleGroup::setup(SimmModel* aModel)
 {
 	_muscles.setSize(0);
 
-	SimmMuscle* sm;
-	for (int i = 0; i < aModel->getNumberOfMuscles(); i++)
+	for (int i = 0; i < aModel->getNA(); i++)
 	{
-		if (sm = dynamic_cast<SimmMuscle*>(aModel->getMuscle(i)))
+		const Array<string>& groupNames = aModel->getMuscle(i)->getGroupNames();
+		for (int j = 0; j < groupNames.getSize(); j++)
 		{
-			const Array<string>& groupNames = sm->getGroupNames();
-			for (int j = 0; j < groupNames.getSize(); j++)
-			{
-				if (groupNames[j] == getName())
-					_muscles.append(sm);
-			}
+			if (groupNames[j] == getName())
+				_muscles.append(aModel->getMuscle(i));
 		}
 	}
 }

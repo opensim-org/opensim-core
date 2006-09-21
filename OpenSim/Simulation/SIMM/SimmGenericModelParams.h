@@ -32,10 +32,10 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmModel.h"
 #include "SimmMarker.h"
+#include "SimmMarkerSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -47,6 +47,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class SimmModel;
 
 class RDSIMULATION_API SimmGenericModelParams : public Object  
 {
@@ -60,8 +62,8 @@ protected:
 	PropertyStr _fileNameProp;
 	std::string &_fileName;
 
-	PropertyObjArray _markerSetProp;
-	ArrayPtrs<SimmMarker> &_markerSet;
+	PropertyObj _markerSetProp;
+	SimmMarkerSet &_markerSet;
 
 //=============================================================================
 // METHODS
@@ -110,7 +112,7 @@ public:
 		_fileName=aFileName;
 	};
 
-	ArrayPtrs<SimmMarker>& getMarkerSet()
+	SimmMarkerSet& getMarkerSet()
 	{
 		return _markerSet;
 	}

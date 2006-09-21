@@ -31,15 +31,15 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Scale.h>
 #include <OpenSim/Tools/ScaleSet.h>
 
-#include "SimmMarkerPair.h"
-#include "BodyScale.h"
+#include "SimmMarkerPairSet.h"
+#include "BodyScaleSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -61,11 +61,11 @@ class RDSIMULATION_API SimmMeasurement : public Object
 private:
 
 protected:
-	PropertyObjArray _markerPairSetProp;
-	ArrayPtrs<SimmMarkerPair> &_markerPairSet;
+	PropertyObj _markerPairSetProp;
+	SimmMarkerPairSet &_markerPairSet;
 
-	PropertyObjArray _bodyScaleSetProp;
-	ArrayPtrs<BodyScale> &_bodyScaleSet;
+	PropertyObj _bodyScaleSetProp;
+	BodyScaleSet &_bodyScaleSet;
 
 	PropertyBool _applyProp;
 	bool &_apply;

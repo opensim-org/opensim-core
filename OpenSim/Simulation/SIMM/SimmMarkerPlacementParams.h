@@ -39,9 +39,8 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 
-#include "SimmModel.h"
-#include "SimmCoordinate.h"
-#include "SimmMarker.h"
+#include "SimmCoordinateSet.h"
+#include "SimmMarkerSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -53,6 +52,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class SimmModel;
 
 class RDSIMULATION_API SimmMarkerPlacementParams : public Object  
 {
@@ -76,12 +77,12 @@ protected:
 	std::string &_coordinateFileName;
 
 	// coordinate set for updating coordinates in scaled model
-	PropertyObjArray _coordinateSetProp;
-	ArrayPtrs<SimmCoordinate> &_coordinateSet;
+	PropertyObj _coordinateSetProp;
+	SimmCoordinateSet &_coordinateSet;
 
 	// marker set for updating markers in scaled model
-	PropertyObjArray _markerSetProp;
-	ArrayPtrs<SimmMarker> &_markerSet;
+	PropertyObj _markerSetProp;
+	SimmMarkerSet &_markerSet;
 
 	// name of SIMM joint file to write when done placing markers
 	PropertyStr _outputJointFileNameProp;
@@ -130,7 +131,7 @@ public:
 
 	bool isDefault() const;
 
-	ArrayPtrs<SimmMarker> &getMarkerSet() const
+	SimmMarkerSet &getMarkerSet() const
 	{
 		return _markerSet;
 	}
@@ -148,7 +149,7 @@ public:
         return _coordinateFileName;
     }
     
-    ArrayPtrs<SimmCoordinate> &getCoordinateSet()
+    SimmCoordinateSet &getCoordinateSet()
     {
         return _coordinateSet;
     }

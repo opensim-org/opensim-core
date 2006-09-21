@@ -27,9 +27,9 @@
 // INCLUDES
 //=============================================================================
 #include "SimmMarkerPlacementParams.h"
+#include "SimmModel.h"
 #include "SimmMarkerData.h"
 #include "SimmMotionData.h"
-#include "SimmCoordinate.h"
 
 //=============================================================================
 // STATICS
@@ -50,8 +50,10 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams() :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -70,8 +72,10 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams(DOMElement *aElement) :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -102,8 +106,10 @@ SimmMarkerPlacementParams::SimmMarkerPlacementParams(const SimmMarkerPlacementPa
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -198,16 +204,12 @@ void SimmMarkerPlacementParams::setupProperties()
 	_coordinateFileNameProp.setComment("Name of file containing the joint angles used to set the initial configuration of the model for the purpose of relocating the non-fixed markers.");
 	_propertySet.append(&_coordinateFileNameProp);
 
-	_coordinateSetProp.setName("CoordinateSet");
-	_coordinateSetProp.setComment("Name of the .mot file containing the joint angles used to set the initial configuration of the model for the purpose of relocating the non-fixed marker locations.");
-	ArrayPtrs<Object> cs;
-	_coordinateSetProp.setValue(cs);
+	_coordinateSetProp.setName("SimmCoordinateSet");
+	_coordinateSetProp.setComment("Coordinate parameters (e.g., weights, locked/unlocked) can be specified here.");
 	_propertySet.append(&_coordinateSetProp);
 
-	_markerSetProp.setName("MarkerSet");
+	_markerSetProp.setName("SimmMarkerSet");
 	_markerSetProp.setComment("Markers to use if different from or in addition to the generic model.");
-	ArrayPtrs<Object> ms;
-	_markerSetProp.setValue(ms);
 	_propertySet.append(&_markerSetProp);
 
 	_outputJointFileNameProp.setName("output_joint_file");

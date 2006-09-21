@@ -27,6 +27,7 @@
 // INCLUDES
 //=============================================================================
 #include "SimmGenericModelParams.h"
+#include "SimmModel.h"
 
 //=============================================================================
 // STATICS
@@ -45,7 +46,8 @@ using namespace std;
  */
 SimmGenericModelParams::SimmGenericModelParams() :
    _fileName(_fileNameProp.getValueStr()),
-   _markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+   _markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setNull();
 }
@@ -56,7 +58,8 @@ SimmGenericModelParams::SimmGenericModelParams() :
 SimmGenericModelParams::SimmGenericModelParams(DOMElement *aElement) :
    Object(aElement),
    _fileName(_fileNameProp.getValueStr()),
-   _markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+   _markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setNull();
 
@@ -80,7 +83,8 @@ SimmGenericModelParams::~SimmGenericModelParams()
 SimmGenericModelParams::SimmGenericModelParams(const SimmGenericModelParams &aGenericModelParams) :
    Object(aGenericModelParams),
    _fileName(_fileNameProp.getValueStr()),
-   _markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+   _markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
 {
 	setupProperties();
 	copyData(aGenericModelParams);
@@ -150,16 +154,14 @@ void SimmGenericModelParams::setupProperties()
 	_fileNameProp.setComment("Name of the file for the OpenSim model (unscaled generic model)"); 
 	_propertySet.append(&_fileNameProp);
 
-	_markerSetProp.setName("MarkerSet");
-	_markerSetProp.setComment("Name of xml file specifying markers used by the gaitlab.");
-	ArrayPtrs<Object> markers;
-	_markerSetProp.setValue(markers);
+	_markerSetProp.setName("SimmMarkerSet");
+	_markerSetProp.setComment("Markers to add to the generic model for this application");
 	_propertySet.append(&_markerSetProp);
 }
 
 void SimmGenericModelParams::registerTypes()
 {
-	Object::RegisterType(SimmMarker());
+	//Object::RegisterType(SimmMarker());
 }
 
 SimmGenericModelParams& SimmGenericModelParams::operator=(const SimmGenericModelParams &aGenericModelParams)
@@ -208,6 +210,6 @@ void SimmGenericModelParams::peteTest() const
 	cout << "      markers:" << endl;
 
 	for (int i = 0; i < _markerSet.getSize(); i++)
-		_markerSet[i]->peteTest();
+		_markerSet.get(i)->peteTest();
 }
 

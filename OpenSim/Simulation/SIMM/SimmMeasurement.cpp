@@ -44,8 +44,10 @@ using namespace std;
  * Default constructor.
  */
 SimmMeasurement::SimmMeasurement() :
-	_markerPairSet((ArrayPtrs<SimmMarkerPair>&)_markerPairSetProp.getValueObjArray()),
-	_bodyScaleSet((ArrayPtrs<BodyScale>&)_bodyScaleSetProp.getValueObjArray()),
+	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
+	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
+	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
+	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
 {
 	setNull();
@@ -56,8 +58,10 @@ SimmMeasurement::SimmMeasurement() :
  */
 SimmMeasurement::SimmMeasurement(DOMElement *aElement) :
    Object(aElement),
-	_markerPairSet((ArrayPtrs<SimmMarkerPair>&)_markerPairSetProp.getValueObjArray()),
-	_bodyScaleSet((ArrayPtrs<BodyScale>&)_bodyScaleSetProp.getValueObjArray()),
+	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
+	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
+	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
+	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
 {
 	setNull();
@@ -80,8 +84,10 @@ SimmMeasurement::~SimmMeasurement()
  */
 SimmMeasurement::SimmMeasurement(const SimmMeasurement &aMeasurement) :
    Object(aMeasurement),
-	_markerPairSet((ArrayPtrs<SimmMarkerPair>&)_markerPairSetProp.getValueObjArray()),
-	_bodyScaleSet((ArrayPtrs<BodyScale>&)_bodyScaleSetProp.getValueObjArray()),
+	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
+	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
+	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
+	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
 {
 	setupProperties();
@@ -155,15 +161,11 @@ void SimmMeasurement::setupProperties()
 	_propertySet.append(&_applyProp);
 
 	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
-	_markerPairSetProp.setName("MarkerPairSet");
-	ArrayPtrs<Object> mps;
-	_markerPairSetProp.setValue(mps);
+	_markerPairSetProp.setName("SimmMarkerPairSet");
 	_propertySet.append(&_markerPairSetProp);
 
 	_bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
 	_bodyScaleSetProp.setName("BodyScaleSet");
-	ArrayPtrs<Object> bss;
-	_bodyScaleSetProp.setValue(bss);
 	_propertySet.append(&_bodyScaleSetProp);
 
 }

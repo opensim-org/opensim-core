@@ -31,6 +31,7 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
@@ -38,7 +39,7 @@
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Tools/Function.h>
-#include "SimmMusclePoint.h"
+#include "SimmMusclePointSet.h"
 
 namespace OpenSim { 
 
@@ -67,8 +68,8 @@ private:
 	SimmKinematicsEngine* _kinematicsEngine;
 
 protected:
-	PropertyObjArray _attachmentsProp;
-	ArrayPtrs<SimmMusclePoint> &_attachments;
+	PropertyObj _attachmentSetProp;
+	SimmMusclePointSet &_attachmentSet;
 
 	PropertyDbl _maxIsometricForceProp;
 	double &_maxIsometricForce;
@@ -125,7 +126,7 @@ public:
 #endif
 
     void SimmMuscle::copyData(const SimmMuscle &aMuscle);
-	const ArrayPtrs<SimmMusclePoint>& getAttachmentArray() const { return _attachments; }
+	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
 
 	virtual void computeActuation() { }
 	virtual void apply() { }

@@ -32,16 +32,15 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Scale.h>
-
-#include "SimmModel.h"
 #include "SimmMeasurement.h"
+#include "SimmMeasurementSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -53,6 +52,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class SimmModel;
 
 class RDSIMULATION_API SimmScalingParams : public Object  
 {
@@ -68,12 +69,12 @@ protected:
 	Array<std::string>& _scalingOrder;
 
 	// set of measurements to make on generic model and subject's static pose
-	PropertyObjArray _measurementSetProp;
-	ArrayPtrs<SimmMeasurement> &_measurementSet;
+	PropertyObj _measurementSetProp;
+	SimmMeasurementSet &_measurementSet;
 
 	// set of XYZ scale factors to use for manual scaling
-	PropertyObjArray _scaleSetProp;
-	ArrayPtrs<Scale> &_scaleSet;
+	PropertyObj _scaleSetProp;
+	ScaleSet &_scaleSet;
 
 	// name of marker file that contains the static pose
 	PropertyStr _markerFileNameProp;
@@ -139,11 +140,6 @@ public:
 	 */
  	const ScaleSet& getScaleSet(SimmModel& aModel, const char* subjectDirectory);	
  
-	ArrayPtrs<OpenSim::Scale> &getScales()
-	{
-		return _scaleSet;
-	};
-
 	void writeOutputFiles(SimmModel* aModel, const char* dirToWriteOutputFiles=0);
 	/* Register types to be used when reading a SimmScalingParams object from xml file. */
 	static void registerTypes();
@@ -163,19 +159,19 @@ public:
 	{
 		_scaleSet.append(aScale);
 	}
-     ArrayPtrs<SimmMeasurement> getMeasurementSet() {
+    SimmMeasurementSet& getMeasurementSet() {
         return _measurementSet;
     }
 
-     void setMeasurementSet(ArrayPtrs<SimmMeasurement> measurementSet) {
+     void setMeasurementSet(SimmMeasurementSet& measurementSet) {
         _measurementSet = measurementSet;
     }
 
-     ArrayPtrs<Scale> getScaleSet() {
+     ScaleSet& getScaleSet() {
         return _scaleSet;
     }
 
-     void setScaleSet(ArrayPtrs<Scale> aScaleSet) {
+     void setScaleSet(ScaleSet& aScaleSet) {
         _scaleSet = aScaleSet;
     }
 

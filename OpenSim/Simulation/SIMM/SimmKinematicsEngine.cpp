@@ -76,9 +76,12 @@ SimmKinematicsEngine::~SimmKinematicsEngine()
  * Default constructor.
  */
 SimmKinematicsEngine::SimmKinematicsEngine() :
-	_bodies((ArrayPtrs<SimmBody>&)_bodiesProp.getValueObjArray()),
-	_coordinates((ArrayPtrs<SimmCoordinate>&)_coordinatesProp.getValueObjArray()),
-	_joints((ArrayPtrs<SimmJoint>&)_jointsProp.getValueObjArray()),
+	_bodySetProp(PropertyObj("", SimmBodySet())),
+	_bodySet((SimmBodySet&)_bodySetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_jointSetProp(PropertyObj("", SimmJointSet())),
+	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
@@ -96,9 +99,12 @@ SimmKinematicsEngine::SimmKinematicsEngine() :
  */
 SimmKinematicsEngine::SimmKinematicsEngine(const string &aFileName) :
 	AbstractDynamicsEngine(aFileName),
-	_bodies((ArrayPtrs<SimmBody>&)_bodiesProp.getValueObjArray()),
-	_coordinates((ArrayPtrs<SimmCoordinate>&)_coordinatesProp.getValueObjArray()),
-	_joints((ArrayPtrs<SimmJoint>&)_jointsProp.getValueObjArray()),
+	_bodySetProp(PropertyObj("", SimmBodySet())),
+	_bodySet((SimmBodySet&)_bodySetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_jointSetProp(PropertyObj("", SimmJointSet())),
+	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
@@ -121,9 +127,12 @@ SimmKinematicsEngine::SimmKinematicsEngine(const string &aFileName) :
  */
 SimmKinematicsEngine::SimmKinematicsEngine(DOMElement *aElement) :
 	AbstractDynamicsEngine(aElement),
-	_bodies((ArrayPtrs<SimmBody>&)_bodiesProp.getValueObjArray()),
-	_coordinates((ArrayPtrs<SimmCoordinate>&)_coordinatesProp.getValueObjArray()),
-	_joints((ArrayPtrs<SimmJoint>&)_jointsProp.getValueObjArray()),
+	_bodySetProp(PropertyObj("", SimmBodySet())),
+	_bodySet((SimmBodySet&)_bodySetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_jointSetProp(PropertyObj("", SimmJointSet())),
+	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
@@ -146,9 +155,12 @@ SimmKinematicsEngine::SimmKinematicsEngine(DOMElement *aElement) :
  */
 SimmKinematicsEngine::SimmKinematicsEngine(const SimmKinematicsEngine& aKE) :
    AbstractDynamicsEngine(aKE),
-	_bodies((ArrayPtrs<SimmBody>&)_bodiesProp.getValueObjArray()),
-	_coordinates((ArrayPtrs<SimmCoordinate>&)_coordinatesProp.getValueObjArray()),
-	_joints((ArrayPtrs<SimmJoint>&)_jointsProp.getValueObjArray()),
+	_bodySetProp(PropertyObj("", SimmBodySet())),
+	_bodySet((SimmBodySet&)_bodySetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_jointSetProp(PropertyObj("", SimmJointSet())),
+	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
@@ -182,9 +194,9 @@ Object* SimmKinematicsEngine::copy(DOMElement *aElement) const
 
 void SimmKinematicsEngine::copyData(const SimmKinematicsEngine &aKE)
 {
-	_bodies = aKE._bodies;
-	_coordinates = aKE._coordinates;
-	_joints = aKE._joints;
+	_bodySet = aKE._bodySet;
+	_coordinateSet = aKE._coordinateSet;
+	_jointSet = aKE._jointSet;
 	_lengthUnits = aKE._lengthUnits;
 	_forceUnits = aKE._forceUnits;
 	_model = aKE._model;
@@ -229,20 +241,14 @@ void SimmKinematicsEngine::setNull()
  */
 void SimmKinematicsEngine::setupProperties()
 {
-	_bodiesProp.setName("Bodies");
-	ArrayPtrs<Object> bdy;
-	_bodiesProp.setValue(bdy);
-	_propertySet.append(&_bodiesProp);
+	_bodySetProp.setName("SimmBodySet");
+	_propertySet.append(&_bodySetProp);
 
-	_coordinatesProp.setName("Coordinates");
-	ArrayPtrs<Object> gc;
-	_coordinatesProp.setValue(gc);
-	_propertySet.append(&_coordinatesProp);
+	_coordinateSetProp.setName("SimmCoordinateSet");
+	_propertySet.append(&_coordinateSetProp);
 
-	_jointsProp.setName("Joints");
-	ArrayPtrs<Object> jnt;
-	_jointsProp.setValue(jnt);
-	_propertySet.append(&_jointsProp);
+	_jointSetProp.setName("SimmJointSet");
+	_propertySet.append(&_jointSetProp);
 
 	_lengthUnitsStrProp.setName("length_units");
 	_propertySet.append(&_lengthUnitsStrProp);
@@ -274,16 +280,16 @@ void SimmKinematicsEngine::setup(SimmModel* aModel)
 
 	_model = aModel;
 
-	for (i = 0; i < _bodies.getSize(); i++)
-		_bodies[i]->setup(this);
+	for (i = 0; i < _bodySet.getSize(); i++)
+		_bodySet[i]->setup(this);
 
 	_groundBody = identifyGroundBody();
 
-	for (i = 0; i < _coordinates.getSize(); i++)
-		_coordinates[i]->setup(this);
+	for (i = 0; i < _coordinateSet.getSize(); i++)
+		_coordinateSet[i]->setup(this);
 
-	for (i = 0; i < _joints.getSize(); i++)
-		_joints[i]->setup(this);
+	for (i = 0; i < _jointSet.getSize(); i++)
+		_jointSet[i]->setup(this);
 
 	/* Generate paths from every body to every other one. */
 	makePaths();
@@ -310,10 +316,10 @@ void SimmKinematicsEngine::setup(SimmModel* aModel)
 
 SimmBody* SimmKinematicsEngine::getBody(const string &aName) const
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		if (aName == _bodies[i]->getName())
-			return _bodies[i];
+		if (aName == _bodySet[i]->getName())
+			return _bodySet[i];
 	}
 
 	return NULL;
@@ -322,25 +328,25 @@ SimmBody* SimmKinematicsEngine::getBody(const string &aName) const
 SimmBody* SimmKinematicsEngine::identifyGroundBody(void)
 {
 	// The ground body is the one that is named simmGroundName.
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		if (_bodies[i]->getName() == simmGroundName)
-			return _bodies[i];
+		if (_bodySet[i]->getName() == simmGroundName)
+			return _bodySet[i];
 	}
 
 	// If that name is not found, then the first body is selected as ground.
-	if (_bodies.getSize() > 0)
-		return _bodies[0];
+	if (_bodySet.getSize() > 0)
+		return _bodySet[0];
 
 	return NULL;
 }
 
 Coordinate* SimmKinematicsEngine::getCoordinate(const string &aName) const
 {
-	for (int i = 0; i < _coordinates.getSize(); i++)
+	for (int i = 0; i < _coordinateSet.getSize(); i++)
 	{
-		if (aName == _coordinates[i]->getName())
-			return _coordinates[i];
+		if (aName == _coordinateSet[i]->getName())
+			return _coordinateSet[i];
 	}
 
 	return NULL;
@@ -383,7 +389,7 @@ void SimmKinematicsEngine::convertPoint(Array<double>& aPoint, const SimmBody* a
 void SimmKinematicsEngine::makePaths(void)
 {
    int i, j, numPathsCompleted = 0;
-   int numBodies = _bodies.getSize();
+   int numBodies = _bodySet.getSize();
    int numPaths = numBodies*numBodies;
 
    /* Create space for the paths, and initialize each path to NULL */
@@ -395,15 +401,15 @@ void SimmKinematicsEngine::makePaths(void)
    /* Each joint represents two simple paths- from parent to child and from
     * child to parent. Add these paths to the list and count them as completed.
     */
-   for (i = 0; i < _joints.getSize(); i++)
+   for (i = 0; i < _jointSet.getSize(); i++)
    {
 		JointPath p;
-		p.push_back(SimmStep(_joints[i], SimmStep::forward));
-		_path.setPath(_joints[i]->getParentBody(), _joints[i]->getChildBody(), p);
+		p.push_back(SimmStep(_jointSet[i], SimmStep::forward));
+		_path.setPath(_jointSet[i]->getParentBody(), _jointSet[i]->getChildBody(), p);
       numPathsCompleted++;
 		p.clear();
-		p.push_back(SimmStep(_joints[i], SimmStep::inverse));
-		_path.setPath(_joints[i]->getChildBody(), _joints[i]->getParentBody(), p);
+		p.push_back(SimmStep(_jointSet[i], SimmStep::inverse));
+		_path.setPath(_jointSet[i]->getChildBody(), _jointSet[i]->getParentBody(), p);
       numPathsCompleted++;
    }
 
@@ -415,10 +421,10 @@ void SimmKinematicsEngine::makePaths(void)
    {
       int k, oldCount = numPathsCompleted;
 
-      for (i = 0; i < _joints.getSize(); i++)
+      for (i = 0; i < _jointSet.getSize(); i++)
       {
-         const SimmBody* bodyM = _joints[i]->getParentBody();
-         const SimmBody* bodyN = _joints[i]->getChildBody();
+         const SimmBody* bodyM = _jointSet[i]->getParentBody();
+         const SimmBody* bodyN = _jointSet[i]->getChildBody();
 
          if (bodyM == NULL || bodyN == NULL)
             continue;
@@ -428,8 +434,8 @@ void SimmKinematicsEngine::makePaths(void)
             {
                if (j == k)
                   continue;
-					const SimmBody* bodyJ = _bodies[j];
-					const SimmBody* bodyK = _bodies[k];
+					const SimmBody* bodyJ = _bodySet[j];
+					const SimmBody* bodyK = _bodySet[k];
 					const JointPath* jp = _path.getPath(bodyJ, bodyK);
 					if (jp == NULL)
 						continue;
@@ -449,8 +455,8 @@ void SimmKinematicsEngine::makePaths(void)
                   if (curPath == NULL || curPath->size() > jp->size() + 1)
                   {
 							JointPath p = *jp;
-							p.push_back(SimmStep(_joints[i], SimmStep::forward));
-							_path.setPath(_bodies[j], bodyN, p);
+							p.push_back(SimmStep(_jointSet[i], SimmStep::forward));
+							_path.setPath(_bodySet[j], bodyN, p);
                      numPathsCompleted++;
                   }
                }
@@ -463,7 +469,7 @@ void SimmKinematicsEngine::makePaths(void)
                   if (curPath == NULL || curPath->size() > jp->size() + 1)
                   {
 							JointPath p = *jp;
-							p.push_back(SimmStep(_joints[i], SimmStep::inverse));
+							p.push_back(SimmStep(_jointSet[i], SimmStep::inverse));
 							_path.setPath(bodyJ, bodyM, p);
                      numPathsCompleted++;
 						}
@@ -481,22 +487,22 @@ void SimmKinematicsEngine::makePaths(void)
 			cout << "makePaths : Error - cannot find joint path between the following pairs of bodies: \n";
          for (i = 0; i < numBodies; i++)
          {
-            name1 = _bodies[i]->getName();
+            name1 = _bodySet[i]->getName();
             for (j = i+1; j < numBodies; j++)
             {
-               name2 = _bodies[j]->getName();
+               name2 = _bodySet[j]->getName();
 
-					const JointPath* jp = _path.getPath(_bodies[i], _bodies[j]);
+					const JointPath* jp = _path.getPath(_bodySet[i], _bodySet[j]);
                if (jp == NULL)
                {
-                  cout << "(" << _bodies[i]->getName() << ", " << _bodies[j]->getName() << ")\n";
+                  cout << "(" << _bodySet[i]->getName() << ", " << _bodySet[j]->getName() << ")\n";
                }
 					else
 					{
-						if (jp->back().getJoint()->getParentBody() != _bodies[j] &&
-							 jp->back().getJoint()->getChildBody() != _bodies[j])
+						if (jp->back().getJoint()->getParentBody() != _bodySet[j] &&
+							 jp->back().getJoint()->getChildBody() != _bodySet[j])
 						{
-							cout << "(" << _bodies[i]->getName() << ", " << _bodies[j]->getName() << ")\n";
+							cout << "(" << _bodySet[i]->getName() << ", " << _bodySet[j]->getName() << ")\n";
 						}
 					}
             }
@@ -512,13 +518,13 @@ void SimmKinematicsEngine::makePaths(void)
  */
 void SimmKinematicsEngine::createCoordinateJointLists()
 {
-   for (int i = 0; i < _coordinates.getSize(); i++)
+   for (int i = 0; i < _coordinateSet.getSize(); i++)
    {
-      for (int j = 0; j < _joints.getSize(); j++)
+      for (int j = 0; j < _jointSet.getSize(); j++)
       {
-         if (_joints[j]->isCoordinateUsed(_coordinates[i]))
+         if (_jointSet[j]->isCoordinateUsed(_coordinateSet[i]))
          {
-            _coordinates[i]->addJointToList(_joints[j]);
+            _coordinateSet[i]->addJointToList(_jointSet[j]);
          }
       }
    }
@@ -530,21 +536,21 @@ void SimmKinematicsEngine::createCoordinateJointLists()
  */
 void SimmKinematicsEngine::createCoordinatePathLists()
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		for (int j = 0; j < _bodies.getSize(); j++)
+		for (int j = 0; j < _bodySet.getSize(); j++)
 		{
-			const JointPath* p = _path.getPath(_bodies[i], _bodies[j]);
+			const JointPath* p = _path.getPath(_bodySet[i], _bodySet[j]);
 			if (p && p->size() > 0)
 			{
-				for (int c = 0; c < _coordinates.getSize(); c++)
+				for (int c = 0; c < _coordinateSet.getSize(); c++)
 				{
 					for (unsigned int k = 0; k < p->size(); k++)
 					{
 						SimmJoint* jnt = (*p)[k].getJoint();
-						if (jnt->isCoordinateUsed(_coordinates[c]))
+						if (jnt->isCoordinateUsed(_coordinateSet[c]))
 						{
-							_coordinates[c]->addPathToList(_path.getSimmPath(_bodies[i], _bodies[j]));
+							_coordinateSet[c]->addPathToList(_path.getSimmPath(_bodySet[i], _bodySet[j]));
 							break;
 						}
 					}
@@ -582,26 +588,26 @@ bool SimmKinematicsEngine::checkDynamicParameters(void)
 {
 	bool dynamicsReady = true;
 
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		if (_bodies[i] != _groundBody && !_bodies[i]->_sdfastInfo.skippable)
+		if (_bodySet[i] != _groundBody && !_bodySet[i]->_sdfastInfo.skippable)
 		{
 			// Check mass of body
-			double mass = _bodies[i]->getMass();
+			double mass = _bodySet[i]->getMass();
 			if (EQUAL_WITHIN_ERROR(mass, 0.0))
 			{
-				cerr << "Mass of body " << _bodies[i]->getName() << " is zero." << endl;
+				cerr << "Mass of body " << _bodySet[i]->getName() << " is zero." << endl;
 				dynamicsReady = false;
 			}
 
 			// Check inertia matrix of body
-			const Array<double>& inertia = _bodies[i]->getInertia();
+			const Array<double>& inertia = _bodySet[i]->getInertia();
 			double inertiaSum = 0.0;
 			for (int j = 0; j < 9; j++)
 				inertiaSum += inertia[j];
 			if (EQUAL_WITHIN_ERROR(inertiaSum, 0.0))
 			{
-				cerr << "Inertia matrix of body " << _bodies[i]->getName() << " is zero." << endl;
+				cerr << "Inertia matrix of body " << _bodySet[i]->getName() << " is zero." << endl;
 				dynamicsReady = false;
 			}
 		}
@@ -622,15 +628,15 @@ bool SimmKinematicsEngine::checkDynamicParameters(void)
  */
 SimmDof* SimmKinematicsEngine::markUnconstrainedDof(const SimmCoordinate* aCoordinate)
 {
-   for (int i = 0; i < _joints.getSize(); i++)
+   for (int i = 0; i < _jointSet.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofs = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-      for (int j = 0; j < dofs.getSize(); j++)
+      for (int j = 0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() == aCoordinate)
+			if (dofSet.get(j)->getCoordinate() == aCoordinate)
 	      {
-				Function* func = dofs[j]->getFunction();
+				Function* func = dofSet.get(j)->getFunction();
 
 				if (func->getNumberOfPoints() == 2)
 				{
@@ -641,19 +647,19 @@ SimmDof* SimmKinematicsEngine::markUnconstrainedDof(const SimmCoordinate* aCoord
 					{
 						if (EQUAL_WITHIN_ERROR(slopeAtZero, 1.0))
 						{
-							dofs[j]->_sdfastInfo.constrained = false;
-							dofs[j]->_sdfastInfo.conversionSign = 1.0;
-							return dofs[j];
+							dofSet.get(j)->_sdfastInfo.constrained = false;
+							dofSet.get(j)->_sdfastInfo.conversionSign = 1.0;
+							return dofSet.get(j);
 						}
 						else if (EQUAL_WITHIN_ERROR(slopeAtZero, -1.0))
 						{
-							dofs[j]->_sdfastInfo.constrained = false;
+							dofSet.get(j)->_sdfastInfo.constrained = false;
 	                  /* If slope is negative, set the conversion_sign to -1
 		                * so the conversion factor (which is set later) will
 		                * be negative.
 		                */
-							dofs[j]->_sdfastInfo.conversionSign = -1.0;
-							return dofs[j];
+							dofSet.get(j)->_sdfastInfo.conversionSign = -1.0;
+							return dofSet.get(j);
 						}
 					}
 				}
@@ -669,17 +675,17 @@ SimmDof* SimmKinematicsEngine::findNthSdfastQ(int n, SimmJoint*& joint) const
 {
 	joint = NULL;
 
-   for (int i = 0; i < _joints.getSize(); i++)
+   for (int i = 0; i < _jointSet.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofs = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-		for (int j = 0; j < dofs.getSize(); j++)
+		for (int j = 0; j < dofSet.getSize(); j++)
       {
-			if ((dofs[j]->getCoordinate() != NULL || dofs[j]->_sdfastInfo.fixed) &&
-				 dofs[j]->_sdfastInfo.stateNumber == n)
+			if ((dofSet.get(j)->getCoordinate() != NULL || dofSet.get(j)->_sdfastInfo.fixed) &&
+				 dofSet.get(j)->_sdfastInfo.stateNumber == n)
 			{
-				joint = _joints[i];
-            return dofs[j];
+				joint = _jointSet[i];
+            return dofSet.get(j);
 			}
       }
    }
@@ -689,15 +695,15 @@ SimmDof* SimmKinematicsEngine::findNthSdfastQ(int n, SimmJoint*& joint) const
 
 SimmDof* SimmKinematicsEngine::findUnconstrainedSdfastDof(const SimmCoordinate* coord) const
 {
-   for (int i = 0; i < _joints.getSize(); i++)
+   for (int i = 0; i < _jointSet.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofs = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-		for (int j = 0; j < dofs.getSize(); j++)
+		for (int j = 0; j < dofSet.getSize(); j++)
       {
-			if (!dofs[j]->_sdfastInfo.constrained && dofs[j]->getCoordinate() == coord)
+			if (!dofSet.get(j)->_sdfastInfo.constrained && dofSet.get(j)->getCoordinate() == coord)
 			{
-            return dofs[j];
+            return dofSet.get(j);
 			}
       }
    }
@@ -710,14 +716,14 @@ SimmDof* SimmKinematicsEngine::findUnconstrainedSdfastDof(const SimmCoordinate* 
  */
 SimmMarker* SimmKinematicsEngine::getMarker(const string& name, SimmBody*& body) const
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++)
+		for (int j = 0; j < _bodySet[i]->getNumMarkers(); j++)
 		{
-			if (_bodies[i]->getMarker(j)->getName() == name)
+			if (_bodySet[i]->getMarker(j)->getName() == name)
 			{
-				body = _bodies[i];
-				return _bodies[i]->getMarker(j);
+				body = _bodySet[i];
+				return _bodySet[i]->getMarker(j);
 			}
 		}
 	}
@@ -730,14 +736,14 @@ SimmMarker* SimmKinematicsEngine::getMarker(const string& name, SimmBody*& body)
  */
 const SimmMarker* SimmKinematicsEngine::getMarker(const string& name, const SimmBody*& body) const
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++)
+		for (int j = 0; j < _bodySet[i]->getNumMarkers(); j++)
 		{
-			if (_bodies[i]->getMarker(j)->getName() == name)
+			if (_bodySet[i]->getMarker(j)->getName() == name)
 			{
-				body = _bodies[i];
-				return _bodies[i]->getMarker(j);
+				body = _bodySet[i];
+				return _bodySet[i]->getMarker(j);
 			}
 		}
 	}
@@ -749,18 +755,18 @@ void SimmKinematicsEngine::countSdfastQsAndConstraints(void)
 {
    int i;
 
-   for (i = 0, _sdfastInfo._numQs = 0; i < _joints.getSize(); i++)
+   for (i = 0, _sdfastInfo._numQs = 0; i < _jointSet.getSize(); i++)
 	{
-		ArrayPtrs<SimmDof>& dofs = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-		for (int j = 0; j < dofs.getSize(); j++)
+		for (int j = 0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() != NULL || dofs[j]->_sdfastInfo.fixed)
+			if (dofSet.get(j)->getCoordinate() != NULL || dofSet.get(j)->_sdfastInfo.fixed)
             _sdfastInfo._numQs++;
 		}
 	}
 
-   _sdfastInfo._numConstraints = _sdfastInfo._numQs - _coordinates.getSize();
+   _sdfastInfo._numConstraints = _sdfastInfo._numQs - _coordinateSet.getSize();
 
 #if 0
    for (i = 0; i < ms->num_constraint_objects; i++)
@@ -769,7 +775,7 @@ void SimmKinematicsEngine::countSdfastQsAndConstraints(void)
 }
 
 /* This function initializes all of the SdfastInfo structures
- * in the joints, bodies, and dofs. It needs to be called at
+ * in the joints, bodies, and dofSet. It needs to be called at
  * the beginning of every "save dynamics" call in order to
  * clear the values from the last call.
  */
@@ -781,54 +787,54 @@ void SimmKinematicsEngine::initSdfastParameters(void)
 	_sdfastInfo._numQs = 0;
 	_sdfastInfo._numRestraintFunctions = 0;
 
-	for (i = 0; i < _joints.getSize(); i++)
+	for (i = 0; i < _jointSet.getSize(); i++)
    {
-		_joints[i]->_sdfastInfo.used = false;
-		_joints[i]->_sdfastInfo.name.erase(_joints[i]->_sdfastInfo.name.begin(),_joints[i]->_sdfastInfo.name.end());
-		_joints[i]->_sdfastInfo.type = dpUnknownJoint;
-		_joints[i]->_sdfastInfo.index = -1;
-		_joints[i]->_sdfastInfo.direction = SimmStep::forward;
-		_joints[i]->_sdfastInfo.inbname.erase(_joints[i]->_sdfastInfo.inbname.begin(),_joints[i]->_sdfastInfo.inbname.end());
-		_joints[i]->_sdfastInfo.outbname.erase(_joints[i]->_sdfastInfo.outbname.begin(),_joints[i]->_sdfastInfo.outbname.end());
-		_joints[i]->_sdfastInfo.closesLoop = false;
+		_jointSet[i]->_sdfastInfo.used = false;
+		_jointSet[i]->_sdfastInfo.name.erase(_jointSet[i]->_sdfastInfo.name.begin(),_jointSet[i]->_sdfastInfo.name.end());
+		_jointSet[i]->_sdfastInfo.type = dpUnknownJoint;
+		_jointSet[i]->_sdfastInfo.index = -1;
+		_jointSet[i]->_sdfastInfo.direction = SimmStep::forward;
+		_jointSet[i]->_sdfastInfo.inbname.erase(_jointSet[i]->_sdfastInfo.inbname.begin(),_jointSet[i]->_sdfastInfo.inbname.end());
+		_jointSet[i]->_sdfastInfo.outbname.erase(_jointSet[i]->_sdfastInfo.outbname.begin(),_jointSet[i]->_sdfastInfo.outbname.end());
+		_jointSet[i]->_sdfastInfo.closesLoop = false;
 	}
 
-	for (i = 0; i < _bodies.getSize(); i++)
+	for (i = 0; i < _bodySet.getSize(); i++)
 	{
-		_bodies[i]->_sdfastInfo.used = false;
-		_bodies[i]->_sdfastInfo.timesSplit = 0;
-		_bodies[i]->_sdfastInfo.massFactor = 1.0;
-		_bodies[i]->_sdfastInfo.skippable = false;
+		_bodySet[i]->_sdfastInfo.used = false;
+		_bodySet[i]->_sdfastInfo.timesSplit = 0;
+		_bodySet[i]->_sdfastInfo.massFactor = 1.0;
+		_bodySet[i]->_sdfastInfo.skippable = false;
 	}
 
-	for (i = 0; i < _coordinates.getSize(); i++)
+	for (i = 0; i < _coordinateSet.getSize(); i++)
 	{
-		_coordinates[i]->_sdfastInfo.restraintFuncNum = -1;
-		_coordinates[i]->_sdfastInfo.minRestraintFuncNum = -1;
-		_coordinates[i]->_sdfastInfo.maxRestraintFuncNum = -1;
+		_coordinateSet[i]->_sdfastInfo.restraintFuncNum = -1;
+		_coordinateSet[i]->_sdfastInfo.minRestraintFuncNum = -1;
+		_coordinateSet[i]->_sdfastInfo.maxRestraintFuncNum = -1;
 	}
 
-	/* All dofs start as constrained. The function markUnconstrainedDof
+	/* All dofSet start as constrained. The function markUnconstrainedDof
 	 * unconstains those dofs that correspond to a "true" degree of
 	 * freedom in the model.
 	 */
-	for (i = 0; i < _joints.getSize(); i++)
+	for (i = 0; i < _jointSet.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofList = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-      for (int j = 0; j < dofList.getSize(); j++)
+      for (int j = 0; j < dofSet.getSize(); j++)
       {
-			dofList[j]->_sdfastInfo.name.erase(dofList[j]->_sdfastInfo.name.begin(),dofList[j]->_sdfastInfo.name.end());
-			dofList[j]->_sdfastInfo.constraintName.erase(dofList[j]->_sdfastInfo.constraintName.begin(),dofList[j]->_sdfastInfo.constraintName.end());
-			dofList[j]->_sdfastInfo.initialValue = 0.0;
-			dofList[j]->_sdfastInfo.constrained = true;
-			dofList[j]->_sdfastInfo.fixed = false;
-			dofList[j]->_sdfastInfo.stateNumber = -1;
-			dofList[j]->_sdfastInfo.errorNumber = -1;
-			dofList[j]->_sdfastInfo.joint = -1;
-			dofList[j]->_sdfastInfo.axis = -1;
-			dofList[j]->_sdfastInfo.conversion = 0.0;
-			dofList[j]->_sdfastInfo.conversionSign = 1.0;
+			dofSet.get(j)->_sdfastInfo.name.erase(dofSet.get(j)->_sdfastInfo.name.begin(),dofSet.get(j)->_sdfastInfo.name.end());
+			dofSet.get(j)->_sdfastInfo.constraintName.erase(dofSet.get(j)->_sdfastInfo.constraintName.begin(),dofSet.get(j)->_sdfastInfo.constraintName.end());
+			dofSet.get(j)->_sdfastInfo.initialValue = 0.0;
+			dofSet.get(j)->_sdfastInfo.constrained = true;
+			dofSet.get(j)->_sdfastInfo.fixed = false;
+			dofSet.get(j)->_sdfastInfo.stateNumber = -1;
+			dofSet.get(j)->_sdfastInfo.errorNumber = -1;
+			dofSet.get(j)->_sdfastInfo.joint = -1;
+			dofSet.get(j)->_sdfastInfo.axis = -1;
+			dofSet.get(j)->_sdfastInfo.conversion = 0.0;
+			dofSet.get(j)->_sdfastInfo.conversionSign = 1.0;
 		}
 	}
 }
@@ -837,9 +843,9 @@ bool SimmKinematicsEngine::validSdfastModel(void)
 {
    int i;
 
-	for (i = 0; i < _joints.getSize(); i++)
+	for (i = 0; i < _jointSet.getSize(); i++)
    {
-		dpJointType type = _joints[i]->_sdfastInfo.type;
+		dpJointType type = _jointSet[i]->_sdfastInfo.type;
 
       if (type != dpPlanar &&
 	       type != dpReversePlanar &&
@@ -857,24 +863,24 @@ bool SimmKinematicsEngine::validSdfastModel(void)
 	       type != dpReverseBushing &&
 	       type != dpSkippable)
       {
-	      cerr << "===ERROR===: Joint " << _joints[i]->getName() << " cannot be converted to an SD/FAST joint." << endl;
+	      cerr << "===ERROR===: Joint " << _jointSet[i]->getName() << " cannot be converted to an SD/FAST joint." << endl;
          return false;
       }
    }
 
-	for (i = 0; i < _coordinates.getSize(); i++)
+	for (i = 0; i < _coordinateSet.getSize(); i++)
    {
-      if (_coordinates[i]->isUsedInModel())
+      if (_coordinateSet[i]->isUsedInModel())
       {
 			/* markUnconstrainedDof() is called for each SimmCoordinate as part of the
 			 * setup() process, but it needs to be called again here because the model
 			 * may have been modified. This might not be necessary if the setup()
 			 * process is repeated every time the model is modified.
 			 */
-	      if (!markUnconstrainedDof(_coordinates[i]))
+	      if (!markUnconstrainedDof(_coordinateSet[i]))
          {
 	         cerr << "===ERROR===: At least one DOF must be a \"simple\" function of gencoord " <<
-					     _coordinates[i]->getName() << " (2 points, slope=1, passes thru zero)." << endl;
+					     _coordinateSet[i]->getName() << " (2 points, slope=1, passes thru zero)." << endl;
             return false;
          }
       }
@@ -892,27 +898,27 @@ void SimmKinematicsEngine::makeDofSdfastNames(void)
 {
 	static string constraintSuffix("_con");
 
-	for (int i = 0; i < _joints.getSize(); i++)
+	for (int i = 0; i < _jointSet.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofList = _joints[i]->getDofs();
+		SimmDofSet& dofSet = _jointSet[i]->getDofSet();
 
-      for (int j = 0; j < dofList.getSize(); j++)
+      for (int j = 0; j < dofSet.getSize(); j++)
       {
-			if (!dofList[j]->_sdfastInfo.constrained)
+			if (!dofSet.get(j)->_sdfastInfo.constrained)
          {
-				const SimmCoordinate* coord = dofList[j]->getCoordinate();
-				dofList[j]->_sdfastInfo.name = coord->getName();
-				convertString(dofList[j]->_sdfastInfo.name, true);
-            dofList[j]->_sdfastInfo.constraintName.erase(dofList[j]->_sdfastInfo.constraintName.begin(),dofList[j]->_sdfastInfo.constraintName.end());
+				const SimmCoordinate* coord = dofSet.get(j)->getCoordinate();
+				dofSet.get(j)->_sdfastInfo.name = coord->getName();
+				convertString(dofSet.get(j)->_sdfastInfo.name, true);
+            dofSet.get(j)->_sdfastInfo.constraintName.erase(dofSet.get(j)->_sdfastInfo.constraintName.begin(),dofSet.get(j)->_sdfastInfo.constraintName.end());
          }
          else
          {
-				dofList[j]->_sdfastInfo.name = _joints[i]->getName();
-				dofList[j]->_sdfastInfo.name.append("_");
-				dofList[j]->_sdfastInfo.name.append(dofList[j]->getName());
-				convertString(dofList[j]->_sdfastInfo.name, true);
-            dofList[j]->_sdfastInfo.constraintName = dofList[j]->_sdfastInfo.name;
-            dofList[j]->_sdfastInfo.constraintName.append(constraintSuffix);
+				dofSet.get(j)->_sdfastInfo.name = _jointSet[i]->getName();
+				dofSet.get(j)->_sdfastInfo.name.append("_");
+				dofSet.get(j)->_sdfastInfo.name.append(dofSet.get(j)->getName());
+				convertString(dofSet.get(j)->_sdfastInfo.name, true);
+            dofSet.get(j)->_sdfastInfo.constraintName = dofSet.get(j)->_sdfastInfo.name;
+            dofSet.get(j)->_sdfastInfo.constraintName.append(constraintSuffix);
          }
       }
    }
@@ -937,89 +943,89 @@ void SimmKinematicsEngine::makeSdfastJointOrder(void)
 
 	_groundBody->_sdfastInfo.used = true;
 
-	for (i = 0; i < _joints.getSize(); i++)
+	for (i = 0; i < _jointSet.getSize(); i++)
    {
-		if (_joints[i]->getParentBody() == _groundBody)
+		if (_jointSet[i]->getParentBody() == _groundBody)
       {
-			_sdfastInfo._jointOrder.append(_joints[i]);
-			_joints[i]->_sdfastInfo.index = jointsDone++;
-			_joints[i]->getChildBody()->_sdfastInfo.used = true;
-         _joints[i]->_sdfastInfo.used = true;
-			_joints[i]->_sdfastInfo.direction = SimmStep::forward;
-         _joints[i]->_sdfastInfo.inbname = sdfastGroundName;
-			_joints[i]->_sdfastInfo.outbname = _joints[i]->getChildBody()->getName();
-         _joints[i]->_sdfastInfo.closesLoop = false;
+			_sdfastInfo._jointOrder.append(_jointSet[i]);
+			_jointSet[i]->_sdfastInfo.index = jointsDone++;
+			_jointSet[i]->getChildBody()->_sdfastInfo.used = true;
+         _jointSet[i]->_sdfastInfo.used = true;
+			_jointSet[i]->_sdfastInfo.direction = SimmStep::forward;
+         _jointSet[i]->_sdfastInfo.inbname = sdfastGroundName;
+			_jointSet[i]->_sdfastInfo.outbname = _jointSet[i]->getChildBody()->getName();
+         _jointSet[i]->_sdfastInfo.closesLoop = false;
       }
-      else if (_joints[i]->getChildBody() == _groundBody)
+      else if (_jointSet[i]->getChildBody() == _groundBody)
       {
-			_sdfastInfo._jointOrder.append(_joints[i]);
-			_joints[i]->_sdfastInfo.index = jointsDone++;
-			_joints[i]->getParentBody()->_sdfastInfo.used = true;
-         _joints[i]->_sdfastInfo.used = true;
-			_joints[i]->_sdfastInfo.direction = SimmStep::inverse;
-         _joints[i]->_sdfastInfo.inbname = sdfastGroundName;
-			_joints[i]->_sdfastInfo.outbname = _joints[i]->getParentBody()->getName();
-         _joints[i]->_sdfastInfo.closesLoop = false;
+			_sdfastInfo._jointOrder.append(_jointSet[i]);
+			_jointSet[i]->_sdfastInfo.index = jointsDone++;
+			_jointSet[i]->getParentBody()->_sdfastInfo.used = true;
+         _jointSet[i]->_sdfastInfo.used = true;
+			_jointSet[i]->_sdfastInfo.direction = SimmStep::inverse;
+         _jointSet[i]->_sdfastInfo.inbname = sdfastGroundName;
+			_jointSet[i]->_sdfastInfo.outbname = _jointSet[i]->getParentBody()->getName();
+         _jointSet[i]->_sdfastInfo.closesLoop = false;
       }
    }
 
    jointsUsed = jointsDone;
-   while (jointsDone + numSkippable < _joints.getSize())
+   while (jointsDone + numSkippable < _jointSet.getSize())
    {
-      for (i = 0; i < _joints.getSize(); i++)
+      for (i = 0; i < _jointSet.getSize(); i++)
       {
-			if (_joints[i]->_sdfastInfo.used)
+			if (_jointSet[i]->_sdfastInfo.used)
             continue;
 
-			SimmBody* parentBody = _joints[i]->getParentBody();
-			SimmBody* childBody = _joints[i]->getChildBody();
+			SimmBody* parentBody = _jointSet[i]->getParentBody();
+			SimmBody* childBody = _jointSet[i]->getChildBody();
 
 			if (!parentBody->_sdfastInfo.used && !childBody->_sdfastInfo.used)
 			{
             continue;
 			}
-         else if (_joints[i]->_sdfastInfo.type == dpSkippable)
+         else if (_jointSet[i]->_sdfastInfo.type == dpSkippable)
          {
-            _joints[i]->_sdfastInfo.index = -1;
+            _jointSet[i]->_sdfastInfo.index = -1;
             numSkippable++;
-            _joints[i]->_sdfastInfo.used = false;
+            _jointSet[i]->_sdfastInfo.used = false;
             continue;
          }
 			else if (!parentBody->_sdfastInfo.used)
          {
-				_sdfastInfo._jointOrder.append(_joints[i]);
-            _joints[i]->_sdfastInfo.index = jointsUsed++;
+				_sdfastInfo._jointOrder.append(_jointSet[i]);
+            _jointSet[i]->_sdfastInfo.index = jointsUsed++;
             parentBody->_sdfastInfo.used = true;
-            _joints[i]->_sdfastInfo.used = true;
-				_joints[i]->_sdfastInfo.direction = SimmStep::inverse;
-				_joints[i]->_sdfastInfo.inbname = childBody->getName();
-				_joints[i]->_sdfastInfo.outbname = parentBody->getName();
-            _joints[i]->_sdfastInfo.closesLoop = false;
+            _jointSet[i]->_sdfastInfo.used = true;
+				_jointSet[i]->_sdfastInfo.direction = SimmStep::inverse;
+				_jointSet[i]->_sdfastInfo.inbname = childBody->getName();
+				_jointSet[i]->_sdfastInfo.outbname = parentBody->getName();
+            _jointSet[i]->_sdfastInfo.closesLoop = false;
 				jointsDone++;
          }
          else if (!childBody->_sdfastInfo.used)
          {
-				_sdfastInfo._jointOrder.append(_joints[i]);
-            _joints[i]->_sdfastInfo.index = jointsUsed++;
+				_sdfastInfo._jointOrder.append(_jointSet[i]);
+            _jointSet[i]->_sdfastInfo.index = jointsUsed++;
             childBody->_sdfastInfo.used = true;
-            _joints[i]->_sdfastInfo.used = true;
-				_joints[i]->_sdfastInfo.direction = SimmStep::forward;
-				_joints[i]->_sdfastInfo.inbname = parentBody->getName();
-				_joints[i]->_sdfastInfo.outbname = childBody->getName();
-            _joints[i]->_sdfastInfo.closesLoop = false;
+            _jointSet[i]->_sdfastInfo.used = true;
+				_jointSet[i]->_sdfastInfo.direction = SimmStep::forward;
+				_jointSet[i]->_sdfastInfo.inbname = parentBody->getName();
+				_jointSet[i]->_sdfastInfo.outbname = childBody->getName();
+            _jointSet[i]->_sdfastInfo.closesLoop = false;
 				jointsDone++;
          }
          else
          {
-				_sdfastInfo._jointOrder.append(_joints[i]);
-            _joints[i]->_sdfastInfo.index = jointsUsed++;
-            _joints[i]->_sdfastInfo.used = true;
-				_joints[i]->_sdfastInfo.direction = SimmStep::forward;
+				_sdfastInfo._jointOrder.append(_jointSet[i]);
+            _jointSet[i]->_sdfastInfo.index = jointsUsed++;
+            _jointSet[i]->_sdfastInfo.used = true;
+				_jointSet[i]->_sdfastInfo.direction = SimmStep::forward;
 				childBody->_sdfastInfo.massFactor += 1.0;
             childBody->_sdfastInfo.timesSplit++;
-				_joints[i]->_sdfastInfo.inbname = parentBody->getName();
-				_joints[i]->_sdfastInfo.outbname = makeSdfastBodyName(childBody->getName(), childBody->_sdfastInfo.timesSplit);
-            _joints[i]->_sdfastInfo.closesLoop = true;
+				_jointSet[i]->_sdfastInfo.inbname = parentBody->getName();
+				_jointSet[i]->_sdfastInfo.outbname = makeSdfastBodyName(childBody->getName(), childBody->_sdfastInfo.timesSplit);
+            _jointSet[i]->_sdfastInfo.closesLoop = true;
 				jointsDone++;
          }
       }
@@ -1029,14 +1035,14 @@ void SimmKinematicsEngine::makeSdfastJointOrder(void)
     * are valid one-token C strings. Do not touch the ground segment name ($ground)
     * because SD/FAST requires exactly that name.
     */
-   for (i = 0; i < _joints.getSize(); i++)
+   for (i = 0; i < _jointSet.getSize(); i++)
    {
-		if (_joints[i]->_sdfastInfo.type != dpSkippable)
+		if (_jointSet[i]->_sdfastInfo.type != dpSkippable)
 		{
-			if (_joints[i]->_sdfastInfo.inbname != sdfastGroundName)
-				convertString(_joints[i]->_sdfastInfo.inbname, true);
-			if (_joints[i]->_sdfastInfo.outbname != sdfastGroundName)
-				convertString(_joints[i]->_sdfastInfo.outbname, true);
+			if (_jointSet[i]->_sdfastInfo.inbname != sdfastGroundName)
+				convertString(_jointSet[i]->_sdfastInfo.inbname, true);
+			if (_jointSet[i]->_sdfastInfo.outbname != sdfastGroundName)
+				convertString(_jointSet[i]->_sdfastInfo.outbname, true);
 		}
    }
 }
@@ -1101,19 +1107,19 @@ void SimmKinematicsEngine::makeSdfastModel(string filename, bool writeFile)
    {
 		bool firstOne = true;
 
-		for (i = 0; i < _bodies.getSize(); i++)
+		for (i = 0; i < _bodySet.getSize(); i++)
       {
-         if (_bodies[i]->_sdfastInfo.timesSplit > 0)
+         if (_bodySet[i]->_sdfastInfo.timesSplit > 0)
          {
 				if (firstOne)
 				{
 					cout << "# Loop Joints" << endl << endl;
 					firstOne = false;
 				}
-				for (j = 0; j < _bodies[i]->_sdfastInfo.timesSplit; j++)
+				for (j = 0; j < _bodySet[i]->_sdfastInfo.timesSplit; j++)
 				{
-					out << "body = " << _bodies[i]->getName() << " inb = " <<
-						makeSdfastBodyName(_bodies[i]->getName(), j + 1) << " joint = weld" << endl;
+					out << "body = " << _bodySet[i]->getName() << " inb = " <<
+						makeSdfastBodyName(_bodySet[i]->getName(), j + 1) << " joint = weld" << endl;
 					out << "bodytojoint = 0.0 0.0 0.0   inbtojoint = 0.0 0.0 0.0" << endl << endl;
 				}
          }
@@ -1239,11 +1245,11 @@ void SimmKinematicsEngine::writeSdfastConstraintData(ofstream& out)
    */
 	for (i = 0; i < _sdfastInfo._jointOrder.getSize(); i++)
 	{
-		ArrayPtrs<SimmDof>& dofs = _sdfastInfo._jointOrder[i]->getDofs();
+		SimmDofSet& dofSet = _sdfastInfo._jointOrder[i]->getDofSet();
 
-		for (j = 0; j < dofs.getSize(); j++)
+		for (j = 0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() != NULL && dofs[j]->_sdfastInfo.constrained)
+			if (dofSet.get(j)->getCoordinate() != NULL && dofSet.get(j)->_sdfastInfo.constrained)
 			{
 				constraintsExist = true;
 				break;
@@ -1261,13 +1267,13 @@ void SimmKinematicsEngine::writeSdfastConstraintData(ofstream& out)
 
 	for (i = 0; i < _sdfastInfo._jointOrder.getSize(); i++)
 	{
-		ArrayPtrs<SimmDof>& dofs = _sdfastInfo._jointOrder[i]->getDofs();
+		SimmDofSet& dofSet = _sdfastInfo._jointOrder[i]->getDofSet();
 
-		for (j = 0; j < dofs.getSize(); j++)
+		for (j = 0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() != NULL && dofs[j]->_sdfastInfo.constrained)
+			if (dofSet.get(j)->getCoordinate() != NULL && dofSet.get(j)->_sdfastInfo.constrained)
 			{
-				Function* func = dofs[j]->getFunction();
+				Function* func = dofSet.get(j)->getFunction();
 				NatCubicSpline* bar = new NatCubicSpline;
 
 				/* TODO: Function needs some pure virtual getX() and getY() functions??? */
@@ -1276,7 +1282,7 @@ void SimmKinematicsEngine::writeSdfastConstraintData(ofstream& out)
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 				if (cubicSpline)
 				{
-					out << "static double " << dofs[j]->_sdfastInfo.name << "_data[][2] =" << endl << "{" << endl;
+					out << "static double " << dofSet.get(j)->_sdfastInfo.name << "_data[][2] =" << endl << "{" << endl;
 					for (int k = 0; k < cubicSpline->getNumberOfPoints(); k++)
 					{
 						out << "{" << cubicSpline->getX()[k] << ", " << cubicSpline->getY()[k] << "}";
@@ -1292,12 +1298,12 @@ void SimmKinematicsEngine::writeSdfastConstraintData(ofstream& out)
 
 	for (i = 0; i < _sdfastInfo._jointOrder.getSize(); i++)
 	{
-		ArrayPtrs<SimmDof>& dofs = _sdfastInfo._jointOrder[i]->getDofs();
+		SimmDofSet& dofSet = _sdfastInfo._jointOrder[i]->getDofSet();
 
-		for (j = 0; j < dofs.getSize(); j++)
+		for (j = 0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() != NULL && dofs[j]->_sdfastInfo.constrained)
-				out << "static dpSplineFunction " << dofs[j]->_sdfastInfo.name << "_func;" << endl;
+			if (dofSet.get(j)->getCoordinate() != NULL && dofSet.get(j)->_sdfastInfo.constrained)
+				out << "static dpSplineFunction " << dofSet.get(j)->_sdfastInfo.name << "_func;" << endl;
       }
    }
 }
@@ -1306,9 +1312,9 @@ void SimmKinematicsEngine::writeSdfastQRestraintData(ofstream& out)
 {
 	Function* func;
 
-   for (int i = 0; i < _coordinates.getSize(); i++)
+   for (int i = 0; i < _coordinateSet.getSize(); i++)
    {
-		if ((func = _coordinates[i]->getRestraintFunction()) && _coordinates[i]->isRestraintActive())
+		if ((func = _coordinateSet[i]->getRestraintFunction()) && _coordinateSet[i]->isRestraintActive())
       {
 			/* TODO: Function needs some pure virtual getX() and getY() functions??? */
 			NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
@@ -1323,12 +1329,12 @@ void SimmKinematicsEngine::writeSdfastQRestraintData(ofstream& out)
 					else
 						out << "," << endl;
 				}
-				_coordinates[i]->_sdfastInfo.restraintFuncNum = _sdfastInfo._numRestraintFunctions++;
+				_coordinateSet[i]->_sdfastInfo.restraintFuncNum = _sdfastInfo._numRestraintFunctions++;
          }
       }
       else
       {
-			if (func = _coordinates[i]->getMinRestraintFunction())
+			if (func = _coordinateSet[i]->getMinRestraintFunction())
 			{
 				/* TODO: Function needs some pure virtual getX() and getY() functions??? */
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
@@ -1343,11 +1349,11 @@ void SimmKinematicsEngine::writeSdfastQRestraintData(ofstream& out)
 						else
 							out << "," << endl;
 					}
-					_coordinates[i]->_sdfastInfo.minRestraintFuncNum = _sdfastInfo._numRestraintFunctions++;
+					_coordinateSet[i]->_sdfastInfo.minRestraintFuncNum = _sdfastInfo._numRestraintFunctions++;
 				}
 			}
 
-			if (func = _coordinates[i]->getMaxRestraintFunction())
+			if (func = _coordinateSet[i]->getMaxRestraintFunction())
 			{
 				/* TODO: Function needs some pure virtual getX() and getY() functions??? */
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
@@ -1362,7 +1368,7 @@ void SimmKinematicsEngine::writeSdfastQRestraintData(ofstream& out)
 						else
 							out << "," << endl;
 					}
-					_coordinates[i]->_sdfastInfo.maxRestraintFuncNum = _sdfastInfo._numRestraintFunctions++;
+					_coordinateSet[i]->_sdfastInfo.maxRestraintFuncNum = _sdfastInfo._numRestraintFunctions++;
 				}
 			}
 		}
@@ -1607,20 +1613,20 @@ void SimmKinematicsEngine::writeSdfastConstraintCode(ofstream& out)
 
 	for (i=0,count=0; i < _sdfastInfo._jointOrder.getSize(); i++)
    {
-		ArrayPtrs<SimmDof>& dofs = _sdfastInfo._jointOrder[i]->getDofs();
+		SimmDofSet& dofSet = _sdfastInfo._jointOrder[i]->getDofSet();
 
-		for (j=0; j < dofs.getSize(); j++)
+		for (j=0; j < dofSet.getSize(); j++)
       {
-			if (dofs[j]->getCoordinate() != NULL && dofs[j]->_sdfastInfo.constrained)
+			if (dofSet.get(j)->getCoordinate() != NULL && dofSet.get(j)->_sdfastInfo.constrained)
 			{
-				out << "   numpts = sizeof(" << dofs[j]->_sdfastInfo.name << "_data)/(sizeof(double)*2);" << endl;
-				out << "   (void)malloc_function(&" << dofs[j]->_sdfastInfo.name << "_func,numpts);" << endl;
-				out << "   " << dofs[j]->_sdfastInfo.name << "_func.numpoints = numpts;" << endl;
+				out << "   numpts = sizeof(" << dofSet.get(j)->_sdfastInfo.name << "_data)/(sizeof(double)*2);" << endl;
+				out << "   (void)malloc_function(&" << dofSet.get(j)->_sdfastInfo.name << "_func,numpts);" << endl;
+				out << "   " << dofSet.get(j)->_sdfastInfo.name << "_func.numpoints = numpts;" << endl;
 				out << "   for (i=0; i<numpts; i++)\n   {" << endl;
-				out << "      " << dofs[j]->_sdfastInfo.name << "_func.x[i] = " << dofs[j]->_sdfastInfo.name << "_data[i][0];" << endl;
-				out << "      " << dofs[j]->_sdfastInfo.name << "_func.y[i] = " << dofs[j]->_sdfastInfo.name << "_data[i][1];" << endl;
+				out << "      " << dofSet.get(j)->_sdfastInfo.name << "_func.x[i] = " << dofSet.get(j)->_sdfastInfo.name << "_data[i][0];" << endl;
+				out << "      " << dofSet.get(j)->_sdfastInfo.name << "_func.y[i] = " << dofSet.get(j)->_sdfastInfo.name << "_data[i][1];" << endl;
 				out << "   }" << endl;
-				out << "   calc_spline_coefficients(&" << dofs[j]->_sdfastInfo.name << "_func);" << endl << endl;
+				out << "   calc_spline_coefficients(&" << dofSet.get(j)->_sdfastInfo.name << "_func);" << endl << endl;
 				count++;
 			}
       }
@@ -2086,7 +2092,7 @@ void SimmKinematicsEngine::writeSdfastParameterFile(string filename)
    out << "# muscle_name state1_init_value state2_init_value ..." << endl;
    out << "#" << endl;
 
-	for (i = 0; i < _model->getNumberOfMuscles(); i++)
+	for (i = 0; i < _model->getNA(); i++)
 		out << "#" << _model->getMuscle(i)->getName() << " 0.0 0.0 0.0" << endl;
    out << endl;
 
@@ -2097,8 +2103,8 @@ void SimmKinematicsEngine::saveDynamics(const string &aFolderName)
 {
 	initSdfastParameters();
 
-	for (int i = 0; i < _joints.getSize(); i++)
-		_joints[i]->identifyDpType(_model);
+	for (int i = 0; i < _jointSet.getSize(); i++)
+		_jointSet[i]->identifyDpType(_model);
 
 	if (!validSdfastModel())
 		goto error;
@@ -2135,11 +2141,11 @@ SimmBody* SimmKinematicsEngine::getLeafBody(SimmJoint* aJoint) const
 	SimmBody* parentBody = aJoint->getParentBody();
 	SimmBody* childBody = aJoint->getChildBody();
 
-	for (int i = 0; i < _joints.getSize(); i++)
+	for (int i = 0; i < _jointSet.getSize(); i++)
 	{
-		if (parentBody == _joints[i]->getParentBody() || parentBody == _joints[i]->getChildBody())
+		if (parentBody == _jointSet[i]->getParentBody() || parentBody == _jointSet[i]->getChildBody())
 			parentCount++;
-		if (childBody == _joints[i]->getParentBody() || childBody == _joints[i]->getChildBody())
+		if (childBody == _jointSet[i]->getParentBody() || childBody == _jointSet[i]->getChildBody())
 			childCount++;
 	}
 
@@ -2158,8 +2164,8 @@ int SimmKinematicsEngine::getNumMarkers() const
 {
 	int num = 0;
 
-	for (int i = 0; i < _bodies.getSize(); i++)
-		num += _bodies[i]->getNumMarkers();
+	for (int i = 0; i < _bodySet.getSize(); i++)
+		num += _bodySet[i]->getNumMarkers();
 
 	return num;
 }
@@ -2168,9 +2174,9 @@ void SimmKinematicsEngine::getUnlockedCoordinates(SimmCoordinateArray& aUnlocked
 {
 	aUnlockedCoordinates.setSize(0);
 
-	for (int i = 0; i < _coordinates.getSize(); i++)
-		if (!_coordinates[i]->isLocked())
-			aUnlockedCoordinates.append(_coordinates[i]);
+	for (int i = 0; i < _coordinateSet.getSize(); i++)
+		if (!_coordinateSet[i]->isLocked())
+			aUnlockedCoordinates.append(_coordinateSet[i]);
 }
 
 /* Set the local offset of each non-fixed marker so that in the model's
@@ -2181,9 +2187,9 @@ void SimmKinematicsEngine::moveMarkersToCloud(Storage& aMarkerStorage)
 {
 
 	string markerComponentNames[] = {"_px", "_py", "_pz"};
-	for (int i = 0; i < _bodies.getSize(); i++) {
-		for (int j = 0; j < _bodies[i]->getNumMarkers(); j++) {
-			SimmMarker* localMarker = _bodies[i]->getMarker(j);
+	for (int i = 0; i < _bodySet.getSize(); i++) {
+		for (int j = 0; j < _bodySet[i]->getNumMarkers(); j++) {
+			SimmMarker* localMarker = _bodySet[i]->getMarker(j);
 			if (!localMarker->getFixed()) {
 				double pt[3];
 				for ( int k = 0; k < 3; k++) {
@@ -2192,7 +2198,7 @@ void SimmKinematicsEngine::moveMarkersToCloud(Storage& aMarkerStorage)
 						aMarkerStorage.getData(0, index, pt[k]);
 					}
 				}
-				convertPoint(pt, getGroundBodyPtr(), _bodies[i]);
+				convertPoint(pt, getGroundBodyPtr(), _bodySet[i]);
 				localMarker->setOffset(pt);
 			}
 		}
@@ -2206,8 +2212,8 @@ int SimmKinematicsEngine::deleteUnusedMarkers(const Array<string>& aMarkerNames)
 {
 	int numDeleted = 0;
 
-	for (int i = 0; i < _bodies.getSize(); i++)
-		numDeleted += _bodies[i]->deleteUnusedMarkers(aMarkerNames);
+	for (int i = 0; i < _bodySet.getSize(); i++)
+		numDeleted += _bodySet[i]->deleteUnusedMarkers(aMarkerNames);
 
 	cout << "Deleted " << numDeleted << " unused markers from model " << _model->getName() << endl;
 
@@ -2226,8 +2232,8 @@ int SimmKinematicsEngine::replaceMarkerSet(SimmMarkerSet& aMarkerSet)
 	SimmBody* body;
 
 	// First remove all existing markers from the model.
-	for (i = 0; i < _bodies.getSize(); i++)
-		_bodies[i]->deleteAllMarkers();
+	for (i = 0; i < _bodySet.getSize(); i++)
+		_bodySet[i]->deleteAllMarkers();
 
 	for (i = 0; i < aMarkerSet.getSize(); i++)
 	{
@@ -2251,7 +2257,7 @@ int SimmKinematicsEngine::replaceMarkerSet(SimmMarkerSet& aMarkerSet)
  * passed-in marker set. If the marker does not yet exist
  * in the model, it is added.
  */
-void SimmKinematicsEngine::updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray)
+void SimmKinematicsEngine::updateMarkers(SimmMarkerSet& aMarkerArray)
 {
 	int i;
 	SimmBody* body;
@@ -2259,7 +2265,7 @@ void SimmKinematicsEngine::updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray)
 	for (i = 0; i < aMarkerArray.getSize(); i++)
 	{
 		SimmBody* modelMarkerBody = NULL;
-		SimmMarker* updatingMarker = aMarkerArray[i];
+		SimmMarker* updatingMarker = aMarkerArray.get(i);
 		SimmMarker* modelMarker = getMarker(updatingMarker->getName(), modelMarkerBody);
 		const string* updatingBodyName = updatingMarker->getBodyName();
 
@@ -2305,7 +2311,7 @@ void SimmKinematicsEngine::updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray)
  * passed-in coordinate set. If the coordinate does not exist
  * in the model, it is not added.
  */
-void SimmKinematicsEngine::updateCoordinates(ArrayPtrs<SimmCoordinate>& aCoordinateArray)
+void SimmKinematicsEngine::updateCoordinates(SimmCoordinateSet& aCoordinateArray)
 {
 	for (int i = 0; i < aCoordinateArray.getSize(); i++)
 	{
@@ -2429,20 +2435,20 @@ void SimmKinematicsEngine::writeSIMMJointFile(const string& aFileName) const
    out << "/*                     SEGMENTS                     */\n";
    out << "/****************************************************/\n";
 	int i;
-	for (i = 0; i < _bodies.getSize(); i++)
-		_bodies[i]->writeSIMM(out);
+	for (i = 0; i < _bodySet.getSize(); i++)
+		_bodySet[i]->writeSIMM(out);
 
    out << "\n/****************************************************/\n";
    out << "/*                      JOINTS                      */\n";
    out << "/****************************************************/\n";
-	for (i = 0; i < _joints.getSize(); i++)
-		_joints[i]->writeSIMM(out, functionIndex);
+	for (i = 0; i < _jointSet.getSize(); i++)
+		_jointSet[i]->writeSIMM(out, functionIndex);
 
    out << "\n/****************************************************/\n";
    out << "/*                     GENCOORDS                    */\n";
    out << "/****************************************************/\n";
-	for (i = 0; i < _coordinates.getSize(); i++)
-		_coordinates[i]->writeSIMM(out, functionIndex);
+	for (i = 0; i < _coordinateSet.getSize(); i++)
+		_coordinateSet[i]->writeSIMM(out, functionIndex);
 
 #if 0
    out << "\n/****************************************************/\n";
@@ -2532,8 +2538,8 @@ void SimmKinematicsEngine::writeMarkerFile(const string& aFileName) const
 	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
 	out << "<MarkerSet>" << endl;
 
-	for (int i = 0; i < _bodies.getSize(); i++)
-		_bodies[i]->writeMarkers(out);
+	for (int i = 0; i < _bodySet.getSize(); i++)
+		_bodySet[i]->writeMarkers(out);
 
 	out << "</MarkerSet>" << endl;
 	out.close();
@@ -2548,34 +2554,34 @@ void SimmKinematicsEngine::peteTest() const
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
 	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
 
-	if (_bodies.getSize() < 1)
+	if (_bodySet.getSize() < 1)
 	{
 		cout << "no bodies" << endl;
 	}
 	else
 	{
-		for (i = 0; i < _bodies.getSize(); i++)
-			_bodies[i]->peteTest();
+		for (i = 0; i < _bodySet.getSize(); i++)
+			_bodySet[i]->peteTest();
 	}
 #if 0
-	if (_coordinates.getSize() < 1)
+	if (_coordinateSet.getSize() < 1)
 	{
 		cout << "no coordinates" << endl;
 	}
 	else
 	{
-		for (i = 0; i < _coordinates.getSize(); i++)
-			_coordinates[i]->peteTest();
+		for (i = 0; i < _coordinateSet.getSize(); i++)
+			_coordinateSet[i]->peteTest();
 	}
 
-	if (_joints.getSize() < 1)
+	if (_jointSet.getSize() < 1)
 	{
 		cout << "no joints" << endl;
 	}
 	else
 	{
-		for (i = 0; i < _joints.getSize(); i++)
-			_joints[i]->peteTest();
+		for (i = 0; i < _jointSet.getSize(); i++)
+			_jointSet[i]->peteTest();
 	}
 
 	_path.peteTest();
@@ -2660,8 +2666,8 @@ string SimmKinematicsEngine::getPseudoStateName(int aIndex) const
 //--------------------------------------------------------------------------
 int SimmKinematicsEngine::getBodyIndex(const string &aName) const
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
-		if (_bodies.get(i)->getName() == aName)
+	for (int i = 0; i < _bodySet.getSize(); i++)
+		if (_bodySet.get(i)->getName() == aName)
 			return i;
 
 	return -1;
@@ -2669,8 +2675,8 @@ int SimmKinematicsEngine::getBodyIndex(const string &aName) const
 
 int SimmKinematicsEngine::getCoordinateIndex(const string &aName) const
 {
-	for (int i = 0; i < _coordinates.getSize(); i++)
-		if (_coordinates.get(i)->getName() == aName)
+	for (int i = 0; i < _coordinateSet.getSize(); i++)
+		if (_coordinateSet.get(i)->getName() == aName)
 			return i;
 
 	return -1;
@@ -2742,8 +2748,8 @@ void SimmKinematicsEngine::setStates(const double aY[])
 {
 	if (aY)
 	{
-		for (int i = 0; i < _coordinates.getSize(); i++)
-			_coordinates.get(i)->setValue(aY[i]);
+		for (int i = 0; i < _coordinateSet.getSize(); i++)
+			_coordinateSet.get(i)->setValue(aY[i]);
 	}
 }
 
@@ -2751,15 +2757,15 @@ void SimmKinematicsEngine::getStates(double rY[]) const
 {
 	if (rY)
 	{
-		for (int i = 0; i < _coordinates.getSize(); i++)
-			rY[i] = _coordinates.get(i)->getValue();
+		for (int i = 0; i < _coordinateSet.getSize(); i++)
+			rY[i] = _coordinateSet.get(i)->getValue();
 	}
 }
 
 double SimmKinematicsEngine::getState(int aIndex) const
 {
-	if (aIndex >= 0 && aIndex < _coordinates.getSize())
-		return _coordinates.get(aIndex)->getValue();
+	if (aIndex >= 0 && aIndex < _coordinateSet.getSize())
+		return _coordinateSet.get(aIndex)->getValue();
 
 	return 0.0;
 }
@@ -2769,15 +2775,15 @@ double SimmKinematicsEngine::getState(const string &aName) const
 	int index = getCoordinateIndex(aName);
 
 	if (index >= 0)
-		return _coordinates.get(index)->getValue();
+		return _coordinateSet.get(index)->getValue();
 
 	return 0.0;
 }
 
 void SimmKinematicsEngine::applyDefaultPose()
 {
-	for (int i = 0; i < _coordinates.getSize(); i++)
-		_coordinates.get(i)->setValue(_coordinates.get(i)->getDefaultValue());
+	for (int i = 0; i < _coordinateSet.getSize(); i++)
+		_coordinateSet.get(i)->setValue(_coordinateSet.get(i)->getDefaultValue());
 }
 
 //--------------------------------------------------------------------------
@@ -2913,22 +2919,22 @@ bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet)
 {
 	int i, j;
 
-	for (i = 0; i < _bodies.getSize(); i++)
+	for (i = 0; i < _bodySet.getSize(); i++)
 	{
 		for (j = 0; j < aScaleSet.getSize(); j++)
 		{
 			Scale *aScale = aScaleSet.get(j);
-			if (_bodies[i]->getName() == aScale->getSegmentName())
+			if (_bodySet[i]->getName() == aScale->getSegmentName())
 			{
 				Array<double> scaleFactors(1.0, 3);
 				aScale->getScaleFactors(scaleFactors);
-				_bodies[i]->scale(scaleFactors);
+				_bodySet[i]->scale(scaleFactors);
 			}
 		}
 	}
 
-	for (i = 0; i < _joints.getSize(); i++)
-		_joints[i]->scale(aScaleSet);
+	for (i = 0; i < _jointSet.getSize(); i++)
+		_jointSet[i]->scale(aScaleSet);
 
 	// Invalidate all of the body->body paths
 	_path.invalidate();
@@ -2939,19 +2945,19 @@ bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet)
 bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet, bool aPreserveMassDist, double aFinalMass)
 {
 
-	ArrayPtrs<SimmBody>&	bodies = getBodies();
+	SimmBodySet&	bodySet = getBodies();
 	int i, j;
 
-	for (i = 0; i < bodies.getSize(); i++)
+	for (i = 0; i < bodySet.getSize(); i++)
 	{
 		for (j = 0; j < aScaleSet.getSize(); j++)
 		{
 			Scale *aScale = aScaleSet.get(j);
-			if (bodies[i]->getName() == aScale->getSegmentName())
+			if (bodySet.get(i)->getName() == aScale->getSegmentName())
 			{
 				Array<double> scaleFactors(1.0, 3);
 				aScale->getScaleFactors(scaleFactors);
-				bodies[i]->scale(scaleFactors, aPreserveMassDist);	
+				bodySet.get(i)->scale(scaleFactors, aPreserveMassDist);	
 			}
 		}
 	}
@@ -2968,8 +2974,8 @@ bool SimmKinematicsEngine::scale(const ScaleSet& aScaleSet, bool aPreserveMassDi
 		{
 			double factor = pow(aFinalMass / mass, 1.0 / 3.0);
 			Array<double> scaleFactor(factor, 3);
-			for (i = 0; i < bodies.getSize(); i++)
-				bodies[i]->scaleInertialProperties(scaleFactor);	
+			for (i = 0; i < bodySet.getSize(); i++)
+				bodySet.get(i)->scaleInertialProperties(scaleFactor);	
 		}
 	}
 
@@ -3002,9 +3008,9 @@ void SimmKinematicsEngine::setGravity(double aGrav[3])
 
 int SimmKinematicsEngine::getGroundBodyIndex() const
 {
-	for (int i = 0; i < _bodies.getSize(); i++)
+	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
-		if (_bodies[i] == _groundBody)
+		if (_bodySet[i] == _groundBody)
 			return i;
 	}
 
@@ -3038,8 +3044,8 @@ double SimmKinematicsEngine::getMass() const
 {
 	double totalMass = 0.0;
 
-	for (int i = 0; i < _bodies.getSize(); i++)
-		totalMass += _bodies[i]->getMass();
+	for (int i = 0; i < _bodySet.getSize(); i++)
+		totalMass += _bodySet[i]->getMass();
 
 	return totalMass;
 }

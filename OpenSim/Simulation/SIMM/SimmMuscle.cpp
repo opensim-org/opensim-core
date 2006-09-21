@@ -49,7 +49,8 @@ using namespace std;
  */
 SimmMuscle::SimmMuscle() :
    Actuator(0, 0, 0),
-   _attachments((ArrayPtrs<SimmMusclePoint>&)_attachmentsProp.getValueObjArray()),
+	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
+	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -75,7 +76,8 @@ SimmMuscle::SimmMuscle() :
  */
 SimmMuscle::SimmMuscle(DOMElement *aElement) :
    Actuator(0, 0, 0, aElement),
-   _attachments((ArrayPtrs<SimmMusclePoint>&)_attachmentsProp.getValueObjArray()),
+	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
+	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -113,7 +115,8 @@ SimmMuscle::~SimmMuscle()
  */
 SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
    Actuator(aMuscle),
-   _attachments((ArrayPtrs<SimmMusclePoint>&)_attachmentsProp.getValueObjArray()),
+	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
+	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -170,7 +173,7 @@ Object* SimmMuscle::copy(DOMElement *aElement) const
 
 void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 {
-	_attachments = aMuscle.getAttachmentArray();
+	_attachmentSet = aMuscle.getAttachmentSet();
 	_maxIsometricForce = aMuscle._maxIsometricForce;
 	_optimalFiberLength = aMuscle._optimalFiberLength;
 	_tendonSlackLength = aMuscle._tendonSlackLength;
@@ -207,10 +210,8 @@ void SimmMuscle::setNull()
  */
 void SimmMuscle::setupProperties()
 {
-	_attachmentsProp.setName("Attachments");
-	ArrayPtrs<Object> pts;
-	_attachmentsProp.setValue(pts);
-	_propertySet.append(&_attachmentsProp);
+	_attachmentSetProp.setName("SimmMusclePointSet");
+	_propertySet.append(&_attachmentSetProp);
 
 	_maxIsometricForceProp.setName("max_isometric_force");
 	_maxIsometricForceProp.setValue(0.0);
@@ -280,9 +281,9 @@ void SimmMuscle::preScale(const ScaleSet& aScaleSet)
 
 void SimmMuscle::scale(const ScaleSet& aScaleSet)
 {
-	for (int i = 0; i < _attachments.getSize(); i++)
+	for (int i = 0; i < _attachmentSet.getSize(); i++)
 	{
-		const string& bodyName = _attachments[i]->getBodyName();
+		const string& bodyName = _attachmentSet.get(i)->getBodyName();
 		for (int j = 0; j < aScaleSet.getSize(); j++)
 		{
 			Scale *aScale = aScaleSet.get(j);
@@ -290,7 +291,7 @@ void SimmMuscle::scale(const ScaleSet& aScaleSet)
 			{
 				Array<double> scaleFactors(1.0, 3);
 				aScale->getScaleFactors(scaleFactors);
-				_attachments[i]->scale(scaleFactors);
+				_attachmentSet.get(i)->scale(scaleFactors);
 			}
 		}
 	}
@@ -319,8 +320,8 @@ void SimmMuscle::setup(SimmModel* model, SimmKinematicsEngine* ke)
 
 	_kinematicsEngine = ke;
 
-	for (i = 0; i < _attachments.getSize(); i++)
-		_attachments[i]->setup(model, ke);
+	for (i = 0; i < _attachmentSet.getSize(); i++)
+		_attachmentSet.get(i)->setup(model, ke);
 
 	_groups.setSize(0);
 	for (i = 0; i < _groupNames.getSize(); i++)
@@ -335,10 +336,10 @@ double SimmMuscle::getLength() const
 
 	//check wrapping??
 
-   for (int i = 0; i < _attachments.getSize() - 1; i++)
+   for (int i = 0; i < _attachmentSet.getSize() - 1; i++)
    {
-		start = _attachments[i];
-      end = _attachments[i+1];
+		start = _attachmentSet.get(i);
+      end = _attachmentSet.get(i+1);
 #if 0
       /* If both points are wrap points on the same wrap object, then this muscle
        * segment wraps over the surface of a wrap object, so just add in the
@@ -367,8 +368,8 @@ void SimmMuscle::writeSIMM(ofstream& out) const
 	out << "beginmuscle " << getName() << endl;
 
 	out << "beginpoints" << endl;
-	for (int i = 0; i < _attachments.getSize(); i++)
-		_attachments[i]->writeSIMM(out);
+	for (int i = 0; i < _attachmentSet.getSize(); i++)
+		_attachmentSet.get(i)->writeSIMM(out);
 	out << "endpoints" << endl;
 
 	if (_groupNames.getSize() > 0)
@@ -411,8 +412,8 @@ void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 	int i;
 
 	cout << "Muscle: " << getName() << endl;
-	for (i = 0; i < _attachments.getSize(); i++)
-		_attachments[i]->peteTest();
+	for (i = 0; i < _attachmentSet.getSize(); i++)
+		_attachmentSet.get(i)->peteTest();
 	cout << "   groups: ";
 	for (i = 0; i < _groupNames.getSize(); i++)
 		cout << _groupNames[i] << " ";

@@ -29,6 +29,7 @@
 #include "SimmIKTrialParams.h"
 #include "SimmModel.h"
 #include "SimmMotionData.h"
+#include "SimmCoordinateSet.h"
 
 //=============================================================================
 // STATICS

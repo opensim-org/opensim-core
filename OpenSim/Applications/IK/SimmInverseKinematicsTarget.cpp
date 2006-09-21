@@ -336,7 +336,7 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 {
 	_markers.setSize(0);
 
-	SimmBodyArray& bodies = _model.getSimmKinematicsEngine().getBodyArray();
+	SimmBodySet& bodySet = _model.getSimmKinematicsEngine().getBodies();
 
 	for (int i = 0; i < aNameArray.getSize(); i++)
 	{
@@ -352,19 +352,19 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 		{
 			mName.erase(mName.end() - 3, mName.end());
 
-			for (int j = 0; j < bodies.getSize(); j++)
+			for (int j = 0; j < bodySet.getSize(); j++)
 			{
-				for (int k = 0; k < bodies[j]->getNumMarkers(); k++)
+				for (int k = 0; k < bodySet.get(j)->getNumMarkers(); k++)
 				{
-					if (bodies[j]->getMarker(k)->getName() == mName)
+					if (bodySet.get(j)->getMarker(k)->getName() == mName)
 					{
 						markerToSolve *newMarker = new markerToSolve;
-						newMarker->marker = bodies[j]->getMarker(k);
-						newMarker->body = bodies[j];
+						newMarker->marker = bodySet.get(j)->getMarker(k);
+						newMarker->body = bodySet.get(j);
 						newMarker->experimentalColumn = i-1;	// make it i-1 to account for time column
 						_markers.append(newMarker);
 						foundIt = true;
-						j = bodies.getSize(); // to break out of outer loop
+						j = bodySet.getSize(); // to break out of outer loop
 						break;
 					}
 				}
@@ -414,7 +414,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 
 	_numPrescribedQs = 0;
 	_prescribedQsIndices = new int[_model.getKinematicsEngine().getNumCoordinates()];
-	ArrayPtrs<SimmCoordinate>& coords = _model.getSimmKinematicsEngine().getCoordinates();
+	SimmCoordinateSet& coords = _model.getSimmKinematicsEngine().getCoordinates();
 	for (i = 0; i < coords.getSize(); i++)
 	{
 		if (coords[i]->isLocked())

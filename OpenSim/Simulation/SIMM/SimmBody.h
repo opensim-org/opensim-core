@@ -35,14 +35,15 @@
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmMarker.h"
+#include "SimmMarkerSet.h"
 
 namespace OpenSim { 
 
 class SimmKinematicsEngine;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -84,8 +85,8 @@ protected:
 	PropertyObj		_displayerProp;
 	VisibleObject	&_displayer;
 
-	PropertyObjArray _markersProp;
-	ArrayPtrs<SimmMarker> &_markers;
+	PropertyObj _markerSetProp;
+	SimmMarkerSet &_markerSet;
 
 	/* For holding cumulative scale factors, which are needed if
 	 * a SIMM joint file is written (so SIMM knows how much to
@@ -120,7 +121,7 @@ public:
 	const Array<double>& getInertia() { return _inertia; }
 	virtual VisibleObject *getDisplayer() { return &_displayer; };
 
-	int getNumMarkers() { return _markers.getSize(); }
+	int getNumMarkers() { return _markerSet.getSize(); }
 	SimmMarker* getMarker(int index) const;
 	int deleteAllMarkers();
 	void deleteMarker(const SimmMarker* aMarker);
@@ -144,8 +145,6 @@ private:
 
 //=============================================================================
 //=============================================================================
-
-typedef RDSIMULATION_API OpenSim::ArrayPtrs<OpenSim::SimmBody> SimmBodyArray;
 
 }; //namespace
 #endif // __SimmBody_h__

@@ -45,9 +45,12 @@ using namespace std;
  */
 SimmIKParams::SimmIKParams() :
    _modelFileName(_modelFileNameProp.getValueStr()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_IKTrialParamsSet((ArrayPtrs<SimmIKTrialParams>&)_IKTrialParamsSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
+	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
 {
 	setNull();
 }
@@ -58,9 +61,12 @@ SimmIKParams::SimmIKParams() :
 SimmIKParams::SimmIKParams(DOMElement *aElement) :
    Object(aElement),
    _modelFileName(_modelFileNameProp.getValueStr()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_IKTrialParamsSet((ArrayPtrs<SimmIKTrialParams>&)_IKTrialParamsSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
+	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
 {
 	setNull();
 	updateFromXMLNode();
@@ -83,9 +89,12 @@ SimmIKParams::~SimmIKParams()
 SimmIKParams::SimmIKParams(const SimmIKParams &aIKParams) :
    Object(aIKParams),
    _modelFileName(_modelFileNameProp.getValueStr()),
-	_markerSet((ArrayPtrs<SimmMarker>&)_markerSetProp.getValueObjArray()),
-	_coordinateSet((ArrayPtrs<SimmCoordinate>&)_coordinateSetProp.getValueObjArray()),
-	_IKTrialParamsSet((ArrayPtrs<SimmIKTrialParams>&)_IKTrialParamsSetProp.getValueObjArray())
+	_markerSetProp(PropertyObj("", SimmMarkerSet())),
+	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
+	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
+	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
+	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
 {
 	setupProperties();
 	copyData(aIKParams);
@@ -157,22 +166,16 @@ void SimmIKParams::setupProperties()
 	_modelFileNameProp.setComment("Name of model file. This is assumed to be scaled already with marker placement done.");
 	_propertySet.append(&_modelFileNameProp);
 
-	_markerSetProp.setName("MarkerSet");
+	_markerSetProp.setName("SimmMarkerSet");
 	_markerSetProp.setComment("Markers to be used by all IK trials");
-	ArrayPtrs<Object> ms;
-	_markerSetProp.setValue(ms);
 	_propertySet.append(&_markerSetProp);
 
-	_coordinateSetProp.setName("CoordinateSet");
+	_coordinateSetProp.setName("SimmCoordinateSet");
 	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial values. Filename is specified in the appropriate trial block.");
-	ArrayPtrs<Object> cs;
-	_coordinateSetProp.setValue(cs);
 	_propertySet.append(&_coordinateSetProp);
 
-	_IKTrialParamsSetProp.setName("IKTrialSet");
+	_IKTrialParamsSetProp.setName("SimmIKTrialParamsSet");
 	_IKTrialParamsSetProp.setComment("Trial paramaters, one block per trial");
-	ArrayPtrs<Object> iktps;
-	_IKTrialParamsSetProp.setValue(iktps);
 	_propertySet.append(&_IKTrialParamsSetProp);
 }
 
@@ -198,9 +201,9 @@ void SimmIKParams::peteTest() const
 	cout << "   IKParameters: " << getName() << endl;
 	cout << "      modelFileName: " << _modelFileName << endl;
 	for (i = 0; i < _markerSet.getSize(); i++)
-		_markerSet[i]->peteTest();
+		_markerSet.get(i)->peteTest();
 	for (i = 0; i < _coordinateSet.getSize(); i++)
-		_coordinateSet[i]->peteTest();
+		_coordinateSet.get(i)->peteTest();
 	for (i = 0; i < _IKTrialParamsSet.getSize(); i++)
-		_IKTrialParamsSet[i]->peteTest();
+		_IKTrialParamsSet.get(i)->peteTest();
 }

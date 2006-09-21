@@ -30,7 +30,9 @@
 #include <string>
 #include <math.h>
 #include "SimmModel.h"
+#include "SimmMuscle.h"
 #include "SimmKinematicsEngine.h"
+#include "SimmCoordinateSet.h"
 // PATH stuff from Kenny
 #ifdef _MSC_VER
 	#include <direct.h>
@@ -60,7 +62,8 @@ using namespace std;
  * Default constructor.
  */
 SimmModel::SimmModel() :
-   _muscles((ArrayPtrs<SimmMuscle>&)_musclesProp.getValueObjArray()),
+	_muscleSetProp(PropertyObj("", SimmMuscleSet())),
+	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
 	_builtOK(false)
@@ -74,7 +77,8 @@ SimmModel::SimmModel() :
  */
 SimmModel::SimmModel(const string &aFileName) :
 	Model(aFileName),
-   _muscles((ArrayPtrs<SimmMuscle>&)_musclesProp.getValueObjArray()),
+	_muscleSetProp(PropertyObj("", SimmMuscleSet())),
+	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
 	_builtOK(false)
@@ -87,7 +91,8 @@ SimmModel::SimmModel(const string &aFileName) :
 
 SimmModel::SimmModel(DOMElement *aElement) :
    Model(aElement),
-   _muscles((ArrayPtrs<SimmMuscle>&)_musclesProp.getValueObjArray()),
+	_muscleSetProp(PropertyObj("", SimmMuscleSet())),
+	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
 	_builtOK(false)
@@ -115,7 +120,8 @@ SimmModel::~SimmModel()
 
 SimmModel::SimmModel(const SimmModel &aModel) :
    Model(aModel),
-   _muscles((ArrayPtrs<SimmMuscle>&)_musclesProp.getValueObjArray()),
+	_muscleSetProp(PropertyObj("", SimmMuscleSet())),
+	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
 	_builtOK(false)
@@ -165,8 +171,8 @@ Object* SimmModel::copy(DOMElement *aElement) const
  */
 void SimmModel::copyData(const SimmModel &aModel)
 {
-	_muscles = aModel._muscles;
-	_muscleGroups = aModel._muscleGroups;
+	_muscleSet = aModel._muscleSet;
+	_muscleGroupSet = aModel._muscleGroupSet;
 	_kinematicsEngine = aModel._kinematicsEngine;
 	_gravity = aModel._gravity;
 }
@@ -205,10 +211,8 @@ void SimmModel::setupProperties()
 	_kinematicsEngineProp.setValue(kes);
 	_propertySet.append(&_kinematicsEngineProp);
 
-	_musclesProp.setName("Muscles");
-	ArrayPtrs<Object> musc;
-	_musclesProp.setValue(musc);
-	_propertySet.append(&_musclesProp);
+	_muscleSetProp.setName("SimmMuscleSet");
+	_propertySet.append(&_muscleSetProp);
 
 	const double defaultGravity[] = {0.0, -9.80665, 0.0};
 	_gravityProp.setName("gravity");
@@ -276,13 +280,13 @@ bool SimmModel::bodyNeededForDynamics(SimmBody* aBody)
 
 SimmMuscleGroup* SimmModel::enterGroup(const string& aName)
 {
-	for (int i = 0; i < _muscleGroups.getSize(); i++)
-		if (aName == _muscleGroups[i]->getName())
-			return _muscleGroups[i];
+	for (int i = 0; i < _muscleGroupSet.getSize(); i++)
+		if (aName == _muscleGroupSet.get(i)->getName())
+			return _muscleGroupSet.get(i);
 
 	SimmMuscleGroup* newGroup = new SimmMuscleGroup();
 	newGroup->setName(aName);
-	_muscleGroups.append(newGroup);
+	_muscleGroupSet.append(newGroup);
 
 	return newGroup;
 }
@@ -323,25 +327,18 @@ void SimmModel::setup()
 	 *   3. muscle->setup() is called so the muscles
 	 *      can store pointers to the groups they're in.
 	 */
-	SimmMuscle* sm;
-	for (i = 0; i < _muscles.getSize(); i++)
+	for (i = 0; i < _muscleSet.getSize(); i++)
 	{
-		if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-		{
-			const Array<string>& groupNames = sm->getGroupNames();
-			for (int j = 0; j < groupNames.getSize(); j++)
-				enterGroup(groupNames[j]);
-		}
+		const Array<string>& groupNames = _muscleSet.get(i)->getGroupNames();
+		for (int j = 0; j < groupNames.getSize(); j++)
+			enterGroup(groupNames[j]);
 	}
 
-	for (i = 0; i < _muscleGroups.getSize(); i++)
-		_muscleGroups[i]->setup(this);
+	for (i = 0; i < _muscleGroupSet.getSize(); i++)
+		_muscleGroupSet.get(i)->setup(this);
 
-	for (i = 0; i < _muscles.getSize(); i++)
-	{
-		if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-			sm->setup(this, &getSimmKinematicsEngine());
-	}
+	for (i = 0; i < _muscleSet.getSize(); i++)
+		_muscleSet.get(i)->setup(this, &getSimmKinematicsEngine());
 
 	SimmKinematicsEngine* ske;
 	for (i = 0; i < _kinematicsEngine.getSize(); i++)
@@ -394,7 +391,7 @@ int SimmModel::replaceMarkerSet(SimmMarkerSet& aMarkerSet)
  * passed-in marker set. If the marker does not yet exist
  * in the model, it is added.
  */
-void SimmModel::updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray)
+void SimmModel::updateMarkers(SimmMarkerSet& aMarkerArray)
 {
 	getSimmKinematicsEngine().updateMarkers(aMarkerArray);
 }
@@ -405,7 +402,7 @@ void SimmModel::updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray)
  * passed-in coordinate set. If the coordinate does not yet exist
  * in the model, it is not added.
  */
-void SimmModel::updateCoordinates(ArrayPtrs<SimmCoordinate>& aCoordinateArray)
+void SimmModel::updateCoordinates(SimmCoordinateSet& aCoordinateArray)
 {
 	getSimmKinematicsEngine().updateCoordinates(aCoordinateArray);
 }
@@ -425,12 +422,12 @@ const SimmUnits& SimmModel::getForceUnits() const
 	return getSimmKinematicsEngine().getForceUnits();
 }
 
-ArrayPtrs<SimmBody>& SimmModel::getBodies()
+SimmBodySet& SimmModel::getBodies()
 {
 	return getSimmKinematicsEngine().getBodies();
 }
 
-ArrayPtrs<SimmCoordinate>& SimmModel::getCoordinates()
+SimmCoordinateSet& SimmModel::getCoordinates()
 {
 	return getSimmKinematicsEngine().getCoordinates();
 }
@@ -462,8 +459,8 @@ void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
    out << "/**********************************************************/\n";
    out << "\n";
 
-	for (int i = 0; i < getNumberOfMuscles(); i++)
-		_muscles[i]->writeSIMM(out);
+	for (int i = 0; i < getNA(); i++)
+		_muscleSet.get(i)->writeSIMM(out);
 
    out.close();
 	cout << "Wrote SIMM muscle file " << aFileName << " from model " << getName() << endl;
@@ -486,11 +483,11 @@ void SimmModel::peteTest() const
 	cout << "SimmModel " << getName() << endl;
 	cout << "   gravity: " << _gravity << endl;
 
-	for (i = 0; i < getNumberOfMuscles(); i++)
-		_muscles[i]->peteTest(&getSimmKinematicsEngine());
+	for (i = 0; i < getNA(); i++)
+		_muscleSet.get(i)->peteTest(&getSimmKinematicsEngine());
 
 	for (i = 0; i < getNumberOfMuscleGroups(); i++)
-		_muscleGroups[i]->peteTest();
+		_muscleGroupSet.get(i)->peteTest();
 
 	getSimmKinematicsEngine().peteTest();
 }
@@ -521,7 +518,7 @@ int SimmModel::getNX() const
 
 int SimmModel::getNA() const
 {
-	return _muscles.getSize();
+	return _muscleSet.getSize();
 }
 
 int SimmModel::getNP() const
@@ -565,8 +562,8 @@ string SimmModel::getSpeedName(int aIndex) const
 
 string SimmModel::getActuatorName(int aIndex) const
 {
-	if (_muscles.getSize() > aIndex)
-		return _muscles[aIndex]->getName();
+	if (_muscleSet.getSize() > aIndex)
+		return _muscleSet.get(aIndex)->getName();
 	else
 		return "";
 }
@@ -606,8 +603,8 @@ int SimmModel::getSpeedIndex(const string &aName) const
 
 int SimmModel::getActuatorIndex(const string &aName) const
 {
-	for (int i = 0; i < _muscles.getSize(); i++)
-		if (_muscles[i]->getName() == aName)
+	for (int i = 0; i < _muscleSet.getSize(); i++)
+		if (_muscleSet.get(i)->getName() == aName)
 			return i;
 
 	return -1;
@@ -859,14 +856,10 @@ bool SimmModel::scale(const ScaleSet& aScaleSet)
 	//    scale all of the muscle properties except tendon and
 	//    fiber length.
 	int i;
-	SimmMuscle* sm;
-	for (i = 0; i < _muscles.getSize(); i++)
+	for (i = 0; i < _muscleSet.getSize(); i++)
 	{
-		if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-		{
-			sm->preScale(aScaleSet);
-			sm->scale(aScaleSet);
-		}
+		_muscleSet.get(i)->preScale(aScaleSet);
+		_muscleSet.get(i)->scale(aScaleSet);
 	}
 
 	// 3. Scale the rest of the model
@@ -879,11 +872,8 @@ bool SimmModel::scale(const ScaleSet& aScaleSet)
 	//    properties.
 	if (returnVal)
 	{
-		for (i = 0; i < _muscles.getSize(); i++)
-		{
-			if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-				sm->postScale(aScaleSet);
-		}
+		for (i = 0; i < _muscleSet.getSize(); i++)
+			_muscleSet.get(i)->postScale(aScaleSet);
 	}
 
 	// 5. Put the model back in whatever pose it was in.
@@ -908,14 +898,10 @@ bool SimmModel::scale(const ScaleSet& aScaleSet, bool aPreserveMassDist, double 
 	//    scale all of the muscle properties except tendon and
 	//    fiber length.
 	int i;
-	SimmMuscle* sm;
-	for (i = 0; i < _muscles.getSize(); i++)
+	for (i = 0; i < _muscleSet.getSize(); i++)
 	{
-		if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-		{
-			sm->preScale(aScaleSet);
-			sm->scale(aScaleSet);
-		}
+		_muscleSet.get(i)->preScale(aScaleSet);
+		_muscleSet.get(i)->scale(aScaleSet);
 	}
 
 	// 3. Scale the rest of the model
@@ -928,11 +914,8 @@ bool SimmModel::scale(const ScaleSet& aScaleSet, bool aPreserveMassDist, double 
 	//    properties.
 	if (returnVal)
 	{
-		for (i = 0; i < _muscles.getSize(); i++)
-		{
-			if (sm = dynamic_cast<SimmMuscle*>(_muscles[i]))
-				sm->postScale(aScaleSet);
-		}
+		for (i = 0; i < _muscleSet.getSize(); i++)
+			_muscleSet.get(i)->postScale(aScaleSet);
 	}
 
 	// 5. Put the model back in whatever pose it was in.

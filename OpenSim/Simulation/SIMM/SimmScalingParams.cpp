@@ -27,9 +27,11 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Tools/ScaleSet.h>
+#include "SimmModel.h"
 #include "SimmSubject.h"
 #include "SimmScalingParams.h"
 #include "SimmMarkerData.h"
+
 
 //=============================================================================
 // STATICS
@@ -48,8 +50,10 @@ using namespace std;
  */
 SimmScalingParams::SimmScalingParams() :
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSet((ArrayPtrs<SimmMeasurement>&)_measurementSetProp.getValueObjArray()),
-	_scaleSet((ArrayPtrs<Scale>&)_scaleSetProp.getValueObjArray()),
+	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
+	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
+	_scaleSetProp(PropertyObj("", ScaleSet())),
+	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
 	_markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_preserveMassDist(_preserveMassDistProp.getValueBool()),
@@ -68,8 +72,10 @@ SimmScalingParams::SimmScalingParams() :
 SimmScalingParams::SimmScalingParams(DOMElement *aElement) :
    Object(aElement),
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSet((ArrayPtrs<SimmMeasurement>&)_measurementSetProp.getValueObjArray()),
-	_scaleSet((ArrayPtrs<Scale>&)_scaleSetProp.getValueObjArray()),
+	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
+	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
+	_scaleSetProp(PropertyObj("", ScaleSet())),
+	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
 	_markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_preserveMassDist(_preserveMassDistProp.getValueBool()),
@@ -100,8 +106,10 @@ SimmScalingParams::~SimmScalingParams()
 SimmScalingParams::SimmScalingParams(const SimmScalingParams &aScalingParams) :
    Object(aScalingParams),
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSet((ArrayPtrs<SimmMeasurement>&)_measurementSetProp.getValueObjArray()),
-	_scaleSet((ArrayPtrs<Scale>&)_scaleSetProp.getValueObjArray()),
+	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
+	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
+	_scaleSetProp(PropertyObj("", ScaleSet())),
+	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_preserveMassDist(_preserveMassDistProp.getValueBool()),
@@ -190,15 +198,11 @@ void SimmScalingParams::setupProperties()
 	_scalingOrderProp.setValue(sorder);
 	_propertySet.append(&_scalingOrderProp);
 
-	_measurementSetProp.setName("MeasurementSet");
-	ArrayPtrs<Object> ms;
-	_measurementSetProp.setValue(ms);
+	_measurementSetProp.setName("SimmMeasurementSet");
 	_measurementSetProp.setComment("Measurements consist of a 'MarkerPairSet' and a 'BodyScaleSet'");
 	_propertySet.append(&_measurementSetProp);
 
 	_scaleSetProp.setName("ScaleSet");
-	ArrayPtrs<Object> ss;
-	_scaleSetProp.setValue(ss);
 	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling. Used only in 'maunal' scaling.");
 	_propertySet.append(&_scaleSetProp);
 
@@ -269,15 +273,15 @@ const ScaleSet& SimmScalingParams::getScaleSet(SimmModel& aModel, const char* su
 	int i;
 	Array<double> unity(1.0, 3);
 
-	const ArrayPtrs<SimmBody>& bodies = aModel.getBodies();
+	const SimmBodySet& bodySet = aModel.getBodies();
 
 	// Make a scale set with a Scale for each body.
 	// Initialize all factors to 1.0.
 	//
-	for (i = 0; i < bodies.getSize(); i++)
+	for (i = 0; i < bodySet.getSize(); i++)
 	{
 		Scale* bodyScale = new Scale();
-		bodyScale->setSegmentName(bodies[i]->getName());
+		bodyScale->setSegmentName(bodySet.get(i)->getName());
 		bodyScale->setScaleFactors(unity);
 		bodyScale->setApply(true);
 		_theScaleSet.append(bodyScale);

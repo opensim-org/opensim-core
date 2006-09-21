@@ -31,7 +31,7 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
@@ -42,6 +42,7 @@
 #include "SimmCoordinate.h"
 #include "SimmRotationDof.h"
 #include "SimmTranslationDof.h"
+#include "SimmDofSet.h"
 #include "SimmBody.h"
 #include "SimmStep.h"
 #include "SimmSdfastBody.h"
@@ -85,8 +86,8 @@ protected:
 	PropertyStrArray _bodiesProp;
 	Array<std::string>& _bodies;
 
-	PropertyObjArray _dofsProp;
-	ArrayPtrs<SimmDof>& _dofs;
+	PropertyObj _dofSetProp;
+	SimmDofSet& _dofSet;
 
    SimmBody *_childBody;
    SimmBody *_parentBody;
@@ -119,7 +120,7 @@ public:
 
 	void invalidate() { _transformsValid = false; }
 	Array<std::string>& getBodyNames() const { return _bodies; }
-	ArrayPtrs<SimmDof>& getDofs() const { return _dofs; }
+	SimmDofSet& getDofSet() const { return _dofSet; }
 	SimmBody* getChildBody() const { return _childBody; }
 	SimmBody* getParentBody() const { return _parentBody; }
 	const Transform& getForwardTransform();

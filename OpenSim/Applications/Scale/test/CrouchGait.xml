@@ -7,7 +7,7 @@
    <!-- Info on generic model that will be scaled to the subject -->
    <SimmGenericModelParams>
       <file_name>dynamic.xml</file_name>
-      <MarkerSet>
+      <SimmMarkerSet><objects>
          <SimmMarker name="V.Sacral"> <weight>2.000000</weight> <fixed>false</fixed> </SimmMarker>
          <SimmMarker name="R.ASIS"> <weight>2.000000</weight> <fixed>false</fixed> </SimmMarker>
          <SimmMarker name="L.ASIS"> <weight>2.000000</weight> <fixed>false</fixed> </SimmMarker>
@@ -30,17 +30,17 @@
          <SimmMarker name="L.Shank"> <weight>0.000000</weight> <fixed>false</fixed> </SimmMarker>
          <SimmMarker name="L.Toe"> <weight>2.000000</weight> <fixed>false</fixed> </SimmMarker>
          <SimmMarker name="L.Heel"> <weight>2.000000</weight> <fixed>false</fixed> </SimmMarker>
-      </MarkerSet>
+      </objects></SimmMarkerSet>
    </SimmGenericModelParams>
 
    <!-- Info on how the model is scaled -->
    <SimmScalingParams>
-      <MeasurementSet>
+      <SimmMeasurementSet><objects>
          <SimmMeasurement name="head size">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>Front.Head Rear.Head</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="skull"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="OT_head"> <axes>X Y Z</axes> </BodyScale>
@@ -49,10 +49,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="torso height">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.ASIS R.Shoulder</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.ASIS L.Shoulder</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="lumbar1"> <axes>X Y</axes> </BodyScale>
                <BodyScale name="lumbar2"> <axes>X Y</axes> </BodyScale>
@@ -75,9 +75,9 @@
          </SimmMeasurement>
          <SimmMeasurement name="torso width">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.Shoulder L.Shoulder</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="lumbar1"> <axes>Z</axes> </BodyScale>
                <BodyScale name="lumbar2"> <axes>Z</axes> </BodyScale>
@@ -100,10 +100,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="upper arm length">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.Shoulder R.Elbow</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.Shoulder L.Elbow</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="humerus_r"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="humerus_l"> <axes>X Y Z</axes> </BodyScale>
@@ -113,10 +113,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="lower arm length">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.Elbow R.Wrist</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.Elbow L.Wrist</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="ulna_r"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="ulna_l"> <axes>X Y Z</axes> </BodyScale>
@@ -132,9 +132,9 @@
          </SimmMeasurement>
          <SimmMeasurement name="pelvis width">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.ASIS L.ASIS</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="pelvis"> <axes>Y Z</axes> </BodyScale>
                <BodyScale name="pelvis_marker"> <axes>Y Z</axes> </BodyScale>
@@ -142,10 +142,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="pelvis depth">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.ASIS V.Sacral</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.ASIS V.Sacral</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="pelvis"> <axes>X</axes> </BodyScale>
                <BodyScale name="pelvis_marker"> <axes>X</axes> </BodyScale>
@@ -153,10 +153,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="thigh length">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.ASIS R.Knee</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.ASIS L.Knee</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="femur_r"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="femur_l"> <axes>X Y Z</axes> </BodyScale>
@@ -164,10 +164,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="shank length">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.Knee R.Ankle</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.Knee L.Ankle</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="tibia_r"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="tibia_l"> <axes>X Y Z</axes> </BodyScale>
@@ -185,10 +185,10 @@
          </SimmMeasurement>
          <SimmMeasurement name="foot length">
             <apply>true</apply> <!-- set to false to not use this SimmMeasurement -->
-            <MarkerPairSet>
+            <SimmMarkerPairSet><objects>
                <SimmMarkerPair> <markers>R.Heel R.Toe</markers> </SimmMarkerPair>
                <SimmMarkerPair> <markers>L.Heel L.Toe</markers> </SimmMarkerPair>
-            </MarkerPairSet>
+            </objects></SimmMarkerPairSet>
             <BodyScaleSet>
                <BodyScale name="talus_r"> <axes>X Y Z</axes> </BodyScale>
                <BodyScale name="talus_l"> <axes>X Y Z</axes> </BodyScale>
@@ -200,14 +200,14 @@
                <BodyScale name="toes_l"> <axes>X Y Z</axes> </BodyScale>
             </BodyScaleSet>
          </SimmMeasurement>
-      </MeasurementSet>
-	  <ScaleSet>
+      </objects></SimmMeasurementSet>
+	  <ScaleSet><objects>
 	     <suScale>
 			<scales> 1.00000000 1.00000000 1.00000000 </scales>
 			<segment> torso </segment>
 			<apply> false </apply>
 		 </suScale>
-      </ScaleSet>
+      </objects></ScaleSet>
       <scaling_order>measurements</scaling_order> <!-- order of scaling -->
       <marker_trial>init100.trc</marker_trial>
       <max_marker_movement>10.0</max_marker_movement>

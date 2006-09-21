@@ -331,7 +331,7 @@ void SimmCoordinate::determineType(SimmKinematicsEngine* aEngine)
 
       for (int i = 0; i < _jointList.getSize(); i++)
       {
-			ArrayPtrs<SimmDof>& dofList = _jointList[i]->getDofs();
+			SimmDofSet& dofList = _jointList[i]->getDofSet();
 
 			for (int j = 0; j < dofList.getSize(); j++)
          {

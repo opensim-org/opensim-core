@@ -20,7 +20,7 @@
 	<SimmIKParams name="">
 		<!--Name of the OpenSim model file after scaling and marker relocation.-->
 		<!--Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial values. Filename is specified in the appropriate trial block.-->
-		<CoordinateSet>
+		<SimmCoordinateSet><objects>
 			<SimmCoordinate name="pelvis_tx">
 				<value>fromFile</value> 
 				<locked>false</locked> 
@@ -119,9 +119,9 @@
 				<value>fromFile</value> 
 				<locked>false</locked> 
 			</SimmCoordinate>
-		</CoordinateSet>
+		</objects></SimmCoordinateSet>
 		<!--Trial paramaters, one block per trial-->
-		<IKTrialSet>
+		<SimmIKTrialParamsSet><objects>
 			<SimmIKTrialParams name="first trial">
 				<!--Name of the .trc file containing the marker trail data.-->
 				<marker_trial> subject_trial.trc </marker_trial>
@@ -138,6 +138,6 @@
 				<!--Flag for whether or not to includ marker positions in the output .mot file.-->
 				<include_markers> true </include_markers>
 			</SimmIKTrialParams>
-		</IKTrialSet>
+		</objects></SimmIKTrialParamsSet>
 	</SimmIKParams>
 </SimmSubject>

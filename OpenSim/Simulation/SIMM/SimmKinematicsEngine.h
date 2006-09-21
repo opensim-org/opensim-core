@@ -33,16 +33,15 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include "Constant.h"
-#include "SimmBody.h"
-#include "SimmCoordinate.h"
-#include "SimmJoint.h"
+#include "SimmBodySet.h"
+#include "SimmCoordinateSet.h"
+#include "SimmJointSet.h"
 #include "SimmDof.h"
 #include "SimmRotationDof.h"
 #include "SimmTranslationDof.h"
@@ -95,14 +94,14 @@ public:
 	SimmSdfastInfo _sdfastInfo;
 
 protected:
-	PropertyObjArray _bodiesProp;
-	ArrayPtrs<SimmBody> &_bodies;
+	PropertyObj _bodySetProp;
+	SimmBodySet &_bodySet;
 
-	PropertyObjArray _coordinatesProp;
-	ArrayPtrs<SimmCoordinate> &_coordinates;
+	PropertyObj _coordinateSetProp;
+	SimmCoordinateSet &_coordinateSet;
 
-	PropertyObjArray _jointsProp;
-	ArrayPtrs<SimmJoint> &_joints;
+	PropertyObj _jointSetProp;
+	SimmJointSet &_jointSet;
 
 	PropertyStr _lengthUnitsStrProp;
 	std::string& _lengthUnitsStr;
@@ -191,8 +190,8 @@ public:
 	void moveMarkersToCloud(Storage& aMarkerStorage);
 	int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
 	int replaceMarkerSet(SimmMarkerSet& aMarkerSet);
-	void updateMarkers(ArrayPtrs<SimmMarker>& aMarkerArray);
-	void updateCoordinates(ArrayPtrs<SimmCoordinate>& aCoordinateArray);
+	void updateMarkers(SimmMarkerSet& aMarkerArray);
+	void updateCoordinates(SimmCoordinateSet& aCoordinateArray);
 	double takeMeasurement(const SimmMeasurement& aMeasurement) const;
 	const SimmUnits& getLengthUnits() const { return _lengthUnits; }
 	const SimmUnits& getForceUnits() const { return _forceUnits; }
@@ -205,17 +204,17 @@ public:
 	void getUnlockedCoordinates(SimmCoordinateArray& aUnlockedCoordinates) const;
 	virtual SimmBody* getBody(const std::string &aName) const;
 	virtual Coordinate* getCoordinate(const std::string &aName) const;
-	virtual SimmJoint* getJoint(int index) { return _joints[index]; }
-	virtual ArrayPtrs<SimmBody>& getBodies() { return _bodies; }
-	virtual ArrayPtrs<SimmCoordinate>& getCoordinates() { return _coordinates; }
+	virtual SimmJoint* getJoint(int index) { return _jointSet[index]; }
+	virtual SimmBodySet& getBodies() { return _bodySet; }
+	virtual SimmCoordinateSet& getCoordinates() { return _coordinateSet; }
 
 	//--------------------------------------------------------------------------
 	// NUMBERS
 	//--------------------------------------------------------------------------
-	virtual int getNumBodies() const { return _bodies.getSize(); }
-	virtual int getNumJoints() const { return _joints.getSize(); }
-	virtual int getNumCoordinates() const { return _coordinates.getSize(); }
-	virtual int getNumSpeeds() const { return _coordinates.getSize(); }
+	virtual int getNumBodies() const { return _bodySet.getSize(); }
+	virtual int getNumJoints() const { return _jointSet.getSize(); }
+	virtual int getNumCoordinates() const { return _coordinateSet.getSize(); }
+	virtual int getNumSpeeds() const { return _coordinateSet.getSize(); }
 	virtual int getNumControls() const;
 	virtual int getNumContacts() const;
 	virtual int getNumStates() const;
@@ -317,7 +316,6 @@ public:
 	//--------------------------------------------------------------------------
 	// BODY INFORMATION
 	//--------------------------------------------------------------------------
-	SimmBodyArray& getBodyArray() { return _bodies; }
 	virtual int getGroundBodyIndex() const;
 	virtual void setBodyToJointBodyLocal(int aBody, const double aBTJ[3]);
 	virtual void getBodyToJointBodyLocal(int aBody, double rBTJ[3]) const;
