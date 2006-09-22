@@ -154,16 +154,28 @@ void SimmMarker::copyData(const SimmMarker &aMarker)
 void SimmMarker::updateFromMarker(const SimmMarker &aMarker)
 {
 	if (!aMarker._attachmentProp.getUseDefault())
+	{
 		_attachment = aMarker._attachment;
+		_attachmentProp.setUseDefault(false);
+	}
 
 	if (!aMarker._weightProp.getUseDefault())
+	{
 		_weight = aMarker._weight;
+		_weightProp.setUseDefault(false);
+	}
 
 	if (!aMarker._fixedProp.getUseDefault())
+	{
 		_fixed = aMarker._fixed;
+		_fixedProp.setUseDefault(false);
+	}
 
 	if (!aMarker._bodyNameProp.getUseDefault())
+	{
 		_bodyName = aMarker._bodyName;
+		_bodyNameProp.setUseDefault(false);
+	}
 }
 
 //_____________________________________________________________________________

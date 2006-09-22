@@ -230,8 +230,8 @@ SimmIKTrialParams& SimmIKTrialParams::operator=(const SimmIKTrialParams &aIKTria
 /**
  * Get correct data for coordinate values (based on input coordinate file specification).
  * If file is specified, then it's read, and any coordinate that's specified as "FromFile" 
- * is updated from this file. N
- OTE: Caller is responsible for freeing up the returned SimmMotionData
+ * is updated from this file.
+ * NOTE: Caller is responsible for freeing up the returned SimmMotionData
  *
  * @param aModel SimmModel to use. 
  * @return Pointer to a SimmMotionData.

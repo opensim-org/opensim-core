@@ -443,43 +443,77 @@ Function* SimmCoordinate::getMaxRestraintFunction(void) const
 void SimmCoordinate::updateFromCoordinate(const SimmCoordinate &aCoordinate)
 {
 	if (!aCoordinate._defaultValueProp.getUseDefault())
+	{
 		_defaultValue = aCoordinate._defaultValue;
+		_defaultValueProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._valueStrProp.getUseDefault())
 	{
 		_valueStr = aCoordinate._valueStr;
 		setValue(_valueStr);
+		_valueStrProp.setUseDefault(false);
 	}
 
 	if (!aCoordinate._toleranceProp.getUseDefault())
+	{
 		_tolerance = aCoordinate._tolerance;
+		_toleranceProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._PDStiffnessProp.getUseDefault())
+	{
 		_PDStiffness = aCoordinate._PDStiffness;
+		_PDStiffnessProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._IKweightProp.getUseDefault())
+	{
 		_IKweight = aCoordinate._IKweight;
+		_IKweightProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._rangeProp.getUseDefault())
+	{
 		_range = aCoordinate._range;
+		_rangeProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._keysProp.getUseDefault())
+	{
 		_keys = aCoordinate._keys;
+		_keysProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._clampedProp.getUseDefault())
+	{
 		_clamped = aCoordinate._clamped;
+		_clampedProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._lockedProp.getUseDefault())
+	{
 		_locked = aCoordinate._locked;
+		_lockedProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._restraintFunctionProp.getUseDefault())
+	{
 		_restraintFunction = aCoordinate._restraintFunction;
+		_restraintFunctionProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._maxRestraintFunctionProp.getUseDefault())
+	{
 		_maxRestraintFunction = aCoordinate._maxRestraintFunction;
+		_maxRestraintFunctionProp.setUseDefault(false);
+	}
 
 	if (!aCoordinate._restraintActiveProp.getUseDefault())
+	{
 		_restraintActive = aCoordinate._restraintActive;
+		_restraintActiveProp.setUseDefault(false);
+	}
 }
 
 void SimmCoordinate::writeSIMM(ofstream& out, int& aFunctionIndex) const
