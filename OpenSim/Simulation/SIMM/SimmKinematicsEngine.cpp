@@ -35,6 +35,7 @@
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/Memory.h>
 #include <OpenSim/Tools/GCVSpline.h>
+#include <OpenSim/Tools/IO.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "simmMacros.h"
 #include "SimmKinematicsEngine.h"
@@ -82,8 +83,6 @@ SimmKinematicsEngine::SimmKinematicsEngine() :
 	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", SimmJointSet())),
 	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
 	_model(NULL),
 	_sdfastInfo(),
@@ -105,8 +104,6 @@ SimmKinematicsEngine::SimmKinematicsEngine(const string &aFileName) :
 	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", SimmJointSet())),
 	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
 	_model(NULL),
 	_sdfastInfo(),
@@ -133,8 +130,6 @@ SimmKinematicsEngine::SimmKinematicsEngine(DOMElement *aElement) :
 	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", SimmJointSet())),
 	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
 	_model(NULL),
 	_sdfastInfo(),
@@ -161,8 +156,6 @@ SimmKinematicsEngine::SimmKinematicsEngine(const SimmKinematicsEngine& aKE) :
 	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", SimmJointSet())),
 	_jointSet((SimmJointSet&)_jointSetProp.getValueObj()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_path(0),
 	_model(NULL),
 	_sdfastInfo(),
@@ -197,8 +190,6 @@ void SimmKinematicsEngine::copyData(const SimmKinematicsEngine &aKE)
 	_bodySet = aKE._bodySet;
 	_coordinateSet = aKE._coordinateSet;
 	_jointSet = aKE._jointSet;
-	_lengthUnits = aKE._lengthUnits;
-	_forceUnits = aKE._forceUnits;
 	_model = aKE._model;
 	_sdfastInfo = aKE._sdfastInfo;
 }
@@ -249,12 +240,6 @@ void SimmKinematicsEngine::setupProperties()
 
 	_jointSetProp.setName("SimmJointSet");
 	_propertySet.append(&_jointSetProp);
-
-	_lengthUnitsStrProp.setName("length_units");
-	_propertySet.append(&_lengthUnitsStrProp);
-
-	_forceUnitsStrProp.setName("force_units");
-	_propertySet.append(&_forceUnitsStrProp);
 }
 
 void SimmKinematicsEngine::registerTypes()
@@ -299,19 +284,6 @@ void SimmKinematicsEngine::setup(SimmModel* aModel)
 
 	/* For each coordinate, generate a list of the paths that use it. */
 	createCoordinatePathLists();
-
-	/* Initialize the length and force units from the strings specified in the XML file.
-	 * If they were not specified, use meters and Newtons.
-	 */
-	if (_lengthUnitsStrProp.getUseDefault())
-		_lengthUnits = SimmUnits(SimmUnits::simmMeters);
-	else
-		_lengthUnits = SimmUnits(_lengthUnitsStr);
-
-	if (_forceUnitsStrProp.getUseDefault())
-		_forceUnits = SimmUnits(SimmUnits::simmNewtons);
-	else
-		_forceUnits = SimmUnits(_forceUnitsStr);
 }
 
 SimmBody* SimmKinematicsEngine::getBody(const string &aName) const
@@ -1057,7 +1029,7 @@ string getCurrentTimeString(void)
    return string(buf);
 }
 
-void SimmKinematicsEngine::makeSdfastModel(string filename, bool writeFile)
+void SimmKinematicsEngine::makeSdfastModel(const string& filename, bool writeFile)
 {
 	ofstream out;
 	int i, j, dofCount = 0, constrainedCount = 0, bodyCount = 0;
@@ -1162,7 +1134,7 @@ void SimmKinematicsEngine::makeSdfastModel(string filename, bool writeFile)
    }
 }
 
-void SimmKinematicsEngine::writeSDHeaderFile(const string filename)
+void SimmKinematicsEngine::writeSDHeaderFile(const string& filename)
 {
    int i;
 	ofstream out;
@@ -1850,7 +1822,7 @@ void SimmKinematicsEngine::writeSdfastConstraintObjects(ofstream& out)
 #endif
 }
 
-void SimmKinematicsEngine::writeSdforCFile(string filename)
+void SimmKinematicsEngine::writeSdforCFile(const string& filename)
 {
 	ofstream out;
 
@@ -1904,12 +1876,14 @@ void SimmKinematicsEngine::writeSdforCFile(string filename)
    out.close();
 }
 
-void SimmKinematicsEngine::writeSdfastParameterFile(string filename)
+void SimmKinematicsEngine::writeSdfastParameterFile(const string& aFileName, const string& aMuscleFileName,
+																	 const string& aBonePath, const string& aKineticsFile,
+																	 const string& aOutputMotionFile)
 {
 	int i;
 	ofstream out;
 
-	out.open(filename.c_str());
+	out.open(aFileName.c_str());
 	out.setf(ios::fixed);
 	out.precision(10);
 
@@ -1926,10 +1900,24 @@ void SimmKinematicsEngine::writeSdfastParameterFile(string filename)
    out << "# desired value." << endl << endl;
 
    out << "############################# I/O Options #############################" << endl;
-	out << "muscle_file dynamic.msl" << endl;
-	out << "#bone_path path_to_bone_files" << endl;
-	out << "output_motion_file results.mot" << endl;
-   out << "#kinetics_file forces.ktx" << endl;
+	if (aMuscleFileName == "no_muscles")
+		out << "#muscle_file name_of_muscle_file" << endl;
+	else
+		out << "muscle_file " << aMuscleFileName << endl;
+
+	if (aBonePath == "no_path")
+		out << "#bone_path path_to_bone_files" << endl;
+	else
+		out << "bone_path " << aBonePath << endl;
+
+	if (aKineticsFile == "no_kinetics")
+		out << "#kinetics_file inputData.mot" << endl;
+	else
+		out << "kinetics_file " << aKineticsFile << endl;
+
+	out << "output_motion_file " << aOutputMotionFile << endl;
+
+	// It is not recommended to use kinetics files for output (use motion files instead)
 	out << "#output_kinetics_file results.ktx" << endl << endl;
 
    out << "######################## Integration Parameters #######################" << endl;
@@ -2099,8 +2087,27 @@ void SimmKinematicsEngine::writeSdfastParameterFile(string filename)
 	out.close();
 }
 
-void SimmKinematicsEngine::saveDynamics(const string &aFolderName)
+void SimmKinematicsEngine::saveDynamics(const string& aFolderName, const string& aMuscleFileName,
+													 const string& aBonePath, const string& aKineticsFile,
+													 const string& aOutputMotionFile)
 {
+	string folder;
+
+	// Create the folder. Then append the name with a separator, if necessary.
+	if (aFolderName.length() > 0)
+	{
+		IO::makeDir(aFolderName.c_str());
+
+		if (aFolderName[aFolderName.length()-1] != '\\' && aFolderName[aFolderName.length()-1] != '/')
+			folder = aFolderName + "\\";
+		else
+			folder = aFolderName;
+	}
+	else
+	{
+		folder = "";
+	}
+
 	initSdfastParameters();
 
 	for (int i = 0; i < _jointSet.getSize(); i++)
@@ -2112,13 +2119,13 @@ void SimmKinematicsEngine::saveDynamics(const string &aFolderName)
 	if (!checkDynamicParameters())
 		goto error;
 
-	makeSdfastModel(aFolderName + "model.sd", true);
+	makeSdfastModel(folder + "model.sd", true);
 
-	writeSDHeaderFile(aFolderName + "model.h");
+	writeSDHeaderFile(folder + "model.h");
 
-	writeSdforCFile(aFolderName + "sdfor.c");
+	writeSdforCFile(folder + "sdfor.c");
 
-	writeSdfastParameterFile("pipeline/params.txt");
+	writeSdfastParameterFile(folder + "params.txt", aMuscleFileName, aBonePath, aKineticsFile, aOutputMotionFile);
 
 	goto cleanup;
 
@@ -2400,10 +2407,10 @@ void SimmKinematicsEngine::writeSIMMJointFile(const string& aFileName) const
       out << "motion_file " << mMotionFilename << endl;
 #endif
 
-	if (_lengthUnits.getType() != SimmUnits::simmUnknownUnits)
-		out << "length_units " << _lengthUnits.getLabel() << endl;
-	if (_forceUnits.getType() != SimmUnits::simmUnknownUnits)
-		out << "force_units " << _forceUnits.getLabel() << endl;
+	if (_model->getLengthUnits().getType() != SimmUnits::simmUnknownUnits)
+		out << "length_units " << _model->getLengthUnits().getLabel() << endl;
+	if (_model->getForceUnits().getType() != SimmUnits::simmUnknownUnits)
+		out << "force_units " << _model->getForceUnits().getLabel() << endl;
 
 #if 0
    if (mMarkerRadius != 0.01)
@@ -2503,7 +2510,7 @@ void SimmKinematicsEngine::writeSIMMJointFile(const string& aFileName) const
    out << "origin 0.0 0.0 0.0" << endl;
    out << "\nmaterial mat2\n";
 	/* The floor bone file is in meters, so scale it to fit this model. */
-	double floorScale = 1.0 / getLengthUnits().convertTo(SimmUnits::simmMeters);
+	double floorScale = 1.0 / _model->getLengthUnits().convertTo(SimmUnits::simmMeters);
 	out << "scale " << floorScale << " " << floorScale * 2.0 << " " << floorScale * 4.0 << endl;
    out << " endworldobject\n\n";
 
@@ -2513,7 +2520,7 @@ void SimmKinematicsEngine::writeSIMMJointFile(const string& aFileName) const
 
 	/* The default ball object in SIMM is in meters, so scale it to fit this model. */
 	out << "beginmotionobject ball\n";
-	double scale = 0.25 / getLengthUnits().convertTo(SimmUnits::simmMeters);
+	double scale = 0.25 / _model->getLengthUnits().convertTo(SimmUnits::simmMeters);
 	out << "material blue" << endl;
 	out << "scale " << scale << " " << scale << " " << scale << endl;
    out << "endmotionobject\n\n";
@@ -2550,9 +2557,6 @@ void SimmKinematicsEngine::peteTest() const
 	int i;
 
 	cout << "Kinematics Engine:" << endl;
-
-	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
-	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
 
 	if (_bodySet.getSize() < 1)
 	{

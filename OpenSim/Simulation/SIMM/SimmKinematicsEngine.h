@@ -103,14 +103,6 @@ protected:
 	PropertyObj _jointSetProp;
 	SimmJointSet &_jointSet;
 
-	PropertyStr _lengthUnitsStrProp;
-	std::string& _lengthUnitsStr;
-	SimmUnits _lengthUnits;
-
-	PropertyStr _forceUnitsStrProp;
-	std::string& _forceUnitsStr;
-	SimmUnits _forceUnits;
-
 	SimmPathMatrix _path;
 
 	SimmModel* _model;
@@ -135,7 +127,9 @@ public:
 #ifndef SWIG
 	SimmKinematicsEngine& operator=(const SimmKinematicsEngine &aEngine);
 #endif
-	void saveDynamics(const std::string &aFolderName);
+	void saveDynamics(const std::string& aFolderName = "", const std::string& aMuscleFileName = "no_muscles",
+		const std::string& aBonePath = "no_path", const std::string& aKineticsFile = "no_kinetics",
+		const std::string& aOutputMotionFile = "results.mot");
 	SimmBody* getLeafBody(SimmJoint* aJoint) const;
 	SimmDof* markUnconstrainedDof(const SimmCoordinate* aCoordinate);
 
@@ -154,8 +148,8 @@ private:
 	void makeDofSdfastNames(void);
 	void makeSdfastJointOrder(void);
 	bool validSdfastModel(void);
-	void makeSdfastModel(std::string filename, bool writeFile);
-	void writeSDHeaderFile(std::string filename);
+	void makeSdfastModel(const std::string& filename, bool writeFile);
+	void writeSDHeaderFile(const std::string& filename);
 	void writeSdfastConstraintData(std::ofstream& out);
 	void writeSdfastQRestraintData(std::ofstream& out);
 	void writeSdfastQRestraintFunctions(std::ofstream& out);
@@ -164,8 +158,10 @@ private:
 	void writeSdfastConstraintCode(std::ofstream& out);
 	void writeSdfastWrapObjects(std::ofstream& out);
 	void writeSdfastConstraintObjects(std::ofstream& out);
-	void writeSdforCFile(std::string filename);
-	void writeSdfastParameterFile(std::string filename);
+	void writeSdforCFile(const std::string& filename);
+	void writeSdfastParameterFile(const std::string& aFileName, const std::string& aMuscleFileName = "no_muscles",
+		const std::string& aBonePath = "no_path", const std::string& aKineticsFile = "no_kinetics",
+		const std::string& aOutputMotionFile = "results.mot");
 	void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData);
 
 protected:
@@ -193,8 +189,6 @@ public:
 	void updateMarkers(SimmMarkerSet& aMarkerArray);
 	void updateCoordinates(SimmCoordinateSet& aCoordinateArray);
 	double takeMeasurement(const SimmMeasurement& aMeasurement) const;
-	const SimmUnits& getLengthUnits() const { return _lengthUnits; }
-	const SimmUnits& getForceUnits() const { return _forceUnits; }
 
 	void writeSIMMJointFile(const std::string& aFileName) const;
 	void writeMarkerFile(const std::string& aFileName) const;

@@ -66,6 +66,8 @@ SimmModel::SimmModel() :
 	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_builtOK(false)
 {
 	setNull();
@@ -81,6 +83,8 @@ SimmModel::SimmModel(const string &aFileName) :
 	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_builtOK(false)
 {
 	setNull();
@@ -95,6 +99,8 @@ SimmModel::SimmModel(DOMElement *aElement) :
 	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_builtOK(false)
 {
 	setNull();
@@ -124,6 +130,8 @@ SimmModel::SimmModel(const SimmModel &aModel) :
 	_muscleSet((SimmMuscleSet&)_muscleSetProp.getValueObj()),
 	_kinematicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_kinematicsEngineProp.getValueObjArray()),
    _gravity(_gravityProp.getValueDblArray()),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_builtOK(false)
 {
 	setupProperties();
@@ -175,6 +183,8 @@ void SimmModel::copyData(const SimmModel &aModel)
 	_muscleGroupSet = aModel._muscleGroupSet;
 	_kinematicsEngine = aModel._kinematicsEngine;
 	_gravity = aModel._gravity;
+	_lengthUnits = aModel._lengthUnits;
+	_forceUnits = aModel._forceUnits;
 }
 
 
@@ -218,6 +228,12 @@ void SimmModel::setupProperties()
 	_gravityProp.setName("gravity");
 	_gravityProp.setValue(3, defaultGravity);
 	_propertySet.append(&_gravityProp);
+
+	_lengthUnitsStrProp.setName("length_units");
+	_propertySet.append(&_lengthUnitsStrProp);
+
+	_forceUnitsStrProp.setName("force_units");
+	_propertySet.append(&_forceUnitsStrProp);
 }
 
 void SimmModel::registerTypes()
@@ -357,7 +373,20 @@ void SimmModel::setup()
 		/* Copy number of bodies to base class. */
 		_nb = _kinematicsEngine[0]->getNumBodies();
 	}
-	
+
+	/* Initialize the length and force units from the strings specified in the XML file.
+	 * If they were not specified, use meters and Newtons.
+	 */
+	if (_lengthUnitsStrProp.getUseDefault())
+		_lengthUnits = SimmUnits(SimmUnits::simmMeters);
+	else
+		_lengthUnits = SimmUnits(_lengthUnitsStr);
+
+	if (_forceUnitsStrProp.getUseDefault())
+		_forceUnits = SimmUnits(SimmUnits::simmNewtons);
+	else
+		_forceUnits = SimmUnits(_forceUnitsStr);
+
 	// Restore the current directory.
 	if (origDirPath[0] != '\0')
 		chdir(origDirPath);
@@ -410,16 +439,6 @@ void SimmModel::updateCoordinates(SimmCoordinateSet& aCoordinateArray)
 double SimmModel::takeMeasurement(const SimmMeasurement& aMeasurement)
 {
 	return getSimmKinematicsEngine().takeMeasurement(aMeasurement);
-}
-
-const SimmUnits& SimmModel::getLengthUnits() const
-{
-	return getSimmKinematicsEngine().getLengthUnits();
-}
-
-const SimmUnits& SimmModel::getForceUnits() const
-{
-	return getSimmKinematicsEngine().getForceUnits();
 }
 
 SimmBodySet& SimmModel::getBodies()
@@ -482,6 +501,8 @@ void SimmModel::peteTest() const
 
 	cout << "SimmModel " << getName() << endl;
 	cout << "   gravity: " << _gravity << endl;
+	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
+	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
 
 	for (i = 0; i < getNA(); i++)
 		_muscleSet.get(i)->peteTest(&getSimmKinematicsEngine());

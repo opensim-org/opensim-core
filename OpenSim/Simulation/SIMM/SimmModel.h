@@ -32,6 +32,7 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
+#include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
@@ -79,6 +80,14 @@ private:
 
 	PropertyDblArray _gravityProp;
 	Array<double> &_gravity;
+
+	PropertyStr _lengthUnitsStrProp;
+	std::string& _lengthUnitsStr;
+	SimmUnits _lengthUnits;
+
+	PropertyStr _forceUnitsStrProp;
+	std::string& _forceUnitsStr;
+	SimmUnits _forceUnits;
 
 	std::string _fileName;
 
@@ -131,8 +140,8 @@ public:
 	void updateMarkers(SimmMarkerSet& aMarkerArray);
 	void updateCoordinates(SimmCoordinateSet& aCoordinateArray);
 	double takeMeasurement(const SimmMeasurement& aMeasurement);
-	const SimmUnits& getLengthUnits() const;
-	const SimmUnits& getForceUnits() const;
+	const SimmUnits& getLengthUnits() const { return _lengthUnits; }
+	const SimmUnits& getForceUnits() const { return _forceUnits; }
 
 	const double* getGravity() const { return &_gravity[0]; }
 	const char* getGravityLabel() const;

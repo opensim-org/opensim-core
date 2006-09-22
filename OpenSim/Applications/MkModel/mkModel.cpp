@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 		SimmModel *model = new SimmModel(inName);
 		model->setup();
 		SimmKinematicsEngine& engine = model->getSimmKinematicsEngine();
-		engine.saveDynamics("");
+		engine.saveDynamics();
 		delete model;
 	}
 	catch(Exception &x) {
