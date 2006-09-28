@@ -85,7 +85,7 @@ setNull()
 	_status = RKF_NORMAL;
 	_steps = 0;
 	_trys = 0;
-	_maxSteps = 1000;
+	_maxSteps = 10000;
 	_halt = false;
 	_dtMax = 1.0;
 	_dtMin = 1.0e-8;
