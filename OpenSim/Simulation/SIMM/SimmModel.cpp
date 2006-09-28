@@ -472,11 +472,24 @@ void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
    }
 
    out << "/**********************************************************/\n";
-   out << "/*            Muscle file created by NMBLTS                */\n";
+   out << "/*            Muscle file created by Opensim              */\n";
    if (getInputFileName() != "")
       out << "/* name of original model file: " << getInputFileName() << " */\n";
    out << "/**********************************************************/\n";
-   out << "\n";
+   out << endl << endl;
+
+	/* TODO: hack to support dynamic parameters in all currently defined muscle models. */
+	out << "begindynamicparameters" << endl;
+	out << "timescale" << endl;
+	out << "mass" << endl;
+	out << "damping" << endl;
+	out << "activation1" << endl;
+	out << "activation2" << endl;
+	out << "activation_time_constant" << endl;
+	out << "deactivation_time_constant" << endl;
+	out << "Vmax" << endl;
+	out << "Vmax0" << endl;
+	out << "enddynamicparameters" << endl << endl;
 
 	for (int i = 0; i < getNA(); i++)
 		_muscleSet.get(i)->writeSIMM(out);

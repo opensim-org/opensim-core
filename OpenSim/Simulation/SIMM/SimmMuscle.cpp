@@ -59,6 +59,10 @@ SimmMuscle::SimmMuscle() :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
+	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
+	_maxVelocity(_maxVelocityProp.getValueDbl()),
+	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -87,6 +91,10 @@ SimmMuscle::SimmMuscle(DOMElement *aElement) :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
+	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
+	_maxVelocity(_maxVelocityProp.getValueDbl()),
+	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -127,6 +135,10 @@ SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
+	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
+	_maxVelocity(_maxVelocityProp.getValueDbl()),
+	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -185,6 +197,10 @@ void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 	_pennationAngle = aMuscle._pennationAngle;
 	_maxContractionVelocity = aMuscle._maxContractionVelocity;
 	_muscleModelIndex = aMuscle._muscleModelIndex;
+	_activationTimeConstant = aMuscle._activationTimeConstant;
+	_deactivationTimeConstant = aMuscle._deactivationTimeConstant;
+	_maxVelocity = aMuscle._maxVelocity;
+	_maxVelocityZeroAct = aMuscle._maxVelocityZeroAct;
 	_tendonForceLengthCurve = aMuscle._tendonForceLengthCurve;
 	_activeForceLengthCurve = aMuscle._activeForceLengthCurve;
 	_passiveForceLengthCurve = aMuscle._passiveForceLengthCurve;
@@ -242,6 +258,22 @@ void SimmMuscle::setupProperties()
 	_muscleModelIndexProp.setName("muscle_model");
 	_muscleModelIndexProp.setValue(4);
 	_propertySet.append(&_muscleModelIndexProp);
+
+	_activationTimeConstantProp.setName("activation_time_constant");
+	_activationTimeConstantProp.setValue(0.0);
+	_propertySet.append(&_activationTimeConstantProp);
+
+	_deactivationTimeConstantProp.setName("deactivation_time_constant");
+	_deactivationTimeConstantProp.setValue(0.0);
+	_propertySet.append(&_deactivationTimeConstantProp);
+
+	_maxVelocityProp.setName("Vmax");
+	_maxVelocityProp.setValue(0.0);
+	_propertySet.append(&_maxVelocityProp);
+
+	_maxVelocityZeroActProp.setName("Vmax0");
+	_maxVelocityZeroActProp.setValue(0.0);
+	_propertySet.append(&_maxVelocityZeroActProp);
 
 	ArrayPtrs<Object> func;
 
@@ -436,6 +468,10 @@ void SimmMuscle::writeSIMM(ofstream& out) const
 	out << "pennation_angle " << _pennationAngle << endl;
 	out << "max_contraction_velocity " << _maxContractionVelocity << endl;
 	out << "muscle_model " << _muscleModelIndex << endl;
+	out << "activation_time_constant " << _activationTimeConstant << endl;
+	out << "deactivation_time_constant " << _deactivationTimeConstant << endl;
+	out << "Vmax " << _maxVelocity << endl;
+	out << "Vmax0 " << _maxVelocityZeroAct << endl;
 
 	NatCubicSpline* ncs;
 
@@ -486,6 +522,10 @@ void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 	cout << "   pennationAngle: " << _pennationAngle << endl;
 	cout << "   maxContractionVelocity: " << _maxContractionVelocity << endl;
 	cout << "   muscleModel: " << _muscleModelIndex << endl;
+	cout << "   activation_time_constant: " << _activationTimeConstant << endl;
+	cout << "   deactivation_time_constant: " << _deactivationTimeConstant << endl;
+	cout << "   Vmax: " << _maxVelocity << endl;
+	cout << "   Vmax0: " << _maxVelocityZeroAct << endl;
 	if (_tendonForceLengthCurve.getSize() > 0)
 		cout << "   tendonForceLengthCurve: " << *(_tendonForceLengthCurve[0]) << endl;
 	if (_activeForceLengthCurve.getSize() > 0)

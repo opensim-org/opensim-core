@@ -91,6 +91,18 @@ protected:
 	PropertyInt _muscleModelIndexProp;
 	int &_muscleModelIndex;
 
+	PropertyDbl _activationTimeConstantProp;
+	double &_activationTimeConstant;
+
+	PropertyDbl _deactivationTimeConstantProp;
+	double &_deactivationTimeConstant;
+
+	PropertyDbl _maxVelocityProp;
+	double &_maxVelocity;
+
+	PropertyDbl _maxVelocityZeroActProp;
+	double &_maxVelocityZeroAct;
+
 	PropertyObjArray _tendonForceLengthCurveProp;
 	ArrayPtrs<Function> &_tendonForceLengthCurve;
 
