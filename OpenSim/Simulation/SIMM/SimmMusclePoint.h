@@ -101,6 +101,7 @@ public:
 	void scale(Array<double>& aScaleFactors);
 
 	virtual void writeSIMM(std::ofstream& out) const;
+	virtual bool isActive() const { return true; }
 	virtual void setup(SimmModel* model, SimmKinematicsEngine* ke);
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() { return &_displayer; };

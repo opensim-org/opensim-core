@@ -1,10 +1,10 @@
-#ifndef _SimmMuscleViaPoint_h_
-#define _SimmMuscleViaPoint_h_
+#ifndef __AttachmentPointIterator_h__
+#define __AttachmentPointIterator_h__
 
-// SimmMuscleViaPoint.h
+// AttachmentPointIterator.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -29,46 +29,27 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
-#include "SimmMusclePoint.h"
-#include "SimmCoordinate.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmModel;
-class SimmKinematicsEngine;
+class SimmMusclePoint;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM muscle via point, which is a muscle point that
- * is active only for a specified range of a coordinate.
+ * A base class that specifies the interface for an [actuator] attachment point iterator.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMuscleViaPoint : public SimmMusclePoint  
+class RDSIMULATION_API AttachmentPointIterator
 {
-
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
-   PropertyDblArray _rangeProp;
-   Array<double> &_range;
-
-	PropertyStr _coordinateNameProp;
-   std::string &_coordinateName;
-
-	const SimmCoordinate* _coordinate;
+	int _counter;
 
 //=============================================================================
 // METHODS
@@ -77,39 +58,22 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMuscleViaPoint();
-	SimmMuscleViaPoint(DOMElement *aElement);
-	SimmMuscleViaPoint(const SimmMuscleViaPoint &aPoint);
-	virtual ~SimmMuscleViaPoint();
-	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
+	AttachmentPointIterator();
+	virtual ~AttachmentPointIterator();
 
-#ifndef SWIG
-	SimmMuscleViaPoint& operator=(const SimmMuscleViaPoint &aPoint);
-#endif
-   void SimmMuscleViaPoint::copyData(const SimmMuscleViaPoint &aPoint);
+	virtual bool finished() const = 0;
+	virtual SimmMusclePoint* getCurrent() = 0;
+	virtual SimmMusclePoint* next() = 0;
+	virtual void reset() = 0;
+	virtual void end() = 0;
 
-	Array<double>& getRange() const { return _range; }
-	std::string& getCoordinateName() const { return _coordinateName; }
-
-	virtual void writeSIMM(std::ofstream& out) const;
-	virtual bool isActive() const;
-	virtual void setup(SimmModel* model, SimmKinematicsEngine* ke);
-
-	virtual void peteTest() const;
-
-protected:
-
-private:
-	void setNull();
-	void setupProperties();
 //=============================================================================
-};	// END of class SimmMuscleViaPoint
-
-}; //namespace
+};	// END of class AttachmentPointIterator
 //=============================================================================
 //=============================================================================
 
-#endif // __SimmMuscleViaPoint_h__
+} // end of namespace OpenSim
+
+#endif // __AttachmentPointIterator_h__
 
 

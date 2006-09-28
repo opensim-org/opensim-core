@@ -31,6 +31,7 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/Storage.h>
@@ -45,6 +46,7 @@ namespace OpenSim {
 
 class SimmKinematicsEngine;
 class SimmMuscleGroup;
+class AttachmentPointIterator;
 
 //=============================================================================
 //=============================================================================
@@ -86,6 +88,9 @@ protected:
 	PropertyDbl _maxContractionVelocityProp;
 	double &_maxContractionVelocity;
 
+	PropertyInt _muscleModelIndexProp;
+	int &_muscleModelIndex;
+
 	PropertyObjArray _tendonForceLengthCurveProp;
 	ArrayPtrs<Function> &_tendonForceLengthCurve;
 
@@ -125,7 +130,7 @@ public:
 	SimmMuscle& operator=(const SimmMuscle &aMuscle);
 #endif
 
-    void SimmMuscle::copyData(const SimmMuscle &aMuscle);
+   void SimmMuscle::copyData(const SimmMuscle &aMuscle);
 	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
 
 	virtual void computeActuation() { }
@@ -145,7 +150,7 @@ public:
 	void setup(SimmModel* model, SimmKinematicsEngine* ke);
 
 	void writeSIMM(std::ofstream& out) const;
-
+	virtual AttachmentPointIterator* newAttachmentPointIterator() const;
 	void peteTest(SimmKinematicsEngine* ke) const;
 
 protected:

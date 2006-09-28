@@ -31,6 +31,8 @@
 #include "SimmMuscleViaPoint.h"
 #include "SimmModel.h"
 #include "SimmKinematicsEngine.h"
+#include "AttachmentPointIterator.h"
+#include "SimmMusclePointSetIterator.h"
 
 //=============================================================================
 // STATICS
@@ -56,6 +58,7 @@ SimmMuscle::SimmMuscle() :
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
+	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -83,6 +86,7 @@ SimmMuscle::SimmMuscle(DOMElement *aElement) :
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
+	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -122,6 +126,7 @@ SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
+	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -179,6 +184,7 @@ void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 	_tendonSlackLength = aMuscle._tendonSlackLength;
 	_pennationAngle = aMuscle._pennationAngle;
 	_maxContractionVelocity = aMuscle._maxContractionVelocity;
+	_muscleModelIndex = aMuscle._muscleModelIndex;
 	_tendonForceLengthCurve = aMuscle._tendonForceLengthCurve;
 	_activeForceLengthCurve = aMuscle._activeForceLengthCurve;
 	_passiveForceLengthCurve = aMuscle._passiveForceLengthCurve;
@@ -232,6 +238,10 @@ void SimmMuscle::setupProperties()
 	_maxContractionVelocityProp.setName("max_contraction_velocity");
 	_maxContractionVelocityProp.setValue(0.0);
 	_propertySet.append(&_maxContractionVelocityProp);
+
+	_muscleModelIndexProp.setName("muscle_model");
+	_muscleModelIndexProp.setValue(4);
+	_propertySet.append(&_muscleModelIndexProp);
 
 	ArrayPtrs<Object> func;
 
@@ -334,6 +344,45 @@ double SimmMuscle::getLength() const
 	double length = 0.0;
 	SimmMusclePoint *start, *end;
 
+	AttachmentPointIterator *api = newAttachmentPointIterator();
+
+	if (!api)
+		return 0.0;
+
+	start = api->next();
+	end = api->next();
+
+	while (start && end)
+	{
+#if 0
+      /* If both points are wrap points on the same wrap object, then this muscle
+       * segment wraps over the surface of a wrap object, so just add in the
+       * pre-calculated distance.
+       */
+      if (dynamic_cast<SimmMuscleWrapPoint&>start &&
+			 dynamic_cast<SimmMuscleWrapPoint&>end &&
+			 start.getWrapObject() == end.getWrapObject())
+      {
+         length += end.getWrapDistance();
+      }
+      else
+      {
+         length += _kinematicsEngine->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
+      }
+#else
+		length += _kinematicsEngine->calcDistance(start->getAttachment(), start->getBody(), end->getAttachment(), end->getBody());
+#endif
+		start = end;
+		end = api->next();
+   }
+	delete api;
+
+	return length;
+}
+#if 0
+	double length = 0.0;
+	SimmMusclePoint *start, *end;
+
 	//check wrapping??
 
    for (int i = 0; i < _attachmentSet.getSize() - 1; i++)
@@ -362,6 +411,7 @@ double SimmMuscle::getLength() const
 
 	return length;
 }
+#endif
 
 void SimmMuscle::writeSIMM(ofstream& out) const
 {
@@ -385,6 +435,7 @@ void SimmMuscle::writeSIMM(ofstream& out) const
 	out << "tendon_slack_length " << _tendonSlackLength << endl;
 	out << "pennation_angle " << _pennationAngle << endl;
 	out << "max_contraction_velocity " << _maxContractionVelocity << endl;
+	out << "muscle_model " << _muscleModelIndex << endl;
 
 	NatCubicSpline* ncs;
 
@@ -407,6 +458,17 @@ void SimmMuscle::writeSIMM(ofstream& out) const
 	out << "endmuscle" << endl << endl;
 }
 
+//_____________________________________________________________________________
+/**
+ * Make a new muscle point iterator.
+ *
+ * @return Pointer to the muscle point iterator.
+ */
+AttachmentPointIterator* SimmMuscle::newAttachmentPointIterator() const
+{
+	return new SimmMusclePointSetIterator(_attachmentSet);
+}
+
 void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 {
 	int i;
@@ -423,6 +485,7 @@ void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 	cout << "   tendonSlackLength: " << _tendonSlackLength << endl;
 	cout << "   pennationAngle: " << _pennationAngle << endl;
 	cout << "   maxContractionVelocity: " << _maxContractionVelocity << endl;
+	cout << "   muscleModel: " << _muscleModelIndex << endl;
 	if (_tendonForceLengthCurve.getSize() > 0)
 		cout << "   tendonForceLengthCurve: " << *(_tendonForceLengthCurve[0]) << endl;
 	if (_activeForceLengthCurve.getSize() > 0)

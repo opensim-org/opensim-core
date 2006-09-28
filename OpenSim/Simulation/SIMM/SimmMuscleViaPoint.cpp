@@ -178,6 +178,25 @@ void SimmMuscleViaPoint::writeSIMM(ofstream& out) const
 	out << " ranges 1 " << _coordinateName << " (" << _range[0] << ", " << _range[1] << ")" << endl;
 }
 
+//_____________________________________________________________________________
+/**
+ * Determine if this point is active by checking the value of the
+ * coordinate that it is linked to.
+ *
+ * @return Whether or not this point is active.
+ */
+bool SimmMuscleViaPoint::isActive() const
+{
+	if (_coordinate)
+	{
+		double value = _coordinate->getValue();
+		if (value >= _range[0] && value <= _range[1])
+			return true;
+	}
+
+	return false;
+}
+
 /* Perform some set up functions that happen after the
  * object has been deserialized or copied.
  */
