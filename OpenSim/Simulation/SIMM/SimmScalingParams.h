@@ -159,6 +159,10 @@ public:
 	{
 		_scaleSet.append(aScale);
 	}
+	//--------------------------------------------------------------------------
+	// GET AND SET
+	//--------------------------------------------------------------------------
+
     SimmMeasurementSet& getMeasurementSet() {
         return _measurementSet;
     }
@@ -202,6 +206,14 @@ public:
     void setMarkerFileName(const std::string& aMarkerFileName) {
         _markerFileName = aMarkerFileName;
     }
+
+	void setMaxMarkerMovement(const double aMaxMarkerMovement) {
+		_maxMarkerMovement = aMaxMarkerMovement;
+	}
+
+	double getMaxMarkerMovement() const {
+		return _maxMarkerMovement;
+	}
 
     const std::string& getOutputJointFileName() {
         return _outputJointFileName;

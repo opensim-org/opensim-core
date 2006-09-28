@@ -135,13 +135,31 @@ public:
 	{
 		return _markerSet;
 	}
+	void setMarkerSet(const SimmMarkerSet &aMarkerSet)
+	{
+		_markerSet = aMarkerSet;
+	}
+	/**
+	 * get/set StaticPoseFilename
+	 */
 	const std::string &getStaticPoseFilename() const
 	{
 		return _markerFileName;
 	}
 
+	void setStaticPoseFilename(const std::string &aFileName) 
+	{
+		_markerFileName = aFileName;
+	}
+
+	/**
+	 * get/set timeRange in static trial file
+	 */
     Array<double> getTimeRange() {
         return _timeRange;
+    }
+    void setTimeRange(Array<double> timeRange) {
+        _timeRange = timeRange;
     }
 
 	const std::string &SimmMarkerPlacementParams::getCoordinateFileName() const
@@ -153,10 +171,20 @@ public:
     {
         return _coordinateSet;
     }
-
+	/**
+	 * get/set MaxMarkerMovement
+	 */
 	 double getMaxMarkerMovement() const
 	 {
 		 return _maxMarkerMovement;
+	 }
+
+	 void setMaxMarkerMovement(double aMaxMarkerMovement)
+	 {
+		 if (aMaxMarkerMovement!= -1.0){
+			 _maxMarkerMovement=aMaxMarkerMovement;
+			_maxMarkerMovementProp.setUseDefault(false);
+			}
 	 }
 
 	/** Add a coordinate to the coordinate set */
@@ -168,7 +196,10 @@ public:
     }
 
     void setOutputModelFileName(const std::string& aOutputModelFileName) {
-        _outputModelFileName = aOutputModelFileName;
+		if (aOutputModelFileName != ""){
+			_outputModelFileName = aOutputModelFileName;
+ 			_outputModelFileNameProp.setUseDefault(false);
+		}
     }
 
 	const std::string& getOutputJointFileName() {
@@ -178,15 +209,21 @@ public:
 	 * Expose file names for access from the GUI
 	 */
     void setOutputJointFileName(const std::string& outputJointFileName) {
-        _outputJointFileName = outputJointFileName;
-    }
+		if (outputJointFileName != ""){
+			_outputJointFileName = outputJointFileName;
+ 			_outputJointFileNameProp.setUseDefault(false);
+		}
+   }
 
     const std::string& getOutputMuscleFileName() {
         return _outputMuscleFileName;
     }
 
     void setOutputMuscleFileName(const std::string& outputMuscleFileName) {
-        _outputMuscleFileName = outputMuscleFileName;
+		if (outputMuscleFileName != ""){
+			_outputMuscleFileName = outputMuscleFileName;
+			_outputMuscleFileNameProp.setUseDefault(false);
+		}
     }
 
     const std::string& getOutputMarkerFileName() {
@@ -194,7 +231,10 @@ public:
     }
 
     void setOutputMarkerFileName(const std::string& outputMarkerFileName) {
-        _outputMarkerFileName = outputMarkerFileName;
+		if (outputMarkerFileName != ""){
+			_outputMarkerFileName = outputMarkerFileName;
+			_outputMarkerFileNameProp.setUseDefault(false);
+		}
     }
 
     const std::string& getOutputMotionFileName() {
@@ -202,7 +242,10 @@ public:
     }
 
     void setOutputMotionFileName(const std::string& outputMotionFileName) {
-        _outputMotionFileName = outputMotionFileName;
+		if (outputMotionFileName != ""){
+			_outputMotionFileName = outputMotionFileName;
+			_outputMotionFileNameProp.setUseDefault(false);
+		}
     }
 
 protected:

@@ -79,7 +79,15 @@ Investigation::Investigation(const string &aFileName):
 	setType("Investigation");
 	setNull();
 	updateFromXMLNode();
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	IO::chDir(directoryOfSetupFile.c_str());
+
 	loadModel();
+
+	IO::chDir(saveWorkingDirectory.c_str());
 }
 //_____________________________________________________________________________
 /**

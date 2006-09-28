@@ -29,6 +29,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <OpenSim/Tools/IO.h>
 #include "SimmModel.h"
 #include "SimmMuscle.h"
 #include "SimmKinematicsEngine.h"
@@ -88,7 +89,13 @@ SimmModel::SimmModel(const string &aFileName) :
 	_builtOK(false)
 {
 	setNull();
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	IO::chDir(directoryOfSetupFile.c_str());
 	updateFromXMLNode();
+	IO::chDir(saveWorkingDirectory.c_str());
 
 	_fileName = aFileName;
 }

@@ -156,8 +156,20 @@ bool AnalysisFactory::registerAnalysis(Analysis *aAnalysis)
  * mechanism instead (that's why the return value is const)
  */
 const ArrayPtrs<Analysis> & AnalysisFactory::
-getRegisteredAnalyses() const
+getRegisteredAnalyses()
 {
+	Array<std::string> *registeredTypes = new Array<std::string>("", 4);
+	Object::getRegisteredTypenames(*registeredTypes);
+	_analysesList.setSize(0);
+	for(int i=0; i<registeredTypes->getSize(); i++){
+		Object *nextObject = Object::newInstanceOfType(registeredTypes->get(i));
+		Analysis* nextAnalysis = dynamic_cast<Analysis *>(nextObject);
+		if (nextObject != 0 && nextAnalysis != 0){
+			_analysesList.append(nextAnalysis);
+		}
+		else
+			delete nextObject;
+	}
 	return _analysesList;
 }
 //_____________________________________________________________________________

@@ -82,8 +82,15 @@ SimmSubject::SimmSubject(const string &aFileName) :
 {
 	setNull();
 
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	IO::chDir(directoryOfSetupFile.c_str());
+
 	updateFromXMLNode();
 
+	IO::chDir(saveWorkingDirectory.c_str());
 	_pathToSubject = IO::getParentDirectory(aFileName);
 }
 

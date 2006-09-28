@@ -91,7 +91,7 @@ public:
 	// Name for display purposes
 	const std::string& toString() const;
 
-	const ArrayPtrs<Analysis> &getRegisteredAnalyses() const;
+	const ArrayPtrs<Analysis> &getRegisteredAnalyses();
 protected:
 	// Method to find out if an aAnalysisName is already registered */
 	bool  analysisExists(const std::string &aAnalysisName) const;

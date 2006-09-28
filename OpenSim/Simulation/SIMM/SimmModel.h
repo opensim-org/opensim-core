@@ -103,7 +103,11 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmModel();
-	SimmModel(const std::string &aFileName);
+	SimmModel(const std::string &aFileName)
+#ifdef SWIG
+		throw(OpenSim::Exception)
+#endif
+	;
 	SimmModel(DOMElement *aElement);
 	SimmModel(const SimmModel &aModel);
 	virtual ~SimmModel();
