@@ -43,7 +43,6 @@
 #include <OpenSim/Simulation/Model/Callback.h>
 #include <OpenSim/Simulation/Model/CallbackSet.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
-#include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/AnalysisFactory.h>
@@ -56,6 +55,7 @@
 
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
 #include <OpenSim/Tools/Range.h>
 #include <OpenSim/Tools/Scale.h>
 #include <OpenSim/Tools/ScaleSet.h>
@@ -68,6 +68,8 @@
 #include <OpenSim/Simulation/SIMM/Constant.h>
 #include <OpenSim/Simulation/SIMM/Coordinate.h>
 #include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+#include <OpenSim/Simulation/SIMM/SimmCoordinateSet.h>
+
 #include <OpenSim/Simulation/SIMM/SimmDof.h>
 #include <OpenSim/Simulation/SIMM/SimmJoint.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
@@ -76,6 +78,7 @@
 #include <OpenSim/Simulation/SIMM/SimmMuscle.h>
 #include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
 #include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
+#include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
 #include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
 #include <OpenSim/Simulation/SIMM/SimmPath.h>
 #include <OpenSim/Simulation/SIMM/SimmPathMatrix.h>
@@ -130,33 +133,59 @@ using namespace OpenSim;
 
 %pragma(java) jniclassclassmodifiers="public class"
 
+%pragma(java) jniclassimports="import org.opensim.utils.TheApp;"
+
 %pragma(java) jniclasscode=%{
   static {
-    try {
+      try{
         System.loadLibrary("rdModelDll");
-    } catch (UnsatisfiedLinkError e) {
-      System.err.println("Native code library failed to load. Check that the dynamic library rdModelDll is in the PATH\n" + e);
-      System.exit(1);
-    }
+      }
+      catch(UnsatisfiedLinkError e){
+           TheApp.exitApp("Required library failed to load. Check that the dynamic library rdModelDll is in your PATH\n"+e);
+      }
   }
 %}
 
 /* make getCPtr public not package private */
-%typemap(javabody) SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)  %{
+%typemap(javabody) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)%{
   private long swigCPtr;
+  protected boolean swigCMemOwn;
 
-  public $javaclassname(long cPtr, boolean bFutureUse) {
+  public $javaclassname(long cPtr, boolean cMemoryOwn) {
+    swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
-  }
-
-  protected $javaclassname() {
-    swigCPtr = 0;
   }
 
   public static long getCPtr($javaclassname obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 %}
+
+%typemap(javabody_derived) SWIGTYPE %{
+  private long swigCPtr;
+
+  public $javaclassname(long cPtr, boolean cMemoryOwn) {
+    super(opensimModelJNI.SWIGStorageUpcast(cPtr), cMemoryOwn);
+    swigCPtr = cPtr;
+  }
+
+  public static long getCPtr($javaclassname obj) {
+    return (obj == null) ? 0 : obj.swigCPtr;
+  }
+%}
+// Generic Exception handling
+%typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
+  SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
+                          "C++ $1_type exception thrown");
+  return $null;
+%}
+
+%typemap(throws, throws="java.io.IOException") OpenSim::Exception {
+  jclass excep = jenv->FindClass("java/io/IOException");
+  if (excep)
+    jenv->ThrowNew(excep, ($1).getMessage());
+  return $null;
+}
 
 %exception OpenSim::AnalyticGeometry::dynamic_cast(Geometry *geometry) {
     $action
@@ -174,11 +203,6 @@ using namespace OpenSim;
 };
 
 
-/*
-%typemap(javacode) OpenSim::ActuatorSet, OpenSim::ContactForceSet %{
-
-%}
-*/
 /* rest of header files to be wrapped */
 %include <OpenSim/Tools/rdToolsDLL.h>
 %include <OpenSim/Simulation/rdSimulationDLL.h>
@@ -229,11 +253,10 @@ using namespace OpenSim;
 %template(SetCallback) OpenSim::Set<OpenSim::Callback>;
 %include <OpenSim/Simulation/Model/CallbackSet.h>
 %include <OpenSim/Simulation/Model/IntegCallback.h>
-%include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Simulation/Model/Analysis.h>
-%template(ArrayAnalysis) OpenSim::ArrayPtrs<OpenSim::Analysis>;
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%include <OpenSim/Simulation/Model/AnalysisSet.h>
 %include <OpenSim/Simulation/Model/AnalysisFactory.h>
 %include <OpenSim/Simulation/Model/Investigation.h>
 
@@ -264,20 +287,25 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/Constant.h>
 %include <OpenSim/Simulation/SIMM/Coordinate.h>
 %include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+%template(SetSimmCoordinate) OpenSim::Set<OpenSim::SimmCoordinate>;
+%include <OpenSim/Simulation/SIMM/SimmCoordinateSet.h>
+
 %include <OpenSim/Simulation/SIMM/SimmDof.h>
 %include <OpenSim/Simulation/SIMM/SimmJoint.h>
 %include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 %include <OpenSim/Simulation/SIMM/SimmMarker.h>
 
-%template(ArrayPtrsSimmMarker) OpenSim::ArrayPtrs<OpenSim::SimmMarker>;
+%template(SetSimmMarker) OpenSim::Set<OpenSim::SimmMarker>;
+%include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
 %include <OpenSim/Simulation/SIMM/SimmModel.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscle.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
 
-%template(ArrayPtrsSimmMusclePoint) OpenSim::ArrayPtrs<OpenSim::SimmMusclePoint>;
-
 %include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
+%template(SetSimmMusclePoint) OpenSim::Set<OpenSim::SimmMusclePoint>;
+%include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
+
 %include <OpenSim/Simulation/SIMM/SimmPath.h>
 %include <OpenSim/Simulation/SIMM/SimmPathMatrix.h>
 %include <OpenSim/Simulation/SIMM/SimmPoint.h>

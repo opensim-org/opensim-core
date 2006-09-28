@@ -486,7 +486,36 @@ makeDir(const char *aDirName)
 #else
 	return _mkdir(aDirName);
 #endif
+}
+//_____________________________________________________________________________
+/**
+ * Change working directory. Potentially platform dependent.
+  * @return int 0 on success, error condition otherwise
+*/
+int IO::
+chDir(const char *aDirName)
+{
 
+#ifdef __linux__
+	return chdir(aDirName); 
+#else
+	return _chdir(aDirName);
+#endif
+
+}
+//_____________________________________________________________________________
+/**
+ * Get current working directory. Potentially platform dependent.
+  * @return working directory on success, NULL on error
+*/
+char* IO::
+getCwd(char *buffer, int maxlength)
+{
+#ifdef __linux__
+	return getcwd(buffer, maxlength); 
+#else
+	return _getcwd(buffer, maxlength);
+#endif
 
 }
 

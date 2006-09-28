@@ -89,6 +89,10 @@ const char ObjectDEFAULT_NAME[] = "default";
  */
 namespace OpenSim { 
 
+/** VisibleObject needs Object for persistence while Object
+	needs VisibleObject so that anything can be made visible.
+	Ideally VisibleObject would be broken into interfaces
+	so that the behavior only (not the serialization) is used here.*/
 class VisibleObject;
 
 class RDTOOLS_API Object  
@@ -157,7 +161,11 @@ protected:
 public:
 	virtual ~Object();
 	Object();
-	Object(const std::string &aFileName);
+	Object(const std::string &aFileName)
+#ifdef SWIG
+		throw(OpenSim::Exception)
+#endif
+		;
 	Object(const XMLDocument *aDocument);
 	Object(DOMElement *aNode);
 	Object(const Object &aObject);
@@ -207,6 +215,32 @@ public:
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
 	//--------------------------------------------------------------------------
 	static void RegisterType(const Object &aObject);
+
+	/*=============================================================================
+	 * makeObjectFromFile creates an OpenSim object based on the tag at the root
+	 * node of the XML file passed in. This is useful since the constructor of Object 
+	 * doesn't have the proper type info. This works by using the defaults table so 
+	 * that "Object" does not need to know about 
+	 * derived classes. It uses the defaults table to get an instance.
+	 * =============================================================================*/
+	static Object* makeObjectFromFile(const std::string &aFileName);
+
+	/*=============================================================================
+	 * newInstanceOfType Creates a new instance of the type indicated by aType. 
+	 * The instance is initialized to the default Object
+	 * of corresponding type.
+	 =============================================================================*/
+	static Object* newInstanceOfType(const std::string &aType);
+
+	/*=============================================================================
+	* getRegisteredTypenames is a utility to retrieve all the typenames registered so far.
+	* This is done by traversing the registered objects map, so only concrete classes that 
+	* have registered instances are dealt with.
+	* The result returned in rTypeNames should not be cached while more dlls are loaded 
+	* as they get stale
+	* instead the list should be constructed whenever in doubt
+	=============================================================================*/
+	static void getRegisteredTypenames(Array<std::string>& rTypeNames);
 
 	//--------------------------------------------------------------------------
 	// XML NEW

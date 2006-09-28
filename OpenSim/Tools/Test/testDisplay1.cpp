@@ -23,11 +23,11 @@ int TestVisibleObjectCollection();
  */
 int main(int argc, char* argv[])
 {
-	SimmModel* model = new SimmModel("C:/Downloads/MODEL/dynamic00.xml");
-	SimmBody* pelvis = model->getSimmKinematicsEngine().getBody("pelvis");
+	SimmModel* model = new SimmModel("dynamic.xml");
 	model->setup();
-	pelvis = model->getSimmKinematicsEngine().getBody("pelvis");
 
+	model->getSimmKinematicsEngine().saveDynamics("");
+	model->writeSIMMJointFile("test.jnt");
 	SimmModelVisibleIterator* it = new SimmModelVisibleIterator(*model);
 	ArrayPtrs<VisibleObject>* visObjectsList= it->getVisibleObjects(0);
 	for (int i=0; i < visObjectsList->getSize(); i++){

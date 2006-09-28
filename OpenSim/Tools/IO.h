@@ -102,7 +102,10 @@ public:
 	static int ComputeNumberOfSteps(double aTI,double aTF,double aDT);
 	static char* ReadCharacters(FILE *aFP,int aNChar);
 	static FILE* OpenFile(const char *aFileName,const char *aMode);
+	// Directory management
 	static int makeDir(const char *aDirName);
+	static int chDir(const char *aDirName);
+	static char* getCwd(char *buffer, int maxlength);
 	static std::string getParentDirectory(const std::string& fileName);
 //=============================================================================
 };	// END CLASS IO

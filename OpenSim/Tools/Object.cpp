@@ -43,7 +43,6 @@
 #include "PropertyStr.h"
 
 
-
 using namespace OpenSim;
 using namespace std;
 
@@ -133,6 +132,7 @@ Object::Object(const string &aFileName)
 		}
 		fileExists.close();	
 	}
+
 	_document = new XMLDocument(aFileName);
 
 	//try {
@@ -158,6 +158,7 @@ Object::Object(const string &aFileName)
 	//catch(Exception &x) {
 		//x.print(cout);
 	//}
+
 }
 //_____________________________________________________________________________
 /**
@@ -1578,6 +1579,71 @@ print(const string &aFileName)
 	return _document->print(aFileName);
 }
 
+//=============================================================================
+// Utilities, factory methods
+//=============================================================================
+/**
+ * makeObjectFromFile creates an OpenSim object based on the type of the object at the root
+ * node of the XML file passed in. This is useful since the constructor of Object doesn't have the
+ * proper type info. This works by using the defaults table so that "Object" does not need to know about 
+ * derived classes, however it uses the defaults table to get an instance, so only "Registered" types will 
+ * be considered.
+ *
+ * Note: The object created is "New" so whoever makes the call also takes ownership of the object
+ */
+Object* Object::
+makeObjectFromFile(const std::string &aFileName)
+{
+	/**
+	 * Open the file and get the type of the root element
+	 */
+	try{
+		XMLDocument *doc = new XMLDocument(aFileName);
+		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
+		char *rootName = XMLString::transcode(elt->getNodeName());
+		Object* newObject = newInstanceOfType(rootName);
+		newObject->_document=doc;
+		newObject->setXMLNode(elt);
+		newObject->updateFromXMLNode();
+		return (newObject);
+	}
+	catch(...){	// Document couldn't be opened, or something went really bad
+		return 0;
+	}
+
+}
+
+/**
+ * newInstanceOfType Create a new instance of the type indicated by aType. The instance is initialized to the default Object
+ * of corresponding type.
+ */
+Object* Object::
+newInstanceOfType(const std::string &aType)
+{
+	stringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.find(aType);
+	Object* newObj=0;
+	if (find_Iter != _mapTypesToDefaultObjects.end()){
+		Object* defaultObject = find_Iter->second;
+		// This object has proper type;
+		newObj = defaultObject->copy();
+	}
+	return (newObj);
+}
+
+/**
+ * getRegisteredTypenames is a utility to retrieve all the typenames registered so far.
+ * This is done by traversing the registered objects map, so only concrete classes are dealt with.
+ * The result returned in rTypeNames should not be cached while more dlls are loaded as they get stale
+ * instead the list should be constructed whenever in doubt
+ */
+void Object::
+getRegisteredTypenames(Array<std::string>& rTypeNames)
+{
+	stringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.begin();
+	while (find_Iter != _mapTypesToDefaultObjects.end()){
+		rTypeNames.append(find_Iter->first);
+	}
+}
 /** 
     * The following code accounts for an object made up to call 
     * RegisterTypes_rdTools function on entry to the DLL in a cross platform manner 
