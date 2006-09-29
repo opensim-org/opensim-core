@@ -506,6 +506,10 @@ void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
 	out << "max_isometric_stress" << endl;
 	out << "enddynamicparameters" << endl << endl;
 
+	/* The default muscle must be defined or the Pipeline code crashes. */
+	out << "begindefaultmuscle" << endl;
+	out << "enddefaultmuscle" << endl << endl;
+
 	for (int i = 0; i < getNA(); i++)
 		_muscleSet.get(i)->writeSIMM(out);
 
