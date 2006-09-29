@@ -91,6 +91,21 @@ protected:
 	PropertyInt _muscleModelIndexProp;
 	int &_muscleModelIndex;
 
+	PropertyDbl _activation1Prop;
+	double &_activation1;
+
+	PropertyDbl _activation2Prop;
+	double &_activation2;
+
+	PropertyDbl _massProp;
+	double &_mass;
+
+	PropertyDbl _dampingProp;
+	double &_damping;
+
+	PropertyDbl _timeScaleProp;
+	double &_timeScale;
+
 	PropertyDbl _activationTimeConstantProp;
 	double &_activationTimeConstant;
 
@@ -102,6 +117,30 @@ protected:
 
 	PropertyDbl _maxVelocityZeroActProp;
 	double &_maxVelocityZeroAct;
+
+	PropertyDbl _AfProp;
+	double &_Af;
+
+	PropertyDbl _FlenProp;
+	double &_Flen;
+
+	PropertyDbl _FmaxTendonStrainProp;
+	double &_FmaxTendonStrain;
+
+	PropertyDbl _FmaxMuscleStrainProp;
+	double &_FmaxMuscleStrain;
+
+	PropertyDbl _KshapeActiveProp;
+	double &_KshapeActive;
+
+	PropertyDbl _KshapePassiveProp;
+	double &_KshapePassive;
+
+	PropertyDbl _muscleDensityProp;
+	double &_muscleDensity;
+
+	PropertyDbl _maxIsometricStressProp;
+	double &_maxIsometricStress;
 
 	PropertyObjArray _tendonForceLengthCurveProp;
 	ArrayPtrs<Function> &_tendonForceLengthCurve;

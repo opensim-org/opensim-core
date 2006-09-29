@@ -59,10 +59,23 @@ SimmMuscle::SimmMuscle() :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activation1(_activation1Prop.getValueDbl()),
+	_activation2(_activation2Prop.getValueDbl()),
+	_mass(_massProp.getValueDbl()),
+	_damping(_dampingProp.getValueDbl()),
+	_timeScale(_timeScaleProp.getValueDbl()),
 	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
 	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
 	_maxVelocity(_maxVelocityProp.getValueDbl()),
 	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
+	_Af(_AfProp.getValueDbl()),
+	_Flen(_FlenProp.getValueDbl()),
+	_FmaxTendonStrain(_FmaxTendonStrainProp.getValueDbl()),
+	_FmaxMuscleStrain(_FmaxMuscleStrainProp.getValueDbl()),
+	_KshapeActive(_KshapeActiveProp.getValueDbl()),
+	_KshapePassive(_KshapePassiveProp.getValueDbl()),
+	_muscleDensity(_muscleDensityProp.getValueDbl()),
+	_maxIsometricStress(_maxIsometricStressProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -91,10 +104,23 @@ SimmMuscle::SimmMuscle(DOMElement *aElement) :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activation1(_activation1Prop.getValueDbl()),
+	_activation2(_activation2Prop.getValueDbl()),
+	_mass(_massProp.getValueDbl()),
+	_damping(_dampingProp.getValueDbl()),
+	_timeScale(_timeScaleProp.getValueDbl()),
 	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
 	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
 	_maxVelocity(_maxVelocityProp.getValueDbl()),
 	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
+	_Af(_AfProp.getValueDbl()),
+	_Flen(_FlenProp.getValueDbl()),
+	_FmaxTendonStrain(_FmaxTendonStrainProp.getValueDbl()),
+	_FmaxMuscleStrain(_FmaxMuscleStrainProp.getValueDbl()),
+	_KshapeActive(_KshapeActiveProp.getValueDbl()),
+	_KshapePassive(_KshapePassiveProp.getValueDbl()),
+	_muscleDensity(_muscleDensityProp.getValueDbl()),
+	_maxIsometricStress(_maxIsometricStressProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -135,10 +161,23 @@ SimmMuscle::SimmMuscle(const SimmMuscle &aMuscle) :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_muscleModelIndex(_muscleModelIndexProp.getValueInt()),
+	_activation1(_activation1Prop.getValueDbl()),
+	_activation2(_activation2Prop.getValueDbl()),
+	_mass(_massProp.getValueDbl()),
+	_damping(_dampingProp.getValueDbl()),
+	_timeScale(_timeScaleProp.getValueDbl()),
 	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
 	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
 	_maxVelocity(_maxVelocityProp.getValueDbl()),
 	_maxVelocityZeroAct(_maxVelocityZeroActProp.getValueDbl()),
+	_Af(_AfProp.getValueDbl()),
+	_Flen(_FlenProp.getValueDbl()),
+	_FmaxTendonStrain(_FmaxTendonStrainProp.getValueDbl()),
+	_FmaxMuscleStrain(_FmaxMuscleStrainProp.getValueDbl()),
+	_KshapeActive(_KshapeActiveProp.getValueDbl()),
+	_KshapePassive(_KshapePassiveProp.getValueDbl()),
+	_muscleDensity(_muscleDensityProp.getValueDbl()),
+	_maxIsometricStress(_maxIsometricStressProp.getValueDbl()),
 	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
 	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
 	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
@@ -197,10 +236,23 @@ void SimmMuscle::copyData(const SimmMuscle &aMuscle)
 	_pennationAngle = aMuscle._pennationAngle;
 	_maxContractionVelocity = aMuscle._maxContractionVelocity;
 	_muscleModelIndex = aMuscle._muscleModelIndex;
+	_activation1 = aMuscle._activation1;
+	_activation2 = aMuscle._activation2;
+	_mass = aMuscle._mass;
+	_damping = aMuscle._damping;
+	_timeScale = aMuscle._timeScale;
 	_activationTimeConstant = aMuscle._activationTimeConstant;
 	_deactivationTimeConstant = aMuscle._deactivationTimeConstant;
 	_maxVelocity = aMuscle._maxVelocity;
 	_maxVelocityZeroAct = aMuscle._maxVelocityZeroAct;
+	_Af = aMuscle._Af;
+	_Flen = aMuscle._Flen;
+	_FmaxTendonStrain = aMuscle._FmaxTendonStrain;
+	_FmaxMuscleStrain = aMuscle._FmaxMuscleStrain;
+	_KshapeActive = aMuscle._KshapeActive;
+	_KshapePassive = aMuscle._KshapePassive;
+	_muscleDensity = aMuscle._muscleDensity;
+	_maxIsometricStress = aMuscle._maxIsometricStress;
 	_tendonForceLengthCurve = aMuscle._tendonForceLengthCurve;
 	_activeForceLengthCurve = aMuscle._activeForceLengthCurve;
 	_passiveForceLengthCurve = aMuscle._passiveForceLengthCurve;
@@ -259,6 +311,26 @@ void SimmMuscle::setupProperties()
 	_muscleModelIndexProp.setValue(4);
 	_propertySet.append(&_muscleModelIndexProp);
 
+	_activation1Prop.setName("activation1");
+	_activation1Prop.setValue(0.0);
+	_propertySet.append(&_activation1Prop);
+
+	_activation2Prop.setName("activation2");
+	_activation2Prop.setValue(0.0);
+	_propertySet.append(&_activation2Prop);
+
+	_massProp.setName("mass");
+	_massProp.setValue(0.0);
+	_propertySet.append(&_massProp);
+
+	_dampingProp.setName("damping");
+	_dampingProp.setValue(0.0);
+	_propertySet.append(&_dampingProp);
+
+	_timeScaleProp.setName("timescale");
+	_timeScaleProp.setValue(0.0);
+	_propertySet.append(&_timeScaleProp);
+
 	_activationTimeConstantProp.setName("activation_time_constant");
 	_activationTimeConstantProp.setValue(0.0);
 	_propertySet.append(&_activationTimeConstantProp);
@@ -274,6 +346,38 @@ void SimmMuscle::setupProperties()
 	_maxVelocityZeroActProp.setName("Vmax0");
 	_maxVelocityZeroActProp.setValue(0.0);
 	_propertySet.append(&_maxVelocityZeroActProp);
+
+	_AfProp.setName("Af");
+	_AfProp.setValue(0.0);
+	_propertySet.append(&_AfProp);
+
+	_FlenProp.setName("Flen");
+	_FlenProp.setValue(0.0);
+	_propertySet.append(&_FlenProp);
+
+	_FmaxTendonStrainProp.setName("FmaxTendonStrain");
+	_FmaxTendonStrainProp.setValue(0.0);
+	_propertySet.append(&_FmaxTendonStrainProp);
+
+	_FmaxMuscleStrainProp.setName("FmaxMuscleStrain");
+	_FmaxMuscleStrainProp.setValue(0.0);
+	_propertySet.append(&_FmaxMuscleStrainProp);
+
+	_KshapeActiveProp.setName("KshapeActive");
+	_KshapeActiveProp.setValue(0.0);
+	_propertySet.append(&_KshapeActiveProp);
+
+	_KshapePassiveProp.setName("KshapePassive");
+	_KshapePassiveProp.setValue(0.0);
+	_propertySet.append(&_KshapePassiveProp);
+
+	_muscleDensityProp.setName("muscle_density");
+	_muscleDensityProp.setValue(0.0);
+	_propertySet.append(&_muscleDensityProp);
+
+	_maxIsometricStressProp.setName("max_isometric_stress");
+	_maxIsometricStressProp.setValue(0.0);
+	_propertySet.append(&_maxIsometricStressProp);
 
 	ArrayPtrs<Object> func;
 
@@ -468,10 +572,23 @@ void SimmMuscle::writeSIMM(ofstream& out) const
 	out << "pennation_angle " << _pennationAngle << endl;
 	out << "max_contraction_velocity " << _maxContractionVelocity << endl;
 	out << "muscle_model " << _muscleModelIndex << endl;
+	out << "activation1 " << _activation1 << endl;
+	out << "activation2 " << _activation2 << endl;
+	out << "mass " << _mass << endl;
+	out << "damping " << _damping << endl;
+	out << "timescale " << _timeScale << endl;
 	out << "activation_time_constant " << _activationTimeConstant << endl;
 	out << "deactivation_time_constant " << _deactivationTimeConstant << endl;
 	out << "Vmax " << _maxVelocity << endl;
 	out << "Vmax0 " << _maxVelocityZeroAct << endl;
+	out << "Af " << _Af << endl;
+	out << "Flen " << _Flen << endl;
+	out << "FmaxTendonStrain " << _FmaxTendonStrain << endl;
+	out << "FmaxMuscleStrain " << _FmaxMuscleStrain << endl;
+	out << "KshapeActive " << _KshapeActive << endl;
+	out << "KshapePassive " << _KshapePassive << endl;
+	out << "muscle_density " << _muscleDensity << endl;
+	out << "max_isometric_stress " << _maxIsometricStress << endl;
 
 	NatCubicSpline* ncs;
 
@@ -522,10 +639,24 @@ void SimmMuscle::peteTest(SimmKinematicsEngine* ke) const
 	cout << "   pennationAngle: " << _pennationAngle << endl;
 	cout << "   maxContractionVelocity: " << _maxContractionVelocity << endl;
 	cout << "   muscleModel: " << _muscleModelIndex << endl;
+	cout << "   activation1 " << _activation1 << endl;
+	cout << "   activation2 " << _activation2 << endl;
+	cout << "   mass: " << _mass << endl;
+	cout << "   damping: " << _damping << endl;
+	cout << "   timescale: " << _timeScale << endl;
 	cout << "   activation_time_constant: " << _activationTimeConstant << endl;
 	cout << "   deactivation_time_constant: " << _deactivationTimeConstant << endl;
 	cout << "   Vmax: " << _maxVelocity << endl;
 	cout << "   Vmax0: " << _maxVelocityZeroAct << endl;
+	cout << "   Af: " << _Af << endl;
+	cout << "   Flen: " << _Flen << endl;
+	cout << "   FmaxTendonStrain: " << _FmaxTendonStrain << endl;
+	cout << "   FmaxMuscleStrain: " << _FmaxMuscleStrain << endl;
+	cout << "   KshapeActive: " << _KshapeActive << endl;
+	cout << "   KshapePassive: " << _KshapePassive << endl;
+	cout << "   muscle_density: " << _muscleDensity << endl;
+	cout << "   max_isometric_stress: " << _maxIsometricStress << endl;
+
 	if (_tendonForceLengthCurve.getSize() > 0)
 		cout << "   tendonForceLengthCurve: " << *(_tendonForceLengthCurve[0]) << endl;
 	if (_activeForceLengthCurve.getSize() > 0)

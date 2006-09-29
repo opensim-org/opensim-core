@@ -496,6 +496,14 @@ void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
 	out << "deactivation_time_constant" << endl;
 	out << "Vmax" << endl;
 	out << "Vmax0" << endl;
+	out << "Af" << endl;
+	out << "Flen" << endl;
+	out << "FmaxTendonStrain" << endl;
+	out << "FmaxMuscleStrain" << endl;
+	out << "KshapeActive" << endl;
+	out << "KshapePassive" << endl;
+	out << "muscle_density" << endl;
+	out << "max_isometric_stress" << endl;
 	out << "enddynamicparameters" << endl << endl;
 
 	for (int i = 0; i < getNA(); i++)
