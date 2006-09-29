@@ -11,6 +11,14 @@
 #include <OpenSim/Simulation/Model/Investigation.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include "Analyses.h"
+#include "suAnalysesDLL.h"
+#ifdef SWIG
+	#ifdef SUANALYSES_API
+		#undef SUANALYSES_API
+		#define SUANALYSES_API
+	#endif
+#endif
+
 namespace OpenSim { 
 
 class XMLDocument;
