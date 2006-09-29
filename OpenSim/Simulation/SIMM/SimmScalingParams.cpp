@@ -203,7 +203,7 @@ void SimmScalingParams::setupProperties()
 	_propertySet.append(&_measurementSetProp);
 
 	_scaleSetProp.setName("ScaleSet");
-	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling. Used only in 'maunal' scaling.");
+	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling. Used only in 'manual' scaling.");
 	_propertySet.append(&_scaleSetProp);
 
 	_markerFileNameProp.setName("marker_trial");
