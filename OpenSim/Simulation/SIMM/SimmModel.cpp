@@ -507,8 +507,8 @@ void SimmModel::writeSIMMMuscleFile(const string& aFileName) const
 	out << "enddynamicparameters" << endl << endl;
 
 	/* The default muscle must be defined or the Pipeline code crashes. */
-	out << "begindefaultmuscle" << endl;
-	out << "enddefaultmuscle" << endl << endl;
+	out << "beginmuscle defaultmuscle" << endl;
+	out << "endmuscle" << endl << endl;
 
 	for (int i = 0; i < getNA(); i++)
 		_muscleSet.get(i)->writeSIMM(out);
