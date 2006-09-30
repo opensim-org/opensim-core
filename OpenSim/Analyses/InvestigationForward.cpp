@@ -220,6 +220,12 @@ void InvestigationForward::run()
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
 
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
+	IO::chDir(directoryOfSetupFile.c_str());
+
 	// INPUT
 	// Controls
 	ControlSet *controlSet=NULL;
@@ -325,5 +331,6 @@ void InvestigationForward::run()
 
 	// PRINT RESULTS
 	printResults(getName().c_str(),getResultsDir().c_str());
+	IO::chDir(saveWorkingDirectory.c_str());
 }
 

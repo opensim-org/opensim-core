@@ -381,6 +381,12 @@ void InvestigationPerturbation::run()
 	Object::RegisterType(ControlLinear());
 	Object::RegisterType(ControlLinearNode());
 
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
+	IO::chDir(directoryOfSetupFile.c_str());
+
 	// INPUT
 	// Controls
 	cout<<endl<<endl<<"Loading controls from file "<<_controlsFileName<<".\n";
@@ -683,6 +689,8 @@ void InvestigationPerturbation::run()
 
 	} // end time loop
 	//***************************************************************************
+	IO::chDir(saveWorkingDirectory.c_str());
+
 }
 
 
