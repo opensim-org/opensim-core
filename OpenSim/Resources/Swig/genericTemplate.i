@@ -105,6 +105,8 @@
 #include <OpenSim/Simulation/SIMM/ScalerInterface.h>
 #include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
 #include <OpenSim/Applications/Scale/SimmScalerImpl.h>
+#include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
+#include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
@@ -333,6 +335,9 @@ using namespace OpenSim;
 %include <OpenSim/Applications/Workflow/workflowDLL.h>
 %include <OpenSim/Simulation/SIMM/ScalerInterface.h>
 %include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
+%include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
+%template(SetSimmMeasurements) OpenSim::Set<OpenSim::SimmMeasurement>;
+%include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 %include <OpenSim/Applications/Scale/SimmScalerImpl.h>
 %include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
 %include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>

@@ -40,6 +40,12 @@
 
 #include "SimmMarkerPairSet.h"
 #include "BodyScaleSet.h"
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
 
 //=============================================================================
 //=============================================================================

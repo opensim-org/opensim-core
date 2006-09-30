@@ -205,10 +205,12 @@ public:
 
     void setMarkerFileName(const std::string& aMarkerFileName) {
         _markerFileName = aMarkerFileName;
+		_markerFileNameProp.setUseDefault(false);
     }
 
 	void setMaxMarkerMovement(const double aMaxMarkerMovement) {
 		_maxMarkerMovement = aMaxMarkerMovement;
+		_maxMarkerMovementProp.setUseDefault(false);
 	}
 
 	double getMaxMarkerMovement() const {
@@ -221,6 +223,7 @@ public:
 
     void setOutputJointFileName(const std::string& outputJointFileName) {
         _outputJointFileName = outputJointFileName;
+		_outputJointFileNameProp.setUseDefault(false);
     }
 
     const std::string& getOutputMuscleFileName() {
@@ -229,6 +232,7 @@ public:
 
     void setOutputMuscleFileName(const std::string& aOutputMuscleFileName) {
         _outputMuscleFileName = aOutputMuscleFileName;
+		_outputMuscleFileNameProp.setUseDefault(false);
     }
 
     const std::string& getOutputModelFileName() {
@@ -237,6 +241,7 @@ public:
 
     void setOutputModelFileName(const std::string& aOutputModelFileName) {
         _outputModelFileName = aOutputModelFileName;
+		_outputModelFileNameProp.setUseDefault(false);
     }
 
     const std::string& getOutputScaleFileName() {
@@ -245,6 +250,7 @@ public:
 
     void setOutputScaleFileName(const std::string& aOutputScaleFileName) {
         _outputScaleFileName = aOutputScaleFileName;
+		_outputScaleFileNameProp.setUseDefault(false);
     }
 protected:
 
