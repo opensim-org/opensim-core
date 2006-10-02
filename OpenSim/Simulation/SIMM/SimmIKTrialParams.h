@@ -130,6 +130,7 @@ public:
 	SimmMotionData *getCoordinateValues(SimmModel& aModel, const char*path=0) const;
 
 	void peteTest() const;
+	/*===== Set and Get ===============*/
 	std::string getMarkerDataFilename() const
 	{
 		return _inputMarkerFileName;
@@ -137,6 +138,26 @@ public:
 	std::string getOutputMotionFilename() const
 	{
 		return _outputMotionFileName;
+	}
+	void setOutputMotionFilename(const std::string& aOutputMotionFilename)
+	{
+		_outputMotionFileName = aOutputMotionFilename;
+	}
+	void setIncludeMarkersProp(bool aBoolean)
+	{
+		_includeMarkers=aBoolean;
+	}
+	const bool getIncludeMarkersProp()
+	{
+		return _includeMarkers;
+	}
+	const std::string& getInputCoordinateFileName() const
+	{
+		return _inputCoordinateFileName;
+	}
+	void setInputCoordinateFileName(const std::string& aFilename)
+	{
+		_inputCoordinateFileName = aFilename;
 	}
 protected:
 
