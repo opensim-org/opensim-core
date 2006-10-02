@@ -142,15 +142,15 @@ int main(int argc,char **argv)
 
 		// CONSTRUCT SUBJECT INSTANCE
 		SimmSubject *subject = new SimmSubject(inName);
-		Object *subjectCopy = subject->copy();
-		subjectCopy->print("test_subject.xml");
+		//Object *subjectCopy = subject->copy();
+		//subjectCopy->print("test_subject.xml");
 
 		// CONSTRUCT THE MODEL
 		SimmModel *model = subject->createModel();
 
 		// WRITE MODEL TO FILE
-		Object *modelCopy = model->copy();
-		modelCopy->print("gait_test.osim");
+		//Object *modelCopy = model->copy();
+		//modelCopy->print("gait_test.osim");
 
 		// SCALE THE MODEL BASE ON PARAMETERS SPECIFIED IN THE SUBJECT FILE
 		if (!subject->isDefaultScalingParams()){
