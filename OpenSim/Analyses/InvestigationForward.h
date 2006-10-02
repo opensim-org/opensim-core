@@ -45,6 +45,26 @@ private:
 	/** Name of the initial states file. */
 	PropertyStr _initialStatesFileNameProp;
 	std::string &_initialStatesFileName;
+	/** Name of the file containing the external loads applied to the model. */
+	OpenSim::PropertyStr _externalLoadsFileNameProp;
+	std::string &_externalLoadsFileName;
+	/** Name of the file containing the model kinematics corresponding to the
+	external loads. */
+	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
+	std::string &_externalLoadsModelKinematicsFileName;
+	/** Name of the body to which the first set of external loads should be
+	applied (e.g., the body name for the right foot). */
+	OpenSim::PropertyStr _externalLoadsBody1Prop;
+	std::string &_externalLoadsBody1;
+	/** Name of the body to which the second set of external loads should be
+	applied (e.g., the body name for the left foot). */
+	OpenSim::PropertyStr _externalLoadsBody2Prop;
+	std::string &_externalLoadsBody2;
+	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
+	to the external loads. A negative value results in no filtering.
+	The default value is -1.0, so no filtering. */
+	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
+	double &_lowpassCutoffFrequencyForLoadKinematics;
 
 
 //=============================================================================
@@ -84,6 +104,11 @@ public:
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual void run();
+
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	void initializeExternalLoads();
 
 //=============================================================================
 };	// END of class InvestigationForward
