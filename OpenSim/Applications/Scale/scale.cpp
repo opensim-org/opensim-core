@@ -182,18 +182,26 @@ int main(int argc,char **argv)
 			// Update markers to correspond to those specified in IKParams block
 			model->updateMarkers(params.getMarkerSet());
 
-			// begin code restore  (What is a code restore?)
-			SimmMotionData coordinateValues(params.getCoordinateFileName());
+			SimmMotionData *coordinateValues = 0;
+			if (params.getCoordinateFileName() != "Unassigned") { // TODO: more reliable way to check if it's not the default value
+				if(ifstream(params.getCoordinateFileName().c_str())) {
+					coordinateValues = new SimmMotionData(params.getCoordinateFileName());
+				} else {
+					cout << "Could not read motion file `" << params.getCoordinateFileName() << "'" << endl;
+				}
+			}
+			if (!coordinateValues)
+				coordinateValues = new SimmMotionData();
 
 			// For each coordinate whose "value" field the user specified
 			// as "fromFile", read the value from the first frame in the
 			// coordinate file (a SIMM motion file) and use it to overwrite
 			// the "fromFile" specification.
 			SimmCoordinateSet &coordinateSet = params.getCoordinateSet();
-			if (coordinateValues.getNumColumns() > 0) {
+			if (coordinateValues->getNumColumns() > 0) {
 				for (int i = 0; i < coordinateSet.getSize(); i++) {
 					if (coordinateSet.get(i)->getValueStr() == "fromFile"){
-						double newValue = coordinateValues.getValue(coordinateSet.get(i)->getName(), 0);
+						double newValue = coordinateValues->getValue(coordinateSet.get(i)->getName(), 0);
 						coordinateSet.get(i)->setValue(newValue);
 					}
 				}
@@ -227,7 +235,9 @@ int main(int argc,char **argv)
 			options.setIncludeMarkers(true);
 			// Convert read trc fil into "common" rdStroage format
 			staticPose.makeRdStorage(inputStorage);
-			coordinateValues.addToRdStorage(inputStorage,timeRange[0],timeRange[1]);
+			if(coordinateValues->getNumColumns()) {
+				coordinateValues->addToRdStorage(inputStorage,timeRange[0],timeRange[1]);
+			}
 			inputStorage.print("markers_coords.sto");
 			// Create target
 			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
