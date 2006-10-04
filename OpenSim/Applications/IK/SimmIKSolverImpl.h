@@ -62,7 +62,7 @@ private:
 						Array<int>& indices, 
 						StateVector* inputRow);
 
-};
+};
 
 }; //namespace
 
