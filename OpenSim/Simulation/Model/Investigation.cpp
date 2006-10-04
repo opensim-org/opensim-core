@@ -389,23 +389,27 @@ getAnalysisSet() const
 void Investigation::
 loadModel()
 {
-	cout<<"Investigation "<<getName()<<" loading a model using the ";
-	cout<<"following command line:\n";
+	// If _modelLibrary is not specified, we do not try to load the model here and assume
+	// the caller/user of this investigation will take care of setting it up.
+	if (_modelLibrary != "") {
+		cout<<"Investigation "<<getName()<<" loading a model using the ";
+		cout<<"following command line:\n";
 
-	Array<string> args("");
-	constructCommandLineForLoadModel(args);
-	cout<<args<<endl;
+		Array<string> args("");
+		constructCommandLineForLoadModel(args);
+		cout<<args<<endl;
 
-	int i;
-	int argc = args.getSize();
-	if(argc==0) { setModel(NULL);  return; }
-	char **argv = new char*[argc];
-	for(i=0;i<argc;i++) {
-		argv[i] = (char *)args[i].c_str();
+		int i;
+		int argc = args.getSize();
+		if(argc==0) { setModel(NULL);  return; }
+		char **argv = new char*[argc];
+		for(i=0;i<argc;i++) {
+			argv[i] = (char *)args[i].c_str();
+		}
+
+		Model *model = LoadModel(argc,argv);
+		setModel(model);
 	}
-
-	Model *model = LoadModel(argc,argv);
-	setModel(model);
 }
 //_____________________________________________________________________________
 /**

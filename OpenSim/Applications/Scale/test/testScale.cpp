@@ -109,7 +109,7 @@ int main(int argc,char **argv)
 		// Create target
 		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
 		// Create solver
-		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target, subject->getIKParams());
+		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
 		// Solve
 		Storage	outputStorage;
 		ikSolver->solveFrames(options, inputStorage, outputStorage);

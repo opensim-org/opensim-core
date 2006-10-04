@@ -36,6 +36,7 @@
 #include <OpenSim/Applications/Scale/SimmScalerImpl.h>
 #include "SimmIKSolverImpl.h"
 #include "SimmInverseKinematicsTarget.h"
+#include "InvestigationIK.h"
 
 
 
@@ -52,9 +53,15 @@ static void PrintUsage(ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
+	//----------------------
+	// Surrounding try block
+	//----------------------
+	try {
+	//----------------------
+
 	// PARSE COMMAND LINE
-	string inName;
 	string option = "";
+	string setupFileName;
 	if (argc < 2)
 	{
 		PrintUsage(cout);
@@ -72,44 +79,23 @@ int main(int argc,char **argv)
 					return(0);
 					// IDENTIFY SETUP FILE
 				} else if((option=="-Setup")||(option=="-S")) {
-					inName = argv[i+1];
+					setupFileName = argv[i+1];
 					break;
 				}
 				else if((option=="-PrintSetup")||(option=="-PS")) {
-					SimmSubject *subject = new SimmSubject();
-					subject->setName("default");
-					// Add in useful objects that may need to be instantiated
+					InvestigationIK *investigation = new InvestigationIK();
+					investigation->setName("default");
 					Object::setSerializeAllDefaults(true);
 
-					// Add instances of objects that matter as examples
-					SimmGenericModelParams& params  = subject->getGenericModelParams();
-					params.addMarker(new SimmMarker());
-					// Add a measurement
-					SimmScalingParams& params2 = subject->getScalingParams();
-					SimmMeasurement* meas = new SimmMeasurement();
-					meas->addBodyScale(new BodyScale());
-					meas->addMarkerPair(new SimmMarkerPair());
-					meas->setApply(false);
-					params2.addMeasurement(meas);
-					params2.addScale(new Scale());
-
-					// Now do SimmMarkerPlacementParams 
-					SimmMarkerPlacementParams& params3 = subject->getMarkerPlacementParams();
-					params3.getMarkerSet().append(new SimmMarker());
-					params3.addCoordinate(new SimmCoordinate());
-
-					// do SimmIKParams
-					SimmIKParams& param4 = subject->getIKParams();
-					param4.getMarkerSet().append(new SimmMarker());
-
+					investigation->getMarkerSet().append(new SimmMarker());
 					SimmCoordinate* aCoordinate = new SimmCoordinate();
 					aCoordinate->setRestraintFunction(new NatCubicSpline());
-					param4.getCoordinateSet().append(aCoordinate);
+					investigation->getCoordinateSet().append(aCoordinate);
 
-					subject->print("default_subject.xml");
+					investigation->print("setup_ik_default.xml");
 					Object::setSerializeAllDefaults(false);
-					cout << "Created file default_subject.xml with default setup" << endl;
-					return(0); 
+					cout << "Created file setup_ik_default.xml with default setup" << endl;
+					return 0;
 				}
 				else {
 					cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
@@ -118,81 +104,40 @@ int main(int argc,char **argv)
 				}
 		}
 	}
-	// Construct model and read parameters file
-	SimmSubject* subject = new SimmSubject(inName);
-	SimmModel* model = subject->createModel();
 
-	if (!subject->isDefaultIKParams()){
-		//  If model needs to be created anew, do it here.
-		if (subject->getIKParams().getModelFileName()!="Unassigned"){
-			delete model;
-			model = new SimmModel(subject->getIKParams().getModelFileName());
-			model->setup();
-		}
-		else // Warn model used without scaling or marker placement
-			cout << "Inverse kinematics model name not set. Using " << inName << " as model file "<< endl;
-
-		// Update markers to correspond to those specified in IKParams block
-		model->updateMarkers(subject->getIKParams().getMarkerSet());
-		// Initialize coordinates based on user input
-		model->updateCoordinates(subject->getIKParams().getCoordinateSet());
-		/* Now perform the IK trials on the updated model. */
-		for (int i = 0; i < subject->getIKParams().getNumIKTrials(); i++)
-		{
-			// Get trial params
-			SimmIKTrialParams& trialParams = subject->getIKParams().getTrialParams(i);
-			// Handle coordinates file
-			SimmMotionData* coordinateValues = trialParams.getCoordinateValues(*model);
-
-			// Setup IK problem for trial
-			// We need SimmInverseKinematicsTarget, iksolver (SimmIKSolverImpl)
-			// Create SimmMarkerData Object from trc file of experimental motion data
-			SimmMarkerData motionTrialData(trialParams.getMarkerDataFilename());
-			motionTrialData.convertToUnits(model->getLengthUnits());
-
-			Storage inputStorage;
-			// Convert read trc fil into "common" rdStroage format
-			motionTrialData.makeRdStorage(inputStorage);
-			if (coordinateValues != 0) {
-				/* Adjust the user-defined start and end times to make sure they are in the
-				* range of the marker data. This must be done so that you only look in the
-				* coordinate data for rows that will actually be solved.
-				*/
-				double firstStateTime = inputStorage.getFirstTime();
-				double lastStateTime = inputStorage.getLastTime();
-				double startTime = (firstStateTime>trialParams.getStartTime()) ? firstStateTime : trialParams.getStartTime();
-				double endTime =  (lastStateTime<trialParams.getEndTime()) ? lastStateTime : trialParams.getEndTime();
-
-				/* Add the coordinate data to the marker data. There must be a row of
-				* corresponding coordinate data for every row of marker data that will
-				* be solved, or it is a fatal error.
-				*/
-				coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
-
-				//inputStorage.setWriteSIMMHeader(true);
-				//inputStorage.print("preIK.mot");
-			}
-			// Create target
-			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
-			// Create solver
-			SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target, subject->getIKParams());
-			// Solve
-			Storage	outputStorage;
-			ikSolver->solveFrames(trialParams, inputStorage, outputStorage);
-			outputStorage.setWriteSIMMHeader(true);
-			outputStorage.print(trialParams.getOutputMotionFilename().c_str());
-
-			delete coordinateValues;
-			delete ikSolver;
-			delete target;
-		}
-
+	// ERROR CHECK
+	if(setupFileName=="") {
+		cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
+		PrintUsage(cout);
+		return(-1);
 	}
-	else {
-			cout << "Inverse kinematics parameters not set. IK was not solved." << endl;
-	}
-	delete subject;
 
+	// CONSTRUCT
+	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
+	InvestigationIK ik(setupFileName);
+	ik.print("ik_setup_check.xml");
+
+	// PRINT MODEL INFORMATION
+	Model *model = ik.getModel();
+	if(model==NULL) {
+		cout<<"\nik:  ERROR- failed to load model.\n";
+		exit(-1);
+	}
+	model->printBasicInfo(cout);
+
+	// RUN
+	ik.run();
+
+	//----------------------------
+	// Catch any thrown exceptions
+	//----------------------------
+	} catch(Exception x) {
+		x.print(cout);
+		return(-1);
+	}
+	//----------------------------
+
+	return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -203,9 +148,8 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"\n\nik.exe:\n\n";
 	aOStream<<"Option             Argument         Action / Notes\n";
 	aOStream<<"------             --------         --------------\n";
-	aOStream<<"-Help, -H                           Print the command-line options for scale.exe.\n";
-	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
-	aOStream<<"-Setup, -S         SetupFile        Specify an xml setupfile that specifies an OpenSim model,\n";
-	aOStream<<"                                    a marker file, and scaling parameters.\n";
+	aOStream<<"-Help, -H                           Print the command-line options for ik.exe.\n";
+	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the IK investigation\n";
+	aOStream<<"-Setup, -S         SetupFile        Specify an xml setup file that specifies parameters for the IK investigation.\n";
 }
 	

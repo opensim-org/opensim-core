@@ -7,11 +7,8 @@
 namespace OpenSim { 
 
 class SimmIKTrialParams;
-class AbstractDynamicsEngine;
 class Storage;
-class SimmIKParams;
 class SimmInverseKinematicsTarget;
-class rdFSQP;
 
 // IKSolverInterface.h
 // Author: Ayman Habib
@@ -41,12 +38,9 @@ class RDSIMULATION_API IKSolverInterface
 {
 protected: 
 	SimmInverseKinematicsTarget&	_ikTarget;
-	const SimmIKParams&			_ikParams;
 public:
-	IKSolverInterface(SimmInverseKinematicsTarget&	aOptimizationTarget,
-						const SimmIKParams&		aIKParams):
-	_ikTarget(aOptimizationTarget),
-	_ikParams(aIKParams)
+	IKSolverInterface(SimmInverseKinematicsTarget& aOptimizationTarget):
+	_ikTarget(aOptimizationTarget)
 	{
 	}
 	virtual void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData) 

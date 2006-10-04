@@ -19,9 +19,8 @@ using namespace std;
  * @param aIKParams Parameters specified in input file to control IK.
  */
 SimmIKSolverImpl::
-SimmIKSolverImpl(SimmInverseKinematicsTarget&	aOptimizationTarget,
-				 const SimmIKParams&	aIKParams):
-IKSolverInterface(aOptimizationTarget, aIKParams)
+SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget):
+IKSolverInterface(aOptimizationTarget)
 {
 }
 //______________________________________________________________________________

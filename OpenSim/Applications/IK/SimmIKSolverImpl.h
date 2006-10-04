@@ -8,9 +8,6 @@
 
 namespace OpenSim { 
 
-class rdOptimizationTarget;
-class rdFSQP;
-class SimmIKParams;
 class SimmIKTrialParams;
 class SimmInverseKinematicsTarget;
 
@@ -47,8 +44,7 @@ class SimmInverseKinematicsTarget;
 class workflow_API SimmIKSolverImpl : public IKSolverInterface 
 {
 public:
-	SimmIKSolverImpl(SimmInverseKinematicsTarget&	aOptimizationTarget,
-					const SimmIKParams&		aIKParams);
+	SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget);
 
 	virtual void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData);
 private:
