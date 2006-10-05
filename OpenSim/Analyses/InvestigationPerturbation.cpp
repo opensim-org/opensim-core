@@ -108,6 +108,7 @@ InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
 	setType("InvestigationPerturbation");
 	setNull();
 	updateFromXMLNode();
+	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**

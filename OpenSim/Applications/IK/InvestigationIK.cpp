@@ -70,6 +70,7 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 	if (_model) throw( Exception("InvestigationIK did not expect initialized model") );
 	if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
 	setModel(new SimmModel(_modelFile));
+	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -237,13 +238,6 @@ operator=(const InvestigationIK &aInvestigation)
 void InvestigationIK::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
-
-#if 0
-	if (_model) throw( Exception("InvestigationIK::run did not expect initialized model") );
-	if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
-	SimmModel *simmModel = new SimmModel(_modelFile);
-	setModel(simmModel);
-#endif
 	
 	// Cast to SimmModel so we can call functions that don't exist in base Model class
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());

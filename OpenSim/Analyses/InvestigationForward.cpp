@@ -11,7 +11,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Analyses/ForceApplier.h>
@@ -73,6 +72,7 @@ InvestigationForward::InvestigationForward(const string &aFileName) :
 	setType("InvestigationForward");
 	setNull();
 	updateFromXMLNode();
+	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -337,16 +337,6 @@ void InvestigationForward::run()
 	int nu = _model->getNU();
 	int na = _model->getNA();
 	int nb = _model->getNB();
-
-	// ADD ANALYSES
-	Analysis *analysis;
-	int i, size = getAnalysisSet().getSize();
-	for(i=0;i<size;i++) {
-		analysis = getAnalysisSet().get(i);
-		if(analysis==NULL) continue;
-		analysis->setModel(_model);
-		_model->addAnalysis(analysis);
-	}
 
 	// GROUND REACTION FORCES
 	initializeExternalLoads();
