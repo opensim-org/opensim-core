@@ -1479,7 +1479,7 @@ addIntegCallback(IntegCallback *aCallback)
 {
 	// CHECK FOR NULL
 	if(aCallback==NULL) {
-		printf("Model.addDerivCallback:  ERROR- NULL callback.\n");
+		printf("Model.addIntegCallback:  ERROR- NULL callback.\n");
 	}
 
 	// ADD
