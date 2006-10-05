@@ -129,6 +129,7 @@ public:
 	//--------------------------------------------------------------------------
 	void constructCommandLineForLoadModel(Array<std::string> &args);
 	void loadModel();
+	void addAnalysisSetToModel();
 
 	//--------------------------------------------------------------------------
 	// INTERFACE

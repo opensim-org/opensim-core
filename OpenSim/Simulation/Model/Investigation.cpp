@@ -446,6 +446,27 @@ constructCommandLineForLoadModel(Array<string> &args)
 		args.append(_paramsFile);
 	}
 }
+//_____________________________________________________________________________
+/**
+ * Adds Analysis objects from analysis set to model.
+ */
+void Investigation::
+addAnalysisSetToModel()
+{
+	if (!_model) {
+		string msg = "ERROR- A model has not been set.";
+		cout<<endl<<msg<<endl;
+		throw(Exception(msg,__FILE__,__LINE__));
+	}
+
+	int size = _analysisSet.getSize();
+	for(int i=0;i<size;i++) {
+		Analysis *analysis = _analysisSet.get(i);
+		if(analysis==NULL) continue;
+		analysis->setModel(_model);
+		_model->addAnalysis(analysis);
+	}
+}
 
 
 //=============================================================================
