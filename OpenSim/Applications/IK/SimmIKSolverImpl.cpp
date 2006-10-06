@@ -4,6 +4,8 @@
 #include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "SimmIKSolverImpl.h"
 #include "SimmInverseKinematicsTarget.h"
 
@@ -165,15 +167,27 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 
 		inputData.getTime(index, currentTime);
 		cout << "Solved frame " << index + 1 << " at time " << currentTime << ", Optimizer returned = " << optimizerReturn << endl;
-		// Allocate new row (StateVector) and add it to ikStorage
-		StateVector *nextDataRow = new StateVector();
+
+		// INTEGRATION CALLBACKS
+		// TODO: pass callback a reasonable "dt" value
+		double emptyX, emptyY;
+		IntegCallbackSet *callbackSet = _ikTarget.getModel().getIntegCallbackSet();
+		if(callbackSet!=NULL)
+			callbackSet->step(&emptyX,&emptyY,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
+
+		// ANALYSES
+		// TODO: pass callback a reasonable "dt" value
+		AnalysisSet *analysisSet = _ikTarget.getModel().getAnalysisSet();
+		if(analysisSet!=NULL)
+			analysisSet->step(&emptyX,&emptyY,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
 
 		// Append user data to qsAndMarkersArray
 		Array<double> dataRow(qsAndMarkersArray);
 		appendUserData(dataRow, userDataColumnIndices, inputData.getStateVector(index));
 
+		// Allocate new row (StateVector) and add it to outputData
+		StateVector *nextDataRow = new StateVector();
 		nextDataRow->setStates(timeT, dataRow.getSize(), &dataRow[0]);
-
 		outputData.append(*nextDataRow);
 	}
 
