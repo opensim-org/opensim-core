@@ -46,9 +46,9 @@ using namespace std;
  * Constructor
  */
 static bool debug = false; // used for debugging
-/*
-/* used for debugging to tell if the code is in computePerformanceGradient context
-*/
+/**
+ * used for debugging to tell if the code is in computePerformanceGradient context
+ */
 static bool calcDerivs = true; 
 
 SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(SimmModel &aModel, Storage& aExperimentalDataStorage):
