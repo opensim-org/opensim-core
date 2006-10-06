@@ -282,7 +282,7 @@ setModel(Model *aModel)
 void Analysis::
 setColumnLabels(const char *aLabels)
 {
-	_labels = string(aLabels);
+	_labels = aLabels ? string(aLabels) : "";
 }
 //_____________________________________________________________________________
 /**
