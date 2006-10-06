@@ -10,6 +10,7 @@ LINK_LIBRARIES(
 	debug xerces-c_2D optimized  xerces-c_2 
 	debug rdTools_d optimized rdTools
 	debug rdSimulation_d optimized rdSimulation
+	debug suAnalyses_d optimized suAnalyses
 	debug rdSQP_d optimized rdSQP)
 
 ADD_DEFINITIONS(-Dworkflow_EXPORTS)
