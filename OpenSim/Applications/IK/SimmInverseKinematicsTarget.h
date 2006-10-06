@@ -115,7 +115,7 @@ public:
 	void getUnconstrainedCoordinateNames(Array<const std::string*>& aNameArray);
 	void getPrescribedCoordinateNames(Array<const std::string*>& aNameArray);
 	void getOutputMarkerNames(Array<const std::string*>& aNameArray);
-	const SimmModel& getModel() { return _model; };
+	SimmModel& getModel() { return _model; };
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
@@ -128,7 +128,7 @@ public:
 	// CONSTRAINTS
 	int computeConstraint(double *x,int i,double *c);
 	int computeConstraintGradient(double *x,int i,double *dcdx);
-};
+};
 
 }; //namespace
 
