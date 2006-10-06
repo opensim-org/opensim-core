@@ -3085,9 +3085,33 @@ void SimmKinematicsEngine::getSystemInertia(double *rM, double *rCOM, double *rI
 //--------------------------------------------------------------------------
 // KINEMATICS
 //--------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the inertial position of a point on a body.
+ *
+ * Note that the configuration of the model must be set before calling this
+ * method.
+ *
+ * @param aBody Body ID.
+ * @param aPoint Point on the body expressed in the body-local frame.
+ * @param rPos Position of the point in the inertial frame.
+ *
+ * @see setConfiguration()
+ */
 void SimmKinematicsEngine::getPosition(int aBody, const double aPoint[3], double rPos[3]) const
 {
-	// TODO
+	if (aBody < 0 || aBody >= _bodySet.getSize())
+		return;
+
+	const SimmBody* groundBody = getGroundBodyPtr();
+
+	Transform& transform = _path.getSimmPath(_bodySet.get(aBody), groundBody)->getInverseTransform();	
+
+	rPos[0] = aPoint[0];
+	rPos[1] = aPoint[1];
+	rPos[2] = aPoint[2];
+
+	transform.transformPoint(rPos);
 }
 
 void SimmKinematicsEngine::getVelocity(int aBody, const double aPoint[3], double rVel[3]) const
@@ -3100,14 +3124,57 @@ void SimmKinematicsEngine::getAcceleration(int aBody, const double aPoint[3], do
 	// TODO
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the body orientation with respect to the ground.
+ *
+ * @param aBody Body ID.
+ * @param rDirCos Orientation of the body with respect to the ground frame.
+ */
 void SimmKinematicsEngine::getDirectionCosines(int aBody, double rDirCos[3][3]) const
 {
-	// TODO
+	if (aBody < 0 || aBody >= _bodySet.getSize())
+		return;
+
+	const SimmBody* groundBody = getGroundBodyPtr();
+
+	Transform& transform = _path.getSimmPath(groundBody, _bodySet.get(aBody))->getForwardTransform();	
+
+	int i, j;
+	double *mat = transform.getMatrix();
+
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 3; j++)
+			rDirCos[i][j] = mat[i * 4 + j];
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the body orientation with respect to the ground.
+ *
+ * @param aBody Body ID.
+ * @param rDirCos Orientation of the body with respect to the ground frame.
+ */
 void SimmKinematicsEngine::getDirectionCosines(int aBody, double *rDirCos) const
 {
-	// TODO
+	if (aBody < 0 || aBody >= _bodySet.getSize())
+		return;
+
+	const SimmBody* groundBody = getGroundBodyPtr();
+
+	Transform& transform = _path.getSimmPath(groundBody, _bodySet.get(aBody))->getForwardTransform();	
+
+	double *mat = transform.getMatrix();
+
+	rDirCos[0] = mat[0];
+	rDirCos[1] = mat[1];
+	rDirCos[2] = mat[2];
+	rDirCos[3] = mat[4];
+	rDirCos[4] = mat[5];
+	rDirCos[5] = mat[6];
+	rDirCos[6] = mat[8];
+	rDirCos[7] = mat[9];
+	rDirCos[8] = mat[10];
 }
 
 void SimmKinematicsEngine::getAngularVelocity(int aBody, double rAngVel[3]) const
