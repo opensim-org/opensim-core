@@ -535,13 +535,13 @@ void SimmModel::peteTest() const
 	cout << "   gravity: " << _gravity << endl;
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
 	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
-
+#if 0
 	for (i = 0; i < getNA(); i++)
 		_muscleSet.get(i)->peteTest(&getSimmKinematicsEngine());
 
 	for (i = 0; i < getNumberOfMuscleGroups(); i++)
 		_muscleGroupSet.get(i)->peteTest();
-
+#endif
 	getSimmKinematicsEngine().peteTest();
 }
 

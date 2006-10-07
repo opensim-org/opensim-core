@@ -2556,7 +2556,23 @@ void SimmKinematicsEngine::peteTest() const
 {
 	int i;
 
-	cout << "Kinematics Engine:" << endl;
+	cout << "SimmKinematicsEngine:" << endl;
+
+	if (1)
+	{
+		int bodyNum = 1;
+		double rDirCos[3][3], apt[3], rpt[3];
+		apt[0] = apt[1] = apt[2] = 0.0;
+		getPosition(bodyNum, apt, rpt);
+		cout << "origin of body " << bodyNum << " in ground frame" << endl;
+		cout << rpt[0] << " " << rpt[1] << " " << rpt[2] << endl;
+		getDirectionCosines(bodyNum, rDirCos);
+		cout << "direction cosines from ground to body " << bodyNum << endl;
+		cout << rDirCos[0][0] << " " << rDirCos[0][1] << " " << rDirCos[0][2] << endl;
+		cout << rDirCos[1][0] << " " << rDirCos[1][1] << " " << rDirCos[1][2] << endl;
+		cout << rDirCos[2][0] << " " << rDirCos[2][1] << " " << rDirCos[2][2] << endl;
+		return;
+	}
 
 	if (_bodySet.getSize() < 1)
 	{
@@ -2567,7 +2583,7 @@ void SimmKinematicsEngine::peteTest() const
 		for (i = 0; i < _bodySet.getSize(); i++)
 			_bodySet[i]->peteTest();
 	}
-#if 0
+#if 1
 	if (_coordinateSet.getSize() < 1)
 	{
 		cout << "no coordinates" << endl;
