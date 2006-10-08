@@ -66,3 +66,24 @@ void SimmMarkerSet::setNull()
 	setType("SimmMarkerSet");
 	setName("");
 }
+//_____________________________________________________________________________
+/**
+ * Copy constructor of a aSimmMarkerSet.
+ */
+SimmMarkerSet::SimmMarkerSet(const SimmMarkerSet& aSimmMarkerSet):
+	Set<SimmMarker>(aSimmMarkerSet)
+{
+	setNull();
+	*this = aSimmMarkerSet;
+}
+//_____________________________________________________________________________
+/**
+ * Add name prefix.
+ */
+void SimmMarkerSet::addNamePrefix(const std::string& prefix)
+{
+	// Cycle thru set and add prefix
+	for(int i=0; i <getSize(); i++){
+		get(i)->setName(prefix + get(i)->getName());
+	}
+}

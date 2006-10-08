@@ -51,5 +51,11 @@
 
 #endif // PLATFORM
 
+#ifdef SWIG
+#ifdef RDSQP_API
+		#undef RDSQP_API
+		#define RDSQP_API
+	#endif
+#endif
 
 #endif // __rdSQPDLL_h__

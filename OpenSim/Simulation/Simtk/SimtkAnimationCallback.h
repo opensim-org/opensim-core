@@ -37,8 +37,9 @@
 // INCLUDES
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/IntegCallback.h>
 #include <OpenSim/Tools/Transform.h>
+#include <OpenSim/Simulation/Model/IntegCallback.h>
+#include <OpenSim/Simulation/SIMM/SimmModel.h>
 
 //=============================================================================
 //=============================================================================
@@ -58,17 +59,12 @@ static bool _busy;
 // DATA
 //=============================================================================
 protected:
-	/** Keep pointers to body transforms. This is not used right now as 
-	 * when we get the data from SDFast we recover translations and rotations separately
-	 * And these are passed directly to VTK for display 
-	 *
-	 * @todo check if building the xform and passing it directly to vtk is faster
-	 */
 	
-	ArrayPtrs<Transform> _transforms;
+	Transform*		_transforms;
 	/** Current simulation time for feedback purposes */
-	double					 _currentTime;
-
+	double			_currentTime;
+	double*			_rotationAgles;
+	double*			_offsets;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -92,10 +88,22 @@ public:
 	virtual int
 		step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 		double *aX,double *aY,void *aClientData=NULL);
+	virtual int
+		begin(int aStep,double aDT,double aT,
+		double *aX,double *aY,void *aClientData=NULL)
+	{
+		_currentTime=aDT;
+		return 0;
+	}
+	const Transform* getBodyTransform(int bodyIndex) const;
+	void getBodyRotations(int index, double rots[]) const;
 	// Handle _busy flag to make sure all xforms are read for the same time step
 	// by keeping mutual exclusion access to the xforms
 	void getMutex();
 	void releaseMutex();
+
+	void extractOffsets(SimmModel& displayModel);
+
 //=============================================================================
 };	// END of class SimtkAnimationCallback
 

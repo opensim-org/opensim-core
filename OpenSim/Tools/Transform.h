@@ -126,7 +126,8 @@ public:
 	void transformVector(double vec[3]) const;
 
 	double* getMatrix() { return &_matrix4[0][0]; } // Pete
-	void getMatrix(double aMat[]) const;	
+	void getMatrix(double aMat[]) const;
+	void setRotationSubmatrix(double rDirCos[3][3]);
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------

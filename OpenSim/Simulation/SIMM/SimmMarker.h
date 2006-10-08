@@ -79,6 +79,7 @@ protected:
 
 	/** A temporary kluge until the default mechanism is working */
 	static Geometry *_defaultGeometry;
+	bool			_virtual;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -112,6 +113,14 @@ public:
 
 	void peteTest() const;
 	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	const bool isVirtual()
+	{
+		return _virtual;
+	}
+	void setVirtual(bool aTrueFalse)
+	{
+		_virtual=aTrueFalse;
+	}
 protected:
 
 private:

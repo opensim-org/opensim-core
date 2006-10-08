@@ -132,17 +132,11 @@ public:
 		return _markerPlacementParams;
 	}
 
-	SimmIKParams& getIKParams()
-	{
-		return _IKParams;
-	}
-
 	double getMass() const { return _mass; }
 
 	bool isDefaultGenericModelParams() { return _genericModelParamsProp.getUseDefault(); }
 	bool isDefaultScalingParams() { return _scalingParamsProp.getUseDefault(); }
 	bool isDefaultMarkerPlacementParams() const;
-	bool isDefaultIKParams() { return _IKParamsProp.getUseDefault(); }
 	/* Register types to be used when reading a SimmSubject object from xml file. */
 	static void registerTypes();
 

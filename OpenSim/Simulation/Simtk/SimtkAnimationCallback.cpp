@@ -37,8 +37,10 @@
 //=============================================================================
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
+#include <OpenSim/Simulation/SIMM/SimmBody.h>
+#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/Simulation/SIMM/SimmModel.h>
 #include "SimtkAnimationCallback.h"
-#include <OpenSim/Tools/TransformChangeEvent.h>
 
 //=============================================================================
 // STATICS
@@ -74,34 +76,45 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	// NULL
 	setNull();
 
-	// We keep pointer to body's xform. Don't delete it on exit
-	_transforms.setMemoryOwner(false);
+	// We keep pointer to body's xform. Don't delete them on exit
+	_transforms = new Transform[_model->getNB()];
+	_rotationAgles = new double[_model->getNB()*3];
 
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	double t[3];	// Translation from sdfast
-	double com[3];	// Center of mass
-	double rot[3];	// Rotation angles 
 	double dirCos[3][3];	// Direction cosines
-	for(int i=0;i<_model->getNB();i++) {
-		// get position from sdfast
-		// adjust by com
-		_model->getBody(i)->getCenterOfMass(com);
-		for(int k=0; k < 3; k++)
-			Orig[k] = -com[k];
-		_model->getPosition(i, Orig, t);
-
-		_model->getDirectionCosines(i,dirCos);
-		_model->convertDirectionCosinesToAngles(dirCos,
-			&rot[0],&rot[1],&rot[2]);
-		// Initialize xform to identity
-		// take this out and use full transform instead _model->getBody(i)->getTransform().setOrientation(rot);
-		_model->getBody(i)->getTransform().setPosition(t);
-		_transforms.append(&_model->getBody(i)->getTransform());
+	std::string modelName = _model->getName();
+	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
+	if (0){
+		/*for(int i=0;i<_model->getNB();i++) {
+			simmModel->getSimmKinematicsEngine().getDirectionCosines(i, dirCos);
+			simmModel->getSimmKinematicsEngine().getPosition(i, Orig, t);
+			_transforms[i].setRotationSubmatrix(dirCos);
+			_transforms[i].setPosition(t);
+		}*/
 	}
+	else {	// SDFast?
+	/* _offsets uninitialized here
+		for(int i=0;i<_model->getNB();i++) {
+			// get position from sdfast
+			// adjust by com
+			_model->getBody(i)->getCenterOfMass(com);
+			for(int k=0; k < 3; k++)
+				Orig[k] = -_offsets[3*i+k];
+			_model->getPosition(i, Orig, t);
 
+			_model->getDirectionCosines(i,dirCos);
+			// Initialize xform to identity
+			_transforms[i].setPosition(t);
+			_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
+			for(int j=0; j <3; j++)
+				_rotationAgles[3*i+j]=rot[j];
+			_transforms[i].setRotationSubmatrix(dirCos);
+
+		} */
+	}
 	_currentTime=0.0;
-	// manually add callback to model
-	_model->addIntegCallback(this);
+	setChanged();
 }
 
 //=============================================================================
@@ -161,47 +174,59 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	if(_busy)
 		return 0;
 
-	getMutex();
+	getMutex();	// Intention is to make sure xforms that are cached are consistent from the same time
+
 	_currentTime = aT;
 	// CHECK STEP INTERVAL
 	if((aStep% getStepInterval())!=0) return 0;
 
-	// MAYA TIME
+	// OpenSim display time
 	double realTime = aT * _model->getTimeNormConstant();
-	printf("time = %lf\n",realTime);
-
-	// SET STATES Why do we need this?
-	//_model->set(aT,aX,aY);
+	printf("Callback time = %lf\n",realTime);
 
 	// LOOP OVER BODIES
 	int i;
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	double t[3];	// Translation from sdfast
+	double dirCos[3][3];	// Direction cosines
+	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
+	if (simmModel){
+		for(int i=0;i<_model->getNB();i++) {
+			simmModel->getSimmKinematicsEngine().getDirectionCosines(i, dirCos);
+			simmModel->getSimmKinematicsEngine().getPosition(i, Orig, t);
+			_transforms[i].setRotationSubmatrix(dirCos);
+			_transforms[i].setPosition(t);
+		}
+	}
+	else {	// SDFast?
 	double com[3];	// Center of mass
 	double rot[3];	// Rotation angles 
-	double dirCos[3][3];	// Direction cosines
-	for(i=0;i<_model->getNB();i++) {
+		for(int i=0;i<_model->getNB();i++) {
+			// get position from sdfast
+			// adjust by com
+			_model->getBody(i)->getCenterOfMass(com);
+			for(int k=0; k < 3; k++)
+				Orig[k] = -_offsets[3*i+k];
+			_model->getPosition(i, Orig, t);
 
-		// TRANSLATION AND ROTATION
-		Body *body = _model->getBody(i);
-		body->getCenterOfMass(com);
-		for(int k=0; k < 3; k++)
-			Orig[k] = -com[k];
-		_model->getPosition(i, Orig, t);
+			_model->getDirectionCosines(i,dirCos);
+			// Initialize xform to identity
+			_transforms[i].setPosition(t);
+			_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
+			for(int j=0; j <3; j++)
+				_rotationAgles[3*i+j]=rot[j];
+			std::cout << "Body" << _model->getBody(i)->getName() << 
+				t[0] << t[1] << t[2] << rot[0] << rot[1] << rot[2] <<std::endl;
+			_transforms[i].setRotationSubmatrix(dirCos);
 
-		_model->getDirectionCosines(i,dirCos);
-		_model->convertDirectionCosinesToAngles(dirCos,
-			&rot[0],&rot[1],&rot[2]);
-		// Initialize xform to identity
-		// Replace with original transform instead _transforms[i]->setOrientation(rot);
-		_transforms[i]->setPosition(t);
-		/* Create a transform change event and notify observers
-		TransformChangeEvent	*xformChangeEvnt = new TransformChangeEvent(*body);
-		body->setTransform(*_transforms[i]);
-		body->notifyObservers(*xformChangeEvnt);
-		delete xformChangeEvnt;*/
+		}
 	}
 	releaseMutex();
+	// Create a transform change event and notify observers
+	/*TransformChangeEvent	*xformChangeEvnt = new TransformChangeEvent(*body);
+	body->notifyObservers(*xformChangeEvnt);
+	delete xformChangeEvnt;*/
+
 	return (0);
 }
 void SimtkAnimationCallback::getMutex()
@@ -215,4 +240,56 @@ void SimtkAnimationCallback::getMutex()
 void SimtkAnimationCallback::releaseMutex()
 {
 	_busy = false;
+}
+
+const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
+{
+	return &_transforms[index];
+}
+
+void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
+{
+	_offsets = new double[displayModel.getNB()*3];
+	double bodyCom[3];
+
+	for(int i=0;i<_model->getNB();i++) {
+	// TRANSLATION AND ROTATION
+		Body *body = _model->getBody(i);
+		std::string bodyName = body->getName();
+		SimmBody* sBody = displayModel.getBodies().get(bodyName);
+		if (sBody != 0){
+			sBody->getMassCenter(bodyCom);
+			for(int j=0; j<3; j++){
+				_offsets[3*i+j] = bodyCom[j];
+			}
+		}
+	}
+	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
+	double t[3];	// Translation from sdfast
+	double dirCos[3][3];	// Direction cosines
+	double com[3],rot[3];
+
+	for(int i=0;i<_model->getNB();i++) {
+		// get position from sdfast
+		// adjust by com
+		_model->getBody(i)->getCenterOfMass(com);
+		for(int k=0; k < 3; k++)
+			Orig[k] = -_offsets[3*i+k];
+		_model->getPosition(i, Orig, t);
+
+		_model->getDirectionCosines(i,dirCos);
+		// Initialize xform to identity
+		_transforms[i].setPosition(t);
+		_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
+		for(int j=0; j <3; j++)
+			_rotationAgles[3*i+j]=rot[j];
+		_transforms[i].setRotationSubmatrix(dirCos);
+	}
+}
+
+void SimtkAnimationCallback::getBodyRotations(int index, double rots[]) const
+{
+	for(int i=0; i<3; i++){
+		rots[i] = _rotationAgles[3*index+i];
+	}
 }

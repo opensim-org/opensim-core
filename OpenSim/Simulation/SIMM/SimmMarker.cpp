@@ -145,6 +145,7 @@ void SimmMarker::copyData(const SimmMarker &aMarker)
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
 	_displayer = aMarker._displayer;
+	_virtual = aMarker._virtual;
 }
 
 /* Update an existing marker with parameter values from a
@@ -187,7 +188,7 @@ void SimmMarker::setNull()
 	setupProperties();
 	setType("SimmMarker");
 	setName("");
-
+	setVirtual(true);
 }
 //_____________________________________________________________________________
 /**

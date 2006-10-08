@@ -115,14 +115,6 @@ int main(int argc,char **argv)
 					params3.getMarkerSet().append(new SimmMarker());
 					params3.addCoordinate(new SimmCoordinate());
 
-					// do SimmIKParams
-					SimmIKParams& param4 = subject->getIKParams();
-					param4.getMarkerSet().append(new SimmMarker());
-
-					SimmCoordinate* aCoordinate = new SimmCoordinate();
-					aCoordinate->setRestraintFunction(new NatCubicSpline());
-					param4.getCoordinateSet().append(aCoordinate);
-
 					subject->print("default_subject.xml");
 					Object::setSerializeAllDefaults(false);
 					cout << "Created file default_subject.xml with default setup" << endl;

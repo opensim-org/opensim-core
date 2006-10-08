@@ -95,6 +95,11 @@ public:
 		return _coordinateSet;
 	}
 
+	SimmIKTrialParamsSet& getIKTrialParamsSet()
+	{
+		return _IKTrialParamsSet;
+	}
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------

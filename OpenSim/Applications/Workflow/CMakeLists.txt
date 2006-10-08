@@ -27,10 +27,12 @@ INCLUDE_DIRECTORIES(
 	${OpenSim_SOURCE_DIR}/Tools/Simulation/SIMM)
 
 FILE(GLOB SOURCE_FILES *.cpp ../Scale/SimmScalerImpl.cpp 
+							 ../IK/InvestigationIK.cpp 
 							 ../IK/SimmIKSolverImpl.cpp 
 							 ../IK/SimmInverseKinematicsTarget.cpp)
 FILE(GLOB INCLUDE_FILES *.h  ../Scale/SimmScalerImpl.h
 							 ../IK/SimmIKSolverImpl.h
+							 ../IK/InvestigationIK.h
 							 ../IK/SimmInverseKinematicsTarget.h)
 
 LINK_LIBRARIES(

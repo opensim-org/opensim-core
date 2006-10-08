@@ -116,6 +116,7 @@ public:
 	void setOutputPrecision(int aPrecision);
 	int getOutputPrecision() const;
 	AnalysisSet& getAnalysisSet() const;
+	// Results Directory
 	const std::string& getResultsDir() const {
 		return _resultsDir;
 	};
@@ -123,7 +124,24 @@ public:
 	{
 		_resultsDir = aString;
 	};
-
+	// Investigation time range
+	double getStartTime() const
+	{
+		return _ti;
+	}
+	double getFinalTime() const
+	{
+		return _tf;
+	}
+	// Model xml file
+	const std::string& getModelFilename()
+	{
+		return _modelFile;
+	}
+	void setModelFilename(const std::string& aModelFile)
+	{
+		_modelFile = aModelFile;
+	}
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------

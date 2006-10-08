@@ -423,6 +423,15 @@ void Transform::getMatrix(double aMat[]) const
 			aMat[i*4+j] = _matrix4[i][j];
 }
 
+void Transform::
+setRotationSubmatrix(double rDirCos[3][3])
+{
+	_translationOnly=false;
+	for(int i=0; i<3; i++)
+		for(int j=0; j<3; j++)
+			_matrix4[i][j] = rDirCos[i][j];
+}
+
 /**
  * Debugging 
  */

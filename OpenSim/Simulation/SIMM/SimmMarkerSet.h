@@ -39,7 +39,10 @@ private:
 public:
 	SimmMarkerSet();
 	SimmMarkerSet(const std::string& aMarkersFileName);
+	SimmMarkerSet(const SimmMarkerSet& aSimmMarkerSet);
 	~SimmMarkerSet(void);
+	/** Add aprefix to marker names for all markers in the set**/
+	void addNamePrefix(const std::string& prefix);
 };
 
 }; //namespace

@@ -51,6 +51,8 @@
 #include <OpenSim/Analyses/InvestigationForward.h>
 #include <OpenSim/Analyses/InvestigationPerturbation.h>
 
+#include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
+
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/IndAcc.h>
 #include <OpenSim/Analyses/Kinematics.h>
@@ -66,6 +68,8 @@
 	/* This group of headers added by KMS 3/22/06 */
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmBody.h>
+#include <OpenSim/Simulation/SIMM/SimmBodySet.h>
+
 #include <OpenSim/Simulation/SIMM/SimmBone.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Simulation/SIMM/Constant.h>
@@ -96,6 +100,8 @@
 #include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
 #include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
+#include <OpenSim/Simulation/SIMM/SimmIKTrialParamsSet.h>
+
 #include <OpenSim/Simulation/SIMM/SimmIKParams.h>
 #include <OpenSim/Simulation/SIMM/SimmSubject.h>
 #include <OpenSim/Simulation/SIMM/SimmMotionData.h>
@@ -108,6 +114,9 @@
 #include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
 #include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
+#include <OpenSim/SQP/rdSQPDLL.h>
+#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/Applications/IK/InvestigationIK.h>
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
 using namespace OpenSim;
@@ -268,6 +277,8 @@ using namespace OpenSim;
 %include <OpenSim/Analyses/InvestigationForward.h>
 %include <OpenSim/Analyses/InvestigationPerturbation.h>
 
+%include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
+
 %include <OpenSim/Analyses/suAnalysesDLL.h>
 %include <OpenSim/Analyses/Kinematics.h>
 %include <OpenSim/Analyses/Actuation.h>
@@ -290,6 +301,9 @@ using namespace OpenSim;
 	/* This group of headers added by KMS 3/22/06 */
 %include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 %include <OpenSim/Simulation/SIMM/SimmBody.h>
+%template(SetSimmBodies) OpenSim::Set<OpenSim::SimmBody>;
+%include <OpenSim/Simulation/SIMM/SimmBodySet.h>
+
 %include <OpenSim/Simulation/SIMM/SimmBone.h>
 %include <OpenSim/Tools/Function.h>
 %include <OpenSim/Simulation/SIMM/Constant.h>
@@ -327,6 +341,8 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmScalingParams.h>
 %include <OpenSim/Simulation/SIMM/SimmMarkerPlacementParams.h>
 %include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
+%template(SetSimmIKTrialParams) OpenSim::Set<OpenSim::SimmIKTrialParams>;
+%include <OpenSim/Simulation/SIMM/SimmIKTrialParamsSet.h>
 %include <OpenSim/Simulation/SIMM/SimmIKParams.h>
 %include <OpenSim/Simulation/SIMM/SimmSubject.h>
 %include <OpenSim/Simulation/SIMM/SimmMotionData.h>
@@ -340,4 +356,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 %include <OpenSim/Applications/Scale/SimmScalerImpl.h>
 %include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
+%include <OpenSim/SQP/rdSQPDLL.h>
+%include <OpenSim/SQP/rdOptimizationTarget.h>
+%include <OpenSim/Applications/IK/InvestigationIK.h>
 %include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>

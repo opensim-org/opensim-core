@@ -7,6 +7,7 @@
 #include "InvestigationIK.h"
 #include <string>
 #include <iostream>
+#include <OpenSim/Tools/IO.h>	
 #include <OpenSim/Simulation/SIMM/SimmCoordinateSet.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
 #include <OpenSim/Simulation/SIMM/SimmIKTrialParamsSet.h>
@@ -65,12 +66,21 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 {
 	setType("InvestigationIK");
 	setNull();
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	IO::chDir(directoryOfSetupFile.c_str());
+
 	updateFromXMLNode();
 
 	if (_model) throw( Exception("InvestigationIK did not expect initialized model") );
 	if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
 	setModel(new SimmModel(_modelFile));
+		// Cast to SimmModel so we can call functions that don't exist in base Model class
+	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());
+	simmModel->setup();
+
 	if (_model) addAnalysisSetToModel();
+	IO::chDir(saveWorkingDirectory.c_str());
 }
 //_____________________________________________________________________________
 /**
@@ -239,10 +249,8 @@ void InvestigationIK::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 	
-	// Cast to SimmModel so we can call functions that don't exist in base Model class
+		// Cast to SimmModel so we can call functions that don't exist in base Model class
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());
-	simmModel->setup();
-
 	// Update markers to correspond to those specified in IKParams block
 	simmModel->updateMarkers(_markerSet);
 	// Initialize coordinates based on user input
