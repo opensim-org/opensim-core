@@ -85,13 +85,27 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	double dirCos[3][3];	// Direction cosines
 	std::string modelName = _model->getName();
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
-	if (0){
-		/*for(int i=0;i<_model->getNB();i++) {
-			simmModel->getSimmKinematicsEngine().getDirectionCosines(i, dirCos);
-			simmModel->getSimmKinematicsEngine().getPosition(i, Orig, t);
+	if (simmModel){
+		SimmBody* gnd = simmModel->getSimmKinematicsEngine().getGroundBodyPtr();
+		SimmBodySet& bodySet = simmModel->getSimmKinematicsEngine().getBodies();
+		double dirCos[3][3];
+		for(int i=0;i<_model->getNB();i++) {
+			double stdFrame[3][3] = {{ 1.0, 0.0, 0.0 },
+									{0., 1., 0.},
+									{0., 0., 1.}};	 
+			double Orig[3] = { 0.0, 0.0, 0.0 };
+			SimmBody *body = bodySet.get(i);
+			simmModel->getSimmKinematicsEngine().convertVector(stdFrame[0], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
+			// Transpose rotations part!
+			for(int j=0; j <3; j++)
+				for(int k=0; k <3; k++)
+					dirCos[j][k]=stdFrame[k][j];
 			_transforms[i].setRotationSubmatrix(dirCos);
-			_transforms[i].setPosition(t);
-		}*/
+			_transforms[i].setPosition(Orig);
+		}
 	}
 	else {	// SDFast?
 	/* _offsets uninitialized here
@@ -186,21 +200,43 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 
 	// LOOP OVER BODIES
 	int i;
-	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
+		// Zero 
+
+	/*
+                    model.getSimmKinematicsEngine().convertVector(originFrame[0], body, gnd);
+                    model.getSimmKinematicsEngine().convertVector(originFrame[1], body, gnd);
+                    model.getSimmKinematicsEngine().convertVector(originFrame[2], body, gnd);
+                    model.getSimmKinematicsEngine().convertPoint(originFrame[3], body, gnd); */
+
 	double t[3];	// Translation from sdfast
 	double dirCos[3][3];	// Direction cosines
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
 	if (simmModel){
+		SimmBody* gnd = simmModel->getSimmKinematicsEngine().getGroundBodyPtr();
+		SimmBodySet& bodySet = simmModel->getSimmKinematicsEngine().getBodies();
 		for(int i=0;i<_model->getNB();i++) {
-			simmModel->getSimmKinematicsEngine().getDirectionCosines(i, dirCos);
-			simmModel->getSimmKinematicsEngine().getPosition(i, Orig, t);
+			double stdFrame[3][3] = {{ 1.0, 0.0, 0.0 },
+									{0., 1., 0.},
+									{0., 0., 1.}};	 
+			double Orig[3] = { 0.0, 0.0, 0.0 };
+			SimmBody *body = bodySet.get(i);
+			simmModel->getSimmKinematicsEngine().convertVector(stdFrame[0], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
+            simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
+			// Transpose rotations part!
+			for(int j=0; j <3; j++)
+				for(int k=0; k <3; k++)
+					dirCos[j][k]=stdFrame[k][j];
+
 			_transforms[i].setRotationSubmatrix(dirCos);
-			_transforms[i].setPosition(t);
+			_transforms[i].setPosition(Orig);
 		}
 	}
 	else {	// SDFast?
-	double com[3];	// Center of mass
-	double rot[3];	// Rotation angles 
+		double com[3];	// Center of mass
+		double rot[3];	// Rotation angles 
+		double Orig[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<_model->getNB();i++) {
 			// get position from sdfast
 			// adjust by com
@@ -215,8 +251,6 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 			_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
 			for(int j=0; j <3; j++)
 				_rotationAgles[3*i+j]=rot[j];
-			std::cout << "Body" << _model->getBody(i)->getName() << 
-				t[0] << t[1] << t[2] << rot[0] << rot[1] << rot[2] <<std::endl;
 			_transforms[i].setRotationSubmatrix(dirCos);
 
 		}
@@ -246,13 +280,25 @@ const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
 {
 	return &_transforms[index];
 }
-
+/**
+ * Cache Coms for bodies so that we can get the xform for the bodies from SDFast in one go with 
+ * minimal computation on our side. If displaying a SimmModel for example in IK then offsets are set to 0
+ */
 void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 {
 	_offsets = new double[displayModel.getNB()*3];
+	int i;
+	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
+	if (simmModel){	// Just set offsets to zero we're displaying a SimmModel and Running SimmModel too
+		for(i=0;i<_model->getNB();i++){
+			_offsets[i*3]=_offsets[i*3+1]=_offsets[i*3+2]=0.0;
+		}
+		return;
+	}
 	double bodyCom[3];
 
-	for(int i=0;i<_model->getNB();i++) {
+	
+	for(i=0;i<_model->getNB();i++) {
 	// TRANSLATION AND ROTATION
 		Body *body = _model->getBody(i);
 		std::string bodyName = body->getName();

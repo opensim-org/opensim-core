@@ -2644,11 +2644,17 @@ void SimmKinematicsEngine::setBodyName(int aIndex, const string &aName)
 {
 	// TODO
 }
-
+//_____________________________________________________________________________
+/**
+ * Get the name of the body located at aIndex index
+ */
 string SimmKinematicsEngine::getBodyName(int aIndex) const
 {
-	// TODO
-	return "";
+	SimmBody *bdy = _bodySet.get(aIndex);
+	if (bdy)
+		return bdy->getName();
+	else
+		return "";
 }
 
 string SimmKinematicsEngine::getCoordinateName(int aIndex) const

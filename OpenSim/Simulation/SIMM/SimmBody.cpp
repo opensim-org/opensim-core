@@ -220,7 +220,7 @@ void SimmBody::setup(SimmKinematicsEngine* aEngine)
 	int i;
 	for (i = 0; i < _displayer.getNumGeometryFiles(); i++)
 	{
-		_displayer.addGeometry(new PolyhedralGeometry(_displayer.getGeometryFileName(i)));
+		_displayer.addGeometry(new PolyhedralGeometry("bones/"+_displayer.getGeometryFileName(i)));
 	}
 
 	for (i = 0; i < _markerSet.getSize(); i++)

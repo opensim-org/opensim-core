@@ -249,7 +249,14 @@ void InvestigationIK::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 	
-		// Cast to SimmModel so we can call functions that don't exist in base Model class
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory
+	string aFileName = string(getDocument()->getFileName());
+	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	IO::chDir(directoryOfSetupFile.c_str());
+
+	// Cast to SimmModel so we can call functions that don't exist in base Model class
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());
 	// Update markers to correspond to those specified in IKParams block
 	simmModel->updateMarkers(_markerSet);
@@ -304,6 +311,7 @@ void InvestigationIK::run()
 		delete coordinateValues;
 		delete ikSolver;
 		delete target;
+	IO::chDir(saveWorkingDirectory.c_str());
 	}
 }
 
