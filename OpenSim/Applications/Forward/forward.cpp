@@ -106,6 +106,18 @@ int main(int argc,char **argv)
 	model->printDetailedInfo(cout);
 	cout<<"-----------------------------------------------------------------------\n\n";
 
+	// ALTER TORSO COM ?
+	FILE *fpTorso = fopen("rra_newTorsoBTJ.txt","r");
+	if(fpTorso!=NULL) {
+		Array<double> btj(0.0,3);
+		fscanf(fpTorso,"%lf %lf %lf",&btj[0],&btj[1],&btj[2]);
+		int iTorso = model->getBodyIndex("torso");
+		cout<<"NOTE- altering torso (index="<<iTorso<<") body-to-joint vector:\n";
+		cout<<btj<<endl<<endl;
+		model->setBodyToJointBodyLocal(iTorso,&btj[0]);
+		fclose(fpTorso);
+	}
+
 	// RUN
 	forward.run();
 
