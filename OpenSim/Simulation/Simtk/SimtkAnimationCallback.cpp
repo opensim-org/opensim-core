@@ -81,8 +81,6 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	_rotationAgles = new double[_model->getNB()*3];
 
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
-	double t[3];	// Translation from sdfast
-	double dirCos[3][3];	// Direction cosines
 	std::string modelName = _model->getName();
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
 	if (simmModel){
@@ -128,7 +126,7 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 		} */
 	}
 	_currentTime=0.0;
-	setChanged();
+	
 }
 
 //=============================================================================
@@ -199,7 +197,6 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	printf("Callback time = %lf\n",realTime);
 
 	// LOOP OVER BODIES
-	int i;
 		// Zero 
 
 	/*

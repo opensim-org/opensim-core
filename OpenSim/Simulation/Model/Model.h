@@ -578,6 +578,7 @@ public:
 	//--------------------------------------------------------------------------
 	IntegCallbackSet* getIntegCallbackSet();
 	void addIntegCallback(IntegCallback *aCallback);
+	void removeIntegCallback(IntegCallback *aCallback);
 	IntegCallback& getIntegCallback(const int index) const;
 
 	//--------------------------------------------------------------------------
