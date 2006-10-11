@@ -227,7 +227,7 @@ void SimmBody::setup(SimmKinematicsEngine* aEngine)
 	{
 		_markerSet.get(i)->setup(aEngine);
 		// This should happen inside setup
-		_displayer.addDependent(_markerSet.get(i)->getDisplayer());
+		//_displayer.addDependent(_markerSet.get(i)->getDisplayer());
 		Transform position;
 		position.translate(_markerSet.get(i)->getOffset());
 		_markerSet.get(i)->getDisplayer()->setTransform(position);
