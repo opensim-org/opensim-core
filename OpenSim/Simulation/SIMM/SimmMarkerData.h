@@ -88,6 +88,7 @@ public:
 	const SimmUnits& getUnits() const { return _units; }
 	void convertToUnits(const SimmUnits& aUnits);
 	const Array<std::string>& getMarkerNames() const { return _markerNames; }
+	int getNumFrames() const { return _numFrames; }
 
 	void peteTest() const;
 
