@@ -370,6 +370,12 @@ void InvestigationForward::run()
 
 
 	// PRINT RESULTS
+	Storage *xStore = integrand.getControlStorage();
+	Storage *yStore = integrand.getStateStorage();
+	Storage *ypStore = integrand.getPseudoStateStorage();
+	xStore->print("controls_forward.sto");
+	yStore->print("states_forward.sto");
+	ypStore->print("pseudo_forward.sto");
 	printResults(getName().c_str(),getResultsDir().c_str());
 	IO::chDir(saveWorkingDirectory.c_str());
 }
