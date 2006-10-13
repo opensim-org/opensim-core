@@ -263,8 +263,14 @@ void SimmMarker::setup(SimmKinematicsEngine* aEngine)
 		}
 		_displayer.setOwner(this);
 		_displayer.addGeometry(_defaultGeometry);
-		double defaultColor[3] = { 0.0, 0.0, 1.0 };
-		_displayer.getVisibleProperties().setColor(defaultColor);
+		if (isVirtual()){	// Pink
+			double defaultColor[3] = { 1.0, 0.0, 0.8 };
+			_displayer.getVisibleProperties().setColor(defaultColor);
+		}
+		else {	// Experimental is blue
+			double defaultColor[3] = { 0.0, 0.0, 1.0 };
+			_displayer.getVisibleProperties().setColor(defaultColor);
+		}
 	}
 
 }

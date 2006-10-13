@@ -78,7 +78,6 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 
 	// We keep pointer to body's xform. Don't delete them on exit
 	_transforms = new Transform[_model->getNB()];
-	_rotationAgles = new double[_model->getNB()*3];
 
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	std::string modelName = _model->getName();
@@ -97,33 +96,14 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
             simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
             simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
             simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
-			// Transpose rotations part!
 			for(int j=0; j <3; j++)
 				for(int k=0; k <3; k++)
-					dirCos[j][k]=stdFrame[k][j];
+					dirCos[j][k]=stdFrame[j][k];
 			_transforms[i].setRotationSubmatrix(dirCos);
 			_transforms[i].setPosition(Orig);
 		}
 	}
 	else {	// SDFast?
-	/* _offsets uninitialized here
-		for(int i=0;i<_model->getNB();i++) {
-			// get position from sdfast
-			// adjust by com
-			_model->getBody(i)->getCenterOfMass(com);
-			for(int k=0; k < 3; k++)
-				Orig[k] = -_offsets[3*i+k];
-			_model->getPosition(i, Orig, t);
-
-			_model->getDirectionCosines(i,dirCos);
-			// Initialize xform to identity
-			_transforms[i].setPosition(t);
-			_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
-			for(int j=0; j <3; j++)
-				_rotationAgles[3*i+j]=rot[j];
-			_transforms[i].setRotationSubmatrix(dirCos);
-
-		} */
 	}
 	_currentTime=0.0;
 	
@@ -197,14 +177,6 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	printf("Callback time = %lf\n",realTime);
 
 	// LOOP OVER BODIES
-		// Zero 
-
-	/*
-                    model.getSimmKinematicsEngine().convertVector(originFrame[0], body, gnd);
-                    model.getSimmKinematicsEngine().convertVector(originFrame[1], body, gnd);
-                    model.getSimmKinematicsEngine().convertVector(originFrame[2], body, gnd);
-                    model.getSimmKinematicsEngine().convertPoint(originFrame[3], body, gnd); */
-
 	double t[3];	// Translation from sdfast
 	double dirCos[3][3];	// Direction cosines
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
@@ -221,10 +193,10 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
             simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
             simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
             simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
-			// Transpose rotations part!
+			// Assign dirCos
 			for(int j=0; j <3; j++)
 				for(int k=0; k <3; k++)
-					dirCos[j][k]=stdFrame[k][j];
+					dirCos[j][k]=stdFrame[j][k];
 
 			_transforms[i].setRotationSubmatrix(dirCos);
 			_transforms[i].setPosition(Orig);
@@ -232,7 +204,6 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	}
 	else {	// SDFast?
 		double com[3];	// Center of mass
-		double rot[3];	// Rotation angles 
 		double Orig[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<_model->getNB();i++) {
 			// get position from sdfast
@@ -245,9 +216,6 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 			_model->getDirectionCosines(i,dirCos);
 			// Initialize xform to identity
 			_transforms[i].setPosition(t);
-			_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
-			for(int j=0; j <3; j++)
-				_rotationAgles[3*i+j]=rot[j];
 			_transforms[i].setRotationSubmatrix(dirCos);
 
 		}
@@ -310,7 +278,7 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	double t[3];	// Translation from sdfast
 	double dirCos[3][3];	// Direction cosines
-	double com[3],rot[3];
+	double com[3];
 
 	for(int i=0;i<_model->getNB();i++) {
 		// get position from sdfast
@@ -323,9 +291,6 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 		_model->getDirectionCosines(i,dirCos);
 		// Initialize xform to identity
 		_transforms[i].setPosition(t);
-		_model->convertDirectionCosinesToAngles(dirCos, &rot[0], &rot[1], &rot[2]);
-		for(int j=0; j <3; j++)
-			_rotationAgles[3*i+j]=rot[j];
 		_transforms[i].setRotationSubmatrix(dirCos);
 	}
 }
