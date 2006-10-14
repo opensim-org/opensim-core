@@ -63,7 +63,6 @@ protected:
 	Transform*		_transforms;
 	/** Current simulation time for feedback purposes */
 	double			_currentTime;
-	double*			_rotationAgles;
 	double*			_offsets;
 //=============================================================================
 // METHODS
@@ -96,13 +95,15 @@ public:
 		return 0;
 	}
 	const Transform* getBodyTransform(int bodyIndex) const;
-	void getBodyRotations(int index, double rots[]) const;
 	// Handle _busy flag to make sure all xforms are read for the same time step
 	// by keeping mutual exclusion access to the xforms
 	void getMutex();
 	void releaseMutex();
 
 	void extractOffsets(SimmModel& displayModel);
+private:
+	// Load transforms vector from KinematicsEngine
+	void getTransformsFromKinematicsEngine(SimmModel* simmModel);
 
 //=============================================================================
 };	// END of class SimtkAnimationCallback

@@ -59,6 +59,7 @@ bool SimtkAnimationCallback::_busy = false;
  */
 SimtkAnimationCallback::~SimtkAnimationCallback()
 {
+	delete[] _transforms;
 }
 
 //_____________________________________________________________________________
@@ -81,30 +82,9 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	std::string modelName = _model->getName();
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
-	if (simmModel){
-		SimmBody* gnd = simmModel->getSimmKinematicsEngine().getGroundBodyPtr();
-		SimmBodySet& bodySet = simmModel->getSimmKinematicsEngine().getBodies();
-		double dirCos[3][3];
-		for(int i=0;i<_model->getNB();i++) {
-			double stdFrame[3][3] = {{ 1.0, 0.0, 0.0 },
-									{0., 1., 0.},
-									{0., 0., 1.}};	 
-			double Orig[3] = { 0.0, 0.0, 0.0 };
-			SimmBody *body = bodySet.get(i);
-			simmModel->getSimmKinematicsEngine().convertVector(stdFrame[0], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
-			for(int j=0; j <3; j++)
-				for(int k=0; k <3; k++)
-					dirCos[j][k]=stdFrame[j][k];
-			_transforms[i].setRotationSubmatrix(dirCos);
-			_transforms[i].setPosition(Orig);
-		}
-	}
-	else {	// SDFast?
-	}
+	SimmModel *simmModel = dynamic_cast<SimmModel*>(aModel);
+	if (simmModel)
+		getTransformsFromKinematicsEngine(simmModel);
 	_currentTime=0.0;
 	
 }
@@ -181,39 +161,25 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	double dirCos[3][3];	// Direction cosines
 	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
 	if (simmModel){
-		SimmBody* gnd = simmModel->getSimmKinematicsEngine().getGroundBodyPtr();
-		SimmBodySet& bodySet = simmModel->getSimmKinematicsEngine().getBodies();
-		for(int i=0;i<_model->getNB();i++) {
-			double stdFrame[3][3] = {{ 1.0, 0.0, 0.0 },
-									{0., 1., 0.},
-									{0., 0., 1.}};	 
-			double Orig[3] = { 0.0, 0.0, 0.0 };
-			SimmBody *body = bodySet.get(i);
-			simmModel->getSimmKinematicsEngine().convertVector(stdFrame[0], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
-            simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
-			// Assign dirCos
-			for(int j=0; j <3; j++)
-				for(int k=0; k <3; k++)
-					dirCos[j][k]=stdFrame[j][k];
-
-			_transforms[i].setRotationSubmatrix(dirCos);
-			_transforms[i].setPosition(Orig);
-		}
+		getTransformsFromKinematicsEngine(simmModel);
 	}
 	else {	// SDFast?
-		double com[3];	// Center of mass
+		//double com[3];	// Center of mass
 		double Orig[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<_model->getNB();i++) {
 			// get position from sdfast
 			// adjust by com
-			_model->getBody(i)->getCenterOfMass(com);
 			for(int k=0; k < 3; k++)
 				Orig[k] = -_offsets[3*i+k];
 			_model->getPosition(i, Orig, t);
 
 			_model->getDirectionCosines(i,dirCos);
+			for(int j=0; j<3; j++)
+				for(int k=0; k<j; k++){
+					double swap=dirCos[j][k]; 
+					dirCos[j][k]=dirCos[k][j];
+					dirCos[k][j]=swap;
+			}
 			// Initialize xform to identity
 			_transforms[i].setPosition(t);
 			_transforms[i].setRotationSubmatrix(dirCos);
@@ -273,6 +239,8 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 			for(int j=0; j<3; j++){
 				_offsets[3*i+j] = bodyCom[j];
 			}
+			std::cout << "Com for body " << bodyName << " at"
+				<< bodyCom[0] << bodyCom[1] << bodyCom[2] << std::endl;
 		}
 	}
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
@@ -283,7 +251,6 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 	for(int i=0;i<_model->getNB();i++) {
 		// get position from sdfast
 		// adjust by com
-		_model->getBody(i)->getCenterOfMass(com);
 		for(int k=0; k < 3; k++)
 			Orig[k] = -_offsets[3*i+k];
 		_model->getPosition(i, Orig, t);
@@ -291,13 +258,45 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 		_model->getDirectionCosines(i,dirCos);
 		// Initialize xform to identity
 		_transforms[i].setPosition(t);
+		for(int j=0; j<3; j++)
+			for(int k=0; k<j; k++){
+				double swap=dirCos[j][k]; 
+				dirCos[j][k]=dirCos[k][j];
+				dirCos[k][j]=swap;
+			}
 		_transforms[i].setRotationSubmatrix(dirCos);
+		std::cout << "Body at position " << i << "is " << 
+			_model->getBody(i)->getName() << displayModel.getBodies().get(i)->getName() << std::endl;
 	}
 }
-
-void SimtkAnimationCallback::getBodyRotations(int index, double rots[]) const
+/*------------------------------------------------------------------
+ * getTransformsFromKinematicsEngine is a utility used to filll the 
+ * _transforms array from a SimmKinematicsEngine
+ * @param simmModel: The model to use with associated kinematicsEngine
+ */
+void SimtkAnimationCallback::
+getTransformsFromKinematicsEngine(SimmModel* simmModel)
 {
-	for(int i=0; i<3; i++){
-		rots[i] = _rotationAgles[3*index+i];
+	SimmBody* gnd = simmModel->getSimmKinematicsEngine().getGroundBodyPtr();
+	SimmBodySet& bodySet = simmModel->getSimmKinematicsEngine().getBodies();
+	double dirCos[3][3];	// Direction cosines
+	for(int i=0;i<_model->getNB();i++) {
+		// Initialize inside the loop since convert* methods operate in-place.
+		double stdFrame[3][3] = {{ 1.0, 0.0, 0.0 },
+								{0., 1., 0.},
+								{0., 0., 1.}};	 
+		double Orig[3] = { 0.0, 0.0, 0.0 };
+		SimmBody *body = bodySet.get(i);
+		simmModel->getSimmKinematicsEngine().convertVector(stdFrame[0], body, gnd);
+        simmModel->getSimmKinematicsEngine().convertVector(stdFrame[1], body, gnd);
+        simmModel->getSimmKinematicsEngine().convertVector(stdFrame[2], body, gnd);
+        simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
+		// Assign dirCos
+		for(int j=0; j <3; j++)
+			for(int k=0; k <j; k++)
+				dirCos[j][k]=stdFrame[j][k];
+
+		_transforms[i].setRotationSubmatrix(dirCos);
+		_transforms[i].setPosition(Orig);
 	}
 }
