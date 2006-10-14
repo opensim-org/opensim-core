@@ -150,7 +150,12 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 
 	_currentTime = aT;
 	// CHECK STEP INTERVAL
-	if((aStep% getStepInterval())!=0) return 0;
+	if((aStep% getStepInterval())!=0) {
+		std::cout << "************WE ARE HERE AFTER ALL!!!!!!!" << std::endl << std::flush;
+		std::cout << "************" << aStep << " " << getStepInterval() << std::endl << std::flush;
+		releaseMutex();
+		return 0;
+	}
 
 	// OpenSim display time
 	double realTime = aT * _model->getTimeNormConstant();
@@ -196,7 +201,7 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 }
 void SimtkAnimationCallback::getMutex()
 {
-	while(_busy)
+	while(_busy) 
 		;
 	_busy = true;
 	return;
@@ -246,7 +251,6 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	double t[3];	// Translation from sdfast
 	double dirCos[3][3];	// Direction cosines
-	double com[3];
 
 	for(int i=0;i<_model->getNB();i++) {
 		// get position from sdfast
@@ -293,7 +297,7 @@ getTransformsFromKinematicsEngine(SimmModel* simmModel)
         simmModel->getSimmKinematicsEngine().convertPoint(Orig, body, gnd);
 		// Assign dirCos
 		for(int j=0; j <3; j++)
-			for(int k=0; k <j; k++)
+			for(int k=0; k <3; k++)
 				dirCos[j][k]=stdFrame[j][k];
 
 		_transforms[i].setRotationSubmatrix(dirCos);
