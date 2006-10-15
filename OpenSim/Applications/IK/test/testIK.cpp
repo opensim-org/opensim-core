@@ -65,7 +65,10 @@ int main(int argc,char **argv)
 	//--------------------- IK proper section
 	{
 		try 
-		{			// Update markers to correspond to those specified in IKParams block, potentially adding new ones
+		{	
+			/* CLAY- Commented out until we fix, so things would compile...
+
+			// Update markers to correspond to those specified in IKParams block, potentially adding new ones
 			model->updateMarkers(subject->getIKParams().getMarkerSet());
 			// Initialize coordinates based on user input
 			model->updateCoordinates(subject->getIKParams().getCoordinateSet());
@@ -85,19 +88,17 @@ int main(int argc,char **argv)
 			motionTrialData.makeRdStorage(inputStorage);
 
 			if (coordinateValues != 0) {
-				/* Adjust the user-defined start and end times to make sure they are in the
-				* range of the marker data. This must be done so that you only look in the
-				* coordinate data for rows that will actually be solved.
-				*/
+				// Adjust the user-defined start and end times to make sure they are in the
+				// range of the marker data. This must be done so that you only look in the
+				// coordinate data for rows that will actually be solved.
 				double firstStateTime = inputStorage.getFirstTime();
 				double lastStateTime = inputStorage.getLastTime();
 				double startTime = (firstStateTime>trialParams.getStartTime()) ? firstStateTime : trialParams.getStartTime();
 				double endTime =  (lastStateTime<trialParams.getEndTime()) ? lastStateTime : trialParams.getEndTime();
 
-				/* Add the coordinate data to the marker data. There must be a row of
-				* corresponding coordinate data for every row of marker data that will
-				* be solved, or it is a fatal error.
-				*/
+				// Add the coordinate data to the marker data. There must be a row of
+				// corresponding coordinate data for every row of marker data that will
+				// be solved, or it is a fatal error.
 				coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
 			}
 
@@ -116,6 +117,8 @@ int main(int argc,char **argv)
 			delete coordinateValues;
 			delete ikSolver;
 			delete target;
+
+			CLAY */
 		}
 		catch (Exception &x)
 		{
