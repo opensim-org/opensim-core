@@ -42,14 +42,17 @@
 #include <OpenSim/Simulation/SIMM/SimmModel.h>
 #include "SimtkAnimationCallback.h"
 
+
+using namespace std;
+using namespace OpenSim;
+
+
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-
-using namespace OpenSim;
 bool SimtkAnimationCallback::_busy = false;
+
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -74,19 +77,29 @@ SimtkAnimationCallback::~SimtkAnimationCallback()
 SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	IntegCallback(aModel)
 {
+	cout<<"\n\nCreating new SimtkAnimationCallback...\n";
 	// NULL
 	setNull();
+	cout<<"finished setNull()\n";
 
 	// We keep pointer to body's xform. Don't delete them on exit
 	_transforms = new Transform[_model->getNB()];
+	cout<<"alocated transforms.\n";
 
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	std::string modelName = _model->getName();
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(aModel);
-	if (simmModel)
-		getTransformsFromKinematicsEngine(simmModel);
+	cout<<"modelName = "<<modelName<<endl;
+	//SimmModel *simmModel = dynamic_cast<SimmModel*>(aModel);
+	string type = aModel->getType();
+	cout<<"finished dynamic cast.\n";
+	if (type=="SimmModel") {
+		getTransformsFromKinematicsEngine((SimmModel*)aModel);
+		cout<<"got transforms from simmModel\n";
+	}
+
 	_currentTime=0.0;
-	
+	cout<<"set current time to 0.0\n";
+	cout<<endl<<endl;
 }
 
 //=============================================================================
@@ -164,11 +177,15 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	// LOOP OVER BODIES
 	double t[3];	// Translation from sdfast
 	double dirCos[3][3];	// Direction cosines
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
-	if (simmModel){
-		getTransformsFromKinematicsEngine(simmModel);
-	}
-	else {	// SDFast?
+	//SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);  CLAY- avoiding dynamic cast.
+	string type = _model->getType();
+	cout<<"type = "<<type<<endl;
+	// SimmModel
+	if(type=="SimmModel"){
+		getTransformsFromKinematicsEngine((SimmModel*)_model);
+
+	// SDFast Model
+	} else {	// SDFast?
 		//double com[3];	// Center of mass
 		double Orig[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<_model->getNB();i++) {
