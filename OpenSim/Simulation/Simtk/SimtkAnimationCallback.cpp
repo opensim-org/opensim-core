@@ -89,16 +89,12 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 	std::string modelName = _model->getName();
 	cout<<"modelName = "<<modelName<<endl;
-	//SimmModel *simmModel = dynamic_cast<SimmModel*>(aModel);
 	string type = aModel->getType();
-	cout<<"finished dynamic cast.\n";
-	if (type=="SimmModel") {
+	if(type=="SimmModel") {
 		getTransformsFromKinematicsEngine((SimmModel*)aModel);
-		cout<<"got transforms from simmModel\n";
 	}
 
 	_currentTime=0.0;
-	cout<<"set current time to 0.0\n";
 	cout<<endl<<endl;
 }
 
@@ -179,11 +175,9 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	double dirCos[3][3];	// Direction cosines
 	//SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);  CLAY- avoiding dynamic cast.
 	string type = _model->getType();
-	cout<<"type = "<<type<<endl;
 	// SimmModel
 	if(type=="SimmModel"){
 		getTransformsFromKinematicsEngine((SimmModel*)_model);
-
 	// SDFast Model
 	} else {	// SDFast?
 		//double com[3];	// Center of mass
@@ -241,8 +235,9 @@ void SimtkAnimationCallback::extractOffsets(SimmModel& displayModel)
 {
 	_offsets = new double[displayModel.getNB()*3];
 	int i;
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);
-	if (simmModel){	// Just set offsets to zero we're displaying a SimmModel and Running SimmModel too
+	//SimmModel *simmModel = dynamic_cast<SimmModel*>(_model);  // CLAY- commented out to avoid dynamic cast.
+	string type = _model->getType();
+	if(type=="SimmModel") {
 		for(i=0;i<_model->getNB();i++){
 			_offsets[i*3]=_offsets[i*3+1]=_offsets[i*3+2]=0.0;
 		}
