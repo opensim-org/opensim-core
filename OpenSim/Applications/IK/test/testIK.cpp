@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
 	//--------------------- IK proper section
 	{
-		try 
+		try
 		{	
 			/* CLAY- Commented out until we fix, so things would compile...
 
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
 			delete ikSolver;
 			delete target;
 
-			CLAY */
+			CLAY- Commented out so things would compile. */
 		}
 		catch (Exception &x)
 		{
