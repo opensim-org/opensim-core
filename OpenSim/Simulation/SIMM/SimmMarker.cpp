@@ -287,7 +287,10 @@ void SimmMarker::writeSIMM(ofstream& out) const
 {
 	// Write out log(_weight) + 1 as marker weight instead of _weight,
 	// so that we won't have markers with radius 1000 if _weight=1000.
-	double outputWeight = log(_weight) + 1.0;
+	// If _weight <= 1, outputWeight will be set to 1.
+	double outputWeight = 1.0;
+	if (_weight > 1.0)
+		outputWeight = log(_weight) + 1.0;
 
 	out << "marker " << getName() << '\t' << _attachment[0] << " " << _attachment[1] << " " << _attachment[2] << " " << outputWeight;
 	//out << "marker " << getName() << '\t' << _attachment[0] << " " << _attachment[1] << " " << _attachment[2] << " " << _weight;
