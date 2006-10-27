@@ -2,25 +2,28 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${OpenSi
 
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(rdConvertControls rdConvertControls.cpp)
+ADD_EXECUTABLE(convertControls rdConvertControls.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(rdConvertStorageToControls rdConvertStorageToControls.cpp)
+ADD_EXECUTABLE(convertStorageToControls rdConvertStorageToControls.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(rdSimplifyControls rdSimplifyControls.cpp)
+ADD_EXECUTABLE(simplifyControls rdSimplifyControls.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(suPerturbStorage perturbStorage.cpp)
+ADD_EXECUTABLE(serturbStorage perturbStorage.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
 ADD_EXECUTABLE(suStorageAdd storageAdd.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(suStorageIntegrate storageIntegrate.cpp)
+ADD_EXECUTABLE(storageIntegrate storageIntegrate.cpp)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized        xerces-c_2 rdTools rdSimulation)
-ADD_EXECUTABLE(suStorageSubtract storageSubtract.cpp)
+ADD_EXECUTABLE(storageSubtract storageSubtract.cpp)
+
+LINK_LIBRARIES( debug xerces-c_2D  optimized xerces-c_2 rdTools)
+ADD_EXECUTABLE(storageFilter storageFilter.cpp)
 
 INSTALL_TARGETS(/bin/ rdConvertControls)
 INSTALL_TARGETS(/bin/ rdConvertStorageToControls)
@@ -29,3 +32,4 @@ INSTALL_TARGETS(/bin/ suPerturbStorage)
 INSTALL_TARGETS(/bin/ suStorageAdd)
 INSTALL_TARGETS(/bin/ suStorageIntegrate)
 INSTALL_TARGETS(/bin/ suStorageSubtract)
+INSTALL_TARGETS(/bin/ storageFilter)
