@@ -901,10 +901,6 @@ updateFromXMLNode()
 		case(Property::ObjArray) : {
 			property->setUseDefault(true);
 
-			// CLEAR EXISTING OBJECT ARRAY
-			ArrayPtrs<Object> &objArray = property->getValueObjArray();
-			objArray.setSize(0);
-
 			// GET ENCLOSING ELEMENT
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if(elmt==NULL) {
@@ -914,6 +910,12 @@ updateFromXMLNode()
 				}
 				break;
 			}
+
+			// CLEAR EXISTING OBJECT ARRAY
+			// Eran: Moved after elmt check above so that values set by constructor are kept if
+			// property is not specified in the xml file
+			ArrayPtrs<Object> &objArray = property->getValueObjArray();
+			objArray.setSize(0);
 
 			// VARIABLES
 			int i;
