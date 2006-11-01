@@ -45,7 +45,8 @@ InvestigationForward::InvestigationForward() :
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -67,7 +68,8 @@ InvestigationForward::InvestigationForward(const string &aFileName) :
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -86,7 +88,8 @@ InvestigationForward::InvestigationForward(DOMElement *aElement) :
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -137,7 +140,8 @@ InvestigationForward(const InvestigationForward &aInvestigation) :
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -183,6 +187,7 @@ setNull()
 	_externalLoadsBody1 = -1;
 	_externalLoadsBody2 = -1;
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
+	_useSpecifiedDt = false;
 }
 //_____________________________________________________________________________
 /**
@@ -211,6 +216,9 @@ void InvestigationForward::setupProperties()
 
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
+
+	_useSpecifiedDtProp.setName("use_specified_dt");
+	_propertySet.append( &_useSpecifiedDtProp );
 }
 
 
@@ -356,6 +364,23 @@ void InvestigationForward::run()
 	integ->setMaxDT(_maxDT);
 	integ->setTolerance(_errorTolerance);
 	integ->setFineTolerance(_fineTolerance);
+
+	if(_useSpecifiedDt) {
+		if(yiStore) {
+			std::cout << "Using dt specified in initial states file (" << _initialStatesFileName << ")" << std::endl;
+			double *tArray = new double[yiStore->getSize()];
+			double *dtArray = new double[yiStore->getSize()-1];
+			yiStore->getTimeColumn(tArray);
+			for(int i=0;i<yiStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
+			integ->setUseSpecifiedDT(true);
+			integ->setDTArray(yiStore->getSize()-1, dtArray, tArray[0]);
+			delete[] tArray;
+			delete[] dtArray;
+		}
+		else {
+			std::cout << "WARNING: Ignoring 'use_specified_dt' property because no initial states file is specified" << std::endl;
+		}
+	}
 
 	// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
 	Array<double> yi(0.0,ny);

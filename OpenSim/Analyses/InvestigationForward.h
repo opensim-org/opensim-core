@@ -65,6 +65,9 @@ private:
 	The default value is -1.0, so no filtering. */
 	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
+	/** If true, the time steps from the initial states file are used during current integration */
+	OpenSim::PropertyBool _useSpecifiedDtProp;
+	bool &_useSpecifiedDt;
 
 
 //=============================================================================
