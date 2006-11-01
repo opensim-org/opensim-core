@@ -748,7 +748,18 @@ getControlValue(double aT)
 
 		// STEPS
 		} else {
-			value = _nodes[i+1]->getValue();
+			// Eran: Changed semantics of piecewise constant controls so that
+			// the control value stored at time t(i+1) is applied to the time
+			// interval (t(i),t(i+1)] *exclusive* of time t(i).
+			// This was essential to get forward simulation to match cmcgait simulation
+			// much better.  During cmcgait simulation of interval [t1,t2] when the
+			// integrator reaches time t2 it would pick up the control value at t2
+			// because it had yet to compute the piecewise linear control value
+			// at time t3.  During forward simulation, when the integrator reaches t2
+			// the control at t3 is known but for consistency with cmcgait we need to
+			// use the control value at t2.  Hence the (t(i),t(i+1)] choice.
+			if (aT == _nodes[i]->getTime()) value = _nodes[i]->getValue();
+			else value = _nodes[i+1]->getValue();
 		}
 	}
 
