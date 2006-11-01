@@ -48,6 +48,12 @@ static void PrintUsage(ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
+	//----------------------
+	// Surrounding try block
+	//----------------------
+	try {
+	//----------------------
+
 	// PARSE COMMAND LINE
 	int i;
 	string option = "";
@@ -120,6 +126,15 @@ int main(int argc,char **argv)
 
 	// RUN
 	forward.run();
+
+	//----------------------------
+	// Catch any thrown exceptions
+	//----------------------------
+	} catch(Exception x) {
+		x.print(cout);
+		return(-1);
+	}
+	//----------------------------
 
 	return(0);
 }
