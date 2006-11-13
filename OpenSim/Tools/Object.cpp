@@ -783,8 +783,10 @@ updateFromXMLNode()
 					// Add check for _type so that only nodes with proper parent are used.
 					// A more robust solution is traversing only immediate children of _node
 					// outside the loop.
-					if (string(parentName)=="defaults" || string(parentName)!=_type)
+					if (string(parentName)=="defaults" || string(parentName)!=_type) {
+						delete[] parentName;
 						continue;
+					}
 					// NAME ATTRIBUTE
 					char *elmtName =
 						XMLNode::GetAttribute(elmt,"name");
@@ -797,6 +799,7 @@ updateFromXMLNode()
 
 					// CLEAN UP
 					delete[] elmtName;
+					delete[] parentName;
 				}
 
 				// WAS A NODE NOT FOUND?
@@ -918,11 +921,6 @@ updateFromXMLNode()
 			objArray.setSize(0);
 
 			// VARIABLES
-			int i;
-			unsigned int j;
-			XMLCh *tagName;
-			DOMElement *objElmt;
-			DOMNodeList *list;
 			Object *defaultObject,*object;
 			{
 				// If top element has a "file attribute", the document needs to be opened
@@ -940,26 +938,26 @@ updateFromXMLNode()
 				}
 			}
 
-			// LOOP THROUGH SUPPORTED OBJECT TYPES
-			list = elmt->getChildNodes();
-			listLength = list->getLength();
-			char buffer[31];
-			for(j=0;j<listLength;j++) {
 
-				// GET ELEMENT
-				objElmt = (DOMElement*) list->item(j);
-				if(objElmt==NULL) continue;
+			// LOOP THROUGH SUPPORTED OBJECT TYPES
+			DOMNodeList *list = elmt->getChildNodes();
+			listLength = list->getLength();
+			for(unsigned int j=0;j<listLength;j++) {
+				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
+				// to process element nodes
+				if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
+				DOMElement *objElmt = (DOMElement*) list->item(j);
+
 				const XMLCh *objType = objElmt->getTagName();
-				XMLString::transcode(objType, buffer, 30);
+				char *buffer = XMLString::transcode(objType);
 				XMLString::trim(buffer);
-				string  objectType(buffer);
+				string objectType(buffer);
+				delete[] buffer;
+
 				if ( find(recognizedTypes.begin(), recognizedTypes.end(), objectType)== recognizedTypes.end()){
 					continue;
 				}
 				defaultObject = _mapTypesToDefaultObjects[objectType];
-					// GET ELEMENT
-					objElmt = (DOMElement*) list->item(j);
-					if(objElmt==NULL) continue;
 
 					// If object is from non-inlined, detect it and set attributes
 					// However we need to do that on the finalized object as copying
@@ -1076,14 +1074,17 @@ updateDefaultObjectsFromXMLNode()
 		// CHECK THAT THE ELEMENT IS AN IMMEDIATE CHILD
 		DOMNode *parent = elmt->getParentNode();
 		if(parent != defaultsElmt) {
-			string elmtName,parentName,nodeName;
-			elmtName = XMLString::transcode(elmt->getNodeName());
-			parentName = XMLString::transcode(parent->getNodeName());
-			nodeName = XMLString::transcode(_node->getNodeName());
 			if(Object_DEBUG) {
+				char *elmtName,*parentName,*nodeName;
+				elmtName = XMLString::transcode(elmt->getNodeName());
+				parentName = XMLString::transcode(parent->getNodeName());
+				nodeName = XMLString::transcode(_node->getNodeName());
 				cout<<"Object.updateFromXMLNode: "<<elmtName;
 				cout<<" is a child of "<<parentName<<", not of ";
 				cout<<nodeName<<endl;
+				delete[] elmtName;
+				delete[] parentName;
+				delete[] nodeName;
 			}
 			continue;
 		}
@@ -1604,6 +1605,7 @@ makeObjectFromFile(const std::string &aFileName)
 		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
 		char *rootName = XMLString::transcode(elt->getNodeName());
 		Object* newObject = newInstanceOfType(rootName);
+		delete[] rootName;
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);
 		newObject->updateFromXMLNode();
