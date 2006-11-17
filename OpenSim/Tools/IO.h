@@ -82,6 +82,7 @@ private:
 public:
 	// FILE NAMES
 	static char* ConstructDateAndTimeStamp();
+	static std::string FixSlashesInFilePath(const std::string &path);
 	// NUMBER OUTPUT FORMAT
 	static void SetScientific(bool aTrueFalse);
 	static bool GetScientific();

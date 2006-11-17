@@ -91,6 +91,26 @@ ConstructDateAndTimeStamp()
 
 	return(stamp);
 }
+//-----------------------------------------------------------------------------
+// FIXING SLASHES IN PATH
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Ensures slashes are back slashes ('\') in Windows and forward slashes ('/') in Linux.
+ */
+std::string IO::
+FixSlashesInFilePath(const std::string &path)
+{
+	std::string fixedPath = path;
+	for(unsigned int i=0;i<fixedPath.length();i++) {
+#ifdef WIN32
+		if(fixedPath[i] == '/') fixedPath[i] = '\\';
+#else
+		if(fixedPath[i] == '\\') fixedPath[i] = '/';
+#endif
+	}
+	return fixedPath;
+}
 
 //=============================================================================
 // NUMBERED OUTPUT

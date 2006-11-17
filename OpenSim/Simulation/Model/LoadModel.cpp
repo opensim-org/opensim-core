@@ -4,6 +4,7 @@
 
 #include <string>
 #include <iostream>
+#include <OpenSim/Tools/IO.h>
 #include "LoadModel.h"
 #include "ActuatorSet.h"
 #include "ContactForceSet.h"
@@ -69,9 +70,10 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 #ifdef __linux__
 	libraryExtension=".so";
 #endif
-	string actualLibFileName(lpLibFileName+libraryExtension);
+	string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
+	string actualLibFileName(fixedLibFileName+libraryExtension);
 	string debugSuffix="_d";
-	char *locationOf_D=strstr(lpLibFileName, debugSuffix.c_str());
+	char *locationOf_D=strstr(fixedLibFileName.c_str(), debugSuffix.c_str());
 	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
 
 	PORTABLE_HINSTANCE libraryHandle = NULL;
@@ -83,12 +85,12 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		// Append _D to lpLibFileName;
 		cout << "WARNING: SUSPECT LOADING RELEASE LIB INTO DEBUG Simulation library." << endl;
 		cout << "Trying to load a debug version ..." << endl;
-		actualLibFileName = string(lpLibFileName)+debugSuffix+libraryExtension;
+		actualLibFileName = fixedLibFileName+debugSuffix+libraryExtension;
 		// if that fails we'll try the one with no _D 
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
-			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << string(lpLibFileName) << endl;
+			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << fixedLibFileName << endl;
 			// library with _D loading failed, try non _D version
-			actualLibFileName = string(lpLibFileName)+libraryExtension;
+			actualLibFileName = fixedLibFileName+libraryExtension;
 			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
