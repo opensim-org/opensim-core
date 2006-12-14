@@ -625,6 +625,20 @@ printResults(const char *aBaseName,const char *aDir,double aDT,
 		if(_pStore!=NULL)  _pStore->print(name,aDT);
 	}
 
+	// POSITIONS (.mot file)
+	// For now (until we resolve the .sto vs .mot issue) also write
+	// an .mot file so the motion can be viewed in SIMM -- Eran.
+	_pStore->scaleTime(_model->getTimeNormConstant());
+	bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
+	_pStore->setWriteSIMMHeader(true);
+	sprintf(name,"%s/%s_%s_q.mot",path,aBaseName,getName().c_str());
+	if(aDT<=0.0) {
+		if(_pStore!=NULL)  _pStore->print(name);
+	} else {
+		if(_pStore!=NULL)  _pStore->print(name,aDT);
+	}
+	_pStore->setWriteSIMMHeader(writeSIMMHeader);
+
 	return(0);
 }
 
