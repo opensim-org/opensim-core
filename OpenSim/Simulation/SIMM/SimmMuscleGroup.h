@@ -1,10 +1,10 @@
-#ifndef _SimmMuscleGroup_h_
-#define _SimmMuscleGroup_h_
+#ifndef __SimmMuscleGroup_h__
+#define __SimmMuscleGroup_h__
 
 // SimmMuscleGroup.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -34,10 +34,10 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/XMLDocument.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmModel;
-class SimmMuscle;
+class AbstractModel;
+class AbstractActuator;
 
 //=============================================================================
 //=============================================================================
@@ -57,7 +57,7 @@ class RDSIMULATION_API SimmMuscleGroup : public Object
 private:
 
 protected:
-	Array<SimmMuscle*> _muscles;
+	Array<AbstractActuator*> _muscles;
 
 //=============================================================================
 // METHODS
@@ -78,11 +78,11 @@ public:
 #endif
    void SimmMuscleGroup::copyData(const SimmMuscleGroup &aGroup);
 
-   void setup(SimmModel* aModel);
+   void setup(AbstractModel* aModel);
 
 	bool contains(const std::string& aName) const;
 
-	void peteTest() const;
+	virtual void peteTest() const;
 
 protected:
 
@@ -91,10 +91,10 @@ private:
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmMuscleGroup
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMuscleGroup_h__
 

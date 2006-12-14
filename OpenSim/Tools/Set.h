@@ -33,16 +33,13 @@
  * Author: Frank C. Anderson 
  */
 
-
-
-
 // INCLUDES
 #include "rdTools.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
 #include "PropertyObjArray.h"
 
-
+namespace OpenSim { 
 
 //=============================================================================
 //=============================================================================
@@ -56,8 +53,6 @@
  * @see ArrayPtrs
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 template<class T> class Set : public Object
 {
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -545,6 +540,11 @@ virtual bool remove(const T* aObject)
 	return( _objects.remove(aObject) );
 }
 
+virtual void clearAndDestroy()
+{
+	_objects.clearAndDestroy();
+}
+
 //-----------------------------------------------------------------------------
 // SET AND GET
 //-----------------------------------------------------------------------------
@@ -598,6 +598,25 @@ virtual T* get(int aIndex) const
 T* get(const std::string &aName)
 {
 	return( _objects.get(aName) );
+}
+//_____________________________________________________________________________
+/**
+ * Get names of objects in the set.
+ *
+ * @param rNames Array of names.  The names are appended to rNames, so it
+ * is permissible to send in an non-empty array; the names in the set
+ * will simply be appended to the array sent in.
+ */
+virtual void getNames(OpenSim::Array<std::string> &rNames ) const
+{
+	for(int i=0;i<_objects.getSize();i++) {
+		T *obj = _objects[i];
+		if(obj==NULL) {
+			rNames.append("NULL");
+		} else {
+			rNames.append(obj->getName());
+		}
+	}
 }
 //_____________________________________________________________________________
 /**

@@ -4,6 +4,7 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <OpenSim/Tools/Object.h>
+#include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyInt.h>

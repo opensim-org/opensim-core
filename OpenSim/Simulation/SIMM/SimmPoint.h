@@ -1,10 +1,10 @@
-#ifndef _SimmPoint_h_
-#define _SimmPoint_h_
+#ifndef __SimmPoint_h__
+#define __SimmPoint_h__
 
 // SimmPoint.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -32,6 +32,7 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -41,8 +42,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class RDSIMULATION_API SimmPoint : public Object
 {
 
@@ -74,12 +73,15 @@ public:
 	bool isVisible() const;
 	void peteTest() const;
 
+private:
+	void setNull();
+
 //=============================================================================
 };	// END of class SimmPoint
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmPoint_h__
 

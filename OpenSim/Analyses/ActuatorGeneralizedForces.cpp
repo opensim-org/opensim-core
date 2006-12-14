@@ -18,7 +18,10 @@
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 #include <OpenSim/Tools/Storage.h>
 #include "ActuatorGeneralizedForces.h"
 
@@ -54,28 +57,29 @@ ActuatorGeneralizedForces::~ActuatorGeneralizedForces()
 	}
 
 }
+
 //_____________________________________________________________________________
 /**
  * Construct an GeneralizedForces object for recording the joint torques due
  * an actuator or set of actuators during a simulation.
  *
- * @param aModel Model for which the joint torques are to be recorded.
+ * @param aModel AbstractModel for which the joint torques are to be recorded.
  * @param aNA Number of actuators in set 
  * @param aActuatorList An array containing the actuator numbers
  */
-ActuatorGeneralizedForces::ActuatorGeneralizedForces(Model *aModel) : 
+ActuatorGeneralizedForces::ActuatorGeneralizedForces(AbstractModel *aModel) : 
 Analysis(aModel),
 _actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(0)
+_actuatorList(NULL)
 {
 	setNull();
 
 	/* The rest will be done when a model and actuator set are set
 	// ALLOCATE STATE VECTOR
-	_dqdt = new double[_model->getNQ()];
-	_dudt = new double[_model->getNU()];
+	_dqdt = new double[_model->getNumCoordinates()];
+	_dudt = new double[_model->getNumSpeeds()];
 	_actuatorList = aActuatorList;
-	_actuatorGenForces = new double[_model->getNU()];
+	_actuatorGenForces = new double[_model->getNumSpeeds()];
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
@@ -85,11 +89,13 @@ _actuatorList(0)
 	allocateStorage();
 	*/
 }
+
+
 ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(const std::string &aFileName) :
 Analysis(aFileName),
 _actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(0)
+_actuatorList(NULL)
 {
 	setNull();
 	// Serialize from XML
@@ -102,7 +108,7 @@ ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(DOMElement *aElement) :
 Analysis(aElement),
 _actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(0)
+_actuatorList(NULL)
 {
 	setNull();
 
@@ -111,7 +117,6 @@ _actuatorList(0)
 
 }
 
-// Copy constrctor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -121,7 +126,7 @@ ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(const ActuatorGeneralizedForces &aObject) :
 Analysis(aObject),
 _actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(0)
+_actuatorList(NULL)
 {
 	setNull();
 
@@ -146,6 +151,9 @@ copy(DOMElement *aElement) const
 	object->updateFromXMLNode();
 	return(object);
 }
+
+
+
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
@@ -170,7 +178,8 @@ setNull()
 	// POINTERS
 	_dqdt = NULL;
 	_dudt = NULL;
-	_actuatorList = Array<int>(0);
+	_actuatorList = Array<AbstractActuator*>(NULL);  // CLAY- Is this right?  Or, should it simply be...
+	//_actuatorList.setSize(0);
 	_actuatorGenForces = NULL;
 	_actuatorGenForcesStore = NULL;
 
@@ -189,12 +198,12 @@ setNull()
 /**
  * Analysis::setModel override
  */
-void ActuatorGeneralizedForces::setModel(Model *aModel)
+void ActuatorGeneralizedForces::setModel(AbstractModel *aModel)
 {
 	Analysis::setModel(aModel);
-	if (_dqdt != 0) delete[] _dqdt;	_dqdt = new double[_model->getNQ()];
-	if (_dudt != 0) delete[] _dudt;	_dudt = new double[_model->getNU()];
-	if (_actuatorGenForces != 0) delete[] _actuatorGenForces;	_actuatorGenForces = new double[_model->getNU()];
+	if (_dqdt != 0) delete[] _dqdt;	_dqdt = new double[_model->getNumCoordinates()];
+	if (_dudt != 0) delete[] _dudt;	_dudt = new double[_model->getNumSpeeds()];
+	if (_actuatorGenForces != 0) delete[] _actuatorGenForces;	_actuatorGenForces = new double[_model->getNumSpeeds()];
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
@@ -218,9 +227,9 @@ setActuatorList(const Array<std::string>& aActuatorNames)
 {
 	_actuatorList.setSize(0);
 	for(int i=0; i < aActuatorNames.getSize(); i++){
-		int actIndex = _model->getActuatorIndex(aActuatorNames.get(i));
-		if (actIndex != -1)
-			_actuatorList.append(actIndex);
+		AbstractActuator *act = _model->getActuatorSet()->get(aActuatorNames.get(i));
+		if (act)
+			_actuatorList.append(act);
 
 	}
 }
@@ -284,15 +293,21 @@ void ActuatorGeneralizedForces::
 constructColumnLabels()
 {
 	// CHECK FOR NULL
-	if(_model->getSpeedName(0).empty()) { setColumnLabels(NULL);  return; }
-
-	// ASSIGN
-	int i;
-	string labels = "time";
-	for(i=0;i<_model->getNU();i++) {
-		labels += "\t";
-		labels += _model->getSpeedName(i);
+	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
+	{
+		setColumnLabels(NULL);
+		return;
 	}
+
+	string labels = "time";
+	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+
+	for(int i=0; i<ss->getSize(); i++)
+	{
+		AbstractSpeed* speed = ss->get(i);
+		labels += "\t" + speed->getName();
+	}
+
 	labels += "\n";
 
 	setColumnLabels(labels.c_str());
@@ -342,17 +357,17 @@ int ActuatorGeneralizedForces::
 record(double aT,double *aX,double *aY)
 {
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
 
 	// COMPUTE ACCELERATIONS OF GENERALIZED COORDINATES
 	_model->set(aT,aX,aY);
-	_model->computeActuation();
-	_model->applyActuatorForces();
-	_model->computeContact();
-	_model->applyContactForces();
-	_model->computeAccelerations(_dqdt,_dudt);
+	_model->getActuatorSet()->computeActuation();
+	_model->getActuatorSet()->apply();
+	_model->getContactSet()->computeContact();
+	_model->getContactSet()->apply();
+	_model->getDynamicsEngine().computeDerivatives(_dqdt,_dudt);
 
 
 	// COMPUTE ACTUATOR GENERALIZED FORCES - to use the compute generalized
@@ -360,14 +375,14 @@ record(double aT,double *aX,double *aY)
 	int i;
 	int size = _actuatorList.getSize();
 	_model->setStates(aY); //clears forces
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	for(i=0;i<size;i++) {
-		_model->setActuatorForce(_actuatorList[i],0.0);
+		_actuatorList[i]->setForce(0.0);
 	}
-	_model->applyActuatorForces();
-	_model->computeContact();
-	_model->applyContactForces();
-	_model->computeGeneralizedForces(_dudt,_actuatorGenForces);
+	_model->getActuatorSet()->apply();
+	_model->getContactSet()->computeContact();
+	_model->getContactSet()->apply();
+	_model->getDynamicsEngine().computeGeneralizedForces(_dudt,_actuatorGenForces);
 
 	// RECORD RESULTS
 	_actuatorGenForcesStore->append(aT*_model->getTimeNormConstant(),nu,_actuatorGenForces);
@@ -380,7 +395,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -412,7 +427,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -446,7 +461,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

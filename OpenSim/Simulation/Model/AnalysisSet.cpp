@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "AnalysisSet.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 using namespace OpenSim;
@@ -62,7 +62,7 @@ AnalysisSet::~AnalysisSet()
  *
  * @param aModel Model for the analysis set.
  */
-AnalysisSet::AnalysisSet(Model *aModel)
+AnalysisSet::AnalysisSet(AbstractModel *aModel)
 {
 	setType("AnalysisSet");
 	setNull();
@@ -157,7 +157,7 @@ setNull()
  * @param aModel Pointer to the model.
  */
 void AnalysisSet::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	int i;
 	int size = getSize();
@@ -174,7 +174,7 @@ setModel(Model *aModel)
  *
  * @return Pointer to the model.
  */
-Model* AnalysisSet::
+AbstractModel* AnalysisSet::
 getModel()
 {
 	return(_model);

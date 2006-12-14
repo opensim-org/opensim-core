@@ -12,7 +12,6 @@
 #include <math.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "DecompHard.h"
 
 

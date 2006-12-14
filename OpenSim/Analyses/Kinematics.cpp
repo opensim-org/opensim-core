@@ -11,8 +11,10 @@
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 #include "Kinematics.h"
 
 
@@ -45,13 +47,19 @@ Kinematics::~Kinematics()
  * Construct an Kinematics object for recording the kinematics of
  * a model's generalized coodinates during a simulation.
  *
- * @param aModel Model for which the kinematics are to be recorded.
+ * @param aModel AbstractModel for which the kinematics are to be recorded.
  */
-Kinematics::Kinematics(Model *aModel) :
+Kinematics::Kinematics(AbstractModel *aModel) :
 	Analysis(aModel)
 {
 	// NULL
 	setNull();
+
+	if (_model != 0){
+		// ALLOCATE STATE VECTOR
+		_y = new double[_model->getNumStates()];
+		_dy = new double[_model->getNumStates()];
+	}
 
 	// DESCRIPTION
 	constructDescription();
@@ -63,8 +71,8 @@ Kinematics::Kinematics(Model *aModel) :
 	if(_model==NULL) return;
 
 	// ALLOCATE ARRAYS
-	_y = new double[_model->getNY()];
-	_dy = new double[_model->getNY()];
+	_y = new double[_model->getNumStates()];
+	_dy = new double[_model->getNumStates()];
 
 	// LABELS
 	constructColumnLabels();
@@ -182,8 +190,8 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_y = new double[_model->getNY()];
-		_dy = new double[_model->getNY()];
+		_y = new double[_model->getNumStates()];
+		_dy = new double[_model->getNumStates()];
 		constructColumnLabels();
 	}
 
@@ -270,23 +278,31 @@ void Kinematics::
 constructColumnLabels()
 {
 	// CHECK FOR NULL
-	if (_model ==0) return;
-
-	if(_model->getSpeedName(0).empty()) { setColumnLabels(NULL);  return; }
-
-	// ASSIGN
-	int i;
-	string labels = "time";
-	for(i=0;i<_model->getNU();i++) {
-		labels += "\t";
-		labels += _model->getSpeedName(i);
+	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
+	{
+		setColumnLabels(NULL);
+		return;
 	}
+
+	string labels = "time";
+	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+
+	int i;
+	for (i=0; i < ss->getSize(); i++)
+	{
+		AbstractSpeed *speed= ss->get(i);
+		labels += "\t" + AbstractSpeed::getCoordinateName(speed->getName());
+	}
+
 	labels += "\n";
 
 	setColumnLabels(labels.c_str());
-	_pStore->setColumnLabels(getColumnLabels());
-	_vStore->setColumnLabels(getColumnLabels());
-	_aStore->setColumnLabels(getColumnLabels());
+	if (_pStore)
+		_pStore->setColumnLabels(getColumnLabels());
+	if (_vStore)
+		_vStore->setColumnLabels(getColumnLabels());
+	if (_aStore)
+		_aStore->setColumnLabels(getColumnLabels());
 }
 
 
@@ -330,7 +346,7 @@ getPositionStorage()
 /**
  * Set the model pointer for analyzing kinematics.
  */
-void Kinematics::setModel(Model *aModel)
+void Kinematics::setModel(AbstractModel *aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
@@ -341,10 +357,12 @@ void Kinematics::setModel(Model *aModel)
 
 	if (_model){
 		// ALLOCATE STATE VECTOR
-		_y = new double[_model->getNY()];
-		_dy = new double[_model->getNY()];
+		_y = new double[_model->getNumStates()];
+		_dy = new double[_model->getNumStates()];
 	}
 
+	constructColumnLabels();
+	// UPDATE LABELS
 	constructColumnLabels();
 }
 
@@ -381,9 +399,9 @@ int Kinematics::
 record(double aT,double *aX,double *aY)
 {
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
 
 	// COMPUTE DERIVATIVES
 	// ----------------------------------
@@ -392,31 +410,31 @@ record(double aT,double *aX,double *aY)
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
 
 	// ACCELERATIONS
-	_model->computeAccelerations(_dy,&_dy[nq]);
+	_model->getDynamicsEngine().computeDerivatives(_dy,&_dy[nq]);
 	// ----------------------------------
 
 
 	// CONVERT RESULTS TO ANGLES
 	memcpy(_y,aY,ny*sizeof(double));
-	_model->convertQuaternionsToAngles(_y,_y);
+	_model->getDynamicsEngine().convertQuaternionsToAngles(_y,_y);
 
 	// CONVERT TO DEGREES
 	if(getInDegrees()) {
-		_model->convertRadiansToDegrees(_y,_y);
-		_model->convertRadiansToDegrees(&_y[nq],&_y[nq]);
-		_model->convertRadiansToDegrees(&_dy[nq],&_dy[nq]);
+		_model->getDynamicsEngine().convertRadiansToDegrees(_y,_y);
+		_model->getDynamicsEngine().convertRadiansToDegrees(&_y[nq],&_y[nq]);
+		_model->getDynamicsEngine().convertRadiansToDegrees(&_dy[nq],&_dy[nq]);
 	}
 
 	// RECORD RESULTS
@@ -432,7 +450,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -473,7 +491,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -507,7 +525,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

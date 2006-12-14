@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -32,6 +31,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API IndAcc : public Analysis 
 {
@@ -77,8 +78,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	IndAcc(Model *aModel);
-	IndAcc(Model *aModel,Storage *aStates,Storage *aControls,
+	IndAcc(AbstractModel *aModel);
+	IndAcc(AbstractModel *aModel,Storage *aStates,Storage *aControls,
 		char *aBaseName,char *aDir=NULL,char *aExtension=NULL);
 	virtual ~IndAcc();
 private:

@@ -1,10 +1,10 @@
-#ifndef _SimmCoordinate_h_
-#define _SimmCoordinate_h_
+#ifndef __SimmCoordinate_h__
+#define __SimmCoordinate_h__
 
 // SimmCoordinate.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -40,13 +40,14 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Function.h>
-#include <OpenSim/Simulation/SIMM/Coordinate.h>
-#include "SimmPath.h"
+#include "AbstractCoordinate.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmJoint;
-class SimmKinematicsEngine;
+class AbstractDof;
+class AbstractJoint;
+class SimmPath;
+class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
@@ -56,44 +57,26 @@ class SimmKinematicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-
-
-class RDSIMULATION_API SimmCoordinate : public OpenSim::Coordinate  
+class RDSIMULATION_API SimmCoordinate : public AbstractCoordinate  
 {
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-#ifndef SWIG
-	typedef struct
-	{
-		int restraintFuncNum;
-		int minRestraintFuncNum;
-		int maxRestraintFuncNum;
-	} sdfastCoordinateInfo;
-
-	sdfastCoordinateInfo _sdfastInfo;
-#endif
 protected:
 	PropertyDbl _defaultValueProp;
 	double &_defaultValue;
 
-	/* value is specified as a string, so the user can specify
-	 * options like "fromFile" which means to read the value
-	 * from a coordinate file.
-	 */
-	PropertyStr _valueStrProp;
-	std::string &_valueStr;
-	double _value;
+	PropertyDbl _valueProp;
+	double &_value;
 
 	PropertyDbl _toleranceProp;
 	double &_tolerance;
 
-	PropertyDbl _PDStiffnessProp;
-	double &_PDStiffness;
+	PropertyDbl _stiffnessProp;
+	double &_stiffness;
 
-	PropertyDbl _IKweightProp;
-	double &_IKweight;
+	PropertyDbl _weightProp;
+	double &_weight;
 
 	PropertyDblArray _rangeProp;
 	Array<double>& _range;
@@ -119,10 +102,10 @@ protected:
 	PropertyBool _restraintActiveProp;
 	bool &_restraintActive;
 
-	Array<SimmJoint*> _jointList; // list of joints that use this coordinate
+	Array<AbstractJoint*> _jointList; // list of joints that use this coordinate
 	Array<SimmPath*> _pathList; // list of paths that use this coordinate
 
-	int _RTtype; // rotational or translational (based on the DOFs it's used in)
+	AbstractDof::DofType _motionType; // rotational or translational (based on the DOFs it's used in)
 
 //=============================================================================
 // METHODS
@@ -141,60 +124,66 @@ public:
 #ifndef SWIG
 	SimmCoordinate& operator=(const SimmCoordinate &aCoordinate);
 #endif
-   void SimmCoordinate::copyData(const SimmCoordinate &aCoordinate);
+   void copyData(const SimmCoordinate &aCoordinate);
 
-   void addJointToList(SimmJoint* aJoint) { _jointList.append(aJoint); }
-   void addPathToList(SimmPath* aPath) { _pathList.append(aPath); }
-   void setup(SimmKinematicsEngine* aEngine);
-	bool setValue(double value);
-	bool setValue(std::string& aValueStr);
-	double getValue() const { return _value; }
-	const std::string& getValueStr() const { return _valueStr; }
-	double getTolerance() const { return _tolerance; }
-	double getDefaultValue() const { return _defaultValue; }
-	double getPDStiffness() const { return _PDStiffness; }
-	double getIKweight() const { return _IKweight; }
-	void getRange(double range[2]) const { range[0] = _range[0]; range[1] = _range[1]; }
+   virtual void setup(AbstractDynamicsEngine* aEngine);
+
+	virtual void updateFromCoordinate(const AbstractCoordinate &aCoordinate);
+	virtual double getValue() const { return _value; }
+	virtual bool setValue(double aValue);
+	virtual bool getValueUseDefault() const { return _valueProp.getUseDefault(); }
+	virtual void getRange(double rRange[2]) const { rRange[0] = _range[0]; rRange[1] = _range[1]; }
+	virtual bool setRange(double aRange[2]);
 	virtual double getRangeMin() const { return _range[0]; }
 	virtual double getRangeMax() const { return _range[1]; }
-	void getKeys(std::string keys[]) const;
-	const Array<SimmJoint*>& getJointList() const { return _jointList; }
+	virtual bool setRangeMin(double aMin);
+	virtual bool setRangeMax(double aMax);
+	virtual bool getRangeUseDefault() const { return _rangeProp.getUseDefault(); }
+	virtual double getTolerance() const { return _tolerance; }
+	virtual bool setTolerance(double aTolerance);
+	virtual bool getToleranceUseDefault() const { return _toleranceProp.getUseDefault(); }
+	virtual double getWeight() const { return _weight; }
+	virtual bool setWeight(double aWeight);
+	virtual bool getWeightUseDefault() const { return _weightProp.getUseDefault(); }
+	virtual double getStiffness() const { return _stiffness; }
+	virtual bool setStiffness(double aStiffness);
+	virtual bool getStiffnessUseDefault() const { return _stiffnessProp.getUseDefault(); }
+	virtual double getDefaultValue() const { return _defaultValue; }
+	virtual bool setDefaultValue(double aDefaultValue);
+	virtual bool getDefaultValueUseDefault() const { return _defaultValueProp.getUseDefault(); }
+	virtual bool getClamped() const { return _clamped; }
+	virtual bool setClamped(bool aClamped) { _clamped = aClamped; return true; }
+	virtual bool getClampedUseDefault() const { return _clampedProp.getUseDefault(); }
+	virtual bool getLocked() const { return _locked; }
+	virtual bool setLocked(bool aLocked) { _locked = aLocked; return true; }
+	virtual bool getLockedUseDefault() const { return _lockedProp.getUseDefault(); }
+   virtual void addJointToList(AbstractJoint* aJoint) { _jointList.append(aJoint); }
+   virtual void addPathToList(SimmPath* aPath) { _pathList.append(aPath); }
+	virtual bool isUsedInModel() const { if (getJointList().getSize() > 0) return true; else return false; }
+	virtual bool isRestraintActive() const { return _restraintActive; }
+	virtual Function* getRestraintFunction() const;
+	virtual Function* getMinRestraintFunction() const;
+	virtual Function* getMaxRestraintFunction() const;
+	virtual AbstractDof::DofType getMotionType() const { return _motionType; }
+
+	void getKeys(std::string rKeys[]) const;
+	const Array<std::string>& getKeys() const { return _keys; }
+	const Array<AbstractJoint*>& getJointList() const { return _jointList; }
 	const Array<SimmPath*>& getPathList() const { return _pathList; }
-	bool isUsedInModel(void) { if (getJointList().getSize() > 0) return true; else return false; }
-	bool isClamped(void) const { return _clamped; }
-	bool isLocked(void) const { return _locked; }
-	void setLocked(bool aState) { _locked = aState; }
-	bool isRestraintActive(void) const { return _restraintActive; }
-	Function* getRestraintFunction(void) const;
-	Function* getMinRestraintFunction(void) const;
-	Function* getMaxRestraintFunction(void) const;
-	void updateFromCoordinate(const SimmCoordinate &aCoordinate);
+	void determineType();
 
-	void writeSIMM(std::ofstream& out, int& aFunctionIndex) const;
-
-	void peteTest(void) const;
-	/**
-	 * Manually set restraint function for coordinate
-	 */
-	void setRestraintFunction(Function* aFunction)
-	{
-		_restraintFunction.append(aFunction);
-	}
-protected:
+	virtual void peteTest() const;
 
 private:
-	void setNull(void);
-	void setupProperties(void);
-	void determineType(SimmKinematicsEngine* aEngine);
+	void setNull();
+	void setupProperties();
 
 //=============================================================================
 };	// END of class SimmCoordinate
-
 //=============================================================================
 //=============================================================================
 
-typedef RDSIMULATION_API OpenSim::ArrayPtrs<OpenSim::SimmCoordinate> SimmCoordinateArray;
-}; //namespace
+} // end of namespace OpenSim
 
 #endif // __SimmCoordinate_h__
 

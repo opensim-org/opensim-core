@@ -13,7 +13,9 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+//#include <OpenSim/Simulation/Simm/ActuatorIterator.h>
 #include "Decomp.h"
 
 
@@ -66,9 +68,9 @@ Decomp::~Decomp()
  * This constructor is used if the decomposition analysis is going to
  * be performed during the course of a simulation.
  *
- * @param aModel Model on which the analyses are to be performed.
+ * @param aModel AbstractModel on which the analyses are to be performed.
  */
-Decomp::Decomp(Model *aModel) :
+Decomp::Decomp(AbstractModel *aModel) :
 	Analysis(aModel),
 	_cNames("")
 {
@@ -117,14 +119,14 @@ Decomp::Decomp(Model *aModel) :
  * accelerates the model in a pure sense, without its associated reaction
  * forces.
  *
- * @param aModel Model on which the simulation was run.
+ * @param aModel AbstractModel on which the simulation was run.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.  If NULL,
  * accelerations are computed based on a NULL decompostion.
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension of the force decomposition files.
  */
-Decomp::Decomp(Model *aModel,char *aBaseName,char *aDir,char *aExtension) :
+Decomp::Decomp(AbstractModel *aModel,char *aBaseName,char *aDir,char *aExtension) :
 	Analysis(aModel),
 	_cNames("")
 {
@@ -208,10 +210,10 @@ void Decomp::
 initializeNumbers()
 {
 	// NUMBERS OF THINGS
-	int na = _model->getNA();
+	int na = _model->getNumActuators();
 	_nc = na + 5;
 	_nic = _nc - 2;
-	_np = _model->getNP();
+	_np = _model->getNumContacts();
 
 	// INDICES
 	_cAct = na - 1;
@@ -233,14 +235,20 @@ constructComponentNames()
 	// SET COMPONENTS NAMES
 	int c;
 	_cNames.setSize(_nc);
+	int ai=0;	// index for looping over actuators
+	ActuatorSet* as = _model->getActuatorSet();
+	AbstractActuator* act = as->get(ai);
 	for(c=0;c<_nc;c++) {
-		if(c<=_cAct) {
-			_cNames[c] = _model->getActuatorName(c);
+		if (act) {
+			_cNames[c] = act->getName();
 		} else {
 			_cNames[c] = ADDON_COMPONENT_NAMES[c-_cAct-1];
 		}
 		cout<<_cNames[c]<<endl;
+		ai++;
+		act = as->get(ai);
 	}
+
 }
 //-----------------------------------------------------------------------------
 // DESCRIPTION
@@ -348,7 +356,7 @@ createNullDecomposition()
 {
 	// ZERO VECTOR
 	int i;
-	int n = 3*_model->getNP();
+	int n = 3*_model->getNumContacts();
 	if(n<=0) return;
 	double *zero = new double[n];
 	for(i=0;i<n;i++) zero[i] = 0.0;
@@ -565,14 +573,14 @@ getUsePresetContactEstablishedSettings() const
  * Set whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNP().
+ * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
  * @param aTrueFalse Wheter or not contact has been established.
  * @see setUsePresetContactEstablished()
  */
 void Decomp::
 setContactEstablished(int aIndex,bool aTrueFalse)
 {
-	if((aIndex<0)||(aIndex>=_model->getNP())) {
+	if((aIndex<0)||(aIndex>=_model->getNumContacts())) {
 		printf("Decomp.setContactEstablished: WARN- index out of range.\n");
 		return;
 	}
@@ -584,14 +592,14 @@ setContactEstablished(int aIndex,bool aTrueFalse)
  * Get whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNP().
+ * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
  * @return True if contact has been established; false if not or on an error.
  * @see setUsePresetContactEstablished()
  */
 bool Decomp::
 getContactEstablished(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=_model->getNP())) {
+	if((aIndex<0)||(aIndex>=_model->getNumContacts())) {
 		printf("Decomp.getContactEstablished: WARN- index out of range.\n");
 		return(false);
 	}
@@ -744,7 +752,7 @@ sum()
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -776,7 +784,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -810,7 +818,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

@@ -37,7 +37,7 @@
 //=============================================================================
 //#include <Object.h>
 #include "CallbackSet.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 //=============================================================================
 // STATICS
@@ -64,7 +64,7 @@ CallbackSet::~CallbackSet()
 /**
  * Default constructor.
  */
-CallbackSet::CallbackSet(Model *aModel)
+CallbackSet::CallbackSet(AbstractModel *aModel)
 {
 	setType("CallbackSet");
 	setNull();
@@ -97,7 +97,7 @@ setNull()
  *
  * @return Pointer to the model.
  */
-Model* CallbackSet::
+AbstractModel* CallbackSet::
 getModel()
 {
 	return(_model);

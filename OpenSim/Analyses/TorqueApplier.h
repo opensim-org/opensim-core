@@ -11,14 +11,12 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include <OpenSim/Tools/FunctionSet.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 
 
 //=============================================================================
@@ -32,6 +30,9 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractBody;
+
 class SUANALYSES_API TorqueApplier : public DerivCallback 
 {
 //=============================================================================
@@ -39,7 +40,7 @@ class SUANALYSES_API TorqueApplier : public DerivCallback
 //=============================================================================
 protected:
 	/** Which body segment. */
-	int _body;
+	AbstractBody* _body;
 	/** Torque to be applied. */
 	double _torque[3];
 	/** Vector function containing torque to be applied (t,x,y,z). */
@@ -58,9 +59,9 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	TorqueApplier(Model *aModel,int aBody);
-	TorqueApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *torqueData,
-	              int txNum, int tyNum, int tzNum);
+	TorqueApplier(AbstractModel *aModel,AbstractBody *aBody);
+	TorqueApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
+		Storage *torqueData,int txNum, int tyNum, int tzNum);
 	virtual ~TorqueApplier();
 private:
 	void setNull();
@@ -73,8 +74,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setBody(int aBody);
-	int getBody() const;
+	void setBody(AbstractBody *aBody);
+	AbstractBody* getBody() const;
 	void setTorque(double aTorque[3]);
 	void getTorque(double rPoint[3]) const;
 

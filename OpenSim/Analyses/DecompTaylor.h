@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
@@ -30,6 +29,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API DecompTaylor : public Decomp
 {
@@ -111,7 +112,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	DecompTaylor(Model *aModel);
+	DecompTaylor(AbstractModel *aModel);
 	virtual ~DecompTaylor();
 private:
 	void setNull();

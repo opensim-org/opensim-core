@@ -1,7 +1,7 @@
 // SimmBody.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,23 +22,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmBody.h"
-#include "SimmKinematicsEngine.h"
-#include "simmMacros.h"
-#include <OpenSim/Tools/VisibleObject.h>
-
+#include "AbstractDynamicsEngine.h"
+#include "SimmMacros.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -52,28 +47,26 @@ SimmBody::SimmBody() :
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
+	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
  */
 SimmBody::SimmBody(DOMElement *aElement) :
-   Object(aElement),
+   AbstractBody(aElement),
    _mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -92,18 +85,18 @@ SimmBody::~SimmBody()
  * @param aBody SimmBody to be copied.
  */
 SimmBody::SimmBody(const SimmBody &aBody) :
-   Object(aBody),
+   AbstractBody(aBody),
    _mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
+	setNull();
 	setupProperties();
 	copyData(aBody);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this body and return a pointer to the copy.
@@ -116,6 +109,7 @@ Object* SimmBody::copy() const
 	SimmBody *body = new SimmBody(*this);
 	return(body);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmBody and modify the copy so that it is consistent
@@ -139,28 +133,32 @@ Object* SimmBody::copy(DOMElement *aElement) const
 	return(body);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmBody to another.
+ *
+ * @param aBody SimmBody to be copied.
+ */
 void SimmBody::copyData(const SimmBody &aBody)
 {
 	_mass = aBody._mass;
 	_massCenter = aBody._massCenter;
 	_inertia = aBody._inertia;
 	_displayer = aBody._displayer; //? Do we need a dep copy here? when is this invoked?
-	_markerSet = aBody._markerSet;
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmBody to their null values.
  */
 void SimmBody::setNull()
 {
-	setupProperties();
 	setType("SimmBody");
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -168,134 +166,172 @@ void SimmBody::setNull()
 void SimmBody::setupProperties()
 {
 	_massProp.setName("mass");
-	_massProp.setValue(5.5);
+	_massProp.setValue(0.0);
 	_propertySet.append(&_massProp);
 
-	const double defaultMC[] = {1.1, 2.2, 3.3};
+	const double defaultMC[] = {0.0, 0.0, 0.0};
 	_massCenterProp.setName("mass_center");
 	_massCenterProp.setValue(3, defaultMC);
 	_propertySet.append(&_massCenterProp);
 
-	const double defaultInertia[] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+	const double defaultInertia[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	_inertiaProp.setName("inertia");
 	_inertiaProp.setValue(9, defaultInertia);
 	_propertySet.append(&_inertiaProp);
 
 	_displayerProp.setName("Displayer");
 	_propertySet.append(&_displayerProp);
-
-	_markerSetProp.setName("SimmMarkerSet");
-	_propertySet.append(&_markerSetProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aEngine dynamics engine containing this SimmBody.
+ */
+void SimmBody::setup(AbstractDynamicsEngine* aEngine)
+{
+	// Base class
+	AbstractBody::setup(aEngine);
+
+	int i;
+	for (i = 0; i < _displayer.getNumGeometryFiles(); i++)
+		_displayer.addGeometry(new PolyhedralGeometry("bones/"+_displayer.getGeometryFileName(i)));
+
+	_displayer.setOwner(this);
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmBody& SimmBody::operator=(const SimmBody &aBody)
 {
 	// BASE CLASS
-	Object::operator=(aBody);
+	AbstractBody::operator=(aBody);
 
 	copyData(aBody);
 
 	return(*this);
 }
 
-/* Perform some set up functions that happen after the
- * object has been deserialized or copied.
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the mass of the body.
+ *
+ * @param aMass mass of body.
+ * @return Whether mass was successfully changed.
  */
-void SimmBody::setup(SimmKinematicsEngine* aEngine)
+bool SimmBody::setMass(double aMass)
 {
-	//SimmBone* sb;
-
-	/* The _bones array can contain any VisibleObject.
-	 * Check for ones of type SimmBone and call the
-	 * setup function for them (to read in the VTK
-	 * files, etc.).
-	 *
-	int i;
-	for (i = 0; i < _bones.getSize(); i++)
+	if (aMass >= 0.0)
 	{
-		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
-			sb->setup(aEngine);
-	}
-	*/
-	int i;
-	for (i = 0; i < _displayer.getNumGeometryFiles(); i++)
-	{
-		_displayer.addGeometry(new PolyhedralGeometry("bones/"+_displayer.getGeometryFileName(i)));
+		_mass = aMass;
+		return true;
 	}
 
-	for (i = 0; i < _markerSet.getSize(); i++)
-	{
-		_markerSet.get(i)->setup(aEngine);
-		// This should happen inside setup
-		//_displayer.addDependent(_markerSet.get(i)->getDisplayer());
-		Transform position;
-		position.translate(_markerSet.get(i)->getOffset());
-		_markerSet.get(i)->getDisplayer()->setTransform(position);
+	return false;
+}
 
+//_____________________________________________________________________________
+/**
+ * Get the mass center of the body.
+ *
+ * @param rVec XYZ coordinates of mass center are returned here.
+ */
+void SimmBody::getMassCenter(double rVec[3]) const
+{
+	rVec[0] = _massCenter[0];
+	rVec[1] = _massCenter[1];
+	rVec[2] = _massCenter[2];
+}
+ 
+//_____________________________________________________________________________
+/**
+ * Set the mass center of the body.
+ *
+ * @param aVec XYZ coordinates of mass center.
+ * @return Whether mass center was successfully changed.
+ */
+bool SimmBody::setMassCenter(double aVec[3])
+{
+	_massCenter[0] = aVec[0];
+	_massCenter[1] = aVec[1];
+	_massCenter[2] = aVec[2];
+
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the inertia matrix of the body.
+ *
+ * @param rInertia 3x3 inertia matrix.
+ */
+void SimmBody::getInertia(double rInertia[3][3]) const
+{
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			rInertia[i][j] = _inertia[i*3 + j];
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the inertia matrix of the body.
+ *
+ * @param aInertia 9-element inertia matrix.
+ * @return Whether inertia matrix was successfully changed.
+ */
+bool SimmBody::setInertia(const Array<double>& aInertia)
+{
+	if (aInertia.getSize() >= 9)
+	{
+		for (int i = 0; i < 9; i++)
+			_inertia[i] = aInertia[i];
+
+		return true;
 	}
 
-	_displayer.setOwner(this);
-	/*
-	for (i = 0; i < 3; i++)
-		_scaleFactor[i] = 1.0;
-		*/
+	return false;
 }
 
-void SimmBody::addMarker(SimmMarker* aMarker)
+//=============================================================================
+// BONES
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Add a bone to the body.
+ *
+ * @param aBone bone to be added.
+void SimmBody::addBone(VisibleObject* aBone)
 {
-	// newMarker will be deleted when the _markers array
-	// is deleted because _memoryOwner is set to true.
-	SimmMarker* newMarker = new SimmMarker(*aMarker);
-	_markerSet.append(newMarker);
+	VisibleObject* newBone = new VisibleObject(*aBone);
+
+	// note: _boneSet takes over ownership of newBone
+	_boneSet.append(newBone);
 }
+ */
 
-SimmMarker* SimmBody::getMarker(int index) const
-{
-	if (index >= 0 && index < _markerSet.getSize())
-		return _markerSet.get(index);
-
-	return NULL;
-}
-
-int SimmBody::deleteAllMarkers()
-{
-	int numDeleted = _markerSet.getSize();
-
-	_markerSet.setSize(0);
-
-	return numDeleted;
-}
-
-void SimmBody::deleteMarker(const SimmMarker* aMarker)
-{
-	_markerSet.remove(aMarker);
-}
-
-/* Remove all markers from the body that are not in the passed-in list. */
-int SimmBody::deleteUnusedMarkers(const Array<string>& aMarkerNames)
-{
-	int j=0;
-	int numDeleted = 0;
-
-	for (int i = 0; i < _markerSet.getSize(); i++)
-	{
-		for (j = 0; j < aMarkerNames.getSize(); j++)
-		{
-			if (aMarkerNames[j] == _markerSet.get(i)->getName())
-				break;
-		}
-		if (j == aMarkerNames.getSize())
-		{
-			_markerSet.remove(i);
-			numDeleted++;
-			i--; // decrement i so the next marker will not be skipped
-		}
-	}
-
-	return numDeleted;
-}
-
-void SimmBody::scale(Array<double>& aScaleFactors, bool aPreserveMassDist)
+//=============================================================================
+// SCALING
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Scale the body.
+ *
+ * @param aScaleFactors XYZ scale factors.
+ * @param aScaleMass whether or not to scale mass properties
+ */
+void SimmBody::scale(Array<double>& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
@@ -310,21 +346,19 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aPreserveMassDist)
 	// Update scale factors for displayer
 	getDisplayer()->setScaleFactors(aScaleFactors.get());
 
-	if (!aPreserveMassDist)
+	if (aScaleMass)
 		scaleInertialProperties(aScaleFactors);
 
-	/*
-	SimmBone* sb;
-	for (i = 0; i < _bones.getSize(); i++)
-	{
-		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
-			sb->scale(aScaleFactors);
-	}
-	*/
-	for (i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->scale(aScaleFactors);
+	//for (i = 0; i < _boneSet.getSize(); i++)
+		//_boneSet.get(i)->scale(aScaleFactors);
 }
 
+//_____________________________________________________________________________
+/**
+ * Scale the body's mass and inertia.
+ *
+ * @param aScaleFactors XYZ scale factors.
+ */
 void SimmBody::scaleInertialProperties(Array<double>& aScaleFactors)
 {
 	int i;
@@ -437,82 +471,23 @@ void SimmBody::scaleInertialProperties(Array<double>& aScaleFactors)
 	}
 }
 
-void SimmBody::writeSIMM(ofstream& out) const
+//=============================================================================
+// ITERATORS FOR COMPONENTS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Make an iterator for the body's bone set.
+ *
+ * @return Pointer to the bone iterator.
+BoneIterator* SimmBody::newBoneIterator() const
 {
-	int i;
-	//SimmBone* sb;
-
-	out << "beginsegment " << getName() << endl;
-	out << "mass " << _mass << endl;
-	out << "masscenter " << _massCenter[0] << " " << _massCenter[1] << " " << _massCenter[2] << endl;
-	out << "inertia " << _inertia[0] << " " << _inertia[1] << " " << _inertia[2] << endl;
-	out << "        " << _inertia[3] << " " << _inertia[4] << " " << _inertia[5] << endl;
-	out << "        " << _inertia[6] << " " << _inertia[7] << " " << _inertia[8] << endl;
-	
-	string fileName;
-	for (i = 0; i < _displayer.getNumGeometryFiles()  ; i++)
-	{
-		fileName = _displayer.getGeometryFileName(i);
-		int dot = fileName.find_last_of(".");
-		if (dot > 0)
-			fileName.erase(dot, 4);
-		fileName += ".asc";
-		out << "bone " << fileName << endl;
-	}
-	
-	for (i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->writeSIMM(out);
-
-	double scaleFactors[3];
-	_displayer.getScaleFactors(scaleFactors);
-
-	out << "scale " << scaleFactors[0] << " " << scaleFactors[1] << " " << scaleFactors[2] << endl;
-	out << "endsegment" << endl << endl;
+	return new BoneSetIterator(_boneSet);
 }
+ */
 
-void SimmBody::writeMarkers(ofstream& out) const
-{
-	/* The code to write a marker to a file could be
-	 * turned into a SimmMarker method, but what gets
-	 * written to the file is not a standard marker
-	 * node, but rather one that can be pasted into
-	 * a MarkerSet node in a SimmSubject definition.
-	 * The bodyName field is needed for this, and
-	 * bodyName is not used by every marker in the model.
-	 */
-	for (int i = 0; i < _markerSet.getSize(); i++)
-	{
-		const double* pos = _markerSet.get(i)->getOffset();
-
-		out << "   <SimmMarker name=\"" << _markerSet.get(i)->getName() << "\">" << endl;
-		out << "      <body>" << getName() << "</body>" << endl;
-		out << "      <location>" << pos[0] << " " << pos[1] << " " << pos[2] << "</location>" << endl;
-		out << "      <weight>" << _markerSet.get(i)->getWeight() << "</weight>" << endl;
-		out << "      <fixed>" << ((_markerSet.get(i)->getFixed()) ? ("true") : ("false")) << "</fixed>" << endl;
-		out << "   </SimmMarker>" << endl;
-	}
-}
-
-void SimmBody::peteTest() const
-{
-	int i;
-	//SimmBone* sb;
-
-	cout << "Body: " << getName() << endl;
-	cout << "   mass: " << _mass << endl;
-	cout << "   massCenter: " << _massCenter << endl;
-	cout << "   inertia: " << _inertia << endl;
-	/*
-	for (i = 0; i < _bones.getSize(); i++)
-	{
-		if (sb = dynamic_cast<SimmBone*>(_bones[i]))
-			sb->peteTest();
-	}
-	*/
-	for (i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->peteTest();
-}
-
+//=============================================================================
+// I/O
+//=============================================================================
 void SimmBody::getScaleFactors(Array<double>& scales) const
 {
 
@@ -522,4 +497,20 @@ void SimmBody::getScaleFactors(Array<double>& scales) const
 	for (int i=0; i<3; i++)
 		scales[i] = scaleFactors[i];
 
+}
+
+void SimmBody::peteTest() const
+{
+	cout << "Body: " << getName() << endl;
+	cout << "   mass: " << _mass << endl;
+	cout << "   massCenter: " << _massCenter << endl;
+	cout << "   inertia: " << _inertia << endl;
+
+	if (_wrapObjectSet.getSize() > 0) {
+		int i;
+		for (i = 0; i < _wrapObjectSet.getSize(); i++)
+			_wrapObjectSet.get(i)->peteTest();
+	} else {
+		cout << "   no wrap objects" << endl;
+	}
 }

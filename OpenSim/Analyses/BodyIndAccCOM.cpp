@@ -13,7 +13,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include "BodyIndAccCOM.h"
 
 
@@ -67,13 +69,13 @@ BodyIndAccCOM::~BodyIndAccCOM()
  * Construct an induced acceleration COM instance for performing an induced
  * acceleration COM analysis on the bodies of a model.
  *
- * @param aModel Model on which the analyses are to be performed.
+ * @param aModel AbstractModel on which the analyses are to be performed.
  * @param aN Number of bodies that will be used to calculate COM
  * @param aBodyList Array containing aN body numbers corresponding to
  * 					  those used in calculating COM
  */
-BodyIndAccCOM::BodyIndAccCOM(Model *aModel, int aN,
-	 int aBodyList[]) : BodyIndAcc(aModel)
+BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel, int aN,
+	 AbstractBody* aBodyList[]) : BodyIndAcc(aModel)
 {
 	setName("BodyIndAccCOM");
 
@@ -101,7 +103,7 @@ BodyIndAccCOM::BodyIndAccCOM(Model *aModel, int aN,
  * Note that the induced accelerations are not read in from file.  The
  * induced accelerations are recomputed based on the force decomposition.
  *
- * @param aModel Model on which the analyses were performed.
+ * @param aModel AbstractModel on which the analyses were performed.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.
  * @param aDir Directory in which the results reside.
@@ -113,9 +115,9 @@ BodyIndAccCOM::BodyIndAccCOM(Model *aModel, int aN,
  * @todo	check that code is correct for generalized force case
  * @todo add initial velocity and ind pos due to init vel and pos to all
  */
-BodyIndAccCOM::BodyIndAccCOM(Model *aModel,Storage *aStates,
+BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel,Storage *aStates,
 	Storage *aControls,char *aBaseName,char *aDir,char *aExtension,
-	int aN,int aBodyList[]) :
+	int aN,AbstractBody* aBodyList[]) :
 	BodyIndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
 	printf("BodyIndAccCOM: constructing COM induced acceleration analysis from file.\n");
@@ -151,17 +153,23 @@ BodyIndAccCOM::BodyIndAccCOM(Model *aModel,Storage *aStates,
  * all of the body numbers for the given model.
  */
 void BodyIndAccCOM::
-setBodyList(int aBodyList[])
+setBodyList(AbstractBody* aBodyList[])
 {
 	int i;	
 
-	if(_aN==0){
-		_aN = _model->getNB();
-		_aBodyList = new int[_aN];		
-		for(i=0;i<_aN;i++)
-			_aBodyList[i] = i;
+	if (_aN==0){
+		_aN = _model->getNumBodies();
+		_aBodyList = new AbstractBody*[_aN];		
+		i = 0;
+		BodySet *bs = _model->getDynamicsEngine().getBodySet();
+
+		for(i=0; i<bs->getSize(); i++)
+		{
+			AbstractBody *body=bs->get(i);
+			_aBodyList[i++] = body;
+		}
 	} else {
-		_aBodyList = new int[_aN];		
+		_aBodyList = new AbstractBody*[_aN];		
 		for(i=0;i<_aN;i++)
 			_aBodyList[i] = aBodyList[i];
 	}
@@ -185,7 +193,7 @@ constructDescription()
 	strcat(descrip,tmp);
 	strcat(descrip,"\nThe bodies in the COM calculation were: \n");
 	for(i=0;i<_aN;i++){
-		sprintf(tmp2,"%s ", _model->getBodyName(_aBodyList[i]).c_str());
+		sprintf(tmp2,"%s ", _aBodyList[i]->getName().c_str());
 		strcat(descrip,tmp2);
 	}
 	strcat(descrip,"\n");
@@ -331,7 +339,6 @@ computeBodyCOMAccelerations()
 	StateVector *stateStoreVec = NULL;
 	double *dataVec = NULL;
 	double *statedataVec = NULL;
-	double posCOM[3] = {0,0,0};
 	double velVec[3];
 	double posVec[3];
 	double ivelVec[3];
@@ -367,15 +374,17 @@ computeBodyCOMAccelerations()
 			if(t==(_yStore->getSize() - 1)) _tf = time;
 
 			for(body=0;body<_aN;body++) {
-				bodyMass = _model->getMass(_aBodyList[body]);
+				bodyMass = _aBodyList[body]->getMass();
 				if (c==0){ // only need to do this once for each time step
+					double posCOM[3];
+					_aBodyList[body]->getMassCenter(posCOM);
 					_model->setStates(statedataVec);
-					_model->getPosition(_aBodyList[body],posCOM,b_posVec);
-					_model->getVelocity(_aBodyList[body],posCOM,b_velVec);
+					_model->getDynamicsEngine().getPosition(*_aBodyList[body],posCOM,b_posVec);
+					_model->getDynamicsEngine().getVelocity(*_aBodyList[body],posCOM,b_velVec);
 				}
 				// COMPUTE
 				for(int k=0;k<3;k++){	
-					I = Mtx::ComputeIndex(_aBodyList[body],6,k);
+					I = Mtx::ComputeIndex(body/*_aBodyList[body]*/,6,k); // TODOAUG
 					J = Mtx::ComputeIndex(c,3,k);
 					accVec[J] += bodyMass*dataVec[I];
 					if (c==0){ // only need to do this once for each time step

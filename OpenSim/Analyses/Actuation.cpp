@@ -11,7 +11,9 @@
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+//#include <OpenSim/Simulation/Simm/ActuatorIterator.h>
 #include "Actuation.h"
 
 
@@ -45,7 +47,7 @@ Actuation::~Actuation()
  *
  * @param aModel Model for which the Actuation are to be recorded.
  */
-Actuation::Actuation(Model *aModel) :
+Actuation::Actuation(AbstractModel *aModel) :
 	Analysis(aModel)
 {
 	// NULL
@@ -61,7 +63,7 @@ Actuation::Actuation(Model *aModel) :
 	if(_model==NULL) return;
 
 	// NUMBER OF ACTUATORS
-	_na = _model->getNA();
+	_na = _model->getNumActuators();
 	if(_na<=0) return;
 
 	// WORK ARRAY
@@ -186,7 +188,7 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_na = _model->getNA();
+		_na = _model->getNumActuators();
 		_fsp = new double[_na];
 		constructColumnLabels();
 	}
@@ -197,18 +199,23 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 /**
  * Set the model pointer for analysis.
  */
-void Actuation::setModel(Model *aModel)
+void Actuation::setModel(AbstractModel *aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
 
-	_na = _model->getNA();
+	if (_model)
+		_na = _model->getNumActuators();
+	else
+		_na = 0;
+
 	if(_na<=0) return;
 
 	// WORK ARRAY
 	if(_fsp!=NULL) delete[] _fsp;
 	_fsp = new double[_na];
 
+	// UPDATE LABELS
 	constructColumnLabels();
 }
 //_____________________________________________________________________________
@@ -282,16 +289,32 @@ constructDescription()
 void Actuation::
 constructColumnLabels()
 {
-	// ASSIGN
-	int i;
-	string labels = "time";
-	for(i=0;i<_model->getNA();i++) {
-		labels += "\t";
-		labels += _model->getActuatorName(i);
-	}
-	labels += "\n";
+	if (_model)
+	{
+		// ASSIGN
+		string labels = "time";
+		ActuatorSet *ai = _model->getActuatorSet();
+		AbstractActuator *act=0;
+	
+		int i;
+		for (i=0; i < ai->getSize(); i++)
+		{
+			act = ai->get(i);
+			labels += "\t";
+			labels += act->getName();
+		}
 
-	setColumnLabels(labels.c_str());
+		labels += "\n";
+
+		setColumnLabels(labels.c_str());
+
+		if (_forceStore)
+			_forceStore->setColumnLabels(getColumnLabels());
+		if (_speedStore)
+			_speedStore->setColumnLabels(getColumnLabels());
+		if (_powerStore)
+			_powerStore->setColumnLabels(getColumnLabels());
+	}
 	_forceStore->setColumnLabels(getColumnLabels());
 	_speedStore->setColumnLabels(getColumnLabels());
 	_powerStore->setColumnLabels(getColumnLabels());
@@ -389,10 +412,10 @@ record(double aT,double *aX,double *aY)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 
 	// NUMBER OF ACTUATORS
-	int na = _model->getNA();
+	int na = _model->getNumActuators();
 	if(na!=_na) {
 		printf("Actuation.record: WARN- number of actuators has changed!\n");
 		_na = na;
@@ -407,23 +430,21 @@ record(double aT,double *aX,double *aY)
 	double tReal = aT * _model->getTimeNormConstant();
 
 	// FORCE
-	int i;
-	for(i=0;i<na;i++) {
-		_fsp[i] = _model->getActuatorForce(i);
-	}
+	ActuatorSet *as = _model->getActuatorSet();
+	for(int i=0; i<as->getSize(); i++)
+		_fsp[i] = as->get(i)->getForce();
 	_forceStore->append(tReal,na,_fsp);
 
 	// SPEED
-	for(i=0;i<na;i++) {
-		_fsp[i] = _model->getActuatorSpeed(i);
-	}
+	for(int i=0; i<as->getSize(); i++)
+		_fsp[i] = as->get(i)->getSpeed();
 	_speedStore->append(tReal,na,_fsp);
 
 	// POWER
-	for(i=0;i<na;i++) {
-		_fsp[i] = _model->getActuatorPower(i);
-	}
+	for(int i=0; i<as->getSize(); i++)
+		_fsp[i] = as->get(i)->getPower();
 	_powerStore->append(tReal,na,_fsp);
+
 
 	return(0);
 }
@@ -433,7 +454,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -474,7 +495,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -508,7 +529,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

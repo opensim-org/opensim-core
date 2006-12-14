@@ -36,8 +36,8 @@
 
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyInt.h>
-#include "Model.h"
-#include "Actuator.h"
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+#include <OpenSim/Simulation/SIMM/AbstractSpeed.h>
 
 
 //=============================================================================
@@ -52,24 +52,33 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API GeneralizedForce : public Actuator
+class AbstractCoordinate;
+
+class RDSIMULATION_API GeneralizedForce : public AbstractActuator
 {
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-	/** Name of the control. */
-	static const std::string X_NAME;
 protected:
 	// PROPERTIES
-	/** Coordinate to which the generalized force is applied. */
-	PropertyInt _propQID;
+	/** Name of coordinate to which the generalized force is applied. */
+	PropertyStr _propQName;
+	/** Optimal force. */
+	PropertyDbl _propOptimalForce;
 
 	// REFERENCES
-	int &_qID;
+	std::string& _qName;
+	double &_optimalForce;
+
+	/** Coordinate to which the generalized force is applied. */
+	AbstractCoordinate *_q;
+	AbstractSpeed *_u;
 
 	/** Temporary work array for holding generalized speeds. */
 	double *_utmp;
+
+	/** Excitation (control 0). */
+	double _excitation;
 
 //=============================================================================
 // METHODS
@@ -78,12 +87,13 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	GeneralizedForce(int aQID=-1,int aNX=1,int aNY=0,int aNYP=0);
-	GeneralizedForce(DOMElement *aElement,int aNX=1,int aNY=0,int aNYP=0);
+	GeneralizedForce(std::string aQName="");
+	GeneralizedForce(DOMElement *aElement);
 	GeneralizedForce(const GeneralizedForce &aGenForce);
 	virtual ~GeneralizedForce();
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
+	void copyData(const GeneralizedForce &aGenForce);
 private:
 	void setNull();
 	void setupProperties();
@@ -99,8 +109,13 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// GENERALIZED COORDINATE
-	void setQID(int aQID);
-	int getQID() const;
+	void setQ(AbstractCoordinate* aQ);
+	AbstractCoordinate* getQ() const;
+	// OPTIMAL FORCE
+	void setOptimalForce(double aOptimalForce);
+	double getOptimalForce() const;
+	// STRESS
+	double getStress() const;
 
 	//--------------------------------------------------------------------------
 	// APPLICATION
@@ -116,7 +131,9 @@ public:
 	// CHECK
 	//--------------------------------------------------------------------------
 	virtual bool check() const;
-	virtual bool isQIDValid() const;
+	virtual bool isQValid() const;
+	// Setup method to initialize Body references
+	void setup(AbstractModel* aModel);
 
 	//--------------------------------------------------------------------------
 	// XML

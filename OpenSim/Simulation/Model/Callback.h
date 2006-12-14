@@ -38,7 +38,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
 
-#include "Model.h"
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 
@@ -54,6 +53,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API Callback : public Object
 {
 
@@ -62,7 +63,7 @@ class RDSIMULATION_API Callback : public Object
 //=============================================================================
 protected:
 	/** Model. */
-	Model *_model;
+	AbstractModel *_model;
 private:
 	/** On, off flag. */
 	PropertyBool _onProp;
@@ -81,7 +82,7 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Callback(Model *aModel=NULL);
+	Callback(AbstractModel *aModel=NULL);
 	Callback(const Callback &aCallback);
 	Callback(const std::string &aFileName);
 	Callback(DOMElement *aElement);
@@ -103,8 +104,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	// MODEL
-	virtual void setModel(Model *);
-	Model* getModel() const;
+	virtual void setModel(AbstractModel *);
+	AbstractModel* getModel() const;
 	// ON,OFF
 	void setOn(bool aTrueFalse);
 	bool getOn() const;

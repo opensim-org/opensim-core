@@ -5,8 +5,7 @@
 //==============================================================================
 #include <iostream>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -50,7 +49,7 @@ int main()
 	// STEP 4
 	// Alter the initial states if desired.
 	// Initial states would normally be specified in a file
-	Array<double> yi(0.0,model.getNY());
+	Array<double> yi(0.0,model.getNumStates());
 	model.getInitialStates(&yi[0]);
 	yi[1] = 0.25;	// Y Position of block center of mass (com)
 	yi[7] = 1.0;	// X Velocity of block com

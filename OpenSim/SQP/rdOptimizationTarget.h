@@ -104,15 +104,15 @@ public:
 		computeConstraintGradient(double *x,int i,double *dcdx) = 0;
 
 	// SET AND GET
-	virtual void setNX(int aNX);
-	int getNX();
+	virtual void setNumControls(int aNX);
+	int getNumControls();
 	void setDX(double aVal);
 	void setDX(int aIndex,double aVal);
 	double getDX(int aIndex);
 	double* getDXArray();
 	void setNEvaluations(int aN=0);
 	int getNEvaluations();
-	int getNP();
+	int getNumContacts();
 	int getNC();
 	int getNCInequality();
 	int getNCInequalityNonlinear();

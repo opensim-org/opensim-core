@@ -74,7 +74,7 @@ rdOptimizationTarget(int aNX)
 	setNull();
 
 	// SET NUMBER OF CONTROLS
-	setNX(aNX);
+	setNumControls(aNX);
 }
 
 
@@ -119,7 +119,7 @@ setNull()
  * @see setDX()
  */
 void rdOptimizationTarget::
-setNX(int aNX)
+setNumControls(int aNX)
 {
 	_nx = aNX;
 	if(_nx<0) _nx = 0;
@@ -135,7 +135,7 @@ setNX(int aNX)
  * @return Number of controls.
  */
 int rdOptimizationTarget::
-getNX()
+getNumControls()
 {
 	return(_nx);
 }
@@ -232,7 +232,7 @@ getNEvaluations()
  * Get the number of performance criteria.
  */
 int rdOptimizationTarget::
-getNP()
+getNumContacts()
 {
 	return(_np);
 }

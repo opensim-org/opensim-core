@@ -34,7 +34,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of body scales.
+ * A class for holding a set of muscle points.
  *
  * @authors Peter Loan
  * @version 1.0

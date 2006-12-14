@@ -1,10 +1,10 @@
-#ifndef _BodyScale_h_
-#define _BodyScale_h_
+#ifndef __BodyScale_h__
+#define __BodyScale_h__
 
 // BodyScale.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -35,6 +35,8 @@
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/XMLDocument.h>
 
+namespace OpenSim {
+
 //=============================================================================
 //=============================================================================
 /**
@@ -44,16 +46,12 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class RDSIMULATION_API BodyScale : public Object  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
 	PropertyStrArray _axisNamesProp;
 	Array<std::string>& _axisNames;
@@ -72,9 +70,7 @@ public:
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 
-#ifndef SWIG
 	BodyScale& operator=(const BodyScale &aBodyScale);
-#endif
 	void copyData(const BodyScale &aBodyScale);
 
 	const Array<std::string>& getAxisNames() const { return _axisNames; }
@@ -88,10 +84,10 @@ private:
 	void setupProperties();
 //=============================================================================
 };	// END of class BodyScale
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __BodyScale_h__
 

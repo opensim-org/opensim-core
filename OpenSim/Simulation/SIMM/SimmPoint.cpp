@@ -1,7 +1,7 @@
 // SimmPoint.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,21 +22,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
-#include "simmMacros.h"
+#include "SimmMacros.h"
 #include "SimmPoint.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -47,17 +44,32 @@ using namespace std;
  */
 SimmPoint::SimmPoint()
 {
+	setNull();
 }
 
+//_____________________________________________________________________________
+/**
+ * Constructor from a set of XYZ coordinates.
+ */
 SimmPoint::SimmPoint(double coords[3])
 {
+	setNull();
+
 	for (int i = 0; i < 3; i++)
 		_location[i] = coords[i];
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aPoint SimmPoint to be copied.
+ */
 SimmPoint::SimmPoint(const SimmPoint& aPoint) :
    Object(aPoint)
 {
+	setNull();
+
 	for (int i = 0; i < 3; i++)
 		_location[i] = aPoint._location[i];
 }
@@ -83,6 +95,27 @@ Object* SimmPoint::copy() const
 	return(point);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set NULL values for all the variable members of this class.
+ */
+void SimmPoint::setNull()
+{
+	setType("SimmPoint");
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmPoint& SimmPoint::operator=(const SimmPoint &aPoint)
 {
 	// BASE CLASS
@@ -94,6 +127,12 @@ SimmPoint& SimmPoint::operator=(const SimmPoint &aPoint)
 	return(*this);
 }
 
+//_____________________________________________________________________________
+/**
+ * Plus-equals operator.
+ *
+ * @return Reference to this object.
+ */
 SimmPoint& SimmPoint::operator+=(const SimmPoint &aPoint)
 {
 	for (int i = 0; i < 3; i++)
@@ -102,6 +141,12 @@ SimmPoint& SimmPoint::operator+=(const SimmPoint &aPoint)
 	return(*this);
 }
 
+//_____________________________________________________________________________
+/**
+ * Divide-equals operator.
+ *
+ * @return Reference to this object.
+ */
 SimmPoint& SimmPoint::operator/=(double factor)
 {
 	for (int i = 0; i < 3; i++)
@@ -110,6 +155,17 @@ SimmPoint& SimmPoint::operator/=(double factor)
 	return(*this);
 }
 
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the coordinates of the SimmPoint
+ *
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param z Z coordinate
+ */
 void SimmPoint::set(double x, double y, double z)
 {
 	_location[0] = x;
@@ -117,8 +173,12 @@ void SimmPoint::set(double x, double y, double z)
 	_location[2] = z;
 }
 
-/* The point is considered not visible (valid) if any
- * coordinate is NAN.
+//_____________________________________________________________________________
+/**
+ * Is the SimmPoint visible? It is considered invisible if
+ * any coordinate is NAN.
+ *
+ * @return Whether or not the SimmPoint is visible.
  */
 bool SimmPoint::isVisible() const
 {

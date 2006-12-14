@@ -1,5 +1,3 @@
-SUBDIRS(SDFast)
-
 SET(KIT Simulation)
 SET(UKIT SIMULATION)
 

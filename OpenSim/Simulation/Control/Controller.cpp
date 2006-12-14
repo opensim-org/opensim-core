@@ -36,6 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "Controller.h"
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 //=============================================================================
@@ -58,9 +59,9 @@ const int Controller::DESCRIP_LENGTH = ControllerDESCRIP_LENGTH;
 /**
  * Default constructor.
  *
- * @param aModel Model that is to be controlled.
+ * @param aModel AbstractModel that is to be controlled.
  */
-Controller::Controller(Model *aModel)
+Controller::Controller(AbstractModel *aModel)
 {
 	// NULL
 	setNull();
@@ -115,7 +116,7 @@ setNull()
  *
  * @return Pointer to the model.
  */
-Model* Controller::
+AbstractModel* Controller::
 getModel()
 {
 	return(_model);

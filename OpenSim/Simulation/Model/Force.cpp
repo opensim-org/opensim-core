@@ -41,6 +41,9 @@
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include "Force.h"
 
 
@@ -61,9 +64,6 @@ using namespace std;
 //_____________________________________________________________________________
 /**
  * Destructor.
- *
- * @todo There appears to be a memory leak when the control names are
- * allocated (_xNames) in Force.
  */
 Force::~Force()
 {
@@ -72,20 +72,29 @@ Force::~Force()
 /**
  * Default constructor.
  */
-Force::Force(int aBodyA,int aBodyB,int aNX,int aNY,int aNYP) :
-	Actuator(aNX,aNY,aNYP),
-	_bA(_propBodyA.getValueInt()),
+Force::Force(const string &aBodyAName,const string &aBodyBName) :
+	AbstractActuator(),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_pA(_propPointA.getValueDblArray()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt()),
-	_pB(_propPointB.getValueDblArray())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_pB(_propPointB.getValueDblArray()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
+
 {
 	// NULL
 	setNull();
 
 	// MEMBER DATA
-	_bA = aBodyA;
-	_bB = aBodyB;
+	_bodyAName = aBodyAName;
+	_bodyBName = aBodyBName;
+
+	if(_model) {
+		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -93,16 +102,25 @@ Force::Force(int aBodyA,int aBodyB,int aNX,int aNY,int aNYP) :
  *
  * @param aFileName Name of the file.
  */
-Force::Force(DOMElement *aElement,int aNX,int aNY,int aNYP) :
-	Actuator(aNX,aNY,aNYP,aElement),
-	_bA(_propBodyA.getValueInt()),
+Force::Force(DOMElement *aElement) :
+	AbstractActuator(aElement),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_pA(_propPointA.getValueDblArray()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt()),
-	_pB(_propPointB.getValueDblArray())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_pB(_propPointB.getValueDblArray()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
 {
 	setNull();
 	updateFromXMLNode();
+
+	// MEMBER DATA
+	if (_model) {
+		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -111,12 +129,15 @@ Force::Force(DOMElement *aElement,int aNX,int aNY,int aNYP) :
  * @param aForce Force to be copied.
  */
 Force::Force(const Force &aForce) :
-	Actuator(aForce),
-	_bA(_propBodyA.getValueInt()),
+	AbstractActuator(aForce),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_pA(_propPointA.getValueDblArray()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt()),
-	_pB(_propPointB.getValueDblArray())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_pB(_propPointB.getValueDblArray()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
 {
 	setNull();
 	*this = aForce;
@@ -151,7 +172,7 @@ copy() const
 Object* Force::
 copy(DOMElement *aElement) const
 {
-	Force *act = new Force(aElement,getNX(),getNY());
+	Force *act = new Force(aElement);
 	*act = *this;
 	act->updateFromXMLNode();
 
@@ -177,13 +198,14 @@ setNull()
 	// APPLIES FORCE
 	setAppliesForce(true);
 
+	setNumControls(1); setNumStates(0); setNumPseudoStates(0);
+	bindControl(0, _excitation, "excitation");
+
 	// BODY A
-	_bA = -1;
 	_pA[0] = _pA[1] = _pA[2] = 0.0;
 	_uA[0] = _uA[1] = _uA[2] = 0.0;  _uA[0] = 1.0;
 
 	// BODY B
-	_bB = -1;
 	_pB[0] = _pB[1] = _pB[2] = 0.0;
 	_uB[0] = _uB[1] = _uB[2] = 0.0;  _uB[0] = 1.0;
 
@@ -205,9 +227,8 @@ setupProperties()
 	double origin[3] = { 0.0, 0.0, 0.0 };
 	double x_axis[3] = { 1.0, 0.0, 0.0 };
 
-	_propBodyA.setName("body_A");
-	_propBodyA.setValue(-1);
-	_propertySet.append( &_propBodyA );
+	_propBodyAName.setName("body_A");
+	_propertySet.append( &_propBodyAName );
 
 	_propPointA.setName("point_A");
 	_propPointA.setValue(3,origin);
@@ -217,13 +238,17 @@ setupProperties()
 	_propUnitVectorA.setValue(3,x_axis);
 	_propertySet.append( &_propUnitVectorA );
 
-	_propBodyB.setName("body_B");
-	_propBodyB.setValue(-1);
-	_propertySet.append( &_propBodyB );
+	_propBodyBName.setName("body_B");
+	_propertySet.append( &_propBodyBName );
 
 	_propPointB.setName("point_B");
 	_propPointB.setValue(3,origin);
 	_propertySet.append( &_propPointB );
+
+	_propOptimalForce.setName("optimal_force");
+	_propOptimalForce.setValue(1.0);
+	_propertySet.append( &_propOptimalForce );
+
 }
 
 
@@ -243,7 +268,7 @@ Force& Force::
 operator=(const Force &aForce)
 {
 	// BASE CLASS
-	Actuator::operator=(aForce);
+	AbstractActuator::operator=(aForce);
 
 	// BODY A
 	setBodyA(aForce.getBodyA());
@@ -263,6 +288,9 @@ operator=(const Force &aForce)
 	// DIRECTION B
 	aForce.getForceDirectionB(_uB);
 
+	// OPTIMAL FORCE
+	setOptimalForce(aForce.getOptimalForce());
+
 	return(*this);
 }
 
@@ -275,22 +303,24 @@ operator=(const Force &aForce)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the id of the first body to which the force is applied.
+ * Set the first body to which the force is applied.
  *
- * @param aID Body ID.
+ * @param aBody Pointer to body.
  */
 void Force::
-setBodyA(int aID)
+setBodyA(AbstractBody* aBody)
 {
-	_bA = aID;
+	_bA = aBody;
+	if (aBody)
+		_bodyAName = aBody->getName();
 }
 //_____________________________________________________________________________
 /**
- * Get the id of the first body to which the force is applied.
+ * Get the first body to which the force is applied.
  *
- * @param aID Body ID.
+ * @return Pointer to body.
  */
-int Force::
+AbstractBody* Force::
 getBodyA() const
 {
 	return(_bA);
@@ -397,22 +427,24 @@ getForceDirectionA(double rDirection[3]) const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the id of the second body to which the force is applied.
+ * Set the second body to which the force is applied.
  *
- * @param aID Body ID.
+ * @param aBody Pointer to body.
  */
 void Force::
-setBodyB(int aID)
+setBodyB(AbstractBody* aBody)
 {
-	_bB = aID;
+	_bB = aBody;
+	if (aBody)
+		_bodyBName = aBody->getName();
 }
 //_____________________________________________________________________________
 /**
- * Get the id of the second body to which the force is applied.
+ * Get the second body to which the force is applied.
  *
- * @param aID Body ID.
+ * @return Pointer to body.
  */
-int Force::
+AbstractBody* Force::
 getBodyB() const
 {
 	return(_bB);
@@ -544,13 +576,50 @@ getScaleFactor()
 	return(_scaleFactor);
 }
 
+//-----------------------------------------------------------------------------
+// OPTIMAL FORCE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the optimal force of the force.
+ *
+ * @param aOptimalForce Optimal force.
+ */
+void Force::
+setOptimalForce(double aOptimalForce)
+{
+	_optimalForce = aOptimalForce;
+}
+//_____________________________________________________________________________
+/**
+ * Get the optimal force of the force.
+ *
+ * @return Optimal force.
+ */
+double Force::
+getOptimalForce() const
+{
+	return(_optimalForce);
+}
+//_____________________________________________________________________________
+/**
+ * Get the stress of the force.
+ *
+ * @return Stress.
+ */
+double Force::
+getStress() const
+{
+	return fabs(_force/_optimalForce); 
+}
+
 
 //=============================================================================
 // COMPUTATIONS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute all quantities necessary for applying the actuator force to the
+ * Compute all quantities necessary for applying the force force to the
  * model.
  */
 void Force::
@@ -563,7 +632,7 @@ computeActuation()
 	computeSpeed();
 
 	// FORCE
-	double force = getControl(0) * getOptimalForce();
+	double force = _excitation * getOptimalForce();
 	setForce(force);
 }
 //_____________________________________________________________________________
@@ -574,7 +643,7 @@ computeActuation()
 void Force::
 computeForceDirectionForBodyB()
 {
-	_model->transform(_bA,&_uA[0],_bB,_uB);
+	_model->getDynamicsEngine().transform(*_bA,&_uA[0],*_bB,_uB);
 	Mtx::Multiply(1,3,_uB,-1.0,_uB);
 }
 //_____________________________________________________________________________
@@ -585,10 +654,10 @@ void Force::
 computeSpeed()
 {
 	double vA[3],vB[3],v[3];
-	_model->getVelocity(_bA,&_pA[0],vA);
-	_model->getVelocity(_bA,&_pB[0],vB);
+	_model->getDynamicsEngine().getVelocity(*_bA,&_pA[0],vA);
+	_model->getDynamicsEngine().getVelocity(*_bA,&_pB[0],vB);
 	Mtx::Subtract(1,3,vB,vA,v);
-	_model->transform(_model->getGroundID(),v,_bA,v);
+	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),v,*_bA,v);
 	_speed = -Mtx::DotProduct(3,&_uA[0],v);
 }
 //_____________________________________________________________________________
@@ -632,19 +701,19 @@ apply()
 	}
 	
 	// FORCE ON BODY A
-	if(_bA!=_model->getGroundID()) {
+	if(_bA!=&_model->getDynamicsEngine().getGroundBody()) {
 		double fA[3];
 		Mtx::Multiply(1,3,&_uA[0],_force,fA);
 		Mtx::Multiply(1,3,fA,_scaleFactor,fA);
-		_model->applyForceBodyLocal(_bA,&_pA[0],fA);
+		_model->getDynamicsEngine().applyForceBodyLocal(*_bA,&_pA[0],fA);
 	}
 
 	// FORCE ON BODY B
-	if(_bB!=_model->getGroundID()) {
+	if(_bB!=&_model->getDynamicsEngine().getGroundBody()) {
 		double fB[3];
 		Mtx::Multiply(1,3,_uB,_force,fB);
 		Mtx::Multiply(1,3,fB,_scaleFactor,fB);
-		_model->applyForceBodyLocal(_bB,&_pB[0],fB);
+		_model->getDynamicsEngine().applyForceBodyLocal(*_bB,&_pB[0],fB);
 	}
 }
 
@@ -659,22 +728,22 @@ apply()
 bool Force::
 check() const
 {
-	Actuator::check();
+	AbstractActuator::check();
 
 	// BODY A
 	if(_model!=NULL) {
-		if((getBodyA()<_model->getGroundID())||(getBodyA()>=_model->getNB())) {
-			printf("Force.check: ERROR- %s has invalid body for BodyA (%d).\n",
-				getName().c_str(),getBodyA());
+		if(getBodyA()==NULL) {
+			printf("Force.check: ERROR- %s has invalid body for BodyA (%s).\n",
+				getName().c_str(),_bodyAName.c_str());
 			return(false);
 		}
 	}
 
 	// BODY B
 	if(_model!=NULL) {
-		if((getBodyB()<_model->getGroundID())||(getBodyB()>=_model->getNB())) {
-			printf("Force.check: ERROR- %s has invalid body for BodyB (%d).\n",
-				getName().c_str(),getBodyB());
+		if(getBodyB()==NULL) {
+			printf("Force.check: ERROR- %s has invalid body for BodyB (%s).\n",
+				getName().c_str(),_bodyBName.c_str());
 			return(false);
 		}
 	}
@@ -687,7 +756,20 @@ check() const
 
 	return(true);
 }
-
+//_____________________________________________________________________________
+/**
+ * setup sets the actual Body references _ba, _bB
+ */
+void Force::
+setup(AbstractModel* aModel)
+{
+	AbstractActuator::setup(aModel);
+	if (aModel)
+	{
+		_bA = aModel->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = aModel->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
+}
 
 //=============================================================================
 // UTILITY
@@ -715,14 +797,13 @@ computeLineOfAction(double rLineOfAction[3]) const
 
 	// GET INERTIAL POSITONS
 	double pB[3],pA[3];
-	_model->getPosition(_bB,&_pB[0],pB);
-	_model->getPosition(_bA,&_pA[0],pA);
+	_model->getDynamicsEngine().getPosition(*_bB,&_pB[0],pB);
+	_model->getDynamicsEngine().getPosition(*_bA,&_pA[0],pA);
 
 	// SUBTRACT
 	Mtx::Subtract(1,3,pB,pA,rLineOfAction);
 
 	// TRANSFORM
-	int ground = _model->getGroundID();
-	_model->transform(ground,rLineOfAction,_bA,rLineOfAction);
+	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),rLineOfAction,*_bA,rLineOfAction);
 }
 

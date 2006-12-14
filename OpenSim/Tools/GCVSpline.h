@@ -179,8 +179,6 @@ public:
 	virtual double
 		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0);
 
-	virtual void writeSIMM(std::ofstream& out, int functionIndex) const;
-
 	OpenSim_DERIVED(GCVSpline, Function)
 
 //=============================================================================

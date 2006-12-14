@@ -13,7 +13,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include "rdActuatorsDLL.h"
 
@@ -28,16 +27,15 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
+
+class AbstractCoordinate;
 
 class RDACTUATORS_API SpringGeneralizedForce : public GeneralizedForce 
 {
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-	/** Name of the control. */
-	static const std::string X_NAME;
 protected:
 	// PROPERTIES
 	/** Rest length. */
@@ -57,9 +55,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	SpringGeneralizedForce(int aQID=-1,int aNX=1,int aNY=0,int aNYP=0);
-	SpringGeneralizedForce(DOMElement *aElement,
-		int aNX=1,int aNY=0,int aNYP=0);
+	SpringGeneralizedForce(std::string aQName="");
+	SpringGeneralizedForce(DOMElement *aElement);
 	SpringGeneralizedForce(const SpringGeneralizedForce &aActuator);
 	virtual ~SpringGeneralizedForce();
 	virtual Object* copy() const;
@@ -79,16 +76,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// CONTROLS
-	virtual int getNX() const;
-	virtual const std::string getControlName(int aIndex) const;
-	virtual int getControlIndex(const std::string &aName) const;
-	virtual void setControls(const double aX[]);
-	virtual void setControl(int aIndex,double aValue);
-	virtual void setControl(const std::string &aName,double aValue);
-	virtual void getControls(double rX[]) const;
-	virtual double getControl(int aIndex) const;
-	virtual double getControl(const std::string &aName) const;
 	// REST LENGTH
 	void setRestLength(double aRestLength);
 	double getRestLength() const;

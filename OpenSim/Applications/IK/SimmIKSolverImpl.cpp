@@ -1,9 +1,10 @@
+#include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Simulation/SIMM/SimmIKTrialParams.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Subject/SimmIKTrial.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "SimmIKSolverImpl.h"
@@ -18,7 +19,7 @@ using namespace std;
  * An implementation of the IKSolverInterface specific to simm classes/dynamicsEngine.
  *
  * @param aOptimizationTarget The target that IK will minimize
- * @param aIKParams Parameters specified in input file to control IK.
+ * @param aIKTrial Parameters specified in input file to control IK.
  */
 SimmIKSolverImpl::
 SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget):
@@ -34,7 +35,7 @@ IKSolverInterface(aOptimizationTarget)
  * @param inputData Set of frames to solve packaged as a storage fle.
  * @param outputData the frames solved by the solver represented as a storage onbject.
  */
-void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData)
+void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData)
 {
 	int i;
 
@@ -100,10 +101,10 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 
 	// Set the lower and upper bounds on the unconstrained Q array
 	// TODO: shouldn't have to search for coordinates by name
-	SimmKinematicsEngine &eng = (SimmKinematicsEngine&)_ikTarget.getModel().getSimmKinematicsEngine();
-	for (i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
+	AbstractDynamicsEngine &eng = _ikTarget.getModel().getDynamicsEngine();
+	for (int i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
 	{
-		Coordinate* coord = eng.getCoordinate(*(unconstrainedCoordinateNames[i]));
+		AbstractCoordinate* coord = eng.getCoordinateSet()->get(*(unconstrainedCoordinateNames[i]));
 		optimizer->setLowerBound(i, coord->getRangeMin());
 		optimizer->setUpperBound(i, coord->getRangeMax());
 	}
@@ -138,7 +139,7 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrialParams& aIKOptions, Storage&
 		 *   (b) locked at that specified value.
 		 * These coordinates are not variables in the IK solving.
 		 * If a coordinate is specified in the file but not
-		 * locked, it is an unconstrained coordinate and it is
+		 * locked, it is an unconstrained coordinate and is a
 		 * variable in the IK solving.
 		 */
 		_ikTarget.setPrescribedCoordinates(index);

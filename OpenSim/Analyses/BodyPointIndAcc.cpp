@@ -13,7 +13,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+//#include <OpenSim/Simulation/Simm/ActuatorIterator.h>
 #include "BodyPointIndAcc.h"
 
 
@@ -59,7 +63,7 @@ BodyPointIndAcc::~BodyPointIndAcc()
  * @point aPoint Point value.
  */
 BodyPointIndAcc::
-BodyPointIndAcc(Model *aModel,int aBody,double aPoint[3])
+BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3])
 	: IndAcc(aModel)
 {
 	// STATES
@@ -93,7 +97,7 @@ BodyPointIndAcc(Model *aModel,int aBody,double aPoint[3])
  * @todo add initial velocity and ind pos due to init vel and pos to all
  */
 BodyPointIndAcc::
-BodyPointIndAcc(Model *aModel,int aBody,double aPoint[3],
+BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3],
 	Storage *aStates,Storage *aControls,char *aBaseName,char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
@@ -135,7 +139,7 @@ setNull()
 	_pzPointStore = NULL;
 	setName("BodyPointIndAcc");
 	setPointName("Unknown");
-	_body = -1;
+	_body = NULL;
 	_point[0] = _point[1] = _point[2] = 0.0;
 }
 //_____________________________________________________________________________
@@ -148,20 +152,12 @@ constructDescription()
 	char descrip[BUFFER_LENGTH];
 	char tmp[BUFFER_LENGTH];
 
-	// BODY NAME
-	const char *bodyName;
-	if(_body<0) {
-		bodyName = "ground";
-	} else {
-		bodyName = _model->getBodyName(_body).c_str();
-	}
-
 	strcpy(descrip,"\n");
 	sprintf(tmp,"This file contains the accelerations of point (%lf, %lf, %lf)",
 		_point[0],_point[1],_point[2]);
 	strcat(descrip,tmp);
 	sprintf(tmp,"\non body %s induced by the action forces of model %s.\n",
-		bodyName,_model->getName().c_str());
+		_body->getName().c_str(),_model->getName().c_str());
 	strcat(descrip,tmp);
 	strcat(descrip,"\nThe accelerations are in the inertial frame.\n");
 	strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
@@ -252,14 +248,13 @@ deletePointStorage()
  * @param aBody Body ID
  */
 void BodyPointIndAcc::
-setBody(int aBody)
+setBody(AbstractBody *aBody)
 {
-	if((aBody<0)||(aBody>=_model->getNB())) {
-		printf("BodyPointIndAcc.setBody:  WARN- invalid body ID %d.\n",aBody);
-		printf("\tSetting body id to -1.\n");
-		_body = -1;
-	} else {
-		_body = aBody;
+	if (!aBody)
+	{
+		printf("BodyPointIndAcc.setBody:  WARN- invalid body ID %p.\n", aBody);
+		_body = NULL;
+		return;
 	}
 
 	// RESET STORAGE
@@ -279,7 +274,7 @@ setBody(int aBody)
  *
  * @return Body ID
  */
-int BodyPointIndAcc::
+AbstractBody* BodyPointIndAcc::
 getBody()
 {
 	return(_body);
@@ -406,12 +401,12 @@ computePointAccelerations()
 	}
 
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int nb = _model->getNB();
-	int ny = _model->getNY();
-	int nx = _model->getNX();
-	int np = _model->getNP();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int nb = _model->getNumBodies();
+	int ny = _model->getNumStates();
+	int nx = _model->getNumControls();
+	int np = _model->getNumContacts();
 
 	// GRAVITY
 	double g[3];
@@ -421,7 +416,7 @@ computePointAccelerations()
 
 	// LOOP OVER TIME
 	int i,j,c,I,J;
-	int bodyB;
+	AbstractBody *bodyB;
 	double pointB[3];
 	double t;
 	double *fe = new double[3*np];
@@ -434,9 +429,15 @@ computePointAccelerations()
 	double *az = new double[getNumComponents()];
 	double acc[3], vel[3], pos[3];
 	StateVector *yVec;
+
+	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
+
 	for(i=0;i<_yStore->getSize();i++) {
 
 		// LOOP OVER INDEPENDENT COMPONENTS
+		int ai=0;	// index for looping over actuators
+		ActuatorSet* as = _model->getActuatorSet();
+		AbstractActuator* act = as->get(ai);
 		for(c=0;c<getNumIndependentComponents();c++) {
 
 			// SET GRAVITY
@@ -469,52 +470,52 @@ computePointAccelerations()
 			_model->set(t,x,y);
 
 			// COMPUTE ACTUATION
-			_model->computeActuation();
+			_model->getActuatorSet()->computeActuation();
 
 			// NEED TO RECORD THE INITIAL BODY VELOCITIES AND POSITIONS
 				if(c==getVelocityIndex() && t==_ti){
-					_model->applyActuatorForces();
-					_model->computeAccelerations(dqdt,dudt);					
-					_model->getVelocity(_body,_point,vel);
-					_model->getPosition(_body,_point,pos);
+					_model->getActuatorSet()->apply();
+					engine.computeDerivatives(dqdt,dudt);					
+					engine.getVelocity(*_body,_point,vel);
+					engine.getPosition(*_body,_point,pos);
 
 					// RESET STATES
 					_model->set(t,x,y);
 
 					// RECOMPUTE ACTUATION
-					_model->computeActuation();	
+					_model->getActuatorSet()->computeActuation();	
 
 					// APPLY ELEMENT FORCES
 					if(!getUseNullDecomposition()) {
-						for(j=0;j<_model->getNP();j++) {
+						for(j=0;j<_model->getNumContacts();j++) {
 							J = Mtx::ComputeIndex(j,3,0);
-							bodyB = _model->getContactBodyB(j);
-							_model->getContactPointB(j,pointB);
-							_model->applyForce(bodyB,pointB,&fe[J]);
+							bodyB = _model->getContactSet()->getContactBodyB(j);
+							_model->getContactSet()->getContactPointB(j,pointB);
+							engine.applyForce(*bodyB,pointB,&fe[J]);
 						}	
 					}
 				}
 
 			// APPLY ACTUATOR FORCE
 			if(c<=getLastActuatorIndex()) {
-				_model->applyActuatorForce(c);
+				act->apply();
 			}
 
 			// APPLY ELEMENT FORCES
 			if(!getUseNullDecomposition()) {
-				for(j=0;j<_model->getNP();j++) {
+				for(j=0;j<_model->getNumContacts();j++) {
 					J = Mtx::ComputeIndex(j,3,0);
-					bodyB = _model->getContactBodyB(j);
-					_model->getContactPointB(j,pointB);
-					_model->applyForce(bodyB,pointB,&fe[J]);
+					bodyB = _model->getContactSet()->getContactBodyB(j);
+					_model->getContactSet()->getContactPointB(j,pointB);
+					engine.applyForce(*bodyB,pointB,&fe[J]);
 				}
 			}
 
 			// COMPUTE THE ACCELERATIONS
-			_model->computeAccelerations(dqdt,dudt);
+			engine.computeDerivatives(dqdt,dudt);
 
 			// COMPUTE THE BODY POINT ACCELERATION
-			_model->getAcceleration(_body,_point,acc);
+			engine.getAcceleration(*_body,_point,acc);
 
 			// FILL ARRAYS
 			ax[c] = acc[0];
@@ -549,6 +550,9 @@ computePointAccelerations()
 		_axPointStore->append(t,getNumComponents(),ax);
 		_ayPointStore->append(t,getNumComponents(),ay);
 		_azPointStore->append(t,getNumComponents(),az);
+
+		ai++;
+		act = as->get(ai);
 	}
 
 	// COMPUTE THE INDUCED VELOCITIES AND POSITIONS

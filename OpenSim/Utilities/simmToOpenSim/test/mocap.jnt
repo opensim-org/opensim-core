@@ -1,0 +1,7260 @@
+/*******************************************************************************
+   MOCAP MODEL
+   joint file
+
+   (c) Copyright 2001-5, MusculoGraphics, a division of
+       Motion Analysis Corporation.
+       All rights reserved.
+
+   This version of the Mocap Model is for use with Solver 1.2.10,
+   released September 14, 2005.
+
+   This file contains the segments joints, gencoords, and constraint functions
+   for the SIMM model of an average adult male. It was developed by various
+   biomechanics researchers, including:
+
+   Scott Delp, Ph.D., Stanford University
+   Wendy Murray, Ph.D., Stanford University
+   Silvia Salinas Blemker, M.S., Stanford University 
+   Anita Vasavada, Ph.D., Washington State University
+   Srikanth Suryanarayanan, M.S., Rehabilitation Institute of Chicago
+   Frans van der Helm, Ph.D., Delft University
+
+*******************************************************************************/
+
+#ifndef LOWER_EXTREMITY
+   #define LOWER_EXTREMITY 1
+#endif
+
+#ifndef UPPER_EXTREMITY
+   #define UPPER_EXTREMITY 1
+#endif
+
+#ifndef GROUND_PLANE_DEFINED
+   #define GROUND_PLANE_XZ 1
+#endif
+
+#ifndef RIGHT_HAND_FULL
+   #define RIGHT_HAND_FULL 1
+#endif
+
+#ifndef LEFT_HAND_FULL
+   #define LEFT_HAND_FULL 1
+#endif
+
+/* If subjects stand with their arms out, parallel to the
+ * ground, in the static pose, then SIMM should detect this
+ * situation and automatically set ARMS_UP to 1. Thus you
+ * should not have to change this constant.
+ */
+#ifndef ARMS_UP
+	#define ARMS_UP 1
+#endif
+
+
+/* If this model is being used to analyze walking in a
+ * straight line, then set WALKING to 1, so that the
+ * ranges of motion for the ground -> body degrees of
+ * freedom are more restrictive.
+ */
+#ifndef WALKING
+    #define WALKING 1
+#endif
+
+
+/* Because the shoulder and wrist models have many degrees
+ * of freedom, it is often difficult to control with only
+ * one marker at the shoulder, one at the elbow, and one at
+ * the wrist. To reduce this problem for gait analysis, some
+ * of the degrees of freedom in the arms are restricted to
+ * small ranges of motion. These ranges are suitable for most
+ * gait patterns, but may not be appropriate for motions
+ * involving more movement of the arms, such as dancing.
+ * To remove these restrictions and allow greater movement
+ * of the arms, set FULL_ARM_MOTION to 1. For best results
+ * when doing this, you should also add more arm markers to
+ * the model.
+ */
+#define FULL_ARM_MOTION 0
+
+
+/* For a shoulder model with more degrees of freedom, set
+ * COMPLEX_CLAVICLE to 1. This more complex shoulder model
+ * is much more difficult to control with the standard OrthoTrak
+ * marker set, so you will want to add more markers to the
+ * arms when using this shoulder model.
+ */
+#define COMPLEX_CLAVICLE 0
+
+
+/* To enhance the knee model to include varus/valgus motion,
+ * set VARUS_VALGUS to 1.
+ */
+#define VARUS_VALGUS 0
+
+
+/* The TWO_PELVIS_JOINTS parameter controls the transformation from the
+ * ground segment to the pelvis. If the parameter is set to 1, the
+ * transformation is controlled by two joints. The first joint goes
+ * from ground to the pelvic_frame, and has six degrees of freedom.
+ * The second joint goes from pelvic_frame to pelvis, and has only
+ * three degrees of freedom- pelvic_tilt, pelvic_obliquity, and pelvic_rotation.
+ * These DOFs are meant to contain more anatomically meaningful rotations.
+ * When loading the mocap model and solving the static pose,
+ * the rotations in the second joint are locked at zero, and the
+ * rotations in the first joint are set to appropriate values.
+ * Then when solving motions, the first joint's rotations are
+ * locked and the second joint's rotations are unlocked. Thus
+ * the pelvic tilt, obliquity, and rotation angles are measured
+ * with respect to the static pose. If you do not want this
+ * behavior, and instead want to remove those three DOFs and
+ * have only one joint between ground and the pelvis (the first
+ * joint with six DOFs), then set the parameter to 0.
+ */
+#define TWO_PELVIS_JOINTS 1
+
+
+/* These are the weights of the various markers in the
+ * mocap model. Solver uses them to determine which markers
+ * it should try harder to fit to the marker cloud data.
+ * 1.0 is the default, and numbers greater than 1.0 tell
+ * Solver to try harder for those markers.
+ */
+#define FOOT_WEIGHT 2.0
+#define PELVIS_WEIGHT 3.0
+#define KNEE_WEIGHT 2.0
+#define WRIST_WEIGHT 1.0
+#define ARM_WEIGHT 1.0
+#define OTHER_WEIGHT 1.0
+
+#define TORSO_SIZE 0.5600 0.5600 0.3632
+#define HEAD_SIZE 0.1890 0.1890 0.1890
+#define UPPER_ARM_SIZE 0.2850 0.2850 0.2850
+#define LOWER_ARM_SIZE 0.2635 0.2635 0.2635
+#define HAND_SIZE 0.1879 0.1879 0.1879
+#define PELVIS_SIZE 0.1844 0.0922 0.256
+#define THIGH_SIZE 0.4050 0.4050 0.4050
+#define SHANK_SIZE 0.4000 0.4000 0.4000
+#define FOOT_SIZE 0.2670 0.2670 0.2670
+
+
+#if GROUND_PLANE_XY
+   #define SHADOW_PARAMS shadow Z 0.001
+   gravity -Z
+#elif GROUND_PLANE_XZ
+   #define SHADOW_PARAMS shadow Y 0.001
+   gravity -Y
+#else
+   #define SHADOW_PARAMS shadow X 0.001
+   gravity -X
+#endif
+
+#define DEFAULT_RIGHT_AXES \
+axis1 1.0 0.0 0.0 \
+axis2 0.0 1.0 0.0 \
+axis3 0.0 0.0 1.0
+
+#define DEFAULT_LEFT_AXES \
+axis1 -1.0 0.0 0.0 \
+axis2 0.0 -1.0 0.0 \
+axis3 0.0 0.0 1.0
+
+
+name Mocap Model
+
+#if LOWER_EXTREMITY
+muscle_file mocap.msl
+#endif
+
+bone_path mocap_bones
+
+/* These are the units of the mocap model */
+length_units m
+force_units N
+
+marker_radius 0.005
+marker_visibility off
+
+/*  Defaults for solver 1.2.3 and later versions  */
+
+solver_accuracy 0.00010
+solver_method LM
+solver_orient_body yes   /* no longer used */
+solver_joint_limits yes
+solver_max_iterations 100
+
+/* If you want to make the ground-reaction force vector
+ * in the SIMM model window bigger/smaller/thinner/thicker,
+ * change the scaling factors shown below. The length of the 
+ * vector (in meters) is the Y scale factor multiplied
+ * by the magnitude of the force in Newtons.
+ */
+beginmotionobject force
+scale 1.0 0.002 1.0
+endmotionobject
+
+
+/************************************* SEGMENTS *******************************/
+beginsegment ground
+endsegment
+
+#if TWO_PELVIS_JOINTS
+beginsegment pelvic_frame
+begingroups spine torso right leg_r hip_r left leg_l hip_l endgroups
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.001 0.0 
+endsegment
+#endif
+
+beginsegment pelvis
+bone pelvis_rvR.asc
+bone pelvis_lvR.asc
+bone sacrumvR.asc
+material my_bone
+begingroups spine torso right leg_r hip_r left leg_l hip_l endgroups
+gait_scale PELVIS PELVIS_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 -1.0 0.0
+htr_y -1.0 0.0 0.0
+endsegment
+
+beginsegment pelvis_marker
+marker V.Sacral	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker Sacral	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker V.Sacrum	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker Sacrum	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker SACR	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker VSAC	-0.155 0.0 0.0 PELVIS_WEIGHT
+marker R.ASIS	0.0 0.0 0.128 PELVIS_WEIGHT
+marker RASIS	0.0 0.0 0.128 PELVIS_WEIGHT
+marker RASI	0.0 0.0 0.128 PELVIS_WEIGHT
+marker R.PSIS	-0.148 0.000 0.047 PELVIS_WEIGHT
+marker RPSIS	-0.148 0.000 0.047 PELVIS_WEIGHT
+marker RPSI	-0.148 0.000 0.047 PELVIS_WEIGHT
+marker R.Trochanter	-0.005 -0.042 0.093 PELVIS_WEIGHT
+marker L.ASIS	0.0 0.0 -0.128 PELVIS_WEIGHT
+marker LASIS	0.0 0.0 -0.128 PELVIS_WEIGHT
+marker LASI	0.0 0.0 -0.128 PELVIS_WEIGHT
+marker L.PSIS	-0.148 0.000 -0.047 PELVIS_WEIGHT
+marker LPSIS	-0.148 0.000 -0.047 PELVIS_WEIGHT
+marker LPSI	-0.148 0.000 -0.047 PELVIS_WEIGHT
+marker L.Trochanter	-0.005 -0.042 -0.093 PELVIS_WEIGHT
+gait_scale PELVIS PELVIS_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 -0.001 0.0
+htr_y -0.001 0.0 0.0
+endsegment
+
+#if UPPER_EXTREMITY
+/****************** Lower Torso **********************/
+beginsegment lumbar1
+bone lumbar1.asc
+material my_bone
+begingroups lumbar torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment lumbar2
+bone lumbar2.asc
+material my_bone
+begingroups lumbar torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment lumbar3
+bone lumbar3.asc
+material my_bone
+begingroups lumbar torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment lumbar4
+bone lumbar4.asc
+material my_bone
+begingroups lumbar torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment lumbar5
+bone lumbar5.asc
+material my_bone
+begingroups lumbar torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+/********************** Thorax *********************/
+beginsegment thorax
+bone ribcage.asc
+bone thoracic1.asc
+bone thoracic2.asc
+bone thoracic3.asc
+bone thoracic4.asc
+bone thoracic5.asc
+bone thoracic6.asc
+bone thoracic7.asc
+bone thoracic8.asc
+bone thoracic9.asc
+bone thoracic10.asc
+bone thoracic11.asc
+bone thoracic12.asc
+material my_bone
+begingroups torso spine endgroups
+gait_scale TORSO TORSO_SIZE
+marker Offset	0.06 0.26 0.0 OTHER_WEIGHT
+marker T10	-0.12 0.09 0.0 OTHER_WEIGHT
+marker CLAV	0.02 0.33 0.0 OTHER_WEIGHT
+marker Sternum	0.07 0.24 0.0 OTHER_WEIGHT
+marker STRN	0.07 0.24 0.0 OTHER_WEIGHT
+marker RBAK	-0.15 0.22 0.0 OTHER_WEIGHT
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+/******************** Neck and Head **********************/
+beginsegment cerv1
+bone cerv1.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv2
+bone cerv2.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv3
+bone cerv3.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv4
+bone cerv4.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv5
+bone cerv5.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv6
+bone cerv6.asc
+material my_bone
+begingroups neck spine endgroups
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment cerv7
+bone cerv7.asc
+material my_bone
+begingroups neck spine endgroups
+marker C7	0.0 0.0 0.0 OTHER_WEIGHT
+marker C7 Spinous Process	0.0 0.0 0.0 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 1.0 0.0
+endsegment
+
+beginsegment skull
+bone skull.asc
+bone jaw.asc
+material my_bone
+begingroups head endgroups
+gait_scale HEAD HEAD_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.2 0.0
+endsegment
+
+beginsegment OT_head
+material my_bone
+begingroups head endgroups
+marker Rear.Head	0.0 0.0 0.0 OTHER_WEIGHT
+marker Head.Rear	0.0 0.0 0.0 OTHER_WEIGHT
+marker RearHead	0.0 0.0 0.0 OTHER_WEIGHT
+marker HeadRear	0.0 0.0 0.0 OTHER_WEIGHT
+marker Front.Head	0.0 0.19 0.0 OTHER_WEIGHT
+marker Head.Front	0.0 0.19 0.0 OTHER_WEIGHT
+marker FrontHead	0.0 0.19 0.0 OTHER_WEIGHT
+marker HeadFront	0.0 0.19 0.0 OTHER_WEIGHT
+marker Top.Head	-0.06 0.095 0.0 OTHER_WEIGHT
+marker Head.Top	-0.06 0.095 0.0 OTHER_WEIGHT
+marker TopHead	-0.06 0.095 0.0 OTHER_WEIGHT
+marker HeadTop	-0.06 0.095 0.0 OTHER_WEIGHT
+marker R.Ear	0.0 0.0 0.0 OTHER_WEIGHT
+marker L.Ear	0.0 0.0 0.0 OTHER_WEIGHT
+marker RBHD	0.0 0.0 0.0 OTHER_WEIGHT
+marker RFHD	0.0 0.0 0.0 OTHER_WEIGHT
+marker LBHD	0.0 0.0 0.0 OTHER_WEIGHT
+marker LFHD	0.0 0.0 0.0 OTHER_WEIGHT
+marker HEDO	0.0 0.0 0.0 OTHER_WEIGHT
+marker HEDP	0.0 0.0 0.0 OTHER_WEIGHT
+marker HEDA	0.0 0.0 0.0 OTHER_WEIGHT
+marker HEDL	0.0 0.0 0.0 OTHER_WEIGHT
+gait_scale HEAD HEAD_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.001 0.0
+endsegment
+
+/********************** Right Shoulder *****************/
+beginsegment clavicle_r
+bone clavicle_rv.asc
+material my_bone
+begingroups right shoulder_r endgroups
+marker R.Clavicle	0.03 0.0 0.0 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 1.0
+endsegment
+
+beginsegment clavicle_marker_r
+material my_bone
+begingroups right shoulder_r endgroups
+marker R.Shoulder	0.0 0.0 0.165 OTHER_WEIGHT
+marker RSHO	0.0 0.0 0.165 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 0.001
+endsegment
+
+beginsegment scapula_r
+bone scapula_rv.asc
+begingroups right shoulder_r endgroups
+material my_bone
+marker R.Scapula	-0.12 -0.10 -0.08 OTHER_WEIGHT
+marker R.Scapula.Top	0.0 0.0 0.0 OTHER_WEIGHT
+marker R.Scapula.Bottom	0.0 0.0 0.0 OTHER_WEIGHT
+marker R.Angulus Acromialis	-0.055 -0.015 0.015 OTHER_WEIGHT
+marker R.Trigonum Spinae	-0.09 -0.045 -0.05 OTHER_WEIGHT
+marker R.Angulus Inferior	-0.10 -0.17 -0.04 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 0.001
+endsegment
+
+/************************* Right Arm **********************/
+beginsegment humerus_r
+bone humerus_rv.asc
+material my_bone
+begingroups right shoulder_r arm_r elbow_r endgroups
+marker R.Bicep	0.04 -0.15 0.0 ARM_WEIGHT
+marker R.Tricep	-0.04 -0.15 0.0 ARM_WEIGHT
+marker R.Biceps.Lateral	0.03 -0.15 0.02 ARM_WEIGHT
+marker RUPA	0.03 -0.15 0.02 ARM_WEIGHT
+gait_scale R_UPPER_ARM UPPER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment elbow_marker_r
+material my_bone
+begingroups right arm_r elbow_r endgroups
+marker R.Elbow	-0.01 -0.281 0.04 ARM_WEIGHT
+marker R.Elbow.Lateral	-0.01 -0.281 0.04 ARM_WEIGHT
+marker RELB	-0.01 -0.281 0.04 ARM_WEIGHT
+marker R.Elbow.Medial	0.0 -0.281 -0.04 ARM_WEIGHT
+marker R.Elbow.Med	0.0 -0.281 -0.04 ARM_WEIGHT
+gait_scale R_UPPER_ARM UPPER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment ulna_r
+beginfiles ulna_rv.asc endfiles
+material my_bone
+begingroups right arm_r elbow_r endgroups
+marker R.Forearm	0.0 -0.15 0.0 WRIST_WEIGHT
+marker RFRA	0.0 -0.15 0.0 WRIST_WEIGHT
+gait_scale R_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment radius_r
+bone radius_rv.asc
+material my_bone
+begingroups right arm_r elbow_r endgroups
+gait_scale R_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment wrist_marker_r
+material my_bone
+begingroups right arm_r elbow_r endgroups
+marker R.Wrist	-0.025 -0.245 0.006 WRIST_WEIGHT
+marker R.Wrist.Lateral	-0.025 -0.245 0.006 WRIST_WEIGHT
+marker R.Wrist.Lat	-0.025 -0.245 0.006 WRIST_WEIGHT
+marker R.Wrist.Medial	0.035 -0.245 0.000 WRIST_WEIGHT
+marker R.Wrist.Med	0.035 -0.245 0.000 WRIST_WEIGHT
+marker R.Ulna	0.0 -0.245 -0.03 WRIST_WEIGHT
+marker R.Radius	0.0 -0.245 0.04 WRIST_WEIGHT
+marker RWRI	-0.025 -0.245 0.006 WRIST_WEIGHT
+marker RWRA	-0.025 -0.245 0.006 WRIST_WEIGHT
+marker RWRB	0.035 -0.245 0.000 WRIST_WEIGHT
+gait_scale R_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+/*************************** Right Wrist and Hand ************/
+#if !(RIGHT_HAND_FULL)
+
+beginsegment wflex_r
+material my_bone
+begingroups right arm_r endgroups
+gait_scale R_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment hand_r
+bone pisiform_rvs.asc
+bone lunate_rvs.asc
+bone scaphoid_rvs.asc
+bone triquetrum_rvs.asc
+bone hamate_rvs.asc
+bone capitate_rvs.asc
+bone trapezoid_rvs.asc
+bone trapezium_rvs.asc
+bone metacarpal2_rvs.asc
+bone index_proximal_rvs.asc
+bone index_medial_rvs.asc
+bone index_distal_rvs.asc
+bone metacarpal3_rvs.asc
+bone middle_proximal_rvs.asc
+bone middle_medial_rvs.asc
+bone middle_distal_rvs.asc
+bone metacarpal4_rvs.asc
+bone ring_proximal_rvs.asc
+bone ring_medial_rvs.asc
+bone ring_distal_rvs.asc
+bone metacarpal5_rvs.asc
+bone little_proximal_rvs.asc
+bone little_medial_rvs.asc
+bone little_distal_rvs.asc 
+bone metacarpal1_rvs.asc
+bone thumb_proximal_rvs.asc
+bone thumb_distal_rvs.asc
+material my_bone
+begingroups right arm_r endgroups
+marker R.Hand	-0.03 -0.05 0.0 OTHER_WEIGHT
+marker RFIN	-0.03 -0.05 0.0 OTHER_WEIGHT
+gait_scale R_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.1 0.0 
+endsegment
+
+#endif
+
+/************************ Left Shoulder *********************/
+beginsegment clavicle_l
+bone clavicle_lv.asc
+material my_bone
+begingroups left shoulder_l endgroups
+marker L.Clavicle	0.03 0.0 0.0 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 -1.0
+endsegment
+
+beginsegment clavicle_marker_l
+material my_bone
+begingroups left shoulder_l endgroups
+marker L.Shoulder	0.0 0.0 -0.165 OTHER_WEIGHT
+marker LSHO	0.0 0.0 -0.165 OTHER_WEIGHT
+gait_scale TORSO TORSO_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 -0.001
+endsegment
+
+beginsegment scapula_l
+bone scapula_lv.asc
+material my_bone
+begingroups left shoulder_l endgroups
+gait_scale TORSO TORSO_SIZE
+marker L.Scapula	-0.12 -0.10 0.08 OTHER_WEIGHT
+marker L.Scapula.Top	0.0 0.0 0.0 OTHER_WEIGHT
+marker L.Scapula.Bottom	0.0 0.0 0.0 OTHER_WEIGHT
+marker L.Angulus Acromialis	-0.055 -0.015 -0.015 OTHER_WEIGHT
+marker L.Trigonum Spinae	-0.09 -0.045 0.05 OTHER_WEIGHT
+marker L.Angulus Inferior	-0.10 -0.17 0.04 OTHER_WEIGHT
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.0 -0.001
+endsegment
+
+/**************************** Left Arm ***************/
+beginsegment humerus_l
+bone humerus_lv.asc
+material my_bone
+begingroups left shoulder_l arm_l elbow_l endgroups
+marker L.Bicep	0.04 -0.15 0.0 ARM_WEIGHT
+marker L.Tricep	-0.04 -0.15 0.0 ARM_WEIGHT
+marker L.Biceps.Lateral	0.03 -0.15 -0.02 ARM_WEIGHT
+marker LUPA	0.03 -0.15 -0.02 ARM_WEIGHT
+gait_scale L_UPPER_ARM UPPER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment elbow_marker_l
+material my_bone
+begingroups left arm_l elbow_l endgroups
+marker L.Elbow	0.01 -0.281 -0.04 ARM_WEIGHT
+marker L.Elbow.Lateral	0.01 -0.281 -0.04 ARM_WEIGHT
+marker L.Elbow.Lat	0.01 -0.281 -0.04 ARM_WEIGHT
+marker LELB	0.01 -0.281 -0.04 ARM_WEIGHT
+marker L.Elbow.Medial	-0.02 -0.281 0.04 ARM_WEIGHT
+marker L.Elbow.Med	-0.02 -0.281 0.04 ARM_WEIGHT
+gait_scale L_UPPER_ARM UPPER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment ulna_l
+bone ulna_lv.asc
+material my_bone
+begingroups left arm_l elbow_l endgroups
+marker L.Forearm	0.0 -0.15 0.0 WRIST_WEIGHT
+marker LFRA	0.0 -0.15 0.0 WRIST_WEIGHT
+gait_scale L_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment radius_l
+bone radius_lv.asc
+material my_bone
+begingroups left arm_l elbow_l endgroups
+gait_scale L_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment wrist_marker_l
+material my_bone
+begingroups left arm_l elbow_l endgroups
+marker L.Wrist	-0.025 -0.245 -0.006 WRIST_WEIGHT
+marker L.Wrist.Lateral	-0.025 -0.245 -0.006 WRIST_WEIGHT
+marker L.Wrist.Lat	-0.025 -0.245 -0.006 WRIST_WEIGHT
+marker L.Wrist.Medial	0.035 -0.245 0.000 WRIST_WEIGHT
+marker L.Wrist.Med	0.035 -0.245 0.000 WRIST_WEIGHT
+marker L.Ulna	0.0 -0.245 0.03 WRIST_WEIGHT
+marker L.Radius	0.0 -0.245 -0.04 WRIST_WEIGHT
+marker LWRI	-0.025 -0.245 -0.006 WRIST_WEIGHT
+marker LWRA	-0.025 -0.245 -0.006 WRIST_WEIGHT
+marker LWRB	0.025 -0.245 0.000 WRIST_WEIGHT
+gait_scale L_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 0.001 0.0 
+endsegment
+
+/*********************** Left Wrist and Hand ****************/
+
+#if !(LEFT_HAND_FULL)
+
+beginsegment wflex_l
+material my_bone
+begingroups left arm_l endgroups
+gait_scale L_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment hand_l
+bone pisiform_lvs.asc
+bone lunate_lvs.asc
+bone scaphoid_lvs.asc
+bone triquetrum_lvs.asc
+bone hamate_lvs.asc
+bone capitate_lvs.asc
+bone trapezoid_lvs.asc
+bone trapezium_lvs.asc
+bone metacarpal2_lvs.asc
+bone index_proximal_lvs.asc
+bone index_medial_lvs.asc
+bone index_distal_lvs.asc
+bone metacarpal3_lvs.asc
+bone middle_proximal_lvs.asc
+bone middle_medial_lvs.asc
+bone middle_distal_lvs.asc
+bone metacarpal4_lvs.asc
+bone ring_proximal_lvs.asc
+bone ring_medial_lvs.asc
+bone ring_distal_lvs.asc
+bone metacarpal5_lvs.asc
+bone little_proximal_lvs.asc
+bone little_medial_lvs.asc
+bone little_distal_lvs.asc
+bone metacarpal1_lvs.asc
+bone thumb_proximal_lvs.asc
+bone thumb_distal_lvs.asc
+material my_bone
+begingroups left arm_l endgroups
+marker L.Hand	-0.03 -0.05 0.0 OTHER_WEIGHT
+marker LFIN	-0.03 -0.05 0.0 OTHER_WEIGHT
+gait_scale L_LOWER_ARM LOWER_ARM_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.1 0.0 
+endsegment
+
+#endif
+
+#endif /* UPPER_EXTREMITY */
+
+#if LOWER_EXTREMITY
+
+/************************ Right Leg and Foot ***************/
+beginsegment femur_r
+bone femur_r.asc
+material my_bone
+begingroups right leg_r hip_r knee_r endgroups
+marker R.Knee	0.0 -0.404 0.05 KNEE_WEIGHT
+marker R.Knee.Lateral	0.0 -0.404 0.05 KNEE_WEIGHT
+marker R.Knee.Lat	0.0 -0.404 0.05 KNEE_WEIGHT
+marker RKNE	0.0 -0.404 0.05 KNEE_WEIGHT
+marker R.Knee.Medial	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker R.Knee.Med	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker R.Thigh	0.0179 -0.2240 0.1147 KNEE_WEIGHT
+marker R.Thigh.Upper	0.0179 -0.2640 0.0647 KNEE_WEIGHT
+marker R.Thigh.Front	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Thigh.Rear	-0.0479 -0.3240 0.0047 KNEE_WEIGHT
+marker RTHI	0.0179 -0.2640 0.0647 KNEE_WEIGHT
+marker R.Thigh.M1	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Thigh.M2	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Thigh.M3	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Medial	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Lateral	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Anterior	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Posterior	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Proximal	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+marker R.Femur.Distal	0.0800 -0.3240 0.0047 KNEE_WEIGHT
+gait_scale R_THIGH THIGH_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment tibia_r
+bone tibia_r.asc
+bone fibula_r.asc
+material my_bone
+begingroups right leg_r knee_r ankle_r endgroups
+marker R.Ankle	-0.005 -0.41 0.053 FOOT_WEIGHT
+marker R.Ankle.Lateral	-0.005 -0.41 0.053 FOOT_WEIGHT
+marker R.Ankle.Lat	-0.005 -0.41 0.053 FOOT_WEIGHT
+marker RANK	-0.005 -0.41 0.053 FOOT_WEIGHT
+marker R.Ankle.Medial	0.006 -0.3888 -0.038 FOOT_WEIGHT
+marker R.Ankle.Med	0.006 -0.3888 -0.038 FOOT_WEIGHT
+marker R.Shank	0.0104 -0.2322 0.0748 OTHER_WEIGHT
+marker R.Shank.Upper	0.0125 -0.3196 0.0600 OTHER_WEIGHT
+marker R.Shank.Front	0.0425 -0.3596 0.0000 OTHER_WEIGHT
+marker R.Shank.Rear	-0.0325 -0.3596 0.0000 OTHER_WEIGHT
+marker RTIB	0.0125 -0.3196 0.0600 OTHER_WEIGHT
+marker R.Shank.M1	-0.008 -0.08 0.055 KNEE_WEIGHT fixed /* fibular head */
+marker R.Shank.M2	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker R.Shank.M3	0.0425 -0.3596 0.0000 KNEE_WEIGHT fixed /* medial tibia */
+marker R.Shank.M4	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker R.Shank.M5	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker R.Fibula.Head	0.0256 -0.04157 0.05976 KNEE_WEIGHT fixed
+marker R.Tibia.medial	0.02398 -0.05473 -0.04540 KNEE_WEIGHT fixed
+marker R.Tibia.tub	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker R.Tibia.prox	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker R.Tibia.distal	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment patella_r
+bone patella_r.asc
+material my_bone
+begingroups right leg_r knee_r endgroups
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+#if VARUS_VALGUS
+beginsegment tibia_vv_lat_r
+material my_bone
+begingroups right leg_r knee_r endgroups
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment tibia_vv_med_r
+material my_bone
+begingroups right leg_r knee_r endgroups
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment tibia_vv_norm_r
+material my_bone
+begingroups right leg_r knee_r endgroups
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment patella_vv_tmp_r
+material my_bone
+begingroups right leg_r knee_r endgroups
+gait_scale R_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+#endif
+
+beginsegment talus_r
+bone talus_rv.asc
+material my_bone
+begingroups right leg_r foot_r ankle_r endgroups
+gait_scale R_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment foot_r
+bone calcaneous_rv.asc
+bone navicular_rv.asc
+bone cuboid_rv.asc
+bone first_cuneiform_rv.asc
+bone second_cuneiform_rv.asc
+bone third_cuneiform_rv.asc
+bone metatarsal1_rv.asc
+bone metatarsal2_rv.asc
+bone metatarsal3_rv.asc
+bone metatarsal4_rv.asc
+bone metatarsal5_rv.asc
+material my_bone
+begingroups right leg_r ankle_r foot_r endgroups
+gait_scale R_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 1.0 0.0 0.0
+endsegment
+
+beginsegment foot_marker_r
+material my_bone
+begingroups right leg_r ankle_r foot_r endgroups
+marker R.Toe	0.190 0.0 0.0 FOOT_WEIGHT
+marker RTOE	0.190 0.0 0.0 FOOT_WEIGHT
+marker R.MedFoot	0.13 0.0 -0.03 FOOT_WEIGHT
+marker R.LatFoot	0.13 0.0 0.05 FOOT_WEIGHT
+marker R.Heel	0.0 0.0 0.0 FOOT_WEIGHT
+marker RHEE	0.0 0.0 0.0 FOOT_WEIGHT
+marker RMT5	0.0 0.0 0.0 FOOT_WEIGHT
+gait_scale R_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 0.001 0.0 0.0
+endsegment
+
+beginsegment toes_r
+bone prox_phalanx1_rvs.asc
+bone prox_phalanx2_rvs.asc
+bone prox_phalanx3_rvs.asc
+bone prox_phalanx4_rvs.asc
+bone prox_phalanx5_rvs.asc
+bone mid_phalanx2_rvs.asc
+bone mid_phalanx3_rvs.asc
+bone mid_phalanx4_rvs.asc
+bone mid_phalanx5_rvs.asc
+bone distal_phalanx1_rvs.asc
+bone distal_phalanx2_rvs.asc
+bone distal_phalanx3_rvs.asc
+bone distal_phalanx4_rvs.asc
+bone distal_phalanx5_rvs.asc
+material my_bone
+begingroups right leg_r foot_r endgroups
+gait_scale R_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 0.05 0.0 0.0
+endsegment
+
+/************************ Left Leg and Foot ********************/
+beginsegment femur_l
+bone femur_l.asc
+material my_bone
+begingroups left leg_l hip_l knee_l endgroups
+marker L.Knee	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker L.Knee.Lateral	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker L.Knee.Lat	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker LKNE	0.0 -0.404 -0.05 KNEE_WEIGHT
+marker L.Knee.Medial	0.0 -0.404 0.05 KNEE_WEIGHT
+marker L.Knee.Med	0.0 -0.404 0.05 KNEE_WEIGHT
+marker L.Thigh	0.0179 -0.2240 -0.1147 KNEE_WEIGHT
+marker L.Thigh.Upper	0.0179 -0.2640 -0.0647 KNEE_WEIGHT
+marker L.Thigh.Front	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Thigh.Rear	-0.0479 -0.3240 -0.0047 KNEE_WEIGHT
+marker LTHI	0.0179 -0.2640 -0.0647 KNEE_WEIGHT
+marker L.Thigh.M1	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Thigh.M2	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Thigh.M3	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Medial	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Lateral	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Anterior	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Posterior	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Proximal	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+marker L.Femur.Distal	0.0800 -0.3240 -0.0047 KNEE_WEIGHT
+gait_scale L_THIGH THIGH_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment tibia_l
+bone tibia_l.asc
+bone fibula_l.asc
+material my_bone
+begingroups left leg_l knee_l ankle_l endgroups
+marker L.Ankle	-0.005 -0.41 -0.053 FOOT_WEIGHT
+marker L.Ankle.Lateral	-0.005 -0.41 -0.053 FOOT_WEIGHT
+marker L.Ankle.Lat	-0.005 -0.41 -0.053 FOOT_WEIGHT
+marker LANK	-0.005 -0.41 -0.053 FOOT_WEIGHT
+marker L.Ankle.Medial	0.006 -0.3888 0.038 FOOT_WEIGHT
+marker L.Ankle.Med	0.006 -0.3888 0.038 FOOT_WEIGHT
+marker L.Shank	0.0104 -0.2322 -0.0748 OTHER_WEIGHT
+marker L.Shank.Upper	0.0125 -0.3196 -0.0600 OTHER_WEIGHT
+marker L.Shank.Front	0.0425 -0.3596 0.0000 OTHER_WEIGHT
+marker L.Shank.Rear	-0.0325 -0.3596 0.0000 OTHER_WEIGHT
+marker LTIB	0.0125 -0.3196 -0.0600 OTHER_WEIGHT
+marker L.Shank.M1	-0.008 -0.08 -0.055 KNEE_WEIGHT fixed /* fibular head */
+marker L.Shank.M2	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker L.Shank.M3	0.0425 -0.3596 0.0000 KNEE_WEIGHT fixed /* medial tibia */
+marker L.Shank.M4	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker L.Shank.M5	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker L.Fibula.Head	0.0256 -0.04157 -0.05976 KNEE_WEIGHT fixed
+marker L.Tibia.medial	0.02398 -0.05473 0.04540 KNEE_WEIGHT fixed
+marker L.Tibia.tub	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker L.Tibia.prox	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+marker L.Tibia.distal	0.0425 -0.3596 0.0000 KNEE_WEIGHT
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment patella_l
+bone patella_l.asc
+material my_bone
+begingroups left leg_l knee_l endgroups
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+#if VARUS_VALGUS
+beginsegment tibia_vv_lat_l
+material my_bone
+begingroups left leg_l knee_l endgroups
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment tibia_vv_med_l
+material my_bone
+begingroups left leg_l knee_l endgroups
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment tibia_vv_norm_l
+material my_bone
+begingroups left leg_l knee_l endgroups
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment patella_vv_tmp_l
+material my_bone
+begingroups left leg_l knee_l endgroups
+gait_scale L_SHANK SHANK_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+#endif
+
+beginsegment talus_l
+bone talus_lv.asc
+material my_bone
+begingroups left leg_l foot_l ankle_l endgroups
+gait_scale L_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment foot_l
+bone calcaneous_lv.asc
+bone navicular_lv.asc
+bone cuboid_lv.asc
+bone first_cuneiform_lv.asc
+bone second_cuneiform_lv.asc
+bone third_cuneiform_lv.asc
+bone metatarsal1_lv.asc
+bone metatarsal2_lv.asc
+bone metatarsal3_lv.asc
+bone metatarsal4_lv.asc
+bone metatarsal5_lv.asc
+material my_bone
+begingroups left leg_l ankle_l foot_l endgroups
+gait_scale L_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 1.0 0.0 0.0
+endsegment
+
+beginsegment foot_marker_l
+material my_bone
+begingroups left leg_l ankle_l foot_l endgroups
+marker L.Toe	0.190 0.0 0.0 FOOT_WEIGHT
+marker LTOE	0.190 0.0 0.0 FOOT_WEIGHT
+marker L.MedFoot	0.13 0.0 0.03 FOOT_WEIGHT
+marker L.LatFoot	0.13 0.0 -0.05 FOOT_WEIGHT
+marker L.Heel	0.0 0.0 0.0 FOOT_WEIGHT
+marker LHEE	0.0 0.0 0.0 FOOT_WEIGHT
+marker LMT5	0.0 0.0 0.0 FOOT_WEIGHT
+gait_scale L_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 0.001 0.0 0.0
+endsegment
+
+beginsegment toes_l
+bone prox_phalanx1_lvs.asc
+bone prox_phalanx2_lvs.asc
+bone prox_phalanx3_lvs.asc
+bone prox_phalanx4_lvs.asc
+bone prox_phalanx5_lvs.asc
+bone mid_phalanx2_lvs.asc
+bone mid_phalanx3_lvs.asc
+bone mid_phalanx4_lvs.asc
+bone mid_phalanx5_lvs.asc
+bone distal_phalanx1_lvs.asc
+bone distal_phalanx2_lvs.asc
+bone distal_phalanx3_lvs.asc
+bone distal_phalanx4_lvs.asc
+bone distal_phalanx5_lvs.asc
+material my_bone
+begingroups left leg_l foot_l endgroups
+gait_scale L_FOOT FOOT_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 0.0 0.0 1.0
+htr_y 0.05 0.0 0.0
+endsegment
+
+#endif /* LOWER_EXTREMITY */
+
+/*********************************************/
+/*                JOINTS                     */
+/*********************************************/
+
+#if TWO_PELVIS_JOINTS
+
+beginjoint gnd_pelvic_frame
+segments ground pelvic_frame
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx function f1(lower_torso_TX)
+ty function f1(lower_torso_TY)
+tz function f1(lower_torso_TZ)
+r1 function f1(lower_torso_RX)
+r2 function f1(lower_torso_RY)
+r3 function f1(lower_torso_RZ)
+endjoint
+
+beginjoint pelvic_frame_pelvis
+segments pelvic_frame pelvis
+order t r2 r3 r1
+axis1 -1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 -1.0
+tx constant 0.0
+ty constant 0.0
+tz constant 0.0
+r1 function f1(pelvic_lat_tilt)
+r2 function f1(pelvic_rotation)
+r3 function f1(pelvic_fwd_tilt)
+endjoint
+
+#else
+
+beginjoint gnd_pelvis
+segments ground pelvis
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx function f1(lower_torso_TX)
+ty function f1(lower_torso_TY)
+tz function f1(lower_torso_TZ)
+r1 function f1(lower_torso_RX)
+r2 function f1(lower_torso_RY)
+r3 function f1(lower_torso_RZ)
+endjoint
+
+#endif
+
+beginjoint pelvis_marker
+segments pelvis pelvis_marker
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant 0.0
+ty constant 0.0
+tz constant 0.0
+r1 constant 0.0
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+#if UPPER_EXTREMITY
+
+/*************************** Lumbar Joints *****************/
+beginjoint pelvis_lum5          
+segments pelvis lumbar5
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant -0.087200
+ty constant 0.033100
+tz constant 0.000000
+r1  function f151(lumbar_roll)
+r2  function f152(lumbar_yaw)
+r3  function f153(lumbar_pitch)
+endjoint
+
+beginjoint lum5_lum4
+segments lumbar5 lumbar4
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant 0.012300
+ty constant 0.032500
+tz constant 0.000000
+r1  function f141(lumbar_roll)
+r2  function f142(lumbar_yaw)
+r3  function f143(lumbar_pitch)
+endjoint
+
+beginjoint lum4_lum3
+segments lumbar4 lumbar3
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant 0.002000
+ty constant 0.034100
+tz constant 0.000000
+r1  function f131(lumbar_roll)
+r2  function f132(lumbar_yaw)
+r3  function f133(lumbar_pitch)
+endjoint
+
+beginjoint lum3_lum2
+segments lumbar3 lumbar2
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant -0.005800
+ty constant 0.035400
+tz constant 0.000000
+r1  function f121(lumbar_roll)
+r2  function f122(lumbar_yaw)
+r3  function f123(lumbar_pitch)
+endjoint
+
+beginjoint lum2_lum1
+segments lumbar2 lumbar1
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant -0.011200
+ty constant 0.029100
+tz constant 0.000000
+r1  function f111(lumbar_roll)
+r2  function f112(lumbar_yaw)
+r3  function f113(lumbar_pitch)
+endjoint
+
+beginjoint thor12jnt
+segments lumbar1 thorax
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant 0.024900
+ty constant -0.014200
+tz constant 0.000000
+r3 constant 0.000000
+r1 constant 0.000000
+r2 constant 0.000000
+endjoint
+
+/*************************** Neck Joints **********************/
+beginjoint thor1_cerv7
+segments thorax cerv7
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx  constant -0.047500
+ty  constant 0.361300
+tz  constant 0.000000
+r1  function f371(neck_roll)
+r2  function f372(neck_yaw)
+r3  function f373(neck_pitch)
+endjoint
+
+beginjoint cerv7_cerv6  
+segments cerv7 cerv6
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.005620
+ty  constant 0.018030
+tz  constant 0.000000
+r1  function f361(neck_roll)
+r2  function f362(neck_yaw)
+r3  function f363(neck_pitch)
+endjoint
+
+beginjoint cerv6_cerv5
+segments cerv6 cerv5
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.004760
+ty  constant 0.016180
+tz  constant 0.000000
+r1  function f351(neck_roll)
+r2  function f352(neck_yaw)
+r3  function f353(neck_pitch)
+endjoint
+
+beginjoint cerv5_cerv4
+segments cerv5 cerv4
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.002760
+ty  constant 0.015600
+tz  constant 0.000000
+r1  function f341(neck_roll)
+r2  function f342(neck_yaw)
+r3  function f343(neck_pitch)
+endjoint
+
+beginjoint cerv4_cerv3
+segments cerv4 cerv3
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.002300
+ty  constant 0.018100
+tz  constant 0.000000
+r1  function f331(neck_roll)
+r2  function f332(neck_yaw)
+r3  function f333(neck_pitch)
+endjoint
+
+beginjoint cerv3_cerv2
+segments cerv3 cerv2
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.000540
+ty  constant 0.014080
+tz  constant 0.000000
+r1  function f321(neck_roll)
+r2  function f322(neck_yaw)
+r3  function f323(neck_pitch)
+endjoint
+
+beginjoint cerv2_cerv1
+segments cerv2 cerv1
+order t r3 r1 r2        
+DEFAULT_RIGHT_AXES
+tx  constant 0.001460
+ty  constant 0.032510
+tz  constant 0.000000
+r1  function f311(neck_roll)
+r2  function f312(neck_yaw)
+r3  function f313(neck_pitch)
+endjoint
+
+beginjoint cerv1_skull
+segments cerv1 skull
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx  constant 0.000900
+ty  constant 0.011400
+tz  constant 0.000000
+r1  function f301(neck_roll)
+r2  function f302(neck_yaw)
+r3  function f303(neck_pitch)
+endjoint
+
+beginjoint skull_OT_head
+segments skull OT_head
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx  constant -0.090000
+ty  constant 0.110000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant -90.000000
+endjoint
+
+/***************************** Right Shoulder *****************/
+beginjoint sternoclavicular_r
+segments thorax clavicle_r
+order t r2 r3 r1
+DEFAULT_RIGHT_AXES
+tx  constant -0.011000
+ty  constant 0.338000
+tz  constant 0.022000
+#if COMPLEX_CLAVICLE
+r1  function f1000(clav_add_r)
+r2  function f1001(clav_rot_r)
+r3  function f1(clav_flex_r)
+#else
+r1 constant -10.0
+r2 constant -20.0
+r3 constant 0.0
+#endif
+endjoint
+
+beginjoint clavicularmarker_r
+segments clavicle_r clavicle_marker_r
+order r1 r3 r2 t
+DEFAULT_RIGHT_AXES
+tx  constant -0.06
+ty  constant 0.045
+tz  constant -0.022
+r1  constant 10.0
+r2  constant 20.0
+r3  constant 0.0
+endjoint
+
+beginjoint st_cl_inv_r
+segments clavicle_r scapula_r
+order t r1 r3 r2
+DEFAULT_RIGHT_AXES
+tx  constant 0.008688
+ty  constant -0.001300
+tz  constant 0.155441
+#if COMPLEX_CLAVICLE
+r1  function f1(scap_add_r)
+r2  function f1(scap_rot_r)
+r3  function f1(scap_flex_r)
+#else
+r1 constant 10.0
+r2 constant 20.0
+r3 constant 0.0
+#endif
+endjoint
+
+beginjoint acromial_inv_r
+segments scapula_r humerus_r
+order t r1 r3 r2
+DEFAULT_RIGHT_AXES
+tx  constant 0.005000
+ty  constant -0.035000
+tz  constant 0.030000
+r1  function f1(arm_add_r)
+r2  function f1(arm_rot_r)
+r3  function f1(arm_flex_r)
+endjoint
+
+
+/**************************** Right Arm ************************/
+beginjoint elbowmarker_r
+segments humerus_r elbow_marker_r
+order t r3 r2 r1
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.226047 0.022269 0.973862
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 15.000000
+r3  constant 3.000000
+endjoint
+
+beginjoint elbow_r
+segments humerus_r ulna_r
+order t r3 r2 r1
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.226047 0.022269 0.973862
+tx  constant 0.013144
+ty  constant -0.286273
+tz  constant -0.009595
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f1(elbow_flex_r)
+endjoint
+
+beginjoint radioulnar_r
+segments ulna_r radius_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.056398 0.998406 0.001952
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.006727
+ty  constant -0.013007
+tz  constant 0.026083
+r1  constant 0.000000
+r2  function f1(pro_sup_r)
+r3  constant 0.000000
+endjoint
+
+beginjoint wristmarker_r
+segments radius_r wrist_marker_r
+order t r1 r2 r3
+DEFAULT_RIGHT_AXES
+tx  constant 0.006727
+ty  constant 0.013007
+tz  constant -0.026083
+r1  constant -8.000000
+r2  constant 10.000000
+r3  constant -4.000000
+endjoint
+
+/************************* Right Wrist and Hand *******************/
+
+#if !(RIGHT_HAND_FULL)
+
+beginjoint radius_wflex_r
+segments radius_r wflex_r
+order t r1 r2 r3
+DEFAULT_RIGHT_AXES
+tx  constant -0.008797
+ty  constant -0.225841
+tz  constant  0.013610
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f1400(wrist_flex_r)
+endjoint
+
+beginjoint wflex_hand_r
+segments wflex_r hand_r
+order t r1 r2 r3
+DEFAULT_RIGHT_AXES
+tx  constant 0.000000
+ty  constant -0.030000
+tz  constant 0.000000
+r1  function f1403(wrist_dev_r)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+#endif
+
+/***************************** Left Shoulder ********************/
+beginjoint sternoclavicular_l
+segments thorax clavicle_l
+order t r2 r3 r1
+DEFAULT_LEFT_AXES
+tx  constant -0.011000
+ty  constant 0.338000
+tz  constant -0.022000
+#if COMPLEX_CLAVICLE
+r1  function f1300(clav_add_l)
+r2  function f1301(clav_rot_l)
+r3  function f1(clav_flex_l)
+#else
+r1 constant -10.0
+r2 constant -20.0
+r3 constant 0.0
+#endif
+endjoint
+
+beginjoint clavicularmarker_l
+segments clavicle_l clavicle_marker_l
+order r1 r3 r2 t
+DEFAULT_LEFT_AXES
+tx  constant -0.06
+ty  constant 0.045
+tz  constant 0.022
+r1  constant 10.0
+r2  constant 20.0
+r3  constant 0.0
+endjoint
+
+beginjoint st_cl_inv_l
+segments clavicle_l scapula_l
+order t r1 r3 r2
+DEFAULT_LEFT_AXES
+tx  constant 0.008688
+ty  constant -0.001300
+tz  constant -0.155441
+#if COMPLEX_CLAVICLE
+r1  function f1(scap_add_l)
+r2  function f1(scap_rot_l)
+r3  function f1(scap_flex_l)
+#else
+r1 constant 10.0
+r2 constant 20.0
+r3 constant 0.0
+#endif
+endjoint
+
+beginjoint acromial_inv_l
+segments scapula_l humerus_l
+order t r1 r3 r2
+DEFAULT_LEFT_AXES
+tx  constant 0.005000
+ty  constant -0.035000
+tz  constant -0.030000
+r1  function f1(arm_add_l)
+r2  function f1(arm_rot_l)
+r3  function f1(arm_flex_l)
+endjoint
+
+
+/****************************** Left Arm **********************/
+beginjoint elbowmarker_l
+segments humerus_l elbow_marker_l
+order t r3 r2 r1
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 -0.226047 -0.022269 0.973862
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant -15.000000
+r3  constant 3.000000
+endjoint
+
+beginjoint elbow_l
+segments humerus_l ulna_l
+order t r3 r2 r1
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 -0.226047 -0.022269 0.973862
+tx  constant 0.013144
+ty  constant -0.286273
+tz  constant 0.009595
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f1(elbow_flex_l)
+endjoint
+
+beginjoint radioulnar_l
+segments ulna_l radius_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 -0.056398 -0.998406 0.001952
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.006727
+ty  constant -0.013007
+tz  constant -0.026083
+r1  constant 0.000000
+r2  function f1(pro_sup_l)
+r3  constant 0.000000
+endjoint
+
+beginjoint wristmarker_l
+segments radius_l wrist_marker_l
+order t r1 r2 r3
+DEFAULT_RIGHT_AXES
+tx  constant 0.006727
+ty  constant 0.013007
+tz  constant 0.026083
+r1  constant 8.000000
+r2  constant -10.000000
+r3  constant -4.000000
+endjoint
+
+/***************************** Left Wrist and Hand ****************/
+
+#if !(LEFT_HAND_FULL)
+
+beginjoint radius_wflex_l
+segments radius_l wflex_l
+order t r1 r2 r3
+DEFAULT_LEFT_AXES
+tx  constant -0.008797
+ty  constant -0.225841
+tz  constant -0.013610
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f1400(wrist_flex_l)
+endjoint
+
+beginjoint wflex_hand_l
+segments wflex_l hand_l
+order t r1 r2 r3
+DEFAULT_LEFT_AXES
+tx  constant 0.000000
+ty  constant -0.030000
+tz  constant 0.000000
+r1  function f1403(wrist_dev_l)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+#endif
+
+#endif /* UPPER_EXTREMITY */
+
+#if LOWER_EXTREMITY
+
+/************************** Right Leg *********************/
+beginjoint hip_r
+segments pelvis femur_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant -0.0421
+ty constant -0.0839
+tz constant  0.0785
+r3 function f1(hip_flex_r)
+r1 function f1(hip_add_r)
+r2 function f1(hip_rot_r)
+endjoint
+
+#if VARUS_VALGUS
+
+beginjoint knee_flex_r
+segments femur_r tibia_vv_lat_r
+order t r3 r1 r2
+axis1 1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 -1.0
+tx function f1600(knee_flex_r)
+ty function f1601(knee_flex_r)
+tz constant 0.000
+r1 constant 0.0
+r2 constant 0.0
+r3 function f1(knee_flex_r)
+endjoint
+
+beginjoint knee_lat_vv_r
+segments tibia_vv_lat_r tibia_vv_med_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant  0.0
+ty constant -0.030
+tz constant  0.025
+r1 function f1610(knee_vv_r)
+r2 constant 0.0 
+r3 constant 0.0
+endjoint
+
+beginjoint knee_med_vv_r
+segments tibia_vv_med_r tibia_vv_norm_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant  0.0
+ty constant  0.0
+tz constant -0.05
+r1 function f1611(knee_vv_r)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+beginjoint knee_final_r
+segments tibia_vv_norm_r tibia_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx constant 0.0
+ty constant 0.030
+tz constant 0.025
+r1 constant 0.0
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+beginjoint tib_pat_r
+segments tibia_r patella_vv_tmp_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx function f1602(knee_flex_r)
+ty function f1603(knee_flex_r)
+tz constant 0.0024
+r3 function f1604(knee_flex_r)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+beginjoint patella_vv_corr_r
+segments patella_vv_tmp_r patella_r
+order t r1 r2 r3
+DEFAULT_RIGHT_AXES
+tx constant 0.0
+ty constant 0.0
+tz constant 0.0
+r1 function f1612(knee_vv_r)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+#else
+
+beginjoint knee_r
+segments femur_r tibia_r
+order t r3 r1 r2
+axis1 1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 -1.0
+tx function f1600(knee_flex_r)
+ty function f1601(knee_flex_r)
+tz constant 0.000
+r1 constant 0.0
+r2 constant 0.0
+r3 function f1(knee_flex_r)
+endjoint
+
+beginjoint tib_pat_r
+segments tibia_r patella_r
+order t r3 r1 r2
+DEFAULT_RIGHT_AXES
+tx function f1602(knee_flex_r)
+ty function f1603(knee_flex_r)
+tz constant 0.0024
+r3 function f1604(knee_flex_r)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+#endif
+
+beginjoint ankle_r
+segments tibia_r talus_r
+order t r3 r1 r2
+axis1 1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 -0.10453 -0.17365 0.97925 /* ankle axis from Isman and Inman (BOLEGS.IN)*/
+tx constant 0.0
+ty constant -0.423
+tz constant 0.0
+r3 function f1(ankle_flex_r)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+/* defines joint between talus and calcanus frames.  Translation before
+ * rotation from ankle joint center to origin of calcaneal frame */
+beginjoint subtalar_r
+segments talus_r foot_r
+order t r1 r2 r3
+axis1 0.78718 0.604747 -0.120949        /* subtalar axis from Isman and Inman */
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 1.0
+tx constant -0.04877
+ty constant -0.04195
+tz constant 0.00792
+r1 function f1(subt_angle_r)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+/* defines joint between the SIMM foot and the OrthoTrak foot */
+beginjoint foot_mark_r
+segments foot_r foot_marker_r
+order t r1 r2 r3
+axis1 1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 1.0
+tx constant -0.020
+ty constant  0.030
+tz constant -0.010
+r1 constant 0.0
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+/* defines joint between calcaneous and toes_prox frames.  Translation before
+ * rotation from calcaneal frame to base of second metatarsal */
+beginjoint toes_r
+segments foot_r toes_r
+order t r1 r2 r3
+axis1 0.542 0.0 -0.841
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 1.0
+tx constant 0.1768
+ty constant -0.002
+tz constant 0.00108
+r1 function f1(toe_angle_r)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+
+/************************* Left Leg ***********************/
+beginjoint hip_l
+segments pelvis femur_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx constant -0.0421
+ty constant -0.0839
+tz constant -0.0785
+r3 function f1(hip_flex_l)
+r1 function f1(hip_add_l)
+r2 function f1(hip_rot_l)
+endjoint
+
+#if VARUS_VALGUS
+
+beginjoint knee_flex_l
+segments femur_l tibia_vv_lat_l
+order t r3 r1 r2
+axis1 -1.0 0.0 0.0
+axis2 0.0 -1.0 0.0
+axis3 0.0 0.0 -1.0
+tx function f1700(knee_flex_l)
+ty function f1701(knee_flex_l)
+tz constant 0.0
+r1 constant 0.0
+r2 constant 0.0
+r3 function f1(knee_flex_l)
+endjoint
+
+beginjoint knee_lat_vv_l
+segments tibia_vv_lat_l tibia_vv_med_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx constant  0.0
+ty constant -0.030
+tz constant -0.025
+r1 function f1710(knee_vv_l)
+r2 constant 0.0 
+r3 constant 0.0
+endjoint
+
+beginjoint knee_med_vv_l
+segments tibia_vv_med_l tibia_vv_norm_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx constant 0.0
+ty constant 0.0
+tz constant 0.05
+r1 function f1711(knee_vv_l)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+beginjoint knee_final_l
+segments tibia_vv_norm_l tibia_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx constant  0.0
+ty constant  0.030
+tz constant -0.025
+r1 constant 0.0
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+beginjoint tib_pat_l
+segments tibia_l patella_vv_tmp_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx function f1702(knee_flex_l)
+ty function f1703(knee_flex_l)
+tz constant -0.0024
+r3 function f1704(knee_flex_l)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+beginjoint patella_vv_corr_l
+segments patella_vv_tmp_l patella_l
+order t r1 r2 r3
+DEFAULT_LEFT_AXES
+tx constant 0.0
+ty constant 0.0
+tz constant 0.0
+r1 function f1612(knee_vv_l)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+#else
+
+beginjoint knee_l
+segments femur_l tibia_l
+order t r3 r1 r2
+axis1 -1.0 0.0 0.0
+axis2 0.0 -1.0 0.0
+axis3 0.0 0.0 -1.0
+tx function f1700(knee_flex_l)
+ty function f1701(knee_flex_l)
+tz constant 0.0
+r1 constant 0.0
+r2 constant 0.0
+r3 function f1(knee_flex_l)
+endjoint
+
+beginjoint tib_pat_l
+segments tibia_l patella_l
+order t r3 r1 r2
+DEFAULT_LEFT_AXES
+tx function f1702(knee_flex_l)
+ty function f1703(knee_flex_l)
+tz constant -0.0024
+r3 function f1704(knee_flex_l)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+#endif
+
+beginjoint ankle_l
+segments tibia_l talus_l
+order t r3 r1 r2
+axis1 -1.0000 0.00000 0.00000
+axis2 0.00000 -1.0000 0.00000
+axis3 0.10453 0.17365 0.97925 /* ankle axis from Isman and Inman (BOLEGS.IN)*/
+tx constant 0.0
+ty constant -0.423
+tz constant 0.0
+r3 function f1(ankle_flex_l)
+r1 constant 0.0
+r2 constant 0.0
+endjoint
+
+/* defines joint between talus and calcanus frames.  Translation before
+ * rotation from ankle joint center to origin of calcaneal frame */
+beginjoint subtalar_l
+segments talus_l foot_l
+order t r1 r2 r3
+axis1 -0.78718 -0.604747 -0.120949      /* subtalar axis from Isman and Inman */
+axis2 0.00000 -1.000000 0.0
+axis3 0.00000 0.000000 1.0
+tx constant -0.04877
+ty constant -0.04195
+tz constant -0.00792
+r1 function f1(subt_angle_l)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+/* defines joint between the SIMM foot and the OrthoTrak foot */
+beginjoint foot_mark_l
+segments foot_l foot_marker_l
+order t r1 r2 r3
+axis1 1.0 0.0 0.0
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 1.0
+tx constant -0.020
+ty constant  0.030
+tz constant  0.010
+r1 constant 0.0
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+/* defines joint between calcaneous and toes_prox frames.  Translation before
+ * rotation from calcaneal frame to base of second metatarsal */
+beginjoint toes_l
+segments foot_l toes_l
+order t r1 r2 r3
+axis1 -0.542 0.0 -0.841
+axis2 0.0 1.0 0.0
+axis3 0.0 0.0 1.0
+tx constant 0.1768
+ty constant -0.002
+tz constant -0.00108
+r1 function f1(toe_angle_l)
+r2 constant 0.0
+r3 constant 0.0
+endjoint
+
+#endif /* LOWER_EXTREMITY */
+
+/*********************************************/
+/*              GENCOORDS                    */
+/*********************************************/
+begingencoord lower_torso_TX
+range -10.0 10.0
+#if GROUND_PLANE_XZ
+#elif GROUND_PLANE_XY
+#elif GROUND_PLANE_YZ
+   default_value 0.969
+#endif
+begingroups ground_LT endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord lower_torso_TY
+range -10.0 10.0
+#if GROUND_PLANE_XZ
+   default_value 0.969
+#elif GROUND_PLANE_XY
+#elif GROUND_PLANE_YZ
+#endif
+begingroups ground_LT endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord lower_torso_TZ
+range -10.0 10.0
+#if GROUND_PLANE_XZ
+#elif GROUND_PLANE_XY
+   default_value 0.969
+#elif GROUND_PLANE_YZ
+#endif
+begingroups ground_LT endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord lower_torso_RX
+#if WALKING
+range -270.0 270.0
+#else
+range -1800.0 1800.0
+#endif
+#if GROUND_PLANE_XZ
+#elif GROUND_PLANE_XY
+   default_value 90.0
+#elif GROUND_PLANE_YZ
+#endif
+begingroups ground_LT endgroups
+clamped yes
+#if TWO_PELVIS_JOINTS
+locked yes
+#endif
+endgencoord
+
+begingencoord lower_torso_RY
+#if WALKING
+range -270.0 270.0
+#else
+range -1800.0 1800.0
+#endif
+#if GROUND_PLANE_XZ
+#elif GROUND_PLANE_XY
+#elif GROUND_PLANE_YZ
+   default_value -90.0
+#endif
+begingroups ground_LT endgroups
+clamped yes
+#if TWO_PELVIS_JOINTS
+locked yes
+#endif
+endgencoord
+
+begingencoord lower_torso_RZ
+#if WALKING
+range -270.0 270.0
+#else
+range -1800.0 1800.0
+#endif
+#if GROUND_PLANE_XZ
+#elif GROUND_PLANE_XY
+#elif GROUND_PLANE_YZ
+   default_value -90.0
+#endif
+begingroups ground_LT endgroups
+clamped yes
+#if TWO_PELVIS_JOINTS
+locked yes
+#endif
+endgencoord
+
+#if TWO_PELVIS_JOINTS
+
+begingencoord pelvic_rotation
+range -90.0 90.0
+begingroups pelvis endgroups
+clamped no
+locked no
+endgencoord
+
+begingencoord pelvic_fwd_tilt
+range -90.0 90.0
+begingroups pelvis endgroups
+clamped no
+locked no
+default_value 13.0
+endgencoord
+
+begingencoord pelvic_lat_tilt
+range -90.0 90.0
+begingroups pelvis endgroups
+clamped no
+locked no
+endgencoord
+
+#endif
+
+#if UPPER_EXTREMITY
+
+begingencoord lumbar_pitch              
+range -45.0 45.0
+begingroups lumbar spine endgroups
+default_value 13.0
+clamped yes
+visible no
+endgencoord
+
+begingencoord lumbar_roll
+range -45.0 45.0
+begingroups lumbar spine endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord lumbar_yaw       
+range -60.0  60.0
+begingroups lumbar spine endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord neck_pitch                
+range -50.0 72.0
+begingroups neck spine endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord neck_roll
+range -40.0 40.0
+begingroups neck spine endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord neck_yaw
+range -66.0 66.0
+begingroups neck spine endgroups
+clamped yes
+visible no
+endgencoord
+
+/****************** Right Shoulder *****************/
+
+#if COMPLEX_CLAVICLE
+
+begingencoord clav_add_r
+range -15.0 5.0
+default_value -10.619275
+begingroups right shoulder_r clavicle_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord clav_rot_r
+range -5.0 15.0
+default_value 5.754241
+begingroups right shoulder_r clavicle_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord clav_flex_r
+range -20.0 20.0
+default_value 3.097808
+begingroups right shoulder_r clavicle_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_add_r
+range -30.0 30.0
+default_value 18.134767
+begingroups right shoulder_r scapula_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_rot_r
+range -30.0 30.0
+default_value 6.140150
+begingroups right shoulder_r scapula_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_flex_r
+range -30.0 30.0
+default_value 3.09789
+begingroups right shoulder_r scapula_r endgroups
+clamped yes
+visible no
+endgencoord
+
+#endif
+
+begingencoord arm_add_r
+range -120.0 90.0
+#if ARMS_UP
+default_value -90.0
+#endif
+begingroups right shoulder_r arm_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord arm_rot_r
+#if FULL_ARM_MOTION
+range -90.0 90.0
+#else
+range -10.0 10.0
+#endif
+begingroups right shoulder_r arm_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord arm_flex_r
+#if FULL_ARM_MOTION
+range -90.0 90.0
+#else
+range -45.0 90.0
+#endif
+begingroups right shoulder_r arm_r endgroups
+clamped yes
+visible no
+endgencoord
+
+
+/******************** Right Arm ************************/
+begingencoord elbow_flex_r
+range 0.0 130.0
+begingroups right arm_r elbow_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord pro_sup_r
+#if FULL_ARM_MOTION || RIGHT_HAND_FULL
+range 0.000000 90.0
+#else
+range 50.000000 70.000000
+#endif
+default_value 60.0
+begingroups right arm_r elbow_r endgroups
+clamped yes
+visible no
+endgencoord
+
+/******************** Right Wrist and Hand *****************/
+begingencoord wrist_flex_r
+range -70.000000 70.000000
+begingroups right arm_r wrist_r endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord wrist_dev_r
+range -25.000000 35.000000
+begingroups right arm_r wrist_r endgroups
+clamped yes
+visible no
+endgencoord
+
+
+/*********************** Left Shoulder ****************************/
+
+#if COMPLEX_CLAVICLE
+
+begingencoord clav_add_l
+range -15.000000 5.000000
+default_value -10.619275
+begingroups left shoulder_l clavicle_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord clav_rot_l
+range -5.000000 15.000000
+default_value 5.754241
+begingroups left shoulder_l clavicle_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord clav_flex_l
+range -20.000000 20.000000
+default_value 3.097808
+begingroups left shoulder_l clavicle_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_add_l
+range -30.000000 30.000000
+default_value 18.134767
+begingroups left shoulder_l scapula_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_rot_l
+range -30.000000 30.000000
+default_value 6.140150
+begingroups left shoulder_l scapula_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord scap_flex_l
+range -30.000000 30.000000
+default_value 3.09789
+begingroups left shoulder_l scapula_l endgroups
+clamped yes
+visible no
+endgencoord
+
+#endif
+
+begingencoord arm_add_l
+range -120.000000 90.000000
+#if ARMS_UP
+default_value -90.0
+#endif
+begingroups left shoulder_l arm_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord arm_rot_l
+#if FULL_ARM_MOTION
+range -90.000000 90.000000
+#else
+range -10.000000 10.000000
+#endif
+begingroups left shoulder_l arm_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord arm_flex_l
+#if FULL_ARM_MOTION
+range -90.000000 90.000000
+#else
+range -45.000000 90.000000
+#endif
+begingroups left shoulder_l arm_l endgroups
+clamped yes
+visible no
+endgencoord
+
+/*********************** Left Arm ***************************/
+begingencoord elbow_flex_l
+range 0.000000 130.000000
+begingroups left arm_l elbow_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord pro_sup_l
+#if FULL_ARM_MOTION || LEFT_HAND_FULL
+range 0.000000 90.000000
+#else
+range 50.000000 70.000000
+#endif
+default_value 60.0
+begingroups left arm_l elbow_l endgroups
+clamped yes
+visible no
+endgencoord
+
+/********************** Left Wrist and Hand **********************/
+begingencoord wrist_flex_l
+range -70.000000 70.000000
+begingroups left arm_l wrist_l endgroups
+clamped yes
+visible no
+endgencoord
+
+begingencoord wrist_dev_l
+range -25.000000 35.000000
+begingroups left arm_l wrist_l endgroups
+clamped yes
+visible no
+endgencoord
+
+#endif /* UPPER_EXTREMITY */
+
+#if LOWER_EXTREMITY
+
+/************************** Right Leg ************************/
+begingencoord hip_flex_r
+range -11.0 95.0
+begingroups right leg_r hip_r endgroups
+default_value 13.0
+clamped yes
+endgencoord
+
+begingencoord hip_add_r
+range -50.0 20.0
+begingroups right leg_r hip_r endgroups
+clamped yes
+endgencoord
+
+begingencoord hip_rot_r
+range -40.0 40.0
+begingroups right leg_r hip_r endgroups
+clamped yes
+endgencoord
+
+begingencoord knee_flex_r
+range -10.0 120.0
+begingroups right leg_r knee_r endgroups
+clamped yes
+endgencoord
+
+#if VARUS_VALGUS
+begingencoord knee_vv_r
+range -25.0 25.0
+begingroups right leg_r knee_r endgroups
+clamped yes
+endgencoord
+#endif
+
+begingencoord ankle_flex_r
+range -30.0 30.0
+begingroups right leg_r ankle_r endgroups
+clamped yes
+endgencoord
+
+begingencoord subt_angle_r
+range -20.0 20.0
+begingroups right leg_r ankle_r endgroups
+clamped yes
+endgencoord
+
+begingencoord toe_angle_r
+range -30.0 30.0
+begingroups right leg_r toes_r endgroups
+clamped yes
+endgencoord
+
+/*************************** Left Leg ****************************/
+begingencoord hip_flex_l
+range -11.0 95.0
+begingroups left leg_l hip_l endgroups
+default_value 13.0
+clamped yes
+endgencoord
+
+begingencoord hip_add_l
+range -50.0 20.0
+begingroups left leg_l hip_l endgroups
+clamped yes
+endgencoord
+
+begingencoord hip_rot_l
+range -40.0 40.0
+begingroups left leg_l hip_l endgroups
+clamped yes
+endgencoord
+
+begingencoord knee_flex_l
+range -10.0 120.0
+begingroups left leg_l knee_l endgroups
+clamped yes
+endgencoord
+
+#if VARUS_VALGUS
+begingencoord knee_vv_l
+range -25.0 25.0
+begingroups left leg_l knee_l endgroups
+clamped yes
+endgencoord
+#endif
+
+begingencoord ankle_flex_l
+range -30.0 30.0
+begingroups left leg_l ankle_l endgroups
+clamped yes
+endgencoord
+
+begingencoord subt_angle_l
+range -20.0 20.0
+begingroups left leg_l ankle_l endgroups
+clamped yes
+endgencoord
+
+begingencoord toe_angle_l
+range -30.0 30.0
+begingroups left leg_l toes_l endgroups
+clamped yes
+endgencoord
+
+#endif /* LOWER_EXTREMITY */
+
+/*********************************************/
+/*               FUNCTIONS                   */
+/*********************************************/
+beginfunction f1
+(-360.000000,-360.000000)
+( 360.000000, 360.000000)
+endfunction
+
+beginfunction f2
+(-360.000000, 360.000000)
+( 360.000000,-360.000000)
+endfunction
+
+#if UPPER_EXTREMITY
+
+/********** Lumbar *************/
+/* LUM1 about LUM2 */
+beginfunction f111      
+(-100.0, -20.7)
+( 100.0,  20.7)
+endfunction
+
+beginfunction f112        
+(-100.0, -22.2)
+( 100.0,  22.2)
+endfunction
+
+beginfunction f113       
+(-100.0, -16.2)
+( 100.0,  16.2)
+endfunction
+
+/* LUM2 about LUM3 */
+beginfunction f121      
+(-100.0, -20.7)
+( 100.0,  20.7)
+endfunction
+
+beginfunction f122      
+(-100.0, -22.2)
+( 100.0,  22.2)
+endfunction
+
+beginfunction f123     
+(-100.0, -18.9)
+( 100.0,  18.9)
+endfunction
+
+/* LUM3 about LUM4 */
+beginfunction f131       
+(-100.0, -27.6)
+( 100.0,  27.6)
+endfunction
+
+beginfunction f132      
+(-100.0, -22.2)
+( 100.0,  22.2)
+endfunction
+
+beginfunction f133     
+(-100.0, -20.3)
+( 100.0,  20.3)
+endfunction
+
+/* LUM4 about LUM5 */
+beginfunction f141      
+(-100.0, -20.7)
+( 100.0,  20.7)
+endfunction
+
+beginfunction f142      
+(-100.0, -22.2)
+( 100.0,  22.2)
+endfunction
+
+beginfunction f143     
+(-100.0, -21.6)
+( 100.0,  21.6)
+endfunction
+
+/* LUM5 about pelvis */
+beginfunction f151      
+(-100.0, -10.3)
+( 100.0,  10.3)
+endfunction
+
+beginfunction f152     
+(-100.0, -11.1)
+( 100.0,  11.1)
+endfunction
+
+beginfunction f153     
+(-100.0, -23.0)
+( 100.0,  23.0)
+endfunction
+
+/***************** Neck *******************/
+/*  skull rel to C1    */
+beginfunction f301
+(-100.000000,  -8.200000)
+( 100.000000,   8.200000)
+endfunction
+
+beginfunction f302
+(-100.000000,  -6.500000)
+( 100.000000,   6.500000)
+endfunction
+
+beginfunction f303
+(-100.000000, -18.400000)
+( 100.000000,  18.400000)
+endfunction
+
+/* C1 rel to C2 */
+beginfunction f311
+(-100.000000,  -8.200000)
+( 100.000000,   8.200000)
+endfunction
+
+beginfunction f312
+(-100.000000, -51.900000)
+( 100.000000,  51.900000)
+endfunction
+
+beginfunction f313
+(-100.000000, -14.700000)
+( 100.000000,  14.700000)
+endfunction
+
+/* C2 rel to C3 */
+beginfunction f321
+(-100.000000, -16.400000)
+( 100.000000,  16.400000)
+endfunction
+
+beginfunction f322
+(-100.000000,  -3.900000)
+( 100.000000,   3.900000)
+endfunction
+
+beginfunction f323
+(-100.000000,  -7.400000)
+( 100.000000,   7.400000)
+endfunction
+
+/* C3 rel to C4 */
+beginfunction f331
+(-100.000000, -18.000000)
+( 100.000000,  18.000000)
+endfunction
+
+beginfunction f332
+(-100.000000,  -9.100000)
+( 100.000000,   9.100000)
+endfunction
+
+beginfunction f333
+(-100.000000, -11.000000)
+( 100.000000,  11.000000)
+endfunction
+
+/* C4 rel to C5 */
+beginfunction f341
+(-100.000000, -18.000000)
+( 100.000000,  18.000000)
+endfunction
+
+beginfunction f342
+(-100.000000,  -9.100000)
+( 100.000000,   9.100000)
+endfunction
+
+beginfunction f343
+(-100.000000, -14.700000)
+( 100.000000,  14.700000)
+endfunction
+
+/* C5 rel to C6 */
+beginfunction f351
+(-100.000000, -13.100000)
+( 100.000000,  13.100000)
+endfunction
+
+beginfunction f352
+(-100.000000,  -9.100000)
+( 100.000000,   9.100000)
+endfunction
+
+beginfunction f353
+(-100.000000, -14.700000)
+( 100.000000,  14.700000)
+endfunction
+
+/* C6 rel to C7 */
+beginfunction f361
+(-100.000000, -11.500000)
+( 100.000000,  11.500000)
+endfunction
+
+beginfunction f362
+(-100.000000,  -7.800000)
+( 100.000000,   7.800000)
+endfunction
+
+beginfunction f363
+(-100.000000, -12.500000)
+( 100.000000,  12.500000)
+endfunction
+
+/* C7 rel to T1 */
+beginfunction f371
+(-100.000000,  -6.600000)
+( 100.000000,   6.600000)
+endfunction
+
+beginfunction f372
+(-100.000000,  -2.600000)
+( 100.000000,   2.600000)
+endfunction
+
+beginfunction f373
+(-100.000000,  -6.600000)
+( 100.000000,   6.600000)
+endfunction
+
+/********************* Right Shoulder *************************/
+/* clavicle */
+beginfunction f1000
+(-180.0, -190.0)
+(0.0, -10.0)
+(180.0, 170.0)
+endfunction
+
+beginfunction f1001
+(-180.0, -200.0)
+(0.0, -20.0)
+(180.0, 160.0)
+endfunction
+
+beginfunction f1002
+(-180.0, 190.0)
+(0.0, 10.0)
+(180.0, -170.0)
+endfunction
+
+beginfunction f1003
+(-180.0, 200.0)
+(0.0, 20.0)
+(180.0, -160.0)
+endfunction
+
+/******************* Right Wrist and Hand ********************/
+/* radius-prox_flex RZ */
+beginfunction f1100
+( -90.000000, -45.000000)
+(  90.000000,  45.000000)
+endfunction
+
+/* prox_flex-prox_dev rX */
+beginfunction f1101
+( -25.000000,  -9.375000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* prox_dev-dist_flex rZ */
+beginfunction f1102
+( -70.000000, -35.000000)
+(  70.000000,  35.000000)
+endfunction
+
+/* dist_flex-dist_dev rX */
+beginfunction f1103
+( -25.000000, -15.625000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* ty capitate-cap_aux1 */
+beginfunction f1209
+( -25.403461,  -0.005296)
+( -12.552980,  -0.001860)
+(   0.000000,   0.000000)
+(   7.255741,  -0.001401)
+(  12.481216,  -0.002375)
+(  35.212013,  -0.004810)
+endfunction
+
+/* tz capitate-cap_aux1 */
+beginfunction f1210
+( -25.354568,   0.000723)
+( -10.125652,   0.000708)
+(  -3.840702,   0.000317)
+(   0.000000,   0.000000)
+(   5.468287,  -0.000859)
+(  10.564981,  -0.001663)
+(  16.147070,  -0.002381)
+(  21.782553,  -0.002774)
+(  29.252764,  -0.002942)
+(  35.077644,  -0.002942)
+endfunction
+
+/* tz capitate-cap_aux2 */
+beginfunction f1211
+( -25.355537,   0.003199)
+(   0.000000,   0.000000)
+(  35.115795,  -0.003638)
+endfunction
+
+/* ty trapezium trpzm_aux1 */
+beginfunction f1204
+( -25.355537,  -0.000969)
+(   0.000000,   0.000000)
+(  22.248272,   0.002119)
+(  35.055393,   0.003237)
+endfunction
+
+/* tz trapezium-trpzm_aux1 */
+beginfunction f1205
+( -34.559998,   0.000000)
+( -26.475258,   0.000006)
+( -18.111734,   0.000003)
+(  -8.075508,   0.000003)
+(   0.000000,   0.000000)
+(  35.136032,  -0.000904)
+endfunction
+
+/* tz scaphoid-scaph_aux1 */
+beginfunction f1201
+( -26.081165,  -0.000932)
+( -10.566132,  -0.000266)
+(   0.000000,   0.000000)
+(  35.009277,   0.001910)
+endfunction
+
+/* ty scaphoid-scaph_aux1 */
+beginfunction f1200
+( -25.457281,  -0.000955)
+(   0.000000,   0.000000)
+(  35.313988,   0.001147)
+endfunction
+
+/* tz scaphoid-scaph_aux2 */
+beginfunction f1203
+( -25.672873,   0.001403)
+( -11.341747,   0.000201)
+(  -1.962238,  -0.000004)
+(   0.000000,   0.000000)
+(   7.231682,   0.001196)
+(  19.022863,   0.002061)
+(  35.055382,   0.002131)
+endfunction
+
+/* ty scaphoid-scaph_aux2*/
+beginfunction f1202
+( -25.427441,  -0.000340)
+(   0.000000,   0.000000)
+(  35.265545,   0.000589)
+endfunction
+
+/* ty hamate-ham_aux1 */
+beginfunction f1212
+( -25.387917,   0.004474)
+(   0.022762,   0.000100)
+(  49.934570,   0.010131)
+endfunction
+
+/* tz trapezoid-trpzd_aux1 */
+beginfunction f1208
+( -25.387917,  -0.004666)
+(   0.022762,   0.000121)
+(  35.457458,   0.001204)
+endfunction
+
+/* tz trapezium-trpzm_aux2 */
+beginfunction f1207
+( -25.355537,   0.002558)
+(   0.000000,   0.000000)
+(  35.055393,  -0.002218)
+endfunction
+
+/* ty trapezium-trpzm_aux2 */
+beginfunction f1206
+( -25.355537,   0.000047)
+( -18.831158,   0.000019)
+( -12.065134,   0.000019)
+(  -6.990616,   0.000019)
+(   0.000000,   0.000000)
+(  35.055393,   0.006207)
+endfunction
+
+/* tz metacarp1-mc1_aux1 */
+beginfunction f1213
+( -29.946768,   0.000249)
+( -24.147320,   0.000174)
+( -16.426317,   0.000101)
+(  -9.926102,   0.000039)
+(   0.017050,   0.000000)
+(   6.974461,   0.000096)
+(  13.474678,   0.000191)
+(  14.514713,   0.000241)
+(  16.594780,   0.000274)
+(  24.915058,   0.000244)
+(  35.055397,   0.000223)
+endfunction
+
+#endif /* UPPER_EXTREMITY */
+
+#if LOWER_EXTREMITY
+
+/******************** Right Knee *********************/
+
+/* TX for right knee */
+beginfunction f1600
+(  0.0, -0.00525)
+( 10.0, -0.00310)
+( 20.0, -0.00100)
+( 40.0,  0.00212)
+( 60.0,  0.00410)
+( 80.0,  0.00411)
+(100.0,  0.00179)
+(120.0, -0.00320)
+endfunction
+
+/* TY for right knee */
+beginfunction f1601
+(  0.0, -0.3960)
+( 10.0, -0.3966)
+( 20.0, -0.3976)
+( 30.0, -0.3990)
+( 70.0, -0.4082)
+(120.0, -0.4226)
+endfunction
+
+/* TX for right tib_pat joint */ 
+beginfunction f1602
+(  0.0, 0.0496)
+( 10.0, 0.0484)
+( 20.0, 0.0469)
+( 40.0, 0.0430)
+( 60.0, 0.0381)
+( 80.0, 0.0324)
+(120.0, 0.0173)
+endfunction
+
+/* TY for right tib_pat */
+beginfunction f1603
+(  0.286,-0.0227)
+( 10.0,  -0.0223)
+( 20.0,  -0.0219)
+( 40.0,  -0.0211)
+( 60.0,  -0.0204)
+( 80.0,  -0.0200)
+( 90.0,  -0.0202)
+(120.0,  -0.0219)
+endfunction
+
+/* RZ for right tib_pat joint */
+beginfunction f1604
+(-10.00, -9.24)
+( -0.15, -2.44)
+( 20.34,  6.09)
+( 56.43, 13.86)
+(114.59, 17.65)
+(120.00, 17.65)
+endfunction
+
+/* prox_toes function */
+beginfunction f1606
+(-90.0, -10.0)
+(-45.0,  -5.0)
+(  0.0,   0.0)
+( 30.0,   5.0)
+( 90.0,  15.0)
+endfunction
+
+beginfunction f1610
+(-15.0, -15.0 )
+(-10.0, -10.0 )
+( -5.0,  -5.0 )
+(  0.0,   0.0 )
+(  2.5,   0.0 )
+(  5.0,   0.0 )
+( 10.0,   0.0 )
+( 15.0,   0.0 )
+endfunction
+
+beginfunction f1611
+(-15.0,   0.0 )
+(-10.0,   0.0 )
+( -5.0,   0.0 )
+( -2.5,   0.0 )
+(  0.0,   0.0 )
+(  5.0,   5.0 )
+( 10.0,  10.0 )
+( 15.0,  15.0 )
+endfunction
+
+beginfunction f1612
+(-15.0,  15.0 )
+(-10.0,  10.0 )
+( -5.0,   5.0 )
+(  0.0,   0.0 )
+(  5.0,  -5.0 )
+( 10.0, -10.0 )
+( 15.0, -15.0 )
+endfunction
+
+#endif /* LOWER_EXTREMITY */
+
+#if UPPER_EXTREMITY
+
+/********************* Left Shoulder *************************/
+/* clavicle */
+beginfunction f1300
+(-180.0, -190.0)
+(0.0, -10.0)
+(180.0, 170.0)
+endfunction
+
+beginfunction f1301
+(-180.0, -200.0)
+(0.0, -20.0)
+(180.0, 160.0)
+endfunction
+
+beginfunction f1302
+(-180.0, 190.0)
+(0.0, 10.0)
+(180.0, -170.0)
+endfunction
+
+beginfunction f1303
+(-180.0, 200.0)
+(0.0, 20.0)
+(180.0, -160.0)
+endfunction
+
+/******************* Left Wrist and Hand ********************/
+/* radius-prox_flex RZ */
+beginfunction f1400
+( -90.000000, -90.000000)
+(  90.000000,  90.000000)
+endfunction
+
+/* prox_flex-prox_dev rX */
+beginfunction f1401
+( -25.000000,  -9.375000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* prox_dev-dist_flex rZ */
+beginfunction f1402
+( -70.000000, -35.000000)
+(  70.000000,  35.000000)
+endfunction
+
+/* dist_flex-dist_dev rX */
+beginfunction f1403
+( -90.000000, -90.000000)
+(  90.000000,  90.000000)
+endfunction
+
+/* ty capitate-cap_aux1 */
+beginfunction f1509
+( -25.403461,  -0.005296)
+( -12.552980,  -0.001860)
+(   0.000000,   0.000000)
+(   7.255741,  -0.001401)
+(  12.481216,  -0.002375)
+(  35.212013,  -0.004810)
+endfunction
+
+/* tz capitate-cap_aux1 */
+beginfunction f1510
+( -25.354568,   0.000723)
+( -10.125652,   0.000708)
+(  -3.840702,   0.000317)
+(   0.000000,   0.000000)
+(   5.468287,  -0.000859)
+(  10.564981,  -0.001663)
+(  16.147070,  -0.002381)
+(  21.782553,  -0.002774)
+(  29.252764,  -0.002942)
+(  35.077644,  -0.002942)
+endfunction
+
+/* tz capitate-cap_aux2 */
+beginfunction f1511
+( -25.355537,   0.003199)
+(   0.000000,   0.000000)
+(  35.115795,  -0.003638)
+endfunction
+
+/* ty trapezium trpzm_aux1 */
+beginfunction f1504
+( -25.355537,  -0.000969)
+(   0.000000,   0.000000)
+(  22.248272,   0.002119)
+(  35.055393,   0.003237)
+endfunction
+
+/* tz trapezium-trpzm_aux1 */
+beginfunction f1505
+( -34.559998,   0.000000)
+( -26.475258,   0.000006)
+( -18.111734,   0.000003)
+(  -8.075508,   0.000003)
+(   0.000000,   0.000000)
+(  35.136032,  -0.000904)
+endfunction
+
+/* tz scaphoid-scaph_aux1 */
+beginfunction f1501
+( -26.081165,  -0.000932)
+( -10.566132,  -0.000266)
+(   0.000000,   0.000000)
+(  35.009277,   0.001910)
+endfunction
+
+/* ty scaphoid-scaph_aux1 */
+beginfunction f1500
+( -25.457281,  -0.000955)
+(   0.000000,   0.000000)
+(  35.313988,   0.001147)
+endfunction
+
+/* tz scaphoid-scaph_aux2 */
+beginfunction f1503
+( -25.672873,   0.001403)
+( -11.341747,   0.000201)
+(  -1.962238,  -0.000004)
+(   0.000000,   0.000000)
+(   7.231682,   0.001196)
+(  19.022863,   0.002061)
+(  35.055382,   0.002131)
+endfunction
+
+/* ty scaphoid-scaph_aux2*/
+beginfunction f1502
+( -25.427441,  -0.000340)
+(   0.000000,   0.000000)
+(  35.265545,   0.000589)
+endfunction
+
+/* ty hamate-ham_aux1 */
+beginfunction f1512
+( -25.387917,   0.004474)
+(   0.022762,   0.000100)
+(  49.934570,   0.010131)
+endfunction
+
+/* tz trapezoid-trpzd_aux1 */
+beginfunction f1508
+( -25.387917,  -0.004666)
+(   0.022762,   0.000121)
+(  35.457458,   0.001204)
+endfunction
+
+/* tz trapezium-trpzm_aux2 */
+beginfunction f1507
+( -25.355537,   0.002558)
+(   0.000000,   0.000000)
+(  35.055393,  -0.002218)
+endfunction
+
+/* ty trapezium-trpzm_aux2 */
+beginfunction f1506
+( -25.355537,   0.000047)
+( -18.831158,   0.000019)
+( -12.065134,   0.000019)
+(  -6.990616,   0.000019)
+(   0.000000,   0.000000)
+(  35.055393,   0.006207)
+endfunction
+
+/* tz metacarp1-mc1_aux1 */
+beginfunction f1513
+( -29.946768,   0.000249)
+( -24.147320,   0.000174)
+( -16.426317,   0.000101)
+(  -9.926102,   0.000039)
+(   0.017050,   0.000000)
+(   6.974461,   0.000096)
+(  13.474678,   0.000191)
+(  14.514713,   0.000241)
+(  16.594780,   0.000274)
+(  24.915058,   0.000244)
+(  35.055397,   0.000223)
+endfunction
+
+#endif /* UPPER_EXTREMITY */
+
+#if LOWER_EXTREMITY
+
+/******************** Left Knee *********************/
+/* TX for left knee */
+beginfunction f1700
+(  0.0, -0.00525)
+( 10.0, -0.00310)
+( 20.0, -0.00100)
+( 40.0,  0.00212)
+( 60.0,  0.00410)
+( 80.0,  0.00411)
+(100.0,  0.00179)
+(120.0, -0.00320)
+endfunction
+
+/* TY for left knee */
+beginfunction f1701
+(  0.0, -0.3960)
+( 10.0, -0.3966)
+( 20.0, -0.3976)
+( 30.0, -0.3990)
+( 70.0, -0.4082)
+(120.0, -0.4226)
+endfunction
+
+/* TX for left tib_pat joint */ 
+beginfunction f1702
+(  0.0, 0.0496)
+( 10.0, 0.0484)
+( 20.0, 0.0469)
+( 40.0, 0.0430)
+( 60.0, 0.0381)
+( 80.0, 0.0324)
+(120.0, 0.0173)
+endfunction
+
+/* TY for left tib_pat joint */
+beginfunction f1703
+(  0.286,-0.0227)
+( 10.0,  -0.0223)
+( 20.0,  -0.0219)
+( 40.0,  -0.0211)
+( 60.0,  -0.0204)
+( 80.0,  -0.0200)
+( 90.0,  -0.0202)
+(120.0,  -0.0219)
+endfunction
+
+/* RZ for left tib_pat joint */
+beginfunction f1704
+(-10.00, -9.24)
+( -0.15, -2.44)
+( 20.34,  6.09)
+( 56.43, 13.86)
+(114.59, 17.65)
+(120.00, 17.65)
+endfunction
+
+/* prox_toes function */
+beginfunction f1706
+(-90.0, -10.0)
+(-45.0,  -5.0)
+(  0.0,   0.0)
+( 30.0,   5.0)
+( 90.0,  15.0)
+endfunction
+
+beginfunction f1710
+(-15.0, -15.0 )
+(-10.0, -10.0 )
+( -5.0,  -5.0 )
+(  0.0,   0.0 )
+(  2.5,   0.0 )
+(  5.0,   0.0 )
+( 10.0,   0.0 )
+( 15.0,   0.0 )
+endfunction
+
+beginfunction f1711
+(-15.0,   0.0 )
+(-10.0,   0.0 )
+( -5.0,   0.0 )
+( -2.5,   0.0 )
+(  0.0,   0.0 )
+(  5.0,   5.0 )
+( 10.0,  10.0 )
+( 15.0,  15.0 )
+endfunction
+
+beginfunction f1712
+(-15.0,  15.0 )
+(-10.0,  10.0 )
+( -5.0,   5.0 )
+(  0.0,   0.0 )
+(  5.0,  -5.0 )
+( 10.0, -10.0 )
+( 15.0, -15.0 )
+endfunction
+
+#endif /* LOWER_EXTREMITY */
+
+/************************************************/
+/*              CONSTRAINT OBJECTS              */
+/************************************************/
+
+#if COMPLEX_CLAVICLE
+
+beginconstraintobject right_shoulder
+constrainttype ellipsoid
+segment thorax
+xyz_body_rotation -3.28 -1.47 13.70
+translation -0.0172 0.1829 0.0698
+radius 0.1000 0.1800 0.0900
+beginpoints
+r_sh_1  -0.0815  -0.0579  -0.0910   10.0000 scapula_r
+r_sh_2  -0.0888  -0.1839  -0.0485   10.0000 scapula_r
+r_sh_3  -0.0481  -0.0909  -0.0401   10.0000 scapula_r
+endpoints
+visible no
+active yes
+endconstraintobject
+
+beginconstraintobject left_shoulder
+constrainttype ellipsoid
+segment thorax
+xyz_body_rotation 3.28 1.47 13.70
+translation -0.0172 0.1829 -0.0698
+radius 0.1000 0.1800 0.0900
+beginpoints
+l_sh_1  -0.0815  -0.0579   0.0910   10.0000 scapula_l
+l_sh_2  -0.0888  -0.1839   0.0485   10.0000 scapula_l
+l_sh_3  -0.0481  -0.0909   0.0401   10.0000 scapula_l
+endpoints
+visible no
+active yes
+endconstraintobject
+
+#endif
+
+/*********************************************/
+/*              MODEL VIEWS                  */
+/*********************************************/
+
+#if GROUND_PLANE_XZ
+        beginview default
+         0.0  0.0   1.0  0.0
+         0.0  1.0   0.0  0.0
+        -1.0  0.0   0.0  0.0
+         0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview motion
+        -0.7046 -0.0060  0.7096 0.0000 
+         0.0366  0.9983  0.0448 0.0000 
+        -0.7087  0.0575 -0.7032 0.0000 
+         0.3181 -0.8978 -4.5020 1.0000 
+        endview
+
+        beginview front
+         0.0  0.0   1.0  0.0
+         0.0  1.0   0.0  0.0
+        -1.0  0.0   0.0  0.0
+         0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview side
+         1.0  0.0   0.0  0.0
+         0.0  1.0   0.0  0.0
+         0.0  0.0   1.0  0.0
+         0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview top
+        1.0  0.0   0.0  0.0
+        0.0  0.0   1.0  0.0
+        0.0 -1.0   0.0  0.0
+        0.0  0.0 -5.0  1.0
+        endview
+
+#elif GROUND_PLANE_XY
+        beginview default
+        0.0  0.0   1.0  0.0
+        1.0  0.0   0.0  0.0
+        0.0  1.0   0.0  0.0
+        0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview motion
+        -0.3906 -0.0806  0.9170  0.0000
+         0.9205 -0.0301  0.3895  0.0000
+        -0.0038  0.9963  0.0860  0.0000
+         0.5573 -1.0410 -3.6453  1.0000
+        endview
+        
+        beginview front
+        0.0  0.0   1.0  0.0
+        1.0  0.0   0.0  0.0
+        0.0  1.0   0.0  0.0
+        0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview side
+         1.0  0.0   0.0  0.0
+         0.0  0.0  -1.0  0.0
+         0.0  1.0   0.0  0.0
+         0.0 -1.0 -5.0  1.0
+        endview
+        
+        beginview top
+         1.0   0.0   0.0  0.0
+         0.0   1.0   0.0  0.0
+         0.0   0.0   1.0  0.0
+         0.0   0.0 -5.0  1.0
+        endview
+
+#elif GROUND_PLANE_YZ
+        beginview default
+         0.0  1.0   0.0  0.0
+        -1.0  0.0   0.0  0.0
+         0.0  0.0   1.0  0.0
+         0.0 -0.5  -5.0  1.0
+        endview
+        
+        beginview motion
+        -0.0016  0.9994 -0.0347 0.0000 
+        -0.7450 -0.0243 -0.6666 0.0000 
+        -0.6670  0.0248  0.7446 0.0000 
+         0.5645 -0.8547 -6.0538 1.0000 
+        endview
+        
+        beginview front
+        0.0  1.0   0.0  0.0
+       -1.0  0.0   0.0  0.0
+        0.0  0.0   1.0  0.0
+        0.0 -0.5  -5.0  1.0
+        endview
+        
+        beginview side
+         0.0  1.0   0.0  0.0
+         0.0  0.0   1.0  0.0
+         1.0  0.0   0.0  0.0
+         0.0 -0.5  -5.0  1.0
+        endview
+        
+        beginview top
+         0.0  0.0   1.0  0.0
+         0.0 -1.0   0.0  0.0
+         1.0  0.0   0.0  0.0
+         0.0  0.0  -5.0  1.0
+        endview
+#endif
+
+/*********************************************/
+/*                MATERIALS                  */
+/*********************************************/
+
+beginmaterial cyan
+ambient 0.1000 0.8000 1.0000
+diffuse 0.1000 0.3000 0.5000
+specular 0.1000 0.3000 0.5000
+shininess 10.0000
+endmaterial
+
+beginmaterial green
+ambient 0.0100 0.9000 0.0100
+diffuse 0.1000 0.9000 0.1000
+specular 0.5000 0.5000 0.5000
+shininess 10.0000
+endmaterial
+
+beginmaterial orange
+ambient 1.0000 0.3000 0.0100
+diffuse 0.5000 0.1000 0.1000
+specular 0.5000 0.5000 0.5000
+shininess 10.0000
+endmaterial
+
+beginmaterial yellow
+ambient 1.0000 0.8000 0.1000
+diffuse 0.5000 0.4000 0.1000
+specular 0.5000 0.4000 0.1000
+shininess 10.0000
+endmaterial
+
+beginmaterial purple
+ambient 0.5000 0.0100 0.5000
+diffuse 0.5000 0.0100 0.5000
+specular 0.5000 0.5000 0.5000
+shininess 10.0000
+endmaterial
+
+beginmaterial blue
+ambient 0.1000 0.1000 1.0000
+diffuse 0.1000 0.1000 1.0000
+specular 0.5000 0.5000 0.5000
+shininess 10.0000
+endmaterial
+
+beginmaterial pink
+ambient 0.9 0.3 0.2
+specular 0.14 0.0 0.2
+diffuse 0.2 0.3 0.2
+shininess 25.0
+endmaterial
+
+beginmaterial tan
+ambient 0.7 0.4 0.1
+specular 0.14 0.0 0.2
+diffuse 0.2 0.3 0.2
+shininess 10.0
+endmaterial
+
+beginmaterial red
+ambient 1.0000 0.1000 0.1000
+diffuse 0.5000 0.1000 0.1000
+specular 0.5000 0.1000 0.1000
+shininess 10.0000
+endmaterial
+
+beginmaterial my_bone
+ambient 0.6000 0.6000 0.6000
+diffuse 0.6000 0.4500 0.4000
+specular 0.7000 0.5500 0.4000
+shininess 10.0000
+endmaterial
+
+beginmaterial arrow_mat
+ambient 0.4000 0.4000 0.7000
+diffuse 0.3000 0.3000 0.5000
+specular 0.3000 0.3000 0.5000
+shininess 0.0000
+endmaterial
+
+beginmaterial ligament_mat
+ambient 0.8000 0.3000 0.3000
+diffuse 0.7000 0.2000 0.2000
+specular 1.0000 0.5000 0.5000
+shininess 20.0000
+endmaterial
+
+beginmaterial bone_mat
+ambient 0.6000 0.6000 0.6000
+diffuse 0.6000 0.4500 0.4000
+specular 0.7000 0.5500 0.4000
+shininess 10.0000
+endmaterial
+
+beginmaterial goldmetal
+ambient 0.4000 0.2000 0.0000
+diffuse 0.2200 0.1800 0.0500
+specular 0.8000 0.8000 0.4000
+shininess 93.0000
+endmaterial
+
+beginmaterial graymetal
+ambient 0.6000 0.6000 0.6000
+diffuse 0.1500 0.1500 0.1500
+specular 1.0000 1.0000 1.0000
+shininess 95.0000
+endmaterial
+
+beginmaterial newfloor
+ambient 0.2400 0.5400 0.7300
+diffuse 0.0500 0.1000 0.1500
+specular 1.0000 1.0000 1.0000
+shininess 25.0000
+endmaterial
+
+beginmaterial rad_bone
+ambient 0.6000 0.6000 0.8000
+diffuse 0.6000 0.4500 0.7000
+specular 0.9000 0.4000 0.4000
+shininess 20.0000
+endmaterial
+
+beginmaterial dist_bone
+ambient 0.6000 0.6000 0.8000
+diffuse 0.6000 0.4500 0.7000
+specular 0.9000 0.4000 0.4000
+shininess 20.0000
+endmaterial
+
+beginmaterial muscle_min
+ambient 0.2000 0.0000 0.0000
+diffuse 0.4000 0.0000 0.0000
+specular 0.6000 0.0000 0.0000
+shininess 20.0000
+endmaterial
+
+beginmaterial muscle_max
+ambient 0.5000 0.1000 0.1000
+diffuse 0.7000 0.1000 0.1000
+specular 0.9000 0.2000 0.2000
+shininess 80.0000
+endmaterial
+
+/****************************************************/
+/*                    MOTION OBJECTS                */
+/****************************************************/
+beginmotionobject ball
+material blue
+scale 0.25 0.25 0.25
+endmotionobject
+
+#if GROUND_PLANE_XZ
+   #define FLOOR floor_xz_plane.asc
+   #define FLOOR_ORIGIN 0.0 -0.002 0.0
+#elif GROUND_PLANE_XY
+   #define FLOOR floor_xy_plane.asc
+   #define FLOOR_ORIGIN 0.0 0.0 -0.002
+#elif GROUND_PLANE_YZ
+   #define FLOOR floor_yz_plane.asc
+   #define FLOOR_ORIGIN -0.002 0.0 0.0
+#endif
+
+beginmaterial floor_material
+ambient  0.5 0.4 0.3
+diffuse  0.5 0.4 0.3
+specular 0.5 0.4 0.3
+endmaterial
+
+beginworldobject floor
+filename FLOOR
+material newfloor
+origin FLOOR_ORIGIN
+drawmode solid_fill
+endworldobject
+
+#if RIGHT_HAND_FULL
+
+/*******************************************************************************
+   RIGHT HAND MODEL
+   joint file
+
+   (c) Copyright 2002, MusculoGraphics, a division of
+       Motion Analysis Corporation.
+       All rights reserved.
+
+   This file contains the segments joints, gencoords, and constraint functions
+   for the right hand model of an average adult male. It was developed by Silvia
+   Salinas Blemker and Scott Delp.
+
+   This model is described in the paper:
+      Delp, S. L., Grierson, A. E., Buchanan, T. S. Moments generated by the wrist
+      muscles in flexion-extension and radial-ulnar deviation, Journal of
+      Biomechanics, vol. 29, pp. 1371-1376, 1996.
+
+*******************************************************************************/
+#ifndef RF1M1
+  #define RF1M1 1
+#endif
+#ifndef RF1M2
+  #define RF1M2 1
+#endif
+#ifndef RF1M3
+  #define RF1M3 1
+#endif
+
+#ifndef RF2M1
+  #define RF2M1 1
+#endif
+#ifndef RF2M2
+  #define RF2M2 1
+#endif
+#ifndef RF2M3
+  #define RF2M3 1
+#endif
+
+#ifndef RF3M1
+  #define RF3M1 1
+#endif
+#ifndef RF3M2
+  #define RF3M2 1
+#endif
+#ifndef RF3M3
+  #define RF3M3 1
+#endif
+
+#ifndef RF4M1
+  #define RF4M1 1
+#endif
+#ifndef RF4M2
+  #define RF4M2 1
+#endif
+#ifndef RF4M3
+  #define RF4M3 1
+#endif
+
+#ifndef RF5M1
+  #define RF5M1 1
+#endif
+#ifndef RF5M2
+  #define RF5M2 1
+#endif
+#ifndef RF5M3
+  #define RF5M3 1
+#endif
+
+/*************************** Right Wrist and Hand ************/
+beginsegment prox_carpals_r
+beginfiles
+pisiform_rv.asc
+lunate_rv.asc
+scaphoid_rv.asc
+triquetrum_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	wrist_r
+	hand_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_carpals_r
+beginfiles
+hamate_rv.asc
+capitate_rv.asc
+trapezoid_rv.asc
+trapezium_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	wrist_r
+	hand_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment rotaxis_r
+begingroups
+	aux_axes_r
+	wrist_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment prox_flex_CR_r
+begingroups
+	aux_axes_r
+	wrist_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment prox_dev_CR_r
+begingroups
+	aux_axes_r
+	wrist_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_flex_CR_r
+begingroups
+	aux_axes_r
+	wrist_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_dev_CR_r
+begingroups
+	aux_axes_r
+	wrist_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment scaph_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment scaph_aux2_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment cap_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment cap_aux2_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment ham_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzd_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzm_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzm_aux2_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment mc1_aux1_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment carp_metacarp_r
+begingroups
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment carp_thumb_r
+begingroups
+	right
+	aux_axes_r
+	musc_aux_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment metacarpal2_r
+beginfiles
+metacarpal2_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_1_r
+beginfiles
+index_proximal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger2.M1	-0.012 -0.030 0.0 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_2_r
+beginfiles
+index_medial_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger2.M2	-0.008 -0.020 0.0 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_3_r
+beginfiles
+index_distal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger2.M3	-0.007 -0.010 0.0 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal3_r
+beginfiles
+metacarpal3_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Hand	-0.020 -0.030 0.000 OTHER_WEIGHT
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_1_r
+beginfiles
+middle_proximal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger3.M1	-0.012 -0.032 -0.003 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_2_r
+beginfiles
+middle_medial_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger3.M2	-0.008 -0.020 -0.003 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_3_r
+beginfiles
+middle_distal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger3.M3	-0.007 -0.016 -0.003 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal4_r
+beginfiles
+metacarpal4_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_1_r
+beginfiles
+ring_proximal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger4.M1	-0.012 -0.027 -0.004 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_2_r
+beginfiles
+ring_medial_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger4.M2	-0.008 -0.016 -0.002 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_3_r
+beginfiles
+ring_distal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger4.M3	-0.008 -0.010 -0.002 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal5_r
+beginfiles
+metacarpal5_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_1_r
+beginfiles
+little_proximal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger5.M1	-0.010 -0.025 -0.005 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_2_r
+beginfiles
+little_medial_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger5.M2	-0.008 -0.015 -0.003 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_3_r
+beginfiles
+little_distal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Finger5.M3	-0.008 -0.010 -0.002 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal1_r
+beginfiles
+metacarpal1_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Thumb.M1	-0.012 -0.020 0.006 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment thumb_2_r
+beginfiles
+thumb_proximal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Thumb.M2	-0.008 -0.020 0.000 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment thumb_3_r
+beginfiles
+thumb_distal_rv.asc
+endfiles
+material my_bone
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+marker R.Thumb.M3	-0.007 -0.015 0.000 OTHER_WEIGHT fixed
+gait_scale R_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+
+/*********************************************/
+/*                JOINTS                     */
+/*********************************************/
+beginjoint rad-rotaxis_r
+segments radius_r rotaxis_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.008797
+ty  constant -0.245841
+tz  constant 0.015610
+r1  constant -5.000000
+r2  constant 22.500000
+r3  constant 0.000000
+endjoint
+
+beginjoint rotaxis-prox_flex_CR_r
+segments rotaxis_r prox_flex_CR_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.000832
+ty  constant 0.008099
+tz  constant -0.000364
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f816(wrist_flex_r)
+endjoint
+
+beginjoint prox_flex_dev_r
+segments prox_flex_CR_r prox_dev_CR_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.004500
+ty  constant 0.000000
+tz  constant 0.000000
+r1  function f824(wrist_dev_r)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint prox_dev-dist_flex_r
+segments prox_dev_CR_r dist_flex_CR_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000900
+ty  constant -0.018000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f836(wrist_flex_r)
+endjoint
+
+beginjoint dist_flex-dev_r
+segments dist_flex_CR_r dist_dev_CR_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  function f844(wrist_dev_r)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint prox_carpal_jnt_r
+segments prox_dev_CR_r prox_carpals_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint dist_carpal_jnt_r
+segments dist_dev_CR_r dist_carpals_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint scap-aux1_r
+segments prox_carpals_r scaph_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8312(wrist_dev_r)
+tz  function f8313(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint scap-aux2_r
+segments prox_carpals_r scaph_aux2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8322(wrist_dev_r)
+tz  function f8323(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzm-aux1_r
+segments dist_carpals_r trpzm_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8712(wrist_dev_r)
+tz  function f8713(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzm-aux2_r
+segments dist_carpals_r trpzm_aux2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8722(wrist_dev_r)
+tz  function f8723(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzd-aux1_r
+segments dist_carpals_r trpzd_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f8813(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint cap-aux1_r
+segments dist_carpals_r cap_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8512(wrist_dev_r)
+tz  function f8513(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint cap-aux2_r
+segments dist_carpals_r cap_aux2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f8523(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint ham-aux1_r
+segments dist_carpals_r ham_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f8612(wrist_dev_r)
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint auxCMC_r
+segments dist_dev_CR_r carp_metacarp_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint auxThumb_r
+segments dist_dev_CR_r carp_thumb_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.006000
+ty  constant -0.010000
+tz  constant 0.032000
+r1  constant -30.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint CMC2_r
+segments carp_metacarp_r metacarpal2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.008550
+tz  constant -0.004500
+r1  constant 10.000000
+r2  constant 15.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint MCP2_r
+segments metacarpal2_r index_1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.002162
+ty  constant -0.061650
+tz  constant 0.040500
+#if RF2M1 || (RF2M2 || RF2M3)
+r1  function f1(MCP2_lateral_r)
+r2  constant 0.000000
+r3  function f1(MCP2_flex_r)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP2_r
+segments index_1_r index_2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000450
+ty  constant -0.043434
+tz  constant 0.007191
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF2M2 || RF2M3
+  #if RF2M1
+    r3 function f1(PIP2_flex_r)
+  #else
+    r3 function f1(MCP2_flex_r)
+  #endif
+#else
+  #if RF2M1
+    r3 function f1(MCP2_flex_r)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP2_r
+segments index_2_r index_3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.001737
+ty  constant -0.029493
+tz  constant 0.004248
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF2M3
+  #if RF2M2
+    r3 function f1(DIP2_flex_r)
+  #elif RF2M1
+    r3 function f1(PIP2_flex_r)
+  #else
+    r3 function f1(MCP2_flex_r)
+  #endif
+#else
+  #if RF2M2
+    #if RF2M1
+      r3 function f1(PIP2_flex_r)
+    #else
+      r3 function f1(MCP2_flex_r)
+	#endif
+  #else
+    #if RF2M1
+      r3 function f1(MCP2_flex_r)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC3_r
+segments carp_metacarp_r metacarpal3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.007650
+tz  constant -0.004500
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP3_r
+segments metacarpal3_r middle_1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.002430
+ty  constant -0.068670
+tz  constant 0.014580
+#if RF3M1 || (RF3M2 || RF3M3)
+r1  function f1(MCP3_lateral_r)
+r2  constant 0.000000
+r3  function f1(MCP3_flex_r)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP3_r
+segments middle_1_r middle_2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.003150
+ty  constant -0.048924
+tz  constant 0.002781
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF3M2 || RF3M3
+  #if RF3M1
+    r3 function f1(PIP3_flex_r)
+  #else
+    r3 function f1(MCP3_flex_r)
+  #endif
+#else
+  #if RF3M1
+    r3 function f1(MCP3_flex_r)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP3_r
+segments middle_2_r middle_3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000837
+ty  constant -0.031653
+tz  constant 0.001368
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF3M3
+  #if RF3M2
+    r3 function f1(DIP3_flex_r)
+  #elif RF3M1
+    r3 function f1(PIP3_flex_r)
+  #else
+    r3 function f1(MCP3_flex_r)
+  #endif
+#else
+  #if RF3M2
+    #if RF3M1
+      r3 function f1(PIP3_flex_r)
+    #else
+      r3 function f1(MCP3_flex_r)
+	#endif
+  #else
+    #if RF3M1
+      r3 function f1(MCP3_flex_r)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC4_r
+segments carp_metacarp_r metacarpal4_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.007200
+tz  constant -0.002970
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP4_r
+segments metacarpal4_r ring_1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000810
+ty  constant -0.069300
+tz  constant -0.006660
+#if RF4M1 || (RF4M2 || RF4M3)
+r1  function f1(MCP4_lateral_r)
+r2  constant 0.000000
+r3  function f1(MCP4_flex_r)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP4_r
+segments ring_1_r ring_2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.002160
+ty  constant -0.049644
+tz  constant 0.000261
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF4M2 || RF4M3
+  #if RF4M1
+    r3 function f1(PIP4_flex_r)
+  #else
+    r3 function f1(MCP4_flex_r)
+  #endif
+#else
+  #if RF4M1
+    r3 function f1(MCP4_flex_r)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP4_r
+segments ring_2_r ring_3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.004347
+ty  constant -0.026883
+tz  constant 0.004338
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF4M3
+  #if RF4M2
+    r3 function f1(DIP4_flex_r)
+  #elif RF4M1
+    r3 function f1(PIP4_flex_r)
+  #else
+    r3 function f1(MCP4_flex_r)
+  #endif
+#else
+  #if RF4M2
+    #if RF4M1
+      r3 function f1(PIP4_flex_r)
+    #else
+      r3 function f1(MCP4_flex_r)
+	#endif
+  #else
+    #if RF4M1
+      r3 function f1(MCP4_flex_r)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC5_r
+segments carp_metacarp_r metacarpal5_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.001800
+ty  constant -0.009000
+tz  constant 0.003150
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP5_r
+segments metacarpal5_r little_1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.000360
+ty  constant -0.056880
+tz  constant -0.032940
+#if RF5M1 || (RF5M2 || RF5M3)
+r1  function f1(MCP5_lateral_r)
+r2  constant 0.000000
+r3  function f1(MCP5_flex_r)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP5_r
+segments little_1_r little_2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.002340
+ty  constant -0.039114
+tz  constant -0.002439
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF5M2 || RF5M3
+  #if RF5M1
+    r3 function f1(PIP5_flex_r)
+  #else
+    r3 function f1(MCP5_flex_r)
+  #endif
+#else
+  #if RF5M1
+    r3 function f1(MCP5_flex_r)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP5_r
+segments little_2_r little_3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.003177
+ty  constant -0.023013
+tz  constant 0.002052
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF5M3
+  #if RF5M2
+    r3 function f1(DIP5_flex_r)
+  #elif RF5M1
+    r3 function f1(PIP5_flex_r)
+  #else
+    r3 function f1(MCP5_flex_r)
+  #endif
+#else
+  #if RF5M2
+    #if RF5M1
+      r3 function f1(PIP5_flex_r)
+    #else
+      r3 function f1(MCP5_flex_r)
+	#endif
+  #else
+    #if RF5M1
+      r3 function f1(MCP5_flex_r)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC1_r
+segments carp_thumb_r metacarpal1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.866000 0.500000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+#if RF1M1 || (RF1M2 || RF1M3)
+r1  function f1(thumb_abd_r)
+r2  constant 0.000000
+r3  function f1(thumb_flex_r)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PP1_r
+segments metacarpal1_r thumb_2_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant -0.038000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 30.000000
+#if RF1M2 || RF1M3
+  #if RF1M1
+    r3 function f1(PP1_flex_r)
+  #else
+    r3 function f1(thumb_abd_r)
+  #endif
+#else
+  #if RF1M1
+    r3 function f1(thumb_abd_r)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DP1_r
+segments thumb_2_r thumb_3_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.003000
+ty  constant -0.032000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+#if RF1M3
+  #if RF1M2
+    r3 function f1(DP1_flex_r)
+  #elif RF1M1
+    r3 function f1(PP1_flex_r)
+  #else
+    r3 function f1(thumb_abd_r)
+  #endif
+#else
+  #if RF1M2
+    #if RF1M1
+      r3 function f1(PP1_flex_r)
+    #else
+      r3 function f1(thumb_abd_r)
+	#endif
+  #else
+    #if RF1M1
+      r3 function f1(thumb_abd_r)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint thumb-aux1_r
+segments metacarpal1_r mc1_aux1_r
+order t r1 r2 r3
+axis1 1.000000 0.000000 0.000000
+axis2 0.000000 1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f8912(wrist_dev_r)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+/*********************************************/
+/*              GENCOORDS                    */
+/*********************************************/
+
+#if RF2M1 || (RF2M2 || RF2M3)
+begingencoord MCP2_lateral_r
+range -20.000000 20.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP2_flex_r
+range -10.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF2M1 && (RF2M2 || RF2M3)
+begingencoord PIP2_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF2M2 && RF2M3
+begingencoord DIP2_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF3M1 || (RF3M2 || RF3M3)
+begingencoord MCP3_lateral_r
+range -20.000000 20.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP3_flex_r
+range -10.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF3M1 && (RF3M2 || RF3M3)
+begingencoord PIP3_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF3M2 && RF3M3
+begingencoord DIP3_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF4M1 || (RF4M2 || RF4M3)
+begingencoord MCP4_lateral_r
+range -20.000000 20.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP4_flex_r
+range -10.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF4M1 && (RF4M2 || RF4M3)
+begingencoord PIP4_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF4M2 && RF4M3
+begingencoord DIP4_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF5M1 || (RF5M2 || RF5M3)
+begingencoord MCP5_lateral_r
+range -20.000000 20.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP5_flex_r
+range -10.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF5M1 && (RF5M2 || RF5M3)
+begingencoord PIP5_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF5M2 && RF5M3
+begingencoord DIP5_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF1M1 || (RF1M2 || RF1M3)
+begingencoord thumb_abd_r
+range -35.000000 25.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+
+begingencoord thumb_flex_r
+range -15.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF1M1 && (RF1M2 || RF1M3)
+begingencoord PP1_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if RF1M2 && RF1M3
+begingencoord DP1_flex_r
+range -5.000000 90.000000
+begingroups
+	right
+	arm_r
+	hand_r
+endgroups
+clamped yes
+endgencoord
+#endif
+
+/*********************************************/
+/*               FUNCTIONS                   */
+/*********************************************/
+/* radius-prox_flex RZ */
+beginfunction f816
+( -90.000000, -45.000000)
+(  90.000000,  45.000000)
+endfunction
+
+/* prox_flex-prox_dev rX */
+beginfunction f824
+( -25.000000,  -9.375000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* prox_dev-dist_flex rZ */
+beginfunction f836
+( -70.000000, -35.000000)
+(  70.000000,  35.000000)
+endfunction
+
+/* dist_flex-dist_dev rX */
+beginfunction f844
+( -25.000000, -15.625000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* ty capitate-cap_aux1 */
+beginfunction f8512
+( -25.403461,  -0.005296)
+( -12.552980,  -0.001860)
+(   0.000000,   0.000000)
+(   7.255741,  -0.001401)
+(  12.481216,  -0.002375)
+(  35.212013,  -0.004810)
+endfunction
+
+/* tz capitate-cap_aux1 */
+beginfunction f8513
+( -25.354568,   0.000723)
+( -10.125652,   0.000708)
+(  -3.840702,   0.000317)
+(   0.000000,   0.000000)
+(   5.468287,  -0.000859)
+(  10.564981,  -0.001663)
+(  16.147070,  -0.002381)
+(  21.782553,  -0.002774)
+(  29.252764,  -0.002942)
+(  35.077644,  -0.002942)
+endfunction
+
+/* tz capitate-cap_aux2 */
+beginfunction f8523
+( -25.355537,   0.003199)
+(   0.000000,   0.000000)
+(  35.115795,  -0.003638)
+endfunction
+
+/* ty trapezium trpzm_aux1 */
+beginfunction f8712
+( -25.355537,  -0.000969)
+(   0.000000,   0.000000)
+(  22.248272,   0.002119)
+(  35.055393,   0.003237)
+endfunction
+
+/* tz trapezium-trpzm_aux1 */
+beginfunction f8713
+( -34.559998,   0.000000)
+( -26.475258,   0.000006)
+( -18.111734,   0.000003)
+(  -8.075508,   0.000003)
+(   0.000000,   0.000000)
+(  35.136032,  -0.000904)
+endfunction
+
+/* tz scaphoid-scaph_aux1 */
+beginfunction f8313
+( -26.081165,  -0.000932)
+( -10.566132,  -0.000266)
+(   0.000000,   0.000000)
+(  35.009277,   0.001910)
+endfunction
+
+/* ty scaphoid-scaph_aux1 */
+beginfunction f8312
+( -25.457281,  -0.000955)
+(   0.000000,   0.000000)
+(  35.313988,   0.001147)
+endfunction
+
+/* tz scaphoid-scaph_aux2 */
+beginfunction f8323
+( -25.672873,   0.001403)
+( -11.341747,   0.000201)
+(  -1.962238,  -0.000004)
+(   0.000000,   0.000000)
+(   7.231682,   0.001196)
+(  19.022863,   0.002061)
+(  35.055382,   0.002131)
+endfunction
+
+/* ty scaphoid-scaph_aux2*/
+beginfunction f8322
+( -25.427441,  -0.000340)
+(   0.000000,   0.000000)
+(  35.265545,   0.000589)
+endfunction
+
+/* ty hamate-ham_aux1 */
+beginfunction f8612
+( -25.387917,   0.004474)
+(   0.022762,   0.000100)
+(  49.934570,   0.010131)
+endfunction
+
+/* tz trapezoid-trpzd_aux1 */
+beginfunction f8813
+( -25.387917,  -0.004666)
+(   0.022762,   0.000121)
+(  35.457458,   0.001204)
+endfunction
+
+/* tz trapezium-trpzm_aux2 */
+beginfunction f8723
+( -25.355537,   0.002558)
+(   0.000000,   0.000000)
+(  35.055393,  -0.002218)
+endfunction
+
+/* ty trapezium-trpzm_aux2 */
+beginfunction f8722
+( -25.355537,   0.000047)
+( -18.831158,   0.000019)
+( -12.065134,   0.000019)
+(  -6.990616,   0.000019)
+(   0.000000,   0.000000)
+(  35.055393,   0.006207)
+endfunction
+
+/* tz metacarp1-mc1_aux1 */
+beginfunction f8912
+( -29.946768,   0.000249)
+( -24.147320,   0.000174)
+( -16.426317,   0.000101)
+(  -9.926102,   0.000039)
+(   0.017050,   0.000000)
+(   6.974461,   0.000096)
+(  13.474678,   0.000191)
+(  14.514713,   0.000241)
+(  16.594780,   0.000274)
+(  24.915058,   0.000244)
+(  35.055397,   0.000223)
+endfunction
+
+#endif /* RIGHT_HAND_FULL */
+
+
+#if LEFT_HAND_FULL
+
+/*******************************************************************************
+   LEFT HAND MODEL
+   joint file
+
+   (c) Copyright 2002, MusculoGraphics, a division of
+       Motion Analysis Corporation.
+       All rights reserved.
+
+   This file contains the segments joints, gencoords, and constraint functions
+   for the left hand model of an average adult male. It was developed by Silvia
+   Salinas Blemker and Scott Delp.
+
+   This model is described in the paper:
+      Delp, S. L., Grierson, A. E., Buchanan, T. S. Moments generated by the wrist
+      muscles in flexion-extension and radial-ulnar deviation, Journal of
+      Biomechanics, vol. 29, pp. 1371-1376, 1996.
+
+*******************************************************************************/
+#ifndef LF1M1
+  #define LF1M1 1
+#endif
+#ifndef LF1M2
+  #define LF1M2 1
+#endif
+#ifndef LF1M3
+  #define LF1M3 1
+#endif
+
+#ifndef LF2M1
+  #define LF2M1 1
+#endif
+#ifndef LF2M2
+  #define LF2M2 1
+#endif
+#ifndef LF2M3
+  #define LF2M3 1
+#endif
+
+#ifndef LF3M1
+  #define LF3M1 1
+#endif
+#ifndef LF3M2
+  #define LF3M2 1
+#endif
+#ifndef LF3M3
+  #define LF3M3 1
+#endif
+
+#ifndef LF4M1
+  #define LF4M1 1
+#endif
+#ifndef LF4M2
+  #define LF4M2 1
+#endif
+#ifndef LF4M3
+  #define LF4M3 1
+#endif
+
+#ifndef LF5M1
+  #define LF5M1 1
+#endif
+#ifndef LF5M2
+  #define LF5M2 1
+#endif
+#ifndef LF5M3
+  #define LF5M3 1
+#endif
+
+/*********************** Left Wrist and Hand ****************/
+beginsegment prox_carpals_l
+beginfiles
+pisiform_lv.asc
+lunate_lv.asc
+scaphoid_lv.asc
+triquetrum_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	wrist_l
+	hand_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_carpals_l
+beginfiles
+hamate_lv.asc
+capitate_lv.asc
+trapezoid_lv.asc
+trapezium_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	wrist_l
+	hand_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment rotaxis_l
+begingroups
+	aux_axes_l
+	wrist_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment prox_flex_CR_l
+begingroups
+	aux_axes_l
+	wrist_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment prox_dev_CR_l
+begingroups
+	aux_axes_l
+	wrist_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_flex_CR_l
+begingroups
+	aux_axes_l
+	wrist_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment dist_dev_CR_l
+begingroups
+	aux_axes_l
+	wrist_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment scaph_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment scaph_aux2_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment cap_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment cap_aux2_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment ham_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzd_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzm_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment trpzm_aux2_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment mc1_aux1_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment carp_metacarp_l
+begingroups
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment carp_thumb_l
+begingroups
+	left
+	aux_axes_l
+	musc_aux_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.001 0.0 
+endsegment
+
+beginsegment metacarpal2_l
+beginfiles
+metacarpal2_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_1_l
+beginfiles
+index_proximal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger2.M1	-0.012 -0.030 0.0 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_2_l
+beginfiles
+index_medial_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger2.M2	-0.008 -0.020 0.0 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment index_3_l
+beginfiles
+index_distal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger2.M3	-0.007 -0.010 0.0 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal3_l
+beginfiles
+metacarpal3_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Hand	-0.020 -0.030 0.000 OTHER_WEIGHT
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_1_l
+beginfiles
+middle_proximal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger3.M1	-0.012 -0.032 0.003 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_2_l
+beginfiles
+middle_medial_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger3.M2	-0.008 -0.020 0.003 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment middle_3_l
+beginfiles
+middle_distal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger3.M3	-0.007 -0.016 0.003 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal4_l
+beginfiles
+metacarpal4_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_1_l
+beginfiles
+ring_proximal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger4.M1	-0.012 -0.027 0.004 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_2_l
+beginfiles
+ring_medial_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger4.M2	-0.008 -0.016 0.002 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment ring_3_l
+beginfiles
+ring_distal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger4.M3	-0.008 -0.010 0.002 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal5_l
+beginfiles
+metacarpal5_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_1_l
+beginfiles
+little_proximal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger5.M1	-0.010 -0.025 0.005 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_2_l
+beginfiles
+little_medial_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger5.M2	-0.008 -0.015 0.003 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment little_3_l
+beginfiles
+little_distal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Finger5.M3	-0.008 -0.010 0.002 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x 1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+beginsegment metacarpal1_l
+beginfiles
+metacarpal1_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Thumb.M1	-0.012 -0.020 -0.006 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x -1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment thumb_2_l
+beginfiles
+thumb_proximal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Thumb.M2	-0.008 -0.020 0.000 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x -1.0 0.0 0.0
+htr_y 0.0 -1.0 0.0 
+endsegment
+
+beginsegment thumb_3_l
+beginfiles
+thumb_distal_lv.asc
+endfiles
+material my_bone
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+marker L.Thumb.M3	-0.007 -0.015 0.000 OTHER_WEIGHT fixed
+gait_scale L_HAND HAND_SIZE
+SHADOW_PARAMS
+htr_o 0.0 0.0 0.0
+htr_x -1.0 0.0 0.0
+htr_y 0.0 -0.02 0.0 
+endsegment
+
+
+
+/*********************************************/
+/*                JOINTS                     */
+/*********************************************/
+beginjoint rad-rotaxis_l
+segments radius_l rotaxis_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.008797
+ty  constant -0.245841
+tz  constant -0.015610
+r1  constant -5.000000
+r2  constant 22.500000
+r3  constant 0.000000
+endjoint
+
+beginjoint rotaxis-prox_flex_CR_l
+segments rotaxis_l prox_flex_CR_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.000832
+ty  constant 0.008099
+tz  constant 0.000364
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f716(wrist_flex_l)
+endjoint
+
+beginjoint prox_flex_dev_l
+segments prox_flex_CR_l prox_dev_CR_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.004500
+ty  constant 0.000000
+tz  constant 0.000000
+r1  function f724(wrist_dev_l)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint prox_dev-dist_flex_l
+segments prox_dev_CR_l dist_flex_CR_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000900
+ty  constant -0.018000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  function f736(wrist_flex_l)
+endjoint
+
+beginjoint dist_flex_dev_l
+segments dist_flex_CR_l dist_dev_CR_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  function f744(wrist_dev_l)
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint prox_carpal_jnt_l
+segments prox_dev_CR_l prox_carpals_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint dist_carpal_jnt_l
+segments dist_dev_CR_l dist_carpals_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint scap-aux1_l
+segments prox_carpals_l scaph_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9312(wrist_dev_l)
+tz  function f9313(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint scap-aux2_l
+segments prox_carpals_l scaph_aux2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9322(wrist_dev_l)
+tz  function f9323(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzm-aux1_l
+segments dist_carpals_l trpzm_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9712(wrist_dev_l)
+tz  function f9713(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzm-aux2_l
+segments dist_carpals_l trpzm_aux2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9722(wrist_dev_l)
+tz  function f9723(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint trpzd-aux1_l
+segments dist_carpals_l trpzd_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f9813(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint cap-aux1_l
+segments dist_carpals_l cap_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9512(wrist_dev_l)
+tz  function f9513(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint cap-aux2_l
+segments dist_carpals_l cap_aux2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f9523(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint ham-aux1_l
+segments dist_carpals_l ham_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  function f9612(wrist_dev_l)
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint auxCMC_l
+segments dist_dev_CR_l carp_metacarp_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint auxThumb_l
+segments dist_dev_CR_l carp_thumb_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.006000
+ty  constant -0.010000
+tz  constant -0.032000
+r1  constant -30.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint CMC2_l
+segments carp_metacarp_l metacarpal2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.008550
+tz  constant 0.004500
+r1  constant 10.000000
+r2  constant 15.000000
+r3  constant 0.000000
+endjoint
+
+beginjoint MCP2_l
+segments metacarpal2_l index_1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.002162
+ty  constant -0.061650
+tz  constant -0.040500
+#if LF2M1 || (LF2M2 || LF2M3)
+r1  function f1(MCP2_lateral_l)
+r2  constant 0.000000
+r3  function f1(MCP2_flex_l)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP_l
+segments index_1_l index_2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000450
+ty  constant -0.043434
+tz  constant -0.007191
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF2M2 || LF2M3
+  #if LF2M1
+    r3 function f1(PIP2_flex_l)
+  #else
+    r3 function f1(MCP2_flex_l)
+  #endif
+#else
+  #if LF2M1
+    r3 function f1(MCP2_flex_l)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP_l
+segments index_2_l index_3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.001737
+ty  constant -0.029493
+tz  constant -0.004248
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF2M3
+  #if LF2M2
+    r3 function f1(DIP2_flex_l)
+  #elif LF2M1
+    r3 function f1(PIP2_flex_l)
+  #else
+    r3 function f1(MCP2_flex_l)
+  #endif
+#else
+  #if LF2M2
+    #if LF2M1
+      r3 function f1(PIP2_flex_l)
+    #else
+      r3 function f1(MCP2_flex_l)
+	#endif
+  #else
+    #if LF2M1
+      r3 function f1(MCP2_flex_l)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC3_l
+segments carp_metacarp_l metacarpal3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.007650
+tz  constant 0.004500
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP3_l
+segments metacarpal3_l middle_1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.002430
+ty  constant -0.068670
+tz  constant -0.014580
+#if LF3M1 || (LF3M2 || LF3M3)
+r1  function f1(MCP3_lateral_l)
+r2  constant 0.000000
+r3  function f1(MCP3_flex_l)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP3_l
+segments middle_1_l middle_2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.003150
+ty  constant -0.048924
+tz  constant -0.002781
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF3M2 || LF3M3
+  #if LF3M1
+    r3 function f1(PIP3_flex_l)
+  #else
+    r3 function f1(MCP3_flex_l)
+  #endif
+#else
+  #if LF3M1
+    r3 function f1(MCP3_flex_l)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP3_l
+segments middle_2_l middle_3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000837
+ty  constant -0.031653
+tz  constant -0.001368
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF3M3
+  #if LF3M2
+    r3 function f1(DIP3_flex_l)
+  #elif LF3M1
+    r3 function f1(PIP3_flex_l)
+  #else
+    r3 function f1(MCP3_flex_l)
+  #endif
+#else
+  #if LF3M2
+    #if LF3M1
+      r3 function f1(PIP3_flex_l)
+    #else
+      r3 function f1(MCP3_flex_l)
+	#endif
+  #else
+    #if LF3M1
+      r3 function f1(MCP3_flex_l)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC4_l
+segments carp_metacarp_l metacarpal4_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.004230
+ty  constant -0.007200
+tz  constant 0.002970
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP4_l
+segments metacarpal4_l ring_1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000810
+ty  constant -0.069300
+tz  constant 0.006660
+#if LF4M1 || (LF4M2 || LF4M3)
+r1  function f1(MCP4_lateral_l)
+r2  constant 0.000000
+r3  function f1(MCP4_flex_l)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP4_l
+segments ring_1_l ring_2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.002160
+ty  constant -0.049644
+tz  constant -0.000261
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF4M2 || LF4M3
+  #if LF4M1
+    r3 function f1(PIP4_flex_l)
+  #else
+    r3 function f1(MCP4_flex_l)
+  #endif
+#else
+  #if LF4M1
+    r3 function f1(MCP4_flex_l)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP4_l
+segments ring_2_l ring_3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.004347
+ty  constant -0.026883
+tz  constant -0.004338
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF4M3
+  #if LF4M2
+    r3 function f1(DIP4_flex_l)
+  #elif LF4M1
+    r3 function f1(PIP4_flex_l)
+  #else
+    r3 function f1(MCP4_flex_l)
+  #endif
+#else
+  #if LF4M2
+    #if LF4M1
+      r3 function f1(PIP4_flex_l)
+    #else
+      r3 function f1(MCP4_flex_l)
+	#endif
+  #else
+    #if LF4M1
+      r3 function f1(MCP4_flex_l)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC5_l
+segments carp_metacarp_l metacarpal5_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.001800
+ty  constant -0.009000
+tz  constant -0.003150
+r1  constant 5.000000
+r2  constant 10.000000
+r3  constant 5.000000
+endjoint
+
+beginjoint MCP5_l
+segments metacarpal5_l little_1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant -0.000360
+ty  constant -0.056880
+tz  constant 0.032940
+#if LF5M1 || (LF5M2 || LF5M3)
+r1  function f1(MCP5_lateral_l)
+r2  constant 0.000000
+r3  function f1(MCP5_flex_l)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PIP5_l
+segments little_1_l little_2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.002340
+ty  constant -0.039114
+tz  constant 0.002439
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF5M2 || LF5M3
+  #if LF5M1
+    r3 function f1(PIP5_flex_l)
+  #else
+    r3 function f1(MCP5_flex_l)
+  #endif
+#else
+  #if LF5M1
+    r3 function f1(MCP5_flex_l)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DIP5_l
+segments little_2_l little_3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.003177
+ty  constant -0.023013
+tz  constant -0.002052
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF5M3
+  #if LF5M2
+    r3 function f1(DIP5_flex_l)
+  #elif LF5M1
+    r3 function f1(PIP5_flex_l)
+  #else
+    r3 function f1(MCP5_flex_l)
+  #endif
+#else
+  #if LF5M2
+    #if LF5M1
+      r3 function f1(PIP5_flex_l)
+    #else
+      r3 function f1(MCP5_flex_l)
+	#endif
+  #else
+    #if LF5M1
+      r3 function f1(MCP5_flex_l)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint CMC1_l
+segments carp_thumb_l metacarpal1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 -0.866000  0.500000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  constant 0.000000
+#if LF1M1 || (LF1M2 || LF1M3)
+r1  function f1(thumb_abd_l)
+r2  constant 0.000000
+r3  function f1(thumb_flex_l)
+#else
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+#endif
+endjoint
+
+beginjoint PP1_l
+segments metacarpal1_l thumb_2_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant -0.038000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 30.000000
+#if LF1M2 || LF1M3
+  #if LF1M1
+    r3 function f1(PP1_flex_l)
+  #else
+    r3 function f1(thumb_abd_l)
+  #endif
+#else
+  #if LF1M1
+    r3 function f1(thumb_abd_l)
+  #else
+    r3 constant 0.000000
+  #endif
+#endif
+endjoint
+
+beginjoint DP1_l
+segments thumb_2_l thumb_3_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.003000
+ty  constant -0.032000
+tz  constant 0.000000
+r1  constant 0.000000
+r2  constant 0.000000
+#if LF1M3
+  #if LF1M2
+    r3 function f1(DP1_flex_l)
+  #elif LF1M1
+    r3 function f1(PP1_flex_l)
+  #else
+    r3 function f1(thumb_abd_l)
+  #endif
+#else
+  #if LF1M2
+    #if LF1M1
+      r3 function f1(PP1_flex_l)
+    #else
+      r3 function f1(thumb_abd_l)
+	#endif
+  #else
+    #if LF1M1
+      r3 function f1(thumb_abd_l)
+    #else
+      r3 constant 0.000000
+	#endif
+  #endif
+#endif
+endjoint
+
+beginjoint thumb-aux1_l
+segments metacarpal1_l mc1_aux1_l
+order t r1 r2 r3
+axis1 -1.000000 0.000000 0.000000
+axis2 0.000000 -1.000000 0.000000
+axis3 0.000000 0.000000 1.000000
+tx  constant 0.000000
+ty  constant 0.000000
+tz  function f91012(wrist_dev_l)
+r1  constant 0.000000
+r2  constant 0.000000
+r3  constant 0.000000
+endjoint
+
+
+/*********************************************/
+/*              GENCOORDS                    */
+/*********************************************/
+
+#if LF2M1 || (LF2M2 || LF2M3)
+begingencoord MCP2_lateral_l
+range -20.000000 20.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP2_flex_l
+range -10.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF2M1 && (LF2M2 || LF2M3)
+begingencoord PIP2_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF2M2 && LF2M3
+begingencoord DIP2_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF3M1 || (LF3M2 || LF3M3)
+begingencoord MCP3_lateral_l
+range -20.000000 20.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP3_flex_l
+range -10.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF3M1 && (LF3M2 || LF3M3)
+begingencoord PIP3_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF3M2 && LF3M3
+begingencoord DIP3_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF4M1 || (LF4M2 || LF4M3)
+begingencoord MCP4_lateral_l
+range -20.000000 20.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP4_flex_l
+range -10.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF4M1 && (LF4M2 || LF4M3)
+begingencoord PIP4_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF4M2 && LF4M3
+begingencoord DIP4_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF5M1 || (LF5M2 || LF5M3)
+begingencoord MCP5_lateral_l
+range -20.000000 20.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+
+begingencoord MCP5_flex_l
+range -10.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF5M1 && (LF5M2 || LF5M3)
+begingencoord PIP5_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF5M2 && LF5M3
+begingencoord DIP5_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF1M1 || (LF1M2 || LF1M3)
+begingencoord thumb_abd_l
+range -45.000000 15.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+
+begingencoord thumb_flex_l
+range -45.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF1M1 && (LF1M2 || LF1M3)
+begingencoord PP1_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+#if LF1M2 && LF1M3
+begingencoord DP1_flex_l
+range -5.000000 90.000000
+begingroups
+	left
+	arm_l
+	hand_l
+endgroups
+clamped yes
+endgencoord
+#endif
+
+/*********************************************/
+/*               FUNCTIONS                   */
+/*********************************************/
+/* radius-prox_flex RZ */
+beginfunction f716
+( -90.000000, -45.000000)
+(  90.000000,  45.000000)
+endfunction
+
+/* prox_flex-prox_dev rX */
+beginfunction f724
+( -25.000000,  -9.375000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* prox_dev-dist_flex rZ */
+beginfunction f736
+( -70.000000, -35.000000)
+(  70.000000,  35.000000)
+endfunction
+
+/* dist_flex-dist_dev rX */
+beginfunction f744
+( -25.000000, -15.625000)
+(   0.000000,   0.000000)
+(  35.000000,  17.500000)
+endfunction
+
+/* ty capitate-cap_aux1 */
+beginfunction f9512
+( -25.403461,  -0.005296)
+( -12.552980,  -0.001860)
+(   0.000000,   0.000000)
+(   7.255741,  -0.001401)
+(  12.481216,  -0.002375)
+(  35.212013,  -0.004810)
+endfunction
+
+/* tz capitate-cap_aux1 */
+beginfunction f9513
+( -25.354568,   0.000723)
+( -10.125652,   0.000708)
+(  -3.840702,   0.000317)
+(   0.000000,   0.000000)
+(   5.468287,  -0.000859)
+(  10.564981,  -0.001663)
+(  16.147070,  -0.002381)
+(  21.782553,  -0.002774)
+(  29.252764,  -0.002942)
+(  35.077644,  -0.002942)
+endfunction
+
+/* tz capitate-cap_aux2 */
+beginfunction f9523
+( -25.355537,   0.003199)
+(   0.000000,   0.000000)
+(  35.115795,  -0.003638)
+endfunction
+
+/* ty trapezium trpzm_aux1 */
+beginfunction f9712
+( -25.355537,  -0.000969)
+(   0.000000,   0.000000)
+(  22.248272,   0.002119)
+(  35.055393,   0.003237)
+endfunction
+
+/* tz trapezium-trpzm_aux1 */
+beginfunction f9713
+( -34.559998,   0.000000)
+( -26.475258,   0.000006)
+( -18.111734,   0.000003)
+(  -8.075508,   0.000003)
+(   0.000000,   0.000000)
+(  35.136032,  -0.000904)
+endfunction
+
+/* tz scaphoid-scaph_aux1 */
+beginfunction f9313
+( -26.081165,  -0.000932)
+( -10.566132,  -0.000266)
+(   0.000000,   0.000000)
+(  35.009277,   0.001910)
+endfunction
+
+/* ty scaphoid-scaph_aux1 */
+beginfunction f9312
+( -25.457281,  -0.000955)
+(   0.000000,   0.000000)
+(  35.313988,   0.001147)
+endfunction
+
+/* tz scaphoid-scaph_aux2 */
+beginfunction f9323
+( -25.672873,   0.001403)
+( -11.341747,   0.000201)
+(  -1.962238,  -0.000004)
+(   0.000000,   0.000000)
+(   7.231682,   0.001196)
+(  19.022863,   0.002061)
+(  35.055382,   0.002131)
+endfunction
+
+/* ty scaphoid-scaph_aux2*/
+beginfunction f9322
+( -25.427441,  -0.000340)
+(   0.000000,   0.000000)
+(  35.265545,   0.000589)
+endfunction
+
+/* ty hamate-ham_aux1 */
+beginfunction f9612
+( -25.387917,   0.004474)
+(   0.022762,   0.000100)
+(  49.934570,   0.010131)
+endfunction
+
+/* tz trapezoid-trpzd_aux1 */
+beginfunction f9813
+( -25.387917,  -0.004666)
+(   0.022762,   0.000121)
+(  35.457458,   0.001204)
+endfunction
+
+/* tz trapezium-trpzm_aux2 */
+beginfunction f9723
+( -25.355537,   0.002558)
+(   0.000000,   0.000000)
+(  35.055393,  -0.002218)
+endfunction
+
+/* ty trapezium-trpzm_aux2 */
+beginfunction f9722
+( -25.355537,   0.000047)
+( -18.831158,   0.000019)
+( -12.065134,   0.000019)
+(  -6.990616,   0.000019)
+(   0.000000,   0.000000)
+(  35.055393,   0.006207)
+endfunction
+
+/* tz metacarp1-mc1_aux1 */
+beginfunction f91012
+( -29.946768,   0.000249)
+( -24.147320,   0.000174)
+( -16.426317,   0.000101)
+(  -9.926102,   0.000039)
+(   0.017050,   0.000000)
+(   6.974461,   0.000096)
+(  13.474678,   0.000191)
+(  14.514713,   0.000241)
+(  16.594780,   0.000274)
+(  24.915058,   0.000244)
+(  35.055397,   0.000223)
+endfunction
+
+#endif /* LEFT_HAND_FULL */

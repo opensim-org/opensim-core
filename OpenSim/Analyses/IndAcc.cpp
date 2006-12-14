@@ -12,7 +12,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 #include "IndAcc.h"
 
 
@@ -68,9 +72,9 @@ IndAcc::~IndAcc()
  * This constructor is used if the induced acceleration analysis is going to
  * be performed during the course of a simulation.
  *
- * @param aModel Model on which the analyses are to be performed.
+ * @param aModel AbstractModel on which the analyses are to be performed.
  */
-IndAcc::IndAcc(Model *aModel) :
+IndAcc::IndAcc(AbstractModel *aModel) :
 	Analysis(aModel)
 {
 	int i;
@@ -133,7 +137,7 @@ IndAcc::IndAcc(Model *aModel) :
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension of the force decomposition files.
  */
-IndAcc::IndAcc(Model *aModel,Storage *aStates, Storage *aControls,
+IndAcc::IndAcc(AbstractModel *aModel,Storage *aStates, Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	Analysis(aModel)
 {
@@ -232,10 +236,10 @@ void IndAcc::
 initializeNumbers()
 {
 	// NUMBERS OF THINGS
-	int na = _model->getNA();
+	int na = _model->getNumActuators();
 	_nc = na + 5;
 	_nic = _nc - 2;
-	_ne = _model->getNP();
+	_ne = _model->getNumContacts();
 
 	// INDICES
 	_cAct = na - 1;
@@ -253,15 +257,20 @@ void IndAcc::
 constructComponentNames()
 {
 	// SET COMPONENTS NAMES
-	int c;
+	int c = 0;
 	_cNames = new const char*[_nc];
-	for(c=0;c<_nc;c++) {
-		if(c<=_cAct) {
-			_cNames[c] = _model->getActuatorName(c).c_str();
-		} else {
-			_cNames[c] = cNames[c-_cAct-1];
-		}
+	ActuatorSet *as = _model->getActuatorSet();
+	for(int i=0; i<as->getSize(); i++)
+	{
+		AbstractActuator *act=as->get(i);
+
+		// First copy in the actuator names
+		_cNames[c++] = act->getName().c_str();
 	}
+
+	// Now fill in the names at the end of the list
+	for (; c < _nc; c++)
+		_cNames[c] = cNames[c - _cAct - 1];
 }
 //-----------------------------------------------------------------------------
 // DESCRIPTION
@@ -292,13 +301,23 @@ constructDescription()
 void IndAcc::
 constructColumnLabels()
 {
-	// GET GENERALIZED SPEED NAMES
-	int i;
-	string labels = "time";
-	for(i=0;i<_model->getNU();i++) {
-		labels += "\t";
-		labels += _model->getSpeedName(i);
+	// CHECK FOR NULL
+	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
+	{
+		setColumnLabels(NULL);
+		return;
 	}
+
+	string labels = "time";
+	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+	int i=0;
+
+	for(i=0; i<ss->getSize(); i++)
+	{
+		AbstractSpeed* speed = ss->get(i);
+		labels += "\t" + speed->getName();
+	}
+
 	labels += "\n";
 
 	setColumnLabels(labels.c_str());
@@ -390,7 +409,7 @@ createNullDecomposition()
 {
 	// ZERO VECTOR
 	int i;
-	int n = 3*_model->getNP();
+	int n = 3*_model->getNumContacts();
 	if(n<=0) return;
 	double *zero = new double[n];
 	for(i=0;i<n;i++) zero[i] = 0.0;
@@ -691,11 +710,11 @@ computeAccelerations()
 	}
 
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
-	int nx = _model->getNX();
-	int np = _model->getNP();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
+	int nx = _model->getNumControls();
+	int np = _model->getNumContacts();
 	int n = nq + nu;
 
 	// GRAVITY
@@ -706,7 +725,7 @@ computeAccelerations()
 
 	// LOOP OVER TIME
 	int i,j,c,J,k;
-	int bodyB;
+	AbstractBody *bodyB;
 	double pointB[3];
 	double t, actuatorForce;
 	double *fe = new double[3*np];
@@ -718,6 +737,9 @@ computeAccelerations()
 	for(i=0;i<_yStore->getSize();i++) {
 
 		// LOOP OVER INDEPENDENT COMPONENTS
+		int ai=0;	// index for looping over actuators
+		ActuatorSet* as = _model->getActuatorSet();
+		AbstractActuator* act = as->get(ai);
 		for(c=0;c<_nic;c++) {
 
 			// SET GRAVITY
@@ -751,32 +773,32 @@ computeAccelerations()
 			_model->set(t,x,y);
 
 			// COMPUTE ACTUATION
-			_model->computeActuation();
-			if(c<_model->getNA())
-				actuatorForce = _model->getActuatorForce(c);
+			_model->getActuatorSet()->computeActuation();
+			if(c<_model->getNumActuators())
+				actuatorForce = act->getForce();
 
 			// APPLY ACTUATOR FORCE
-			if(c<=getLastActuatorIndex()) {
-				_model->applyActuatorForce(c);
+			if(c<_model->getNumActuators()) {
+				act->apply();
 			}
 
 			// APPLY ELEMENT FORCES
 			if(!getUseNullDecomposition()) {
-				for(j=0;j<_model->getNP();j++) {
+				for(j=0;j<_model->getNumContacts();j++) {
 					J = Mtx::ComputeIndex(j,3,0);
-					bodyB = _model->getContactBodyB(j);
-					_model->getContactPointB(j,pointB);
-					_model->applyForce(bodyB,pointB,&fe[J]);
+					bodyB = _model->getContactSet()->getContactBodyB(j);
+					_model->getContactSet()->getContactPointB(j,pointB);
+					_model->getDynamicsEngine().applyForce(*bodyB,pointB,&fe[J]);
 				}
 			}
 
 			// COMPUTE THE ACCELERATION
-			_model->computeAccelerations(dqdt,dudt);
+			_model->getDynamicsEngine().computeDerivatives(dqdt,dudt);
 
 			// NORMALIZE ACCELERATIONS BY ACTUATOR FORCE
 			if(_computeNormalizedAccelerations){
-				if(c<_model->getNA()){
-					for(k=0; k<_model->getNU();k++){
+				if(c<_model->getNumActuators()){
+					for(k=0; k<_model->getNumSpeeds();k++){
 						if(actuatorForce > 0.0 || actuatorForce < 0.0)
 							dudt[k] = dudt[k]/actuatorForce;
 						else
@@ -787,7 +809,7 @@ computeAccelerations()
 
 			// DEGREES?
 			if(getInDegrees()) {
-				_model->convertRadiansToDegrees(dudt,dudt);
+				_model->getDynamicsEngine().convertRadiansToDegrees(dudt,dudt);
 			}
 
 			// STORE THE ACCELERATIONS
@@ -796,7 +818,10 @@ computeAccelerations()
 				_aeStore[c]->setDescription(getDescription());
 				_aeStore[c]->setColumnLabels(getColumnLabels());
 			}
-			_aeStore[c]->append(t,_model->getNU(),dudt);
+			_aeStore[c]->append(t,_model->getNumSpeeds(),dudt);
+
+			ai++;
+			act = as->get(ai);
 		}
 	}
 
@@ -827,7 +852,7 @@ computeAccelerations()
 
 		// "INTEGRATE" INITIAL VELOCITES TO YIELD INITIAL POSITIONS
 		// NOTE: position vector is only nu long to neglect last euler angle
-		_model->convertQuaternionsToAngles(stateVec,stateVec);
+		_model->getDynamicsEngine().convertQuaternionsToAngles(stateVec,stateVec);
 		_iPosStore = new Storage(*_yStore, false);
 		_iPosStore->append(_ti,nu,&stateVec[0]);
 		_iPosStore->append(_tf,nu,&stateVec[nq]);

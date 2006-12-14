@@ -1,0 +1,149 @@
+// InvestigationRRA.h
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//#ifndef InvestigationRRA_h__
+//#define InvestigationRRA_h__
+
+#include "rdCMCDLL.h"
+#include <OpenSim/Tools/Object.h>
+//#include <OpenSim/Tools/PropertyBool.h>
+#include <OpenSim/Tools/PropertyDbl.h>
+//#include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Simulation/Model/Investigation.h>
+//#include <OpenSim/Analyses/Analyses.h>
+class XMLDocument;
+
+
+//=============================================================================
+//=============================================================================
+/**
+ * An abstract class for specifying the interface for an investigation.
+ *
+ * @author Chand T. John, Frank C. Anderson
+ * @version 1.0
+ */
+class RDCMC_API InvestigationRRA: public OpenSim::Investigation
+{
+//=============================================================================
+// MEMBER VARIABLES
+//=============================================================================
+private:
+
+	// FOR RRA AND CMC
+
+	/** Name of the tracking file. */
+	OpenSim::PropertyStr _trackingFileNameProp;
+	std::string &_trackingFileName;
+	/** Name of the file containing the constraints on the controls. */
+	OpenSim::PropertyStr _constraintsFileNameProp;
+	std::string &_constraintsFileName;
+	/** Prefix for this simulation's input motion and output files. */
+	OpenSim::PropertyStr _prefixProp;
+	std::string &_prefix;
+	/** Name of kinetics file containing ground reaction data. */
+	OpenSim::PropertyStr _kineticsFileNameProp;
+	std::string &_kineticsFileName;
+
+	// FOR SECOND (OR LATER) PASS OF RRA
+
+	/** Whether or not to compute corrections. */
+	OpenSim::PropertyBool _computeCorrectionsProp;
+	bool &_computeCorrections;
+	/** Torso x coordinate alteration weight. */
+	OpenSim::PropertyDbl _torsoxWeightProp;
+	double &_torsoxWeight;
+	/** Torso z coordinate alteration weight. */
+	OpenSim::PropertyDbl _torsozWeightProp;
+	double &_torsozWeight;
+	/** Lumbar extension alteration weight. */
+	OpenSim::PropertyDbl _lumbarExtensionWeightProp;
+	double &_lumbarExtensionWeight;
+	/** Lumbar bending alteration weight. */
+	OpenSim::PropertyDbl _lumbarBendingWeightProp;
+	double &_lumbarBendingWeight;
+
+	// EXTRA PERTURBATIONS APPLIED BY USER
+
+	/** Torso x perturbation amount. */
+	OpenSim::PropertyDbl _torsoxPerturbationProp;
+	double &_torsoxPerturbation;
+	/** Torso y perturbation amount. */
+	OpenSim::PropertyDbl _torsoyPerturbationProp;
+	double &_torsoyPerturbation;
+	/** Torso z perturbation amount. */
+	OpenSim::PropertyDbl _torsozPerturbationProp;
+	double &_torsozPerturbation;
+	/** Lumbar extension perturbation amount. */
+	OpenSim::PropertyDbl _lumbarExtensionPerturbationProp;
+	double &_lumbarExtensionPerturbation;
+	/** Lumbar bending perturbation amount. */
+	OpenSim::PropertyDbl _lumbarBendingPerturbationProp;
+	double &_lumbarBendingPerturbation;
+	/** Lumbar rotation perturbation amount. */
+	OpenSim::PropertyDbl _lumbarRotationPerturbationProp;
+	double &_lumbarRotationPerturbation;
+	/** Right foot center of pressure x perturbation amount. */
+	OpenSim::PropertyDbl _rightCopxPerturbationProp;
+	double &_rightCopxPerturbation;
+	/** Right foot center of pressure y perturbation amount. */
+	OpenSim::PropertyDbl _rightCopyPerturbationProp;
+	double &_rightCopyPerturbation;
+	/** Right foot center of pressure z perturbation amount. */
+	OpenSim::PropertyDbl _rightCopzPerturbationProp;
+	double &_rightCopzPerturbation;
+	/** Left foot center of pressure x perturbation amount. */
+	OpenSim::PropertyDbl _leftCopxPerturbationProp;
+	double &_leftCopxPerturbation;
+	/** Left foot center of pressure y perturbation amount. */
+	OpenSim::PropertyDbl _leftCopyPerturbationProp;
+	double &_leftCopyPerturbation;
+	/** Left foot center of pressure z perturbation amount. */
+	OpenSim::PropertyDbl _leftCopzPerturbationProp;
+	double &_leftCopzPerturbation;
+
+
+//=============================================================================
+// METHODS
+//=============================================================================
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+public:
+	virtual ~InvestigationRRA();
+	InvestigationRRA();
+	InvestigationRRA(const std::string &aFileName);
+	InvestigationRRA(DOMElement *aElement);
+	InvestigationRRA(const InvestigationRRA &aObject);
+	virtual OpenSim::Object* copy() const;
+	virtual OpenSim::Object* copy(DOMElement *aElement) const;
+private:
+	void setNull();
+	void setupProperties();
+	void constructCorrectiveSprings();
+
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+#ifndef SWIG
+	InvestigationRRA&
+		operator=(const InvestigationRRA &aInvestigationRRA);
+#endif
+
+	//--------------------------------------------------------------------------
+	// GET AND SET
+	//--------------------------------------------------------------------------
+
+
+	//--------------------------------------------------------------------------
+	// INTERFACE
+	//--------------------------------------------------------------------------
+	virtual void run();
+
+//=============================================================================
+};	// END of class InvestigationRRA
+//=============================================================================
+//=============================================================================
+
+//#endif // InvestigationRRA_h__
+
+

@@ -34,7 +34,6 @@
  */
 
 #include <OpenSim/Tools/PropertyInt.h>
-#include "Model.h"
 #include "Callback.h"
 
 
@@ -61,7 +60,7 @@
  */
 namespace OpenSim { 
 
-class Model;
+class AbstractModel;
 
 class RDSIMULATION_API IntegCallback : public Callback
 {
@@ -80,7 +79,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	IntegCallback(Model *aModel=0);
+	IntegCallback(AbstractModel *aModel=0);
 	// Support for Object behavior
 	IntegCallback(const std::string &aFileName);
 	IntegCallback(DOMElement *aElement);

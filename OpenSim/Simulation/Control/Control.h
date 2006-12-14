@@ -72,7 +72,8 @@
  * state variable is the initial value of a muscle activation.  These
  * "non-model" controls are used to set things before a simulation ever
  * begins and are not querried during the cours of a simulation.  The
- * number of model controls can be querried by a call to Model::getNX().
+ * number of model controls can be querried by a call to
+ * AbstractModel::getNumControls().
  *
  * @author Frank C. Anderson
  * @version 1.0

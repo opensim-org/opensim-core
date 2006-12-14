@@ -34,7 +34,7 @@
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
-#include <OpenSim/Simulation/SIMM/simmMacros.h>
+#include <OpenSim/Simulation/SIMM/SimmMacros.h>
 
 
 
@@ -598,22 +598,6 @@ void NatCubicSpline::scaleY(double aScaleFactor)
 
 	// Recalculate the coefficients
 	calcCoefficients();
-}
-
-void NatCubicSpline::writeSIMM(ofstream& out, int aFunctionIndex) const
-{
-	out << "beginfunction f" << aFunctionIndex << endl;
-	for (int i = 0; i < _x.getSize(); i++)
-		out << "(" << _x[i] << ", " << _y[i] << ")" << endl;
-	out << "endfunction" << endl << endl;
-}
-
-void NatCubicSpline::writeSIMM(ofstream& out, const string& aLabel) const
-{
-	out << "begin" << aLabel << endl;
-	for (int i = 0; i < _x.getSize(); i++)
-		out << "(" << _x[i] << ", " << _y[i] << ")" << endl;
-	out << "end" << aLabel << endl << endl;
 }
 
 void NatCubicSpline::peteTest() const

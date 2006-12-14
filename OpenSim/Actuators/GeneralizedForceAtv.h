@@ -36,9 +36,6 @@ class RDACTUATORS_API GeneralizedForceAtv : public GeneralizedForce
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-	static const std::string X_NAME;
-	static const std::string Y_NAME;
 protected:
 	// PROPERTIES
 	/** Rise time of activation. */
@@ -57,9 +54,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForceAtv(int aQID=-1,int aNX=1,int aNY=1,int aNYP=0);
-	GeneralizedForceAtv(DOMElement *aElement,
-		int aNX=1,int aNY=1,int aNYP=0);
+	GeneralizedForceAtv(std::string aQName="");
+	GeneralizedForceAtv(DOMElement *aElement);
 	GeneralizedForceAtv(const GeneralizedForceAtv &aActuator);
 	virtual ~GeneralizedForceAtv();
 	virtual Object* copy() const;
@@ -80,16 +76,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// STATES
-	virtual int getNY() const;
-	virtual const std::string& getStateName(int aIndex) const;
-	virtual int getStateIndex(const std::string &aName) const;
-	virtual void setStates(const double aX[]);
-	virtual void setState(int aIndex,double aValue);
-	virtual void setState(const std::string &aName,double aValue);
-	virtual void getStates(double rX[]) const;
-	virtual double getState(int aIndex) const;
-	virtual double getState(const std::string &aName) const;
 	// RISE TIME
 	void setRiseTime(double aRiseTime);
 	double getRiseTime() const;

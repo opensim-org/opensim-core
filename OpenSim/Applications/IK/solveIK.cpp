@@ -28,20 +28,15 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Applications/Scale/SimmScalerImpl.h>
-#include "SimmIKSolverImpl.h"
-#include "SimmInverseKinematicsTarget.h"
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Subject/SimmSubject.h>
+#include <OpenSim/Simulation/SIMM/SimmMarker.h>
+#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
 #include "InvestigationIK.h"
 
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 static void PrintUsage(ostream &aOStream);
 //______________________________________________________________________________
@@ -89,7 +84,6 @@ int main(int argc,char **argv)
 
 					investigation->getMarkerSet().append(new SimmMarker());
 					SimmCoordinate* aCoordinate = new SimmCoordinate();
-					aCoordinate->setRestraintFunction(new NatCubicSpline());
 					investigation->getCoordinateSet().append(aCoordinate);
 
 					investigation->print("setup_ik_default.xml");
@@ -112,13 +106,15 @@ int main(int argc,char **argv)
 		return(-1);
 	}
 
+	InvestigationIK::registerTypes();
+
 	// CONSTRUCT
 	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
 	InvestigationIK ik(setupFileName);
 	ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model *model = ik.getModel();
+	AbstractModel *model = ik.getModel();
 	if(model==NULL) {
 		cout<<"\nik:  ERROR- failed to load model.\n";
 		exit(-1);
@@ -139,6 +135,7 @@ int main(int argc,char **argv)
 
 	return(0);
 }
+
 //_____________________________________________________________________________
 /**
  * Print the usage for this application
@@ -148,8 +145,9 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"\n\nik.exe:\n\n";
 	aOStream<<"Option             Argument         Action / Notes\n";
 	aOStream<<"------             --------         --------------\n";
-	aOStream<<"-Help, -H                           Print the command-line options for ik.exe.\n";
-	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the IK investigation\n";
-	aOStream<<"-Setup, -S         SetupFile        Specify an xml setup file that specifies parameters for the IK investigation.\n";
+	aOStream<<"-Help, -H                           Print the command-line options for scale.exe.\n";
+	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
+	aOStream<<"-Setup, -S         SetupFile        Specify an xml setupfile that specifies an OpenSim model,\n";
+	aOStream<<"                                    a marker file, and scaling parameters.\n";
 }
 	

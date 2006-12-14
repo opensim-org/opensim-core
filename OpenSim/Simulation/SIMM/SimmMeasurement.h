@@ -1,10 +1,10 @@
-#ifndef _SimmMeasurement_h_
-#define _SimmMeasurement_h_
+#ifndef __SimmMeasurement_h__
+#define __SimmMeasurement_h__
 
 // SimmMeasurement.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -37,15 +37,17 @@
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Scale.h>
 #include <OpenSim/Tools/ScaleSet.h>
-
 #include "SimmMarkerPairSet.h"
 #include "BodyScaleSet.h"
+
 #ifdef SWIG
 	#ifdef RDSIMULATION_API
 		#undef RDSIMULATION_API
 		#define RDSIMULATION_API
 	#endif
 #endif
+
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -56,16 +58,12 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class RDSIMULATION_API SimmMeasurement : public Object  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
 	PropertyObj _markerPairSetProp;
 	SimmMarkerPairSet &_markerPairSet;
@@ -98,38 +96,22 @@ public:
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
 	const SimmMarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
 	bool getApply() const { return _apply; }
-	void setApply(bool aApply) { _apply = aApply; }
-
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
 	/* Register types to be used when reading a SimmMeasurement object from xml file. */
 	static void registerTypes();
 
-	/** Programmatically add a SimmMarkerPair to SimmMeasurement */
-	void addMarkerPair(SimmMarkerPair *aMarkerPair)
-	{
-		_markerPairSet.append(aMarkerPair);
-	}
-
-	/** Programmatically add a BodyScale to SimmMeasurement */
-	void addBodyScale(BodyScale *aBodyScale)
-	{
-		_bodyScaleSet.append(aBodyScale);
-	}
-
 	void peteTest() const;
-
-protected:
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmMeasurement
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMeasurement_h__
 

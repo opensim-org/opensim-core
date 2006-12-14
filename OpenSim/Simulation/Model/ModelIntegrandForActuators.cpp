@@ -37,7 +37,8 @@
 #include "AnalysisSet.h"
 #include "DerivCallbackSet.h"
 #include "ModelIntegrandForActuators.h"
-
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 
 
 using namespace OpenSim;
@@ -55,7 +56,7 @@ using namespace std;
  * @param aModel An instance of an Model.
  */
 ModelIntegrandForActuators::
-ModelIntegrandForActuators(Model *aModel) :
+ModelIntegrandForActuators(AbstractModel *aModel) :
 	ModelIntegrand(aModel),
 	_qWork(0.0),
 	_uWork(0.0),
@@ -90,11 +91,11 @@ setNull()
 	_uSet = NULL;
 	_holdCoordinatesConstant = false;
 	_holdTime = 0.0;
-	_qCorrections.setSize(_model->getNQ());
-	_uCorrections.setSize(_model->getNU());
-	_qWork.setSize(_model->getNQ());
-	_uWork.setSize(_model->getNU());
-	_yModel.setSize(_model->getNY());
+	_qCorrections.setSize(_model->getNumCoordinates());
+	_uCorrections.setSize(_model->getNumSpeeds());
+	_qWork.setSize(_model->getNumCoordinates());
+	_uWork.setSize(_model->getNumSpeeds());
+	_yModel.setSize(_model->getNumStates());
 }
 
 
@@ -115,7 +116,7 @@ setNull()
 int ModelIntegrandForActuators::
 getSize() const
 {
-	int size = _model->getNY() - _model->getNQ() - _model->getNU();
+	int size = _model->getNumStates() - _model->getNumCoordinates() - _model->getNumSpeeds();
 	return(size);
 }
 
@@ -141,7 +142,7 @@ setCoordinateTrajectories(FunctionSet *aSet)
 		msg += " ERR- NULL function set.\n";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
-	if(aSet->getSize() != _model->getNQ()) {
+	if(aSet->getSize() != _model->getNumCoordinates()) {
 		string msg = "ModelIntegrandForActuators.setCoordinateTrajectories:";
 		msg += " ERR- incorrect number of trajectories.\n";
 		throw( Exception(msg,__FILE__,__LINE__) );
@@ -184,7 +185,7 @@ setSpeedTrajectories(FunctionSet *aSet)
 		msg += " ERR- NULL function set.\n";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
-	if(aSet->getSize() != _model->getNU()) {
+	if(aSet->getSize() != _model->getNumSpeeds()) {
 		string msg = "ModelIntegrandForActuators.setSpeedTrajectories:";
 		msg += " ERR- incorrect number of trajectories.\n";
 		throw( Exception(msg,__FILE__,__LINE__) );
@@ -309,7 +310,7 @@ releaseCoordinates()
  *
  * @param t Time (real time not normalized time).
  * @param y Integrated states (size = getSize()).
- * @param yModel Model states (size = getSize()+Model::getNQ()+Model getNU())
+ * @param yModel Model states (size = getSize()+Model::getNumCoordinates()+Model::getNumSpeeds())
  */
 void ModelIntegrandForActuators::
 convertStatesIntegrandToModel(double t,const double y[],double yModel[])
@@ -321,9 +322,9 @@ convertStatesIntegrandToModel(double t,const double y[],double yModel[])
 	}
 
 	int i;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
 	int nqnu = nq + nu;
 	int size = getSize();
 
@@ -348,14 +349,14 @@ convertStatesIntegrandToModel(double t,const double y[],double yModel[])
  *
  * @param t Time (real time not normalized time).
  * @param y Integrated states (size = getSize()).
- * @param yModel Model states (size = getSize()+Model::getNQ()+Model getNU())
+ * @param yModel Model states (size = getSize()+Model::getNumCoordinates()+Model::getNumSpeeds())
  */
 void ModelIntegrandForActuators::
 convertStatesModelToIntegrand(const double yModel[],double y[]) const
 {
 	int i;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	int nqnu = nq + nu;
 	int size = getSize();
 	for(i=0;i<size;i++) y[i] = yModel[i+nqnu];
@@ -424,27 +425,42 @@ compute(double t,double y[],double dydt[])
 	_model->getDerivCallbackSet()->set(t,&_x[0],&_yModel[0]);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(t,&_x[0],&_yModel[0]);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(t,&_x[0],&_yModel[0]);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(t,&_x[0],&_yModel[0]);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(t,&_x[0],&_yModel[0]);
 
 	// DERIVATIVES
-	int i;
 	int size = getSize();
 	if(size>0) {
-		for(i=0;i<size;i++) dydt[i] = 0.0;
 		_model->computeAuxiliaryDerivatives(dydt);
-		_model->getDerivCallbackSet()->computeDerivatives(t,&_x[0],&_yModel[0],dydt);
+
+		if(_model->getDerivCallbackSet()->getSize()) {
+			// Used to just call 
+			// _model->getDerivCallbackSet()->computeDerivatives(t,&_x[0],&_yModel[0],dydt);
+			// but that seems wrong (since dydt is a shorter vector than the full state vector, and
+			// there is no way for the DerivCallback to know that), so instead we convert dydt to
+			// the full derivative vector before passing it to the callback.  I think this
+			// is right, but can't test it because we don't actually have any DerivCallbacks
+			// that implement computeDerivatives.
+			int realNY = _model->getNumStates();
+			double *fulldydt = new double[realNY];
+			int baseIndex = realNY - size;
+			for(int i=0;i<baseIndex;i++) fulldydt[i]=0.0;
+			for(int i=0;i<size;i++) fulldydt[baseIndex+i]=dydt[i];
+			_model->getDerivCallbackSet()->computeDerivatives(t,&_x[0],&_yModel[0],fulldydt);
+			for(int i=0;i<size;i++) dydt[i] = fulldydt[baseIndex+i];
+			delete[] fulldydt;
+		}
 
 		// NORMALIZE
-		for(i=0;i<size;i++) dydt[i] *= tnorm;
+		for(int i=0;i<size;i++) dydt[i] *= tnorm;
 	}
    //-----------------------------------
 }

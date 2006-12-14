@@ -67,7 +67,7 @@ PolynomialSetPoint::~PolynomialSetPoint()
 /**
  * Default constructor.
  */
-PolynomialSetPoint::PolynomialSetPoint(int aBodyA,int aBodyB) :
+PolynomialSetPoint::PolynomialSetPoint(string aBodyA,string aBodyB) :
 	SetPoint(aBodyA,aBodyB),
 	_kNP(_propKNP.getValueDbl()),
 	_kNV(_propKNV.getValueDbl()),
@@ -128,7 +128,7 @@ PolynomialSetPoint::PolynomialSetPoint(const PolynomialSetPoint &aContact) :
 Object* PolynomialSetPoint::
 copy() const
 {
-	Actuator *act = new PolynomialSetPoint(*this);
+	AbstractActuator *act = new PolynomialSetPoint(*this);
 	return(act);
 }
 //_____________________________________________________________________________
@@ -168,6 +168,11 @@ setNull()
 {
 	setupProperties();
 	setType("PolynomialSetPoint");
+
+	setNumControls(0); setNumStates(0); setNumPseudoStates(3);
+	bindPseudoState(0, _pA[0], "px");
+	bindPseudoState(1, _pA[1], "py");
+	bindPseudoState(2, _pA[2], "pz");
 
 	// MEMBER VARIABLES
 	_kNP = 0.0;

@@ -41,7 +41,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Models/SdfastEngine/SdfastBody.h>
+#include <OpenSim/Simulation/Simm/BodyIterator.h>
+#include <OpenSim/Models/SdfastEngine/SdfastCoordinate.h>
+#include <OpenSim/Simulation/Simm/CoordinateIterator.h>
 #include "rdSDFastDLL.h"
 #include "sdfast.h"
 #include "rdSDFast.h"
@@ -102,10 +106,8 @@ void rdSDFast::init()
 	// JOINT AND AXIS MAPS
 	constructJointAndAxisMaps();
 
-	// BODIES
-	constructBodies();
-	// NAMES
-	constructNames();
+	// BODIES, COORDINATES, JOINTS
+	constructEngine();
 
 	// STATIC INSTANCE
 	_Instance = this;
@@ -162,18 +164,15 @@ constructSystemVariables()
 
 	// ASSIGN
 	_nb = sysinfo[1];  // Number of bodies (joints).
-	int nu = sysinfo[2];  // Number of degrees of freedom (sum of all tree joints).
-	_u.setSize(nu);
-	int nq = nu + sysinfo[7];	// Number of generalized coordinates
-	_q.setSize(nq);
-
+	_nu = sysinfo[2];  // Number of degrees of freedom (sum of all tree joints).
+	_nq = _nu + sysinfo[7];	// Number of generalized coordinates
 	_nj = _nb + sysinfo[4];	// Number of joints
 
     // ALLOCATE MEMORY
 	_dudt = new double[nu];
 
 	// Check that some system has been defined.
-	if ( (_nb<=0) || (nu<=0) ) return;
+	if ( (_nb<=0) || (_nu<=0) ) return;
 
 	return;
 }
@@ -225,36 +224,6 @@ constructJointAndAxisMaps()
 		}
 	}
 }
-//_____________________________________________________________________________
-/**
- * Construct the names of the model.
- */
-void rdSDFast::
-constructNames()
-{
-	int i;
-	char name[Object::NAME_LENGTH];
-
-	// BODIES
-	//unused _bNames = Memory::NewArrayOfStrings(getNB()+1,Object::NAME_LENGTH);
-	for(i=0;i<getNB();i++) {
-		sprintf(name,"Body_%d",i); // Ground is body 0
-		setBodyName(i,name);
-	}
-
-	// Q
-	for(i=0;i<getNQ();i++) {
-		sprintf(name,"q%d",i);
-		setCoordinateName(i,name);
-	}
-
-	// U
-	for(i=0;i<getNU();i++) {
-		sprintf(name,"u%d",i);
-		setSpeedName(i,name);
-	}
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -264,7 +233,7 @@ constructNames()
  * Get the number of generalized speeds.
  */
 int rdSDFast::
-getNU() const
+getNumSpeeds() const
 {
 	return(_u.getSize());
 }
@@ -279,7 +248,7 @@ void rdSDFast::
 setSpeedName(int aIndex,const string &aName)
 {
 	if(aIndex<0) return;
-	if(aIndex>=getNU()) return;
+	if(aIndex>=getNumSpeeds()) return;
 	_u.setNameAt(aIndex,aName);
 }
 //_____________________________________________________________________________
@@ -290,13 +259,13 @@ setSpeedName(int aIndex,const string &aName)
  * be greater than or equal to 0 and less than the number of generalized
  * speeds.
  * @return Control name.
- * @see getNU()
+ * @see getNumSpeeds()
  */
 string rdSDFast::
 getSpeedName(int aIndex) const
 {
 	if(aIndex<0) return("");
-	if(aIndex>=getNU()) return("");
+	if(aIndex>=getNumSpeeds()) return("");
 	return(_u.getNameAt(aIndex));
 }
 //_____________________________________________________________________________
@@ -325,7 +294,7 @@ getSpeedIndex(const string &aName) const
  *
  * @param rDUDT Array to be filled with values of the accelerations of the
  * generalized coordinates.  The length of rDUDT should be at least as large
- * as the value returned by getNU().
+ * as the value returned by getNumSpeeds().
  * @see computeAccelerations()
  * @see getAcceleration(int aIndex)
  * @see getAcceleration(const char* aName);
@@ -343,7 +312,7 @@ getAccelerations(double rDUDT[]) const
  * For the returned value to be valid, the method computeAccelerations()
  * must have been called.
  *
- * @param aIndex Index of the acceleration:  0 <= aIndex < getNU().
+ * @param aIndex Index of the acceleration:  0 <= aIndex < getNumSpeeds().
  * @return Value of the acceleration.  rdMath::NAN is returned on an error.
  * @see computeAccelerations()
  * @see getAccelerations(double rDUDT[])
@@ -352,8 +321,8 @@ getAccelerations(double rDUDT[]) const
 double rdSDFast::
 getAcceleration(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=getNU())) {
-		printf("rdSDFast.getSpeed: ERROR- index out of bounds %d.\n",aIndex);
+	if((aIndex<0)||(aIndex>=getNumSpeeds())) {
+		printf("rdSDFast.getAcceleration: ERROR- index out of bounds %d.\n",aIndex);
 		return(rdMath::NAN);
 	}
 	return(_dudt[aIndex]);
@@ -379,7 +348,7 @@ getAcceleration(const string &aSpeedName) const
 {
 	int index = getSpeedIndex(aSpeedName);
 	if(index<0) {
-		cout<<"rdSDFast.getSpeed: ERROR- unknown speed "<<aSpeedName<<
+		cout<<"rdSDFast.getAcceleration: ERROR- unknown speed "<<aSpeedName<<
 			"."<<endl;
 		return(rdMath::NAN);
 	}
@@ -395,49 +364,30 @@ getAcceleration(const string &aSpeedName) const
  *
  * @param rU Array to be filled with values of the generalized speeds.
  * The length of rU should be at least as large as the value returned by
- * getNU().
+ * getNumSpeeds().
  */
 void rdSDFast::
-getSpeeds(double rU[]) const
+getSpeedValues(double rU[]) const
 {
 	_u.getValues(rU);
 }
 //_____________________________________________________________________________
 /**
- * Get the current value of a speed by index.
- *
- * @param aIndex Index of the speed:  0 <= aIndex < getNU().
- * @return Value of the speed.  rdMath::NAN is returned on an error.
- * @see getSpeeds(double rU[])
- * @see getSpeed(const char* aName);
- */
-double rdSDFast::
-getSpeed(int aIndex) const
-{
-	if((aIndex<0)||(aIndex>=getNU())) {
-		printf("rdSDFast.getSpeed: ERROR- index out of bounds %d.\n",aIndex);
-		return(rdMath::NAN);
-	}
-	return(_u[aIndex]);
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a speed by name.
+ * Get a speed by name.
  * Note that this method is slow and should not be used in code where
  * it might be called repeatedly.
  *
  * @param aName Name of the speed.
- * @return Value of the speed.  rdMath::NAN is returned on an error.
- * @see getSpeeds(double rU[])
- * @see getSpeed(int aIndex);
+ * @return Pointer to the speed object.  NULL is returned on an error.
+ * @see getSpeedValues(double rU[])
  */
-double rdSDFast::
+AbstractSpeed* rdSDFast::
 getSpeed(const string &aName) const
 {
 	int index = getSpeedIndex(aName);
 	if(index<0) {
 		cout<<"rdSDFast.getSpeed: ERROR- unknown speed "<<aName<<"."<<endl; 
-		return(rdMath::NAN);
+		return(NULL);
 	}
 	return(_u[aName]);
 }
@@ -451,20 +401,20 @@ getSpeed(const string &aName) const
  *
  * @param rQ Array to be filled with values of the generalized coordinates.
  * The length of rQ should be at least as large as the value returned by
- * getNQ().
+ * getNumCoordinates().
  */
 void rdSDFast::
 getCoordinates(double rQ[]) const
 {
 	if(rQ==NULL) return;
 	int i;
-	for(i=0;i<getNQ();i++) rQ[i] = _q[i];
+	for(i=0;i<getNumCoordinates();i++) rQ[i] = _q[i];
 }
 //_____________________________________________________________________________
 /**
  * Get the current value of a coordinate by index.
  *
- * @param aIndex Index of the coordinate:  0 <= aIndex < getNQ().
+ * @param aIndex Index of the coordinate:  0 <= aIndex < getNumCoordinates().
  * @return Value of the cooridnate.  rdMath::NAN is returned on an error.
  * @see getCoordinates(double rQ[])
  * @see getCoordinate(const char* aName);
@@ -472,7 +422,7 @@ getCoordinates(double rQ[]) const
 double rdSDFast::
 getCoordinate(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=getNQ())) {
+	if((aIndex<0)||(aIndex>=getNumCoordinates())) {
 		printf("rdSDFast.getCoordinate: ERROR- index out of bounds %d.\n",aIndex);
 		return(rdMath::NAN);
 	}
@@ -517,7 +467,7 @@ int rdSDFast::
 getCoordinateIndex(const string &aName) const
 {
 	int i;
-	for(i=0;i<getNQ();i++) {
+	for(i=0;i<getNumCoordinates();i++) {
 		if(aName == getCoordinateName(i)) return(i);
 	}
 
@@ -550,7 +500,7 @@ setConfiguration(const double aQ[],const double aU[])
 void rdSDFast::
 setConfiguration(const double aY[])
 {
-	setConfiguration((double *)aY,(double *)&aY[getNQ()]);
+	setConfiguration((double *)aY,(double *)&aY[getNumCoordinates()]);
 }
 
 //_____________________________________________________________________________
@@ -567,8 +517,8 @@ void rdSDFast::
 extractConfiguration(const double aY[],double rQ[],double rU[]) const
 {
 	int i;
-	for(i=0;i<getNQ();i++)  rQ[i] = aY[i];
-	for(i=0;i<_u.getSize();i++)  rU[i] = aY[getNQ()+i];
+	for(i=0;i<getNumCoordinates();i++)  rQ[i] = aY[i];
+	for(i=0;i<_u.getSize();i++)  rU[i] = aY[getNumCoordinates()+i];
 }
 //_____________________________________________________________________________
 /**
@@ -594,8 +544,8 @@ bool rdSDFast::
 scale(const ScaleSet& aScaleSet)
 {
 	int i;
-	double	(*segmentScales)[3] = new double[getNB()][3];
-	for (i=0; i < getNB(); i++){
+	double	(*segmentScales)[3] = new double[getNumBodies()][3];
+	for (i=0; i < getNumBodies(); i++){
 		segmentScales[i][0]=segmentScales[i][1]=segmentScales[i][2]=1.0;
 	}
 	for(i=0; i < aScaleSet.getSize(); i++){
@@ -618,7 +568,7 @@ scale(const ScaleSet& aScaleSet)
 	// Scale the location of the joints using segment scaling factors
 	int info[50], slider[6], inbody, outbody;
 	double itj[3], btj[3];
-	for (i=0;i<getNB();i++) {
+	for (i=0;i<getNumBodies();i++) {
 		sdgetitj(i,itj);
 		sdgetbtj(i,btj);
 		sdjnt(i,info,slider);
@@ -677,12 +627,13 @@ dump(const std::string& aFileName)
  * Set the gravity.
  * @param aG Gravity vector.
  */
-void rdSDFast::
+bool rdSDFast::
 setGravity(double aG[3])
 {
 	Model::setGravity(aG);
 	sdgrav(aG);
 	sdinit();
+	return true;
 }
 //_____________________________________________________________________________
 /**
@@ -708,19 +659,6 @@ getGroundID() const
 	return(GROUND);
 }
 
-void rdSDFast::
-constructBodies()
-{
-	Model::constructBodies();
-
-	for(int i=0; i < _nb; i++){
-		Body* bdy = getBodySet()->get(i);
-		bdy->setMass(getMass(i));	// Retrieve mass from sdfast
-		double rI[3][3];
-		getInertiaBodyLocal(i, rI);
-		bdy->setInertia(rI[0][0], rI[1][1], rI[2][2], rI[0][1], rI[1][2], rI[2][0]);
-	}
-}
 //_____________________________________________________________________________
 /**
  * Set the vector directed from a body's center of mass to its joint.  The
@@ -998,7 +936,7 @@ getSystemInertia(double *rM,double *rCOM,double *rI) const
  * Get the number of generalized coordinates.
  */
 int rdSDFast::
-getNQ() const
+getNumCoordinates() const
 {
 	return(_q.getSize());
 }
@@ -1010,7 +948,7 @@ getNQ() const
  * should be greater than or equal to 0 and less than the number of
  * coordinates.
  * @param aName Name of generalized coordinate.
- * @see getNQ()
+ * @see getNumCoordinates()
  *
  * @todo: if name is null we need to generate a unique default name. Need to know how this
  * function is used to make sure generated names do not collide with user-assigned names
@@ -1021,7 +959,7 @@ setCoordinateName(int aIndex,const string &aName)
 {
 	// CHECK
 	if(aIndex<0) return;
-	if(aIndex>=getNQ()) return;
+	if(aIndex>=getNumCoordinates()) return;
 	_q.setNameAt(aIndex, aName);
 }
 //_____________________________________________________________________________
@@ -1032,13 +970,13 @@ setCoordinateName(int aIndex,const string &aName)
  * be greater than or equal to 0 and less than the number of generalized
  * coordinates.
  * @return Control name.
- * @see getNQ()
+ * @see getNumCoordinates()
  */
 string rdSDFast::
 getCoordinateName(int aIndex) const
 {
 	if(aIndex<0) return(NULL);
-	if(aIndex>=getNQ()) return(NULL);
+	if(aIndex>=getNumCoordinates()) return(NULL);
 	return(_q.getNameAt(aIndex));
 }
 
@@ -1047,7 +985,7 @@ getCoordinateName(int aIndex) const
  * Get the number of joints in this model.
  */
 int rdSDFast::
-getNJ() const
+getNumJoints() const
 {
 	return(_nj);
 }
@@ -1277,7 +1215,7 @@ int rdSDFast::
 computeAccelerations(double *dqdt,double *dudt)
 {
 	sdderiv(dqdt,dudt);
-	Mtx::Assign(1,getNU(),dudt,_dudt);
+	Mtx::Assign(1,getNumSpeeds(),dudt,_dudt);
 	return(0);
 }
 
@@ -1637,7 +1575,7 @@ applyGeneralizedForces(int aN,const int aU[],const double aF[])
 double rdSDFast::
 getNetAppliedGeneralizedForce(int aU) const
 {
-	if((aU<0)||(aU>=getNU())) return(0.0);
+	if((aU<0)||(aU>=getNumSpeeds())) return(0.0);
 
 	double f;
 	int joint = _u2jMap[aU];
@@ -1654,9 +1592,9 @@ getNetAppliedGeneralizedForce(int aU) const
  * method.
  *
  * @param aDUDT Array of desired accelerations of the generalized coordinates-
- * should be dimensioned to NU (see getNU()).
+ * should be dimensioned to NU (see getNumSpeeds()).
  * @param rF Array of generalized forces that will achieve aDUDT without
- * enforcing any constraints- should be dimensioned to NU (see getNU()).
+ * enforcing any constraints- should be dimensioned to NU (see getNumSpeeds()).
  */
 void rdSDFast::
 computeGeneralizedForces(double aDUDT[],double rF[]) const
@@ -1780,7 +1718,7 @@ formJacobian(int aBody,double aPoint[3],double *rJ0)
 
 	int i,j,I;
 	double trans[3],orien[3];
-	for(i=0;i<getNU();i++) {
+	for(i=0;i<getNumSpeeds();i++) {
 
 		// GET COLUMN
 		sdrel2cart(i,aBody,aPoint,trans,orien);
@@ -1799,7 +1737,7 @@ formJacobian(int aBody,double aPoint[3],double *rJ0)
 	}
 
 	// PRINT
-	//Mtx::Print(6,getNU(),rJ0,3);
+	//Mtx::Print(6,getNumSpeeds(),rJ0,3);
 }
  */
 //_____________________________________________________________________________
@@ -1840,11 +1778,11 @@ formJacobianEuler(int aBody,double *rJ)
 	Mtx::Print(3,3,&E[0][0],3);
 
 	// TRANSFORM J0 TO J
-	int I = Mtx::ComputeIndex(3,getNU(),0);
-	Mtx::Multiply(3,3,getNU(),&E[0][0],&rJ[I],&rJ[I]);
+	int I = Mtx::ComputeIndex(3,getNumSpeeds(),0);
+	Mtx::Multiply(3,3,getNumSpeeds(),&E[0][0],&rJ[I],&rJ[I]);
 
 	// PRINT
-	//Mtx::Print(6,getNU(),rJ,3);
+	//Mtx::Print(6,getNumSpeeds(),rJ,3);
 }
  */
 //_____________________________________________________________________________
@@ -1896,7 +1834,7 @@ formJacobianTranslation(int aBody,const double aPoint[3],double *rJ,
 	// FORM JACOBIAN
 	int i,j,I;
 	double trans[3],orien[3];
-	for(i=0;i<getNU();i++) {
+	for(i=0;i<getNumSpeeds();i++) {
 
 		// GET COLUMN
 		sdrel2cart(i,aBody,point,trans,orien);
@@ -1912,7 +1850,7 @@ formJacobianTranslation(int aBody,const double aPoint[3],double *rJ,
 	}
 
 	// PRINT
-	//Mtx::Print(6,getNU(),rJ0,3);
+	//Mtx::Print(6,getNumSpeeds(),rJ0,3);
 }
 //_____________________________________________________________________________
 /**
@@ -1959,7 +1897,7 @@ formJacobianOrientation(int aBody,double *rJ,int aRefBody) const
 	int i,j,I;
 	double point[] = { 0.0, 0.0, 0.0 };
 	double trans[3],orien[3];
-	for(i=0;i<getNU();i++) {
+	for(i=0;i<getNumSpeeds();i++) {
 
 		// GET COLUMN
 		sdrel2cart(i,aBody,point,trans,orien);
@@ -1975,7 +1913,7 @@ formJacobianOrientation(int aBody,double *rJ,int aRefBody) const
 	}
 
 	// PRINT
-	//Mtx::Print(6,getNU(),rJ0,3);
+	//Mtx::Print(6,getNumSpeeds(),rJ0,3);
 }
 //_____________________________________________________________________________
 /**
@@ -2018,10 +1956,10 @@ formJacobianEuler(int aBody,double *rJE,int aRefBody) const
 	//Mtx::Print(3,3,&E[0][0],3);
 
 	// TRANSFORM J0 TO JE
-	Mtx::Multiply(3,3,getNU(),&E[0][0],rJE,rJE);
+	Mtx::Multiply(3,3,getNumSpeeds(),&E[0][0],rJE,rJE);
 
 	// PRINT
-	//Mtx::Print(6,getNU(),rJ,3);
+	//Mtx::Print(6,getNumSpeeds(),rJ,3);
 }
 
 //=============================================================================
@@ -2035,7 +1973,7 @@ formJacobianEuler(int aBody,double *rJE,int aRefBody) const
  * Convert quaterions to angles.
  *
  * @param aQ Array of generalized coordinates, some of which may be
- * quaternions.  The length of aQ must be at least getNQ().
+ * quaternions.  The length of aQ must be at least getNumCoordinates().
  * @param rQAng Array of equivalent angles.
  */
 void rdSDFast::
@@ -2050,7 +1988,7 @@ convertQuaternionsToAngles(double *aQ,double *rQAng) const
  *
  * @param rQStore Storage object of generalized coordinates, some of which
  * may be quaternions.  The length of each state-vector in rQStore must be
- * at least getNQ().
+ * at least getNumCoordinates().
  */
 void rdSDFast::
 convertQuaternionsToAngles(Storage *rQStore) const
@@ -2058,8 +1996,8 @@ convertQuaternionsToAngles(Storage *rQStore) const
 	if(rQStore==NULL) return;
 
 	// NUMBER OF Q'S
-	int nq = getNQ();
-	int nu = getNU();
+	int nq = getNumCoordinates();
+	int nu = getNumSpeeds();
 	int dn = nq - nu;
 	if(nq<=0) {
 		printf("rdSDFast.convertQuaternionsToAngles: ERROR- models has ");
@@ -2122,7 +2060,7 @@ convertQuaternionsToAngles(Storage *rQStore) const
  * Convert angles to quaterions.
  *
  * @param aQAng Array of generalized coordinates expressed in Euler angles.
- * The length of aQAng must be at least getNU().
+ * The length of aQAng must be at least getNumSpeeds().
  * @param rQ Vector of equivalent quaternions.
  */
 void rdSDFast::
@@ -2138,7 +2076,7 @@ convertAnglesToQuaternions(double *aQAng,double *rQ) const
  *
  * @param rQStore Storage object of generalized coordinates that has all
  * angles expressed as Euler angles in radians.  The length of each
- * state-vector in rQStore must be at least getNU().
+ * state-vector in rQStore must be at least getNumSpeeds().
  */
 void rdSDFast::
 convertAnglesToQuaternions(Storage *rQStore) const
@@ -2146,8 +2084,8 @@ convertAnglesToQuaternions(Storage *rQStore) const
 	if(rQStore==NULL) return;
 
 	// NUMBER OF Q'S
-	int nq = getNQ();
-	int nu = getNU();
+	int nq = getNumCoordinates();
+	int nu = getNumSpeeds();
 	int dn = nq - nu;
 	if(nu<=0) {
 		printf("rdSDFast.convertAnglesToQuaternions: ERROR- models has ");
@@ -2216,9 +2154,9 @@ convertAnglesToQuaternions(Storage *rQStore) const
  * radians to units of degrees.
  *
  * @param aQRad Array in radians.  The length of aQRad should be
- * at least the number of generalized speeds (@see getNU()).
+ * at least the number of generalized speeds (@see getNumSpeeds()).
  * @param rQDeg Array in degrees.  The length of rQRad should be
- * at least the number of generalized speeds (@see getNU()).
+ * at least the number of generalized speeds (@see getNumSpeeds()).
  */
 void rdSDFast::
 convertRadiansToDegrees(double *aQRad,double *rQDeg) const
@@ -2226,7 +2164,7 @@ convertRadiansToDegrees(double *aQRad,double *rQDeg) const
 	// LOOP OVER THE JOINTS
 	int i,j,u;
 	int info[50],slider[6];
-	for(u=i=0;i<getNJ();i++) {
+	for(u=i=0;i<getNumJoints();i++) {
 
 		// GET INFO
 		sdjnt(i,info,slider);
@@ -2248,7 +2186,7 @@ convertRadiansToDegrees(double *aQRad,double *rQDeg) const
  * radians to units of degrees for all the state-vectors in an Storage
  * object.
  *
- * It is assumed that the first first getNU() elements of each state-vector
+ * It is assumed that the first first getNumSpeeds() elements of each state-vector
  * held in the Storage object are the generalized coordinates or speeds.
  *
  * @param rQStore Storage object.
@@ -2260,7 +2198,7 @@ convertRadiansToDegrees(Storage *rQStore) const
 
 	// LOOP THROUGH THE STATEVECTORS
 	int i,size;
-	int nu=getNU();
+	int nu=getNumSpeeds();
 	double *u;
 	StateVector *vec;
 	for(i=0;i<rQStore->getSize();i++) {
@@ -2295,9 +2233,9 @@ convertRadiansToDegrees(Storage *rQStore) const
  * Convert the rotational generalized coordinates or speeds from units of
  * degrees to units of radiants.
  * @param aQDeg Array in degrees.  The length of aQDeg should be
- * at least the number of generalized speeds (@see getNU()).
+ * at least the number of generalized speeds (@see getNumSpeeds()).
  * @param rQRad Array in radians.  The length of rQRad should be
- * at least the number of generalized speeds (@see getNU()).
+ * at least the number of generalized speeds (@see getNumSpeeds()).
  */
 void rdSDFast::
 convertDegreesToRadians(double *aQDeg,double *rQRad) const
@@ -2305,7 +2243,7 @@ convertDegreesToRadians(double *aQDeg,double *rQRad) const
 	// LOOP OVER THE JOINTS
 	int i,j,u;
 	int info[50],slider[6];
-	for(u=i=0;i<getNJ();i++) {
+	for(u=i=0;i<getNumJoints();i++) {
 
 		// GET INFO
 		sdjnt(i,info,slider);
@@ -2327,7 +2265,7 @@ convertDegreesToRadians(double *aQDeg,double *rQRad) const
  * degrees to units of radians for all the state-vectors in an Storage
  * object.
  *
- * It is assumed that the first first getNU() elements of each state-vector
+ * It is assumed that the first first getNumSpeeds() elements of each state-vector
  * held in the Storage object are the generalized coordinates or speeds.
  *
  * @param rQStore Storage object.
@@ -2339,7 +2277,7 @@ convertDegreesToRadians(Storage *rQStore) const
 
 	// LOOP THROUGH THE STATEVECTORS
 	int i,size;
-	int nu=getNU();
+	int nu=getNumSpeeds();
 	double *u;
 	StateVector *vec;
 	for(i=0;i<rQStore->getSize();i++) {

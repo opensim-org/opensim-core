@@ -1,7 +1,7 @@
 // SimmMeasurement.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,7 +22,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -31,10 +30,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -51,6 +48,7 @@ SimmMeasurement::SimmMeasurement() :
 	_apply(_applyProp.getValueBool())
 {
 	setNull();
+	setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -65,6 +63,7 @@ SimmMeasurement::SimmMeasurement(DOMElement *aElement) :
 	_apply(_applyProp.getValueBool())
 {
 	setNull();
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -90,6 +89,7 @@ SimmMeasurement::SimmMeasurement(const SimmMeasurement &aMeasurement) :
 	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
 {
+	setNull();
 	setupProperties();
 	copyData(aMeasurement);
 }
@@ -128,6 +128,15 @@ Object* SimmMeasurement::copy(DOMElement *aElement) const
 	return(measurement);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmMeasurement to another.
+ *
+ * @param aMeasurement SimmMeasurement to be copied.
+ */
 void SimmMeasurement::copyData(const SimmMeasurement &aMeasurement)
 {
 	_markerPairSet = aMeasurement._markerPairSet;
@@ -135,31 +144,21 @@ void SimmMeasurement::copyData(const SimmMeasurement &aMeasurement)
 	_apply = aMeasurement._apply;
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmMeasurement to their null values.
  */
 void SimmMeasurement::setNull()
 {
-	setupProperties();
 	setType("SimmMeasurement");
-	setName("");
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
 void SimmMeasurement::setupProperties()
 {
-	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
-	_applyProp.setName("apply");
-	_applyProp.setValue(true);
-	_propertySet.append(&_applyProp);
-
 	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
 	_markerPairSetProp.setName("SimmMarkerPairSet");
 	_propertySet.append(&_markerPairSetProp);
@@ -168,14 +167,31 @@ void SimmMeasurement::setupProperties()
 	_bodyScaleSetProp.setName("BodyScaleSet");
 	_propertySet.append(&_bodyScaleSetProp);
 
+	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
+	_applyProp.setName("apply");
+	_applyProp.setValue(true);
+	_propertySet.append(&_applyProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Register the types used by SimmMeasurement.
+ */
 void SimmMeasurement::registerTypes()
 {
 	Object::RegisterType(SimmMarkerPair());
 	Object::RegisterType(BodyScale());
 }
 
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmMeasurement& SimmMeasurement::operator=(const SimmMeasurement &aMeasurement)
 {
 	// BASE CLASS
@@ -188,6 +204,14 @@ SimmMeasurement& SimmMeasurement::operator=(const SimmMeasurement &aMeasurement)
 
 /* Apply a scale factor to a scale set, according to the elements of
  * the SimmMeasurement's BodyScaleSet.
+ */
+//_____________________________________________________________________________
+/**
+ * Apply a scale factor to a scale set, according to the elements of
+ * the SimmMeasurement's _bodyScaleSet.
+ *
+ * @param aFactor the scale factor to apply
+ * @param aScaleSet the set of scale factors to modify
  */
 void SimmMeasurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 {

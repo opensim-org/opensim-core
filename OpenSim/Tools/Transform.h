@@ -109,6 +109,8 @@ public:
 	//--------------------------------------------------------------------------
 	void getPosition(double pos[3]) const;
 	void setPosition(const double pos[3]);
+	void getOrientation(double rOrientation[3][3]) const;
+	void setOrientation(const double aOrientation[3][3]);
 	void setIdentity();
 
 	void rotate(const double r[3], const AnglePreference preference, const RotationOrder order);
@@ -124,6 +126,7 @@ public:
 	void transformPoint(double pt[3]) const;
 	void transformPoint(Array<double>& pt) const;
 	void transformVector(double vec[3]) const;
+	void transformVector(Array<double>& vec) const;
 
 	double* getMatrix() { return &_matrix4[0][0]; } // Pete
 	void getMatrix(double aMat[]) const;

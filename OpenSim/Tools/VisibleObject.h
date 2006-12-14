@@ -48,6 +48,7 @@ namespace OpenSim {
 
 class XMLNode;
 class XMLDocument;
+class AbstractDynamicsEngine;
 
 class Geometry;
 // CONSTANTS
@@ -85,12 +86,13 @@ private:
 	PropertyDblArray	_propScaleFactors;
 	Array<double>&		_scaleFactors;
 
-	// In general these can use the Observable mechanism but that would be slow for display purposes.
+	// In general these can use the Observable mechanism but that would be slow 
+	// for display purposes.
 	ArrayPtrs<VisibleObject>	_dependents;
 
 protected:
-	Object*				_owner;	// Actual object that owns this VisibleObject, for debugging only as of now
-	Transform			_transform; /** transform relative to _owner's frame. unserialized */
+	Object*				_owner;	// Actual object that owns this VisibleObject
+	Transform			_transform; // transform relative to _owner's frame. unserialized
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -105,6 +107,8 @@ public:
 	virtual ~VisibleObject();
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
+	virtual void setup(AbstractDynamicsEngine *aEngine) { }
+
 private:
 	void setNull();
 
@@ -120,7 +124,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
-
+	// OWNER OBJECT
 	void setOwner(Object *aObject)
 	{
 		_owner = aObject;
@@ -130,14 +134,15 @@ public:
 	{
 		return _owner;
 	}
+	// GEOMETRY FILES
 	void setNumGeometryFiles(int n);
 	void setGeometryFileName(int i, const std::string &aGeometryFileName);
 	const int getNumGeometryFiles() const;
 	const std::string& getGeometryFileName(int i) const;
-
+	// VISIBLE PROPERTIES
 	void setVisibleProperties(const VisibleProperties &aVisibleProperties);
 	VisibleProperties& getVisibleProperties();
-
+	// TRANSFORM
 	void setTransform(const Transform &aTransform);
 	virtual Transform& getTransform();
 
@@ -158,18 +163,36 @@ public:
 	void rotateDegreesZ(const double rR);
 	void rotateDegreesAxis(const double rR, const double axis[3]);
 	void translate(const double t[3]);
-	
+	// DEPENDENTS
 	void addDependent(VisibleObject *aChild){ _dependents.append(aChild); };
+	bool hasDependent(VisibleObject *aChild){ // Check if dependency already added
+		for(int i=0; i < _dependents.getSize(); i++){
+			if (_dependents.get(i)==aChild)
+				return true; 
+		}
+		return false;
+	};
 	void removeDependent(VisibleObject *aChild){ _dependents.remove(aChild); };
 	int countDependents(){ return _dependents.getSize(); };
 	VisibleObject *getDependent(int i) { 
 		return _dependents.get(i); 
 	};
+	// GEOMETRY ITEMS
 	void addGeometry(Geometry* aGeometry)
 	{
 		_allGeometry.append(aGeometry);
 	};
-	const Geometry* getGeometry(int i)
+	void removeGeometry(Geometry* aGeometry)
+	{
+		_allGeometry.remove(_allGeometry.findIndex(aGeometry));
+	};
+	// Release resources allocated by the display support code.
+	void freeGeometry()
+	{
+		for (int i=_allGeometry.getSize()-1; i >= 0; i--)
+			delete _allGeometry.get(i);
+	}
+	Geometry* getGeometry(int i)
 	{
 		return _allGeometry.get(i);
 	}
@@ -181,6 +204,12 @@ public:
 	{
 		return AnalyticGeometry::createSphere(0.1);
 	}
+	// updateGeometry is the method used to update geometry that can change (e.g. muscles
+	// changing geometry during motion.
+	// Clients/subclasses should not override this method unless their geometry is changing.
+	// This call forces the "recomputation" of geometry aside from display implications.
+
+	virtual void updateGeometry() {};
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------

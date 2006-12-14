@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 
 
@@ -39,8 +38,11 @@ int main(int argc,char **argv)
 	perturb.print("check.xml");
 	*/
 
+#if 0 
+	// commented out because LoadModel changed
+ 
 	// LOAD MODEL
-	Model *model = LoadModel(argc,argv);
+	AbstractModel *model = LoadModel(argc,argv);
 	cout<<"Finished call to LoadModel\n";
 	if(model==NULL) {
 		cout<<"\nperturb:  ERROR- failed to load model.\n";
@@ -56,6 +58,8 @@ int main(int argc,char **argv)
 	cout<<"Running..."<<endl<<endl;
 	//perturb.setModel(model);
 	//perturb.run();
+
+#endif
 
 	return(0);
 }

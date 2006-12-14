@@ -1,10 +1,10 @@
-#ifndef _SimmMotionData_h_
-#define _SimmMotionData_h_
+#ifndef __SimmMotionData_h__
+#define __SimmMotionData_h__
 
 // SimmMotionData.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -30,11 +30,16 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include "SimmMotionEvent.h"
 #include "SimmUnits.h"
+
+namespace OpenSim {
+
+class AbstractModel;
 
 //=============================================================================
 //=============================================================================
@@ -44,9 +49,7 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
-class RDSIMULATION_API SimmMotionData
+class RDSIMULATION_API SimmMotionData : public Object
 {
 
 //=============================================================================
@@ -86,7 +89,16 @@ public:
 	SimmMotionData();
 	SimmMotionData(const std::string& aFileName);
 	SimmMotionData(Storage& aData);
+	SimmMotionData(const SimmMotionData &aData);
+	SimmMotionData(DOMElement *aElement);
 	virtual ~SimmMotionData();
+	virtual Object* copy() const;
+	virtual Object* copy(DOMElement *aElement) const;
+#ifndef SWIG
+	SimmMotionData& operator=(const SimmMotionData &aData);
+#endif
+
+	void copyData(const SimmMotionData &aData);
 
 	int getNumColumns() const { return _numColumns; }
 	int getColumnIndex(const std::string& aName) const;
@@ -94,21 +106,27 @@ public:
 	double getValue(const std::string& aName, int aFrameIndex);
 	double getRangeMin() const { return _rangeMin; }
 	double getRangeMax() const { return _rangeMax; }
-	void addToRdStorage(Storage& aStorage, double startTime, double endTime);
+	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
+	bool deleteColumn(const std::string& aColumnName);
+	void scaleColumn(int aColumnIndex, double aScaleFactor);
+	void convertDegreesToRadians(AbstractModel& aModel);
+	void convertRadiansToDegrees(AbstractModel& aModel);
 
 	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aComment) const;
 
+	const char* getUnassignedColName() const { return "Unassigned"; }
 	void peteTest() const;
 
 private:
-	void readMotionFileHeader(std::ifstream &in, const std::string& aFileName, SimmMotionData& data);
+	void setNull();
+	void readMotionFileHeader(std::ifstream &in, const std::string& aFileName, SimmMotionData& rData);
 
 //=============================================================================
 };	// END of class SimmMotionData
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMotionData_h__
 

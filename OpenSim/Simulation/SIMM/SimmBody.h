@@ -1,10 +1,10 @@
-#ifndef _SimmBody_h_
-#define _SimmBody_h_
+#ifndef __SimmBody_h__
+#define __SimmBody_h__
 
 // SimmBody.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -28,49 +28,37 @@
 
 // INCLUDE
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmMarkerSet.h"
+#include "AbstractBody.h"
+#include "BoneSet.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmKinematicsEngine;
+class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM body segment. simmBodies can contain bones,
- * as well as mass properties.
+ * A class implementing a SIMM body segment.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmBody : public Object  
+class RDSIMULATION_API SimmBody : public AbstractBody  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-#ifndef SWIG
-	typedef struct
-	{
-		bool used;
-		int timesSplit;
-		double massFactor;
-		bool skippable;
-	} sdfastBodyInfo;
-
-	sdfastBodyInfo _sdfastInfo;
-#endif
 protected:
 	PropertyDbl _massProp;
 	double &_mass;
@@ -82,18 +70,8 @@ protected:
 	Array<double> &_inertia;
 
 	// Support of display.
-	PropertyObj		_displayerProp;
-	VisibleObject	&_displayer;
-
-	PropertyObj _markerSetProp;
-	SimmMarkerSet &_markerSet;
-
-	/* For holding cumulative scale factors, which are needed if
-	 * a SIMM joint file is written (so SIMM knows how much to
-	 * scale the bones.
-	 */
-	// Moved down to the Displayer object since its purpose is display and to scale vtk objects as well
-	//double _scaleFactor[3];
+	PropertyObj _displayerProp;
+	VisibleObject &_displayer;
 
 //=============================================================================
 // METHODS
@@ -114,39 +92,31 @@ public:
 #endif
    void SimmBody::copyData(const SimmBody &aBody);
 
-   void setup(SimmKinematicsEngine* aEngine);
+   virtual void setup(AbstractDynamicsEngine* aEngine);
 
-	double getMass() const { return _mass; }
-	void getMassCenter(double vec[3]) { vec[0] = _massCenter[0]; vec[1] = _massCenter[1]; vec[2] = _massCenter[2]; }
-	const Array<double>& getInertia() { return _inertia; }
-	virtual VisibleObject *getDisplayer() { return &_displayer; };
-
-	int getNumMarkers() { return _markerSet.getSize(); }
-	SimmMarker* getMarker(int index) const;
-	int deleteAllMarkers();
-	void deleteMarker(const SimmMarker* aMarker);
-	int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
-	void scale(Array<double>& aScaleFactors, bool aPreserveMassDist = false);
-	void scaleInertialProperties(Array<double>& aScaleFactors);
-
-	void addMarker(SimmMarker* aMarker);
-	void writeSIMM(std::ofstream& out) const;
-	void writeMarkers(std::ofstream& out) const;
-
-	void peteTest() const;
+	virtual double getMass() const { return _mass; }
+	virtual bool setMass(double aMass);
+	virtual void getMassCenter(double rVec[3]) const;
+	virtual bool setMassCenter(double aVec[3]);
+	virtual void getInertia(double rInertia[3][3]) const;
+	virtual bool setInertia(const Array<double>& aInertia);
+	virtual void scale(Array<double>& aScaleFactors, bool aScaleMass = false);
+	virtual void scaleInertialProperties(Array<double>& aScaleFactors);
+	virtual VisibleObject* getDisplayer() const { return &_displayer; }
 	void getScaleFactors(Array<double>& aScaleFactors) const;
-protected:
+
+	virtual void peteTest() const;
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmBody
-
 //=============================================================================
 //=============================================================================
 
-}; //namespace
+} // end of namespace OpenSim
+
 #endif // __SimmBody_h__
 
 

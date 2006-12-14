@@ -3,12 +3,12 @@
 
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 #include <OpenSim/Tools/Storage.h>
 
 namespace OpenSim { 
 
-class SimmIKTrialParams;
+class SimmIKTrial;
 class SimmInverseKinematicsTarget;
 
 #ifdef SWIG
@@ -46,7 +46,7 @@ class workflow_API SimmIKSolverImpl : public IKSolverInterface
 public:
 	SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget);
 
-	virtual void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData);
+	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 private:
 
 	void collectUserData(const Array<std::string> &,
@@ -63,6 +63,3 @@ private:
 }; //namespace
 
 #endif // __SimmIKSolverImpl_h__
-
-
-

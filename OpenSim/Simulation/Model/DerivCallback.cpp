@@ -36,6 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "DerivCallback.h"
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 //=============================================================================
@@ -63,7 +64,7 @@ DerivCallback::~DerivCallback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-DerivCallback::DerivCallback(Model *aModel) :
+DerivCallback::DerivCallback(AbstractModel *aModel) :
 	Callback(aModel)
 {
 	setNull();

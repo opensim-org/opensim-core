@@ -8,11 +8,10 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Tools/IO.h>	
-#include <OpenSim/Simulation/SIMM/SimmCoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmIKTrialParamsSet.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmIKParams.h>
+#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Subject/SimmIKTrialSet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include "SimmIKSolverImpl.h"
 #include "SimmInverseKinematicsTarget.h"
 
@@ -36,12 +35,13 @@ InvestigationIK::~InvestigationIK()
  */
 InvestigationIK::InvestigationIK() :
 	Investigation(),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
-	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
-	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
-	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
+	_markerSetProp(PropertyObj("", MarkerSet())),
+	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", CoordinateSet())),
+	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
+	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
+	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("InvestigationIK");
 	setNull();
@@ -57,12 +57,13 @@ InvestigationIK::InvestigationIK() :
  */
 InvestigationIK::InvestigationIK(const string &aFileName) :
 	Investigation(aFileName),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
-	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
-	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
-	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
+	_markerSetProp(PropertyObj("", MarkerSet())),
+	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", CoordinateSet())),
+	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
+	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
+	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("InvestigationIK");
 	setNull();
@@ -74,12 +75,12 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 
 	if (_model) throw( Exception("InvestigationIK did not expect initialized model") );
 	if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
-	setModel(new SimmModel(_modelFile));
-		// Cast to SimmModel so we can call functions that don't exist in base Model class
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());
-	simmModel->setup();
-
-	if (_model) addAnalysisSetToModel();
+	setModel(new AbstractModel(_modelFile));
+	// Cast to SimmModel so we can call functions that don't exist in base Model class
+	if (_model) {
+		_model->setup();
+		addAnalysisSetToModel();
+	}
 	IO::chDir(saveWorkingDirectory.c_str());
 }
 //_____________________________________________________________________________
@@ -88,12 +89,13 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
  */
 InvestigationIK::InvestigationIK(DOMElement *aElement) :
 	Investigation(aElement),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
-	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
-	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
-	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
+	_markerSetProp(PropertyObj("", MarkerSet())),
+	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", CoordinateSet())),
+	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
+	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
+	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("InvestigationIK");
 	setNull();
@@ -138,12 +140,13 @@ InvestigationIK::InvestigationIK(DOMElement *aElement) :
 InvestigationIK::
 InvestigationIK(const InvestigationIK &aInvestigation) :
 	Investigation(aInvestigation),
-	_markerSetProp(PropertyObj("", SimmMarkerSet())),
-	_markerSet((SimmMarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", SimmCoordinateSet())),
-	_coordinateSet((SimmCoordinateSet&)_coordinateSetProp.getValueObj()),
-	_IKTrialParamsSetProp(PropertyObj("", SimmIKTrialParamsSet())),
-	_IKTrialParamsSet((SimmIKTrialParamsSet&)_IKTrialParamsSetProp.getValueObj())
+	_markerSetProp(PropertyObj("", MarkerSet())),
+	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_coordinateSetProp(PropertyObj("", CoordinateSet())),
+	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
+	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
+	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("InvestigationIK");
 	setNull();
@@ -190,25 +193,30 @@ void InvestigationIK::setupProperties()
 {
 	string comment;
 
-	_markerSetProp.setName("SimmMarkerSet");
 	_markerSetProp.setComment("Markers to be used by all IK trials");
+	_markerSetProp.setName("MarkerSet");
 	_propertySet.append(&_markerSetProp);
 
-	_coordinateSetProp.setName("SimmCoordinateSet");
-	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK. Use value 'fromFile' to force IK to use a file to set the initial values. Filename is specified in the appropriate trial block.");
+	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK.");
+	_coordinateSetProp.setName("CoordinateSet");
 	_propertySet.append(&_coordinateSetProp);
 
-	_IKTrialParamsSetProp.setName("SimmIKTrialParamsSet");
-	_IKTrialParamsSetProp.setComment("Trial paramaters, one block per trial");
-	_propertySet.append(&_IKTrialParamsSetProp);
+	_coordinatesFromFileProp.setName("coordinates_from_file");
+	Array<string> def("");
+	_coordinatesFromFileProp.setValue(def);
+	_propertySet.append(&_coordinatesFromFileProp);
+
+	_IKTrialSetProp.setComment("Trial parameters, one block per trial");
+	_IKTrialSetProp.setName("SimmIKTrialSet");
+	_propertySet.append(&_IKTrialSetProp);
 }
 //_____________________________________________________________________________
 /**
- * Register SimmIKTrialParams type.
+ * Register SimmIKTrial type.
  */
 void InvestigationIK::registerTypes()
 {
-	Object::RegisterType(SimmIKTrialParams());
+	Object::RegisterType(SimmIKTrial());
 }
 //=============================================================================
 // OPERATORS
@@ -228,7 +236,8 @@ operator=(const InvestigationIK &aInvestigation)
 	// MEMBER VARIABLES
 	_markerSet = aInvestigation._markerSet;
 	_coordinateSet = aInvestigation._coordinateSet;
-	_IKTrialParamsSet = aInvestigation._IKTrialParamsSet;
+	_coordinatesFromFile = aInvestigation._coordinatesFromFile;
+	_IKTrialSet = aInvestigation._IKTrialSet;
 
 	return(*this);
 }
@@ -256,62 +265,18 @@ void InvestigationIK::run()
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile.c_str());
 
-	// Cast to SimmModel so we can call functions that don't exist in base Model class
-	SimmModel *simmModel = dynamic_cast<SimmModel*>(getModel());
-	// Update markers to correspond to those specified in IKParams block
-	simmModel->updateMarkers(_markerSet);
-	// Initialize coordinates based on user input
-	simmModel->updateCoordinates(_coordinateSet);
+	/* Update the markers. */
+	_model->getDynamicsEngine().updateMarkerSet(_markerSet);
+
 	/* Now perform the IK trials on the updated model. */
-	for (int i = 0; i < _IKTrialParamsSet.getSize(); i++)
+	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
-		// Get trial params
-		SimmIKTrialParams& trialParams = *_IKTrialParamsSet.get(i);
-		// Handle coordinates file
-		SimmMotionData* coordinateValues = trialParams.getCoordinateValues(*simmModel);
-
-		// Setup IK problem for trial
-		// We need SimmInverseKinematicsTarget, iksolver (SimmIKSolverImpl)
-		// Create SimmMarkerData Object from trc file of experimental motion data
-		SimmMarkerData motionTrialData(trialParams.getMarkerDataFilename());
-		motionTrialData.convertToUnits(simmModel->getLengthUnits());
-
-		Storage inputStorage;
-		// Convert read trc fil into "common" rdStroage format
-		motionTrialData.makeRdStorage(inputStorage);
-		if (coordinateValues != 0) {
-			/* Adjust the user-defined start and end times to make sure they are in the
-			* range of the marker data. This must be done so that you only look in the
-			* coordinate data for rows that will actually be solved.
-			*/
-			double firstStateTime = inputStorage.getFirstTime();
-			double lastStateTime = inputStorage.getLastTime();
-			double startTime = (firstStateTime>trialParams.getStartTime()) ? firstStateTime : trialParams.getStartTime();
-			double endTime =  (lastStateTime<trialParams.getEndTime()) ? lastStateTime : trialParams.getEndTime();
-
-			/* Add the coordinate data to the marker data. There must be a row of
-			* corresponding coordinate data for every row of marker data that will
-			* be solved, or it is a fatal error.
-			*/
-			coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
-
-			//inputStorage.setWriteSIMMHeader(true);
-			//inputStorage.print("preIK.mot");
-		}
-		// Create target
-		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*simmModel, inputStorage);
-		// Create solver
-		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
-		// Solve
-		Storage	outputStorage;
-		ikSolver->solveFrames(trialParams, inputStorage, outputStorage);
-		outputStorage.setWriteSIMMHeader(true);
-		outputStorage.print(trialParams.getOutputMotionFilename().c_str());
-
-		delete coordinateValues;
-		delete ikSolver;
-		delete target;
-	IO::chDir(saveWorkingDirectory.c_str());
+		if (_IKTrialSet.get(i)->processTrial(*_model, _coordinateSet, _coordinatesFromFile))
+			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
+		else
+			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
 	}
+
+	IO::chDir(saveWorkingDirectory.c_str());
 }
 

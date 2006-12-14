@@ -36,10 +36,9 @@
 
 // INCLUDES
 #include <OpenSim/Tools/Object.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/Transform.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
 //=============================================================================
 //=============================================================================
@@ -71,7 +70,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimtkAnimationCallback(Model *aModel);
+	SimtkAnimationCallback(AbstractModel *aModel);
 	virtual ~SimtkAnimationCallback();
 private:
 	void setNull();
@@ -97,13 +96,13 @@ public:
 	const Transform* getBodyTransform(int bodyIndex) const;
 	// Handle _busy flag to make sure all xforms are read for the same time step
 	// by keeping mutual exclusion access to the xforms
-	void getMutex();
-	void releaseMutex();
+	void getMutex() {};
+	void releaseMutex() {};
 
-	void extractOffsets(SimmModel& displayModel);
+	void extractOffsets(AbstractModel& displayModel);
 private:
 	// Load transforms vector from KinematicsEngine
-	void getTransformsFromKinematicsEngine(SimmModel* simmModel);
+	void getTransformsFromKinematicsEngine(AbstractModel& simmModel);
 
 //=============================================================================
 };	// END of class SimtkAnimationCallback

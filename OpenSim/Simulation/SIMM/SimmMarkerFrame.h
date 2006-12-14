@@ -1,10 +1,10 @@
-#ifndef _SimmMarkerFrame_h_
-#define _SimmMarkerFrame_h_
+#ifndef __SimmMarkerFrame_h__
+#define __SimmMarkerFrame_h__
 
 // SimmMarkerFrame.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -30,10 +30,12 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include "SimmPoint.h"
 #include "SimmUnits.h"
 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -43,9 +45,7 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
-class SimmMarkerFrame
+	class RDSIMULATION_API SimmMarkerFrame : public Object
 {
 
 //=============================================================================
@@ -69,27 +69,24 @@ public:
 	SimmMarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, SimmUnits& aUnits);
 	SimmMarkerFrame(const SimmMarkerFrame& aFrame);
 	virtual ~SimmMarkerFrame();
-	void addMarker(double coords[3]);
+	void addMarker(double aCoords[3]);
 	SimmPoint& getMarker(int aIndex) { return *_markers[aIndex]; }
 	int getFrameNumber() const { return _frameNumber; }
 	void setFrameNumber(int aNumber) { _frameNumber = aNumber; }
 	double getFrameTime() const { return _frameTime; }
 	void scale(double aScaleFactor);
 
-	SimmMarkerFrame * copy()
-	{
-		return new SimmMarkerFrame(*this);
-	}
 	void peteTest() const;
 
 private:
+	void setNull();
 
 //=============================================================================
 };	// END of class SimmMarkerFrame
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMarkerFrame_h__
 

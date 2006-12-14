@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "suAnalysesDLL.h"
 #include "IndAcc.h"
 
@@ -29,6 +28,9 @@ const int BodyPointIndAcc_BUFFER_LENGTH = 2048;
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractBody;
+
 class SUANALYSES_API BodyPointIndAcc : public IndAcc 
 {
 //=============================================================================
@@ -41,7 +43,7 @@ private:
 	char _buffer[BodyPointIndAcc_BUFFER_LENGTH];
 	char _tmp[BodyPointIndAcc_BUFFER_LENGTH];
 protected:
-	int _body;
+	AbstractBody *_body;
 	double _point[3];
 	char _pointName[BodyPointIndAcc_NAME_LENGTH];
 	Storage *_axPointStore;
@@ -58,8 +60,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyPointIndAcc(Model *aModel,int aBody,double aPoint[3]);
-	BodyPointIndAcc(Model *aModel,int aBody,double aPoint[3],
+	BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3]);
+	BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3],
 		Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~BodyPointIndAcc();
@@ -73,8 +75,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setBody(int aBody);
-	int getBody();
+	void setBody(AbstractBody* aBody);
+	AbstractBody* getBody();
 	void setPoint(double aPoint[3]);
 	void getPoint(double rPoint[3]);
 	void setPointName(const char *aName);

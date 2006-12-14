@@ -11,14 +11,12 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/FunctionSet.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 #include "TorqueApplier.h"
 
 
@@ -34,6 +32,9 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
+class AbstractBody;
 
 class SUANALYSES_API TorsionalSpring : public TorqueApplier 
 {
@@ -60,7 +61,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	TorsionalSpring(Model *aModel,int aBody);
+	TorsionalSpring(AbstractModel *aModel, AbstractBody *aBody);
 	virtual ~TorsionalSpring();
 private:
 	void setNull();

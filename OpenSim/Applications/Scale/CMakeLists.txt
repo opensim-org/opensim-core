@@ -2,18 +2,17 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src)
 
-FILE(GLOB SOURCE_FILES *.cpp ../IK/SimmIKSolverImpl.cpp ../IK/SimmInverseKinematicsTarget.cpp)
-FILE(GLOB INCLUDE_FILES *.h)
+FILE(GLOB SOURCE_FILES *.cpp ../../Subject/Simm*.cpp ../IK/SimmInverseKinematicsTarget.cpp ../IK/SimmIKSolverImpl.cpp)
+FILE(GLOB INCLUDE_FILES *.h ../../Subject/Simm*.h ../IK/SimmInverseKinematicsTarget.h ../IK/SimmIKSolverImpl.h)
+
+ADD_DEFINITIONS(-Dworkflow_EXPORTS -DRDSIMULATION_EXPORTS)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
 		debug rdTools_d optimized rdTools
 		debug rdSimulation_d optimized rdSimulation
 		debug rdSQP_d optimized rdSQP)
 
-ADD_DEFINITIONS(-Dworkflow_EXPORTS)
-
 ADD_EXECUTABLE(scale ${SOURCE_FILES} ${INCLUDE_FILES})
-
 
 INSTALL_TARGETS(/bin/ scale)
 
@@ -34,4 +33,6 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH .)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
+IF(NOT OPENSIM_MINIMAL_BUILD)
 SUBDIRS(test)
+ENDIF(NOT OPENSIM_MINIMAL_BUILD)

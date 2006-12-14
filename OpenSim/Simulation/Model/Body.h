@@ -35,9 +35,9 @@
 
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
+#include <OpenSim/Simulation/Simm/PolyObject.h>
 
 #ifdef SWIG
 	#ifdef RDSIMULATION_API
@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Body  : public VisibleObject
+class RDSIMULATION_API Body  : public PolyObject
 {
 
 //=============================================================================

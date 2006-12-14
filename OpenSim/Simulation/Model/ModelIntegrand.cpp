@@ -38,6 +38,8 @@
 #include "ModelIntegrand.h"
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
 
 
 
@@ -55,7 +57,7 @@ using namespace std;
  *
  * @param aModel An instance of an Model.
  */
-ModelIntegrand::ModelIntegrand(Model *aModel):
+ModelIntegrand::ModelIntegrand(AbstractModel *aModel):
 	_x(0.0),_xPrev(0.0),_yPrev(0.0),_yp(0.0)
 {
 	setNull();
@@ -67,10 +69,10 @@ ModelIntegrand::ModelIntegrand(Model *aModel):
 	delete tmpControlSet;
 
 	// WORK VARIABLES
-	_x.setSize(_model->getNX());
-	_xPrev.setSize(_model->getNX());
-	_yPrev.setSize(_model->getNY());
-	_yp.setSize(_model->getNYP());
+	_x.setSize(_model->getNumControls());
+	_xPrev.setSize(_model->getNumControls());
+	_yPrev.setSize(_model->getNumStates());
+	_yp.setSize(_model->getNumPseudoStates());
 }
 
 //_____________________________________________________________________________
@@ -122,7 +124,7 @@ setNull()
 int ModelIntegrand::
 getSize() const
 {
-	return(_model->getNY());
+	return(_model->getNumStates());
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ getSize() const
  *
  * @return Model.
  */
-Model* ModelIntegrand::
+AbstractModel* ModelIntegrand::
 getModel()
 {
 	return(_model);
@@ -218,7 +220,7 @@ getPseudoStateStorage()
 void ModelIntegrand::
 setControlSet(const ControlSet &aControlSet)
 {
-	if(aControlSet.getSize() != _model->getNX()) {
+	if(aControlSet.getSize() != _model->getNumControls()) {
 		cout<<"ModelIntegrand.setControlSet: incorrect number of controls.\n";
 		return;
 	}
@@ -279,7 +281,7 @@ getController()
 ControlSet* ModelIntegrand::
 constructControlSet() const
 {
-	int nx = _model->getNX();
+	int nx = _model->getNumControls();
 	ControlSet *controlSet = new ControlSet();
 	controlSet->setName(_model->getName());
 
@@ -301,13 +303,13 @@ constructControlSet() const
  *
  * @param t Time (real time not normalized time).
  * @param y Integrated states (size = getSize()).
- * @param yModel Model states (size = getSize()+Model::getNQ()+Model getNU())
+ * @param yModel Model states (size = getSize()+Model::getNumCoordinates()+Model::getNumSpeeds())
  */
 void ModelIntegrand::
 convertStatesIntegrandToModel(double t,const double y[],double yModel[])
 {
 	int i;
-	int ny = _model->getNY();
+	int ny = _model->getNumStates();
 	for(i=0;i<ny;i++) yModel[i] = y[i];
 }
 //____________________________________________________________________________
@@ -318,13 +320,13 @@ convertStatesIntegrandToModel(double t,const double y[],double yModel[])
  *
  * @param t Time (real time not normalized time).
  * @param y Integrated states (size = getSize()).
- * @param yModel Model states (size = getSize()+Model::getNQ()+Model getNU())
+ * @param yModel Model states (size = getSize()+Model::getNumCoordinates()+Model::getNumSpeeds())
  */
 void ModelIntegrand::
 convertStatesModelToIntegrand(const double yModel[],double y[]) const
 {
 	int i;
-	int ny = _model->getNY();
+	int ny = _model->getNumStates();
 	for(i=0;i<ny;i++) y[i] = yModel[i];
 }
 
@@ -372,7 +374,6 @@ getInitialStates(double yi[]) const
 void ModelIntegrand::
 compute(double t,double y[],double dydt[])
 {
-
 	// GET CONTROLS
 	_controlSet.getControlValues(t,_x);
 	
@@ -381,31 +382,25 @@ compute(double t,double y[],double dydt[])
 	_model->getDerivCallbackSet()->set(t,&_x[0],y);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(t,&_x[0],y);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(t,&_x[0],y);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(t,&_x[0],y);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(t,&_x[0],y);
 
 	// DERIVATIVES
-	int i;
-	int ny = _model->getNY();
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	for(i=0;i<ny;i++) dydt[i] = 0.0;
-	_model->computeAccelerations(&dydt[0],&dydt[nq]);
-	int iAux = nq + nu;
-	if(iAux<ny) _model->computeAuxiliaryDerivatives(&dydt[iAux]);
+	_model->computeDerivatives(dydt);
 	_model->getDerivCallbackSet()->computeDerivatives(t,&_x[0],y,dydt);
 
 	// NORMALIZE
 	double tnorm = _model->getTimeNormConstant();
-	for(i=0;i<ny;i++) dydt[i] *= tnorm;
+	int ny = _model->getNumStates();
+	for(int i=0;i<ny;i++) dydt[i] *= tnorm;
 }
 
 
@@ -430,9 +425,9 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 	_tf = tf;
 	_tPrev = _ti;
 	double tReal = _ti * _model->getTimeNormConstant();
-	int nx = _model->getNX();
-	int ny = _model->getNY();
-	int nyp = _model->getNYP();
+	int nx = _model->getNumControls();
+	int ny = _model->getNumStates();
+	int nyp = _model->getNumPseudoStates();
 
 		// SET
 	_model->setTime(_ti);
@@ -512,7 +507,7 @@ processAfterStep(int step,double &dt,double t,double y[])
 	}
 
 	// STORE STATES
-	int ny = _model->getNY();
+	int ny = _model->getNumStates();
 	if(_stateStore!=NULL) {
 		if(t<_tf) {
 			_stateStore->store(step,tReal,ny,y);
@@ -520,6 +515,12 @@ processAfterStep(int step,double &dt,double t,double y[])
 			_stateStore->append(tReal,ny,y);
 		}
 	}
+
+	// This used to be in ActuatedModelIntegCallback::step
+	// TODO: possibly move it to its own callback rather than always doing this.
+	_model->set(t,&_x[0],y);
+	if(_model->getContactSet())
+		_model->getContactSet()->updatePseudoStates();
 
 	// INTEGRATION CALLBACKS
 	IntegCallbackSet *callbackSet = _model->getIntegCallbackSet();
@@ -532,7 +533,7 @@ processAfterStep(int step,double &dt,double t,double y[])
 		analysisSet->step(&_xPrev[0],&_yPrev[0],step,_dtPrev,t,&_x[0],y);
 
 	// STORE PSEUDOSTATES
-	int nyp = _model->getNYP();
+	int nyp = _model->getNumPseudoStates();
 	if(_pseudoStore!=NULL) {
 		_model->getPseudoStates(&_yp[0]);
 		if(t<_tf) {

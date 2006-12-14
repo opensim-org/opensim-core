@@ -191,7 +191,7 @@ void Marker::
 setNull()
 {
 	setType("Marker");
-	setName("unnamed_marker");
+	//setName("unnamed_marker");
 	setupProperties();
 	_refSegmentForMarker=-2;	// SDFast uses -1 for ground
 }

@@ -11,7 +11,8 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include "IndContactPowers.h"
 
 
@@ -43,7 +44,7 @@ IndContactPowers::~IndContactPowers()
  *
  * @param aContactVelocities Velocities of the contact point expressed in the
  * global frame.  See class Contact.
- * @param aModel Model on which the simulation was run.
+ * @param aModel AbstractModel on which the simulation was run.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.  If NULL,
  * accelerations are computed based on a NULL decompostion.
@@ -52,7 +53,7 @@ IndContactPowers::~IndContactPowers()
  * @see Contact, IndAcc
  */
 IndContactPowers::IndContactPowers(Storage *aContactVelocities,
-	Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+	AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 	char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
@@ -120,13 +121,14 @@ constructColumnLabels()
 	char tmp[Object::NAME_LENGTH];
 
 	// GET GENERALIZED SPEED NAMES
-	int i,a,b;
+	int i;
+	AbstractBody *a, *b;
 	labels = "Time";
-	for(i=0;i<_model->getNP();i++) {
-		a = _model->getContactBodyA(i);
-		b = _model->getContactBodyB(i);
+	for(i=0;i<_model->getNumContacts();i++) {
+		a = _model->getContactSet()->getContactBodyA(i);
+		b = _model->getContactSet()->getContactBodyB(i);
 		sprintf(tmp,"\t%d_%s_%s",i,
-			_model->getBodyName(a).c_str(),_model->getBodyName(b).c_str());
+			a->getName().c_str(),b->getName().c_str());
 		labels += tmp;
 	}
 	labels += "\tTotal\n";
@@ -233,7 +235,7 @@ computeContactPowers()
 	}
 
 	// NUMBERS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	// LOOP OVER TIME
 	int i,c,p;

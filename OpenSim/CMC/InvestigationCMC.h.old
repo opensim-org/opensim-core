@@ -1,0 +1,137 @@
+// InvestigationCMC.h
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Copyright 2006 Realistic Dynamics, Inc.
+// All rights reserved.
+//
+// Please do not read, copy, distribute, or use without permission.
+// Contact: Frank C. Anderson, fc.anderson@RealisticDynamics.com
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//#ifndef __InvestigationCMC_h__
+//#define __InvestigationCMC_h__
+
+#include "rdCMCDLL.h"
+#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Tools/PropertyBool.h>
+#include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Tools/PropertyInt.h>
+#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Tools/FunctionSet.h>
+#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Control/ControlSet.h>
+class XMLDocument;
+
+
+//=============================================================================
+//=============================================================================
+/**
+ * An abstract class for specifying the interface for an investigation.
+ *
+ * @author Frank C. Anderson
+ * @version 1.0
+ */
+class RDCMC_API InvestigationCMC: public OpenSim::Investigation
+{
+//=============================================================================
+// MEMBER VARIABLES
+//=============================================================================
+private:
+	/** Name of the file containing the desired kinematic
+	trajectories. */
+	OpenSim::PropertyStr _desiredKinematicsFileNameProp;
+	std::string &_desiredKinematicsFileName;
+	/** Name of the file containing the tracking tasks. */
+	OpenSim::PropertyStr _taskSetFileNameProp;
+	std::string &_taskSetFileName;
+	/** Name of the file containing the constraints on the
+	controls. */
+	OpenSim::PropertyStr _constraintsFileNameProp;
+	std::string &_constraintsFileName;
+	/** Name of the file containing the generalized coordinates
+	for the model. This file can double as both a way of setting
+	the initial configuration of the model and the desired
+	kinematics. If this file is specified but not a file for the
+	initial states of the model, this file will be used to
+	set the initial generalized coordinates and speeds.  Angles are
+	expected to be in degrees.  All generalized coordinates must
+	be specified. */
+	OpenSim::PropertyStr _qFileNameProp;
+	std::string &_qFileName;
+	/** Name of the file containing the initial states for the
+	simulation.  If this file is specified, it will be used to
+	set the initial states for the model without alteration.
+	All states must be set.  Angles are expected to be in degrees. */
+	OpenSim::PropertyStr _yFileNameProp;
+	std::string &_yFileName;
+	/** Time window over which the desired actuator forces are
+	generated. */
+	OpenSim::PropertyDbl _targetDTProp;
+	double &_targetDT;
+	/** Convergence criterion for the optimizer. */
+	OpenSim::PropertyDbl _convergenceCriterionProp;
+	double &_convergenceCriterion;
+	/** Flag indicating whether to use the fast CMC optimization
+	target.  The fast target requires the desired accelerations to
+	be met within the tolerance set by the convergence criterion.
+	The optimizer fails if the acclerations constraints cannot be
+	met, so the fast target is less robust.  The regular target
+	does not require the acceleration constraints to be met; it
+	meets them as well as it can. */
+	OpenSim::PropertyBool _useFastTargetProp;
+	bool &_useFastTarget;
+	/** Print level for the optimizer, 0 - 3.
+	0 = no printing, ..., 3 = detailed printing. */
+	OpenSim::PropertyInt _printLevelProp;
+	int &_printLevel;
+
+
+//=============================================================================
+// METHODS
+//=============================================================================
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+public:
+	virtual ~InvestigationCMC();
+	InvestigationCMC();
+	InvestigationCMC(const std::string &aFileName);
+	InvestigationCMC(DOMElement *aElement);
+	InvestigationCMC(const InvestigationCMC &aObject);
+	virtual OpenSim::Object* copy() const;
+	virtual OpenSim::Object* copy(DOMElement *aElement) const;
+private:
+	void setNull();
+	void setupProperties();
+	void constructCorrectiveSprings();
+
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+#ifndef SWIG
+	InvestigationCMC&
+		operator=(const InvestigationCMC &aInvestigationCMC);
+#endif
+
+	//--------------------------------------------------------------------------
+	// GET AND SET
+	//--------------------------------------------------------------------------
+	
+	//--------------------------------------------------------------------------
+	// INTERFACE
+	//--------------------------------------------------------------------------
+	virtual void run();
+
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	void computeInitialStatesFromCoordinates(
+		const OpenSim::FunctionSet &aQSet,OpenSim::Array<double> &rYI);
+
+//=============================================================================
+};	// END of class InvestigationCMC
+//=============================================================================
+//=============================================================================
+
+//#endif // __InvestigationCMC_h__
+
+

@@ -11,18 +11,16 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include "SpringGeneralizedForce.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 
 
 
 using namespace OpenSim;
 using namespace std;
 
-
-//=============================================================================
-// STATICS
-//=============================================================================
-const string SpringGeneralizedForce::X_NAME = "stiffness";
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -39,8 +37,8 @@ SpringGeneralizedForce::~SpringGeneralizedForce()
  * Default constructor.
  */
 SpringGeneralizedForce::
-SpringGeneralizedForce(int aQID,int aNX,int aNY,int aNYP) :
-	GeneralizedForce(aQID,aNX,aNY,aNYP),
+SpringGeneralizedForce(string aQName) :
+	GeneralizedForce(aQName),
 	_restLength(_propRestLength.getValueDbl()),
 	_viscosity(_propViscosity.getValueDbl())
 {
@@ -52,13 +50,10 @@ SpringGeneralizedForce(int aQID,int aNX,int aNY,int aNYP) :
  * Construct the actuator from an XML Element.
  *
  * @param aElement XML element.
- * @param aNX Number of controls.
- * @param aNY Number of states.
- * @param aNYP Number of pseudo-states.
  */
 SpringGeneralizedForce::
-SpringGeneralizedForce(DOMElement *aElement,int aNX,int aNY,int aNYP):
-	GeneralizedForce(aElement,aNX,aNY,aNYP),
+SpringGeneralizedForce(DOMElement *aElement):
+	GeneralizedForce(aElement),
 	_restLength(_propRestLength.getValueDbl()),
 	_viscosity(_propViscosity.getValueDbl())
 {
@@ -94,8 +89,8 @@ SpringGeneralizedForce(const SpringGeneralizedForce &aActuator) :
 Object* SpringGeneralizedForce::
 copy() const
 {
-	Actuator *act = new SpringGeneralizedForce(*this);
-	return(act);
+	SpringGeneralizedForce *force = new SpringGeneralizedForce(*this);
+	return force;
 }
 //_____________________________________________________________________________
 /**
@@ -116,8 +111,7 @@ Object* SpringGeneralizedForce::
 copy(DOMElement *aElement) const
 {
 	// ESTABLISH RELATIONSHIP WITH XML NODE
-	SpringGeneralizedForce *act = new
-		SpringGeneralizedForce(aElement,getNX(),getNY(),getNYP());
+	SpringGeneralizedForce *act = new SpringGeneralizedForce(aElement);
 
 	// ASSIGNMENT OPERATOR
 	*act = *this;
@@ -143,7 +137,10 @@ setNull()
 	setupProperties();
 
 	// APPLIES FORCE
-	_appliesForce = true;
+	setAppliesForce(true);
+
+	setNumControls(1); setNumStates(0); setNumPseudoStates(0);
+	bindControl(0, _stiffness, "stiffness");
 
 	// CONTROL VALUES
 	_restLength = 0.0;
@@ -197,171 +194,6 @@ operator=(const SpringGeneralizedForce &aActuator)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// CONTROLS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the number of controls.
- *
- * @return Number of controls (1 for an GeneralizedForce actuator).
- */
-int SpringGeneralizedForce::
-getNX() const
-{
-	return(1);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of a control.\n
- * Valid indices: 0
- *
- * @param aIndex Index of the control whose name is desired.
- * @throws Exception If aIndex is not valid.
- */
-const string SpringGeneralizedForce::
-getControlName(int aIndex) const
-{
-	if(aIndex!=0) {
-		string msg = "SpringGeneralizedForce.setControl: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has only 1 control (only an index of 0 is valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	string name = getName();
-	name += ".";
-	name += X_NAME;
-	return(name);
-}
-//_____________________________________________________________________________
-/**
- * Get the index of a control of a specified name.\n
- * Valid names: x
- *
- * @param aName Name of the control whose index is desired.
- * @return Index of the specified control.
- * @throws Exception If aName is not valid.
- */
-int SpringGeneralizedForce::
-getControlIndex(const string &aName) const
-{
-	if(aName!=getControlName(0)) {
-		string msg = "SpringGeneralizedForce.getControlIndex: ERR- Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has no control by the name";
-		msg += aName;
-		msg += ".\nThe only valid control name is ";
-		msg += getControlName(0);
-		msg += ".";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Set the current values of the controls.  This actuator has one control:
- * the force mangnitude of the actuator.
- *
- * @param aX Array of control values.  aX should be at least a size of 1.
- */
-void SpringGeneralizedForce::
-setControls(const double aX[])
-{
-	setStiffness(aX[0]);
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a control at a specified index.\n
- * Valid indices:  0
- *
- * @param aIndex Index of the control to be set.
- * @param aValue Value to which to set the control.
- * @throws Exception If aIndex is not valid.
- */
-void SpringGeneralizedForce::
-setControl(int aIndex,double aValue)
-{
-	if(aIndex!=0) {
-		string msg = "SpringGeneralizedForce.setControl: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has only 1 control (only an index of 0 is valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	setStiffness(aValue);
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a control of a specified name.\n
- * Valid names: x
- *
- * @param aName Name of the control to be set.
- * @param aValue Value to which to set the control.
- * @throws Exception If aName is not valid.
- */
-void SpringGeneralizedForce::
-setControl(const string &aName,double aValue)
-{
-	int index = getControlIndex(aName);
-	setControl(index,aValue);
-}
-//_____________________________________________________________________________
-/**
- * Get the current values of the controls.
- *
- * @param rX Array of control values.  The size of rX should be at least 1.
- */
-void SpringGeneralizedForce::
-getControls(double rX[]) const
-{
-	rX[0] = getStiffness();
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a control at a specified index.\n
- *	Valid Indices: 0
- *
- * @param aIndex Index of the desired control.
- * @return Value of the desired control.
- * @throws Exception If aIndex is not valid.
- */
-double SpringGeneralizedForce::
-getControl(int aIndex) const
-{
-	if(aIndex!=0) {
-		string msg = "SpringGeneralizedForce.setControl: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has only 1 control (only an index of 0 is valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(getStiffness());
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a control of a specified name.\n
- * Valid names: x
- *
- * @param aName Name of the desired control.
- * @return Value of the desired control.
- * @throws Exception If aName is not valid.
- */
-double SpringGeneralizedForce::
-getControl(const string &aName) const
-{
-	int index = getControlIndex(aName);
-	return(getControl(index));
-}
-
 //-----------------------------------------------------------------------------
 // REST LENGTH
 //-----------------------------------------------------------------------------
@@ -441,7 +273,7 @@ setStiffness(double aStiffness)
 double SpringGeneralizedForce::
 getStiffness() const
 {
-	return(_stiffness);
+	return _stiffness;
 }
 
 
@@ -456,11 +288,16 @@ getStiffness() const
 void SpringGeneralizedForce::
 computeActuation()
 {
-	if(_model==NULL) return;
+	if(_model==NULL || _q == NULL) return;
 
 	// FORCE
-	double q = _model->getCoordinate(_qID);
-	_speed = _model->getSpeed(_qID);
-	double force = -_stiffness*(q - _restLength) - _viscosity*_speed;
-	setForce(force);
+	double q = _q->getValue();
+
+	AbstractSpeed *speed =  _model->getDynamicsEngine().getSpeedSet()->get(_q->getName());
+	if (speed)
+	{
+		_speed = speed->getValue();
+		double force = -_stiffness*(q - _restLength) - _viscosity*_speed;
+		setForce(force);
+	}
 }

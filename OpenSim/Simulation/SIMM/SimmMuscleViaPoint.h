@@ -1,10 +1,10 @@
-#ifndef _SimmMuscleViaPoint_h_
-#define _SimmMuscleViaPoint_h_
+#ifndef __SimmMuscleViaPoint_h__
+#define __SimmMuscleViaPoint_h__
 
 // SimmMuscleViaPoint.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -37,12 +37,13 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include "SimmMusclePoint.h"
-#include "SimmCoordinate.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmModel;
-class SimmKinematicsEngine;
+class AbstractCoordinate;
+class AbstractModel;
+class AbstractSimmMuscle;
+class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
@@ -68,7 +69,7 @@ protected:
 	PropertyStr _coordinateNameProp;
    std::string &_coordinateName;
 
-	const SimmCoordinate* _coordinate;
+	const AbstractCoordinate* _coordinate;
 
 //=============================================================================
 // METHODS
@@ -87,28 +88,26 @@ public:
 #ifndef SWIG
 	SimmMuscleViaPoint& operator=(const SimmMuscleViaPoint &aPoint);
 #endif
-   void SimmMuscleViaPoint::copyData(const SimmMuscleViaPoint &aPoint);
+   void copyData(const SimmMuscleViaPoint &aPoint);
 
 	Array<double>& getRange() const { return _range; }
+	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	std::string& getCoordinateName() const { return _coordinateName; }
 
-	virtual void writeSIMM(std::ofstream& out) const;
 	virtual bool isActive() const;
-	virtual void setup(SimmModel* model, SimmKinematicsEngine* ke);
+	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
 
 	virtual void peteTest() const;
-
-protected:
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmMuscleViaPoint
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMuscleViaPoint_h__
 

@@ -36,6 +36,7 @@
 //============================================================================
 
 #include "IntegCallback.h"
+#include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyInt.h>
@@ -43,6 +44,7 @@
 
 namespace OpenSim { 
 
+class AbstractModel;
 class XMLDocument;
 
 
@@ -84,7 +86,7 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Analysis(Model *aModel=0);
+	Analysis(AbstractModel *aModel=0);
 	Analysis(const std::string &aFileName);
 	Analysis(DOMElement *aElement);
 	virtual ~Analysis();
@@ -103,7 +105,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 	// DEGREES/RADIANS
 	void setInDegrees(bool aTrueFalse);
 	bool getInDegrees() const;

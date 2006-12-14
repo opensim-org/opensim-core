@@ -13,7 +13,6 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -23,7 +22,7 @@
 /**
  * A class for recording the contact forces (and torques) generated
  * during a simulation.  This class will record only the forces (and torques)
- * returned by the getContactForces() method of Model.
+ * returned by the getContactForces() method of AbstractModel.
  *
  * @author Frank C. Anderson
  * @version 1.0
@@ -79,7 +78,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Contact(Model *aModel,int *aResultantForcePointGroups=NULL);
+	Contact(AbstractModel *aModel,int *aResultantForcePointGroups=NULL);
 	virtual ~Contact();
 private:
 	void setNull();

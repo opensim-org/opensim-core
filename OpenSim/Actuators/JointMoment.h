@@ -76,9 +76,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	JointMoment(int aQID=-1,int aNX=1,int aNY=1,int aNYP=0);
-	JointMoment(DOMElement *aElement,
-		int aNX=1,int aNY=1,int aNYP=0);
+	JointMoment(std::string aQName="");
+	JointMoment(DOMElement *aElement);
 	JointMoment(const JointMoment &aActuator);
 	virtual ~JointMoment();
 	virtual Object* copy() const;

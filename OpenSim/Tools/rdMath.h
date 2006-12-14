@@ -63,6 +63,7 @@ class RDTOOLS_API rdMath
 //=============================================================================
 public:
 	static const double PI;
+	static const double PI_2;
 	static const double RTD;
 	static const double DTR;
 	static const double SMALL;

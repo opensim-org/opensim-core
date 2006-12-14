@@ -1,10 +1,10 @@
-#ifndef _SimmMarker_h_
-#define _SimmMarker_h_
+#ifndef __SimmMarker_h__
+#define __SimmMarker_h__
 
-// SimmMarker.h
+// Marker.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -37,10 +37,13 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Tools/Geometry.h>
+#include "AbstractMarker.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmKinematicsEngine;
+class AbstractBody;
+class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
@@ -50,7 +53,7 @@ class SimmKinematicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMarker : public Object
+class RDSIMULATION_API SimmMarker : public AbstractMarker
 {
 
 //=============================================================================
@@ -59,8 +62,8 @@ class RDSIMULATION_API SimmMarker : public Object
 private:
 
 protected:
-	PropertyDblArray _attachmentProp;
-	Array<double> &_attachment;
+	PropertyDblArray _offsetProp;
+	Array<double> &_offset;
 
 	PropertyDbl _weightProp;
 	double &_weight;
@@ -69,17 +72,21 @@ protected:
 	bool &_fixed;
 
 	// The bodyName property is used only for markers that are part of a
-	// SimmMarkerSet, not for ones that are part of a SimmModel.
+	// MarkerSet, not for ones that are part of a model.
 	PropertyStr _bodyNameProp;
 	std::string &_bodyName;
 
+	// Body that the marker is attached to
+	AbstractBody* _body;
+
 	// Support for Display
-	PropertyObj		_displayerProp;
-	VisibleObject	&_displayer;
+	PropertyObj _displayerProp;
+	VisibleObject &_displayer;
 
 	/** A temporary kluge until the default mechanism is working */
 	static Geometry *_defaultGeometry;
-	bool			_virtual;
+	bool _virtual;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -98,21 +105,31 @@ public:
 	SimmMarker& operator=(const SimmMarker &aMarker);
 #endif
 	void copyData(const SimmMarker &aMarker);
-	void updateFromMarker(const SimmMarker &aMarker);
 
-	void getOffset(double *aOffset) const;
-	const double* getOffset() const { return &_attachment[0]; }
-	void setOffset(double pt[3]);
-	bool getFixed() const { return _fixed; }
-	double getWeight() const { return _weight; }
-	const std::string* getBodyName() const;
-	void setup(SimmKinematicsEngine* aEngine);
-	void scale(Array<double>& aScaleFactors);
+	virtual void updateFromMarker(const AbstractMarker &aMarker);
+	virtual void getOffset(double *rOffset) const;
+	virtual const double* getOffset() const { return &_offset[0]; }
+	virtual bool setOffset(Array<double>& aOffset);
+	virtual bool setOffset(const double aPoint[3]);
+	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
+	virtual bool getFixed() const { return _fixed; }
+	virtual bool setFixed(bool aFixed);
+	virtual bool getFixedUseDefault() const { return _fixedProp.getUseDefault(); }
+	virtual double getWeight() const { return _weight; }
+	virtual bool setWeight(double aWeight);
+	virtual bool getWeightUseDefault() const { return _weightProp.getUseDefault(); }
+	virtual const std::string* getBodyName() const;
+	virtual bool setBodyName(const std::string& aName);
+	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
+	virtual bool setBodyNameUseDefault(bool aValue);
+	virtual AbstractBody* getBody() const { return _body; }
+	virtual void setBody(AbstractBody* aBody);
+	virtual void scale(const Array<double>& aScaleFactors);
+	virtual void setup(AbstractDynamicsEngine* aEngine);
+	virtual void updateGeometry();
 
-	void writeSIMM(std::ofstream& out) const;
-
-	void peteTest() const;
-	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	virtual VisibleObject* getDisplayer() { return &_displayer; }
+	virtual void removeSelfFromDisplay();
 	const bool isVirtual()
 	{
 		return _virtual;
@@ -121,17 +138,17 @@ public:
 	{
 		_virtual=aTrueFalse;
 	}
-protected:
+	virtual void peteTest() const;
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmMarker
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMarker_h__
 

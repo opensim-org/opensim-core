@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -46,7 +45,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Kinematics(Model *aModel=0);
+	Kinematics(AbstractModel *aModel=0);
 	Kinematics(const std::string &aFileName);
 	Kinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -78,7 +77,7 @@ public:
 	Storage* getPositionStorage();
 
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

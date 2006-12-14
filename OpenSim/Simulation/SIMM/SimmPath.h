@@ -1,10 +1,10 @@
-#ifndef _SimmPath_h_
-#define _SimmPath_h_
+#ifndef __SimmPath_h__
+#define __SimmPath_h__
 
 // SimmPath.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -35,9 +35,9 @@
 #include <OpenSim/Tools/Storage.h>
 #include "SimmStep.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmBody;
+class AbstractBody;
 
 typedef std::vector<SimmStep> JointPath;
 
@@ -50,7 +50,7 @@ typedef std::vector<SimmStep> JointPath;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmPath
+class SimmPath
 {
 
 //=============================================================================
@@ -58,8 +58,8 @@ class RDSIMULATION_API SimmPath
 //=============================================================================
 private:
 	JointPath _path;
-	const SimmBody* _from;
-	const SimmBody* _to;
+	const AbstractBody* _from;
+	const AbstractBody* _to;
 	Transform _forwardTransform;
 	Transform _inverseTransform;
 	bool _transformsValid;
@@ -72,12 +72,12 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmPath();
-	SimmPath(JointPath aPath, const SimmBody* aFromBody, const SimmBody* aToBody);
+	SimmPath(JointPath aPath, const AbstractBody* aFromBody, const AbstractBody* aToBody);
 	virtual ~SimmPath();
 
 	void invalidate() { _transformsValid = false; }
-	const SimmBody* getFromBody() { return _from; }
-	const SimmBody* getToBody() { return _to; }
+	const AbstractBody* getFromBody() { return _from; }
+	const AbstractBody* getToBody() { return _to; }
 	const JointPath& getPath() const { return _path; }
 	Transform& getForwardTransform();
 	Transform& getInverseTransform();
@@ -89,10 +89,10 @@ private:
 
 //=============================================================================
 };	// END of class SimmPath
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmPath_h__
 

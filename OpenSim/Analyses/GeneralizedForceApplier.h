@@ -11,12 +11,10 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 
 
 //=============================================================================
@@ -30,6 +28,9 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractCoordinate;
+
 class SUANALYSES_API GeneralizedForceApplier : public DerivCallback 
 {
 //=============================================================================
@@ -37,7 +38,7 @@ class SUANALYSES_API GeneralizedForceApplier : public DerivCallback
 //=============================================================================
 protected:
 	/** Which generalized coordinate. */
-	int _genCoord;
+	AbstractCoordinate *_genCoord;
 	/** Generalized force to be applied. */
 	double _generalizedForce;
 	/** Factor that generalized force will be scaled by. */
@@ -63,10 +64,10 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForceApplier(Model *aModel);	
-	GeneralizedForceApplier(Model *aModel,int aGenCoord);
-	GeneralizedForceApplier(Model *aModel,int aGenCoord,double aGeneralizedForce);
-	GeneralizedForceApplier(Model *aModel,int aGenCoord,Storage* aGeneralizedForceStorage,int aIndex);
+	GeneralizedForceApplier(AbstractModel *aModel);	
+	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord);
+	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce);
+	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex);
 	virtual ~GeneralizedForceApplier();
 private:
 	void setNull();
@@ -79,8 +80,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setGeneralizedCoordinate(int aGenCoord);
-	int getGeneralizedCoordinate() const;
+	void setGeneralizedCoordinate(AbstractCoordinate *aGenCoord);
+	AbstractCoordinate* getGeneralizedCoordinate() const;
 	void setScaleFactor(double aFactor);
 	double getScaleFactor() const;
 	void setGeneralizedForce(double aGeneralizedForce);

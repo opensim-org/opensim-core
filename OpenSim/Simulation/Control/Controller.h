@@ -32,7 +32,6 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/Model/Model.h>
 //============================================================================
 
 
@@ -54,6 +53,8 @@ const int ControllerDESCRIP_LENGTH = 8192;
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API Controller  
 {
 
@@ -65,7 +66,7 @@ public:
 	static const int DESCRIP_LENGTH;
 protected:
 	/** Model. */
-	Model *_model;
+	AbstractModel *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
 	/** Name. */
@@ -80,7 +81,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Controller(Model *aModel);
+	Controller(AbstractModel *aModel);
 	virtual ~Controller();
 	void setNull();
 
@@ -88,7 +89,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	Model* getModel();
+	AbstractModel* getModel();
 	// ON/OFF
 	void setOn(bool aTrueFalse);
 	bool getOn();

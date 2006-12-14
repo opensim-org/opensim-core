@@ -1,7 +1,7 @@
 // SimmMarker.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,20 +22,19 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmMarker.h"
-#include "SimmKinematicsEngine.h"
+#include "AbstractModel.h"
+#include "AbstractDynamicsEngine.h"
+#include "BodySet.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
 //=============================================================================
@@ -47,31 +46,32 @@ Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
  */
 SimmMarker::SimmMarker() :
    _weight(_weightProp.getValueDbl()),
-   _attachment(_attachmentProp.getValueDblArray()),
+   _offset(_offsetProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
-
 {
 	setNull();
+	setupProperties();
 	_displayer.setOwner(this);
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
  */
 SimmMarker::SimmMarker(DOMElement *aElement) :
-   Object(aElement),
+   AbstractMarker(aElement),
    _weight(_weightProp.getValueDbl()),
-   _attachment(_attachmentProp.getValueDblArray()),
+   _offset(_offsetProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
 	_displayer.setOwner(this);
 }
@@ -91,18 +91,20 @@ SimmMarker::~SimmMarker()
  * @param aMarker SimmMarker to be copied.
  */
 SimmMarker::SimmMarker(const SimmMarker &aMarker) :
-   Object(aMarker),
+   AbstractMarker(aMarker),
    _weight(_weightProp.getValueDbl()),
-   _attachment(_attachmentProp.getValueDblArray()),
+   _offset(_offsetProp.getValueDblArray()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-  _displayer((VisibleObject&)_displayerProp.getValueObj())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
+	setNull();
 	setupProperties();
 	copyData(aMarker);
 	_displayer.setOwner(this);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmMarker and return a pointer to the copy.
@@ -115,6 +117,7 @@ Object* SimmMarker::copy() const
 	SimmMarker *marker = new SimmMarker(*this);
 	return(marker);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmMarker and modify the copy so that it is consistent
@@ -138,45 +141,23 @@ Object* SimmMarker::copy(DOMElement *aElement) const
 	return(marker);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmMarker to another.
+ *
+ * @param aMarker SimmMarker to be copied.
+ */
 void SimmMarker::copyData(const SimmMarker &aMarker)
 {
-	_attachment = aMarker._attachment;
+	_offset = aMarker._offset;
 	_weight = aMarker._weight;
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
 	_displayer = aMarker._displayer;
 	_virtual = aMarker._virtual;
-}
-
-/* Update an existing marker with parameter values from a
- * new one, but only for the parameters that were explicitly
- * specified in the XML node.
- */
-void SimmMarker::updateFromMarker(const SimmMarker &aMarker)
-{
-	if (!aMarker._attachmentProp.getUseDefault())
-	{
-		_attachment = aMarker._attachment;
-		_attachmentProp.setUseDefault(false);
-	}
-
-	if (!aMarker._weightProp.getUseDefault())
-	{
-		_weight = aMarker._weight;
-		_weightProp.setUseDefault(false);
-	}
-
-	if (!aMarker._fixedProp.getUseDefault())
-	{
-		_fixed = aMarker._fixed;
-		_fixedProp.setUseDefault(false);
-	}
-
-	if (!aMarker._bodyNameProp.getUseDefault())
-	{
-		_bodyName = aMarker._bodyName;
-		_bodyNameProp.setUseDefault(false);
-	}
 }
 
 //_____________________________________________________________________________
@@ -185,11 +166,11 @@ void SimmMarker::updateFromMarker(const SimmMarker &aMarker)
  */
 void SimmMarker::setNull()
 {
-	setupProperties();
 	setType("SimmMarker");
-	setName("");
 	setVirtual(true);
+	_body = 0;
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -201,9 +182,9 @@ void SimmMarker::setupProperties()
 	_propertySet.append(&_weightProp);
 
 	const double defaultAttachment[] = {0.0, 0.0, 0.0};
-	_attachmentProp.setName("location");
-	_attachmentProp.setValue(3, defaultAttachment);
-	_propertySet.append(&_attachmentProp);
+	_offsetProp.setName("location");
+	_offsetProp.setValue(3, defaultAttachment);
+	_propertySet.append(&_offsetProp);
 
 	_fixedProp.setName("fixed");
 	_fixedProp.setValue(false);
@@ -214,67 +195,231 @@ void SimmMarker::setupProperties()
 
 	_displayerProp.setName("Displayer");
 	_propertySet.append(&_displayerProp);
-
 }
 
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aEngine dynamics engine containing this SimmMarker.
+ */
+void SimmMarker::setup(AbstractDynamicsEngine* aEngine)
+{
+	if (_bodyName != "")
+	{
+		AbstractBody *oldBody = _body;
+		_body = aEngine->getBodySet()->get(_bodyName);
+
+		if (!_body)
+		{
+			string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
+				" does not exist in model " +	aEngine->getModel()->getName();
+			throw Exception(errorMessage);
+		}
+		// If marker jumped between bodies we need to fix display stuff
+		if (oldBody && oldBody != _body){
+			oldBody->getDisplayer()->removeDependent(&_displayer);
+		}
+		//TODO: make code below safe to call multiple times (since this setup() method may be
+		//called multiple times for a simm marker).  Should also try to handle case where a marker
+		// is deleted (e.g. in AbstractDynamicsEngine::updateMarkerSet) because then may end up with
+		// stale pointers.
+		VisibleObject* ownerBodyDisplayer;
+		if (_body && (ownerBodyDisplayer = _body->getDisplayer())){
+			if(! ownerBodyDisplayer->hasDependent(&_displayer)){	// Only if first time to be encountered 
+				ownerBodyDisplayer->addDependent(&_displayer);
+				_displayer.addGeometry(_defaultGeometry);
+			}
+		}
+		_displayer.setOwner(this);
+		double defaultColor[3] = { 0.0, 0.0, 1.0 };
+		_displayer.getVisibleProperties().setColor(defaultColor);
+		updateGeometry();
+			
+	}
+	else
+	{
+		string errorMessage = "Error: No body name specified for marker " + getName() + " in model " +
+			aEngine->getModel()->getName();
+		throw Exception(errorMessage);
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Remove self from the list of displayable objects and free resources
+ */
+void SimmMarker::removeSelfFromDisplay()
+{
+		VisibleObject* ownerBodyDisplayer;
+		if (_body && (ownerBodyDisplayer = _body->getDisplayer())){
+			if (ownerBodyDisplayer->hasDependent(&_displayer)){
+				ownerBodyDisplayer->removeDependent(&_displayer);
+			}
+		}
+}
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmMarker& SimmMarker::operator=(const SimmMarker &aMarker)
 {
 	// BASE CLASS
-	Object::operator=(aMarker);
+	AbstractMarker::operator=(aMarker);
 
 	copyData(aMarker);
 
 	return(*this);
 }
 
-void SimmMarker::getOffset(double *aOffset) const
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Update an existing marker with parameter values from a
+ * new one, but only for the parameters that were explicitly
+ * specified in the XML node.
+ *
+ * @param aMarker marker to update from
+ */
+void SimmMarker::updateFromMarker(const AbstractMarker &aMarker)
 {
-	if (aOffset)
+	if (!aMarker.getOffsetUseDefault())
+	{
+		const double* off = aMarker.getOffset();
+		setOffset(off);
+		_offsetProp.setUseDefault(false);
+	}
+
+	if (!aMarker.getFixedUseDefault())
+	{
+		_fixed = aMarker.getFixed();
+		_fixedProp.setUseDefault(false);
+	}
+
+	if (!aMarker.getWeightUseDefault())
+	{
+		_weight = aMarker.getWeight();
+		_weightProp.setUseDefault(false);
+	}
+
+	if (!aMarker.getBodyNameUseDefault())
+	{	
+		_bodyName = *aMarker.getBodyName();
+		_bodyNameProp.setUseDefault(false);
+	}
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the marker's XYZ offset from the body it's attached to.
+ *
+ * @param rOffset XYZ offset is returned here.
+ */
+void SimmMarker::getOffset(double *rOffset) const
+{
+	if (rOffset)
 	{
 		for (int i = 0; i < 3; i++)
-			aOffset[i] = _attachment[i];
+			rOffset[i] = _offset[i];
 	}
 }
 
-void SimmMarker::setOffset(double aPoint[3])
-{
-	for (int i = 0; i < 3; i++)
-		_attachment[i] = aPoint[i];
-}
-
-void SimmMarker::scale(Array<double>& aScaleFactors)
-{
-	for (int i = 0; i < 3; i++)
-		_attachment[i] *= aScaleFactors[i];
-}
-
-/* Perform some set up functions that happen after the
- * object has been deserialized or copied.
+//_____________________________________________________________________________
+/**
+ * Set the marker's XYZ offset from the body it's attached to.
+ *
+ * @param aOffset XYZ offset to set to.
+ * @return Whether or not the offset was set.
  */
-void SimmMarker::setup(SimmKinematicsEngine* aEngine)
+bool SimmMarker::setOffset(Array<double>& aOffset)
 {
-	getBodyName();
-	if (_bodyName != ""){
-		SimmBody* ownerBody = aEngine->getBody(_bodyName);
-		VisibleObject* ownerBodyDisplayer;
-		if (ownerBody && (ownerBodyDisplayer = ownerBody->getDisplayer())){
-			ownerBodyDisplayer->addDependent(&_displayer);
+	_offset[0] = aOffset[0];
+	_offset[1] = aOffset[1];
+	_offset[2] = aOffset[2];
 
-		}
-		_displayer.setOwner(this);
-		_displayer.addGeometry(_defaultGeometry);
-		if (isVirtual()){	// Pink
-			double defaultColor[3] = { 1.0, 0.0, 0.8 };
-			_displayer.getVisibleProperties().setColor(defaultColor);
-		}
-		else {	// Experimental is blue
-			double defaultColor[3] = { 0.0, 0.0, 1.0 };
-			_displayer.getVisibleProperties().setColor(defaultColor);
-		}
-	}
-
+	updateGeometry();
+	return true;
 }
 
+//_____________________________________________________________________________
+/**
+ * Set the marker's XYZ offset from the body it's attached to.
+ *
+ * @param aPoint XYZ offset to set to.
+ * @return Whether or not the offset was set.
+ */
+bool SimmMarker::setOffset(const double aPoint[3])
+{
+	for (int i = 0; i < 3; i++)
+		_offset[i] = aPoint[i];
+
+	updateGeometry();
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the marker's fixed status.
+ *
+ * @param aFixed boolean value to set to.
+ * @return Whether or not the fixed status was set.
+ */
+bool SimmMarker::setFixed(bool aFixed)
+{
+	_fixed = aFixed;
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the marker's weight.
+ *
+ * @param aWeight weight to set to.
+ * @return Whether or not the weight was set.
+ */
+bool SimmMarker::setWeight(double aWeight)
+{
+	if (aWeight >= 0.0)
+	{
+		_weight = aWeight;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the 'body name' field, which is used when the marker is added to
+ * an existing model.
+ *
+ * @param aName name of body
+ * @return Whether or not the body name was set.
+ */
+bool SimmMarker::setBodyName(const string& aName)
+{
+	_bodyName = aName;
+
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the 'body name' field, which is used when the marker is added to
+ * an existing model.
+ *
+ * @return Pointer to the body name.
+ */
 const string* SimmMarker::getBodyName() const
 {
 	if (_bodyNameProp.getUseDefault())
@@ -283,27 +428,61 @@ const string* SimmMarker::getBodyName() const
 	return &_bodyName;
 }
 
-void SimmMarker::writeSIMM(ofstream& out) const
+//_____________________________________________________________________________
+/**
+ * Set the 'body name' field to use or not use the default value.
+ *
+ * @return Whether or not the flag was set properly.
+ */
+bool SimmMarker::setBodyNameUseDefault(bool aValue)
 {
-	// Write out log(_weight) + 1 as marker weight instead of _weight,
-	// so that we won't have markers with radius 1000 if _weight=1000.
-	// If _weight <= 1, outputWeight will be set to 1.
-	double outputWeight = 1.0;
-	if (_weight > 1.0)
-		outputWeight = log(_weight) + 1.0;
+	_bodyNameProp.setUseDefault(aValue);
 
-	out << "marker " << getName() << '\t' << _attachment[0] << " " << _attachment[1] << " " << _attachment[2] << " " << outputWeight;
-	//out << "marker " << getName() << '\t' << _attachment[0] << " " << _attachment[1] << " " << _attachment[2] << " " << _weight;
-	if (_fixed)
-		out << " fixed";
-	out << endl;
+	return true;
 }
 
+//_____________________________________________________________________________
+/**
+ * Set the body that this marker is attached to.
+ *
+ * @param aBody Pointer to the body.
+ */
+void SimmMarker::setBody(AbstractBody* aBody)
+{
+	_body = aBody;
+	// TODO: should body and bodyName be synced when either one is changed?
+}
+
+//=============================================================================
+// SCALING
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Scale the marker.
+ *
+ * @param aScaleFactors XYZ scale factors.
+ */
+void SimmMarker::scale(const Array<double>& aScaleFactors)
+{
+	for (int i = 0; i < 3; i++)
+		_offset[i] *= aScaleFactors[i];
+}
+
+//_____________________________________________________________________________
+/**
+ * Update the geometry to correspond to position changes
+ */
+void SimmMarker::updateGeometry()
+{
+	Transform position;
+	position.translate(getOffset());
+	getDisplayer()->setTransform(position);
+
+}
 void SimmMarker::peteTest() const
 {
 	cout << "   Marker: " << getName() << endl;
-	cout << "      location: " << _attachment << endl;
+	cout << "      location: " << _offset << endl;
 	cout << "      weight: " << _weight << endl;
 	cout << "      fixed: " << ((_fixed) ? ("true") : ("false")) << endl;
 }
-

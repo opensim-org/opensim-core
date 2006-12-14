@@ -35,7 +35,6 @@
 
 
 // INCLUDES
-#include "Model.h"
 #include "CallbackSet.h"
 #include "IntegCallback.h"
 
@@ -51,6 +50,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API IntegCallbackSet : public Set<Callback>
 {
 
@@ -59,7 +60,7 @@ class RDSIMULATION_API IntegCallbackSet : public Set<Callback>
 //=============================================================================
 protected:
 	/** Model on which the callbacks have been set. */
-	Model *_model;
+	AbstractModel *_model;
 
 //=============================================================================
 // METHODS
@@ -68,7 +69,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	IntegCallbackSet(Model *aModel=0);
+	IntegCallbackSet(AbstractModel *aModel=0);
 	virtual ~IntegCallbackSet();
 private:
 	void setNull();
@@ -77,8 +78,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setModel(Model *aModel);
-	Model* getModel();
+	void setModel(AbstractModel *aModel);
+	AbstractModel* getModel();
 	void setOn(bool aTrueFalse);
 	IntegCallback* getIntegCallback(int aIndex) const;
 

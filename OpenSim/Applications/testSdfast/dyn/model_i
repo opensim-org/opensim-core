@@ -1,0 +1,126 @@
+SD/FAST Information File: model.sd
+Generated 07-Aug-2006 15:55:28 by SD/FAST, Kane's formulation
+(sdfast B.2.8 #30123) on machine ID unknown
+
+ROADMAP (model.sd)
+
+Bodies        Inb
+No  Name      body Joint type  Coords q         Multipliers
+--- --------- ---- ----------- ---------------- -----------------------
+ -1 $ground                                    |
+  0 pelvis     -1  Bushing       0?  1?  2?    |
+                   ...           3?  4?  5?    |  0p  1p  2p  3p  4p  5p
+  1 torso       0  Gimbal        6?  7?  8?    |  6p  7p  8p
+  2 neckhead    1  Gimbal        9? 10? 11?    |  9p 10p 11p
+  3 humerus_r   1  Gimbal       12? 13? 14?    | 12p 13p 14p
+  4 ulna_r      3  Pin          15?            | 15p
+  5 radius_r    4  Pin          16?            | 16p
+  6 hand_r      5  U-joint      17? 18?        | 17p 18p
+  7 humerus_l   1  Gimbal       19? 20? 21?    | 19p 20p 21p
+  8 ulna_l      7  Pin          22?            | 22p
+  9 radius_l    8  Pin          23?            | 23p
+ 10 hand_l      9  U-joint      24? 25?        | 24p 25p
+ 11 femur_r     0  Gimbal       26? 27? 28?    | 26p 27p 28p
+ 12 tibia_r    11  Planar       29  30  31?    | 29p
+ 13 patella_r  12  Planar       32  33  34     |
+ 14 talus_r    12  Pin          35?            | 30p
+ 15 foot_r     14  Pin          36?            | 31p
+ 16 toes_r     15  Pin          37?            | 32p
+ 17 femur_l     0  Gimbal       38? 39? 40?    | 33p 34p 35p
+ 18 tibia_l    17  Planar       41  42  43?    | 36p
+ 19 patella_l  18  Planar       44  45  46     |
+ 20 talus_l    18  Pin          47?            | 37p
+ 21 foot_l     20  Pin          48?            | 38p
+ 22 toes_l     21  Pin          49?            | 39p
+
+User Constraints
+
+  0 knee_flexion_r_tx_con                      | 40
+  1 knee_flexion_r_ty_con                      | 41
+  2 tib_pat_r_tx_con                           | 42
+  3 tib_pat_r_ty_con                           | 43
+  4 tib_pat_r_r1_con                           | 44
+  5 knee_flexion_l_tx_con                      | 45
+  6 knee_flexion_l_ty_con                      | 46
+  7 tib_pat_l_tx_con                           | 47
+  8 tib_pat_l_ty_con                           | 48
+  9 tib_pat_l_r1_con                           | 49
+
+
+STATE INDEX TO JOINT/AXIS MAP (model.sd)
+
+ Index
+  q|u   Joint  Axis   Joint type    Axis type    Joint Name
+ -----  -----  ----   -----------   ----------   ----------
+  0|50      0     0?  Bushing       translate    
+  1|51      .     1?  .             translate 
+  2|52      .     2?  .             translate 
+  3|53      .     3?  .             rotate    
+  4|54      .     4?  .             rotate    
+  5|55      .     5?  .             rotate    
+  6|56      1     0?  Gimbal        rotate       
+  7|57      .     1?  .             rotate    
+  8|58      .     2?  .             rotate    
+  9|59      2     0?  Gimbal        rotate       
+ 10|60      .     1?  .             rotate    
+ 11|61      .     2?  .             rotate    
+ 12|62      3     0?  Gimbal        rotate       
+ 13|63      .     1?  .             rotate    
+ 14|64      .     2?  .             rotate    
+ 15|65      4     0?  Pin           rotate       
+ 16|66      5     0?  Pin           rotate       
+ 17|67      6     0?  U-joint       rotate       
+ 18|68      .     1?  .             rotate    
+ 19|69      7     0?  Gimbal        rotate       
+ 20|70      .     1?  .             rotate    
+ 21|71      .     2?  .             rotate    
+ 22|72      8     0?  Pin           rotate       
+ 23|73      9     0?  Pin           rotate       
+ 24|74     10     0?  U-joint       rotate       
+ 25|75      .     1?  .             rotate    
+ 26|76     11     0?  Gimbal        rotate       
+ 27|77      .     1?  .             rotate    
+ 28|78      .     2?  .             rotate    
+ 29|79     12     0   Planar        translate    
+ 30|80      .     1   .             translate 
+ 31|81      .     2?  .             rotate    
+ 32|82     13     0   Planar        translate    
+ 33|83      .     1   .             translate 
+ 34|84      .     2   .             rotate    
+ 35|85     14     0?  Pin           rotate       
+ 36|86     15     0?  Pin           rotate       
+ 37|87     16     0?  Pin           rotate       
+ 38|88     17     0?  Gimbal        rotate       
+ 39|89      .     1?  .             rotate    
+ 40|90      .     2?  .             rotate    
+ 41|91     18     0   Planar        translate    
+ 42|92      .     1   .             translate 
+ 43|93      .     2?  .             rotate    
+ 44|94     19     0   Planar        translate    
+ 45|95      .     1   .             translate 
+ 46|96      .     2   .             rotate    
+ 47|97     20     0?  Pin           rotate       
+ 48|98     21     0?  Pin           rotate       
+ 49|99     22     0?  Pin           rotate       
+
+
+SYSTEM PARAMETERS (model.sd)
+
+Parameter  Value  Description
+
+nbod          23  no. bodies (also, no. of tree joints)
+njnt          23  total number of joints (tree+loop)
+ndof          50  no. degrees of freedom allowed by tree joints
+nloop          0  no. loop joints
+nldof          0  no. degrees of freedom allowed by loop joints
+
+nq            50  no. position coordinates in state (tree joints)
+nu            50  no. rate coordinates in state (tree joints)
+nlq            0  no. position coordinates describing loop joints
+nlu            0  no. rate coordinates describing loop joints
+
+nc            50  total no. constraints defined
+nlc            0  no. loop joint constraints
+npresc        40  no. prescribed motion constraints
+nuserc        10  no. user constraints
+

@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -91,8 +90,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	Decomp(Model *aModel);
-	Decomp(Model *aModel,char *aBaseName,char *aDir=NULL,
+	Decomp(AbstractModel *aModel);
+	Decomp(AbstractModel *aModel,char *aBaseName,char *aDir=NULL,
 		char *aExtension=NULL);
 	virtual ~Decomp();
 private:

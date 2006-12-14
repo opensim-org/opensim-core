@@ -166,6 +166,30 @@ setPosition(const double pos[3])
 }
 //_____________________________________________________________________________
 /**
+ * Get 3x3 orientation matrix from a 4x4 transform matrix
+ *
+ */
+void Transform::
+getOrientation(double rOrientation[3][3]) const
+{
+	int i, j;
+
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 3; j++)
+			rOrientation[i][j] = _matrix4[i][j];
+}
+// Set 3x3 orientation matrix in a 4x4 transform matrix
+void Transform::
+setOrientation(const double aOrientation[3][3])
+{
+	int i, j;
+
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 3; j++)
+			_matrix4[i][j] = aOrientation[i][j];
+}
+//_____________________________________________________________________________
+/**
  * Set transform matrix to identity
  *
  */
@@ -407,6 +431,16 @@ void Transform::transformPoint(Array<double>& pt) const
 }
 
 void Transform::transformVector(double vec[3]) const
+{
+	double tx = vec[X] * _matrix4[0][0] + vec[Y] * _matrix4[1][0] + vec[Z] * _matrix4[2][0];
+	double ty = vec[X] * _matrix4[0][1] + vec[Y] * _matrix4[1][1] + vec[Z] * _matrix4[2][1];
+
+	vec[Z] = vec[X] * _matrix4[0][2] + vec[Y] * _matrix4[1][2] + vec[Z] * _matrix4[2][2];
+	vec[X] = tx;
+	vec[Y] = ty;
+}
+
+void Transform::transformVector(Array<double>& vec) const
 {
 	double tx = vec[X] * _matrix4[0][0] + vec[Y] * _matrix4[1][0] + vec[Z] * _matrix4[2][0];
 	double ty = vec[X] * _matrix4[0][1] + vec[Y] * _matrix4[1][1] + vec[Z] * _matrix4[2][1];

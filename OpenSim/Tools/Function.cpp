@@ -37,7 +37,6 @@
 #include "PropertyDbl.h"
 
 
-
 using namespace OpenSim;
 using namespace std;
 

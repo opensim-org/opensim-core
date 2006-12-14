@@ -1,10 +1,10 @@
-#ifndef _SimmRotationDof_h_
-#define _SimmRotationDof_h_
+#ifndef __SimmRotationDof_h__
+#define __SimmRotationDof_h__
 
 // SimmRotationDof.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -33,7 +33,9 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmDof.h"
+#include "AbstractDof.h"
+
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -43,16 +45,12 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
-class RDSIMULATION_API SimmRotationDof : public SimmDof  
+class RDSIMULATION_API SimmRotationDof : public AbstractDof  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
 	PropertyDblArray _axisProp;
 	Array<double> &_axis;
@@ -74,13 +72,13 @@ public:
 #ifndef SWIG
 	SimmRotationDof& operator=(const SimmRotationDof &aDof);
 #endif
-   void SimmRotationDof::copyData(const SimmRotationDof &aDof);
+   void copyData(const SimmRotationDof &aDof);
 
-	virtual void getAxis(double axis[3]) const;
+	virtual void getAxis(double rAxis[3]) const;
 	const Array<double>& getAxis() const { return _axis; }
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
-	virtual DofType getDofType() const { return Rotational; }
+	virtual DofType getMotionType() const { return Rotational; }
 
 	virtual void peteTest();
 
@@ -90,11 +88,11 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmDof
+};	// END of class SimmRotationDof
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmRotationDof_h__
 

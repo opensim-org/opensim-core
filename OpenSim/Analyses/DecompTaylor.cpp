@@ -13,7 +13,9 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "DecompTaylor.h"
 
@@ -57,7 +59,7 @@ DecompTaylor::~DecompTaylor()
  * @see setPerturbation()
  */
 DecompTaylor::
-DecompTaylor(Model *aModel) :
+DecompTaylor(AbstractModel *aModel) :
 	Decomp(aModel)
 {
 	setNull();
@@ -127,11 +129,11 @@ allocate()
 	if(_model==NULL) return;
 
 	// NUMBERS
-	int ny = _model->getNY();
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int nx = _model->getNX();
-	int np = _model->getNP();
+	int ny = _model->getNumStates();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int nx = _model->getNumControls();
+	int np = _model->getNumContacts();
 	int nc = getNumComponents();
 
 	_contactJustEstablished = new bool[np];
@@ -268,13 +270,13 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
 	if(_model==NULL) return(0);
 
 	// NUMBERS
-	int nu = _model->getNU();
-	int np = _model->getNP();
+	int nu = _model->getNumSpeeds();
+	int np = _model->getNumContacts();
 	int nc = getNumComponents();
 
 	// SET
 	_model->set(aT,aX,aY);
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// ACCELERATION HISTORY
 	int c,i,I;
@@ -296,8 +298,8 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
 	// CONTACT POINTS
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactPointA(i,&_pa[I]);
-		_model->getContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->getContactPointA(i,&_pa[I]);
+		_model->getContactSet()->getContactPointA(i,&_paPrev[I]);
 	}
 
 	// FORCES AND VELOCITIES
@@ -325,8 +327,8 @@ compute(double *aXPrev,double *aYPrev,
 	// PREPARATION
 	//--------------------------------------------------------------------------
 	int i,j,I,J,c;
-	int nu = _model->getNU();
-	int np = _model->getNP();
+	int nu = _model->getNumSpeeds();
+	int np = _model->getNumContacts();
 
 	// REAL TIME
 	double tReal = aT * _model->getTimeNormConstant();
@@ -335,8 +337,8 @@ compute(double *aXPrev,double *aYPrev,
 	computeFrictionFactors(aT,aX,aY);
 
 	// EXTRACT THE PREVIOUS AND CURRENT COORDINATES AND SPEEDS
-	_model->extractConfiguration(aYPrev,_qPrev,_uPrev);
-	_model->extractConfiguration(aY,_q,_u);
+	_model->getDynamicsEngine().extractConfiguration(aYPrev,_qPrev,_uPrev);
+	_model->getDynamicsEngine().extractConfiguration(aY,_q,_u);
 
 	// CURRENT CONTACT FORCES
 	computeContactForces(_sfrc);
@@ -389,8 +391,8 @@ compute(double *aXPrev,double *aYPrev,
 			// viscous components.
 			double fnp[3],fnv[3],fn[3];
 			double ftp[3],ftv[3],ft[3];
-			_model->getContactNormalForce(i,fnp,fnv,fn);
-			_model->getContactTangentForce(i,ftp,ftv,ft);
+			_model->getContactSet()->getContactNormalForce(i,fnp,fnv,fn);
+			_model->getContactSet()->getContactTangentForce(i,ftp,ftv,ft);
 			J = Mtx::ComputeIndex(_cVel,np,i,3,0);
 			Mtx::Add(1,3,fnv,ftv,&_fv[J]);
 			printf("damp force = %lf %lf %lf\n",_fv[J+0],_fv[J+1],_fv[J+2]);
@@ -400,7 +402,7 @@ compute(double *aXPrev,double *aYPrev,
 	//--------------------------------------------------------------------------
 	// INTEGRATE
 	//--------------------------------------------------------------------------
-	int bod;
+	AbstractBody *bod;
 	double pnt[3];
 	double dfp[3],dfv[3];
 	double ddt = aDT*aDT/2.0;
@@ -413,9 +415,9 @@ compute(double *aXPrev,double *aYPrev,
 	_model->set(aT-aDT,aXPrev,aYPrev);
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->setContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->setContactPointA(i,&_paPrev[I]);
 	}
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// LOOP OVER ACTION FORCES
 	for(c=0;c<=getVelocityIndex();c++) {
@@ -428,23 +430,23 @@ compute(double *aXPrev,double *aYPrev,
 			// BODY A
 			// Need to negate! _f is applied to BodyB
 			//bod = _model->getContactBodyA(i);
-			//_model->getContactPointA(i,pnt);
+			//_model->getContactSet()->getContactPointA(i,pnt);
 			//_model->applyForceBody(bod,pnt,_f[c][i]);
 
 			// BODY B
 			// ?? In what frame is the force expressed?  I believe BodyA
-			bod = _model->getContactBodyB(i);
-			_model->getContactPointB(i,pnt);
-			_model->applyForce(bod,pnt,_f[c][i]);
+			bod = _model->getContactSet()->getContactBodyB(i);
+			_model->getContactSet()->getContactPointB(i,pnt);
+			_model->getDynamicsEngine().applyForce(*bod,pnt,_f[c][i]);
 		}
 
 		// COMPUTE INDUCED ACCELERATIONS
-		_model->computeAccelerations(_dqdt,_dudt);
+		_model->getDynamicsEngine().computeDerivatives(_dqdt,_dudt);
 		for(i=0;i<np;i++) {
-			bod = _model->getContactBodyB(i);
-			_model->getContactPointB(i,pnt);
+			bod = _model->getContactSet()->getContactBodyB(i);
+			_model->getContactSet()->getContactPointB(i,pnt);
 			I = Mtx::ComputeIndex(c,np,i,3,0);
-			_model->getAcceleration(bod,pnt,&_a[I]);
+			_model->getDynamicsEngine().getAcceleration(*bod,pnt,&_a[I]);
 		}
 
 		// COMPUTE HIGHER ORDER DERIVATIVES
@@ -489,12 +491,12 @@ compute(double *aXPrev,double *aYPrev,
 			if(!_contactEstablished[i]) continue;
 
 			// GET THE PREVIOUS AND CURRENT JACOBIAN
-			bod = _model->getContactBodyB(i);
-			_model->getContactPointB(i,pnt);
-			_model->setConfiguration(_qPrev,_uPrev);
-			_model->formJacobianTranslation(bod,pnt,_JPrev);
-			_model->setConfiguration(_q,_u);
-			_model->formJacobianTranslation(bod,pnt,_J);
+			bod = _model->getContactSet()->getContactBodyB(i);
+			_model->getContactSet()->getContactPointB(i,pnt);
+			_model->getDynamicsEngine().setConfiguration(_qPrev,_uPrev);
+			_model->getDynamicsEngine().formJacobianTranslation(*bod,pnt,_JPrev);
+			_model->getDynamicsEngine().setConfiguration(_q,_u);
+			_model->getDynamicsEngine().formJacobianTranslation(*bod,pnt,_J);
 
 			// ACCELERATION-BASED CHANGES IN SPRING POINT VELOCITIES
 			Mtx::Multiply(3,nu,1,_J,_du,dv);
@@ -516,8 +518,8 @@ compute(double *aXPrev,double *aYPrev,
 			//double u[3] = { 1.0, 1.0, 1.0 };
 			//_model->getContactStiffnessA(i,u,dfp);
 			//_model->getContactViscosityA(i,u,dfv);
-			_model->getContactStiffness(i,dp,dfp);
-			_model->getContactViscosity(i,dv,dfv);
+			_model->getContactSet()->getContactStiffness(i,dp,dfp);
+			_model->getContactSet()->getContactViscosity(i,dv,dfv);
 
 			// UPDATE INDUCED REACTION FORCES AND VELOCITIES
 			//printf("_pAlpha = %le %le %le\n",_pAlpha[0],_pAlpha[1],_pAlpha[2]);
@@ -554,9 +556,9 @@ compute(double *aXPrev,double *aYPrev,
 	_model->set(aT,aX,aY);
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->setContactPointA(i,&_pa[I]);
+		_model->getContactSet()->setContactPointA(i,&_pa[I]);
 	}
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	for(i=0;i<3*np;i++) _paPrev[i] = _pa[i];
 }
 
@@ -578,10 +580,10 @@ applyActionForce(int aC,double aT,double *aX,double *aY)
 	int i;
 
 	// NUMBERS
-	int ny = _model->getNY();
-	int nx = _model->getNX();
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int ny = _model->getNumStates();
+	int nx = _model->getNumControls();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 
 	// COPY STATES AND CONTROLS
 	memcpy(_yTmp,aY,ny*sizeof(double));
@@ -603,10 +605,11 @@ applyActionForce(int aC,double aT,double *aX,double *aY)
 
 	// APPLY ACTION FORCES SELECTIVELY
 	// ACTUATOR
+	// TODOAUG: can aC be made into a pointer or reference?
 	if(aC<=getLastActuatorIndex()) {
-		_model->computeActuation();
+		_model->getActuatorSet()->computeActuation();
 		_model->getDerivCallbackSet()->computeActuation(_model->getTime(),_xTmp,_yTmp);
-		_model->applyActuatorForce(aC);
+		_model->getActuatorSet()->get(aC)->apply();
 		_model->getDerivCallbackSet()->applyActuation(_model->getTime(),_xTmp,_yTmp);
 
 	// GRAVITY
@@ -634,7 +637,7 @@ initializeForceElements()
 	if(_model==NULL) return;
 
 	// NUMBERS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	// ZERO
 	int c,i,j,I;
@@ -718,10 +721,10 @@ initializeVelocityElements()
 	if(_model==NULL) return;
 
 	// NUMBERS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	// BRING CONTACT COMPUTATIONS UP-TO-DATE
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// COMPUTE CONTACT VELOCITIES
 	computeContactVelocities(_svel);
@@ -763,14 +766,14 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 
 	// NUMBERS
 	int i,j,I,J;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
-	int np = _model->getNP();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
+	int np = _model->getNumContacts();
 
 	// SET
 	_model->set(aT,aX,aY);
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// GET CURRENT CONTACT POINTS
 	// Only for BodyA for now--- This should also be done for BodyB.
@@ -778,7 +781,7 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// so this is unncessesary.
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactPointA(i,&_pa[I]);
+		_model->getContactSet()->getContactPointA(i,&_pa[I]);
 	}
 
 	// COMPUTE CONTACT FORCES
@@ -795,12 +798,12 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 
 		// COMPUTE DAMPING CORRECTION
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactFrictionCorrection(i,&_dfvFric[I]);
+		_model->getContactSet()->getContactFrictionCorrection(i,&_dfvFric[I]);
 
 		// COMPUTE FORCE BEFORE CORRECTION
 		//Mtx::Add(1,3,&_sfrc[I],&_dfvFric[I],f);
-		_model->getContactNormalForce(i,fnp,fnv,fn);
-		_model->getContactTangentForce(i,ftp,ftv,ft);
+		_model->getContactSet()->getContactNormalForce(i,fnp,fnv,fn);
+		_model->getContactSet()->getContactTangentForce(i,ftp,ftv,ft);
 		Mtx::Add(1,3,fnv,ftv,fv);
 		Mtx::Add(1,3,fnp,ftp,fp);
 		Mtx::Add(1,3,fn,ft,f);
@@ -853,9 +856,9 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// RESTORE PREVIOUS CONTACT POINTS
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->setContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->setContactPointA(i,&_paPrev[I]);
 	}
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// LOOP THROUGH SPRINGS
 	for(i=0;i<np;i++) {
@@ -867,8 +870,8 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 
 		// COMPUTE ELASTIC FORCE BEFORE CORRECTION
 		//Mtx::Add(1,3,&_sfrc[I],&_dfpFric[I],f);
-		_model->getContactNormalForce(i,fnpPrev,fnvPrev,fnPrev);
-		_model->getContactTangentForce(i,ftpPrev,ftvPrev,ftPrev);
+		_model->getContactSet()->getContactNormalForce(i,fnpPrev,fnvPrev,fnPrev);
+		_model->getContactSet()->getContactTangentForce(i,ftpPrev,ftvPrev,ftPrev);
 		Mtx::Add(1,3,fnp,ftp,f);
 		Mtx::Add(1,3,fnpPrev,ftpPrev,fPrev);
 
@@ -898,9 +901,9 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// RESET CONTACT POINTS TO CURRENT VALUES
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->setContactPointA(i,&_pa[I]);
+		_model->getContactSet()->setContactPointA(i,&_pa[I]);
 	}
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 }
 
 //-----------------------------------------------------------------------------
@@ -912,7 +915,7 @@ computeFrictionFactors(double aT,double *aX,double *aY)
  * for all contact points.
  *
  * Prior to calling this method, the model states must be set and
- * Model::computeContact() should be called.
+ * AbstractModel::computeContact() should be called.
  *
  * @param rForces Forces of contact points arranged as follows:
  * rForces[point index][3], so the dimension of rForces should be np*3.
@@ -924,14 +927,14 @@ computeContactForces(double *rForces)
 	if(_model==NULL) return;
 
 	// NUMBERS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	// COMPUTE
 	int i,j,I;
 	double f[3];
 	for(i=0;i<np;i++) {
 
-		_model->getContactForce(i,f);
+		_model->getContactSet()->getContactForce(i,f);
 
 		I = Mtx::ComputeIndex(i,3,0);
 		for(j=0;j<3;j++) rForces[I+j] = f[j];
@@ -944,7 +947,7 @@ computeContactForces(double *rForces)
  * frame of BodyA.
  *
  * Prior to calling this method, the model states must be set and
- * Model::computeContact() should be called.
+ * AbstractModel::computeContact() should be called.
  *
  * @param rVels Velocities of contact points arranged as follows:
  * rVels[point index][3], so the dimension of rVels should be np*3.
@@ -956,26 +959,26 @@ computeContactVelocities(double *rVels)
 	if(_model==NULL) return;
 
 	// NUMBERS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	// COMPUTE CONTACT VELOCITIES
 	int i,j,I;
-	int a,b;
+	AbstractBody *a, *b;
 	double pa[3],pb[3];
 	double va[3],vb[3];
 	double v[3];
 	for(i=0;i<np;i++) {
-		a = _model->getContactBodyA(i);
-		b = _model->getContactBodyB(i);
+		a = _model->getContactSet()->getContactBodyA(i);
+		b = _model->getContactSet()->getContactBodyB(i);
 
-		_model->getContactPointA(i,pa);
-		_model->getContactPointB(i,pb);
+		_model->getContactSet()->getContactPointA(i,pa);
+		_model->getContactSet()->getContactPointB(i,pb);
 
-		_model->getVelocity(a,pa,va);
-		_model->getVelocity(b,pb,vb);
+		_model->getDynamicsEngine().getVelocity(*a,pa,va);
+		_model->getDynamicsEngine().getVelocity(*b,pb,vb);
 
 		for(j=0;j<3;j++) v[j] = vb[j] - va[j];
-		_model->transform(_model->getGroundID(),v,a,v);
+		_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),v,*a,v);
 
 		I = Mtx::ComputeIndex(i,3,0);
 		for(j=0;j<3;j++) rVels[I+j] = v[j];
@@ -995,8 +998,8 @@ computeHigherOrderDerivatives(int c,double t,double *dudt,
 
 	// NUMBERS
 	int i,I,J;
-	int nu = _model->getNU();
-	int np = _model->getNP();
+	int nu = _model->getNumSpeeds();
+	int np = _model->getNumContacts();
 
 	// SET NEW ACCELERATIONS HISTORY
 	J = Mtx::ComputeIndex(c,3,0);

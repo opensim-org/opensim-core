@@ -1,10 +1,10 @@
-#ifndef _simmIO_h_
-#define _simmIO_h_
+#ifndef __SimmIO_h__
+#define __SimmIO_h__
 
-// simmIO.h
+// SimmIO.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -31,18 +31,24 @@
 #include <string>
 #include "SimmPoint.h"
 
-bool readNonCommentString(std::istream &stream, std::string &buffer);
-bool readString(std::istream &stream, std::string &buffer);
-bool readStringFromLine(std::string &line, std::string &buffer);
-bool readTabDelimitedStringFromLine(std::string &line, std::string &buffer);
-bool readIntegerFromString(std::string &line, int *x);
-bool readDoubleFromString(std::string &line, double *x);
-bool readVectorFromString(std::string &line, OpenSim::SimmPoint &vec);
-bool readVectorFromString(std::string &line, double *v1, double *v2, double *v3);
-bool readCoordinatesFromLine(std::string &line, double vec[3]);
-int findFirstNonWhiteSpace(std::string &buffer);
-int findFirstWhiteSpace(std::string &buffer);
+namespace OpenSim {
 
-#endif // __simmIO_h__
+bool RDSIMULATION_API readNonCommentStringFromStream(std::istream &aStream, std::string &rBuffer);
+bool RDSIMULATION_API readStringFromStream(std::istream &aStream, std::string &rBuffer);
+bool RDSIMULATION_API readStringFromString(std::string &aString, std::string &rBuffer);
+bool RDSIMULATION_API readTabDelimitedStringFromString(std::string &aString, std::string &rBuffer);
+bool RDSIMULATION_API readIntegerFromString(std::string &aString, int *rNumber);
+bool RDSIMULATION_API readDoubleFromString(std::string &aString, double *rNumber);
+bool RDSIMULATION_API readVectorFromString(std::string &aString, SimmPoint &rVec);
+bool RDSIMULATION_API readVectorFromString(std::string &aString, double *rVX, double *rVY, double *rVZ);
+bool RDSIMULATION_API readCoordinatesFromString(std::string &aString, double rVec[3]);
+int RDSIMULATION_API findFirstNonWhiteSpace(std::string &aString);
+int RDSIMULATION_API findFirstWhiteSpace(std::string &aString);
+void RDSIMULATION_API convertString(std::string& aString, bool aPrependUnderscore);
+std::string RDSIMULATION_API getCurrentTimeString();
+
+} // end of namespace OpenSim
+
+#endif // __SimmIO_h__
 
 

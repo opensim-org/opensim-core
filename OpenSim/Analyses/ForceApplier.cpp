@@ -17,7 +17,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include "ForceApplier.h"
@@ -45,8 +47,9 @@ ForceApplier::~ForceApplier()
  * @param aBody Index of the body to which an external force should be applied.
  */
 ForceApplier::
-ForceApplier(Model *aModel,int aBody) :
-	DerivCallback(aModel)
+ForceApplier(AbstractModel *aModel, AbstractBody *aBody) :
+	DerivCallback(aModel),
+	_body(NULL)
 {
 	setNull();
 
@@ -87,7 +90,7 @@ ForceApplier(Model *aModel,int aBody) :
  * be specified and in radians.
  */
 ForceApplier::
-ForceApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *forceData,
+ForceApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *forceData,
              int fxNum, int fyNum, int fzNum,
 			 int pxNum, int pyNum, int pzNum,
 			 Storage *aQStore, Storage *aUStore) :
@@ -137,7 +140,7 @@ void ForceApplier::
 setNull()
 {
 	setType("ForceApplier");
-	_body = 0;	
+	_body = NULL;	
 	_point[0] = _point[1] = _point[2] = 0.0;
 	_force[0] = _force[1] = _force[2] = 0.0;
 	_forceFunction = NULL;
@@ -185,11 +188,13 @@ constructColumnLabels()
 void ForceApplier::
 allocateStorage()
 {
-	char bodyName[2048];
 	char title[2048];
-	sprintf(title,"Forces applied to ");
-	sprintf(bodyName,"body_%d",_body);
-	strcat(title, bodyName);
+
+	if (_body)
+		sprintf(title,"Forces applied to %s", _body->getName().c_str());
+	else
+		strcat(title, "Body for this ForceApplier has not been set.");
+
 	_appliedForceStore = new Storage(1000,title);
 	_appliedForceStore->setDescription(getDescription());
 	_appliedForceStore->setColumnLabels(_appliedForceStore->getColumnLabels());
@@ -222,7 +227,7 @@ deleteStorage()
  * @param aBody Index of the body to which an external force should be applied.
  */
 void ForceApplier::
-setBody(int aBody)
+setBody(AbstractBody* aBody)
 {
 	_body = aBody;
 }
@@ -232,7 +237,7 @@ setBody(int aBody)
  *
  * @return aBody Index of the body to which an external force should be applied.
  */
-int ForceApplier::
+AbstractBody* ForceApplier::
 getBody() const
 {
 	return(_body);
@@ -485,14 +490,12 @@ computePointFunction(
 	Storage *aQStore,Storage *aUStore,VectorFunction &aPGlobal)
 {
 	int i;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	int size = aQStore->getSize();
-	int ground = _model->getGroundID();
-	Array<int> derivWRT(0,1);
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
-	Array<double> comGlobal(0.0,3),origin(0.0,3);
+	Array<double> originGlobal(0.0,3),origin(0.0,3);
 	Array<double> pGlobal(0.0,3),pLocal(0.0,3);
 	Array<double> vGlobal(0.0,3),vLocal(0.0,3);
 	Storage pStore,vStore;
@@ -501,13 +504,13 @@ computePointFunction(
 		aQStore->getTime(i,*(&t[0]));
 		aQStore->getData(i,nq,&q[0]);
 		aUStore->getData(i,nu,&u[0]);
-		_model->setConfiguration(&q[0],&u[0]);
+		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
-		// Position
-		_model->getPosition(_body,&origin[0],&comGlobal[0]);
+		// Position in local frame (i.e. with respect to body's origin, not center of mass)
+		_model->getDynamicsEngine().getPosition(*_body,&origin[0],&originGlobal[0]);
 		aPGlobal.evaluate(t,pGlobal);
-		Mtx::Subtract(1,3,&pGlobal[0],&comGlobal[0],&pLocal[0]);
-		_model->transform(ground,&pLocal[0],_body,&pLocal[0]);
+		Mtx::Subtract(1,3,&pGlobal[0],&originGlobal[0],&pLocal[0]);
+		_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),&pLocal[0],*_body,&pLocal[0]);
 		pStore.append(t[0],3,&pLocal[0]);
 	}
 
@@ -523,12 +526,19 @@ computePointFunction(
 	pStore.getDataColumn(2,p2);
 	VectorGCVSplineR1R3 *pFunc = new VectorGCVSplineR1R3(3,size,time,p0,p1,p2);
 	setPointFunction(pFunc);
+	delete[] time;
+	delete[] p0;
+	delete[] p1;
+	delete[] p2;
 
+#if 0
+	Array<int> derivWRT(0,1);
 	for(i=0;i<size;i++) {
 		aQStore->getTime(i,*(&t[0]));
 		pFunc->evaluate(t,pLocal);
 		pFunc->evaluate(t,vLocal,derivWRT);
 	}
+#endif
 }
 
 
@@ -549,7 +559,6 @@ applyActuation(double aT,double *aX,double *aY)
 {
 	double force[3] = {0,0,0};
 	double point[3] = {0,0,0};
-	const int ground = _model->getGroundID();
 	double posBodyCOMLocal[3] = {0,0,0};
 	double treal = aT*_model->getTimeNormConstant();
 	
@@ -571,9 +580,9 @@ applyActuation(double aT,double *aX,double *aY)
 		}
 
 		if(_inputForcesInGlobalFrame == false){
-			_model->applyForceBodyLocal(_body,_point,_force);
+			_model->getDynamicsEngine().applyForceBodyLocal(*_body,_point,_force);
 		} else {
-			_model->applyForce(_body,_point,_force);
+			_model->getDynamicsEngine().applyForce(*_body,_point,_force);
 		}
 		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 	}
@@ -605,22 +614,19 @@ printResults(const char *aBaseName,const char *aDir,double aDT,
 	if(aBaseName==NULL) return(-1);
 
 	// CONSTRUCT PATH
-	char path[2048],name[2048],bodyName[2048];
+	char path[2048],name[2048];
 	if(aDir==NULL) {
 		strcpy(path,".");
 	} else {
 		strcpy(path,aDir);
 	}
 
-	sprintf(bodyName,"body_%d",_body);
-
-
 	// ACCELERATIONS
 	_appliedForceStore->scaleTime(_model->getTimeNormConstant());
 	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_appForce",path,aBaseName,bodyName);
+		sprintf(name,"%s/%s_%s_appForce",path,aBaseName,_body->getName().c_str());
 	} else {
-		sprintf(name,"%s/%s_%s_appForce%s",path,aBaseName,bodyName,aExtension);
+		sprintf(name,"%s/%s_%s_appForce%s",path,aBaseName,_body->getName().c_str(),aExtension);
 	}
 	if(aDT<=0.0) {
 		if(_appliedForceStore!=NULL)  _appliedForceStore->print(name);
@@ -630,8 +636,6 @@ printResults(const char *aBaseName,const char *aDir,double aDT,
 
 	return(0);
 }
-
-
 
 
 

@@ -37,7 +37,8 @@
 //=============================================================================
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
-#include "Actuator.h"
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include "ContactForce.h"
 #include "ContactForceSet.h"
 
 
@@ -63,7 +64,8 @@ ContactForceSet::~ContactForceSet()
 /**
  * Default constructor.
  */
-ContactForceSet::ContactForceSet()
+ContactForceSet::ContactForceSet():
+ActuatorSet()
 {
 	// NULL
 	setNull();
@@ -81,7 +83,20 @@ ContactForceSet::ContactForceSet(const char *aFileName) :
 	updateFromXMLNode();
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aContactForceSet ContactForceSet to be copied.
+ */
+ContactForceSet::ContactForceSet(const ContactForceSet &aContactForceSet) :
+	ActuatorSet(aContactForceSet)
+{
+	setNull();
 
+	// Class Members
+	copyData(aContactForceSet);
+}
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
@@ -97,6 +112,31 @@ setNull()
 
 	// PROPERTIES
 	setupSerializedMembers();
+
+	// MODEL
+	_model = NULL;
+}
+//_____________________________________________________________________________
+/**
+ * Copy this ContactForceSet and return a pointer to the copy.
+ * The copy constructor for this class is used.
+ *
+ * @return Pointer to a copy of this ContactForceSet.
+ */
+Object* ContactForceSet::copy() const
+{
+	ContactForceSet *contactSet = new ContactForceSet(*this);
+	return(contactSet);
+}
+//_____________________________________________________________________________
+/**
+ * Copy the member variables of the ContactForceSet.
+ *
+ * @param aContactForceSet contact set to be copied
+ */
+void ContactForceSet::copyData(const ContactForceSet &aContactForceSet)
+{
+	ActuatorSet::copyData(aContactForceSet);
 }
 //_____________________________________________________________________________
 /**
@@ -152,7 +192,7 @@ void ContactForceSet::
 computeContact()
 {
 	int i;
-	Actuator *act;
+	AbstractActuator *act;
 	for(i=0;i<getSize();i++) {
 		act = get(i);
 		if(act!=NULL) act->computeActuation();
@@ -169,7 +209,7 @@ updatePseudoStates()
 {
 	int i;
 	int size = getSize();
-	Actuator *contact;
+	AbstractActuator *contact;
 	for(i=0;i<size;i++) {
 		contact = get(i);
 		if(contact!=NULL) contact->updatePseudoStates();
@@ -188,7 +228,7 @@ void ContactForceSet::
 apply()
 {
 	int i;
-	Actuator *act;
+	AbstractActuator *act;
 	for(i=0;i<getSize();i++) {
 		act = get(i);
 		if(act!=NULL) act->apply();
@@ -210,7 +250,7 @@ check() const
 
 	// LOOP THROUGH CONTACTS
 	int i;
-	Actuator *act;
+	AbstractActuator *act;
 	for(i=0;i<getSize();i++) {
 		act = get(i);
 		if(act==NULL) continue;

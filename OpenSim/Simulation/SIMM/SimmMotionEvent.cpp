@@ -1,7 +1,7 @@
 // SimmMotionEvent.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,7 +22,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -31,10 +30,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -48,7 +45,9 @@ SimmMotionEvent::SimmMotionEvent() :
 	_color(_colorProp.getValueDblArray())
 {
 	setNull();
+	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
@@ -59,6 +58,7 @@ SimmMotionEvent::SimmMotionEvent(DOMElement *aElement) :
 	_color(_colorProp.getValueDblArray())
 {
 	setNull();
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -81,9 +81,11 @@ SimmMotionEvent::SimmMotionEvent(const SimmMotionEvent &aEvent) :
 	_time(_timeProp.getValueDbl()),
 	_color(_colorProp.getValueDblArray())
 {
+	setNull();
 	setupProperties();
 	copyData(aEvent);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmMotionEvent and return a pointer to the copy.
@@ -96,17 +98,18 @@ Object* SimmMotionEvent::copy() const
 	SimmMotionEvent *event = new SimmMotionEvent(*this);
 	return(event);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmMotionEvent and modify the copy so that it is consistent
  * with a specified XML element node.
  *
  * The copy is constructed by first using
- * SimmGenericModelParams::SimmGenericModelParams(DOMElement*) in order to establish the
- * relationship of the SimmGenericModelParams object with the XML node. Then, the
+ * SimmMotionEvent::SimmMotionEvent(DOMElement*) in order to establish the
+ * relationship of the SimmGenericModelMaker object with the XML node. Then, the
  * assignment operator is used to set all data members of the copy to the
- * values of this SimmGenericModelParams object. Finally, the data members of the copy are
- * updated using SimmGenericModelParams::updateFromXMLNode().
+ * values of this SimmMotionEvent object. Finally, the data members of the copy are
+ * updated using SimmMotionEvent::updateFromXMLNode().
  *
  * @param aElement XML element. 
  * @return Pointer to a copy of this SimmMotionEvent.
@@ -119,15 +122,8 @@ Object* SimmMotionEvent::copy(DOMElement *aElement) const
 	return(event);
 }
 
-void SimmMotionEvent::copyData(const SimmMotionEvent &aEvent)
-{
-	_time = aEvent._time;
-	_color = aEvent._color;
-}
-
-
 //=============================================================================
-// CONSTRUCTION
+// CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
@@ -135,10 +131,21 @@ void SimmMotionEvent::copyData(const SimmMotionEvent &aEvent)
  */
 void SimmMotionEvent::setNull()
 {
-	setupProperties();
 	setType("SimmMotionEvent");
-	setName("");
 }
+
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmMotionEvent to another.
+ *
+ * @param aEvent SimmMotionEvent to be copied.
+ */
+void SimmMotionEvent::copyData(const SimmMotionEvent &aEvent)
+{
+	_time = aEvent._time;
+	_color = aEvent._color;
+}
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -152,6 +159,15 @@ void SimmMotionEvent::setupProperties()
 	_propertySet.append(&_colorProp);
 }
 
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmMotionEvent& SimmMotionEvent::operator=(const SimmMotionEvent &aEvent)
 {
 	// BASE CLASS
@@ -162,6 +178,15 @@ SimmMotionEvent& SimmMotionEvent::operator=(const SimmMotionEvent &aEvent)
 	return(*this);
 }
 
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the color of the event.
+ *
+ * @param aColor array of RGB color values
+ */
 void SimmMotionEvent::setColor(double* aColor)
 {
 	for (int i = 0; i < 3; i++)

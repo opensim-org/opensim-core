@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "IntegCallbackSet.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 //=============================================================================
 // STATICS
@@ -63,7 +63,7 @@ IntegCallbackSet::~IntegCallbackSet()
 /**
  * Construct an empty callback set for a model.
  */
-IntegCallbackSet::IntegCallbackSet(Model *aModel)
+IntegCallbackSet::IntegCallbackSet(AbstractModel *aModel)
 {
 	setType("IntegCallbackSet");
 	setNull();
@@ -98,7 +98,7 @@ setNull()
  *
  * @return Pointer to the model.
  */
-Model* IntegCallbackSet::
+AbstractModel* IntegCallbackSet::
 getModel()
 {
 	return(_model);

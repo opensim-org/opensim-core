@@ -39,8 +39,8 @@
 //=============================================================================
 #include <OpenSim/Tools/rdTools.h>
 #include "rdSDFastDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include "rdSDFast.h"
 
@@ -52,6 +52,8 @@
  * models.
  */
 namespace OpenSim { 
+
+class AbstractBody;
 
 class RDSDFAST_API ActuatedModel_SDFast : public rdSDFast
 {
@@ -92,11 +94,11 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// NUMBERS OF THINGS
-	virtual int getNX() const;
-	virtual int getNA() const;
-	virtual int getNP() const;
-	virtual int getNY() const;
-	virtual int getNYP() const;
+	virtual int getNumControls() const;
+	virtual int getNumActuators() const;
+	virtual int getNumContacts() const;
+	virtual int getNumStates() const;
+	virtual int getNumPseudoStates() const;
 
 	// NAMES
 	virtual std::string getActuatorName(int aIndex) const;
@@ -167,9 +169,9 @@ public:
 		applyContactForce(int aID);
 	virtual void
 		applyContactForces();
-	virtual int
+	virtual AbstractBody*
 		getContactBodyA(int aID) const;
-	virtual int
+	virtual AbstractBody*
 		getContactBodyB(int aID) const;
 	virtual void
 		setContactPointA(int aID,const double aPoint[3]);

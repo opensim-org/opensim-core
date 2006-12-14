@@ -18,7 +18,8 @@
 #include <string.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 #include "ActuatorPerturbation.h"
 
 //=============================================================================
@@ -45,10 +46,10 @@ ActuatorPerturbation::~ActuatorPerturbation()
  * Construct a derivative callback instance for perturbing actuator forces
  * during an integration.
  *
- * @param aModel Model for which actuator forces are to be perturbed.
+ * @param aModel AbstractModel for which actuator forces are to be perturbed.
  */
 ActuatorPerturbation::
-ActuatorPerturbation(Model *aModel) :
+ActuatorPerturbation(AbstractModel *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -68,7 +69,7 @@ ActuatorPerturbation(Model *aModel) :
 void ActuatorPerturbation::
 setNull()
 {
-	_actuator = -1;
+	_actuator = NULL;
 	_allowNegForce = true;
 	_perturbation = 0.0;
 	_perturbationType = SCALE;
@@ -88,20 +89,20 @@ setNull()
 /**
  * Set for which actuator a force perturbation should be made.
  *
- * @param aIndex Index of the actuator.
+ * @param aAct Pointer to the actuator.
  */
 void ActuatorPerturbation::
-setActuator(int aIndex)
+setActuator(AbstractActuator *aAct)
 {
-	_actuator = aIndex;
+	_actuator = aAct;
 }
 //_____________________________________________________________________________
 /**
  * Get for which actuator a force perturbation should be made.
  *
- * @return Actuator to which force is applied..
+ * @return Pointer to the actuator.
  */
-int ActuatorPerturbation::
+AbstractActuator* ActuatorPerturbation::
 getActuator() const
 {
 	return(_actuator);
@@ -260,7 +261,7 @@ computeActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	// RECORD NOMINAL FORCE
-	_force = _model->getActuatorForce(_actuator);
+	_force = _actuator->getForce();
 
 	// COMPUTE PERTURBED FORCE
 	int index;
@@ -307,7 +308,7 @@ computeActuation(double aT,double *aX,double *aY)
 	index = _forceStore->append(aT*_model->getTimeNormConstant(),2,forceArray);
 
 	// SET PERTURBED FORCE
-	_model->setActuatorForce(_actuator,force);
+	_actuator->setForce(force);
 }
 //_____________________________________________________________________________
 /**
@@ -325,7 +326,7 @@ applyActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	// RESTORE NOMINAL FORCE
-	_model->setActuatorForce(_actuator,_force);
+	_actuator->setForce(_force);
 }
 
 

@@ -37,7 +37,6 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Tools/Set.h>
-#include "Model.h"
 #include "Analysis.h"
 
 
@@ -52,6 +51,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API AnalysisSet : public Set<Analysis>
 {
 //=============================================================================
@@ -59,7 +60,7 @@ class RDSIMULATION_API AnalysisSet : public Set<Analysis>
 //=============================================================================
 protected:
 	/** Model on which the callbacks have been set. */
-	Model *_model;
+	AbstractModel *_model;
 
 //=============================================================================
 // METHODS
@@ -68,7 +69,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	AnalysisSet(Model *aModel=0);
+	AnalysisSet(AbstractModel *aModel=0);
 	AnalysisSet(const std::string &aFileName);
 	AnalysisSet(DOMElement *aElement);
 	AnalysisSet(const AnalysisSet &aSet);
@@ -82,8 +83,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setModel(Model *aModel);
-	Model* getModel();
+	void setModel(AbstractModel *aModel);
+	AbstractModel* getModel();
 	void setOn(bool aTrueFalse);
 
 	//--------------------------------------------------------------------------

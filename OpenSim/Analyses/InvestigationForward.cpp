@@ -8,7 +8,6 @@
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/GCVSplineSet.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -16,8 +15,8 @@
 #include <OpenSim/Analyses/ForceApplier.h>
 #include <OpenSim/Analyses/TorqueApplier.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -46,7 +45,9 @@ InvestigationForward::InvestigationForward() :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -69,7 +70,9 @@ InvestigationForward::InvestigationForward(const string &aFileName) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -89,7 +92,9 @@ InvestigationForward::InvestigationForward(DOMElement *aElement) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -141,7 +146,9 @@ InvestigationForward(const InvestigationForward &aInvestigation) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationForward");
 	setNull();
@@ -188,6 +195,8 @@ setNull()
 	_externalLoadsBody2 = -1;
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 	_useSpecifiedDt = false;
+	_adjustedCOMBody = "";
+	_adjustedCOMFileName = "";
 }
 //_____________________________________________________________________________
 /**
@@ -195,6 +204,8 @@ setNull()
  */
 void InvestigationForward::setupProperties()
 {
+	string comment;
+
 	// INPUT FILE NAMES
 	_controlsFileNameProp.setName("controls_file_name");
 	_propertySet.append( &_controlsFileNameProp );
@@ -219,6 +230,17 @@ void InvestigationForward::setupProperties()
 
 	_useSpecifiedDtProp.setName("use_specified_dt");
 	_propertySet.append( &_useSpecifiedDtProp );
+
+	comment = "Name of the body whose center of mass is adjusted.";
+	_adjustedCOMBodyProp.setComment(comment);
+	_adjustedCOMBodyProp.setName("adjusted_com_body");
+	_propertySet.append( &_adjustedCOMBodyProp );
+
+	comment = "Name of the file specifying a change to the center of mass of a body.";
+	comment += " This adjustment is made to remove dc offset in the residuals.";
+	_adjustedCOMFileNameProp.setComment(comment);
+	_adjustedCOMFileNameProp.setName("adjusted_com_file_name");
+	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 
 
@@ -245,6 +267,8 @@ operator=(const InvestigationForward &aInvestigation)
 	_externalLoadsBody1Prop = aInvestigation._externalLoadsBody1Prop;
 	_externalLoadsBody2Prop = aInvestigation._externalLoadsBody2Prop;
 	_lowpassCutoffFrequencyForLoadKinematics = aInvestigation._lowpassCutoffFrequencyForLoadKinematics;
+	_adjustedCOMBody = aInvestigation._adjustedCOMBody;
+	_adjustedCOMFileName = aInvestigation._adjustedCOMFileName;
 
 	return(*this);
 }
@@ -274,6 +298,20 @@ void InvestigationForward::run()
 
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
+
+	// ALTER COM ?
+	if(_adjustedCOMFileName!="") {
+		FILE *fpCOM = fopen(_adjustedCOMFileName.c_str(),"r");
+		if(fpCOM!=NULL) {
+			Array<double> com(0.0,3);
+			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
+			AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
+			cout<<"NOTE- altering center of mass for "<<_adjustedCOMBody<<"(index="<<body<<"):\n";
+			cout<<com<<endl<<endl;
+			body->setMassCenter(&com[0]);
+			fclose(fpCOM);
+		}
+	}
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
@@ -339,12 +377,13 @@ void InvestigationForward::run()
 		}
 	}
 
+
 	// ASSIGN NUMBERS OF THINGS
-	int ny = _model->getNY();
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int na = _model->getNA();
-	int nb = _model->getNB();
+	int ny = _model->getNumStates();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int na = _model->getNumActuators();
+	int nb = _model->getNumBodies();
 
 	// GROUND REACTION FORCES
 	initializeExternalLoads();
@@ -387,7 +426,11 @@ void InvestigationForward::run()
 	if(yiStore!=NULL) yiStore->getData(index,ny,&yi[0]);
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
-	_model->setInitialStates(&yi[0]);
+	if (index >= 0) {
+		Array<double> yi(0.0,ny);
+		yiStore->getData(index,ny,&yi[0]);
+		_model->setInitialStates(&yi[0]);
+	}
 
 	// INTEGRATE
 	cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
@@ -437,8 +480,8 @@ initializeExternalLoads()
 	// setting constrained coordinates to their valid values.
 	Storage *qStore=NULL;
 	Storage *uStoreTmp=NULL;
-	_model->formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
-	_model->convertDegreesToRadians(qStore);
+	_model->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
+	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
 	// Filter
 	qStore->pad(60); 
 	if(_lowpassCutoffFrequencyForLoadKinematics>=0) {
@@ -573,8 +616,8 @@ initializeExternalLoads()
 	}
 
 	// BODY INDICES
-	// Right
-	int rightFoot = _model->getBodyIndex(_externalLoadsBody1);
+	// Right 
+	AbstractBody *rightFoot = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
 	if(rightFoot<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the first set of external loads";
 		msg+="should be applied (" + _externalLoadsBody1 + ") is not a segment in the model.";
@@ -582,14 +625,14 @@ initializeExternalLoads()
 	}
 	// Left
 	//int  leftFoot = _model->getBodyIndex("calcn_l");
-	int  leftFoot = _model->getBodyIndex(_externalLoadsBody2);
+	AbstractBody *leftFoot = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
 	if(leftFoot<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the second set of external loads";
 		msg+="should be applied (" + _externalLoadsBody2 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	// Ground
-	int ground = _model->getGroundID();
+	AbstractBody* ground = _model->getDynamicsEngine().getBodySet()->get("ground");  // CLAY- DOES THIS WORK?
 
 
 	// CREATE FORCE AND TORQUE APPLIERS

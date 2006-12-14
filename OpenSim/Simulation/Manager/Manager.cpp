@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 
@@ -132,7 +133,7 @@ bool Manager::
 constructStates()
 {
 	_y.setSize(_integrand->getSize());
-	_yp.setSize(_model->getNYP());
+	_yp.setSize(_model->getNumPseudoStates());
 	return(true);
 }
 //_____________________________________________________________________________
@@ -158,7 +159,7 @@ constructStorage()
 
 	// CONTROLS
 	int i;
-	int nx = _model->getNX();
+	int nx = _model->getNumControls();
 	store = new Storage(512,"controls");
 	columnLabels = "time";
 	for(i=0;i<nx;i++) {
@@ -169,23 +170,27 @@ constructStorage()
 	_integrand->setControlStorage(store);
 
 	// STATES
-	int ny = _model->getNY();
+	Array<string> stateNames("");
+	_model->getStateNames(stateNames);
+	int ny = stateNames.getSize();
 	store = new Storage(512,"states");
 	columnLabels = "time";
 	for(i=0;i<ny;i++) {
 		columnLabels += "\t";
-		columnLabels += _model->getStateName(i);
+		columnLabels += stateNames[i];
 	}
 	store->setColumnLabels(columnLabels.c_str());
 	_integrand->setStateStorage(store);
 
 	// PSEUDO-STATES
-	int nyp = _model->getNYP();
+	Array<string> pseudoNames("");
+	_model->getPseudoStateNames(pseudoNames);
+	int nyp = pseudoNames.getSize();
 	store = new Storage(512,"pseudo");
 	columnLabels = "time";
 	for(i=0;i<nyp;i++) {
 		columnLabels += "\t";
-		columnLabels += _model->getPseudoStateName(i);
+		columnLabels += pseudoNames[i];
 	}
 	store->setColumnLabels(columnLabels.c_str());
 	_integrand->setPseudoStateStorage(store);

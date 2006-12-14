@@ -30,16 +30,17 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/BodySet.h>
 #include <OpenSim/Analyses/InvestigationForward.h>
-
+#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/Actuators/GeneralizedForceAtv.h>
 
 
 using namespace OpenSim;
 using namespace std;
 
 static void PrintUsage(ostream &aOStream);
-
 
 //_____________________________________________________________________________
 /**
@@ -95,15 +96,23 @@ int main(int argc,char **argv)
 		return(-1);
 	}
 
+	/*
+	  ISSUES:
+	  1. need to make an actuator in order to pull in DLL and register actuator objects.
+     2. ActuatorSet, SdfastBodySet, AnalysisSet must have specific names in hopper.xml.
+    */
+	GeneralizedForceAtv *atv = new GeneralizedForceAtv();
+	delete atv;
+
 	// CONSTRUCT
 	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
 	InvestigationForward forward(setupFileName);
 	forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model *model = forward.getModel();
+	AbstractModel *model = forward.getModel();
 	if(model==NULL) {
-		cout<<"\nperturb:  ERROR- failed to load model.\n";
+		cout<<"\nforward:  ERROR- failed to load model.\n";
 		exit(-1);
 	}
 	cout<<"-----------------------------------------------------------------------\n";
@@ -111,18 +120,6 @@ int main(int argc,char **argv)
 	cout<<"-----------------------------------------------------------------------\n";
 	model->printDetailedInfo(cout);
 	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// ALTER TORSO COM ?
-	FILE *fpTorso = fopen("rra_newTorsoBTJ.txt","r");
-	if(fpTorso!=NULL) {
-		Array<double> btj(0.0,3);
-		fscanf(fpTorso,"%lf %lf %lf",&btj[0],&btj[1],&btj[2]);
-		int iTorso = model->getBodyIndex("torso");
-		cout<<"NOTE- altering torso (index="<<iTorso<<") body-to-joint vector:\n";
-		cout<<btj<<endl<<endl;
-		model->setBodyToJointBodyLocal(iTorso,&btj[0]);
-		fclose(fpTorso);
-	}
 
 	// RUN
 	forward.run();

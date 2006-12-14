@@ -1,7 +1,7 @@
 // SimmRotationDof.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,19 +22,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmRotationDof.h"
+#include "AbstractCoordinate.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -47,18 +45,19 @@ SimmRotationDof::SimmRotationDof() :
    _axis(_axisProp.getValueDblArray())
 {
 	setNull();
-
+	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
  */
 SimmRotationDof::SimmRotationDof(DOMElement *aElement) :
-   SimmDof(aElement),
+   AbstractDof(aElement),
    _axis(_axisProp.getValueDblArray())
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -77,12 +76,14 @@ SimmRotationDof::~SimmRotationDof()
  * @param aDof SimmRotationDof to be copied.
  */
 SimmRotationDof::SimmRotationDof(const SimmRotationDof &aDof) :
-   SimmDof(aDof),
+   AbstractDof(aDof),
    _axis(_axisProp.getValueDblArray())
 {
+	setNull();
 	setupProperties();
 	copyData(aDof);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this dof and return a pointer to the copy.
@@ -95,6 +96,7 @@ Object* SimmRotationDof::copy() const
 	SimmRotationDof *dof = new SimmRotationDof(*this);
 	return(dof);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmRotationDof and modify the copy so that it is consistent
@@ -105,7 +107,7 @@ Object* SimmRotationDof::copy() const
  * relationship of the SimmRotationDof object with the XML node. Then, the
  * assignment operator is used to set all data members of the copy to the
  * values of this SimmRotationDof object. Finally, the data members of the copy are
- * updated using SimmRotationDof::updateFromXMLNode().
+ * updated using updateFromXMLNode().
  *
  * @param aElement XML element. 
  * @return Pointer to a copy of this SimmRotationDof.
@@ -118,38 +120,29 @@ Object* SimmRotationDof::copy(DOMElement *aElement) const
 	return(dof);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmRotationDof to another.
+ *
+ * @param aDof SimmRotationDof to be copied.
+ */
 void SimmRotationDof::copyData(const SimmRotationDof &aDof)
 {
 	_axis = aDof._axis;
 }
 
-void SimmRotationDof::getAxis(double axis[3]) const
-{
-	axis[0] = _axis[0];
-	axis[1] = _axis[1];
-	axis[2] = _axis[2];
-}
-
-double SimmRotationDof::getValue()
-{
-	if (_coordinate)
-		return _functions[0]->evaluate(0, _coordinate->getValue(), 0.0, 0.0);
-	else
-		return _functions[0]->evaluate(0, 0.0, 0.0, 0.0);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmRotationDof to their null values.
  */
 void SimmRotationDof::setNull()
 {
-	setupProperties();
 	setType("SimmRotationDof");
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -162,14 +155,53 @@ void SimmRotationDof::setupProperties()
 	_propertySet.append(&_axisProp);
 }
 
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmRotationDof& SimmRotationDof::operator=(const SimmRotationDof &aDof)
 {
 	// BASE CLASS
-	SimmDof::operator=(aDof);
+	AbstractDof::operator=(aDof);
 
 	copyData(aDof);
 
 	return(*this);
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the rotation axis.
+ *
+ * @param rAxis the rotation axis is returned here.
+ */
+void SimmRotationDof::getAxis(double rAxis[3]) const
+{
+	rAxis[0] = _axis[0];
+	rAxis[1] = _axis[1];
+	rAxis[2] = _axis[2];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the current value of the rotation dof
+ *
+ * @return The current value of the dof.
+ */
+double SimmRotationDof::getValue()
+{
+	if (_coordinate)
+		return _functions[0]->evaluate(0, _coordinate->getValue(), 0.0, 0.0);
+	else
+		return _functions[0]->evaluate(0, 0.0, 0.0, 0.0);
 }
 
 void SimmRotationDof::peteTest()

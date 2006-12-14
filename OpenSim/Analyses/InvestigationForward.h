@@ -68,6 +68,13 @@ private:
 	/** If true, the time steps from the initial states file are used during current integration */
 	OpenSim::PropertyBool _useSpecifiedDtProp;
 	bool &_useSpecifiedDt;
+	/** Name of the body whose center of mass is adjusted. */
+	PropertyStr _adjustedCOMBodyProp;
+	std::string &_adjustedCOMBody;
+	/** Name of the file specifying a change to the center of mass of a body.
+	This adjustment is made to remove dc offset in the residuals. */
+	PropertyStr _adjustedCOMFileNameProp;
+	std::string &_adjustedCOMFileName;
 
 
 //=============================================================================

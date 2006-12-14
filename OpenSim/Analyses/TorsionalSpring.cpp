@@ -16,7 +16,9 @@
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include <OpenSim/Tools/FunctionSet.h>
 #include "TorsionalSpring.h"
 
@@ -42,7 +44,7 @@ TorsionalSpring::~TorsionalSpring()
  * @param aBody Body to which external torques are to be applied.
  */
 TorsionalSpring::
-TorsionalSpring(Model *aModel,int aBody) : 
+TorsionalSpring(AbstractModel *aModel,AbstractBody *aBody) : 
 	TorqueApplier(aModel,aBody)
 {
 	setNull();
@@ -281,8 +283,8 @@ void TorsionalSpring::
 computeTargetFunctions(Storage *aQStore,Storage *aUStore)
 {
 	int i;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	double t;
 	Array<double> q(0.0,nq),u(0.0,nu);
 	double dirCos[9],ang[3],angVel[3];
@@ -295,12 +297,12 @@ computeTargetFunctions(Storage *aQStore,Storage *aUStore)
 		aQStore->getTime(i,t);
 		aQStore->getData(i,nq,&q[0]);
 		aUStore->getData(i,nu,&u[0]);
-		_model->setConfiguration(&q[0],&u[0]);
+		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity
-		_model->getDirectionCosines(_body,dirCos);
-		_model->convertDirectionCosinesToAngles(dirCos,&ang[0],&ang[1],&ang[2]);
-		_model->getAngularVelocity(_body,angVel);
+		_model->getDynamicsEngine().getDirectionCosines(*_body,dirCos);
+		_model->getDynamicsEngine().convertDirectionCosinesToAngles(dirCos,&ang[0],&ang[1],&ang[2]);
+		_model->getDynamicsEngine().getAngularVelocity(*_body,angVel);
 
 		// Append to storage
 		angStore.append(t,3,ang);
@@ -351,7 +353,6 @@ applyActuation(double aT,double *aX,double *aY)
 {
 	int i;
 	double torque[3] = {0,0,0};
-	const int ground = _model->getGroundID();
 
 	if(_model==NULL) {
 		printf("TorsionalSpring.applyActuation: WARN- no model.\n");
@@ -371,12 +372,12 @@ applyActuation(double aT,double *aX,double *aY)
 		double eulerAngle[3];
 		_targetPosition->evaluate(&time,eulerAngle);
 
-		_model->convertAnglesToDirectionCosines(eulerAngle[0],eulerAngle[1],
+		_model->getDynamicsEngine().convertAnglesToDirectionCosines(eulerAngle[0],eulerAngle[1],
 			eulerAngle[2],nomDirCos);
-		_model->getDirectionCosines(_body,curDirCos);
+		_model->getDynamicsEngine().getDirectionCosines(*_body,curDirCos);
 		Mtx::Transpose(3,3,curDirCos,curDirCos);
 		Mtx::Multiply(3,3,3,curDirCos,nomDirCos,difDirCos);
-		_model->convertDirectionCosinesToAngles(difDirCos,&difAng[0],&difAng[1],&difAng[2]);
+		_model->getDynamicsEngine().convertDirectionCosinesToAngles(difDirCos,&difAng[0],&difAng[1],&difAng[2]);
 
 		// Calculate difference between current angular velocity and nominal ang velocity,
 		//  expressed in body-fixed 1-2-3 rotational velocities
@@ -386,11 +387,11 @@ applyActuation(double aT,double *aX,double *aY)
 		double difQDot[3];
 		double eulerTransform[9];
 		_targetVelocity->evaluate(&time,nomAngVel); //NEEDS TO BE IN GLOBAL COORDS
-		_model->getAngularVelocity(_body,curAngVel);  //EXPRESSED IN GLOBAL COORDS
+		_model->getDynamicsEngine().getAngularVelocity(*_body,curAngVel);  //EXPRESSED IN GLOBAL COORDS
 		Mtx::Subtract(3,1,curAngVel,nomAngVel,difAngVel);
 //		Mtx::Subtract(3,1,nomAngVel,curAngVel,difAngVel);
-		_model->transform(ground,difAngVel,_body,difAngVel);
-		_model->formEulerTransform(_body, eulerTransform);
+		_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),difAngVel,*_body,difAngVel);
+		_model->getDynamicsEngine().formEulerTransform(*_body, eulerTransform);
 		Mtx::Multiply(3,3,1,eulerTransform,difAngVel,difQDot);
 		
 		// Calculate torque to apply to body, expressed in global reference frame
@@ -402,17 +403,12 @@ applyActuation(double aT,double *aX,double *aY)
 		for(i=0;i<3;i++)
 			torque[i] = _scaleFactor*(-_k[i]*difAng[i] - _b[i]*difQDot[i]);
 		Mtx::Multiply(3,3,1,eulerTransform,torque,torque);
-		_model->transform(_body,torque,ground,torque);
+		_model->getDynamicsEngine().transform(*_body,torque,_model->getDynamicsEngine().getGroundBody(),torque);
 
 		// Apply torque to body
 		setTorque(torque);
-		_model->applyTorque(_body,_torque);
+		_model->getDynamicsEngine().applyTorque(*_body,_torque);
 		if(_storeTorques) _appliedTorqueStore->append(aT,3,_torque);
 
 	}	
 }
-
-
-
-
-

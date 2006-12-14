@@ -11,14 +11,12 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 #include "ForceApplier.h"
 
 
@@ -32,6 +30,9 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
+class AbstractBody;
 
 class SUANALYSES_API LinearSpring : public ForceApplier 
 {
@@ -60,7 +61,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	LinearSpring(Model *aModel,int aBody);	
+	LinearSpring(AbstractModel *aModel, AbstractBody *aBody);	
 	virtual ~LinearSpring();
 private:
 	void setNull();

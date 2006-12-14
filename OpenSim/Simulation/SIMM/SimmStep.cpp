@@ -1,7 +1,7 @@
 // SimmStep.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -29,15 +29,13 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include "SimmStep.h"
-#include "SimmJoint.h"
+#include "AbstractJoint.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -52,7 +50,14 @@ SimmStep::SimmStep() :
 {
 }
 
-SimmStep::SimmStep(SimmJoint* aJoint, Direction aDirection) :
+//_____________________________________________________________________________
+/**
+ * Constructor from a joint and a direction.
+ *
+ * @param aJoint the joint for this step.
+ * @param aDirection the direction the joint is traversed in this step.
+ */
+SimmStep::SimmStep(AbstractJoint* aJoint, Direction aDirection) :
 	_joint(aJoint),
 	_direction(aDirection)
 {
@@ -66,6 +71,15 @@ SimmStep::~SimmStep()
 {
 }
 
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the joint transform.
+ *
+ * @return Reference to the joint transform in the step.
+ */
 Transform& SimmStep::getJointTransform()
 {
 	if (_direction == forward)

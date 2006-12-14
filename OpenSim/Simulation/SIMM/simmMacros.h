@@ -1,10 +1,10 @@
-#ifndef _simmMacros_h_
-#define _simmMacros_h_
+#ifndef __SimmMacros_h__
+#define __SimmMacros_h__
 
-// simmMacros.h
+// SimmMacros.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -25,6 +25,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace OpenSim {
+
 #define DEG_TO_RAD 0.017453292519943
 #define RAD_TO_DEG 57.295779513082323
 #define DTOR DEG_TO_RAD
@@ -37,7 +39,10 @@
 #define DABS(a) ((a)>(double)0.0?(a):(-(a)))
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
+#define EQUAL_WITHIN_TOLERANCE(a,b,c) (DABS(((a)-(b))) <= (c))
 
-#endif // __simmMacros_h__
+} // end of namespace OpenSim
+
+#endif // __SimmMacros_h__
 
 

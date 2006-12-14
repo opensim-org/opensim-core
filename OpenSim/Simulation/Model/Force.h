@@ -38,8 +38,7 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/VectorFunction.h>
-#include "Model.h"
-#include "Actuator.h"
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 
 
 //=============================================================================
@@ -52,9 +51,11 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
 
-class RDSIMULATION_API Force : public Actuator
+class AbstractBody;
+
+class RDSIMULATION_API Force : public AbstractActuator
 {
 
 //=============================================================================
@@ -62,8 +63,8 @@ class RDSIMULATION_API Force : public Actuator
 //=============================================================================
 protected:
 	// PROPERTIES
-	/** BodyA. */
-	PropertyInt _propBodyA;
+	/** name of BodyA. */
+	PropertyStr _propBodyAName;
 	/** Point on BodyA expressed in the body-local frame at which the
 	force is applied. */
 	PropertyDblArray _propPointA;
@@ -71,19 +72,24 @@ protected:
 	specifies the direction a positive actuator force is applied to BodyA.
 	(serialized) */
 	PropertyDblArray _propUnitVectorA;
-	/** BodyB. */
-	PropertyInt _propBodyB;
+	/** name of BodyB. */
+	PropertyStr _propBodyBName;
 	/** Point on BodyB expressed in the body-local frame at which the
 	force is applied. */
 	PropertyDblArray _propPointB;
+	/** Optimal force. */
+	PropertyDbl _propOptimalForce;
 
 	// REFERENCES
-	int &_bA;
+	std::string& _bodyAName;
 	Array<double> &_pA;
 	Array<double> &_uA;
-	int &_bB;
+	std::string& _bodyBName;
 	Array<double> &_pB;
+	double &_optimalForce;
 
+	AbstractBody *_bA;
+	AbstractBody *_bB;
 
 	/** Unit vector expressed in the local frame of BodyB that
 	specifies the direction a positive actuator force is applied to BodyB. */
@@ -101,7 +107,8 @@ protected:
 	/** Scale factor that pre-multiplies the applied force */
 	double _scaleFactor;
 
-
+	/** Excitation (control 0). */
+	double _excitation;
 
 //=============================================================================
 // METHODS
@@ -110,8 +117,8 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Force(int aBodyA=0,int aBodyB=0,int aNX=1,int aNY=0,int aNYP=0);
-	Force(DOMElement *aElement,int aNX=1,int aNY=0,int aNYP=0);
+	Force(const std::string &aBodyAName="",const std::string &aBodyBName="");
+	Force(DOMElement *aElement);
 	Force(const Force &aForce);
 	virtual ~Force();
 	virtual Object* copy() const;
@@ -132,8 +139,8 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// BODY A
-	void setBodyA(int aID);
-	int getBodyA() const;
+	void setBodyA(AbstractBody* aBody);
+	AbstractBody* getBodyA() const;
 	// POINT A
 	void setPointA(const double aPoint[3]);
 	void getPointA(double rPoint[3]) const;
@@ -141,8 +148,8 @@ public:
 	void setForceDirectionA(const double aDirection[3]);
 	void getForceDirectionA(double rDirection[3]) const;
 	// BODY B
-	void setBodyB(int aID);
-	int getBodyB() const;
+	void setBodyB(AbstractBody* aBody);
+	AbstractBody* getBodyB() const;
 	// POINT B
 	void setPointB(const double aPoint[3]);
 	void getPointB(double rPoint[3]) const;
@@ -159,7 +166,11 @@ public:
 	Function* getScaleFunction() const;
 	void setScaleFactor(double aScaleFactor);
 	double getScaleFactor();
-
+	// OPTIMAL FORCE
+	void setOptimalForce(double aOptimalForce);
+	double getOptimalForce() const;
+	// STRESS
+	double getStress() const;
 
 	//--------------------------------------------------------------------------
 	// APPLICATION
@@ -179,6 +190,8 @@ public:
 	// CHECK
 	//--------------------------------------------------------------------------
 	virtual bool check() const;
+	// Setup method to initialize Body references
+	void setup(AbstractModel* aModel);
 
 	//--------------------------------------------------------------------------
 	// UTILITY

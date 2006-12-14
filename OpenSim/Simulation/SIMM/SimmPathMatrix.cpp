@@ -1,7 +1,7 @@
 // SimmPathMatrix.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -27,23 +27,18 @@
 // INCLUDES
 //=============================================================================
 #include "SimmPathMatrix.h"
-#include "SimmBody.h"
+#include "AbstractBody.h"
 #include <ostream>
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
+using namespace std;
 using namespace OpenSim;
+
 const int SimmPathMatrix::cSizeFactor = 2;
 const int SimmPathMatrix::cHash1 = 27;
 const int SimmPathMatrix::cHash2 = 7;
-
-
-using namespace std;
-
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -75,6 +70,70 @@ SimmPathMatrix::~SimmPathMatrix()
 	deletePaths();
 }
 
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get a SimmPath between two bodies.
+ *
+ * @param aFromBody the first body
+ * @param aToBody the second body
+ * @return Pointer to the SimmPath from aFromBody to aToBody
+ */
+SimmPath* SimmPathMatrix::getSimmPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const
+{
+	int index = hash(aFromBody, aToBody);
+
+	assert(index >= 0);
+
+	return _hashTable[index];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get a JointPath between two bodies.
+ *
+ * @param aFromBody the first body
+ * @param aToBody the second body
+ * @return Pointer to the JointPath from aFromBody to aToBody
+ */
+const JointPath* SimmPathMatrix::getPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const
+{
+	int index = hash(aFromBody, aToBody);
+
+	assert(index >= 0);
+
+	if (_hashTable[index])
+		return &_hashTable[index]->getPath();
+
+	return NULL;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the path between two bodies.
+ *
+ * @param aFromBody the first body
+ * @param aToBody the second body
+ * @param Pointer to the JointPath from aFromBody to aToBody
+ */
+void SimmPathMatrix::setPath(const AbstractBody* aFromBody, const AbstractBody* aToBody, JointPath aPath)
+{
+	int index = hash(aFromBody, aToBody);
+
+	assert(index >= 0);
+
+	_hashTable[index] = new SimmPath(aPath, aFromBody, aToBody);
+}
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Delete all paths in the SimmPathMatrix.
+ */
 void SimmPathMatrix::deletePaths()
 {
 	for (unsigned int i = 0; i < _hashTable.size(); i++)
@@ -82,8 +141,14 @@ void SimmPathMatrix::deletePaths()
 		if (_hashTable[i])
 			delete _hashTable[i];
 	}
+
+	_size = 0;
 }
 
+//_____________________________________________________________________________
+/**
+ * Initialize the has table which holds the paths
+ */
 void SimmPathMatrix::initTable(int size)
 {
 	/* If there are already some paths stored in the hash table, delete them. */
@@ -108,10 +173,17 @@ void SimmPathMatrix::invalidate()
 			_hashTable[i]->invalidate();
 }
 
-int SimmPathMatrix::hash(const SimmBody* aFromBody, const SimmBody* aToBody) const
+//_____________________________________________________________________________
+/**
+ * Hash a pair of bodies
+ *
+ * @param aFromBody the first body
+ * @param aToBody the second body
+ * @return The integer hash value
+ */
+int SimmPathMatrix::hash(const AbstractBody* aFromBody, const AbstractBody* aToBody) const
 {
 	int hash_value = ((int)aFromBody / cHash1 + (int)aToBody) / cHash2 % _size;
-	int foo = hash_value;
 
 	SimmPath* hashEntry;
 	for (int i = 0; i < _size; i++)
@@ -128,36 +200,6 @@ int SimmPathMatrix::hash(const SimmBody* aFromBody, const SimmBody* aToBody) con
 	}
 
 	return -1;
-}
-
-SimmPath* SimmPathMatrix::getSimmPath(const SimmBody* aFromBody, const SimmBody* aToBody) const
-{
-	int index = hash(aFromBody, aToBody);
-
-	assert(index >= 0);
-
-	return _hashTable[index];
-}
-
-const JointPath* SimmPathMatrix::getPath(const SimmBody* aFromBody, const SimmBody* aToBody) const
-{
-	int index = hash(aFromBody, aToBody);
-
-	assert(index >= 0);
-
-	if (_hashTable[index])
-		return &_hashTable[index]->getPath();
-
-	return NULL;
-}
-
-void SimmPathMatrix::setPath(const SimmBody* aFromBody, const SimmBody* aToBody, JointPath p)
-{
-	int index = hash(aFromBody, aToBody);
-
-	assert(index >= 0);
-
-	_hashTable[index] = new SimmPath(p, aFromBody, aToBody);
 }
 
 void SimmPathMatrix::peteTest() const

@@ -67,7 +67,7 @@ rdFSQP(rdOptimizationTarget *aTarget)
 	setTarget(aTarget);
 
 	// NEW MAX ITERATIONS
-	_maxIter = 4 * _target->getNX();
+	_maxIter = 4 * _target->getNumControls();
 
 }
 
@@ -131,13 +131,13 @@ setTarget(rdOptimizationTarget *aTarget)
 	_target = aTarget;
 
 	// CONTROLS
-	int nx = _target->getNX();
+	int nx = _target->getNumControls();
 	if(_x!=NULL) delete[] _x;
 	_x = new double[nx];
 
 	// PERFORMANCE
 	int i;
-	int lenp = _target->getNP() - _nfsr;
+	int lenp = _target->getNumContacts() - _nfsr;
 	for(i=0;i<_nfsr;i++)  lenp += _mesh[i];
 	if(lenp<1) lenp = 1;
 	if(_p!=NULL) delete[] _p;
@@ -337,7 +337,7 @@ getNonlinearEqualityConstraintTolerance()
 void rdFSQP::
 setLowerBound(double aLower)
 {
-	for(int i=0;i<_target->getNX();i++)  _bl[i] = aLower;
+	for(int i=0;i<_target->getNumControls();i++)  _bl[i] = aLower;
 }
 //_____________________________________________________________________________
 /**
@@ -350,7 +350,7 @@ void rdFSQP::
 setLowerBound(int aIndex,double aLower)
 {
 	if(aIndex<0) return;
-	if(aIndex>=_target->getNX()) return;
+	if(aIndex>=_target->getNumControls()) return;
 	_bl[aIndex] = aLower;
 }
 //_____________________________________________________________________________
@@ -363,7 +363,7 @@ setLowerBound(int aIndex,double aLower)
 void rdFSQP::
 setLowerBound(double aLower[])
 {
-	for(int i=0;i<_target->getNX();i++)  _bl[i] = aLower[i];
+	for(int i=0;i<_target->getNumControls();i++)  _bl[i] = aLower[i];
 }
 //_____________________________________________________________________________
 /**
@@ -390,7 +390,7 @@ getLowerBound()
 void rdFSQP::
 setUpperBound(double aUpper)
 {
-	for(int i=0;i<_target->getNX();i++)  _bu[i] = aUpper;
+	for(int i=0;i<_target->getNumControls();i++)  _bu[i] = aUpper;
 }
 //_____________________________________________________________________________
 /**
@@ -403,7 +403,7 @@ void rdFSQP::
 setUpperBound(int aIndex,double aUpper)
 {
 	if(aIndex<0) return;
-	if(aIndex>=_target->getNX()) return;
+	if(aIndex>=_target->getNumControls()) return;
 	_bu[aIndex] = aUpper;
 }
 //_____________________________________________________________________________
@@ -416,7 +416,7 @@ setUpperBound(int aIndex,double aUpper)
 void rdFSQP::
 setUpperBound(double aUpper[])
 {
-	for(int i=0;i<_target->getNX();i++)  _bu[i] = aUpper[i];
+	for(int i=0;i<_target->getNumControls();i++)  _bu[i] = aUpper[i];
 }
 //_____________________________________________________________________________
 /**
@@ -461,13 +461,13 @@ computeOptimalControls(const double *xin,double *xout)
 
 	// SET INITIAL X
 	int i;
-	for(i=0;i<_target->getNX();i++)  _x[i] = xin[i];
+	for(i=0;i<_target->getNumControls();i++)  _x[i] = xin[i];
 
 	// SET THE CLIENT DATA TO THIS TARGET
 	void *cd = _target;
 
 	// OPTIMIZE
-	cfsqp(_target->getNX(),_target->getNP(),_nfsr,
+	cfsqp(_target->getNumControls(),_target->getNumContacts(),_nfsr,
 		_target->getNCInequalityNonlinear(),_target->getNCInequality(),
 		_target->getNCEqualityNonlinear(),_target->getNCEquality(),
 		_ncsrl,_ncsrn,_mesh,
@@ -475,7 +475,7 @@ computeOptimalControls(const double *xin,double *xout)
 		_bl,_bu,_x,_p,_c,_lambda,pFunc,cFunc,dpdxFunc,dcdxFunc,cd);
 
 	// SET OUTPUT X
-	for(i=0;i<_target->getNX();i++)  xout[i] = _x[i];
+	for(i=0;i<_target->getNumControls();i++)  xout[i] = _x[i];
 
 	return(_inform);
 }
@@ -505,7 +505,7 @@ CentralDifferences(rdOptimizationTarget *aTarget,
 
 	// CONTROLS
 	int i;
-	int nx = aTarget->getNX();  if(nx<=0) return(-1);
+	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
 	double *xp = new double[nx];  if(xp==NULL) return(-1);
 	for(i=0;i<nx;i++) xp[i]=x[i];
 
@@ -579,7 +579,7 @@ CentralDifferencesConstraint(rdOptimizationTarget *aTarget,
 	if(dcdx==NULL) return(-1);
 
 	// INITIALIZE CONTROLS
-	int nx = aTarget->getNX();  if(nx<=0) return(-1);
+	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
 
 	// INITIALIZE STATUS
 	int status = -1;
@@ -633,7 +633,7 @@ CentralDifferences(rdOptimizationTarget *aTarget,
 
 	// CONTROLS
 	int i;
-	int nx = aTarget->getNX();  if(nx<=0) return(-1);
+	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
 	double *xp = new double[nx];  if(xp==NULL) return(-1);
 	for(i=0;i<nx;i++) xp[i]=x[i];
 

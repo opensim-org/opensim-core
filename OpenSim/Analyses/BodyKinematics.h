@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -26,6 +25,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API BodyKinematics : public Analysis 
 {
@@ -49,7 +50,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyKinematics(Model *aModel=0, bool aInDegrees=true);
+	BodyKinematics(AbstractModel *aModel=0, bool aInDegrees=true);
 	BodyKinematics(const std::string &aFileName);
 	BodyKinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -83,7 +84,7 @@ public:
 	void setAngVelInLocalFrame(bool aTrueFalse);
 	bool getAngVelInLocalFrame();
 
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

@@ -47,6 +47,7 @@ using namespace std;
 // EXPORTED STATIC CONSTANTS
 //=============================================================================
 const double rdMath::PI = acos(-1.0);
+const double rdMath::PI_2 = asin(1.0);
 const double rdMath::DTR = PI/180.0;
 const double rdMath::RTD = 180.0/PI;
 const double rdMath::SMALL = 1.0e-8;

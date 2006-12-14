@@ -10,9 +10,9 @@
 // INCLUDES
 //=============================================================================
 #include <RD/Tools/rdTools.h>
+#include <RD/Tools/rdMath.h>
 #include <RD/Tools/PropertyDbl.h> //added
 #include <RD/Tools/Storage.h>
-#include <RD/Simulation/Model/Model.h>
 #include <RD/Simulation/Model/Force.h>
 #include "Actuators.h"
 

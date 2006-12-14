@@ -6,7 +6,7 @@
 #include <iostream>
 #include <OpenSim/Tools/IO.h>
 #include "LoadModel.h"
-#include "ActuatorSet.h"
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
 #include "ContactForceSet.h"
 
 #ifdef __linux__
@@ -34,10 +34,10 @@ extern "C" {
 // Type definition for the CreateModel() function
 // This is necessary to create a pointer that can properly point to the
 // CreateModel() function.
-typedef OpenSim::Model* (*CREATEMODEL)();
-typedef OpenSim::Model* (*CREATEMODEL_FILE)(const string &);
-typedef OpenSim::Model* (*CREATEMODEL_ActuatorsContacts)(OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
-typedef OpenSim::Model* (*CREATEMODEL_ParamsActuatorsContacts)(const string&,OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
+typedef OpenSim::AbstractModel* (*CREATEMODEL)();
+typedef OpenSim::AbstractModel* (*CREATEMODEL_FILE)(const string &);
+typedef OpenSim::AbstractModel* (*CREATEMODEL_ActuatorsContacts)(OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
+typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const string&,OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
 
 }
 
@@ -176,9 +176,10 @@ LoadOpenSimLibraries(int argc,char **argv)
  * @param aModelLibraryName Name of the model DLL (e.g., rdBlock_D).  Do not
  * include the library (.lib) or DLL (.dll) extension in the name of the
  * model library.
+ * @param aModelFileName Name of the model xml file (optional).
  * @return Pointer to an intance of the model, NULL if no model was created.
  */
-RDSIMULATION_API Model* LoadModel(const string &aModelLibraryName)
+RDSIMULATION_API AbstractModel* LoadModel(const string &aModelLibraryName, const string &aModelFileName)
 {
 	// LOAD MODEL LIBRARY
 	PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(aModelLibraryName.c_str());
@@ -187,204 +188,40 @@ RDSIMULATION_API Model* LoadModel(const string &aModelLibraryName)
 		return(NULL);
 	}
 
-	// GET POINTER TO THE CreateModel() FUNCTION
-	CREATEMODEL createModelFunction = (CREATEMODEL)GetProcAddress(modelLibrary,"CreateModel");
-	if(createModelFunction==NULL) {
-		cout<<"ERROR- function CreateModel() was not found in library "<<aModelLibraryName<<".\n\n";
-		return(NULL);
-	}
+	AbstractModel *model=NULL;
+	if(aModelFileName!="") {
+		// GET POINTER TO THE CreateModel_File() FUNCTION
+		CREATEMODEL_FILE createModelFunction = (CREATEMODEL_FILE)GetProcAddress(modelLibrary,"CreateModel_File");
+		if(createModelFunction==NULL) {
+			cout<<"ERROR- function CreateModel_File() was not found in library "<<aModelLibraryName<<".\n\n";
+			return(NULL);
+		}
 
-	// CALL THE CreatModel() FUNCTION
-	Model *model = createModelFunction();
-	if(model==NULL) {
-		cout<<"ERROR- model "<<aModelLibraryName<<" was not created.\n\n";
-		return(NULL);
+		// CREATE THE MODEL
+		model = createModelFunction(aModelFileName);
+		if(model==NULL) {
+			cout<<"ERROR- model "<<aModelLibraryName<<" was not created.\n\n";
+			return(NULL);
+		}
+	} else {
+		// GET POINTER TO THE CreateModel() FUNCTION
+		CREATEMODEL createModelFunction = (CREATEMODEL)GetProcAddress(modelLibrary,"CreateModel");
+		if(createModelFunction==NULL) {
+			cout<<"ERROR- function CreateModel() was not found in library "<<aModelLibraryName<<".\n\n";
+			return(NULL);
+		}
+
+		// CALL THE CreatModel() FUNCTION
+		model = createModelFunction();
+		if(model==NULL) {
+			cout<<"ERROR- model "<<aModelLibraryName<<" was not created.\n\n";
+			return(NULL);
+		}
 	}
 	
 	return(model);
 }
 
-
-//_____________________________________________________________________________
-/**
- * Load and create a model from a dynamically loaded library (DLL).
- *
- * @param argc Number of character strings in argv.
- * @param argv Array of character strings.
- * @return Pointer to an intance of the model, NULL if no model was created.
- */
-RDSIMULATION_API Model* LoadModel(int argc,char **argv)
-{
-	// VARIABLES
-	int i;
-	string option,value;
-
-	// PARSE THE COMMAND LINE FOR OTHER OPTIONS
-	string actuators="",contacts="",params="";
-	string modelFileName="",modelLibraryName="";
-	for(i=1;i<argc;i++) {
-
-		if(argv[i][0] != '-') continue;
-		option = argv[i];
-
-		if((argc<=1)||(option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")
-			||(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-			PrintUsage(cout);
-			return(NULL);
-
-		} else if((option=="-Actuators")||(option=="-A")) {
-			if((i+1)>=argc) continue;
-			if(actuators=="") actuators = argv[i+1];
-
-		} else if((option=="-Contacts")||(option=="-C")) {
-			if((i+1)>=argc) continue;
-			if(contacts=="") contacts = argv[i+1];
-
-		} else if((option=="-Params")||(option=="-P")) {
-			if((i+1)>=argc) continue;
-			if(params=="") params = argv[i+1];
-
-		} else if((option=="-ModelFile")||(option=="-MF")) {
-			if((i+1)>=argc) continue;
-			if(modelFileName=="") modelFileName = argv[i+1];
-
-		} else if((option=="-ModelLibrary")||(option=="-ML")) {
-			if((i+1)>=argc) continue;
-			if(modelLibraryName=="") modelLibraryName = argv[i+1];
-
-		} else if((option=="-Library")||(option=="-L")) {
-			// DO NOTHING
-			// -Library is a valid option.  Just not acting on it here.
-		
-		} else if((option=="-Setup")||(option=="-S")) {
-			// DO NOTHING
-			// -Setup is a valid option.  Just not acting on it here.
-		
-		} else {
-			cout<<"WARN- "<<option<<" is an unknown option.\n";
-		}
-	}
-
-	// CONSTRUCT ACTUATOR SET
-	ActuatorSet *actuatorSet=0;
-	if(actuators!="") {
-		try {	// the constructor never returns NULL, either succeeds or throws an exception
-			actuatorSet = new ActuatorSet(actuators.c_str());
-		}
-		catch (Exception &x)
-		{
-			actuatorSet=0;
-		}
-
-		if(actuatorSet==0) {
-			cout<<"ERROR- actuator set "<<actuators<<" could not be constructed.\n\n";
-		} else {
-			cout<<"Constructed actuator set from file "<<actuators<<".\n";
-		}
-	}
-
-	// CONSTRUCT CONTACT FORCE SET
-	ContactForceSet *contactForceSet=NULL;
-	if(contacts!="") {
-		try {	// the constructor never returns NULL, either succeeds or throws an exception
-			contactForceSet = new ContactForceSet(contacts.c_str());
-		}
-		catch (Exception &x)
-		{
-			contactForceSet=0;
-		}
-		if(contactForceSet==0) {
-			cout<<"ERROR- contact force set "<<contacts<<" could not be constructed.\n\n";
-		} else {
-			cout<<"Constructed contact force set from file "<<contacts<<".\n";
-		}
-	}
-
-
-	// LOAD MODEL LIBRARY
-	PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(modelLibraryName.c_str());
-	if(modelLibrary==NULL) {
-		cout<<"ERROR- library for model "<<modelLibraryName<<" could not be loaded.\n\n";
-		return(NULL);
-	}
-
-	// CREATE MODEL
-	Model *model = NULL;
-	// Model file (deserialize)
-	if(modelFileName!="") {
-
-		// GET POINTER TO THE CreateModel() FUNCTION
-		CREATEMODEL_FILE createModelFunction = (CREATEMODEL_FILE)GetProcAddress(modelLibrary,"CreateModel_File");
-		if(createModelFunction==NULL) {
-			cout<<"ERROR- function CreateModel_File() was not found in library "<<modelLibraryName<<".\n\n";
-			return(NULL);
-		}
-
-		// CREATE THE MODEL
-		model = createModelFunction(modelFileName);
-		if(model==NULL) {
-			cout<<"ERROR- model "<<modelLibraryName<<" was not created.\n\n";
-			return(NULL);
-		}
-
-	// Params file and actuator and/or contact set
-	} else if(params!="") {
-
-		// GET POINTER TO THE CreateModel() FUNCTION
-		CREATEMODEL_ParamsActuatorsContacts createModelFunction =
-			(CREATEMODEL_ParamsActuatorsContacts)GetProcAddress(modelLibrary,
-			"CreateModel_ParamsActuatorsContacts");
-		if(createModelFunction==NULL) {
-			cout<<"ERROR- function CreateModel_ParamsActuatorsContacts() was not found in library "<<modelLibraryName<<".\n\n";
-			return(NULL);
-		}
-
-		// CREATE THE MODEL
-		model = createModelFunction(params,actuatorSet,contactForceSet);
-		if(model==NULL) {
-			cout<<"ERROR- model "<<modelLibraryName<<" was not created.\n\n";
-			return(NULL);
-		}
-
-	// Actuator and/or contact set
-	} else if((actuatorSet!=NULL)||(contactForceSet!=NULL)) {
-
-		// GET POINTER TO THE CreateModel() FUNCTION
-		CREATEMODEL_ActuatorsContacts createModelFunction =
-			(CREATEMODEL_ActuatorsContacts)GetProcAddress(modelLibrary,
-			"CreateModel_ActuatorsContacts");
-		if(createModelFunction==NULL) {
-			cout<<"ERROR- function CreateModel_ActuatorsContacts() was not found in library "<<modelLibraryName<<".\n\n";
-			return(NULL);
-		}
-
-		// CREATE THE MODEL
-		model = createModelFunction(actuatorSet,contactForceSet);
-		if(model==NULL) {
-			cout<<"ERROR- model "<<modelLibraryName<<" was not created.\n\n";
-			return(NULL);
-		}
-
-	// Default
-	} else {
-
-		// GET POINTER TO THE CreateModel() FUNCTION
-		CREATEMODEL createModelFunction = (CREATEMODEL)GetProcAddress(modelLibrary,"CreateModel");
-		if(createModelFunction==NULL) {
-			cout<<"ERROR- function CreateModel() was not found in library "<<modelLibraryName<<".\n\n";
-			return(NULL);
-		}
-
-		// CREATE THE MODEL
-		model = createModelFunction();
-		if(model==NULL) {
-			cout<<"ERROR- model "<<modelLibraryName<<" was not created.\n\n";
-			return(NULL);
-		}
-	}
-
-	return(model);
-}
 
 //_____________________________________________________________________________
 /**

@@ -35,7 +35,6 @@
 
 
 // INCLUDES
-#include "Model.h"
 #include "CallbackSet.h"
 #include "DerivCallback.h"
 
@@ -67,7 +66,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	DerivCallbackSet(Model *aModel=0);
+	DerivCallbackSet(AbstractModel *aModel=0);
 	virtual ~DerivCallbackSet();
 private:
 	void setNull();

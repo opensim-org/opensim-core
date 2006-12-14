@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
 #include "ActuatedModel_SDFast.h"
 

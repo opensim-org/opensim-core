@@ -11,12 +11,10 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 
 
 //=============================================================================
@@ -30,6 +28,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class SUANALYSES_API ActuatorPerturbation : public DerivCallback 
 {
 //=============================================================================
@@ -41,7 +41,7 @@ public:
 
 protected:
 	/** Which actuator. */
-	int _actuator;
+	AbstractActuator *_actuator;
 	/** Negative force flag **/
 	bool _allowNegForce;
 	/** Force perturbation. */
@@ -57,7 +57,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ActuatorPerturbation(Model *aModel);
+	ActuatorPerturbation(AbstractModel *aModel);
 	virtual ~ActuatorPerturbation();
 private:
 	void setNull();
@@ -66,8 +66,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setActuator(int aActuatorIndex);
-	int getActuator() const;
+	void setActuator(AbstractActuator *aActuator);
+	AbstractActuator* getActuator() const;
 	void setAllowNegForce(bool aTrueFalse);
 	bool getAllowNegForce() const;
 	void setPerturbation(PertType aPerturbationType, double aPerturbation);

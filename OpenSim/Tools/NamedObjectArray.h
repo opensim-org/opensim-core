@@ -42,7 +42,7 @@
 //=============================================================================
 /**
 * A class for maintaining an array of Object*. Used to provide base class 
-* for lookup operations by Model
+* for lookup operations by AbstractModel
 * 
 * @version 1.0
 * @author Ayman Habib

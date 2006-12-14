@@ -1,10 +1,10 @@
-#ifndef _SimmPathMatrix_h_
-#define _SimmPathMatrix_h_
+#ifndef __SimmPathMatrix_h__
+#define __SimmPathMatrix_h__
 
 // SimmPathMatrix.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -34,9 +34,9 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include "SimmPath.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmBody;
+class AbstractBody;
 
 //=============================================================================
 //=============================================================================
@@ -48,7 +48,7 @@ class SimmBody;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmPathMatrix
+class SimmPathMatrix
 {
 
 //=============================================================================
@@ -74,21 +74,21 @@ public:
 
 	void initTable(int size);
 	void invalidate();
-	SimmPath* getSimmPath(const SimmBody* aFromBody, const SimmBody* aToBody) const;
-	const JointPath* getPath(const SimmBody* aFromBody, const SimmBody* aToBody) const;
-	void setPath(const SimmBody* aFromBody, const SimmBody* aToBody, JointPath p);
+	SimmPath* getSimmPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;
+	const JointPath* getPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;
+	void setPath(const AbstractBody* aFromBody, const AbstractBody* aToBody, JointPath aPath);
 	void peteTest() const;
 
 private:
-	int hash(const SimmBody* aFromBody, const SimmBody* aToBody) const;
+	int hash(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;
 	void deletePaths();
 
 //=============================================================================
 };	// END of class SimmPathMatrix
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmPathMatrix_h__
 

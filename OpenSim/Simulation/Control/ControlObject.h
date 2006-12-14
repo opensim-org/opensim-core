@@ -38,7 +38,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/FunctionSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 
 //=============================================================================
@@ -51,6 +50,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class RDSIMULATION_API ControlObject : public Object
 {
@@ -74,7 +75,7 @@ private:
 	static const char PROP_R2[];
 protected:
 	/** Model. */
-	Model *_model;
+	AbstractModel *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
 	/** Body with respect to which the track goals are specified. */
@@ -150,8 +151,8 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	void setModel(Model *aModel);
-	Model* getModel() const;
+	void setModel(AbstractModel *aModel);
+	AbstractModel* getModel() const;
 	// ON,OFF
 	void setOn(bool aTrueFalse);
 	bool getOn() const;

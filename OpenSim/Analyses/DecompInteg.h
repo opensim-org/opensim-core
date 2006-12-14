@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
@@ -30,6 +29,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API DecompInteg : public Decomp
 {
@@ -70,7 +71,7 @@ protected:
 //=============================================================================
 public:
 	DecompInteg(const Manager *aManager,const Contact *aContact,
-		const Actuation *aActuation,Model *aModelTwin,
+		const Actuation *aActuation,AbstractModel *aModelTwin,
 		double aDT=0.0,double aDF=0.0);
 	virtual ~DecompInteg();
 private:

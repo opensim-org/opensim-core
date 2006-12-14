@@ -140,8 +140,6 @@ public:
 		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) = 0;
 	virtual void scaleY(double aScaleFactor) = 0;
 
-	virtual void writeSIMM(std::ofstream& out, int functionIndex) const = 0;
-
 //=============================================================================
 };	// END class Function
 

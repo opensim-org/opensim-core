@@ -10,7 +10,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/BodyConstraint.h>
+#include <OpenSim/Simulation/Model/BodyConstraint.h>
 #include "Analyses.h"
 #include "Decomp.h"
 
@@ -20,7 +20,7 @@
 //=============================================================================
 /**
  * A class for computing a decomposition by hard constraints for the
- * Model.
+ * AbstractModel.
  */
 namespace OpenSim { 
 
@@ -63,7 +63,7 @@ private:
 // METHODS
 //=============================================================================
 public:
-	DecompHard(Model *aModel);
+	DecompHard(AbstractModel *aModel);
 	virtual ~DecompHard();
 private:
 	void setNull();

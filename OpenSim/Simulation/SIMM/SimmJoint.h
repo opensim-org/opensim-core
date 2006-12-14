@@ -1,10 +1,10 @@
-#ifndef _SimmJoint_h_
-#define _SimmJoint_h_
+#ifndef __SimmJoint_h__
+#define __SimmJoint_h__
 
 // SimmJoint.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -31,26 +31,20 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObj.h>
+#include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/Transform.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include "dp.h"
-#include "SimmCoordinate.h"
-#include "SimmRotationDof.h"
-#include "SimmTranslationDof.h"
-#include "SimmDofSet.h"
-#include "SimmBody.h"
-#include "SimmStep.h"
-#include "SimmSdfastBody.h"
+#include "AbstractJoint.h"
+#include "AbstractCoordinate.h"
+#include "AbstractBody.h"
+#include "DofSet.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmKinematicsEngine;
-class SimmModel;
+class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
@@ -60,42 +54,24 @@ class SimmModel;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmJoint : public Object  
+class RDSIMULATION_API SimmJoint : public AbstractJoint  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-#ifndef SWIG
-	typedef struct
-	{
-		bool used;
-		std::string name;
-		dpJointType type;
-		int index;
-		SimmStep::Direction direction;
-		std::string inbname;
-		std::string outbname;
-		bool closesLoop;
-	} sdfastJointInfo;
-
-	sdfastJointInfo _sdfastInfo;
-#endif
 protected:
 	PropertyStrArray _bodiesProp;
 	Array<std::string>& _bodies;
 
 	PropertyObj _dofSetProp;
-	SimmDofSet& _dofSet;
+	DofSet &_dofSet;
 
-   SimmBody *_childBody;
-   SimmBody *_parentBody;
+   AbstractBody *_childBody;
+   AbstractBody *_parentBody;
 
 	Transform _forwardTransform;
 	Transform _inverseTransform;
-
-	bool _transformsValid;
 
 //=============================================================================
 // METHODS
@@ -111,56 +87,35 @@ public:
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 
-   void setup(SimmKinematicsEngine* aEngine);
+   virtual void setup(AbstractDynamicsEngine* aEngine);
 
 #ifndef SWIG
-	SimmJoint& operator=(const SimmJoint &aJoint);
+   SimmJoint& operator=(const SimmJoint &aJoint);
 #endif
    void copyData(const SimmJoint &aJoint);
 
-	void invalidate() { _transformsValid = false; }
-	Array<std::string>& getBodyNames() const { return _bodies; }
-	SimmDofSet& getDofSet() const { return _dofSet; }
-	SimmBody* getChildBody() const { return _childBody; }
-	SimmBody* getParentBody() const { return _parentBody; }
-	const Transform& getForwardTransform();
-	const Transform& getInverseTransform();
-	bool isCoordinateUsed(SimmCoordinate* aCoordinate) const;
-	void identifyDpType(SimmModel* aModel);
-	void makeSdfastJoint(std::ofstream& out, ArrayPtrs<SimmSdfastBody>& sdfastBodies, int* dofCount, int* constrainedCount, bool writeFile);
-	void scale(const ScaleSet& aScaleSet);
+	virtual DofSet* getDofSet() const { return &_dofSet; }
+	virtual AbstractBody* getChildBody() const { return _childBody; }
+	virtual AbstractBody* getParentBody() const { return _parentBody; }
+	virtual const Transform& getForwardTransform();
+	virtual const Transform& getInverseTransform();
+	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const;
+	virtual bool hasXYZAxes() const;
+	virtual void scale(const ScaleSet& aScaleSet);
 
-	void writeSIMM(std::ofstream& out, int& aFunctionIndex) const;
-
-	void peteTest();
+	virtual void peteTest();
 
 private:
 	void setNull();
 	void setupProperties();
 	void calcTransforms();
-	bool isSdfastCompatible(void);
-   bool hasXYZAxes(void);
-	SimmRotationDof* findNthFunctionRotation(int n) const;
-	SimmTranslationDof* findNthFunctionTranslation(int n) const;
-	SimmTranslationDof* getTranslationDof(int axis) const;
-	SimmTranslationDof* findMatchingTranslationDof(SimmRotationDof* rotDof);
-	void makeSdfastWeld(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastPin(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastSlider(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastPlanar(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastUniversal(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastCylindrical(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastGimbal(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
-	void makeSdfastBushing(std::ofstream& out, int* dofCount, int* constrainedCount, bool writeFile);
 
 //=============================================================================
 };	// END of class SimmJoint
 //=============================================================================
 //=============================================================================
 
-typedef OpenSim::Array<OpenSim::SimmJoint*> SimmJointList;
-
-}; //namespace
+} // end of namespace OpenSim
 
 #endif // __SimmJoint_h__
 

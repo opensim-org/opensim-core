@@ -18,7 +18,9 @@
 #include <string.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractCoordinate.h>
 #include <OpenSim/Tools/GCVSpline.h>
 #include "GeneralizedForcePerturbation.h"
 
@@ -49,10 +51,10 @@ GeneralizedForcePerturbation::~GeneralizedForcePerturbation()
  * generalized force is set to be a unit torque.  This can then be scaled
  * if the user wants to apply a constant torque to a generalized coordinate.
  *
- * @param aModel Model for which actuator forces are to be perturbed.
+ * @param aModel AbstractModel for which actuator forces are to be perturbed.
  */
 GeneralizedForcePerturbation::
-GeneralizedForcePerturbation(Model *aModel) :
+GeneralizedForcePerturbation(AbstractModel *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -68,11 +70,11 @@ GeneralizedForcePerturbation(Model *aModel) :
  * to define a function object. This function is used to define the 
  * generalized force that is applied during the simulation.
  *
- * @param aModel Model for which actuator forces are to be perturbed.
+ * @param aModel AbstractModel for which actuator forces are to be perturbed.
  * @param aFunction Function that defines the generalized force to be applied.
  */
 GeneralizedForcePerturbation::
-GeneralizedForcePerturbation(Model *aModel, GCVSpline *_aSpline) :
+GeneralizedForcePerturbation(AbstractModel *aModel, GCVSpline *_aSpline) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -93,7 +95,7 @@ GeneralizedForcePerturbation(Model *aModel, GCVSpline *_aSpline) :
 void GeneralizedForcePerturbation::
 setNull()
 {
-	_genCoord = -1;
+	_genCoord = NULL;
 	_perturbation = 0.0;
 	_genForceSpline = NULL;
 	_scaleFactor = 1.0;
@@ -110,12 +112,12 @@ setNull()
 /**
  * Set which generalized coordinate the force perturbation should be made.
  *
- * @param aIndex Index of the generalized coordinate.
+ * @param aCoord Pointer to the generalized coordinate.
  */
 void GeneralizedForcePerturbation::
-setGenCoord(int aIndex)
+setGenCoord(AbstractCoordinate *aCoord)
 {
-	_genCoord = aIndex;
+	_genCoord = aCoord;
 }
 //_____________________________________________________________________________
 /**
@@ -123,7 +125,7 @@ setGenCoord(int aIndex)
  *
  * @return Generalized coordiante to which force is applied..
  */
-int GeneralizedForcePerturbation::
+AbstractCoordinate *GeneralizedForcePerturbation::
 getGenCoord() const
 {
 	return(_genCoord);
@@ -237,7 +239,7 @@ applyActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	if((aT>=getStartTime()) && (aT<getEndTime())){
-		_model->applyGeneralizedForce(_genCoord, _perturbation);	
+		_model->getDynamicsEngine().applyGeneralizedForce(*_genCoord, _perturbation);	
 //		printf("time = %f\t apply perturbation = %f\n",aT*_model->getTimeNormConstant(),_perturbation);
 	}
 }

@@ -1,7 +1,7 @@
 // SimmMuscleViaPoint.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,21 +22,22 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmMuscleViaPoint.h"
-#include "SimmModel.h"
-#include "SimmKinematicsEngine.h"
+#include "AbstractModel.h"
+#include "AbstractSimmMuscle.h"
+#include "AbstractBody.h"
+#include "AbstractCoordinate.h"
+#include "CoordinateSet.h"
+#include "AbstractDynamicsEngine.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -51,8 +52,9 @@ SimmMuscleViaPoint::SimmMuscleViaPoint() :
 	_coordinate(NULL)
 {
 	setNull();
-
+	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
@@ -64,7 +66,7 @@ SimmMuscleViaPoint::SimmMuscleViaPoint(DOMElement *aElement) :
 	_coordinate(NULL)
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -88,9 +90,11 @@ SimmMuscleViaPoint::SimmMuscleViaPoint(const SimmMuscleViaPoint &aPoint) :
 	_coordinateName(_coordinateNameProp.getValueStr()),
 	_coordinate(NULL)
 {
+	setNull();
 	setupProperties();
 	copyData(aPoint);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this muscle via point and return a pointer to the copy.
@@ -103,6 +107,7 @@ Object* SimmMuscleViaPoint::copy() const
 	SimmMuscleViaPoint *pt = new SimmMuscleViaPoint(*this);
 	return(pt);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmMuscleViaPoint and modify the copy so that it is consistent
@@ -126,6 +131,15 @@ Object* SimmMuscleViaPoint::copy(DOMElement *aElement) const
 	return(pt);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmMuscleViaPoint to another.
+ *
+ * @param aPoint SimmMuscleViaPoint to be copied.
+ */
 void SimmMuscleViaPoint::copyData(const SimmMuscleViaPoint &aPoint)
 {
 	_range = aPoint._range;
@@ -133,20 +147,15 @@ void SimmMuscleViaPoint::copyData(const SimmMuscleViaPoint &aPoint)
 	_coordinate = aPoint._coordinate;
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmMuscleViaPoint to their null values.
  */
 void SimmMuscleViaPoint::setNull()
 {
-	setupProperties();
 	setType("SimmMuscleViaPoint");
-	setName("");
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -160,22 +169,6 @@ void SimmMuscleViaPoint::setupProperties()
 
 	_coordinateNameProp.setName("coordinate");
 	_propertySet.append(&_coordinateNameProp);
-}
-
-SimmMuscleViaPoint& SimmMuscleViaPoint::operator=(const SimmMuscleViaPoint &aPoint)
-{
-	// BASE CLASS
-	SimmMusclePoint::operator=(aPoint);
-
-	copyData(aPoint);
-
-	return(*this);
-}
-
-void SimmMuscleViaPoint::writeSIMM(ofstream& out) const
-{
-	out << _attachment[0] << " " << _attachment[1] << " " << _attachment[2] << " segment " << _bodyName;
-	out << " ranges 1 " << _coordinateName << " (" << _range[0] << ", " << _range[1] << ")" << endl;
 }
 
 //_____________________________________________________________________________
@@ -197,18 +190,41 @@ bool SimmMuscleViaPoint::isActive() const
 	return false;
 }
 
-/* Perform some set up functions that happen after the
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
  * object has been deserialized or copied.
+ *
+ * @param aModel model containing this SimmMuscleViaPoint.
  */
-void SimmMuscleViaPoint::setup(SimmModel* model, SimmKinematicsEngine* ke)
+void SimmMuscleViaPoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
 {
 	// base class
-	SimmMusclePoint::setup(model, ke);
+	SimmMusclePoint::setup(aModel, aMuscle);
 
-	/* Look up the coordinate by name in the kinematics engine and
+	/* Look up the coordinate by name in the dynamics engine and
 	 * store a pointer to it.
 	 */
-	_coordinate = dynamic_cast<SimmCoordinate *> (ke->getCoordinate(_coordinateName));
+	_coordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_coordinateName);
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+SimmMuscleViaPoint& SimmMuscleViaPoint::operator=(const SimmMuscleViaPoint &aPoint)
+{
+	// BASE CLASS
+	SimmMusclePoint::operator=(aPoint);
+
+	copyData(aPoint);
+
+	return(*this);
 }
 
 void SimmMuscleViaPoint::peteTest() const

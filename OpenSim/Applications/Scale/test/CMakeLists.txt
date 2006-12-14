@@ -2,8 +2,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src)
 
-FILE(GLOB SOURCE_FILES ../../IK/Simm*.cpp  ../Simm*.cpp testScale.cpp)
-FILE(GLOB INCLUDE_FILES ../../IK/Simm*.h ../Simm*.h)
+FILE(GLOB SOURCE_FILES ../../IK/simm*.cpp ../../../Subject/Simm*.cpp testScale.cpp)
+FILE(GLOB INCLUDE_FILES ../../IK/simm*.h ../../../Subject/Simm*.h)
 
 
 
@@ -11,8 +11,6 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 		debug rdTools_d optimized rdTools
 		debug rdSimulation_d optimized rdSimulation
 		debug rdSQP_d optimized rdSQP)
-
-ADD_DEFINITIONS(-Dworkflow_EXPORTS)
 
 ADD_EXECUTABLE(testScale ${SOURCE_FILES} ${INCLUDE_FILES})
 

@@ -9,11 +9,14 @@
 //=============================================================================
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
 #include "BodyIndPowers.h"
 
 
@@ -22,6 +25,7 @@
 //=============================================================================
 
 
+using namespace std;
 using namespace OpenSim;
 #define MAXLEN 2048
 
@@ -48,9 +52,9 @@ BodyIndPowers::~BodyIndPowers()
  * Construct an induced power instance for performing an induced
  * power analysis on the bodies of a model.
  *
- * @param aModel Model on which the analyses are to be performed.
+ * @param aModel AbstractModel on which the analyses are to be performed.
  */
-BodyIndPowers::BodyIndPowers(Model *aModel) :
+BodyIndPowers::BodyIndPowers(AbstractModel *aModel) :
 	BodyIndAcc(aModel)
 {
 	setName("BodyInducedPowers");
@@ -73,13 +77,13 @@ BodyIndPowers::BodyIndPowers(Model *aModel) :
  * Note that the induced accelerations are not read in from file.  The
  * induced accelerations are recomputed based on the force decomposition.
  *
- * @param aModel Model on which the analyses were performed.
+ * @param aModel AbstractModel on which the analyses were performed.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension.
  */
-BodyIndPowers::BodyIndPowers(Model *aModel,Storage *aStates,Storage *aControls,
+BodyIndPowers::BodyIndPowers(AbstractModel *aModel,Storage *aStates,Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	BodyIndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
@@ -136,19 +140,22 @@ constructDescription()
 void BodyIndPowers::
 constructColumnLabels()
 {
-	char labels[MAXLEN];
-
 	// GET STATE NAMES
-	int i;
-	char name[MAXLEN];
-	strcpy(labels,"time");
-	for(i=0;i<_model->getNB();i++) {
-		sprintf(name,"\t%s",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-	}
-	strcat(labels,"\tTotal\n");
+	string labels = "time";
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	int i=0;
 
-	setColumnLabels(labels);
+	for(i=0; i<bs->getSize(); i++)
+	{
+		AbstractBody *body=bs->get(i);
+		labels += "\t";
+		labels += body->getName();
+	}
+
+	labels += "\tTotal\n";
+
+	setColumnLabels(labels.c_str());
+
 }
 
 //_____________________________________________________________________________
@@ -262,11 +269,11 @@ computeBodyPowers()
 	}
 
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int nb = _model->getNB();
-	int ny = _model->getNY();
-	int np = _model->getNP();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int nb = _model->getNumBodies();
+	int ny = _model->getNumStates();
+	int np = _model->getNumContacts();
 
 	// GRAVITY
 	double g0[] = { 0.0, 0.0, 0.0 };
@@ -275,8 +282,7 @@ computeBodyPowers()
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
-	int i,j,J,c,body;
-	int bodyB;
+	int i,J,c;
 	double pointB[3];
 	double t;
 	double *y = new double[ny];
@@ -290,6 +296,10 @@ computeBodyPowers()
 	double *vel = new double[nb*3];
 	double *angVel = new double[nb*3];
 	StateVector *yVec;
+	int bodyIndex;
+	BodySet *bs = NULL;
+	AbstractBody *body, *bodyB;
+
 	for(i=0;i<_yStore->getSize();i++) {
 
 		// GET STATES
@@ -304,13 +314,21 @@ computeBodyPowers()
 		// GET VELOCITIES
 		// Need to store them for each body for power calculation 
 		//	before we set them to zero for acceleration calculation
-		for(body=0;body<nb;body++) {	
-			int k = Mtx::ComputeIndex(body,3,0);
-			_model->getVelocity(body,com,&vel[k]);
-			_model->getAngularVelocityBodyLocal(body,&angVel[k]);
+		bodyIndex = 0;
+		bs = _model->getDynamicsEngine().getBodySet();
+		int j=0;
+		for(j=0; j<bs->getSize(); j++)
+		{
+			body = bs->get(j);
+			int k = Mtx::ComputeIndex(bodyIndex++,3,0);
+			_model->getDynamicsEngine().getVelocity(*body,com,&vel[k]);
+			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,&angVel[k]);
 		}
 
 		// LOOP OVER INDEPENDENT COMPONENTS
+		int ai=0;	// index for looping over actuators
+		ActuatorSet* as = _model->getActuatorSet();
+		AbstractActuator* act = as->get(ai);
 		for(c=0;c<_nic;c++) {
 
 			// SET GRAVITY
@@ -336,46 +354,49 @@ computeBodyPowers()
 			_model->setStates(y);
 
 			// APPLY ACTUATOR FORCE
-			if(c<=getLastActuatorIndex()) {
-				_model->applyActuatorForce(c);
+			if(c<_model->getNumActuators()) {
+				act->apply();
 			}
 
 			// APPLY ELEMENT FORCES
-			for(j=0;j<_model->getNP();j++) {
+			for(j=0;j<_model->getNumContacts();j++) {
 				J = Mtx::ComputeIndex(j,3,0);
-				bodyB = _model->getContactBodyB(j);
-				_model->getContactPointB(j,pointB);
-				_model->applyForce(bodyB,pointB,&fe[J]);
+				bodyB = _model->getContactSet()->getContactBodyB(j);
+				_model->getContactSet()->getContactPointB(j,pointB);
+				_model->getDynamicsEngine().applyForce(*bodyB,pointB,&fe[J]);
 			}
 
 			// COMPUTE THE ACCELERATIONS
-			_model->computeAccelerations(dqdt,dudt);
+			_model->getDynamicsEngine().computeDerivatives(dqdt,dudt);
 		
 			// COMPUTE THE BODY POWERS
-			for(body=0;body<nb;body++) {
-
+			bodyIndex = 0;
+			int bsi = 0;
+			BodySet* bs =_model->getDynamicsEngine().getBodySet();
+			
+			for(bsi=0; bsi < bs->getSize(); bsi++)
+			{
+				body = bs->get(bsi);
 				// GET ACCELERATIONS
-				_model->getAcceleration(body,com,acc);
-				_model->getAngularAccelerationBodyLocal(body,angAcc);
+				_model->getDynamicsEngine().getAcceleration(*body,com,acc);
+				_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angAcc);
 	
 				// COMPUTE POWER
 				double gravPower, linPower, angPower, power;
 				double inertia[3][3];
 				double result[3];
 				
-				int k = Mtx::ComputeIndex(body,3,0);
+				int k = Mtx::ComputeIndex(bodyIndex,3,0);
 
 				// GRAVITY
 				_model->getGravity(grav);
-				gravPower = 
-					-_model->getMass(body) *Mtx::DotProduct(3,grav,&vel[k]);
+				gravPower = -body->getMass() * Mtx::DotProduct(3,grav,&vel[k]);
 
 				// LINEAR KINETIC
-				linPower =
-					_model->getMass(body) * Mtx::DotProduct(3,&vel[k],acc);
+				linPower = body->getMass() * Mtx::DotProduct(3,&vel[k],acc);
 
 				// ANGULAR KINETIC
-				_model->getInertiaBodyLocal(body,inertia);
+				body->getInertia(inertia);
 				Mtx::Multiply(3,3,1,&inertia[0][0],angAcc,result);
 				angPower =  Mtx::DotProduct(3,&angVel[k],result);
 
@@ -383,12 +404,13 @@ computeBodyPowers()
 				power = gravPower + linPower + angPower;
 
 				// FILL ARRAY
-				indPower[body] = power;
+				indPower[bodyIndex] = power;
+
 			}
 
 			// SUM POWERS
-			for(indPower[npwr-1]=0.0,body=0;body<nb;body++) {
-				indPower[npwr-1] += indPower[body];
+			for(indPower[npwr-1]=0.0,bodyIndex=0;bodyIndex<nb;bodyIndex++) {
+				indPower[npwr-1] += indPower[bodyIndex];
 			}
 
 			// STORE THE BODY ACCELERATIONS
@@ -399,6 +421,8 @@ computeBodyPowers()
 				_powerStore[c]->setColumnLabels(getColumnLabels());
 			}
 			_powerStore[c]->append(t,npwr,indPower);
+			ai++;
+			act = as->get(ai);
 		}
 	}
 

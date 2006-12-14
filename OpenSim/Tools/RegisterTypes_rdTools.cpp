@@ -15,6 +15,8 @@
 #include "VectorGCVSplineR1R3.h"
 #include "Scale.h"
 #include "NatCubicSpline.h"
+#include "Constant.h"
+#include "VisibleObject.h"
 
 
 
@@ -41,6 +43,7 @@ RDTOOLS_API void RegisterTypes_rdTools()
 	//Object::RegisterType( RootSolver() );
 	Object::RegisterType( Scale() );
 	Object::RegisterType( NatCubicSpline() );
+	Object::RegisterType( Constant() );
 	Object::RegisterType( VisibleObject() );
 }
 

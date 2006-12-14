@@ -6,12 +6,14 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/PropertyInt.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 namespace OpenSim { 
 
+class AbstractModel;
 class XMLDocument;
 
 
@@ -30,7 +32,7 @@ class RDSIMULATION_API Investigation: public Object
 //=============================================================================
 protected:
 	/** Pointer to the model being investigated. */
-	Model *_model;
+	AbstractModel *_model;
 
 	// SERIALIZED PROPERTIES
 	/** Name of the model library to load.  Do not include the library
@@ -40,10 +42,10 @@ protected:
 	/** Name of the xml file used to deserialize or construct a model. */
 	PropertyStr _modelFileProp;
 	std::string &_modelFile;
-	/** Name of the xml file used to construct an actuator set for the
+	/** Names of the xml files used to construct an actuator set for the
 	model. */
-	PropertyStr _actuatorSetFileProp;
-	std::string &_actuatorSetFile;
+	PropertyStrArray _actuatorSetFilesProp;
+	Array<std::string> &_actuatorSetFiles;
 	/** Name of the xml file used to construct a contact force set for the
 	model. */
 	PropertyStr _contactForceSetFileProp;
@@ -111,8 +113,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	virtual void setModel(Model *aModel);
-	virtual Model* getModel() const;
+	virtual void setModel(AbstractModel *aModel);
+	virtual AbstractModel* getModel() const;
 	void setOutputPrecision(int aPrecision);
 	int getOutputPrecision() const;
 	AnalysisSet& getAnalysisSet() const;
@@ -145,7 +147,6 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
-	void constructCommandLineForLoadModel(Array<std::string> &args);
 	void loadModel();
 	void addAnalysisSetToModel();
 

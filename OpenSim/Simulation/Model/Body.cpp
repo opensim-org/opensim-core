@@ -37,11 +37,8 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 
 
-
-
-using namespace OpenSim;
 using namespace std;
-
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -52,7 +49,7 @@ using namespace std;
  */
 
 Body::Body(double aM,double *aI):
-VisibleObject(),
+PolyObject(),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
 _centerOfMass(_propCenterOfMass.getValueDblArray())
@@ -76,7 +73,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
  * @param aFileName File name of the document.
  */
 Body::Body(const string &aFileName):
-VisibleObject(aFileName),
+PolyObject(aFileName),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
 _centerOfMass(_propCenterOfMass.getValueDblArray())
@@ -91,7 +88,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
  * @param aBody Body to copy.
  */
 Body::Body(const Body &aBody) :
-VisibleObject(aBody),
+PolyObject(aBody),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
 _centerOfMass(_propCenterOfMass.getValueDblArray())
@@ -109,7 +106,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
  * @param aElement XML element.
  */
 Body::Body(DOMElement *aElement) :
-VisibleObject(aElement),
+PolyObject(aElement),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
 _centerOfMass(_propCenterOfMass.getValueDblArray())

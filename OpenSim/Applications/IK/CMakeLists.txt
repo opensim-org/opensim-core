@@ -3,20 +3,18 @@ INCLUDE_DIRECTORIES(
 	${OpenSim_SOURCE_DIR}/Vendors 		  
 	${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src)
 
-FILE(GLOB SOURCE_FILES *.cpp ../Scale/simmScalerImpl.cpp)
-FILE(GLOB INCLUDE_FILES *.h  ../Scale/simmScalerImpl.h)
+FILE(GLOB SOURCE_FILES *.cpp ../../Subject/Simm*.cpp)
+FILE(GLOB INCLUDE_FILES *.h ../../Subject/Simm*.h)
 
 LINK_LIBRARIES(
 	debug xerces-c_2D optimized  xerces-c_2 
 	debug rdTools_d optimized rdTools
 	debug rdSimulation_d optimized rdSimulation
-	debug suAnalyses_d optimized suAnalyses
 	debug rdSQP_d optimized rdSQP)
 
-ADD_DEFINITIONS(-Dworkflow_EXPORTS)
+ADD_DEFINITIONS(-DRDSIMULATION_EXPORTS -Dworkflow_EXPORTS)
 
 ADD_EXECUTABLE(ik ${SOURCE_FILES} ${INCLUDE_FILES})
-
 
 INSTALL_TARGETS(/bin/ ik)
 
@@ -38,4 +36,6 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
 # Disable this testing for now since it's accounted for by Scaling
+IF(NOT OPENSIM_MINIMAL_BUILD)
 SUBDIRS(test)
+ENDIF(NOT OPENSIM_MINIMAL_BUILD)

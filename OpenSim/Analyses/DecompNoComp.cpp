@@ -11,7 +11,7 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 #include "DecompNoComp.h"
 
 
@@ -64,9 +64,9 @@ DecompNoComp::~DecompNoComp()
  * This constructor is used if the decomposition analysis is going to
  * be performed during the course of a simulation.
  *
- * @param aModel Model on which the analyses are to be performed.
+ * @param aModel AbstractModel on which the analyses are to be performed.
  */
-DecompNoComp::DecompNoComp(Model *aModel) :
+DecompNoComp::DecompNoComp(AbstractModel *aModel) :
 	Analysis(aModel)
 {
 	int i;
@@ -111,14 +111,14 @@ DecompNoComp::DecompNoComp(Model *aModel) :
  * accelerates the model in a pure sense, without its associated reaction
  * forces.
  *
- * @param aModel Model on which the simulation was run.
+ * @param aModel AbstractModel on which the simulation was run.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.  If NULL,
  * accelerations are computed based on a NULL decompostion.
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension of the force decomposition files.
  */
-DecompNoComp::DecompNoComp(Model *aModel,char *aBaseName,char *aDir,char *aExtension) :
+DecompNoComp::DecompNoComp(AbstractModel *aModel,char *aBaseName,char *aDir,char *aExtension) :
 	Analysis(aModel)
 {
 	printf("DecompNoComp: constructing induced acceleration analysis from file.\n");
@@ -192,10 +192,10 @@ void DecompNoComp::
 initializeNumbers()
 {
 	// NUMBERS OF THINGS
-	int na = _model->getNA();
+	int na = _model->getNumActuators();
 	_nc = 1;
 	_nic = 1;
-	_np = _model->getNP();
+	_np = _model->getNumContacts();
 
 }
 //-----------------------------------------------------------------------------
@@ -304,7 +304,7 @@ createNullDecomposition()
 {
 	// ZERO VECTOR
 	int i;
-	int n = 3*_model->getNP();
+	int n = 3*_model->getNumContacts();
 	if(n<=0) return;
 	double *zero = new double[n];
 	for(i=0;i<n;i++) zero[i] = 0.0;
@@ -456,14 +456,14 @@ getUsePresetContactEstablishedSettings() const
  * Set whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNP().
+ * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
  * @param aTrueFalse Wheter or not contact has been established.
  * @see setUsePresetContactEstablished()
  */
 void DecompNoComp::
 setContactEstablished(int aIndex,bool aTrueFalse)
 {
-	if((aIndex<0)||(aIndex>=_model->getNP())) {
+	if((aIndex<0)||(aIndex>=_model->getNumContacts())) {
 		printf("DecompNoComp.setContactEstablished: WARN- index out of range.\n");
 		return;
 	}
@@ -475,14 +475,14 @@ setContactEstablished(int aIndex,bool aTrueFalse)
  * Get whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNP().
+ * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
  * @return True if contact has been established; false if not or on an error.
  * @see setUsePresetContactEstablished()
  */
 bool DecompNoComp::
 getContactEstablished(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=_model->getNP())) {
+	if((aIndex<0)||(aIndex>=_model->getNumContacts())) {
 		printf("DecompNoComp.getContactEstablished: WARN- index out of range.\n");
 		return(false);
 	}
@@ -603,7 +603,7 @@ getUseNullDecomposition()
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -635,7 +635,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -669,7 +669,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

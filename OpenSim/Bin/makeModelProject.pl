@@ -11,25 +11,23 @@ chomp($subjectName);
 
 use locale;
 
-print "Use subject name ".$subjectName." (y/n)?";
-$response = <STDIN>;
-if ($response =~ m/^[N|n]$/) {
-	print "Enter subject name :";
-	$subjectName = readline STDIN;
-	chomp($subjectName);	
+if ($ARGV[0]) {
+	$subjectName = $ARGV[0];
+	print "Using subject name ".$subjectName."\n";
+} else {
+	print "Use subject name ".$subjectName." (y/n)?";
+	$response = <STDIN>;
+	if ($response =~ m/^[N|n]$/) {
+		print "Enter subject name :";
+		$subjectName = readline STDIN;
+		chomp($subjectName);	
+	}
 }
-
-my $CapSubjectName = "\u$subjectName";
-## my $suCapSubjectName = "su".$CapSubjectName;
 
 chomp($subjectName);
 %filemap = (
 	"template.sln" => $subjectName.".sln",
-	"template.vcproj" => $subjectName.".vcproj",
-	"template.h" => $subjectName.".h",
-	"template.cpp" => $subjectName.".cpp",
-	"sdufuncs_darryl.c" => "sdufuncs_darryl.c",
-	"sdlib.c" => "sdlib.c"
+	"template.vcproj" => $subjectName.".vcproj"
 );
 my $templateDir = $ENV{OPENSIM_TEMPLATE_DIR};
 

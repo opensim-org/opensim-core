@@ -26,30 +26,23 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/VisibleProperties.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmMuscle.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmSubject.h>
+#include <OpenSim/Subject/SimmSubject.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include "SimmScalerImpl.h"
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
-
 
 using namespace std;
 using namespace OpenSim;
-
 
 static void PrintUsage(ostream &aOStream);
 
@@ -97,24 +90,6 @@ int main(int argc,char **argv)
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
 					Object::setSerializeAllDefaults(true);
-					// Add instances of objects that matter as examples
-					SimmGenericModelParams& params  = subject->getGenericModelParams();
-					params.addMarker(new SimmMarker());
-					// Add a measurement
-					SimmScalingParams& params2 = subject->getScalingParams();
-					SimmMeasurement* meas = new SimmMeasurement();
-					meas->addBodyScale(new BodyScale());
-					meas->addMarkerPair(new SimmMarkerPair());
-					meas->setApply(false);
-					params2.addMeasurement(meas);
-
-					params2.addScale(new Scale());
-
-					// Now do SimmMarkerPlacementParams 
-					SimmMarkerPlacementParams& params3 = subject->getMarkerPlacementParams();
-					params3.getMarkerSet().append(new SimmMarker());
-					params3.addCoordinate(new SimmCoordinate());
-
 					subject->print("default_subject.xml");
 					Object::setSerializeAllDefaults(false);
 					cout << "Created file default_subject.xml with default setup" << endl;
@@ -131,134 +106,37 @@ int main(int argc,char **argv)
 
 
 	try {
+		// Construct model and read parameters file
+		Object::RegisterType(VisibleObject());
+		Object::RegisterType(SimmSubject());
+		SimmSubject::registerTypes();
+		SimmSubject* subject = new SimmSubject(inName);
+		AbstractModel* model = subject->createModel();
 
-		// CONSTRUCT SUBJECT INSTANCE
-		SimmSubject *subject = new SimmSubject(inName);
-		//Object *subjectCopy = subject->copy();
-		//subjectCopy->print("test_subject.xml");
-
-		// CONSTRUCT THE MODEL
-		SimmModel *model = subject->createModel();
-
-		// WRITE MODEL TO FILE
-		//Object *modelCopy = model->copy();
-		//modelCopy->print("gait_test.osim");
-
-		// SCALE THE MODEL BASE ON PARAMETERS SPECIFIED IN THE SUBJECT FILE
-		if (!subject->isDefaultScalingParams()){
-			SimmScalingParams& params = subject->getScalingParams();
-			ScalerInterface *scaler = new SimmScalerImpl(*model);
-			const ScaleSet &scaleSet = params.getScaleSet(*model, subject->getPathToSubject().c_str());
-			bool preserveMassDistribution = params.getPreserveMassDist();
-			double mass = subject->getMass();
-			bool success = scaler->scaleModel(scaleSet,preserveMassDistribution, mass);
-			if (!success) {
-				cout << "===ERROR===: Unable to scale generic model." << endl;
-				return -1;
-			} else {
-				cout << "Scaled model "<< inName << "Successfully" << endl;
-			}
-			params.writeOutputFiles(model);
-			delete scaler;
-
-		// NO SCALING PARAMETERS SET
-		} else {
+		if (!subject->isDefaultModelScaler())
+		{
+			SimmModelScaler& scaler = subject->getModelScaler();
+			scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
+		}
+		else
+		{
 			cout << "Scaling parameters not set. Model is not scaled." << endl;
 		}
 
-
-		// ADJUST MARKERS TO AGREE WITH THE STATIC TRIAL
-		if (!subject->isDefaultMarkerPlacementParams()){
-
-			SimmMarkerPlacementParams& params = subject->getMarkerPlacementParams();
-			// Update markers to correspond to those specified in IKParams block
-			model->updateMarkers(params.getMarkerSet());
-
-			SimmMotionData *coordinateValues = 0;
-			if (params.getCoordinateFileName() != "Unassigned") { // TODO: more reliable way to check if it's not the default value
-				if(ifstream(params.getCoordinateFileName().c_str())) {
-					coordinateValues = new SimmMotionData(params.getCoordinateFileName());
-				} else {
-					cout << "Could not read motion file `" << params.getCoordinateFileName() << "'" << endl;
-				}
-			}
-			if (!coordinateValues)
-				coordinateValues = new SimmMotionData();
-
-			// For each coordinate whose "value" field the user specified
-			// as "fromFile", read the value from the first frame in the
-			// coordinate file (a SIMM motion file) and use it to overwrite
-			// the "fromFile" specification.
-			SimmCoordinateSet &coordinateSet = params.getCoordinateSet();
-			if (coordinateValues->getNumColumns() > 0) {
-				for (int i = 0; i < coordinateSet.getSize(); i++) {
-					if (coordinateSet.get(i)->getValueStr() == "fromFile"){
-						double newValue = coordinateValues->getValue(coordinateSet.get(i)->getName(), 0);
-						coordinateSet.get(i)->setValue(newValue);
-					}
-				}
-				// Update the model with the coordinates specified
-				// by the user in the params section.
-				model->updateCoordinates(coordinateSet);
-			}
-			// end code restore
-
-			// Load the static pose marker file, and average all the
-			// frames in the user-specified time range.
-			SimmMarkerData staticPose(params.getStaticPoseFilename());
-
-			// Convert read trc fil into "common" rdStroage format
-			Storage inputStorage;
-			staticPose.makeRdStorage(inputStorage);  // Take out?
-
-			// Convert the marker data into the model's units.
-			Array<double> timeRange = params.getTimeRange();
-			staticPose.averageFrames(0.01, timeRange[0], timeRange[1]);
-			staticPose.convertToUnits(model->getLengthUnits());
-
-			// Delete any markers from the model that are not in the static
-			// pose marker file.
-			model->deleteUnusedMarkers(staticPose.getMarkerNames());
-
-			// SOLVE THE IK PROBLEM FOR THE STATIC POSE
-			SimmIKTrialParams options;
-			options.setStartTime(timeRange[0]);
-			options.setEndTime(timeRange[1]);
-			options.setIncludeMarkers(true);
-			// Convert read trc fil into "common" rdStroage format
-			staticPose.makeRdStorage(inputStorage);
-			if(coordinateValues->getNumColumns()) {
-				coordinateValues->addToRdStorage(inputStorage,timeRange[0],timeRange[1]);
-			}
-			inputStorage.print("markers_coords.sto");
-			// Create target
-			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
-			// Create solver
-			SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
-			// Solve
-			Storage	outputStorage;
-			ikSolver->solveFrames(options, inputStorage, outputStorage);
-
-			// MOVE THE MARKERS TO CORRESPOND TO EXPERIMENTAL LOCATIONS
-			model->moveMarkersToCloud(outputStorage);
-	
-			// WRITE THE FILES
-			params.writeOutputFiles(model, outputStorage);
-
-			delete ikSolver;
-			delete target;
-
-		// DO NOT MOVE MARKERS
-		} else {
+		if (!subject->isDefaultMarkerPlacer())
+		{
+			SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+			placer.processModel(model, subject->getPathToSubject());
+		}
+		else
+		{
 			cout << "Marker placement parameters not set. No markers have been moved." << endl;
 		}
 
-		// CLEAN UP
 		delete model;
 		delete subject;
-
-	// HANDLE ANY EXCEPTIONS
-	} catch(Exception &x) {
+	}
+	catch(Exception &x) {
 		x.print(cout);
 	}
 

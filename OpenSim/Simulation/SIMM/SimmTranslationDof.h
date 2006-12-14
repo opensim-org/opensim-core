@@ -1,10 +1,10 @@
-#ifndef _SimmTranslationDof_h_
-#define _SimmTranslationDof_h_
+#ifndef __SSimmTranslationDof_h__
+#define __SimmTranslationDof_h__
 
 // SimmTranslationDof.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -33,7 +33,9 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmDof.h"
+#include "AbstractDof.h"
+
+namespace OpenSim {
 
 #define TX_NAME "tx"
 #define TY_NAME "ty"
@@ -47,9 +49,7 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
-class RDSIMULATION_API SimmTranslationDof : public SimmDof  
+class RDSIMULATION_API SimmTranslationDof : public AbstractDof  
 {
 public:
 	enum AxisIndex
@@ -62,8 +62,6 @@ public:
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
 	double _axis[3];
 	AxisIndex _axisIndex;
@@ -86,13 +84,13 @@ public:
 #ifndef SWIG
 	SimmTranslationDof& operator=(const SimmTranslationDof &aDof);
 #endif
-   void SimmTranslationDof::copyData(const SimmTranslationDof &aDof);
+   void copyData(const SimmTranslationDof &aDof);
 
-	virtual void getAxis(double axis[3]) const;
+	virtual void getAxis(double rAxis[3]) const;
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
-	virtual DofType getDofType() const { return Translational; }
-	void getTranslation(double vec[4]);
+	virtual DofType getMotionType() const { return Translational; }
+	void getTranslation(double rVec[4]);
 	AxisIndex getAxisIndex() const { return _axisIndex; }
 
 	virtual void peteTest();
@@ -101,13 +99,12 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
 //=============================================================================
-};	// END of class SimmDof
+};	// END of class SimmTranslationDof
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmTranslationDof_h__
 

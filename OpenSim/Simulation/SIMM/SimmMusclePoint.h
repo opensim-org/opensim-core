@@ -1,10 +1,10 @@
-#ifndef _SimmMusclePoint_h_
-#define _SimmMusclePoint_h_
+#ifndef __SimmMusclePoint_h__
+#define __SimmMusclePoint_h__
 
 // SimmMusclePoint.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -38,12 +38,14 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
-#include "SimmBody.h"
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmModel;
-class SimmKinematicsEngine;
+class AbstractBody;
+class AbstractModel;
+class AbstractSimmMuscle;
+class AbstractDynamicsEngine;
+class AbstractWrapObject;
 
 //=============================================================================
 //=============================================================================
@@ -68,14 +70,15 @@ protected:
 	PropertyStr _bodyNameProp;
    std::string &_bodyName;
 
-
 	// Support for Display
-	PropertyObj		_displayerProp;
-	VisibleObject	&_displayer;
+	PropertyObj _displayerProp;
+	VisibleObject &_displayer;
 
-	/* const*/ SimmBody *_body; // Not const anymore since the body's displayer is not const
+	/* const*/ AbstractBody *_body; // Not const anymore since the body's displayer is not const
+
 	/** A temporary kluge until the default mechanism is working */
 	static Geometry *_defaultGeometry;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -96,15 +99,18 @@ public:
    void SimmMusclePoint::copyData(const SimmMusclePoint &aPoint);
 
 	Array<double>& getAttachment() const { return _attachment; }
-	const SimmBody* getBody() const { return _body; }
+	const AbstractBody* getBody() const { return _body; }
 	std::string& getBodyName() const { return _bodyName; }
 	void scale(Array<double>& aScaleFactors);
 
-	virtual void writeSIMM(std::ofstream& out) const;
 	virtual bool isActive() const { return true; }
-	virtual void setup(SimmModel* model, SimmKinematicsEngine* ke);
+	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
+	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
+
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	virtual void updateGeometry();
+
 	virtual void peteTest() const;
 
 protected:
@@ -114,10 +120,10 @@ private:
 	void setupProperties();
 //=============================================================================
 };	// END of class SimmMusclePoint
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmMusclePoint_h__
 

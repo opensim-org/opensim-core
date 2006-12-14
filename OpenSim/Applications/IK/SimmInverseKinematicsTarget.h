@@ -1,6 +1,5 @@
-
-#ifndef _SimmInverseKinematicsTarget_h_
-#define _SimmInverseKinematicsTarget_h_
+#ifndef __SimmInverseKinematicsTarget_h__
+#define __SimmInverseKinematicsTarget_h__
 // SimmInverseKinematicsTarget.h
 // Authors: Ayman Habib, Peter Loan
 /* Copyright (c) 2005, Stanford University, Ayman Habib, and Peter Loan.
@@ -27,14 +26,14 @@
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 #include <OpenSim/Tools/Array.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-namespace OpenSim { 
+#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractBody.h>
+#include <OpenSim/Simulation/SIMM/AbstractMarker.h>
 
-class SimmKinematicsEngine;
-class SimmMarker;
-class SimmBody;
+namespace OpenSim {
+
 class Storage;
-class SimmModel;
 
 #ifdef SWIG
 	#ifdef workflow_API
@@ -59,7 +58,7 @@ class workflow_API SimmInverseKinematicsTarget : public rdOptimizationTarget
 // DATA
 //==============================================================================
 private:
-	SimmModel& _model;
+	AbstractModel& _model;
 
 	// Amount of perturbation used for derivative computation this should be an array
 	static const double _perturbation;
@@ -72,8 +71,8 @@ private:
 	// Marker Map information
 	typedef struct
 	{
-		const SimmMarker* marker;
-		const SimmBody* body;
+		const AbstractMarker* marker;
+		const AbstractBody* body;
 		int experimentalColumn;
 		double experimentalPosition[3];
 		double computedPosition[3];
@@ -82,11 +81,11 @@ private:
 
 	// Coordinate Map information
 	int _numUnconstrainedQs; // number of unconstrained (unlocked) coordinates in model
-	SimmCoordinateArray _unconstrainedQs; // array of unconstrained coordinates in model
+	CoordinateSet _unconstrainedQs; // array of unconstrained coordinates in model
 	int* _unconstrainedQsIndices; // map from unconstrained coordinates into experimental data
 
 	int _numPrescribedQs; // number of coordinates that are locked AND that are specified in _experimentalDataStorage
-	SimmCoordinateArray _prescribedQs; // array of locked+specified coordinates in model
+	CoordinateSet _prescribedQs; // array of locked+specified coordinates in model
 	int* _prescribedQsIndices; // map from locked+specified coordinates into experimental data
 
 //==============================================================================
@@ -100,9 +99,9 @@ public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
 	//---------------------------------------------------------------------------
-	SimmInverseKinematicsTarget(SimmModel &aModel, Storage& aExperimentalDataStorage);
+	SimmInverseKinematicsTarget(AbstractModel &aModel, Storage& aExperimentalDataStorage);
 
-	virtual ~SimmInverseKinematicsTarget();
+	virtual ~SimmInverseKinematicsTarget(void);
 
 	//---------------------------------------------------------------------------
 	// SET AND GET
@@ -115,7 +114,7 @@ public:
 	void getUnconstrainedCoordinateNames(Array<const std::string*>& aNameArray);
 	void getPrescribedCoordinateNames(Array<const std::string*>& aNameArray);
 	void getOutputMarkerNames(Array<const std::string*>& aNameArray);
-	SimmModel& getModel() { return _model; };
+	AbstractModel& getModel() { return _model; };
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
@@ -130,6 +129,6 @@ public:
 	int computeConstraintGradient(double *x,int i,double *dcdx);
 };
 
-}; //namespace
+} // namespace OpenSim
 
 #endif

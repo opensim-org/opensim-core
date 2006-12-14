@@ -81,6 +81,10 @@ class Object;
  * @version 1.0
  * @author Frank C. Anderson
  */
+#ifdef WIN32
+#pragma warning( disable : 4290 )	// VC++ non-ANSI Exception handling
+#endif
+
 class RDTOOLS_API Property  
 {
 

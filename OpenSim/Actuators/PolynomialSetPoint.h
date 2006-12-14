@@ -33,9 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include "Actuators.h"
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "SetPoint.h"
 
 
@@ -90,7 +88,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	PolynomialSetPoint(int aBodyA=0,int aBodyB=0);
+	PolynomialSetPoint(std::string aBodyA="",std::string aBodyB="");
 	PolynomialSetPoint(DOMElement *aElement);
 	PolynomialSetPoint(const PolynomialSetPoint &aContact);
 	virtual ~PolynomialSetPoint();

@@ -33,9 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include "Model.h"
-#include "ActuatorSet.h"
-#include "ContactForce.h"
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
 
 
 //=============================================================================
@@ -49,10 +47,13 @@
  *
  * @author Frank C. Anderson
  * @version 1.0
- * @todo Implement a getNY() method.  Contact forces could have states, just
+ * @todo Implement a getNumStates() method.  Contact forces could have states, just
  * no controls.
  */
 namespace OpenSim { 
+
+class ContactForce;
+class AbstractBody;
 
 class RDSIMULATION_API ContactForceSet : public ActuatorSet 
 {
@@ -70,7 +71,11 @@ protected:
 public:
 	ContactForceSet();
 	ContactForceSet(const char *aFileName);
+	ContactForceSet(const ContactForceSet &aContactForceSet);
+
 	virtual ~ContactForceSet();
+	Object* copy() const;
+	void copyData(const ContactForceSet &aContactForceSet);
 private:
 	void setNull();
 	void setupSerializedMembers();
@@ -82,6 +87,68 @@ public:
 	// CONTACT
 	bool append(ContactForce *aContact);
 	bool set(int aIndex,ContactForce *aContact);
+
+	// Methods moved down from Model, need to be implemented
+	AbstractBody* getContactBodyA(int aID) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	AbstractBody* getContactBodyB(int aID) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void setContactPointA(int aID,const double aPoint[3])
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactPointA(int aID,double rPoint[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void setContactPointB(int aID,const double aPoint[3])
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactPointB(int aID,double rPoint[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactForce(int aID,double rF[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactNormalForce(int aID,double rFP[3],double rFV[3],double rF[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactTangentForce(int aID,double rFP[3],double rFV[3],double rF[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactStiffness(int aID,const double aDX[3],double rDF[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactViscosity(int aID,const double aDV[3],double rDF[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	void getContactFrictionCorrection(int aID,double aDFFric[3]) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	double getContactForce(int aID) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	double getContactSpeed(int aID) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
+	double getContactPower(int aID) const
+	{
+		throw Exception("Not implemented yet", __FILE__, __LINE__);
+	}
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

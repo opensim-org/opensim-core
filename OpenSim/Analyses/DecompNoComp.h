@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -27,6 +26,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API DecompNoComp : public Analysis 
 {
@@ -76,8 +77,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	DecompNoComp(Model *aModel);
-	DecompNoComp(Model *aModel,char *aBaseName,char *aDir=NULL,
+	DecompNoComp(AbstractModel *aModel);
+	DecompNoComp(AbstractModel *aModel,char *aBaseName,char *aDir=NULL,
 		char *aExtension=NULL);
 	virtual ~DecompNoComp();
 private:

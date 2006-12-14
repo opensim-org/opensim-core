@@ -10,7 +10,7 @@
 #include <math.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Tools/PointConstraint.h>
+#include <OpenSim/Simulation/Model/PointConstraint.h>
 #include "DecompHard.h"
 #include "DecompTarget.h"
 

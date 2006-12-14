@@ -1,10 +1,10 @@
-#ifndef _SimmUnits_h_
-#define _SimmUnits_h_
+#ifndef __SimmUnits_h__
+#define __SimmUnits_h__
 
 // SimmUnits.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -30,6 +30,9 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+
+namespace OpenSim {
+
 //=============================================================================
 //=============================================================================
 /**
@@ -38,8 +41,6 @@
  * @author Peter Loan
  * @version 1.0
  */
-namespace OpenSim { 
-
 class RDSIMULATION_API SimmUnits
 {
 
@@ -72,7 +73,7 @@ private:
 public:
 	SimmUnits();
 	SimmUnits(const SimmUnits& aUnits);
-	SimmUnits(std::string& str);
+	SimmUnits(std::string& aString);
 	SimmUnits(UnitType aType);
 	virtual ~SimmUnits();
 	double convertTo(UnitType aType, double aValue) const;
@@ -85,10 +86,10 @@ public:
 
 //=============================================================================
 };	// END of class SimmUnits
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmUnits_h__
 

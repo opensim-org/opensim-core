@@ -26,20 +26,17 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE. 
 */
-
 /*  
  * Author: Frank C. Anderson 
  */
 
-
 // INCLUDES
 #include "VectorFunctionForActuators.h"
-
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 
 using namespace OpenSim;
 using namespace std;
-
 
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
@@ -57,7 +54,7 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(ModelIntegrand *aIntegrand) :
-	VectorFunctionUncoupledNxN(aIntegrand->getModel()->getNA()),
+	VectorFunctionUncoupledNxN(aIntegrand->getModel()->getNumActuators()),
 	_f(0.0)
 {
 	setNull();
@@ -310,8 +307,8 @@ evaluate(const double *aX,double *rF)
 {
 	int i;
 	int N = getNX();
-	Model *model = _integrand->getModel();
-	int nyModel = model->getNY();
+	AbstractModel *model = _integrand->getModel();
+	int nyModel = model->getNumStates();
 
 	// Controls
 	ControlSet *controlSet = _integrand->getControlSet();
@@ -327,12 +324,16 @@ evaluate(const double *aX,double *rF)
 	// Actuator forces
 	Array<double> yModel(0.0,nyModel);
 	_integrand->convertStatesIntegrandToModel(_tf,&y[0],&yModel[0]);
+	// Need to set the controls here because the integrator would have last evaluated the controls at some
+	// intermediate time < _tf so they won't necessarily be at their desired value.
+	model->setControls(aX);
 	model->setStates(&yModel[0]);
-	model->computeActuation();
+	ActuatorSet *actuatorSet = model->getActuatorSet();
+	actuatorSet->computeActuation();
 
 	// Vector function values
 	for(i=0;i<N;i++) {
-		rF[i] = model->getActuatorForce(i) - _f[i];
+		rF[i] = (*actuatorSet)[i]->getForce() - _f[i];
 	}
 }
 //_____________________________________________________________________________

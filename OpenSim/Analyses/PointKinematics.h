@@ -19,7 +19,8 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 
 const int PointKinematicsNAME_LENGTH = 256;
@@ -36,6 +37,9 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractBody;
+
 class SUANALYSES_API PointKinematics : public Analysis 
 {
 //=============================================================================
@@ -47,7 +51,7 @@ public:
 private:
 	//char _buffer[PointKinematicsBUFFER_LENGTH];
 	//char _tmp[PointKinematicsBUFFER_LENGTH];
-	int	_body;
+	AbstractBody *_body;
 protected:
 	// Properties
 	PropertyStr _bodyNameProp;
@@ -69,7 +73,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	PointKinematics(Model *aModel=0);
+	PointKinematics(AbstractModel *aModel=0);
 	PointKinematics(const std::string &aFileName);
 	PointKinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -101,8 +105,8 @@ public:
 	//--------------------------------------------------------------------------
 	// BODY
 	void setBodyPoint(std::string& aBody, double aPoint[3]);
-	void setBody(int aBody);
-	int getBody();
+	void setBody(AbstractBody* aBody);
+	AbstractBody* getBody();
 	// POINT
 	void setPoint(double aPoint[3]);
 	void getPoint(double rPoint[3]);
@@ -110,7 +114,7 @@ public:
 	void setPointName(const char *aName);
 	const char* getPointName();
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 	
 	// STORAGE
 	void setStorageCapacityIncrements(int aIncrement);

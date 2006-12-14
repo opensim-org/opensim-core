@@ -10,6 +10,7 @@
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmModelVisibleIterator.h>
 #include <OpenSim/Simulation/SIMM/SimmModelIterator.h>
+#include <OpenSim/Simulation/SIMM/BodyIterator.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -23,62 +24,18 @@ int TestVisibleObjectCollection();
  */
 int main(int argc, char* argv[])
 {
-	SimmModel* model = new SimmModel("dynamic.xml");
+	AbstractModel* model = new AbstractModel("dynamic.xml");
 	model->setup();
 
-	model->getSimmKinematicsEngine().saveDynamics("");
-	model->writeSIMMJointFile("test.jnt");
-	SimmModelVisibleIterator* it = new SimmModelVisibleIterator(*model);
-	ArrayPtrs<VisibleObject>* visObjectsList= it->getVisibleObjects(0);
-	for (int i=0; i < visObjectsList->getSize(); i++){
-		VisibleObject *nextVisibleObject = visObjectsList->get(i);
-		string name = nextVisibleObject->getName();
-		string type = nextVisibleObject->getType();
-		Object *owner = nextVisibleObject->getOwner();
-		string ownerType = owner? owner->getType():"no-owner";
+	BodyIterator iter = model->getDynamicsEngine().newBodyIterator();
+	while(!iter.finished()){
+		AbstractBody& nextBody = iter.getCurrent();
 		
 		cout << "Object:" << (owner?owner->getName():"no-owner") << "\t"  
 			<< "#geo files+analytical" << (nextVisibleObject->countGeometry()) << "\t" 
 			<< "Dependents" << nextVisibleObject->countDependents()
 			<< endl;
-	}
-    SimmModelIterator *it2 = new SimmModelIterator(*model);
-
-    SimmBody* gnd = model->getSimmKinematicsEngine().getGroundBodyPtr();
-    while (it2->getNextBody() != 0) {
-
-        SimmBody *body = it2->getCurrentBody();
-		VisibleObject *bodyDisplayer = body->getDisplayer();
-		int ct = bodyDisplayer->countDependents();
-		for (int d=0; d < ct; d++){
-			VisibleObject *Dependent = bodyDisplayer->getDependent(d);
-			cout << Dependent->getOwner()->getType() << Dependent->getOwner()->getName() << endl;
-		}
-		for(int j=0; j < ct;j++){
-			VisibleObject *Dependent = bodyDisplayer->getDependent(j);
-			int geomcount = Dependent->countGeometry();
-			// Create actor for the dpendent
-			for(int gc=0; gc<geomcount; gc++){
-				//vtkActor actor = new vtkActor();
-				Geometry *g = const_cast<Geometry*> (Dependent->getGeometry(gc));
-				AnalyticGeometry* ag = dynamic_cast<AnalyticGeometry*>(g);
-				if (ag = (AnalyticGeometry*) g){
-					AnalyticGeometry::AnalyticGeometryType analyticType = ag->getShape();
-					Transform& trans = Dependent->getTransform();
-					if (analyticType == AnalyticGeometry::Sphere){
-						/*
-						System.out.println("Sphere for object "+Dependent.getOwner().getName());
-						vtkSphereSource sphere = new vtkSphereSource();
-						sphere.SetRadius(0.1);
-						vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-						mapper.SetInput(sphere.GetOutput());
-						actor.SetMapper(mapper);
-						GetRenderer().AddViewProp(actor); 
-						*/
-					}
-				}
-			}
-		}
+		iter++;
 	}
 	return(0);
 }

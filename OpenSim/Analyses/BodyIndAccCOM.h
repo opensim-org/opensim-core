@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "suAnalysesDLL.h"
 #include "IndAcc.h"
 #include "BodyIndAcc.h"
@@ -28,6 +27,9 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractBody;
+
 class SUANALYSES_API BodyIndAccCOM : public BodyIndAcc 
 {
 //=============================================================================
@@ -40,21 +42,21 @@ private:
 	Storage *_posStore;
 	Storage *_velStore;
 	int _aN;
-	int *_aBodyList;
+	AbstractBody* *_aBodyList;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	BodyIndAccCOM(Model *aModel, int aN=0, int aBodyList[] = NULL);
-	BodyIndAccCOM(Model *aModel,Storage *aStates,Storage *aControls,
+	BodyIndAccCOM(AbstractModel *aModel, int aN=0, AbstractBody* aBodyList[] = NULL);
+	BodyIndAccCOM(AbstractModel *aModel,Storage *aStates,Storage *aControls,
 		char *aBaseName,char *aDir=NULL,char *aExtension=NULL,
-		int aN=0,int aBodyList[]=NULL);
+		int aN=0,AbstractBody* aBodyList[]=NULL);
 	virtual ~BodyIndAccCOM();
 private:
 	void constructDescription();
 	void constructColumnLabels();
-	void setBodyList(int aBodyList[]);
+	void setBodyList(AbstractBody* aBodyList[]);
 	void allocateBodyStorage();
 	void deleteBodyStorage();
 

@@ -12,8 +12,10 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include "BodyKinematics.h"
 
 
@@ -45,9 +47,9 @@ BodyKinematics::~BodyKinematics()
  * Construct an BodyKinematics instance for recording the kinematics of
  * the bodies of a model during a simulation.
  *
- * @param aModel Model for which the analyses are to be recorded.
+ * @param aModel AbstractModel for which the analyses are to be recorded.
  */
-BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
+BodyKinematics::BodyKinematics(AbstractModel *aModel, bool aInDegrees) :
 	Analysis(aModel),
 	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {
@@ -60,8 +62,8 @@ BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
 		return;
 
 	// ALLOCATE STATE VECTOR
-	_dy = new double[_model->getNY()];
-	_kin = new double[6*_model->getNB() + 3];
+	_dy = new double[_model->getNumStates()];
+	_kin = new double[6*_model->getNumBodies() + 3];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
@@ -246,33 +248,25 @@ constructDescription()
 void BodyKinematics::
 constructColumnLabels()
 {
-	char labels[MAXLEN];
+	string labels = "time";
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	int i=0;
 
-	// GET STATE NAMES
-	int i;
-	char name[MAXLEN];
-	strcpy(labels,"time");
-	for(i=0;i<_model->getNB();i++) {
-		sprintf(name,"\t%s_X",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-		sprintf(name,"\t%s_Y",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-		sprintf(name,"\t%s_Z",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-		sprintf(name,"\t%s_Ox",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-		sprintf(name,"\t%s_Oy",_model->getBodyName(i).c_str());
-		strcat(labels,name);
-		sprintf(name,"\t%s_Oz",_model->getBodyName(i).c_str());
-		strcat(labels,name);
+	for (i=0; i< bs->getSize(); i++)
+	{
+		AbstractBody *body = bs->get(i);
+		labels += "\t" + body->getName() + "_X";
+		labels += "\t" + body->getName() + "_Y";
+		labels += "\t" + body->getName() + "_Z";
+		labels += "\t" + body->getName() + "_Ox";
+		labels += "\t" + body->getName() + "_Oy";
+		labels += "\t" + body->getName() + "_Oz";
 	}
 
 	// ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
-	strcat(labels,"\tWholeBody_X\tWholeBody_Y\tWholeBody_Z");
+	labels += "\tWholeBody_X\tWholeBody_Y\tWholeBody_Z\n";
 
-	strcat(labels,"\n");
-
-	setColumnLabels(labels);
+	setColumnLabels(labels.c_str());
 }
 
 //_____________________________________________________________________________
@@ -322,10 +316,10 @@ deleteStorage()
 /**
  * Set the model for which the body kinematics are to be computed.
  *
- * @param aModel Model pointer
+ * @param aModel AbstractModel pointer
  */
 void BodyKinematics::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	Analysis::setModel(aModel);
 
@@ -335,8 +329,8 @@ setModel(Model *aModel)
 	if (_kin != 0)
 		delete[] _kin;
 
-	_dy = new double[_model->getNY()];
-	_kin = new double[6*_model->getNB() + 3];
+	_dy = new double[_model->getNumStates()];
+	_kin = new double[6*_model->getNumBodies() + 3];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
@@ -450,47 +444,52 @@ record(double aT,double *aX,double *aY)
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
 
 	// ACCELERATIONS
-	int i;
-	int nq = _model->getNQ();
-	_model->computeAccelerations(&_dy[0],&_dy[nq]);
+	int nq = _model->getNumCoordinates();
+	_model->getDynamicsEngine().computeDerivatives(&_dy[0],&_dy[nq]);
 	// ----------------------------------
 
 
 	// VARIABLES
-	double origin[] = { 0.0, 0.0, 0.0 };
 	double dirCos[3][3];
 	double vec[3],angVec[3];
 	double Mass = 0.0;
 	int I;
-	int nk = 6*_model->getNB() + 3;
+	int nk = 6*_model->getNumBodies() + 3;
 
 	// POSITION
 	double rP[3] = { 0.0, 0.0, 0.0 };
-	for(i=0;i<_model->getNB();i++) {
+	int bodyIndex = 0;
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	int i=0;
 
+	for (i=0; i< bs->getSize(); i++)
+	{
+		AbstractBody *body = bs->get(i);
+		double com[3];
+		body->getMassCenter(com);
 		// GET POSITIONS AND EULER ANGLES
-		_model->getPosition(i,origin,vec);
-		_model->getDirectionCosines(i,dirCos);
-		_model->convertDirectionCosinesToAngles(dirCos,
+		_model->getDynamicsEngine().getPosition(*body,com,vec);
+		_model->getDynamicsEngine().getDirectionCosines(*body,dirCos);
+		_model->getDynamicsEngine().convertDirectionCosinesToAngles(dirCos,
 			&angVec[0],&angVec[1],&angVec[2]);
 
 		// ADD TO WHOLE BODY MASS
-		Mass += _model->getMass(i);
-		rP[0] += _model->getMass(i) * vec[0];
-		rP[1] += _model->getMass(i) * vec[1];
-		rP[2] += _model->getMass(i) * vec[2];
+		Mass += body->getMass();
+		rP[0] += body->getMass() * vec[0];
+		rP[1] += body->getMass() * vec[1];
+		rP[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -500,7 +499,7 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(i,6,0);
+		I = Mtx::ComputeIndex(bodyIndex++,6,0);
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
@@ -509,25 +508,29 @@ record(double aT,double *aX,double *aY)
 	rP[0] /= Mass;
 	rP[1] /= Mass;
 	rP[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNB(),6,0);
+	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
 	memcpy(&_kin[I],rP,3*sizeof(double));
 	
 	_pStore->append(aT,nk,_kin);
 
 	// VELOCITY
 	double rV[3] = { 0.0, 0.0, 0.0 };
-	for(i=0;i<_model->getNB();i++) {
-
+	bodyIndex = 0;
+	for (i=0; i< bs->getSize(); i++)
+	{
+		AbstractBody *body = bs->get(i);
+		double com[3];
+		body->getMassCenter(com);
 		// GET VELOCITIES AND ANGULAR VELOCITIES
-		_model->getVelocity(i,origin,vec);
+		_model->getDynamicsEngine().getVelocity(*body,com,vec);
 		if(_angVelInLocalFrame){
-			_model->getAngularVelocityBodyLocal(i,angVec);
+			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,angVec);
 		} else {
-			_model->getAngularVelocity(i,angVec);
+			_model->getDynamicsEngine().getAngularVelocity(*body,angVec);
 		}
-		rV[0] += _model->getMass(i) * vec[0];
-		rV[1] += _model->getMass(i) * vec[1];
-		rV[2] += _model->getMass(i) * vec[2];
+		rV[0] += body->getMass() * vec[0];
+		rV[1] += body->getMass() * vec[1];
+		rV[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -537,7 +540,7 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(i,6,0);
+		I = Mtx::ComputeIndex(bodyIndex++,6,0);
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
@@ -546,21 +549,25 @@ record(double aT,double *aX,double *aY)
 	rV[0] /= Mass;
 	rV[1] /= Mass;
 	rV[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNB(),6,0);
+	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
 	memcpy(&_kin[I],rV,3*sizeof(double));
 
 	_vStore->append(aT,nk,_kin);
 
 	// ACCELERATIONS
-	double rA[3] = { 0.0, 0.0, 0.0 };	
-	for(i=0;i<_model->getNB();i++) {
-
+	double rA[3] = { 0.0, 0.0, 0.0 };
+	bodyIndex = 0;
+	for (i=0; i< bs->getSize(); i++)
+	{
+		AbstractBody *body = bs->get(i);
+		double com[3];
+		body->getMassCenter(com);
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
-		_model->getAcceleration(i,origin,vec);
-		_model->getAngularAccelerationBodyLocal(i,angVec);
-		rA[0] += _model->getMass(i) * vec[0];
-		rA[1] += _model->getMass(i) * vec[1];
-		rA[2] += _model->getMass(i) * vec[2];
+		_model->getDynamicsEngine().getAcceleration(*body,com,vec);
+		_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angVec);
+		rA[0] += body->getMass() * vec[0];
+		rA[1] += body->getMass() * vec[1];
+		rA[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -570,7 +577,7 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(i,6,0);
+		I = Mtx::ComputeIndex(bodyIndex++,6,0);
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
@@ -579,7 +586,7 @@ record(double aT,double *aX,double *aY)
 	rA[0] /= Mass;
 	rA[1] /= Mass;
 	rA[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNB(),6,0);
+	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
 	memcpy(&_kin[I],rA,3*sizeof(double));
 
 	_aStore->append(aT,nk,_kin);
@@ -594,7 +601,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -636,7 +643,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -670,7 +677,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

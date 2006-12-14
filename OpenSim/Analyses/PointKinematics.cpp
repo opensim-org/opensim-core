@@ -10,7 +10,9 @@
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "PointKinematics.h"
 
@@ -47,12 +49,12 @@ PointKinematics::~PointKinematics()
  *
  * @param aModel Model for which the analyses are to be recorded.
  */
-PointKinematics::PointKinematics(Model *aModel) :
+PointKinematics::PointKinematics(AbstractModel *aModel) :
 Analysis(aModel),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
 _pointName(_pointNameProp.getValueStr()),
-_body(-1)
+_body(NULL)
 {
 	// NULL
 	setNull();
@@ -64,13 +66,13 @@ _body(-1)
 		return;
 
 	// Map name to index
-	_body = aModel->getBodyIndex(_bodyName);
+	_body = aModel->getDynamicsEngine().getBodySet()->get(_bodyName);
 
 	// ALLOCATIONS
 	if (_dy != 0)
 		delete[] _dy;
 
-	_dy = new double[_model->getNY()];
+	_dy = new double[_model->getNumStates()];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
@@ -100,7 +102,7 @@ Analysis(aFileName),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
 _pointName(_pointNameProp.getValueStr()),
-_body(-1)
+_body(NULL)
 {
 	setNull();
 
@@ -124,7 +126,8 @@ PointKinematics::PointKinematics(DOMElement *aElement):
 Analysis(aElement),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_body(NULL)
 {
 	setNull();
 
@@ -252,18 +255,10 @@ constructDescription()
 	char descrip[BUFFER_LENGTH];
 	char tmp[BUFFER_LENGTH];
 
-	// BODY NAME
-	string bodyName;
-	if(_body<0) {
-		bodyName = "ground";
-	} else {
-		bodyName = _model->getBodyName(_body);
-	}
-
 	strcpy(descrip,"\nThis file contains the kinematics ");
 	strcat(descrip,"(position, velocity, or acceleration) of\n");
 	sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
-		_point[0],_point[1],_point[2],bodyName.c_str(),
+		_point[0],_point[1],_point[2],_body->getName().c_str(),
 		_model->getName().c_str());
 	strcat(descrip,tmp);
 	strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons,...)\n\n");
@@ -344,18 +339,18 @@ deleteStorage()
  * @param aModel Model pointer
  */
 void PointKinematics::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	Analysis::setModel(aModel);
 
 	// Map name to index
-	_body = aModel->getBodyIndex(_bodyName);
+	_body = aModel->getDynamicsEngine().getBodySet()->get(_bodyName);
 
 	// ALLOCATIONS
 	if (_dy != 0)
 		delete[] _dy;
 
-	_dy = new double[_model->getNY()];
+	_dy = new double[_model->getNumStates()];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
@@ -379,7 +374,7 @@ setBodyPoint(std::string& aBody, double aPoint[3])
 {
 	if (_model == 0)
 		return;
-	setBody(_model->getBodyIndex(aBody));
+	setBody(_model->getDynamicsEngine().getBodySet()->get(aBody));
 	setPoint(aPoint);
 
 }
@@ -390,14 +385,13 @@ setBodyPoint(std::string& aBody, double aPoint[3])
  * @param aBody Body ID
  */
 void PointKinematics::
-setBody(int aBody)
+setBody(AbstractBody* aBody)
 {
-	if((aBody<_model->getGroundID())||(aBody>=_model->getNB())) {
-		printf("PointKinematics.setBody:  WARN- invalid body ID %d.\n",aBody);
-		printf("\tSetting body id to -1.\n");
-		_body = -1;
-	} else {
-		_body = aBody;
+	if (!aBody)
+	{
+		printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
+		_body = NULL;
+		return;
 	}
 
 	// RESET STORAGE
@@ -417,7 +411,7 @@ setBody(int aBody)
  *
  * @return Body ID
  */
-int PointKinematics::
+AbstractBody* PointKinematics::
 getBody()
 {
 	return(_body);
@@ -561,6 +555,8 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(double aT,double *aX,double *aY)
 {
+	AbstractDynamicsEngine& de = _model->getDynamicsEngine();
+
 	// COMPUTE ACCELERATIONS
 	// ----------------------------------
 	// SET
@@ -568,35 +564,34 @@ record(double aT,double *aX,double *aY)
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
 
 	// ACCELERATIONS
-	_model->computeAccelerations(_dy,&_dy[_model->getNQ()]);
+	de.computeDerivatives(_dy,&_dy[_model->getNumCoordinates()]);
 	// ----------------------------------
 
 	// VARIABLES
 	double vec[3];
-	double origin[] = { 0.0, 0.0, 0.0 };
 
 	// POSITION
-	_model->getPosition(_body,_point.get(),vec);
+	de.getPosition(*_body,_point.get(),vec);
 	_pStore->append(aT,3,vec);
 
 	// VELOCITY
-	_model->getVelocity(_body,_point.get(),vec);
+	de.getVelocity(*_body,_point.get(),vec);
 	_vStore->append(aT,3,vec);
 
 	// ACCELERATIONS
-	_model->getAcceleration(_body,_point.get(),vec);
+	de.getAcceleration(*_body,_point.get(),vec);
 	_aStore->append(aT,3,vec);
 
 	return(0);

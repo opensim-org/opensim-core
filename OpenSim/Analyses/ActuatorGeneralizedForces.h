@@ -11,8 +11,9 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Tools/PropertyStrArray.h>
 #include "suAnalysesDLL.h"
 
 
@@ -26,6 +27,8 @@
  */
 namespace OpenSim { 
 
+class AbstractActuator;
+
 class SUANALYSES_API ActuatorGeneralizedForces : public Analysis 
 {
 //=============================================================================
@@ -37,7 +40,7 @@ public:
 protected:
 	double *_dqdt;
 	double *_dudt;
-	Array<int> _actuatorList;
+	Array<AbstractActuator*> _actuatorList;
 	double *_actuatorGenForces;
 	Storage *_actuatorGenForcesStore;
 
@@ -49,7 +52,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ActuatorGeneralizedForces(Model *aModel=0);
+	ActuatorGeneralizedForces(AbstractModel *aModel=0);
 	ActuatorGeneralizedForces(const std::string &aFileName);
 	ActuatorGeneralizedForces(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -78,7 +81,7 @@ public:
 	void setStorageCapacityIncrements(int aIncrement);
 	Storage* getActuatorGenForcesStorage();
 
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 	void setActuatorList(const Array<std::string>& aActuatorNames);
 	//--------------------------------------------------------------------------
 	// ANALYSIS

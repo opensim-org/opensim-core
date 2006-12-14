@@ -33,9 +33,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "Actuators.h"
+#include "rdActuatorsDLL.h"
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ContactForce.h>
 
 
@@ -58,10 +57,6 @@ class RDACTUATORS_API SetPoint : public ContactForce
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-	static const std::string YP0_NAME;
-	static const std::string YP1_NAME;
-	static const std::string YP2_NAME;
 protected:
 	// PROPERTIES
 	/** Constant stiffness in the tangential direction. */
@@ -83,8 +78,8 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SetPoint(int aBodyA=0,int aBodyB=0,int aNYP=3);
-	SetPoint(DOMElement *aElement,int aNYP=3);
+	SetPoint(std::string aBodyA="",std::string aBodyB="");
+	SetPoint(DOMElement *aElement);
 	SetPoint(const SetPoint &aContact);
 	virtual ~SetPoint();
 private:
@@ -101,16 +96,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// PSEUDOSTATES
-	virtual int getNYP() const;
-	virtual const std::string& getPseudoStateName(int aIndex) const;
-	virtual int getPseudoStateIndex(const std::string &aName) const;
-	virtual void setPseudoStates(const double aX[]);
-	virtual void setPseudoState(int aIndex,double aValue);
-	virtual void setPseudoState(const std::string &aName,double aValue);
-	virtual void getPseudoStates(double rX[]) const;
-	virtual double getPseudoState(int aIndex) const;
-	virtual double getPseudoState(const std::string &aName) const;
 	// TANGENTIAL IMPEDANCE
 	virtual double getInstantaneousTangentialStiffness() const;
 	virtual double getInstantaneousTangentialViscosity() const;

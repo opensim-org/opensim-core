@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "suAnalysesDLL.h"
 #include "IndAcc.h"
 
@@ -48,7 +47,7 @@ protected:
 //=============================================================================
 public:
 	IndContactPowers(Storage *aContactVelocities,
-		Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+		AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~IndContactPowers();
 private:

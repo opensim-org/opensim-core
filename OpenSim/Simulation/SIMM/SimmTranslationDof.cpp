@@ -1,7 +1,7 @@
 // SimmTranslationDof.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,19 +22,17 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmTranslationDof.h"
+#include "AbstractCoordinate.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -50,12 +48,13 @@ SimmTranslationDof::SimmTranslationDof()
 	_axis[0] = _axis[1] = _axis[2] = 0.0;
 	_axisIndex = xTranslation;
 }
+
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
  */
 SimmTranslationDof::SimmTranslationDof(DOMElement *aElement) :
-   SimmDof(aElement)
+   AbstractDof(aElement)
 {
 	setNull();
 
@@ -80,11 +79,12 @@ SimmTranslationDof::~SimmTranslationDof()
  * @param aDof SimmTranslationDof to be copied.
  */
 SimmTranslationDof::SimmTranslationDof(const SimmTranslationDof &aDof) :
-   SimmDof(aDof)
+   AbstractDof(aDof)
 {
-	setupProperties();
+	setNull();
 	copyData(aDof);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this dof and return a pointer to the copy.
@@ -120,15 +120,17 @@ Object* SimmTranslationDof::copy(DOMElement *aElement) const
 	return(dof);
 }
 
-void SimmTranslationDof::copyData(const SimmTranslationDof &aDof)
-{
-	aDof.getAxis(_axis);
-	_axisIndex = aDof._axisIndex;
-}
-
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that need to be done each time the
+ * SimmTranslationDof is deserialized.
+ */
 void SimmTranslationDof::updateFromXMLNode()
 {
-	Object::updateFromXMLNode();
+	AbstractDof::updateFromXMLNode();
 
 	if (_name == TX_NAME)
 	{
@@ -147,6 +149,55 @@ void SimmTranslationDof::updateFromXMLNode()
 	}
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmTranslationDof to another.
+ *
+ * @param aDof SimmTranslationDof to be copied.
+ */
+void SimmTranslationDof::copyData(const SimmTranslationDof &aDof)
+{
+	aDof.getAxis(_axis);
+	_axisIndex = aDof._axisIndex;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the data members of this SimmTranslationDof to their null values.
+ */
+void SimmTranslationDof::setNull()
+{
+	setType("SimmTranslationDof");
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+SimmTranslationDof& SimmTranslationDof::operator=(const SimmTranslationDof &aDof)
+{
+	// BASE CLASS
+	AbstractDof::operator=(aDof);
+
+	copyData(aDof);
+
+	return(*this);
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the current value of the translation dof
+ *
+ * @return The current value of the dof.
+ */
 double SimmTranslationDof::getValue()
 {
 	if (_coordinate)
@@ -155,54 +206,36 @@ double SimmTranslationDof::getValue()
 		return _functions[0]->evaluate(0, 0.0, 0.0, 0.0);
 }
 
-void SimmTranslationDof::getAxis(double axis[3]) const
+//_____________________________________________________________________________
+/**
+ * Get the translation axis.
+ *
+ * @param rAxis the translation axis is returned here.
+ */
+void SimmTranslationDof::getAxis(double rAxis[3]) const
 {
-	if (axis != NULL)
+	if (rAxis != NULL)
 	{
-		axis[0] = _axis[0];
-		axis[1] = _axis[1];
-		axis[2] = _axis[2];
+		rAxis[0] = _axis[0];
+		rAxis[1] = _axis[1];
+		rAxis[2] = _axis[2];
 	}
 }
 
-void SimmTranslationDof::getTranslation(double vec[4])
+//_____________________________________________________________________________
+/**
+ * Get the translation.
+ *
+ * @param rVec the translation is returned here.
+ */
+void SimmTranslationDof::getTranslation(double rVec[4])
 {
 	double value = getValue();
 
-	vec[0] = _axis[0] * value;
-	vec[1] = _axis[1] * value;
-	vec[2] = _axis[2] * value;
-	vec[3] = 1.0;
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this SimmTranslationDof to their null values.
- */
-void SimmTranslationDof::setNull()
-{
-	setupProperties();
-	setType("SimmTranslationDof");
-}
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void SimmTranslationDof::setupProperties()
-{
-}
-
-SimmTranslationDof& SimmTranslationDof::operator=(const SimmTranslationDof &aDof)
-{
-	// BASE CLASS
-	SimmDof::operator=(aDof);
-
-	copyData(aDof);
-
-	return(*this);
+	rVec[0] = _axis[0] * value;
+	rVec[1] = _axis[1] * value;
+	rVec[2] = _axis[2] * value;
+	rVec[3] = 1.0;
 }
 
 void SimmTranslationDof::peteTest()
@@ -216,4 +249,3 @@ void SimmTranslationDof::peteTest()
 	if (_functions.getSize() > 0)
 		cout << "   function: " << *(_functions[0]) << endl;
 }
-

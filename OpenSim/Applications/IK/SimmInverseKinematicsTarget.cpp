@@ -24,19 +24,16 @@
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/SIMM/simmMacros.h>
+#include <OpenSim/Simulation/SIMM/SimmMacros.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarker.h>
-#include <OpenSim/Simulation/SIMM/SimmBody.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include "SimmInverseKinematicsTarget.h"
 
-
-
-using namespace OpenSim;
-const double SimmInverseKinematicsTarget::_perturbation=1e-3; 
-
 using namespace std;
+using namespace OpenSim;
+
+const double SimmInverseKinematicsTarget::_perturbation=1e-3; 
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -46,15 +43,17 @@ using namespace std;
  * Constructor
  */
 static bool debug = false; // used for debugging
-/**
+/*
  * used for debugging to tell if the code is in computePerformanceGradient context
- */
+*/
 static bool calcDerivs = true; 
 
-SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(SimmModel &aModel, Storage& aExperimentalDataStorage):
+SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(AbstractModel &aModel, Storage& aExperimentalDataStorage):
 _model(aModel),
 _experimentalDataStorage(aExperimentalDataStorage),
-_markers(NULL)
+_markers(NULL),
+_unconstrainedQs(),
+_prescribedQs()
 {
 	// Mark these arrays as not owned so that we don't free the model's Qs 
 	_unconstrainedQs.setMemoryOwner(false);
@@ -64,14 +63,14 @@ _markers(NULL)
 	buildCoordinateMap(aExperimentalDataStorage.getColumnLabelsArray());
 
 	/** Number of controls. */
-	setNX(_numUnconstrainedQs);
+	setNumControls(_numUnconstrainedQs);
 	/** Number of performance criteria. */
 	_np=1;
 	/** Number of nonlinear inequality constraints. */
 	_nineqn=0;
 	/** Number of inequality constraints. */
 	// Every Q has min and max
-	_nineq=0; // Set min & max on optiimizer 2*model->getNQ();
+	_nineq=0; // Set min & max on optiimizer 2*model->getNumCoordinates();
 	/** Number of nonlinear equality constraints. */
 	_neqn=0;
 	/** Number of equality constraints. */
@@ -108,12 +107,14 @@ SimmInverseKinematicsTarget::
 int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 {
 	int i;
-	SimmKinematicsEngine& ke = _model.getSimmKinematicsEngine();
+	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
 	// Assemble model in new configuration
 	// x contains values only for independent/unconstrained states
 	for (i = 0; i < _numUnconstrainedQs; i++)
 	{
-		_unconstrainedQs[i]->setValue(x[i]);
+		_unconstrainedQs.get(i)->setValue(x[i]);
+		if (debug)
+			cout << _unconstrainedQs.get(i)->getName() << " = " << _unconstrainedQs.get(i)->getValue() << endl;
 	}
 
 	int numCalls = 0;
@@ -145,16 +146,18 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[1], rdMath::NAN) &&
 			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[2], rdMath::NAN))
 		{
+			double globalPos[3];
+
 			// Get marker offset in local frame
 			_markers[i]->marker->getOffset(_markers[i]->computedPosition);
 
 			// transform local marker to world frame
-			ke.convertPoint(_markers[i]->computedPosition, _markers[i]->body, ke.getGroundBodyPtr());
+			de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
 
 			err = 0.0;
 			for (int j = 0; j < 3; j++)
 			{
-				err = _markers[i]->experimentalPosition[j] - _markers[i]->computedPosition[j];
+				err = _markers[i]->experimentalPosition[j] - globalPos[j];
 				markerError += (err * err);
 			}
 			if (markerError > maxMarkerError)
@@ -163,10 +166,10 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 				worstMarker = i;
 			}
 			weight = _markers[i]->marker->getWeight();
-			if (0)
+			if (debug)
 			{
-				cout << _markers[i]->marker->getName() << " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2] <<
-					" comp + " << _markers[i]->computedPosition[0] << " " << _markers[i]->computedPosition[1] << " " << _markers[i]->computedPosition[2] << endl;
+				cout << _markers[i]->marker->getName() << " w = " << weight << " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2] <<
+					" comp + " << globalPos[0] << " " << globalPos[1] << " " << globalPos[2] << endl;
 			}
 			totalErrorSquared += (markerError * weight);
 		}
@@ -179,7 +182,7 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 			double coordinateError = 0.0;
 			double experimentalValue;
 			dataRow->getDataValue(_unconstrainedQsIndices[i], experimentalValue);
-			double computedValue = _unconstrainedQs[i]->getValue();
+			double computedValue = _unconstrainedQs.get(i)->getValue();
 			err = experimentalValue - computedValue;
 			coordinateError += (err * err);
 			if (coordinateError > maxCoordinateError)
@@ -187,7 +190,11 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 				maxCoordinateError = coordinateError;
 				worstCoordinate = i;
 			}
-			weight = _unconstrainedQs[i]->getIKweight();
+			weight = _unconstrainedQs.get(i)->getWeight();
+			if (debug)
+			{
+				cout << _unconstrainedQs.get(i)->getName() << " w = " << weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
+			}
 			totalErrorSquared += (coordinateError * weight);
 		}
 	}
@@ -255,7 +262,7 @@ void SimmInverseKinematicsTarget::setIndexToSolve(int aIndex, double* qGuess)
 		if (dataColumnNumber >= 0)
 			dataRow->getDataValue(dataColumnNumber, qGuess[i]);
 		else
-			qGuess[i] = _unconstrainedQs[i]->getValue();
+			qGuess[i] = _unconstrainedQs.get(i)->getValue();
 	}
 }
 
@@ -274,10 +281,10 @@ void SimmInverseKinematicsTarget::setPrescribedCoordinates(int aIndex)
 		if (_prescribedQsIndices[i] >= 0)
 		{
 			dataRow->getDataValue(_prescribedQsIndices[i], value);
-			bool lockedState = _prescribedQs[i]->isLocked();
-			_prescribedQs[i]->setLocked(false);
-			_prescribedQs[i]->setValue(value);
-			_prescribedQs[i]->setLocked(lockedState);
+			bool lockedState = _prescribedQs.get(i)->getLocked();
+			_prescribedQs.get(i)->setLocked(false);
+			_prescribedQs.get(i)->setValue(value);
+			_prescribedQs.get(i)->setLocked(lockedState);
 		}
 	}
 }
@@ -323,7 +330,7 @@ void SimmInverseKinematicsTarget::getPrescribedQValues(Array<double>& aQValues) 
 	aQValues.setSize(0);
 
 	for (int i = 0; i < _prescribedQs.getSize(); i++)
-		aQValues.append(_prescribedQs[i]->getValue());
+		aQValues.append(_prescribedQs.get(i)->getValue());
 }
 
 //_____________________________________________________________________________
@@ -336,41 +343,34 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 {
 	_markers.setSize(0);
 
-	SimmBodySet& bodySet = _model.getSimmKinematicsEngine().getBodies();
+	MarkerSet* markerSet = _model.getDynamicsEngine().getMarkerSet();
 
-	for (int i = 0; i < aNameArray.getSize(); i++)
+	int i;
+	for (i = 0; i < aNameArray.getSize(); i++)
 	{
-		/* Marker names should show up in the experimental data three times, with
-		 * the suffixes _tx, _ty, and _tz. You only want to look for the marker
-		 * once in the model, so deal with only the _tx name. Also, you have to
-		 * strip off the _tx suffix before comparing it to the names of the
-		 * markers in the model.
-		 */
-		bool foundIt = false;
+		// Marker names should show up in the experimental data three times, with
+		// the suffixes _tx, _ty, and _tz. You only want to look for the marker
+		// once in the model, so deal with only the _tx name. Also, you have to
+		// strip off the _tx suffix before comparing it to the names of the
+		// markers in the model.
 		string mName = aNameArray[i];
-		if (mName.length() > 3 && mName.rfind("_tx") == mName.length() - 3)
+		if (mName.length() > 3 && (mName.rfind("_tx") == mName.length() - 3))
 		{
 			mName.erase(mName.end() - 3, mName.end());
 
-			for (int j = 0; j < bodySet.getSize(); j++)
+			AbstractMarker* modelMarker = markerSet->get(mName);
+			if (modelMarker)
 			{
-				for (int k = 0; k < bodySet.get(j)->getNumMarkers(); k++)
-				{
-					if (bodySet.get(j)->getMarker(k)->getName() == mName)
-					{
-						markerToSolve *newMarker = new markerToSolve;
-						newMarker->marker = bodySet.get(j)->getMarker(k);
-						newMarker->body = bodySet.get(j);
-						newMarker->experimentalColumn = i-1;	// make it i-1 to account for time column
-						_markers.append(newMarker);
-						foundIt = true;
-						j = bodySet.getSize(); // to break out of outer loop
-						break;
-					}
-				}
+				markerToSolve* newMarker = new markerToSolve;
+				newMarker->marker = modelMarker;
+				newMarker->body = modelMarker->getBody();
+				newMarker->experimentalColumn = i - 1;		// make it i-1 to account for time column
+				_markers.append(newMarker);
 			}
-			if (!foundIt)
+			else
+			{
 				cout << "___WARNING___: marker " << mName << " not found in model. It will not be used for IK." << endl;
+			}
 		}
 	}
 }
@@ -385,9 +385,10 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
  */
 void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameArray)
 {
-	int i;
+	int i, j;
+
 	// The unconstrained Qs are the unlocked coordinates in the kinematics engine.
-	_model.getSimmKinematicsEngine().getUnlockedCoordinates(_unconstrainedQs);
+	_model.getDynamicsEngine().getUnlockedCoordinates(_unconstrainedQs);
 	_numUnconstrainedQs = _unconstrainedQs.getSize();
 
 	_unconstrainedQsIndices = new int[_numUnconstrainedQs];
@@ -396,9 +397,9 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 	{
 		_unconstrainedQsIndices[i] = -1;
 
-		for (int j = 0; j < aNameArray.getSize(); j++)
+		for (j = 0; j < aNameArray.getSize(); j++)
 		{
-			if (_unconstrainedQs[i]->getName() == aNameArray[j])
+			if (_unconstrainedQs.get(i)->getName() == aNameArray[j])
 			{
 				_unconstrainedQsIndices[i] = j-1;		// Account for time column
 				break;
@@ -409,22 +410,26 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 #if 0
 	cout << "Unconstrained Qs:" << endl;
 	for (i = 0; i < _unconstrainedQs.getSize(); i++)
-		cout << _unconstrainedQs[i]->getName() << " index = " << _unconstrainedQsIndices[i] << endl;
+		cout << _unconstrainedQs.get(i)->getName() << " index = " << _unconstrainedQsIndices[i] << endl;
 #endif
 
 	_numPrescribedQs = 0;
-	_prescribedQsIndices = new int[_model.getKinematicsEngine().getNumCoordinates()];
-	SimmCoordinateSet& coords = _model.getSimmKinematicsEngine().getCoordinates();
-	for (i = 0; i < coords.getSize(); i++)
+	_prescribedQsIndices = new int[_model.getDynamicsEngine().getNumCoordinates()];
+	_prescribedQs.setMemoryOwner(false);
+
+	const CoordinateSet* coordinateSet = _model.getDynamicsEngine().getCoordinateSet();
+
+	for (i = 0; i < coordinateSet->getSize(); i++)
 	{
-		if (coords[i]->isLocked())
+		AbstractCoordinate* coord = coordinateSet->get(i);
+		if (coord->getLocked())
 		{
-			for (int j = 0; j < aNameArray.getSize(); j++)
+			for (j = 0; j < aNameArray.getSize(); j++)
 			{
-				if (coords[i]->getName() == aNameArray[j])
+				if (coord->getName() == aNameArray[j])
 				{
 					_prescribedQsIndices[_numPrescribedQs++] = j-1;		// Account for time column
-					_prescribedQs.append(coords[i]);
+					_prescribedQs.append(coord);
 					break;
 				}
 			}
@@ -434,7 +439,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 #if 0
 	cout << "Prescribed Qs:" << endl;
 	for (i = 0; i < _prescribedQs.getSize(); i++)
-		cout << _prescribedQs[i]->getName() << " index = " << _prescribedQsIndices[i] << endl;
+		cout << _prescribedQs.get(i)->getName() << " index = " << _prescribedQsIndices[i] << endl;
 #endif
 }
 
@@ -443,7 +448,7 @@ void SimmInverseKinematicsTarget::getUnconstrainedCoordinateNames(Array<const st
 	aNameArray.setSize(0);
 
 	for (int i = 0; i < _numUnconstrainedQs; i++)
-		aNameArray.append(&_unconstrainedQs[i]->getName());
+		aNameArray.append(&_unconstrainedQs.get(i)->getName());
 }
 
 void SimmInverseKinematicsTarget::getPrescribedCoordinateNames(Array<const string*>& aNameArray)
@@ -451,7 +456,7 @@ void SimmInverseKinematicsTarget::getPrescribedCoordinateNames(Array<const strin
 	aNameArray.setSize(0);
 
 	for (int i = 0; i < _numPrescribedQs; i++)
-		aNameArray.append(&_prescribedQs[i]->getName());
+		aNameArray.append(&_prescribedQs.get(i)->getName());
 }
 
 void SimmInverseKinematicsTarget::getOutputMarkerNames(Array<const string*>& aNameArray)

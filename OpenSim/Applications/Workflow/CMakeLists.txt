@@ -26,14 +26,16 @@ INCLUDE_DIRECTORIES(
 	${OpenSim_SOURCE_DIR}/Tools
 	${OpenSim_SOURCE_DIR}/Tools/Simulation/SIMM)
 
-FILE(GLOB SOURCE_FILES *.cpp ../Scale/SimmScalerImpl.cpp 
-							 ../IK/InvestigationIK.cpp 
+FILE(GLOB SOURCE_FILES *.cpp ../IK/InvestigationIK.cpp 
 							 ../IK/SimmIKSolverImpl.cpp 
-							 ../IK/SimmInverseKinematicsTarget.cpp)
-FILE(GLOB INCLUDE_FILES *.h  ../Scale/SimmScalerImpl.h
-							 ../IK/SimmIKSolverImpl.h
+							 ../IK/SimmInverseKinematicsTarget.cpp
+							 ../../Subject/Simm*.cpp)
+FILE(GLOB INCLUDE_FILES *.h  ../IK/SimmIKSolverImpl.h
 							 ../IK/InvestigationIK.h
-							 ../IK/SimmInverseKinematicsTarget.h)
+							 ../IK/SimmInverseKinematicsTarget.h
+							 ../../Subject/Simm*.h)
+
+ADD_DEFINITIONS(-DRDSIMULATION_EXPORTS)
 
 LINK_LIBRARIES(
 	debug xerces-c_2D optimized  xerces-c_2 

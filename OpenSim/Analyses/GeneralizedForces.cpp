@@ -14,13 +14,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "GeneralizedForces.h"
 
@@ -36,6 +36,7 @@
 //_____________________________________________________________________________
 
 
+using namespace std;
 using namespace OpenSim;
 /**
  * Destructor.
@@ -56,9 +57,9 @@ GeneralizedForces::~GeneralizedForces()
  * Construct an GeneralizedForces object for recording the joint torques of
  * a model's generalized coodinates during a simulation.
  *
- * @param aModel Model for which the joint torques are to be recorded.
+ * @param aModel AbstractModel for which the joint torques are to be recorded.
  */
-GeneralizedForces::GeneralizedForces(Model *aModel) :
+GeneralizedForces::GeneralizedForces(AbstractModel *aModel) :
 	Analysis(aModel)
 {
 	setName("GeneralizedForces");
@@ -67,13 +68,13 @@ GeneralizedForces::GeneralizedForces(Model *aModel) :
 		return;
 
 	// ALLOCATE STATE VECTOR
-	_dqdt = new double[_model->getNQ()];
-	_dudt = new double[_model->getNU()];
-	_zero_aY = new double[_model->getNY()];
-	_gravGenForces = new double[_model->getNU()];
-	_velGenForces = new double[_model->getNU()];
-	_actuatorGenForces = new double[_model->getNU()];
-	_contactGenForces = new double[_model->getNU()];
+	_dqdt = new double[_model->getNumCoordinates()];
+	_dudt = new double[_model->getNumSpeeds()];
+	_zero_aY = new double[_model->getNumStates()];
+	_gravGenForces = new double[_model->getNumSpeeds()];
+	_velGenForces = new double[_model->getNumSpeeds()];
+	_actuatorGenForces = new double[_model->getNumSpeeds()];
+	_contactGenForces = new double[_model->getNumSpeeds()];
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
@@ -171,22 +172,22 @@ Object* GeneralizedForces::copy(DOMElement *aElement) const
 /**
  * Set the model for which the GeneralizedForces analysis is to be computed.
  *
- * @param aModel Model pointer
+ * @param aModel AbstractModel pointer
  */
 void GeneralizedForces::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	Analysis::setModel(aModel);
 
 	assert(_model);
 	// ALLOCATE STATE VECTOR
-	if (_dqdt!= 0) delete[] _dqdt;			_dqdt = new double[_model->getNQ()];
-	if (_dudt!= 0) delete[] _dudt;			_dudt = new double[_model->getNU()];
-	if (_zero_aY!= 0) delete[] _zero_aY;	_zero_aY = new double[_model->getNY()];
-	if (_gravGenForces!= 0) delete[] _gravGenForces;			_gravGenForces = new double[_model->getNU()];
-	if (_velGenForces!= 0) delete[] _velGenForces;			_velGenForces = new double[_model->getNU()];
-	if (_actuatorGenForces!= 0) delete[] _actuatorGenForces;			_actuatorGenForces = new double[_model->getNU()];
-	if (_contactGenForces!= 0) delete[] _contactGenForces;			_contactGenForces = new double[_model->getNU()];
+	if (_dqdt!= 0) delete[] _dqdt;			_dqdt = new double[_model->getNumCoordinates()];
+	if (_dudt!= 0) delete[] _dudt;			_dudt = new double[_model->getNumSpeeds()];
+	if (_zero_aY!= 0) delete[] _zero_aY;	_zero_aY = new double[_model->getNumStates()];
+	if (_gravGenForces!= 0) delete[] _gravGenForces;			_gravGenForces = new double[_model->getNumSpeeds()];
+	if (_velGenForces!= 0) delete[] _velGenForces;			_velGenForces = new double[_model->getNumSpeeds()];
+	if (_actuatorGenForces!= 0) delete[] _actuatorGenForces;			_actuatorGenForces = new double[_model->getNumSpeeds()];
+	if (_contactGenForces!= 0) delete[] _contactGenForces;			_contactGenForces = new double[_model->getNumSpeeds()];
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
@@ -301,21 +302,26 @@ constructDescription()
 void GeneralizedForces::
 constructColumnLabels()
 {
-	char labels[4096];
-
 	// CHECK FOR NULL
-	if(_model->getSpeedName(0).empty()) { setColumnLabels(NULL);  return; }
-
-	// ASSIGN
-	int i;
-	strcpy(labels,"time");
-	for(i=0;i<_model->getNU();i++) {
-		strcat(labels,"\t");
-		strcat(labels,_model->getSpeedName(i).c_str());
+	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
+	{
+		setColumnLabels(NULL);
+		return;
 	}
-	strcat(labels,"\n");
 
-	setColumnLabels(labels);
+	string labels = "time";
+	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+	int i=0;
+
+	for(i=0; i<ss->getSize(); i++)
+	{
+		AbstractSpeed *speed = ss->get(i);
+		labels += "\t" + speed->getName();
+	}
+
+	labels += "\n";
+
+	setColumnLabels(labels.c_str());
 }
 
 
@@ -399,9 +405,9 @@ int GeneralizedForces::
 record(double aT,double *aX,double *aY)
 {
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int ny = _model->getNY();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
 
 	double zeroGrav[3] = {0.0, 0.0, 0.0};
 	double grav[3];
@@ -413,19 +419,19 @@ record(double aT,double *aX,double *aY)
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
 	// ACTUATION
-	_model->computeActuation();
+	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
 
 	// ACCELERATIONS
-	_model->computeAccelerations(_dqdt,_dudt);
+	_model->getDynamicsEngine().computeDerivatives(_dqdt,_dudt);
 	// ----------------------------------
 
 	// INITIALIZE ZERO VECTOR
@@ -440,32 +446,32 @@ record(double aT,double *aX,double *aY)
 	_model->getGravity(grav);
 	_model->setGravity(zeroGrav);
 	_model->setStates(aY);
-	_model->computeActuation();
-	_model->applyActuatorForces(); 
-	_model->computeContact();
-	_model->applyContactForces();
-	_model->computeGeneralizedForces(_dudt, _gravGenForces);
+	_model->getActuatorSet()->computeActuation();
+	_model->getActuatorSet()->apply(); 
+	_model->getContactSet()->computeContact();
+	_model->getContactSet()->apply();
+	_model->getDynamicsEngine().computeGeneralizedForces(_dudt, _gravGenForces);
 	_model->setGravity(grav);
 		
 	//COMPUTE GENERALIZED FORCES DUE TO VELOCITY EFFECTS
 	_model->setStates(_zero_aY);
-	_model->computeActuation();
-	_model->applyActuatorForces(); 
-	_model->computeContact();
-	_model->applyContactForces();
-	_model->computeGeneralizedForces(_dudt, _velGenForces);
+	_model->getActuatorSet()->computeActuation();
+	_model->getActuatorSet()->apply(); 
+	_model->getContactSet()->computeContact();
+	_model->getContactSet()->apply();
+	_model->getDynamicsEngine().computeGeneralizedForces(_dudt, _velGenForces);
 
 	// COMPUTE ACTUATOR GENERALIZED FORCES
 	_model->setStates(aY);
-	_model->computeContact();
-	_model->applyContactForces();
-	_model->computeGeneralizedForces(_dudt, _actuatorGenForces);
+	_model->getContactSet()->computeContact();
+	_model->getContactSet()->apply();
+	_model->getDynamicsEngine().computeGeneralizedForces(_dudt, _actuatorGenForces);
 
 	// COMPUTE CONTACT GENERALIZED FORCES
 	_model->setStates(aY);
-	_model->computeActuation();
-	_model->applyActuatorForces(); 
-	_model->computeGeneralizedForces(_dudt, _contactGenForces);
+	_model->getActuatorSet()->computeActuation();
+	_model->getActuatorSet()->apply(); 
+	_model->getDynamicsEngine().computeGeneralizedForces(_dudt, _contactGenForces);
 
 	// RECORD RESULTS
 	_gravGenForcesStore->append(aT*_model->getTimeNormConstant(),nu,_gravGenForces);
@@ -481,7 +487,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -513,7 +519,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -547,7 +553,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

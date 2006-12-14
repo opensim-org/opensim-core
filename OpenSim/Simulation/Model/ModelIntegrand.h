@@ -36,7 +36,6 @@
 // INCLUDES
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
-#include "Model.h"
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 
@@ -57,6 +56,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API ModelIntegrand : public Integrand
 {
 //=============================================================================
@@ -64,7 +65,7 @@ class RDSIMULATION_API ModelIntegrand : public Integrand
 //=============================================================================
 protected:
 	/** Model. */
-	Model *_model;
+	AbstractModel *_model;
 	/** Control set. */
 	ControlSet _controlSet;
 	/** Controller. */
@@ -101,7 +102,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ModelIntegrand(Model *aModel);
+	ModelIntegrand(AbstractModel *aModel);
 	virtual ~ModelIntegrand();
 private:
 	void setNull();
@@ -113,7 +114,7 @@ public:
 	// Size
 	virtual int getSize() const;
 	// Model
-	Model* getModel();
+	AbstractModel* getModel();
 	// Control Set
 	void setControlSet(const ControlSet &aControlSet);
 	ControlSet* getControlSet();

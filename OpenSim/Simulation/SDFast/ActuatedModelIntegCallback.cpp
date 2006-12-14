@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include <OpenSim/Actuators/SetPoint.h>
 #include "ActuatedModel_SDFast.h"

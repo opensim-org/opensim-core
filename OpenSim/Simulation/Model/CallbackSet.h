@@ -37,7 +37,6 @@
 // INCLUDES
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
-#include "Model.h"
 #include "Callback.h"
 #include <OpenSim/Tools/Set.h>
 
@@ -55,6 +54,8 @@ template class RDSIMULATION_API OpenSim::Set<OpenSim::Callback>;
  */
 namespace OpenSim { 
 
+class AbstractMOdel;
+
 class RDSIMULATION_API CallbackSet : public Set<Callback>
 {
 
@@ -63,7 +64,7 @@ class RDSIMULATION_API CallbackSet : public Set<Callback>
 //=============================================================================
 protected:
 	/** Model for which the callbacks have been set. */
-	Model *_model;
+	AbstractModel *_model;
 
 //=============================================================================
 // METHODS
@@ -72,7 +73,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	CallbackSet(Model *aModel=0);
+	CallbackSet(AbstractModel *aModel=0);
 	virtual ~CallbackSet();
 private:
 	void setNull();
@@ -81,7 +82,7 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	Model* getModel();
+	AbstractModel* getModel();
 	void setOn(bool aTrueFalse);
 
 //=============================================================================

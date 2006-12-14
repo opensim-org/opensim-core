@@ -38,7 +38,6 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Integrator/IntegRKF.h>
 
@@ -50,6 +49,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class RDSIMULATION_API Manager
 {
 
@@ -60,7 +61,7 @@ private:
 	/** Simulation session name. */
 	std::string _sessionName;
 	/** Model for which the simulation is performed. */
-	Model *_model;
+	AbstractModel *_model;
 	/** Array of integrated states. */
 	Array<double> _y;
 	/** Number of model pseudostates. */

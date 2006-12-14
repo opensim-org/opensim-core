@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -26,6 +25,8 @@
  * @version 1.0
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class SUANALYSES_API GeneralizedForces : public Analysis 
 {
@@ -51,7 +52,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForces(Model *aModel=0);
+	GeneralizedForces(AbstractModel *aModel=0);
 	GeneralizedForces(const std::string &aFileName);
 	GeneralizedForces(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -82,7 +83,7 @@ public:
 	Storage* getActuatorGenForcesStorage();
 	Storage* getContactGenForcesStorage();
 
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

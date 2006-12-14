@@ -1,7 +1,7 @@
 // SimmMotionData.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,23 +22,25 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include <fstream>
 #include <OpenSim/Tools/rdMath.h>
 #include "SimmMotionData.h"
-#include "simmIO.h"
-#include "simmMacros.h"
+#include "SimmIO.h"
+#include "SimmMacros.h"
+#include "AbstractModel.h"
+#include "AbstractDof.h"
+#include "CoordinateSet.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
+// dll export of static data is problematic for DevStudio. Rearrange code around it.
+// char SimmMotionData::_unassignedColName[] = "Unassigned";
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -48,6 +50,7 @@ using namespace std;
  * Default constructor.
  */
 SimmMotionData::SimmMotionData() :
+	Object(),
 	_numRows(0),
 	_numColumns(0),
 	_keys(""),
@@ -60,9 +63,15 @@ SimmMotionData::SimmMotionData() :
 	_showCursor(false),
 	_slidingTimeScale(false)
 {
+	setNull();
 }
 
+//_____________________________________________________________________________
+/**
+ * Constructor from a SIMM motion file.
+ */
 SimmMotionData::SimmMotionData(const string& aFileName) :
+	Object(),
 	_numRows(0),
 	_numColumns(0),
 	_keys(""),
@@ -75,6 +84,7 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 	_showCursor(false),
 	_slidingTimeScale(false)
 {
+	setNull();
 
 #if 0
    if (!aFileName)
@@ -98,7 +108,7 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 	for (i = 0; i < _numColumns; i++)
 	{
 		string* cName = new string();
-		readString(in, *cName);
+		readStringFromStream(in, *cName);
 		_columnNames.append(*cName);
 	}
 
@@ -111,7 +121,7 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 		double* row = new double [_numColumns];
 		for (int j = 0; j < _numColumns; j++)
 		{
-			readString(in, buffer);
+			readStringFromStream(in, buffer);
 			readDoubleFromString(buffer, &row[j]);
 		}
 		_rows.append(row);
@@ -120,7 +130,12 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 	_fileName = aFileName;
 }
 
+//_____________________________________________________________________________
+/**
+ * Constructor from a Storage object.
+ */
 SimmMotionData::SimmMotionData(Storage& aData) :
+	Object(),
 	_numRows(0),
 	_numColumns(0),
 	_keys(""),
@@ -133,6 +148,8 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 	_showCursor(false),
 	_slidingTimeScale(false)
 {
+	setNull();
+
 	/* Copy the column labels. */
 	const Array<string>& columnLabels = aData.getColumnLabelsArray();
 	//string* timeLabel = new string("time");
@@ -162,20 +179,178 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 
 //_____________________________________________________________________________
 /**
+ * Constructor from an XML node
+ */
+SimmMotionData::SimmMotionData(DOMElement *aElement) :
+   Object(aElement),
+	_numRows(0),
+	_numColumns(0),
+	_keys(""),
+	_columnNames(""),
+	_rows(NULL),
+	_wrap(false),
+	_calcDerivatives(false),
+	_enforceLoops(false),
+	_enforceConstraints(false),
+	_showCursor(false),
+	_slidingTimeScale(false),
+	_events(NULL)
+{
+	setNull();
+	updateFromXMLNode();
+}
+
+//_____________________________________________________________________________
+/**
  * Destructor.
  */
 SimmMotionData::~SimmMotionData()
 {
 }
 
-void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName, SimmMotionData& data)
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aData SimmMotionData to be copied.
+ */
+SimmMotionData::SimmMotionData(const SimmMotionData &aData) :
+   Object(aData),
+	_numRows(0),
+	_numColumns(0),
+	_keys(""),
+	_columnNames(""),
+	_rows(NULL),
+	_wrap(false),
+	_calcDerivatives(false),
+	_enforceLoops(false),
+	_enforceConstraints(false),
+	_showCursor(false),
+	_slidingTimeScale(false),
+	_events(NULL)
+{
+	setNull();
+	copyData(aData);
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy this SimmMotionData and return a pointer to the copy.
+ * The copy constructor for this class is used.
+ *
+ * @return Pointer to a copy of this SimmMotionData.
+ */
+Object* SimmMotionData::copy() const
+{
+	SimmMotionData *data = new SimmMotionData(*this);
+	return(data);
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy this SimmMotionData and modify the copy so that it is consistent
+ * with a specified XML element node.
+ *
+ * The copy is constructed by first using
+ * SimmMotionData::SimmMotionData(DOMElement*) in order to establish the
+ * relationship of the SimmMotionData object with the XML node. Then, the
+ * assignment operator is used to set all data members of the copy to the
+ * values of this SimmMotionData object. Finally, the data members of the copy are
+ * updated using SimmMotionData::updateFromXMLNode().
+ *
+ * @param aElement XML element. 
+ * @return Pointer to a copy of this SimmMotionData.
+ */
+Object* SimmMotionData::copy(DOMElement *aElement) const
+{
+	SimmMotionData *data = new SimmMotionData(aElement);
+	*data = *this;
+	data->updateFromXMLNode();
+	return(data);
+}
+
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the data members of this SimmMotionData to their null values.
+ */
+void SimmMotionData::setNull()
+{
+	setType("SimmMotionData");
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmMotionEvent to another.
+ *
+ * @param aData SimmMotionEvent to be copied.
+ */
+void SimmMotionData::copyData(const SimmMotionData &aData)
+{
+	_name = aData._name;
+	_numRows = aData._numRows;
+	_numColumns = aData._numColumns;
+	_rangeMin = aData._rangeMin;
+	_rangeMax = aData._rangeMax;
+	_units = aData._units;
+	_fileName = aData._fileName;
+	_columnNames = aData._columnNames;
+	_keys = aData._keys;
+	_rows = aData._rows;
+	_timeStep = aData._timeStep;
+	_numOtherData = aData._numOtherData;
+	_wrap = aData._wrap;
+	_calcDerivatives = aData._calcDerivatives;
+	_enforceLoops = aData._enforceLoops;
+	_enforceConstraints = aData._enforceConstraints;
+	_cursorColor[0] = aData._cursorColor[0];
+	_cursorColor[1] = aData._cursorColor[1];
+	_cursorColor[2] = aData._cursorColor[2];
+	_showCursor = aData._showCursor;
+	_slidingTimeScale = aData._slidingTimeScale;
+	_events = aData._events;
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+SimmMotionData& SimmMotionData::operator=(const SimmMotionData &aData)
+{
+	// BASE CLASS
+	Object::operator=(aData);
+
+	copyData(aData);
+
+	return(*this);
+}
+
+//=============================================================================
+// I/O
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Read the header of a SIMM motion file.
+ *
+ * @param in stream of the file to read
+ * @param aFileName name of the file to read
+ * @param rData SimmMotionData to read the header into
+ */
+void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName, SimmMotionData& rData)
 {
    string line, buffer, str, str2, str3;
 	double eventColor[3];
 
    while (1)
    {
-		if (!readNonCommentString(in, buffer))
+		if (!readNonCommentStringFromStream(in, buffer))
 			break;
 
 		if (buffer == "endheader")
@@ -185,7 +360,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       {
          if (getline(in, line))
          {
-				data._name = buffer;
+				rData._name = buffer;
          }
          else
          {
@@ -197,33 +372,33 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       }
       else if (buffer == "wrap")
       {
-			data._wrap = true;
+			rData._wrap = true;
       }
       else if (buffer == "enforce_loops")
       {
-			if (readString(in, str))
+			if (readStringFromStream(in, str))
 			{
 				if (str == "no" || str == "off" || str == "false")
-					data._enforceLoops = false;
+					rData._enforceLoops = false;
 				else if (str == "yes" || str == "on" || str == "true")
-					data._enforceLoops = true;
+					rData._enforceLoops = true;
 			}
       }
       else if (buffer == "enforce_constraints")
       {
-			if (readString(in, str))
+			if (readStringFromStream(in, str))
 			{
 				if (str == "no" || str == "off" || str == "false")
-					data._enforceConstraints = false;
+					rData._enforceConstraints = false;
 				else if (str == "yes" || str == "on" || str == "true")
-					data._enforceConstraints = true;
+					rData._enforceConstraints = true;
 			}
       }
       else if (buffer == "datacolumns")
       {
-			if (readString(in, str))
+			if (readStringFromStream(in, str))
 			{
-				if (!readIntegerFromString(str, &data._numColumns))
+				if (!readIntegerFromString(str, &rData._numColumns))
 				{
 #if 0
 					(void)sprintf(errorbuffer,"Error reading datacolumns in motion %s", motion->name);
@@ -241,17 +416,17 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
 				string* key2 = new string();
 
 				/* The user can specify either one or two keys. */
-				if (readStringFromLine(line, *key1))
-					data._keys.append(*key1);
-				if (readStringFromLine(line, *key2))
-					data._keys.append(*key2);
+				if (readStringFromString(line, *key1))
+					rData._keys.append(*key1);
+				if (readStringFromString(line, *key2))
+					rData._keys.append(*key2);
 			}
       }
       else if (buffer == "datarows")
       {
-			if (readString(in, str))
+			if (readStringFromStream(in, str))
 			{
-				if (!readIntegerFromString(str, &data._numRows) || data._numRows < 0)
+				if (!readIntegerFromString(str, &rData._numRows) || rData._numRows < 0)
 				{
 #if 0
 					(void)sprintf(errorbuffer,"Error reading datarows in motion %s", motion->name);
@@ -263,39 +438,39 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       }
       else if (buffer == "otherdata")
       {
-         readString(in, str);
+         readStringFromStream(in, str);
          //error(none, "Keyword \'otherdata\' is no longer required in a motion header.");
       }
       else if (buffer == "range")
       {
 			/* The next two strings will be interpreted as rangeMin and rangeMax. */
-			readString(in, str);
-			readString(in, str2);
-			if (!readDoubleFromString(str, &data._rangeMin) || !readDoubleFromString(str2, &data._rangeMax))
+			readStringFromStream(in, str);
+			readStringFromStream(in, str2);
+			if (!readDoubleFromString(str, &rData._rangeMin) || !readDoubleFromString(str2, &rData._rangeMax))
 			{
 #if 0
             (void)sprintf(errorbuffer,"Error reading range for motion %s", motion->name);
             error(none,errorbuffer);
             error(none,"Using default values 0.0 to 100.0");
 #endif
-				data._rangeMin = 0.0;
-				data._rangeMax = 100.0;
+				rData._rangeMin = 0.0;
+				rData._rangeMax = 100.0;
          }
       }
       else if (buffer == "units")
       {
-			if (readString(in, str))
-				data._units = SimmUnits(str);
+			if (readStringFromStream(in, str))
+				rData._units = SimmUnits(str);
       }
       else if (buffer == "cursor")
       {
 			/* The next three strings will be interpreted as RGB values. */
-			readString(in, str);
-			readString(in, str2);
-			readString(in, str3);
-			if (!readDoubleFromString(str, &data._cursorColor[0]) ||
-				 !readDoubleFromString(str2, &data._cursorColor[1]) ||
-				 !readDoubleFromString(str3, &data._cursorColor[2]))
+			readStringFromStream(in, str);
+			readStringFromStream(in, str2);
+			readStringFromStream(in, str3);
+			if (!readDoubleFromString(str, &rData._cursorColor[0]) ||
+				 !readDoubleFromString(str2, &rData._cursorColor[1]) ||
+				 !readDoubleFromString(str3, &rData._cursorColor[2]))
 			{
 #if 0
             (void)sprintf(errorbuffer,"Error reading cursor color for motion %s",
@@ -303,11 +478,11 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
             error(none,errorbuffer);
             error(none,"Using default values of 1.0 1.0 0.0");
 #endif
-            data._cursorColor[0] = 1.0;
-            data._cursorColor[1] = 1.0;
-            data._cursorColor[2] = 0.0;
+            rData._cursorColor[0] = 1.0;
+            rData._cursorColor[1] = 1.0;
+            rData._cursorColor[2] = 0.0;
          }
-			data._showCursor = true;
+			rData._showCursor = true;
       }
       else if (buffer == "event")
       {
@@ -315,7 +490,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
 			SimmMotionEvent* anEvent = new SimmMotionEvent();
 
 			/* The next two strings will be interpreted as 'time' and 'name'. */
-			readString(in, str);
+			readStringFromStream(in, str);
 			if (readDoubleFromString(str, &time))
 			{
 				anEvent->setTime(time);
@@ -328,7 +503,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
 #endif
 			}
 
-			if (readString(in, str))
+			if (readStringFromStream(in, str))
 			{
 				anEvent->setName(str);
 			}
@@ -343,9 +518,9 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       else if (buffer == "event_color")
       {
 			/* The next three strings will be interpreted as RGB values. */
-			readString(in, str);
-			readString(in, str2);
-			readString(in, str3);
+			readStringFromStream(in, str);
+			readStringFromStream(in, str2);
+			readStringFromStream(in, str3);
 			if (!readDoubleFromString(str, &eventColor[0]) ||
 				 !readDoubleFromString(str2, &eventColor[1]) ||
 				 !readDoubleFromString(str3, &eventColor[2]))
@@ -363,21 +538,21 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       }
       else if (buffer == "calc_derivatives")
       {
-			readString(in, str);
-			if (!readDoubleFromString(str, &data._timeStep))
+			readStringFromStream(in, str);
+			if (!readDoubleFromString(str, &rData._timeStep))
          {
 #if 0
             (void)sprintf(errorbuffer,"Error reading calc_derivatives for motion %s", motion->name);
             error(recover,errorbuffer);
 #endif
          }
-         else if (data._timeStep <= 0.0)
+         else if (rData._timeStep <= 0.0)
 			{
             //error(recover,"calc_derivatives must be greater than zero.");
 			}
          else
 			{
-				data._calcDerivatives = true;
+				rData._calcDerivatives = true;
 			}
       }
       else if (buffer == "accept_realtime_motion")
@@ -386,7 +561,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
 		}
       else if (buffer == "sliding_time_scale")
 		{
-			data._slidingTimeScale = true;
+			rData._slidingTimeScale = true;
 		}
       else
       {
@@ -410,107 +585,17 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
 	 * So now you have to copy the one specified color into each event
 	 * instance.
 	 */
-	for (int i = 0; i < data._events.getSize(); i++)
+	for (int i = 0; i < rData._events.getSize(); i++)
 		_events[i]->setColor(eventColor);
 }
 
-double SimmMotionData::getValue(const string& aName, int aFrameIndex)
-{
-	for (int i = 0; i < _columnNames.getSize(); i++)
-	{
-		if (_columnNames[i] == aName)
-			return _rows[aFrameIndex][i];
-	}
-
-	return rdMath::NAN;
-}
-
-int SimmMotionData::getColumnIndex(const string& aName) const
-{
-	for (int i = 0; i < _columnNames.getSize(); i++)
-	{
-		if (_columnNames[i] == aName)
-			return i;
-	}
-
-	return -1;
-}
-
-void SimmMotionData::setColumnLabel(int aIndex, const std::string& aLabel)
-{
-	if (aIndex >= 0 && aIndex < _columnNames.getSize())
-		_columnNames[aIndex] = aLabel;
-}
-
-/* Add the coordinate data to an Storage object.
- * Assumptions:
- *   1. the first column in the SimmMotionData is 'time'
- *   2. the Storage object already contains data, so
- *      only the SimmMotionData frames whose time stamps
- *      match existing frames are added to it.
- *   3. the Storage object does not already contain any
- *      columns with the same labels as the SimmMotionData
- *      has. If it does, the Storage will end up with
- *      duplicate column labels.
+//_____________________________________________________________________________
+/**
+ * Write the SimmMotionData to a SIMM motion file.
+ *
+ * @param aFileName the name of the file to create
+ * @param aComment "notes" text to add the file as a comment
  */
-void SimmMotionData::addToRdStorage(Storage& aStorage, double startTime, double endTime)
-{
-	bool addedData = false;
-	double time, stateTime;
-
-	/* Loop through the rows in aStorage from startTime to endTime,
-	 * looking for a match (by time) in the rows of SimmMotionData.
-	 * If you find a match, add the columns in the SimmMotionData
-	 * to the end of the state vector in the Storage. If you
-	 * don't find one, it's a fatal error so throw an exception.
-	 */
-	int startIndex = aStorage.findIndex(0, startTime);
-	int endIndex = aStorage.findIndex(aStorage.getSize() - 1, endTime);
-	int j=0;
-
-	for (int i = startIndex; i <= endIndex; i++)
-	{
-		aStorage.getTime(i, stateTime);
-		for (j = 0; j < _numRows; j++)
-		{
-			/* Assume that the first column is 'time'. */
-			time = _rows[j][0];
-			if(rdMath::IsEqual(time,stateTime,0.0001)) {
-			//if(EQUAL_WITHIN_ERROR(time, stateTime))
-			//{
-				Array<double>& states = aStorage.getStateVector(i)->getData();
-				for (int k = 1; k < _numColumns; k++)	// Start at 1 to avoid duplicate time column
-					states.append(_rows[j][k]);
-				addedData = true;
-				break;
-			}
-		}
-		if (j == _numRows)
-		{
-			char timeText[8];
-			// TODO: use sprintf (recommended) instead of gcvt
-#ifdef __linux__
-			gcvt(stateTime, 6, timeText);
-#else
-			_gcvt(stateTime, 6, timeText);
-#endif
-			string errorMessage = "Error: no coordinate data found at time " + string(timeText) + " in " + _fileName;
-			throw (Exception(errorMessage.c_str()));
-		}
-	}
-
-	/* Add the coordinate names to the Storage (if at least
-	 * one row of data was added to the object).
-	 */
-	if (addedData)
-	{
-		string columnLabels(aStorage.getColumnLabels());
-		for (int i = 1; i < _columnNames.getSize(); i++) // Start at 1 to avoid duplicate time label
-			columnLabels += _columnNames[i] + '\t';
-		aStorage.setColumnLabels(columnLabels.c_str());
-	}
-}
-
 void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& aComment) const
 {
 	int i;
@@ -572,6 +657,205 @@ void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& 
 	out.close();
 
 	cout << "Wrote SIMM motion file " << aFileName << endl;
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the value of one element in one frame.
+ *
+ * @param aName the name of the element
+ * @param aFrameIndex the index of the frame to get the element from
+ * @return The value of the element
+ */
+double SimmMotionData::getValue(const string& aName, int aFrameIndex)
+{
+	for (int i = 0; i < _columnNames.getSize(); i++)
+	{
+		if (_columnNames[i] == aName)
+			return _rows[aFrameIndex][i];
+	}
+
+	return rdMath::NAN;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the index of a column, specified by name
+ *
+ * @param aName the name of the column
+ * @return The index of the column
+ */
+int SimmMotionData::getColumnIndex(const string& aName) const
+{
+	for (int i = 0; i < _columnNames.getSize(); i++)
+	{
+		if (_columnNames[i] == aName)
+			return i;
+	}
+
+	return -1;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the label of a column, specified by index
+ *
+ * @param aIndex the index of the column
+ * @param aLabel the new name of the column
+ */
+void SimmMotionData::setColumnLabel(int aIndex, const std::string& aLabel)
+{
+	if (aIndex >= 0 && aIndex < _columnNames.getSize())
+		_columnNames[aIndex] = aLabel;
+}
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Add the coordinate data to an Storage object.
+ * Assumptions:
+ *   1. the first column in the SimmMotionData is 'time'
+ *   2. the Storage object already contains data, so
+ *      only the SimmMotionData frames whose time stamps
+ *      match existing frames are added to it.
+ *   3. the Storage object does not already contain any
+ *      columns with the same labels as the SimmMotionData
+ *      has. If it does, the Storage will end up with
+ *      duplicate column labels.
+ *
+ * @param rStorage the storage to add the data to
+ * @param aStartTime the time of the first frame to add
+ * @param aEndTime the time of the last frame to add
+ */
+void SimmMotionData::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime)
+{
+	bool addedData = false;
+	double time, stateTime;
+
+	/* Loop through the rows in rStorage from aStartTime to aEndTime,
+	 * looking for a match (by time) in the rows of SimmMotionData.
+	 * If you find a match, add the columns in the SimmMotionData
+	 * to the end of the state vector in the Storage. If you
+	 * don't find one, it's a fatal error so throw an exception.
+	 * Don't add a column if its name is 'unassigned'.
+	 */
+	int i, j, startIndex = rStorage.findIndex(0, aStartTime);
+	int endIndex = rStorage.findIndex(rStorage.getSize() - 1, aEndTime);
+
+	for (i = startIndex; i <= endIndex; i++)
+	{
+		rStorage.getTime(i, stateTime);
+		for (j = 0; j < _numRows; j++)
+		{
+			/* Assume that the first column is 'time'. */
+			time = _rows[j][0];
+			if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
+			{
+				Array<double>& states = rStorage.getStateVector(i)->getData();
+				for (int k = 1; k < _numColumns; k++)	// Start at 1 to avoid duplicate time column
+				{
+					if (_columnNames[k] != getUnassignedColName())
+					{
+						states.append(_rows[j][k]);
+						addedData = true;
+					}
+				}
+				break;
+			}
+		}
+		if (j == _numRows)
+		{
+			char timeText[8];
+			// TODO: use sprintf (recommended) instead of gcvt
+#ifdef __linux__
+			gcvt(stateTime, 6, timeText);
+#else
+			_gcvt(stateTime, 6, timeText);
+#endif
+			string errorMessage = "Error: no coordinate data found at time " + string(timeText) + " in " + _fileName;
+			throw (Exception(errorMessage.c_str()));
+		}
+	}
+
+	/* Add the coordinate names to the Storage (if at least
+	 * one row of data was added to the object).
+	 */
+	if (addedData)
+	{
+		string columnLabels(rStorage.getColumnLabels());
+		for (int i = 1; i < _columnNames.getSize(); i++) // Start at 1 to avoid duplicate time label
+		{
+			if (_columnNames[i] != getUnassignedColName())
+				columnLabels += _columnNames[i] + '\t';
+		}
+		rStorage.setColumnLabels(columnLabels.c_str());
+	}
+}
+
+bool SimmMotionData::deleteColumn(const string& aColumnName)
+{
+	int i = getColumnIndex(aColumnName);
+	if (i >= 0) 
+	{
+		for (int j = 0; j < _rows.getSize(); j++)
+		{
+			double *row = _rows.get(j);
+			for (int k = i; k < _numColumns - 1; k++) row[k] = row[k+1];
+		}
+		_columnNames.remove(i);
+		_numColumns--;
+		return true;
+	}
+	else
+		return false;
+}
+
+void SimmMotionData::scaleColumn(int aColumnIndex, double aScaleFactor)
+{
+	int i;
+	for (i = 0; i < _rows.getSize(); i++)
+		_rows.get(i)[aColumnIndex] *= aScaleFactor;
+}
+
+void SimmMotionData::convertDegreesToRadians(AbstractModel& aModel)
+{
+	int i;
+	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
+
+	// Loop through the coordinates in the model. For each one that is rotational,
+	// see if it has a corresponding column of data. If it does, multiply that
+	// column by DTR.
+	for (i = 0; i < coordinateSet->getSize(); i++) {
+		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+			int index = getColumnIndex(coordinateSet->get(i)->getName());
+			if (index >= 0) {
+				scaleColumn(index, rdMath::DTR);
+			}
+		}
+	}
+}
+
+void SimmMotionData::convertRadiansToDegrees(AbstractModel& aModel)
+{
+	int i;
+	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
+
+	// Loop through the coordinates in the model. For each one that is rotational,
+	// see if it has a corresponding column of data. If it does, multiply that
+	// column by RTD.
+	for (i = 0; i < coordinateSet->getSize(); i++) {
+		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+			int index = getColumnIndex(coordinateSet->get(i)->getName());
+			if (index >= 0) {
+				scaleColumn(index, rdMath::RTD);
+			}
+		}
+	}
 }
 
 void SimmMotionData::peteTest() const

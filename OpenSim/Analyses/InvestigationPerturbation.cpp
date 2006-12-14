@@ -7,7 +7,10 @@
 #include "InvestigationPerturbation.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -413,17 +416,17 @@ void InvestigationPerturbation::run()
 	}
 
 	// ASSIGN NUMBERS OF THINGS
-	int ny = _model->getNY();
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int na = _model->getNA();
-	int nb = _model->getNB();
+	int ny = _model->getNumStates();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int na = _model->getNumActuators();
+	int nb = _model->getNumBodies();
 	int numBodyKinCols = 6*nb + 3;
 
 	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
-	_model->convertDegreesToRadians(_qStore);
-	_model->convertAnglesToQuaternions(_qStore);
-	_model->convertDegreesToRadians(_uStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(_qStore);
+	_model->getDynamicsEngine().convertAnglesToQuaternions(_qStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(_uStore);
 
 	// CONSTRUCT CORRECTIVE SPRINGS
 	constructCorrectiveSprings();
@@ -519,9 +522,11 @@ void InvestigationPerturbation::run()
 	Storage daYdfStore,deltaAYStore,PFYBodyStore;
 	Storage daZdfStore,deltaAZStore,PFZBodyStore;
 	string columnLabels = "time";
-	for(i=0;i<na;i++)	{
-		columnLabels += "\t";
-		columnLabels += _model->getActuatorName(i);
+	ActuatorSet *as = _model->getActuatorSet();
+	for(i=0; i<as->getSize(); i++)
+	{
+		AbstractActuator *act=as->get(i);
+		columnLabels += "\t" + act->getName();
 	}
 
 	daXdfStore.setName("daXdf");
@@ -612,10 +617,12 @@ void InvestigationPerturbation::run()
 		// Loop over muscles
 		//int tib_ant_l = _model->getActuatorIndex("tib_ant_l");
 		//for (m=tib_ant_l;m<=tib_ant_l;m++)	{
+		//ai->reset();
+		//act = ai->next();
 		for (m=0;m<na;m++)	{
-
+			AbstractActuator *act = as->get(m);
 			// Set up pertubation callback
-			cout<<"\nPerturbation of muscle "<<_model->getActuatorName(m)<<" ("<<m<<") in loop"<<endl;
+			cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 			DerivCallbackSet *callbackSet = _model->getDerivCallbackSet();
 			for(i=0;i<callbackSet->getSize();i++)	{
 				DerivCallback *callback = callbackSet->getDerivCallback(i);
@@ -623,7 +630,7 @@ void InvestigationPerturbation::run()
 				callback->reset();
 			}
 			perturbation->reset(); 
-			perturbation->setActuator(m); 
+			perturbation->setActuator(act); 
 			perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
 
 			// Integrate
@@ -653,7 +660,7 @@ void InvestigationPerturbation::run()
 			printf("PFYBody:\t%.16f\tPYBody:\t%.16f\tdifference:\t%.16f\n",
 				PFYBody[m],PYBody,PFYBody[m]-PYBody);
 			printf("daYdf:\t%.16f\tdeltaAY:\t%.16f\n",daYdf[m],deltaAY[m]);
-
+			//act = ai->next();
 		} //end muscle loop
 
 		// Append to storage objects
@@ -756,7 +763,7 @@ constructCorrectiveSprings()
 	colName = "ground_force_pz_r";
 	_copStore->getDataColumn(colName,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *rLin = new LinearSpring(_model,_model->getBodyIndex("calcn_r"));
+	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
 	rLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
@@ -771,7 +778,7 @@ constructCorrectiveSprings()
 	colName = "ground_force_pz_l";
 	_copStore->getDataColumn(colName,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *lLin = new LinearSpring(_model,_model->getBodyIndex("calcn_l"));
+	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
 	lLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
@@ -781,7 +788,7 @@ constructCorrectiveSprings()
 
 	// TORSIONAL
 	// right
-	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getBodyIndex("calcn_r"));
+	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
 	rTrq->computeTargetFunctions(_qStore,_uStore);
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
@@ -789,7 +796,7 @@ constructCorrectiveSprings()
 	Storage *rTrqStore = rTrq->getAppliedTorqueStorage();
 	_model->addDerivCallback(rTrq);
 	// left
-	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getBodyIndex("calcn_l"));
+	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
 	lTrq->computeTargetFunctions(_qStore,_uStore);
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);

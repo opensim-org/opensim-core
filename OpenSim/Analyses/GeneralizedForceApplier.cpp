@@ -15,7 +15,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractCoordinate.h>
 #include "GeneralizedForceApplier.h"
 
 //=============================================================================
@@ -37,10 +39,10 @@ GeneralizedForceApplier::~GeneralizedForceApplier()
  * Construct a derivative callback instance for applying a generalized force
  * during an integration.
  *
- * @param aModel Model for which generalized forces are to be applied.
+ * @param aModel AbstractModel for which generalized forces are to be applied.
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(Model *aModel) :
+GeneralizedForceApplier(AbstractModel *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -61,11 +63,11 @@ GeneralizedForceApplier(Model *aModel) :
  * Construct a derivative callback instance for applying a generalized forces
  * during an integration.
  *
- * @param aModel Model for which generalized forces are to be applied.
+ * @param aModel AbstractModel for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(Model *aModel,int aGenCoord) :
+GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -86,12 +88,12 @@ GeneralizedForceApplier(Model *aModel,int aGenCoord) :
  * Construct a derivative callback instance for applying generalized forces
  * during an integration.
  *
- * @param aModel Model for which generalized forces are to be applied.
+ * @param aModel AbstractModel for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  * @param aGeneralizedForce Generalized force to be applied
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(Model *aModel,int aGenCoord,double aGeneralizedForce) :
+GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -114,13 +116,13 @@ GeneralizedForceApplier(Model *aModel,int aGenCoord,double aGeneralizedForce) :
  * Construct a derivative callback instance for applying generalized forces
  * during an integration. 
  *
- * @param aModel Model for which generalized forces are to be applied.
+ * @param aModel AbstractModel for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  * @param aGeneralizedForceStorage Storage containing (t,x,y,z) of generalized force to be applied 
  * @param aIndex Collumn of storage corresponding to generalized force
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(Model *aModel,int aGenCoord,Storage* aGeneralizedForceStorage,int aIndex) :
+GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -237,7 +239,7 @@ deleteStorage()
  * @param aIndex Index of the generalized coordinate to which a generalized force should be applied.
  */
 void GeneralizedForceApplier::
-setGeneralizedCoordinate(int aGenCoord)
+setGeneralizedCoordinate(AbstractCoordinate *aGenCoord)
 {
 	_genCoord = aGenCoord;
 }
@@ -247,7 +249,7 @@ setGeneralizedCoordinate(int aGenCoord)
  *
  * @return aIndex Index of the generalized coordinate to which a generalized force should be applied.
  */
-int GeneralizedForceApplier::
+AbstractCoordinate* GeneralizedForceApplier::
 getGeneralizedCoordinate() const
 {
 	return(_genCoord);
@@ -433,7 +435,7 @@ applyActuation(double aT,double *aX,double *aY)
 {
 	double genForce = 0.0;
 	double genForceToStore[1];
-	double *genForceArray = new double[_model->getNQ()];
+	double *genForceArray = new double[_model->getNumCoordinates()];
 	double time;
 
 	if(_model==NULL) {
@@ -454,7 +456,7 @@ applyActuation(double aT,double *aX,double *aY)
 			setGeneralizedForce(genForceArray[_genForceIndex]);
 		}
 		
-		_model->applyGeneralizedForce(_genCoord,_generalizedForce*_scaleFactor);
+		_model->getDynamicsEngine().applyGeneralizedForce(*_genCoord,_generalizedForce*_scaleFactor);
 
 		genForceToStore[0] = _generalizedForce;
 
@@ -494,8 +496,7 @@ printResults(char *aBaseName,char *aDir,double aDT,char *aExtension)
 		strcpy(path,aDir);
 	}
 
-	sprintf(genCoordName,"body_%d",_genCoord);
-
+	sprintf(genCoordName,"body_%s",_genCoord->getName());
 
 	// ACCELERATIONS
 	_appliedGeneralizedForceStore->scaleTime(_model->getTimeNormConstant());

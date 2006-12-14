@@ -41,7 +41,7 @@
 #include <OpenSim/Tools/PropertyDbl.h>
 
 #include "Callback.h"
-#include "Model.h"
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 //=============================================================================
 // STATICS
@@ -68,7 +68,7 @@ Callback::~Callback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-Callback::Callback(Model *aModel):
+Callback::Callback(AbstractModel *aModel):
 	_on(_onProp.getValueBool()),
 	_startTime(_startTimeProp.getValueDbl()),
 	_endTime(_endTimeProp.getValueDbl())
@@ -108,7 +108,6 @@ Callback::Callback(const std::string &aFileName):
 {
 	setNull();
 	updateFromXMLNode();
-	_model = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -127,7 +126,6 @@ Callback::Callback(DOMElement *aElement):
 {
 	setNull();
 	updateFromXMLNode();
-	_model = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -227,7 +225,7 @@ operator=(const Callback &aCallback)
  *
  * @return Pointer to the model.
  */
-Model* Callback::
+AbstractModel* Callback::
 getModel() const
 {
 	return(_model);
@@ -238,7 +236,7 @@ getModel() const
  *
  */
 void Callback::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	_model=aModel;
 }

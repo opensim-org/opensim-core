@@ -1,7 +1,7 @@
 // SimmUnits.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,7 +22,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -32,69 +31,115 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Default constructor.
+ */
 SimmUnits::SimmUnits() :
 	_type(simmUnknownUnits)
 {
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aUnits SimmUnits to be copied.
+ */
 SimmUnits::SimmUnits(const SimmUnits& aUnits)
 {
 	_type = aUnits._type;
 }
 
-SimmUnits::SimmUnits(string& str) :
+//_____________________________________________________________________________
+/**
+ * Constructor from a string.
+ *
+ * @param aString string containing the units text label
+ */
+SimmUnits::SimmUnits(string& aString) :
 	_type(simmUnknownUnits)
 {
-   if (str == "RADIANS" || str == "RAD" || str == "radians" || str == "rad")
+   if (aString == "RADIANS" || aString == "RAD" || aString == "radians" || aString == "rad")
       _type = simmRadians;
-   if (str == "DEGREES" || str == "DEG" || str == "degrees" || str == "deg")
+   if (aString == "DEGREES" || aString == "DEG" || aString == "degrees" || aString == "deg")
       _type = simmDegrees;
-   if (str == "MM" || str == "MILLIMETERS" || str == "mm" || str == "millimeters")
+   if (aString == "MM" || aString == "MILLIMETERS" || aString == "mm" || aString == "millimeters")
       _type = simmMillimeters;
-   if (str == "CM" || str == "CENTIMETERS" || str == "cm" || str == "centimeters")
+   if (aString == "CM" || aString == "CENTIMETERS" || aString == "cm" || aString == "centimeters")
       _type = simmCentimeters;
-   if (str == "M" || str == "METERS" || str == "m" || str == "meters")
+   if (aString == "M" || aString == "METERS" || aString == "m" || aString == "meters")
       _type = simmMeters;
-   if (str == "SEC" || str == "SECONDS" || str == "sec" || str == "seconds")
+   if (aString == "SEC" || aString == "SECONDS" || aString == "sec" || aString == "seconds")
       _type = simmSeconds;
-   if (str == "MSEC" || str == "MILLISECONDS" || str == "msec" || str == "milliseconds")
+   if (aString == "MSEC" || aString == "MILLISECONDS" || aString == "msec" || aString == "milliseconds")
       _type = simmMilliseconds;
-	if (str == "N" || str == "NEWTONS" || str == "Newtons")
+	if (aString == "N" || aString == "NEWTONS" || aString == "Newtons")
 		_type = simmNewtons;
 }
 
+//_____________________________________________________________________________
+/**
+ * Constructor from a unit type.
+ *
+ * @param aType the unit type.
+ */
 SimmUnits::SimmUnits(UnitType aType)
 {
 	_type = aType;
 }
 
+//_____________________________________________________________________________
+/**
+ * Destructor
+ */
 SimmUnits::~SimmUnits()
 {
 }
 
-/* Returns a factor for converting a number from
- * the units of 'this' to the units of aType.
- */
-double SimmUnits::convertTo(const SimmUnits& aUnit) const
-{
-	return convertTo(aUnit._type);
-}
-
-/* Converts a number from the units of 'this' to the
- * units of aType.
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Convert a number from the units of this object to the units
+ * of aType.
+ *
+ * @param aType the unit type to convert to
+ * @param aValue the number to convert
+ * @return The number converted to the new units
  */
 double SimmUnits::convertTo(UnitType aType, double aValue) const
 {
 	return aValue * convertTo(aType);
 }
 
-/* Returns a factor for converting a number from
- * the units of 'this' to the units of aType.
+//_____________________________________________________________________________
+/**
+ * Return a conversion factor for converting a number from the
+ * units of this object to the units of aUnit.
+ *
+ * @param aUnit the units to convert to
+ * @return The conversion factor
+ */
+double SimmUnits::convertTo(const SimmUnits& aUnit) const
+{
+	return convertTo(aUnit._type);
+}
+
+//_____________________________________________________________________________
+/**
+ * Return a conversion factor for converting a number from the
+ * units of this object to the units of aType.
+ *
+ * @param aType the units to convert to
+ * @return The conversion factor
  */
 double SimmUnits::convertTo(UnitType aType) const
 {
@@ -160,6 +205,12 @@ double SimmUnits::convertTo(UnitType aType) const
 	return rdMath::NAN;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the text label for the units.
+ *
+ * @return Pointer to the character string.
+ */
 const char* SimmUnits::getLabel() const
 {
 	switch(_type)

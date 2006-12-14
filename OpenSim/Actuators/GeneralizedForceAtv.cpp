@@ -12,19 +12,15 @@
 #include <OpenSim/Tools/PropertyDbl.h>
 #include "GeneralizedForceAtv.h"
 #include <OpenSim/Simulation/Model/Muscle.h>
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 
 
 
 using namespace OpenSim;
 using namespace std;
-
-
-//=============================================================================
-// STATICS
-//=============================================================================
-const string GeneralizedForceAtv::X_NAME = "excitation";
-const string GeneralizedForceAtv::Y_NAME = "activation";
 
 
 //=============================================================================
@@ -42,8 +38,8 @@ GeneralizedForceAtv::~GeneralizedForceAtv()
  * Default constructor.
  */
 GeneralizedForceAtv::
-GeneralizedForceAtv(int aQID,int aNX,int aNY,int aNYP) :
-	GeneralizedForce(aQID,aNX,aNY,aNYP),
+GeneralizedForceAtv(string aQName) :
+	GeneralizedForce(aQName),
 	_riseTime(_propRiseTime.getValueDbl()),
 	_fallTime(_propFallTime.getValueDbl())
 {
@@ -54,13 +50,10 @@ GeneralizedForceAtv(int aQID,int aNX,int aNY,int aNYP) :
  * Construct the actuator from an XML Element.
  *
  * @param aElement XML element.
- * @param aNX Number of controls.
- * @param aNY Number of states.
- * @param aNYP Number of pseudostates.
  */
 GeneralizedForceAtv::
-GeneralizedForceAtv(DOMElement *aElement,int aNX,int aNY,int aNYP) :
-	GeneralizedForce(aElement,aNX,aNY,aNYP),
+GeneralizedForceAtv(DOMElement *aElement) :
+	GeneralizedForce(aElement),
 	_riseTime(_propRiseTime.getValueDbl()),
 	_fallTime(_propFallTime.getValueDbl())
 {
@@ -92,7 +85,7 @@ GeneralizedForceAtv(const GeneralizedForceAtv &aActuator) :
 Object* GeneralizedForceAtv::
 copy() const
 {
-	Actuator *act = new GeneralizedForceAtv(*this);
+	AbstractActuator *act = new GeneralizedForceAtv(*this);
 	return(act);
 }
 //_____________________________________________________________________________
@@ -113,8 +106,7 @@ Object* GeneralizedForceAtv::
 copy(DOMElement *aElement) const
 {
 	// ESTABLISH RELATIONSHIP WITH XML NODE
-	GeneralizedForceAtv *act = new
-		GeneralizedForceAtv(aElement,getNX(),getNY(),getNYP());
+	GeneralizedForceAtv *act = new GeneralizedForceAtv(aElement);
 
 	// ASSIGNMENT OPERATOR
 	*act = *this;
@@ -138,6 +130,10 @@ setNull()
 {
 	setType("GeneralizedForceAtv");
 	setupProperties();
+
+	setNumControls(1); setNumStates(1); setNumPseudoStates(0);
+	bindControl(0, _excitation, "excitation");
+	bindState(0, _a, "activation");
 
 	// APPLIES FORCE
 	_appliesForce = true;
@@ -206,173 +202,6 @@ operator=(const GeneralizedForceAtv &aActuator)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// STATES
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the number of states.
- *
- * @return Number of states (1 = activation).
- */
-int GeneralizedForceAtv::
-getNY() const
-{
-	return(1);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of a state.\n
- * Valid indices: 0
- *
- * @param aIndex Index of the state whose name is desired.
- * @throws Exception If aIndex is not valid.
- */
-const string& GeneralizedForceAtv::
-getStateName(int aIndex) const
-{
-	switch(aIndex) {
-	case(0):
-		return(Y_NAME);
-	default:
-		string msg = "GeneralizedForceAtv.setState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 1 states (index 0 is valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-}
-//_____________________________________________________________________________
-/**
- * Get the index of a state of a specified name.\n
- * Valid names: activation
- *
- * @param aName Name of the state whose index is desired.
- * @return Index of the specified state.
- * @throws Exception If aName is not valid.
- */
-int GeneralizedForceAtv::
-getStateIndex(const string &aName) const
-{
-	if(aName==Y_NAME) {
-		return(0);
-	} else {
-		string msg = "GeneralizedForceAtv.getStateIndex: ERR- Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has no state by the name";
-		msg += aName;
-		msg += ".\n Valid names are ";
-		msg += Y_NAME + "."; 
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Set the current values of the states.  The states are the
- * coordinates of contact PointA.
- *
- * @param aY Array of states.  aY should have a size of 1.
- */
-void GeneralizedForceAtv::
-setStates(const double aY[])
-{
-	_a = aY[0];
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a state at a specified index.\n
- * Valid indices:  0
- *
- * @param aIndex Index of the state to be set.
- * @param aValue Value to which to set the state.
- * @throws Exception If aIndex is not valid.
- */
-void GeneralizedForceAtv::
-setState(int aIndex,double aValue)
-{
-	if(aIndex!=0) {
-		string msg = "GeneralizedForceAtv.setState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 3 states (indices 0-2 are valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-
-	_a = aValue;
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a state of a specified name.\n
- * Valid names: actvation
- *
- * @param aName Name of the state to be set.
- * @param aValue Value to which to set the state.
- * @throws Exception If aName is not valid.
- */
-void GeneralizedForceAtv::
-setState(const string &aName,double aValue)
-{
-	int index = getStateIndex(aName);
-	setState(index,aValue);
-}
-//_____________________________________________________________________________
-/**
- * Get the current values of the states.
- *
- * @param rY Array of states.  The size of rYP should be 3.
- */
-void GeneralizedForceAtv::
-getStates(double rY[]) const
-{
-	rY[0] = _a;
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a state at a specified index.\n
- *	Valid Indices: 0
- *
- * @param aIndex Index of the desired state.
- * @return Value of the desired state.
- * @throws Exception If aIndex is not valid.
- */
-double GeneralizedForceAtv::
-getState(int aIndex) const
-{
-	if(aIndex!=0) {
-		string msg = "GeneralizedForceAtv.setState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 1 states (index 0 is valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-
-	return(_a);
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a state of a specified name.\n
- * Valid names: activation
- *
- * @param aName Name of the desired state.
- * @return Value of the desired state.
- * @throws Exception If aName is not valid.
- */
-double GeneralizedForceAtv::
-getState(const string &aName) const
-{
-	int index = getStateIndex(aName);
-	return(getState(index));
-}
-
 //-----------------------------------------------------------------------------
 // RISE TIME
 //-----------------------------------------------------------------------------
@@ -455,7 +284,12 @@ computeActuation()
 	if(_model==NULL) return;
 
 	// SPEED
-	_speed = _model->getSpeed(_qID);
+	if (_q)
+	{
+		AbstractSpeed *speed =  _model->getDynamicsEngine().getSpeedSet()->get(_q->getName());
+		if (speed)
+			_speed = speed->getValue();
+	}
 
 	// FORCE
 	double force = _a * _optimalForce;
@@ -467,8 +301,8 @@ computeActuation()
  * Compute the time derivatives of the states for this actuator.
  *
  * @param rDYDT Time derivatives of the states-- should have a length of at
- * least the value returned by getNY().
- * @see getNY()
+ * least the value returned by getNumStates().
+ * @see getNumStates()
  */
 void GeneralizedForceAtv::
 computeStateDerivatives(double rDYDT[])

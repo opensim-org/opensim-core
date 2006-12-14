@@ -1,10 +1,10 @@
-#ifndef _SimmKinematicsEngine_h_
-#define _SimmKinematicsEngine_h_
+#ifndef __SimmKinematicsEngine_h__
+#define __SimmKinematicsEngine_h__
 
 // SimmKinematicsEngine.h
 // Authors: Frank C. Anderson, Ayman Habib, and Peter Loan
-/* Copyright (c) 2005, Stanford University, Frank C. Anderson, Ayman Habib, and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -25,7 +25,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 // INCLUDES
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <iostream>
@@ -34,32 +33,12 @@
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include "Constant.h"
-#include "SimmBodySet.h"
-#include "SimmCoordinateSet.h"
-#include "SimmJointSet.h"
-#include "SimmDof.h"
-#include "SimmRotationDof.h"
-#include "SimmTranslationDof.h"
+#include "AbstractDynamicsEngine.h"
 #include "SimmPathMatrix.h"
-#include "SimmSdfastBody.h"
-#include "SimmMarkerSet.h"
-#include "SimmMeasurement.h"
-#include "SimmMarkerData.h"
-#include "SimmMotionData.h"
-#include "SimmUnits.h"
-#include "SimmIKTrialParams.h"
-#include "SimmSdfastInfo.h"
-#include "IKSolverInterface.h"
-#include "ScalerInterface.h"
-
-namespace OpenSim { 
-
-class SimmModel;
 
 #ifdef SWIG
 	#ifdef RDSIMULATION_API
@@ -68,6 +47,17 @@ class SimmModel;
 	#endif
 #endif
 
+namespace OpenSim {
+
+class AbstractBody;
+class BodyIterator;
+class CoordinateSet;
+class CoordinateIterator;
+class JointIterator;
+class AbstractDof;
+class AbstractCoordinate;
+class MarkerSet;
+class SimmMarkerData;
 
 //=============================================================================
 //=============================================================================
@@ -90,26 +80,15 @@ class RDSIMULATION_API SimmKinematicsEngine  : public AbstractDynamicsEngine
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	SimmSdfastInfo _sdfastInfo;
-
 protected:
-	PropertyObj _bodySetProp;
-	SimmBodySet &_bodySet;
 
-	PropertyObj _coordinateSetProp;
-	SimmCoordinateSet &_coordinateSet;
-
-	PropertyObj _jointSetProp;
-	SimmJointSet &_jointSet;
-
+	/* I don't know what this is? */
 	SimmPathMatrix _path;
 
-	SimmModel* _model;
+	/** Ground body. */
+	AbstractBody* _groundBody;
 
-	SimmBody* _groundBody;
-
-	//=============================================================================
+//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -120,290 +99,159 @@ public:
 	SimmKinematicsEngine(const std::string &aFileName);
 	SimmKinematicsEngine(DOMElement *aElement);
 	virtual ~SimmKinematicsEngine();
-	static void registerTypes();
 	SimmKinematicsEngine(const SimmKinematicsEngine& aEngine);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 #ifndef SWIG
 	SimmKinematicsEngine& operator=(const SimmKinematicsEngine &aEngine);
 #endif
-	void saveDynamics(const std::string& aFolderName = "", const std::string& aMuscleFileName = "no_muscles",
-		const std::string& aBonePath = "no_path", const std::string& aKineticsFile = "no_kinetics",
-		const std::string& aOutputMotionFile = "results.mot");
-	SimmBody* getLeafBody(SimmJoint* aJoint) const;
-	SimmDof* markUnconstrainedDof(const SimmCoordinate* aCoordinate);
+	static void registerTypes();
 
 private:
 	void setNull();
 	void setupProperties();
-	void copyData(const SimmKinematicsEngine &aKE);
-	bool checkDynamicParameters();
-	SimmBody* identifyGroundBody(void);
-	SimmDof* findNthSdfastQ(int n, SimmJoint*& joint) const;
-	SimmDof* findUnconstrainedSdfastDof(const SimmCoordinate* coord) const;
-	SimmMarker* getMarker(const std::string& name, SimmBody*& body) const;
-	const SimmMarker* getMarker(const std::string& name, const SimmBody*& body) const;
-	void countSdfastQsAndConstraints(void);
-	void initSdfastParameters(void);
-	void makeDofSdfastNames(void);
-	void makeSdfastJointOrder(void);
-	bool validSdfastModel(void);
-	void makeSdfastModel(const std::string& filename, bool writeFile);
-	void writeSDHeaderFile(const std::string& filename);
-	void writeSdfastConstraintData(std::ofstream& out);
-	void writeSdfastQRestraintData(std::ofstream& out);
-	void writeSdfastQRestraintFunctions(std::ofstream& out);
-	void writeSdfastQInitCode(std::ofstream& out);
-	void writeSdfastInitCode(std::ofstream& out);
-	void writeSdfastConstraintCode(std::ofstream& out);
-	void writeSdfastWrapObjects(std::ofstream& out);
-	void writeSdfastConstraintObjects(std::ofstream& out);
-	void writeSdforCFile(const std::string& filename);
-	void writeSdfastParameterFile(const std::string& aFileName, const std::string& aMuscleFileName = "no_muscles",
-		const std::string& aBonePath = "no_path", const std::string& aKineticsFile = "no_kinetics",
-		const std::string& aOutputMotionFile = "results.mot");
-	void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData);
+	void copyData(const SimmKinematicsEngine &aEngine);
+	AbstractBody* identifyGroundBody();
+	//void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 
 protected:
-	void createCoordinateJointLists(void);
-	void createCoordinatePathLists(void);
+	void createCoordinateJointLists();
+	void createCoordinatePathLists();
 
 public:
-	void setup(SimmModel* aModel);
+	virtual void setup(AbstractModel* aModel);
 	void makePaths();
-	SimmBody* getGroundBodyPtr() const { return _groundBody; }
-	void convertPoint(double aPoint[3], const SimmBody* aFrom, const SimmBody* aTo) const;
-	void convertVector(double aVector[3], const SimmBody* aFrom, const SimmBody* aTo) const;
-	void convertPoint(Array<double>& aPoint, const SimmBody* aFrom, const SimmBody* aTo) const;
-	double calcDistance(Array<double>& aPoint1, const SimmBody* aBody1, Array<double>& aPoint2, const SimmBody* aBody2) const;
-	double calcDistance(const double aPoint1[3], const SimmBody* aBody1, const double aPoint2[3], const SimmBody* aBody2) const;
-	int getNumMarkers() const;
-/*Reorg
-	void solveInverseKinematics(const SimmIKTrialParams& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);
-	SimmMotionData* solveInverseKinematics(const SimmIKTrialParams& aIKOptions, SimmMarkerData& aMarkerData);
-	SimmMotionData* solveInverseKinematics(const SimmIKTrialParams& aIKOptions, SimmMarkerData& aMarkerData, SimmMotionData& aCoordinateData);
-*/
-	void moveMarkersToCloud(Storage& aMarkerStorage);
-	int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
-	int replaceMarkerSet(SimmMarkerSet& aMarkerSet);
-	void updateMarkers(SimmMarkerSet& aMarkerArray);
-	void updateCoordinates(SimmCoordinateSet& aCoordinateArray);
-	double takeMeasurement(const SimmMeasurement& aMeasurement) const;
-
-	void writeSIMMJointFile(const std::string& aFileName) const;
-	void writeMarkerFile(const std::string& aFileName) const;
-
-	void peteTest() const;
-
-	void getUnlockedCoordinates(SimmCoordinateArray& aUnlockedCoordinates) const;
-	virtual SimmBody* getBody(const std::string &aName) const;
-	virtual Coordinate* getCoordinate(const std::string &aName) const;
-	virtual SimmJoint* getJoint(int index) { return _jointSet[index]; }
-	virtual SimmBodySet& getBodies() { return _bodySet; }
-	virtual SimmCoordinateSet& getCoordinates() { return _coordinateSet; }
+#if 0
+	void solveInverseKinematics(const SimmIKTrial& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);
+	SimmMotionData* solveInverseKinematics(const SimmIKTrial& aIKOptions, SimmMarkerData& aMarkerData);
+	SimmMotionData* solveInverseKinematics(const SimmIKTrial& aIKOptions, SimmMarkerData& aMarkerData, SimmMotionData& aCoordinateData);
+#endif
 
 	//--------------------------------------------------------------------------
-	// NUMBERS
+	// COORDINATES
 	//--------------------------------------------------------------------------
-	virtual int getNumBodies() const { return _bodySet.getSize(); }
-	virtual int getNumJoints() const { return _jointSet.getSize(); }
-	virtual int getNumCoordinates() const { return _coordinateSet.getSize(); }
-	virtual int getNumSpeeds() const { return _coordinateSet.getSize(); }
-	virtual int getNumControls() const;
-	virtual int getNumContacts() const;
-	virtual int getNumStates() const;
-	virtual int getNumPseudoStates() const;
-
-	//--------------------------------------------------------------------------
-	// NAMES
-	//--------------------------------------------------------------------------
-public:
-	virtual void setBodyName(int aIndex, const std::string &aName);
-	virtual std::string getBodyName(int aIndex) const;
-	virtual std::string getCoordinateName(int aIndex) const;
-	virtual std::string getSpeedName(int aIndex) const;
-	virtual std::string getControlName(int aIndex) const;
-	virtual std::string getStateName(int aIndex) const;
-	virtual std::string getPseudoStateName(int aIndex) const;
-
-	//--------------------------------------------------------------------------
-	// INDICES FROM NAMES
-	//--------------------------------------------------------------------------
-	virtual int getBodyIndex(const std::string &aName) const;
-	virtual int getCoordinateIndex(const std::string &aName) const;
-	virtual int getSpeedIndex(const std::string &aName) const;
-	virtual int getControlIndex(const std::string &aName) const;
-	virtual int getStateIndex(const std::string &aName) const;
-	virtual int getPseudoStateIndex(const std::string &aName) const;
-
-	//--------------------------------------------------------------------------
-	// SET CURRENT TIME, CONTROLS, AND STATES
-	//--------------------------------------------------------------------------
-	virtual void set(double aT, const double aX[], const double aY[]);
-
-	//--------------------------------------------------------------------------
-	// INITIAL STATES
-	//--------------------------------------------------------------------------
-	virtual void setInitialStates(const double aYI[]);
-	virtual void getInitialStates(double rYI[]) const;
-	virtual double getInitialState(int aIndex) const;
-	virtual double getInitialState(const std::string &aName) const;
-
-	//--------------------------------------------------------------------------
-	// STATES
-	//--------------------------------------------------------------------------
-	virtual void setStates(const double aY[]);
-	virtual void getStates(double rY[]) const;
-	virtual double getState(int aIndex) const;
-	virtual double getState(const std::string &aName) const;
-	virtual void applyDefaultPose();
-
-	//--------------------------------------------------------------------------
-	// INITIAL PSEUDO STATES
-	//--------------------------------------------------------------------------
-	virtual void setInitialPseudoStates(const double aYPI[]);
-	virtual void getInitialPseudoStates(double rYPI[]) const;
-	virtual double getInitialPseudoState(int aIndex) const;
-	virtual double getInitialPseudoState(const std::string &aName) const;
-
-	//--------------------------------------------------------------------------
-	// PSEUDO STATES
-	//--------------------------------------------------------------------------
-	virtual void setPseudoStates(const double aYP[]);
-	virtual void getPseudoStates(double rYP[]) const;
-	virtual double getPseudoState(int aIndex) const;
-	//??virtual double getPseudoState(const std::string &aName) const;
+	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
+	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
+	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint);
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
 	//--------------------------------------------------------------------------
 	virtual void setConfiguration(const double aY[]);
+	virtual void getConfiguration(double rY[]) const;
 	virtual void setConfiguration(const double aQ[], const double aU[]);
-	virtual void getCoordinateValues(double rQ[]) const;
-	virtual double getCoordinateValue(int aIndex) const;
-	virtual double getCoordinateValue(const std::string &aName) const;
+	virtual void getConfiguration(double rQ[],double rU[]) const;
+	virtual void getCoordinates(double rQ[]) const;
 	virtual void getSpeeds(double rU[]) const;
-	virtual double getSpeed(int aIndex) const;
-	virtual double getSpeed(const std::string &aName) const;
-	virtual void getAccelerations(double rDUDT[]) const; // DYN
-	virtual double getAcceleration(int aIndex) const; // DYN
-	virtual double getAcceleration(const std::string &aSpeedName) const; // DYN
+	virtual void getAccelerations(double rDUDT[]) const;
+	virtual double getAcceleration(int aIndex) const;
+	virtual double getAcceleration(const std::string &aSpeedName) const;
 	virtual void extractConfiguration(const double aY[], double rQ[], double rU[]) const;
+	virtual void applyDefaultConfiguration();
 
 	//--------------------------------------------------------------------------
 	// ASSEMBLING THE MODEL
 	//--------------------------------------------------------------------------
-	virtual int assemble(double aTime, double *rState, int *aLock, double aTol, int aMaxevals, int *rFcnt, int *rErr);	//DYN
+	virtual int assemble(double aTime, double *rState, int *aLock, double aTol, int aMaxevals, int *rFcnt, int *rErr);
 
 	//--------------------------------------------------------------------------
-	// SCALE THE MODEL
+	// SCALING
 	//--------------------------------------------------------------------------
-	virtual bool scale(const ScaleSet& aScaleSet);
-	virtual bool scale(const ScaleSet& aScaleSet, bool aPreserveMassDist, double aFinalMass);
-
-	//--------------------------------------------------------------------------
-	// GRAVITY
-	//--------------------------------------------------------------------------
-	virtual void getGravity(double rGrav[3]) const; // DYN
-	virtual void setGravity(double aGrav[3]); // DYN
+	virtual bool scale(const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
 
 	//--------------------------------------------------------------------------
 	// BODY INFORMATION
 	//--------------------------------------------------------------------------
-	virtual int getGroundBodyIndex() const;
-	virtual void setBodyToJointBodyLocal(int aBody, const double aBTJ[3]);
-	virtual void getBodyToJointBodyLocal(int aBody, double rBTJ[3]) const;
-	virtual void setInboardToJointBodyLocal(int aBody, const double aBTJ[3]);
-	virtual void getInboardToJointBodyLocal(int aBody, double rBTJ[3]) const;
+	virtual AbstractBody& getGroundBody() const;
+	virtual AbstractBody* getLeafBody(AbstractJoint* aJoint) const;
 
 	//--------------------------------------------------------------------------
-	// INERTIA	// DYN
+	// INERTIA
 	//--------------------------------------------------------------------------
 	virtual double getMass() const;
-	virtual double getMass(int aBody) const;
-	virtual int getInertiaBodyLocal(int aBody, double rI[3][3]) const;
-	virtual int	getInertiaBodyLocal(int aBody, double *rI) const;
 	virtual void getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const;
 	virtual void getSystemInertia(double *rM, double *rCOM, double *rI) const;
 
 	//--------------------------------------------------------------------------
 	// KINEMATICS
 	//--------------------------------------------------------------------------
-	virtual void getPosition(int aBody, const double aPoint[3], double rPos[3]) const;
-	virtual void getVelocity(int aBody, const double aPoint[3], double rVel[3]) const;
-	virtual void getAcceleration(int aBody, const double aPoint[3], double rAcc[3]) const;
-	virtual void getDirectionCosines(int aBody, double rDirCos[3][3]) const;
-	virtual void getDirectionCosines(int aBody, double *rDirCos) const;
-	virtual void getAngularVelocity(int aBody, double rAngVel[3]) const;
-	virtual void getAngularVelocityBodyLocal(int aBody, double rAngVel[3]) const;
-	virtual void getAngularAcceleration(int aBody, double rAngAcc[3]) const;
-	virtual void getAngularAccelerationBodyLocal(int aBody, double rAngAcc[3]) const;
+	virtual void getPosition(const AbstractBody &aBody, const double aPoint[3], double rPos[3]) const;
+	virtual void getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const;
+	virtual void getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const;
+	virtual void getDirectionCosines(const AbstractBody &aBody, double rDirCos[3][3]) const;
+	virtual void getDirectionCosines(const AbstractBody &aBody, double *rDirCos) const;
+	virtual void getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const;
+	virtual void getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const;
+	virtual void getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const;
+	virtual void getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const;
+	virtual Transform getTransform(const AbstractBody &aBody);
 
 	//--------------------------------------------------------------------------
 	// LOAD APPLICATION
 	//--------------------------------------------------------------------------
 	// FORCES EXPRESSED IN INERTIAL FRAME
-	virtual void applyForce(int aBody, const double aPoint[3], const double aForce[3]);
-	virtual void applyForces(int aN, const int aBodies[], const double aPoints[][3], const double aForces[][3]);
-	virtual void applyForces(int aN, const int aBodies[], const double *aPoints, const double *aForces);
+	virtual void applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]);
+	virtual void applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]);
+	virtual void applyForces(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces);
 
 	// FORCES EXPRESSED IN BODY-LOCAL FRAME
-	virtual void applyForceBodyLocal(int aBody, const double aPoint[3], const double aForce[3]);
-	virtual void applyForcesBodyLocal(int aN, const int aBodies[], const double aPoints[][3], const double aForces[][3]);
-	virtual void applyForcesBodyLocal(int aN, const int aBodies[], const double *aPoints, const double *aForces);
+	virtual void applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]);
+	virtual void applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]);
+	virtual void applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces);
 
 	// TORQUES EXPRESSED IN INERTIAL FRAME
-	virtual void applyTorque(int aBody, const double aTorque[3]); // DYN
-	virtual void applyTorques(int aN, const int aBodies[], const double aTorques[][3]); // DYN
-	virtual void applyTorques(int aN, const int aBodies[], const double *aTorques); // DYN
+	virtual void applyTorque(const AbstractBody &aBody, const double aTorque[3]);
+	virtual void applyTorques(int aN, const AbstractBody *aBodies[], const double aTorques[][3]);
+	virtual void applyTorques(int aN, const AbstractBody *aBodies[], const double *aTorques);
 
-	// TORQUES EXPRESSED IN BODY-LOCAL FRAME (sdbodyt())
-	virtual void applyTorqueBodyLocal(int aBody, const double aTorque[3]); // DYN
-	virtual void applyTorquesBodyLocal(int aN, const int aBodies[], const double aTorques[][3]); // DYN
-	virtual void applyTorquesBodyLocal(int aN, const int aBodies[], const double *aTorques); // DYN
+	// TORQUES EXPRESSED IN BODY-LOCAL FRAME
+	virtual void applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3]);
+	virtual void applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double aTorques[][3]);
+	virtual void applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aTorques);
 
 	// GENERALIZED FORCES
-	virtual void applyGeneralizedForce(int aU, double aF);
+	virtual void applyGeneralizedForce(const AbstractCoordinate &aU, double aF);
 	virtual void applyGeneralizedForces(const double aF[]);
-	virtual void applyGeneralizedForces(int aN, const int aU[], const double aF[]);
+	virtual void applyGeneralizedForces(int aN, const AbstractCoordinate *aU[], const double aF[]);
 
 	//--------------------------------------------------------------------------
 	// LOAD ACCESS AND COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual double getNetAppliedGeneralizedForce(int aU) const; // DYN
-	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const; // DYN
-	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const; // DYN
+	virtual double getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const;
+	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const;
+	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const;
 
 	//--------------------------------------------------------------------------
 	// EQUATIONS OF MOTION
 	//--------------------------------------------------------------------------
-	virtual void formMassMatrix(double *rI); // DYN
-	virtual void formEulerTransform(int aBody, double *rE) const; // DYN
-	virtual void formJacobianTranslation(int aBody, const double aPoint[3], double *rJ, int aRefBody=-1) const; // DYN
-	virtual void formJacobianOrientation(int aBody, double *rJ0, int aRefBody=-1) const; // DYN
-	virtual void formJacobianEuler(int aBody, double *rJE, int aRefBody=-1) const; // DYN
+	virtual void formMassMatrix(double *rI);
+	virtual void formEulerTransform(const AbstractBody &aBody, double *rE) const;
+	virtual void formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody=NULL) const;
+	virtual void formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody=NULL) const;
+	virtual void formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody=NULL) const;
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVES
 	//--------------------------------------------------------------------------
-	virtual int computeAccelerations(double *dqdt, double *dudt); // DYN
-	virtual void computeAuxiliaryDerivatives(double *dydt);  // DYN
+	virtual void computeDerivatives(double *dqdt, double *dudt);
 
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	virtual void transform(int aBody1, const double aVec1[3], int aBody2, double rVec2[3]) const;
-	virtual void transformPosition(int aBody, const double aPos[3], double rPos[3]) const;
+	virtual void transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const;
+	virtual void transform(const AbstractBody &aBodyFrom, const Array<double>& aVec, const AbstractBody &aBodyTo, Array<double>& rVec) const;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, const AbstractBody &aBodyTo, Array<double>& rPos) const;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], double rPos[3]) const;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, Array<double>& rPos) const;
+
+	virtual double calcDistance(const AbstractBody &aBody1, const double aPoint1[3], const AbstractBody &aBody2, const double aPoint2[3]) const;
+	virtual double calcDistance(const AbstractBody &aBody1, const Array<double>& aPoint1, const AbstractBody &aBody2, const Array<double>& aPoint2) const;
 
 	virtual void convertQuaternionsToAngles(double *aQ, double *rQAng) const;
 	virtual void convertQuaternionsToAngles(Storage *rQStore) const;
 	virtual void convertAnglesToQuaternions(double *aQAng, double *rQ) const;
 	virtual void convertAnglesToQuaternions(Storage *rQStore) const;
-
-	virtual void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
-	virtual void convertRadiansToDegrees(Storage *rQStore) const;
-	virtual void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
-	virtual void convertDegreesToRadians(Storage *rQStore) const;
 
 	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const;
 	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const;
@@ -417,34 +265,19 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
+	virtual void computeConstrainedCoordinates(double *rQ) const;
+
 	//--------------------------------------------------------------------------
-	// CONTACT
+	// TESTING
 	//--------------------------------------------------------------------------
-	virtual void computeContact();
-	virtual void applyContactForce(int aID); // DYN
-	virtual void applyContactForces(); // DYN
-	virtual int getContactBodyA(int aID) const;
-	virtual int getContactBodyB(int aID) const;
-	virtual void setContactPointA(int aID, const double aPoint[3]);
-	virtual void getContactPointA(int aID, double rPoint[3]) const;
-	virtual void setContactPointB(int aID, const double aPoint[3]);
-	virtual void getContactPointB(int aID, double rPoint[3]) const;
-	virtual void getContactForce(int aID, double rF[3]) const;
-	virtual void getContactNormalForce(int aID, double rFP[3], double rFV[3], double rF[3]) const;
-	virtual void getContactTangentForce(int aID, double rFP[3], double rFV[3], double rF[3]) const;
-	virtual void getContactStiffness(int aID, const double aDX[3], double rDF[3]) const;
-	virtual void getContactViscosity(int aID, const double aDV[3], double rDF[3]) const;
-	virtual void getContactFrictionCorrection(int aID, double aDFFric[3]) const;
-	virtual double getContactForce(int aID) const;
-	virtual double getContactSpeed(int aID) const;
-	virtual double getContactPower(int aID) const;
+	virtual void peteTest() const;
 
 //=============================================================================
 };	// END of class SimmKinematicsEngine
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmKinematicsEngine_h__
 

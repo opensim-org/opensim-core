@@ -39,6 +39,8 @@
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include "ContactForce.h"
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
 
 
 
@@ -68,8 +70,8 @@ ContactForce::~ContactForce()
  *
  * 
  */
-ContactForce::ContactForce(int aBodyA,int aBodyB,int aNYP) :
-	Force(aBodyA,aBodyB,0,0,aNYP),
+ContactForce::ContactForce(string aBodyA,string aBodyB) :
+	Force(aBodyA,aBodyB),
 	_nA(_propNormalA.getValueDblArray()),
 	_nB(_propNormalB.getValueDblArray())
 {
@@ -81,10 +83,9 @@ ContactForce::ContactForce(int aBodyA,int aBodyB,int aNYP) :
  * Construct a contact force object based on an XML node.
  *
  * @param aElement XML node based on which to construct this object.
- * @param aNYP Number of pseudo-states.
  */
-ContactForce::ContactForce(DOMElement *aElement,int aNYP) :
-	Force(aElement,0,0,aNYP),
+ContactForce::ContactForce(DOMElement *aElement) :
+	Force(aElement),
 	_nA(_propNormalA.getValueDblArray()),
 	_nB(_propNormalB.getValueDblArray())
 {
@@ -129,6 +130,8 @@ setNull()
 
 	// TYPE
 	setType("ContactForce");
+
+	setNumControls(0); setNumStates(0); setNumPseudoStates(0);
 
 	// NORMAL B
 	_nB[0]=0.0;  _nB[1]=0.0;  _nB[2]=0.0;
@@ -228,187 +231,6 @@ operator=(const ContactForce &aContact)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// CONTROLS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the number of controls (0 for ContactForce).
- *
- * Derived classes should override this method.
- *
- * @return Number of controls.
- */
-int ContactForce::
-getNX() const
-{
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of a control.\n
- * Valid indices: none
- *
- * Derived classes should override this method.
- *
- * @param aIndex Index of the control whose name is desired.
- * @throws Exception If aIndex is not valid.
- */
-const string ContactForce::
-getControlName(int aIndex) const
-{
-	string msg = "ContactForce.getControlName: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Get the index of a control of a specified name.\n
- * Valid names: (there are no valid names)
- *
- * Derived classes should override this method.
- *
- * @param aName Name of the control whose index is desired.
- * @return Index of the specified control.
- * @throws Exception If aName is not valid.
- */
-int ContactForce::
-getControlIndex(const string &aName) const
-{
-	string msg = "ContactForce.getControlIndex: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no control by the name";
-	msg += aName;
-	msg += ".";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Set the current values of the controls.
- *
- * Derived classes should override this method.
- *
- * @param aX Array of control values.
- * @throws Exception This actuator has no controls.
- */
-void ContactForce::
-setControls(const double aX[])
-{
-	string msg = "ContactForce.setControls: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a control at a specified index.\n
- * Valid indices: none
- *
- * Derived classes should override this method.
- *
- * @param aIndex Index of the control to be set.
- * @param aValue Value to which to set the control.
- * @throws Exception If aIndex is not valid.
- */
-void ContactForce::
-setControl(int aIndex,double aValue)
-{
-	string msg = "ContactForce.setControl: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a control of a specified name.\n
- * Valid names: (there are no valid names)
- *
- * Derived classes should override this method.
- *
- * @param aName Name of the control to be set.
- * @param aValue Value to which to set the control.
- * @throws Exception If aName is not valid.
- */
-void ContactForce::
-setControl(const string &aName,double aValue)
-{
-	string msg = "ContactForce.setControl: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Get the current values of the controls.
- *
- * Derived classes should override this method.
- *
- * @param aX Array of control values.
- * @throws Exception There are no controls.
- */
-void ContactForce::
-getControls(double rX[]) const
-{
-	string msg = "ContactForce.getControls: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a control at a specified index.\n
- * Valid indices: none
- *
- * Derived classes should override this method.
- *
- * @param aIndex Index of the desired control.
- * @return Value of the desired control.
- * @throws Exception If aIndex is not valid.
- */
-double ContactForce::
-getControl(int aIndex) const
-{
-	string msg = "ContactForce.setControl: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a control of a specified name.\n
- * Valid names: (there are no valid names)
- *
- * Derived classes should override this method.
- *
- * @param aName Name of the desired control.
- * @return Value of the desired control.
- * @throws Exception If aName is not valid.
- */
-double ContactForce::
-getControl(const string &aName) const
-{
-	string msg = "ContactForce.setControl: ERR- Actuator ";
-	msg += getName();
-	msg += " of type ";
-	msg += getType();
-	msg += " has no controls.";
-	throw( Exception(msg,__FILE__,__LINE__) );
-}
 
 //-----------------------------------------------------------------------------
 // NORMAL B
@@ -885,17 +707,17 @@ computeVelocities()
 	// VELOCITY
 	double va[3],vb[3],v[3];
 	if(_vAFunction == NULL){
-		_model->getVelocity(_bA,&_pA[0],va);
+		_model->getDynamicsEngine().getVelocity(*_bA,&_pA[0],va);
 	} else {
 		_vAFunction->evaluate(&time,va);
 	}
 	if(_vBFunction == NULL){
-		_model->getVelocity(_bB,&_pB[0],vb);
+		_model->getDynamicsEngine().getVelocity(*_bB,&_pB[0],vb);
 	} else {
 		_vBFunction->evaluate(&time,vb);
 	}
 	Mtx::Subtract(1,3,vb,va,v);
-	_model->transform(_model->getGroundID(),v,_bA,v);
+	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),v,*_bA,v);
 
 	// NORMAL
 	_vn = Mtx::DotProduct(3,v,&_nA[0]);
@@ -943,7 +765,7 @@ computeLineOfActionComponents(double rNormal[3],
 	// LINE OF ACTION
 	double r[3];
 	computeLineOfAction(r);
-	_model->transform(_model->getGroundID(),r,_bA,r);
+	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),r,*_bA,r);
 
 	// NORMAL COMPONENT
 	double rn = Mtx::DotProduct(3,r,&_nA[0]);

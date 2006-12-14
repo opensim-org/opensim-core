@@ -41,6 +41,9 @@
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include "Torque.h"
 
 
@@ -61,9 +64,6 @@ using namespace std;
 //_____________________________________________________________________________
 /**
  * Destructor.
- *
- * @todo There appears to be a memory leak when the control names are
- * allocated (_xNames) in Torque.
  */
 Torque::~Torque()
 {
@@ -72,18 +72,26 @@ Torque::~Torque()
 /**
  * Default constructor.
  */
-Torque::Torque(int aBodyA,int aBodyB,int aNX,int aNY,int aNYP) :
-	Actuator(aNX,aNY,aNYP),
-	_bA(_propBodyA.getValueInt()),
+Torque::Torque(const string &aBodyAName,const string &aBodyBName) :
+	AbstractActuator(),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
 {
 	// NULL
 	setNull();
 
 	// MEMBER DATA
-	_bA = aBodyA;
-	_bB = aBodyB;
+	_bodyAName = aBodyAName;
+	_bodyBName = aBodyBName;
+
+	if (_model) {
+		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -91,14 +99,23 @@ Torque::Torque(int aBodyA,int aBodyB,int aNX,int aNY,int aNYP) :
  *
  * @param aFileName Name of the file.
  */
-Torque::Torque(DOMElement *aElement,int aNX,int aNY,int aNYP) :
-	Actuator(aNX,aNY,aNYP,aElement),
-	_bA(_propBodyA.getValueInt()),
+Torque::Torque(DOMElement *aElement) :
+	AbstractActuator(aElement),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
 {
 	setNull();
 	updateFromXMLNode();
+
+	// MEMBER DATA
+	if (_model) {
+		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -107,10 +124,13 @@ Torque::Torque(DOMElement *aElement,int aNX,int aNY,int aNYP) :
  * @param aForce Force to be copied.
  */
 Torque::Torque(const Torque &aForce) :
-	Actuator(aForce),
-	_bA(_propBodyA.getValueInt()),
+	AbstractActuator(aForce),
+	_bodyAName(_propBodyAName.getValueStr()),
 	_uA(_propUnitVectorA.getValueDblArray()),
-	_bB(_propBodyB.getValueInt())
+	_bodyBName(_propBodyBName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_bA(NULL),
+	_bB(NULL)
 {
 	setNull();
 	*this = aForce;
@@ -145,7 +165,7 @@ copy() const
 Object* Torque::
 copy(DOMElement *aElement) const
 {
-	Torque *act = new Torque(aElement,getNX(),getNY());
+	Torque *act = new Torque(aElement);
 	*act = *this;
 	act->updateFromXMLNode();
 
@@ -171,12 +191,13 @@ setNull()
 	// APPLIES FORCE
 	setAppliesForce(false);
 
+	setNumControls(1); setNumStates(0); setNumPseudoStates(0);
+	bindControl(0, _excitation, "excitation");
+
 	// BODY A
-	_bA = -1;
 	_uA[0] = _uA[1] = _uA[2] = 0.0;  _uA[0] = 1.0;
 
 	// BODY B
-	_bB = -1;
 	_uB[0] = _uB[1] = _uB[2] = 0.0;  _uB[0] = 1.0;
 }
 //_____________________________________________________________________________
@@ -189,17 +210,19 @@ setupProperties()
 	double origin[3] = { 0.0, 0.0, 0.0 };
 	double x_axis[3] = { 1.0, 0.0, 0.0 };
 
-	_propBodyA.setName("body_A");
-	_propBodyA.setValue(-1);
-	_propertySet.append( &_propBodyA );
+	_propBodyAName.setName("body_A");
+	_propertySet.append( &_propBodyAName );
 
 	_propUnitVectorA.setName("direction_A");
 	_propUnitVectorA.setValue(3,x_axis);
 	_propertySet.append( &_propUnitVectorA );
 
-	_propBodyB.setName("body_B");
-	_propBodyB.setValue(-1);
-	_propertySet.append( &_propBodyB );
+	_propBodyBName.setName("body_B");
+	_propertySet.append( &_propBodyBName );
+
+	_propOptimalForce.setName("optimal_force");
+	_propOptimalForce.setValue(1.0);
+	_propertySet.append( &_propOptimalForce );
 }
 
 
@@ -219,7 +242,7 @@ Torque& Torque::
 operator=(const Torque &aForce)
 {
 	// BASE CLASS
-	Actuator::operator=(aForce);
+	AbstractActuator::operator=(aForce);
 
 	// BODY A
 	setBodyA(aForce.getBodyA());
@@ -245,22 +268,24 @@ operator=(const Torque &aForce)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the id of the first body to which the force is applied.
+ * Set the first body to which the torque is applied.
  *
- * @param aID Body ID.
+ * @param aBody Pointer to body.
  */
 void Torque::
-setBodyA(int aID)
+setBodyA(AbstractBody* aBody)
 {
-	_bA = aID;
+	_bA = aBody;
+	if (aBody)
+		_bodyAName = aBody->getName();
 }
 //_____________________________________________________________________________
 /**
- * Get the id of the first body to which the force is applied.
+ * Get the first body to which the torque is applied.
  *
- * @param aID Body ID.
+ * @return Pointer to body.
  */
-int Torque::
+AbstractBody* Torque::
 getBodyA() const
 {
 	return(_bA);
@@ -314,22 +339,24 @@ getDirectionA(double rDirection[3]) const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the id of the second body to which the force is applied.
+ * Set the second body to which the torque is applied.
  *
- * @param aID Body ID.
+ * @param aBody Pointer to body.
  */
 void Torque::
-setBodyB(int aID)
+setBodyB(AbstractBody* aBody)
 {
-	_bB = aID;
+	_bB = aBody;
+	if (aBody)
+		_bodyBName = aBody->getName();
 }
 //_____________________________________________________________________________
 /**
- * Get the id of the second body to which the force is applied.
+ * Get the second body to which the torque is applied.
  *
- * @param aID Body ID.
+ * @return Pointer to body.
  */
-int Torque::
+AbstractBody* Torque::
 getBodyB() const
 {
 	return(_bB);
@@ -355,6 +382,43 @@ getDirectionB(double rDirection[3]) const
 	rDirection[2] = _uB[2];
 }
 
+//-----------------------------------------------------------------------------
+// OPTIMAL FORCE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the optimal force of the torque.
+ *
+ * @param aOptimalForce Optimal force.
+ */
+void Torque::
+setOptimalForce(double aOptimalForce)
+{
+	_optimalForce = aOptimalForce;
+}
+//_____________________________________________________________________________
+/**
+ * Get the optimal force of the torque.
+ *
+ * @return Optimal force.
+ */
+double Torque::
+getOptimalForce() const
+{
+	return(_optimalForce);
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the stress of the torque.
+ *
+ * @return Stress.
+ */
+double Torque::
+getStress() const
+{
+	return fabs(_force/_optimalForce); 
+}
 
 //=============================================================================
 // COMPUTATIONS
@@ -374,7 +438,7 @@ computeActuation()
 	computeSpeed();
 
 	// FORCE
-	double torque = getControl(0) * getOptimalForce();
+	double torque = _excitation * getOptimalForce();
 	setForce(torque);
 }
 //_____________________________________________________________________________
@@ -385,7 +449,7 @@ computeActuation()
 void Torque::
 computeDirectionForBodyB()
 {
-	_model->transform(_bA,&_uA[0],_bB,_uB);
+	_model->getDynamicsEngine().transform(*_bA,&_uA[0],*_bB,_uB);
 	Mtx::Multiply(1,3,_uB,-1.0,_uB);
 }
 //_____________________________________________________________________________
@@ -398,7 +462,7 @@ void Torque::
 computeSpeed()
 {
 	double angVel[3];
-	_model->getAngularVelocityBodyLocal(_bB,angVel);
+	_model->getDynamicsEngine().getAngularVelocityBodyLocal(*_bB,angVel);
 	_speed = -Mtx::DotProduct(3,&_uA[0],angVel);
 }
 
@@ -414,17 +478,17 @@ void Torque::
 apply()
 {	
 	// TORQUE ON BODY A
-	if(_bA!=_model->getGroundID()) {
+	if(_bA!=&_model->getDynamicsEngine().getGroundBody()) {
 		double fA[3];
 		Mtx::Multiply(1,3,&_uA[0],_force,fA);
-		_model->applyTorqueBodyLocal(_bA,fA);
+		_model->getDynamicsEngine().applyTorqueBodyLocal(*_bA,fA);
 	}
 
 	// FORCE ON BODY B
-	if(_bB!=_model->getGroundID()) {
+	if(_bB!=&_model->getDynamicsEngine().getGroundBody()) {
 		double fB[3];
 		Mtx::Multiply(1,3,_uB,_force,fB);
-		_model->applyTorqueBodyLocal(_bB,fB);
+		_model->getDynamicsEngine().applyTorqueBodyLocal(*_bB,fB);
 	}
 }
 
@@ -439,22 +503,22 @@ apply()
 bool Torque::
 check() const
 {
-	Actuator::check();
+	AbstractActuator::check();
 
 	// BODY A
 	if(_model!=NULL) {
-		if((getBodyA()<_model->getGroundID())||(getBodyA()>=_model->getNB())) {
-			printf("Torque.check: ERROR- %s has invalid body for BodyA (%d).\n",
-				getName().c_str(),getBodyA());
+		if(getBodyA()==NULL) {
+			printf("Torque.check: ERROR- %s has invalid body for BodyA (%s).\n",
+				getName().c_str(),_bodyAName.c_str());
 			return(false);
 		}
 	}
 
 	// BODY B
 	if(_model!=NULL) {
-		if((getBodyB()<_model->getGroundID())||(getBodyB()>=_model->getNB())) {
-			printf("Torque.check: ERROR- %s has invalid body for BodyB (%d).\n",
-				getName().c_str(),getBodyB());
+		if(getBodyB()==NULL) {
+			printf("Torque.check: ERROR- %s has invalid body for BodyB (%s).\n",
+				getName().c_str(),_bodyBName.c_str());
 			return(false);
 		}
 	}
@@ -466,6 +530,20 @@ check() const
 	}
 
 	return(true);
+}
+//_____________________________________________________________________________
+/**
+ * setup sets the actual Body references _ba, _bB
+ */
+void Torque::
+setup(AbstractModel* aModel)
+{
+	AbstractActuator::setup(aModel);
+	if (aModel)
+	{
+		_bA = aModel->getDynamicsEngine().getBodySet()->get(_bodyAName);
+		_bB = aModel->getDynamicsEngine().getBodySet()->get(_bodyBName);
+	}
 }
 
 

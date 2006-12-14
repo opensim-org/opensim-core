@@ -12,7 +12,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
 #include "Contact.h"
 
 
@@ -51,7 +53,7 @@ Contact::~Contact()
  * Construct an Contact object for recording the various qunatities
  * associates with contact.
  *
- * @param aModel Model for which the kinematics are to be recorded.
+ * @param aModel AbstractModel for which the kinematics are to be recorded.
  * @param aResultantForcePointGroups Array containing group assignment for each contact point.
  *  The array must be as long as the number of contact points in the model.
  *  For a contact point to not be included in a resultant force point (RFP) calculation,
@@ -60,7 +62,7 @@ Contact::~Contact()
  *  If no array is given, the RFP is calcualted for all contact points in the
  *  model.
  */
-Contact::Contact(Model *aModel,int *aResultantForcePointGroups) :
+Contact::Contact(AbstractModel *aModel,int *aResultantForcePointGroups) :
 	Analysis(aModel)
 {
 	// NULL
@@ -74,7 +76,7 @@ Contact::Contact(Model *aModel,int *aResultantForcePointGroups) :
 	_resultantForcePointGroupAssignements = aResultantForcePointGroups;
 	if(_resultantForcePointGroupAssignements!=NULL){
 		counter = -1;
-		for(p=0;p<_model->getNP();p++){
+		for(p=0;p<_model->getNumContacts();p++){
 			if(counter < _resultantForcePointGroupAssignements[p]){
 				counter = _resultantForcePointGroupAssignements[p];
 			}
@@ -82,17 +84,17 @@ Contact::Contact(Model *aModel,int *aResultantForcePointGroups) :
 		_nResultantForcePointGroups = counter + 1;
 	} else {
 		_nResultantForcePointGroups = 1;
-		_resultantForcePointGroupAssignements = new int[_model->getNP()];
-		for(p=0;p<_model->getNP();p++)
+		_resultantForcePointGroupAssignements = new int[_model->getNumContacts()];
+		for(p=0;p<_model->getNumContacts();p++)
 			_resultantForcePointGroupAssignements[p]=0;
 	}
 
 	// ALLOCATE WORK ARRAYS
-	int n = 6*_model->getNP();
+	int n = 6*_model->getNumContacts();
 	_points = new double[n];
 	_velocities = new double[n];
 	_forces = new double[n];
-	_powers = new double[_model->getNP()];
+	_powers = new double[_model->getNumContacts()];
 	_resultantForcePoints = new double[3*_nResultantForcePointGroups];
 	_totContactForces = new double[3*_nResultantForcePointGroups];
 	_totContactTorques = new double[3*_nResultantForcePointGroups];
@@ -148,19 +150,25 @@ constructDescription()
 	descrip += "The units are S.I. (seconds, Newtons, meters, etc.).";
 
 	// BODY ID'S
-	int i,id;
-	int nb = _model->getNB();
+	int id = 0;
 	char tmp[Object::NAME_LENGTH];
 	descrip += "\n\nBody ID's:\n";
-	for(i=0;i<nb;i++) {
-		if(_model->getGroundID()==0) id = i+1;
-		else id = i;
-		sprintf(tmp,"%4d\t%s\n",id,_model->getBodyName(i).c_str());
+	int i = 0;
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+
+	for(i=0; i<bs->getSize(); i++)
+	{
+		AbstractBody *body=bs->get(i);
+		//if(_model->getGroundID()==0) id = i+1; TODOAUG: what is this for?
+		//else id = i;
+		sprintf(tmp,"%4d\t%s\n",id,body->getName().c_str());
 		descrip += tmp;
+		id++;
 	}
 	descrip += "\n";
 
 	setDescription(descrip);
+
 }
 //_____________________________________________________________________________
 /**
@@ -172,28 +180,29 @@ constructColumnLabels(int nResultantForcePointgroups)
 	string labels = "Time";
 
 	// VECTOR LABELS
-	int nb = _model->getNB();
-	int a,b,p;
+	int nb = _model->getNumBodies();
+	int p;
+	AbstractBody *a, *b;
 	char tmp[Object::NAME_LENGTH];
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 	for(p=0;p<np;p++) {
 
 		// BODY A
-		a = _model->getContactBodyA(p);
-		sprintf(tmp,"\t%d_A_%s_x",p,_model->getBodyName(a).c_str());
+		a = _model->getContactSet()->getContactBodyA(p);
+		sprintf(tmp,"\t%d_A_%s_x",p,a->getName().c_str());
 		labels += tmp;
-		sprintf(tmp,"\t%d_A_%s_y",p,_model->getBodyName(a).c_str());
+		sprintf(tmp,"\t%d_A_%s_y",p,a->getName().c_str());
 		labels += tmp;
-		sprintf(tmp,"\t%d_A_%s_z",p,_model->getBodyName(a).c_str());
+		sprintf(tmp,"\t%d_A_%s_z",p,a->getName().c_str());
 		labels += tmp;
 
 		// BODY B
-		b = _model->getContactBodyB(p);
-		sprintf(tmp,"\t%d_B_%s_x",p,_model->getBodyName(b).c_str());
+		b = _model->getContactSet()->getContactBodyB(p);
+		sprintf(tmp,"\t%d_B_%s_x",p,b->getName().c_str());
 		labels += tmp;
-		sprintf(tmp,"\t%d_B_%s_y",p,_model->getBodyName(b).c_str());
+		sprintf(tmp,"\t%d_B_%s_y",p,b->getName().c_str());
 		labels += tmp;
-		sprintf(tmp,"\t%d_B_%s_z",p,_model->getBodyName(b).c_str());
+		sprintf(tmp,"\t%d_B_%s_z",p,b->getName().c_str());
 		labels += tmp;
 	}
 	setColumnLabels(labels.c_str());
@@ -201,10 +210,10 @@ constructColumnLabels(int nResultantForcePointgroups)
 	// SCALAR LABELS
 	_scalarLabels = "Time";
 	for(p=0;p<np;p++) {
-		a = _model->getContactBodyA(p);
-		b = _model->getContactBodyB(p);
+		a = _model->getContactSet()->getContactBodyA(p);
+		b = _model->getContactSet()->getContactBodyB(p);
 		sprintf(tmp,"\t%d_%s_%s",
-			p,_model->getBodyName(a).c_str(),_model->getBodyName(b).c_str());
+			p,a->getName().c_str(),b->getName().c_str());
 		_scalarLabels += tmp;
 	}
 
@@ -433,27 +442,27 @@ record(double aT,double *aX,double *aY)
 	_model->set(aT,aX,aY);
 
 	// COMPUTE CONTACT
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 
 	// POINTS
-	const int ground = _model->getGroundID();
-	int p,I,a,b,j;
-	int np = _model->getNP();
+	int p,I,j;
+	int np = _model->getNumContacts();
 	int n = 6*np;
 	double vec[3];
+	AbstractBody *a, *b;
 	for(p=0;p<np;p++) {
 
 		I = Mtx::ComputeIndex(p,6,0);
 
 		// A
-		a = _model->getContactBodyA(p);
-		_model->getContactPointA(p,vec);
-		_model->getPosition(a,vec,&_points[I]);
+		a = _model->getContactSet()->getContactBodyA(p);
+		_model->getContactSet()->getContactPointA(p,vec);
+		_model->getDynamicsEngine().getPosition(*a,vec,&_points[I]);
 
 		// B
-		b = _model->getContactBodyB(p);
-		_model->getContactPointB(p,vec);
-		_model->getPosition(b,vec,&_points[I+3]);
+		b = _model->getContactSet()->getContactBodyB(p);
+		_model->getContactSet()->getContactPointB(p,vec);
+		_model->getDynamicsEngine().getPosition(*b,vec,&_points[I+3]);
 	}
 	_pStore->append(tReal,n,_points);
 
@@ -463,14 +472,14 @@ record(double aT,double *aX,double *aY)
 		I = Mtx::ComputeIndex(p,6,0);
 
 		// A
-		a = _model->getContactBodyA(p);
-		_model->getContactPointA(p,vec);
-		_model->getVelocity(a,vec,&_velocities[I]);
+		a = _model->getContactSet()->getContactBodyA(p);
+		_model->getContactSet()->getContactPointA(p,vec);
+		_model->getDynamicsEngine().getVelocity(*a,vec,&_velocities[I]);
 
 		// B
-		b = _model->getContactBodyB(p);
-		_model->getContactPointB(p,vec);
-		_model->getVelocity(b,vec,&_velocities[I+3]);
+		b = _model->getContactSet()->getContactBodyB(p);
+		_model->getContactSet()->getContactPointB(p,vec);
+		_model->getDynamicsEngine().getVelocity(*b,vec,&_velocities[I+3]);
 	}
 	_vStore->append(tReal,n,_velocities);
 
@@ -480,9 +489,9 @@ record(double aT,double *aX,double *aY)
 		I = Mtx::ComputeIndex(p,6,0);
 
 		// FORCE ON BodyB EXPRESSED IN GROUND FRAME
-		a = _model->getContactBodyA(p);
-		_model->getContactForce(p,vec);
-		_model->transform(a,vec,ground,vec);
+		a = _model->getContactSet()->getContactBodyA(p);
+		_model->getContactSet()->getContactForce(p,vec);
+		_model->getDynamicsEngine().transform(*a,vec,_model->getDynamicsEngine().getGroundBody(),vec);
 		Mtx::Assign(1,3,vec,&_forces[I+3]);
 
 		// FORCE ON BodyA IN GROUND FRAME
@@ -492,13 +501,13 @@ record(double aT,double *aX,double *aY)
 
 	// POWERS
 	for(p=0;p<np;p++) {
-		_powers[p] = _model->getContactPower(p);
+		_powers[p] = _model->getContactSet()->getContactPower(p);
 	}
-	_pwrStore->append(tReal,_model->getNP(),_powers);
+	_pwrStore->append(tReal,_model->getNumContacts(),_powers);
 
 	//RESULTANT FORCE POINT
 	int g, index;
-	int bodyA, bodyB;
+	AbstractBody *bodyA, *bodyB;
 	double resultantForcePoint[3];
 	double totContactForce[3];
 	double totContactTorque[3];
@@ -517,14 +526,14 @@ record(double aT,double *aX,double *aY)
 		}
 		for(p=0;p<np;p++){
 			if(_resultantForcePointGroupAssignements[p]==g){
-				bodyA = _model->getContactBodyA(p);
-				bodyB = _model->getContactBodyB(p);
-				_model->getContactForce(p,contactForce);
-				_model->transform(bodyA,contactForce,ground,contactForce);
+				bodyA = _model->getContactSet()->getContactBodyA(p);
+				bodyB = _model->getContactSet()->getContactBodyB(p);
+				_model->getContactSet()->getContactForce(p,contactForce);
+				_model->getDynamicsEngine().transform(*bodyA,contactForce,_model->getDynamicsEngine().getGroundBody(),contactForce);
 				Mtx::Add(1,3,totContactForce,contactForce,totContactForce);
-				_model->getContactPointB(p, contactPosRelCOMLocal);
+				_model->getContactSet()->getContactPointB(p, contactPosRelCOMLocal);
 
-				_model->transformPosition(bodyB,contactPosRelCOMLocal,contactPosRelCOMGlobal);
+				_model->getDynamicsEngine().transformPosition(*bodyB,contactPosRelCOMLocal,contactPosRelCOMGlobal);
 
 //				_model->getPosition(bodyB,contactPosRelCOMLocal,contactPosGlobal);
 //				_model->getPosition(bodyB,posBodyCOMLocal,posBodyCOMGlobal);
@@ -565,7 +574,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * AbstractModel::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -612,7 +621,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * AbstractModel::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -646,7 +655,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * AbstractModel::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

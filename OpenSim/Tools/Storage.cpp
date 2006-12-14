@@ -655,7 +655,7 @@ getLastStateVector() const
 	StateVector *vec = NULL;
 	try {
 		vec = &_storage.getLast();
-	} catch(Exception &x) {
+	} catch(Exception &) {
 		//x.print(cout);
 	}
 	return(vec);
@@ -2272,7 +2272,7 @@ findIndex(int aI,double aT)
 //_____________________________________________________________________________
 /**
  * Find the index of the storage element that occured immediately before
- * or at a specified time ( aT <= getTime(index) ).
+ * or at a specified time ( getTime(index) <= aT ).
  *
  * This method is not very efficient because it always starts its search
  * with the first stored state.
@@ -2413,7 +2413,7 @@ print(const char *aFileName,const char *aMode)
 	// CLOSE
 	fclose(fp);
 
-	return(nTotal);
+	return(nTotal!=0);
 }
 //_____________________________________________________________________________
 /**

@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "suAnalysesDLL.h"
 #include "BodyIndAcc.h"
 
@@ -27,6 +26,8 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+
 class SUANALYSES_API BodyIndPowers : public BodyIndAcc
 {
 //=============================================================================
@@ -41,8 +42,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyIndPowers(Model *aModel);
-	BodyIndPowers(Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+	BodyIndPowers(AbstractModel *aModel);
+	BodyIndPowers(AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~BodyIndPowers();
 private:

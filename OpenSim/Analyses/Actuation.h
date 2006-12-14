@@ -11,7 +11,6 @@
 //=============================================================================
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -56,7 +55,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Actuation(Model *aModel=0);
+	Actuation(AbstractModel *aModel=0);
 	Actuation(const std::string &aFileName);
 	Actuation(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
@@ -87,7 +86,7 @@ public:
 	Storage* getSpeedStorage() const;
 	Storage* getPowerStorage() const;
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(AbstractModel *aModel);
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

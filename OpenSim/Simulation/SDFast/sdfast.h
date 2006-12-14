@@ -40,6 +40,8 @@ void sdassemble_(double *time,double *state,int *lock,double *tol,
 				int *maxevals,int *fcnt,int *err );
 void sdassemble(double time,double *state,int *lock,double tol,
 				int maxevals,int *fcnt,int *err );
+void sdinitvel(double time, double state[100], int lock[50], double tol,
+					int maxevals, int *fcnt, int *err);
 
 // APPLY LOADS AND PRESCRIBE MOTIONS
 void STDCALL SDBODYT(int *aBody,double aTorque[3]);
@@ -187,13 +189,19 @@ void STDCALL SDGETINER(int *aBody,double rInertia[3][3]);
 void sdgetiner_(int *aBody,double rInertia[3][3]);
 void sdgetiner(int aBody,double rInertia[3][3]);
 
+void sdgetpres(int aJoint, int aAxis, int *rPresout);
+void sdprespos(int aJoint, int aAxis, double aPrval);
+void sdpresvel(int aJoint, int aAxis, double aPrval);
+void sdpresacc(int aJoint, int aAxis, double aPrval);
+void sdvcopy(double aVec[], double rVec[]);
+
 // ERROR
 void sderror(int *rRoutine,int *rErrNo);
 void sdprinterr(FILE *aFP);
 void sdclearerr();
 
 // USER WRITTEN ROUTINES
-
+void init_sdm();
 
 #ifdef __cplusplus
 }

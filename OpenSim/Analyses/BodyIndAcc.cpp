@@ -12,7 +12,10 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 #include "BodyIndAcc.h"
 
 
@@ -52,7 +55,7 @@ BodyIndAcc::~BodyIndAcc()
  *
  * @param aModel Model on which the analyses are to be performed.
  */
-BodyIndAcc::BodyIndAcc(Model *aModel) :
+BodyIndAcc::BodyIndAcc(AbstractModel *aModel) :
 	IndAcc(aModel)
 {
 	setName("BodyIndAcc");
@@ -83,7 +86,7 @@ BodyIndAcc::BodyIndAcc(Model *aModel) :
  * @todo	verify induced accelerations are correct
  * @todo	check that code is correct for generalized force case
  */
-BodyIndAcc::BodyIndAcc(Model *aModel,Storage *aStates,Storage *aControls,
+BodyIndAcc::BodyIndAcc(AbstractModel *aModel,Storage *aStates,Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
@@ -137,28 +140,25 @@ constructDescription()
 void BodyIndAcc::
 constructColumnLabels()
 {
+	string labels = "time";
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	int i=0;
 
-	// GET STATE NAMES
-	int i;
-	string labels;
-	string name;
-	if(_model->getBodyName(0).empty()) {
-		setColumnLabels(NULL);
-
-	} else {
-		labels = "time";
-		for(i=0;i<_model->getNB();i++) {
-			labels += "\t" + _model->getBodyName(i) + "_X";
-			labels += "\t" + _model->getBodyName(i) + "_Y";
-			labels += "\t" + _model->getBodyName(i) + "_Z";
-			labels += "\t" + _model->getBodyName(i) + "_Ox";
-			labels += "\t" + _model->getBodyName(i) + "_Oy";
-			labels += "\t" + _model->getBodyName(i) + "_Oz";
-		}
-		labels += "\n";
+	for(i=0; i<bs->getSize(); i++)
+	{
+		AbstractBody *body = bs->get(i);
+		labels += "\t" + body->getName() + "_X";
+		labels += "\t" + body->getName() + "_Y";
+		labels += "\t" + body->getName() + "_Z";
+		labels += "\t" + body->getName() + "_Ox";
+		labels += "\t" + body->getName() + "_Oy";
+		labels += "\t" + body->getName() + "_Oz";
 	}
 
+	labels += "\n";
+
 	setColumnLabels(labels.c_str());
+
 }
 
 //_____________________________________________________________________________
@@ -287,12 +287,12 @@ computeBodyAccelerations()
 	}
 
 	// NUMBERS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int nb = _model->getNB();
-	int ny = _model->getNY();
-	int nx = _model->getNX();
-	int np = _model->getNP();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int nb = _model->getNumBodies();
+	int ny = _model->getNumStates();
+	int nx = _model->getNumControls();
+	int np = _model->getNumContacts();
 
 	// GRAVITY
 	double g[3];
@@ -301,8 +301,8 @@ computeBodyAccelerations()
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
-	int i,j,c,body,I,J;
-	int bodyB;
+	int i,j,c,I,J;
+	AbstractBody *bodyB;
 	double pointB[3];
 	double t;
 	StateVector *yVec;
@@ -314,12 +314,21 @@ computeBodyAccelerations()
 	double *indAcc = new double[6*nb];
 	double *initVel = new double[6*nb];
 	double *initPos = new double[6*nb];
-	double com[] = { 0.0, 0.0, 0.0 };
 	double acc[3],angAcc[3], vel[3], angVel[3], pos[3], angPos[3];
 	double dirCos[3][3];
+
+	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
+	BodySet *bs = engine.getBodySet();
+	int bsi=0;	// BodySet index;
+	AbstractBody *body;
+	int bodyIndex;
+
 	for(i=0;i<_yStore->getSize();i++) {
 
 		// LOOP OVER INDEPENDENT COMPONENTS
+		ActuatorSet* as = _model->getActuatorSet();
+		int asi=0;
+		AbstractActuator* act = as->get(asi);
 		for(c=0;c<_nic;c++) {
 
 			// SET GRAVITY
@@ -352,20 +361,28 @@ computeBodyAccelerations()
 			_model->set(t,x,y);
 
 			// COMPUTE ACTUATION
-			_model->computeActuation();
+			_model->getActuatorSet()->computeActuation();
 
 			// NEED TO RECORD THE INITIAL BODY VELOCITIES AND POSITIONS
 				if(c==getVelocityIndex() && t==_ti){
-					_model->applyActuatorForces();
-					_model->computeAccelerations(dqdt,dudt);
+					_model->getActuatorSet()->apply();
+					engine.computeDerivatives(dqdt,dudt);
 
-					for(body=0;body<nb;body++) {
-						_model->getVelocity(body,com,vel);
-						_model->getAngularVelocityBodyLocal(body,angVel);
+					bsi=0;
+					bodyIndex = 0;
+					for(bsi=0; bsi < bs->getSize(); bsi++)
+					{
+						body = bs->get(bsi);
 
-						_model->getPosition(body,com,pos);	
-						_model->getDirectionCosines(body, dirCos);
-						_model->convertDirectionCosinesToAngles(dirCos,&angPos[0],&angPos[1],
+						double com[3];
+						body->getMassCenter(com);
+
+						engine.getVelocity(*body,com,vel);
+						engine.getAngularVelocityBodyLocal(*body,angVel);
+
+						engine.getPosition(*body,com,pos);	
+						engine.getDirectionCosines(*body, dirCos);
+						engine.convertDirectionCosinesToAngles(dirCos,&angPos[0],&angPos[1],
 								&angPos[2]);
 		
 						// DEGREES?
@@ -377,45 +394,51 @@ computeBodyAccelerations()
 						}
 	
 						// FILL ARRAY
-						I = Mtx::ComputeIndex(body,6,0);
+						I = Mtx::ComputeIndex(bodyIndex,6,0);
 						memcpy(&initVel[I],vel,3*sizeof(double));
 						memcpy(&initVel[I+3],angVel,3*sizeof(double));
 					
 						memcpy(&initPos[I],pos,3*sizeof(double));
 						memcpy(&initPos[I+3],angPos,3*sizeof(double));
+						bodyIndex++;
 					}
 
 					// RESET STATES
 					_model->set(t,x,y);
 
 					// RECOMPUTE ACTUATION
-					_model->computeActuation();		
+					_model->getActuatorSet()->computeActuation();		
 				}
 
 			// APPLY ACTUATOR FORCE
-			if(c<=getLastActuatorIndex()) {
-				_model->applyActuatorForce(c);
+			if(c<_model->getNumActuators()) {
+				act->apply();
 			}
 
 			// APPLY ELEMENT FORCES
 			if(!getUseNullDecomposition()) {
 				for(j=0;j<np;j++) {
 					J = Mtx::ComputeIndex(j,3,0);
-					bodyB = _model->getContactBodyB(j);
-					_model->getContactPointB(j,pointB);
-					_model->applyForce(bodyB,pointB,&fe[J]);
+					bodyB = _model->getContactSet()->getContactBodyB(j);
+					_model->getContactSet()->getContactPointB(j,pointB);
+					engine.applyForce(*bodyB,pointB,&fe[J]);
 				}
 			}
 
 			// COMPUTE THE ACCELERATIONS
-			_model->computeAccelerations(dqdt,dudt);
+			engine.computeDerivatives(dqdt,dudt);
 
 			// COMPUTE THE BODY ACCELERATIONS
-			for(body=0;body<nb;body++) {
-
+			bsi=0;
+			bodyIndex = 0;
+			for(bsi=0; bsi < bs->getSize(); bsi++)
+			{
+				body = bs->get(bsi);
 				// COMPUTE
-				_model->getAcceleration(body,com,acc);
-				_model->getAngularAccelerationBodyLocal(body,angAcc);
+				double com[3];
+				body->getMassCenter(com);
+				engine.getAcceleration(*body,com,acc);
+				engine.getAngularAccelerationBodyLocal(*body,angAcc);
 
 				// DEGREES?
 				if(getInDegrees()) {
@@ -425,9 +448,10 @@ computeBodyAccelerations()
 				}
 
 				// FILL ARRAY
-				I = Mtx::ComputeIndex(body,6,0);
+				I = Mtx::ComputeIndex(bodyIndex,6,0);
 				memcpy(&indAcc[I],acc,3*sizeof(double));
 				memcpy(&indAcc[I+3],angAcc,3*sizeof(double));
+				bodyIndex++;
 			}
 	
 			// STORE THE BODY ACCELERATIONS
@@ -438,6 +462,9 @@ computeBodyAccelerations()
 				_aeBodyStore[c]->setColumnLabels(getColumnLabels());
 			}
 			_aeBodyStore[c]->append(t,6*nb,indAcc);
+
+			asi++;
+			act = as->get(asi);
 		}
 	}
 

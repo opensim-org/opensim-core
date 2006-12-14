@@ -6,6 +6,7 @@
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Investigation.h>
 
 #ifdef SWIG
@@ -18,9 +19,9 @@
 namespace OpenSim {
 
 class XMLDocument;
-class SimmMarkerSet;
-class SimmCoordinateSet;
-class SimmIKTrialParamsSet;
+class MarkerSet;
+class CoordinateSet;
+class SimmIKTrialSet;
 
 
 //=============================================================================
@@ -37,19 +38,21 @@ class workflow_API InvestigationIK: public Investigation
 // MEMBER VARIABLES
 //=============================================================================
 private:
-
 	// marker set for updating markers in model before doing IK
 	PropertyObj _markerSetProp;
-	SimmMarkerSet &_markerSet;
+	MarkerSet &_markerSet;
 
 	// coordinate set for updating coordinates in model before doing IK
 	PropertyObj _coordinateSetProp;
-	SimmCoordinateSet &_coordinateSet;
+	CoordinateSet &_coordinateSet;
 
-	// parameters for the set of IK trials to perform
-	PropertyObj _IKTrialParamsSetProp;
-	SimmIKTrialParamsSet &_IKTrialParamsSet;
+	// names of coordinates whose values should be read from a file for IK
+	PropertyStrArray _coordinatesFromFileProp;
+	Array<std::string>& _coordinatesFromFile;
 
+	// the set of IK trials to perform
+	PropertyObj _IKTrialSetProp;
+	SimmIKTrialSet &_IKTrialSet;
 
 //=============================================================================
 // METHODS
@@ -85,19 +88,19 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	SimmMarkerSet& getMarkerSet()
+	MarkerSet& getMarkerSet()
 	{
 	   return _markerSet;
 	}
 
-	SimmCoordinateSet &getCoordinateSet() const
+	CoordinateSet &getCoordinateSet() const
 	{
 		return _coordinateSet;
 	}
 
-	SimmIKTrialParamsSet& getIKTrialParamsSet()
+	SimmIKTrialSet& getIKTrialSet()
 	{
-		return _IKTrialParamsSet;
+		return _IKTrialSet;
 	}
 
 	//--------------------------------------------------------------------------

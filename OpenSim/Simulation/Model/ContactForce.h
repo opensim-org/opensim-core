@@ -34,7 +34,6 @@
  */
 
 
-#include "Model.h"
 #include "Force.h"
 
 
@@ -130,8 +129,8 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ContactForce(int aBodyA=0,int aBodyB=0,int aNYP=0);
-	ContactForce(DOMElement *aElement,int aNYP=0);
+	ContactForce(std::string aBodyA="",std::string aBodyB="");
+	ContactForce(DOMElement *aElement);
 	ContactForce(const ContactForce &aForce);
 	virtual ~ContactForce();
 private:
@@ -149,16 +148,6 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
-	// CONTROLS (This are here to override what's in Force)
-	virtual int getNX() const;
-	virtual const std::string getControlName(int aIndex) const;
-	virtual int getControlIndex(const std::string &aName) const;
-	virtual void setControl(int aIndex,double aValue);
-	virtual void setControl(const std::string &aName,double aValue);
-	virtual void setControls(const double aX[]);
-	virtual double getControl(int aIndex) const;
-	virtual double getControl(const std::string &aName) const;
-	virtual void getControls(double rX[]) const;
 	// NORMAL ON BODY A
 	void setNormalA(const double aNormal[3]);
 	void getNormalA(double rNormal[3]) const;

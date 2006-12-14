@@ -43,17 +43,8 @@
 
 
 
-
 using namespace OpenSim;
 using namespace std;
-
-
-//=============================================================================
-// STATICS
-//=============================================================================
-const string SetPoint::YP0_NAME = "px";
-const string SetPoint::YP1_NAME = "py";
-const string SetPoint::YP2_NAME = "pz";
 
 
 //=============================================================================
@@ -74,10 +65,9 @@ SetPoint::~SetPoint()
  *
  * @param aBodyA Contact BodyA.
  * @param aBodyB Contact BodyB.
- * @param aNYP Number of pseudo-states (3, by default).
  */
-SetPoint::SetPoint(int aBodyA,int aBodyB,int aNYP) :
-	ContactForce(aBodyA,aBodyB,aNYP),
+SetPoint::SetPoint(string aBodyA,string aBodyB) :
+	ContactForce(aBodyA,aBodyB),
 	_ktp(_propKTP.getValueDbl()),
 	_ktv(_propKTV.getValueDbl()),
 	_mu(_propMU.getValueDbl())
@@ -91,10 +81,9 @@ SetPoint::SetPoint(int aBodyA,int aBodyB,int aNYP) :
  * PointA.  Derived classes should be aware of this.
  *
  * @param aElement XML node representing this setpoint object.
- * @param aNYP Number of pseudo-states (3, by default).
  */
-SetPoint::SetPoint(DOMElement *aElement,int aNYP) :
-	ContactForce(aElement,aNYP),
+SetPoint::SetPoint(DOMElement *aElement) :
+	ContactForce(aElement),
 	_ktp(_propKTP.getValueDbl()),
 	_ktv(_propKTV.getValueDbl()),
 	_mu(_propMU.getValueDbl())
@@ -139,6 +128,11 @@ setNull()
 {
 	setType("SetPoint");
 	setupProperties();
+
+	setNumControls(0); setNumStates(0); setNumPseudoStates(3);
+	bindPseudoState(0, _pA[0], "px");
+	bindPseudoState(1, _pA[1], "py");
+	bindPseudoState(2, _pA[2], "pz");
 
 	// FRICTION
 	_mu = 0.0;
@@ -194,186 +188,6 @@ operator=(const SetPoint &aSetPoint)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// PSEUDOSTATES
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the number of pseudostates.
- *
- * @return Number of pseudostates (3 for an SetPoint actuator).
- */
-int SetPoint::
-getNYP() const
-{
-	return(3);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of a pseudostate.\n
- * Valid indices: 0-2
- *
- * @param aIndex Index of the pseudostate whose name is desired.
- * @throws Exception If aIndex is not valid.
- */
-const string& SetPoint::
-getPseudoStateName(int aIndex) const
-{
-	switch(aIndex) {
-	case(0):
-		return(YP0_NAME);
-	case(1):
-		return(YP1_NAME);
-	case(2):
-		return(YP2_NAME);
-	default:
-		string msg = "SetPoint.setPseudoState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 3 pseudostates (indices 0-2 are valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-}
-//_____________________________________________________________________________
-/**
- * Get the index of a pseudostate of a specified name.\n
- * Valid names: px, py, pz
- *
- * @param aName Name of the pseudostate whose index is desired.
- * @return Index of the specified pseudostate.
- * @throws Exception If aName is not valid.
- */
-int SetPoint::
-getPseudoStateIndex(const string &aName) const
-{
-	if(aName==YP0_NAME) {
-		return(0);
-	} else if(aName==YP1_NAME) {
-		return(1);
-	} else if(aName==YP2_NAME) {
-		return(2);
-	} else {
-		string msg = "SetPoint.getPseudoStateIndex: ERR- Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has no pseudostate by the name";
-		msg += aName;
-		msg += ".\n Valid names are ";
-		msg += YP0_NAME + ", " + YP1_NAME + ", " + YP2_NAME + "."; 
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Set the current values of the pseudostates.  The pseudo-states are the
- * coordinates of contact PointA.
- *
- * @param aYP Array of pseudostates.  aYP should have a size of 3.
- */
-void SetPoint::
-setPseudoStates(const double aYP[])
-{
-	setPointA(aYP);
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a pseudostate at a specified index.\n
- * Valid indices:  0-2
- *
- * @param aIndex Index of the pseudostate to be set.
- * @param aValue Value to which to set the pseudostate.
- * @throws Exception If aIndex is not valid.
- */
-void SetPoint::
-setPseudoState(int aIndex,double aValue)
-{
-	if((aIndex<0)||(aIndex>2)) {
-		string msg = "SetPoint.setPseudoState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 3 pseudostates (indices 0-2 are valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-
-	double pointA[3];
-	getPointA(pointA);
-	pointA[aIndex] = aValue;
-	setPointA(pointA);
-}
-//_____________________________________________________________________________
-/**
- * Set the value of a pseudostate of a specified name.\n
- * Valid names: px, py, pz
- *
- * @param aName Name of the pseudostate to be set.
- * @param aValue Value to which to set the pseudostate.
- * @throws Exception If aName is not valid.
- */
-void SetPoint::
-setPseudoState(const string &aName,double aValue)
-{
-	int index = getPseudoStateIndex(aName);
-	setPseudoState(index,aValue);
-}
-//_____________________________________________________________________________
-/**
- * Get the current values of the pseudostates.
- *
- * @param rYP Array of pseudostates.  The size of rYP should be 3.
- */
-void SetPoint::
-getPseudoStates(double rYP[]) const
-{
-	getPointA(rYP);
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a pseudostate at a specified index.\n
- *	Valid Indices: 0-2
- *
- * @param aIndex Index of the desired pseudostate.
- * @return Value of the desired pseudostate.
- * @throws Exception If aIndex is not valid.
- */
-double SetPoint::
-getPseudoState(int aIndex) const
-{
-	if((aIndex<0)||(aIndex>2)) {
-		string msg = "SetPoint.setPseudoState: ERR- index out of bounds.\n";
-		msg += "Actuator ";
-		msg += getName();
-		msg += " of type ";
-		msg += getType();
-		msg += " has 3 pseudostates (indices 0-2 are valid).";
-		throw( Exception(msg,__FILE__,__LINE__) );
-	}
-
-	double pointA[3];
-	getPointA(pointA);
-	return(pointA[aIndex]);
-}
-//_____________________________________________________________________________
-/**
- * Get the value of a pseudostate of a specified name.\n
- * Valid names: px, py, pz
- *
- * @param aName Name of the desired pseudostate.
- * @return Value of the desired pseudostate.
- * @throws Exception If aName is not valid.
- */
-double SetPoint::
-getPseudoState(const string &aName) const
-{
-	int index = getPseudoStateIndex(aName);
-	return(getForce());
-}
-
 //-----------------------------------------------------------------------------
 // TANGENTIAL IMPEDANCE
 //-----------------------------------------------------------------------------

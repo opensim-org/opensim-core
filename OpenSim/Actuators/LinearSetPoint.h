@@ -33,9 +33,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "Actuators.h"
+#include <string>
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "SetPoint.h"
 
 
@@ -48,7 +47,9 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
+namespace OpenSim {
+
+class AbstractBody;
 
 class RDACTUATORS_API LinearSetPoint : public SetPoint
 {
@@ -72,7 +73,7 @@ class RDACTUATORS_API LinearSetPoint : public SetPoint
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	LinearSetPoint(int aBodyA=0,int aBodyB=0);
+	LinearSetPoint(std::string aBodyA="",std::string aBodyB="");
 	LinearSetPoint(DOMElement *aElement);
 	LinearSetPoint(const LinearSetPoint &aContact);
 	virtual ~LinearSetPoint();

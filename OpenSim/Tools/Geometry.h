@@ -54,12 +54,39 @@ namespace OpenSim {
 // Base Geometry
 class RDTOOLS_API Geometry
 {
+public:
+	// Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
+	enum GeometryType{
+		None, Sphere,  Cylinder, Cone, Ellipsoid, Line, Arrow	
+	};
 private:
 	bool			_fixed; /** to indicate if the geometry is fixed vs deformable */
 protected:
+	GeometryType	_analyticType;
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+public:
+	Geometry():
+	_fixed(true),
+	_analyticType(None)
+	{}
+	~Geometry() {}
 	//=============================================================================
 	// METHODS
 	//=============================================================================
+	// Retrieve analytic type
+	const GeometryType getShape() const
+	{
+		return _analyticType;
+	}
+	// Check if the geometry corresponds to an analytic geometry
+	virtual bool isAnalytic() const
+	{
+		return _analyticType!=None;
+	}
+	// Mark geometry as Fixed (so that vtk resources are allocated once,
+	// potentially use the same vtkGeometry more than once.)
 	virtual void setFixed(bool aFixed)
 	{
 		_fixed = aFixed;
@@ -68,30 +95,77 @@ protected:
 	{
 		return _fixed;
 	}
-	virtual bool isAnalytic() const
-	{
-		return false;
-	}
-
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
-	Geometry():
-	_fixed(true)
-	{}
 
 //=============================================================================
 };	// END of class Geometry
 
-class RDTOOLS_API AnalyticGeometry : public Geometry
-{	// Utility class used to abstract anayltic geometry
-public:
-	enum AnalyticGeometryType{
-		None, Sphere,  Cylinder, Cone, Ellipsoid
-	};
+/***
+ * LineGeometry is a utility class used to abstract a line segment.
+ * It is used by muscle segments so that it's as small and useful as possiblethe 
+ * For muscle segments, GUI is free to display it as a line, cylinder or ellipsoid
+ */
+class RDTOOLS_API LineGeometry : public Geometry
+{	
 protected:
-	AnalyticGeometryType	_analyticType;
+	double _point1[3];
+	double _point2[3];
+public:
+	LineGeometry(double aPoint1[3], double aPoint2[3]):
+	  Geometry()
+	{
+		
+		_analyticType=Line;
+		for(int i=0; i<3; i++){
+			_point1[i] = aPoint1[i];
+			_point2[i] = aPoint2[i];
+		}
+	}
+	LineGeometry():
+	  Geometry()
+	{
+		_analyticType=Line;
+		for(int i=0; i<3; i++){
+			_point1[i] = _point2[i] =0.0;
+		}
+	}
+	virtual ~LineGeometry() {}
+	// Get & Set end points
+	void getPoints(double rPoint1[3], double rPoint2[3]) const
+	{
+		for(int i=0; i<3; i++){
+			rPoint1[i] = _point1[i];
+			rPoint2[i] = _point2[i];
+		}
+	}
+	void setPoints(double aPoint1[3], double aPoint2[3])
+	{
+		for(int i=0; i<3; i++){
+			_point1[i] = aPoint1[i];
+			_point2[i] = aPoint2[i];
+		}
+	}
+};
+
+class RDTOOLS_API ArrowGeometry : public LineGeometry
+{	
+public:
+	ArrowGeometry(double aPoint1[3], double aUnitDirTo[3], double aLength):
+	  LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
+	{
+		_analyticType = Arrow;
+	}
+	virtual ~ArrowGeometry() {}
+};
+
+
+/**
+ * Utility class used to abstract anayltic geometry. 
+ * If the differentiation between types becomes an issue, or more info need
+ * to be stuffed in this class, it may be worth it to separate it into a bunch,
+ * one per shape.
+ */
+class RDTOOLS_API AnalyticGeometry : public Geometry
+{	 
 
 	// Common array of attributes for analytic geometry we can represent
 	// Meaning depends on _analyticType as follows.
@@ -102,21 +176,12 @@ protected:
 	// Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
 	double				_attributes[6];
 
-	// Default is none of the above!
 public:
-	AnalyticGeometry():
-	  Geometry()
+	AnalyticGeometry(GeometryType aGeometricType)
 	{
-		_analyticType = None;
+		_analyticType=aGeometricType;
 	}
-	virtual bool isAnalytic() const
-	{
-		return true;
-	}
-	const AnalyticGeometryType getShape() const
-	{
-		return _analyticType;
-	}
+	virtual ~AnalyticGeometry() {}
 	const double& getSphereRadius() const
 	{
 		//assert(_analyticType==Sphere);
@@ -149,8 +214,7 @@ public:
 	}
 	static AnalyticGeometry* createSphere(double radius)
 	{
-		AnalyticGeometry* sphere = new AnalyticGeometry();
-		sphere->_analyticType=Sphere;
+		AnalyticGeometry* sphere = new AnalyticGeometry(Sphere);
 		sphere->setSphereRadius(radius);
 		return sphere;
 	}
@@ -170,10 +234,6 @@ public:
 	const std::string&  getGeometryFilename() const
 	{
 		return _geometryFile;
-	};
-	virtual bool isAnalytic() const
-	{
-		return false;
 	};
 
 };

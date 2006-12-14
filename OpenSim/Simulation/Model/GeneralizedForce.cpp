@@ -39,7 +39,10 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include "GeneralizedForce.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/CoordinateSet.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 
 
 
@@ -67,32 +70,45 @@ GeneralizedForce::~GeneralizedForce()
 /**
  * Default constructor.
  */
-GeneralizedForce::GeneralizedForce(int aQID,int aNX,int aNY,int aNYP) :
-	Actuator(aNX,aNY,aNYP),
-	_qID(_propQID.getValueInt())
+GeneralizedForce::GeneralizedForce(string aQName) :
+	AbstractActuator(),
+	_qName(_propQName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_q(NULL),
+	_u(NULL)
 {
 	// NULL
 	setNull();
 
 	// MEMBER VARIABLES
-	_qID = aQID;
+	_qName = aQName;
+
+	if (_model) {
+		_q = _model->getDynamicsEngine().getCoordinateSet()->get(_qName);
+		_u = _model->getDynamicsEngine().getSpeedSet()->get(AbstractSpeed::getSpeedName(_qName));
+	}
 }
 //_____________________________________________________________________________
 /**
  * Construct the actuator from an XML element.
  *
  * @param aElement XML element.
- * @param aNX Number of controls.
- * @param aNY Number of states.
- * @param aNYP Number of pseudo-states.
  */
 GeneralizedForce::
-GeneralizedForce(DOMElement *aElement,int aNX,int aNY,int aNYP):
-	Actuator(aNX,aNY,aNYP,aElement),
-	_qID(_propQID.getValueInt())
+GeneralizedForce(DOMElement *aElement):
+	AbstractActuator(aElement),
+	_qName(_propQName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_q(NULL),
+	_u(NULL)
 {
 	setNull();
 	updateFromXMLNode();
+
+	if (_model) {
+		_q = _model->getDynamicsEngine().getCoordinateSet()->get(_qName);
+		_u = _model->getDynamicsEngine().getSpeedSet()->get(AbstractSpeed::getSpeedName(_qName));
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -101,11 +117,14 @@ GeneralizedForce(DOMElement *aElement,int aNX,int aNY,int aNYP):
  * @param aForce Force to be copied.
  */
 GeneralizedForce::GeneralizedForce(const GeneralizedForce &aGenForce) :
-	Actuator(aGenForce),
-	_qID(_propQID.getValueInt())
+	AbstractActuator(aGenForce),
+	_qName(_propQName.getValueStr()),
+	_optimalForce(_propOptimalForce.getValueDbl()),
+	_q(NULL),
+	_u(NULL)
 {
 	setNull();
-	setQID(aGenForce.getQID());
+	copyData(aGenForce);
 }
 //_____________________________________________________________________________
 /**
@@ -117,8 +136,8 @@ GeneralizedForce::GeneralizedForce(const GeneralizedForce &aGenForce) :
 Object* GeneralizedForce::
 copy() const
 {
-	Actuator *act = new GeneralizedForce(*this);
-	return(act);
+	GeneralizedForce *force = new GeneralizedForce(*this);
+	return force;
 }
 //_____________________________________________________________________________
 /**
@@ -138,8 +157,7 @@ copy() const
 Object* GeneralizedForce::
 copy(DOMElement *aElement) const
 {
-	GeneralizedForce *act = new
-		GeneralizedForce(aElement,getNX(),getNY(),getNYP());
+	GeneralizedForce *act = new GeneralizedForce(aElement);
 	*act = *this;
 	act->updateFromXMLNode();
 	return(act);
@@ -162,9 +180,12 @@ setNull()
 	// APPLIES FORCE
 	_appliesForce = true;
 
+	setNumControls(1); setNumStates(0); setNumPseudoStates(0);
+	bindControl(0, _excitation, "excitation");
+
 	// MEMBER VARIABLES
 	_utmp = NULL;
-	_qID = -1;
+	_excitation = 0.0;
 }
 //_____________________________________________________________________________
 /**
@@ -173,9 +194,25 @@ setNull()
 void GeneralizedForce::
 setupProperties()
 {
-	_propQID.setName("qid");
-	_propQID.setValue(-1);
-	_propertySet.append( &_propQID );
+	_propQName.setName("coordinate"); // TODOAUG: was "qid"
+	_propertySet.append( &_propQName );
+
+	_propOptimalForce.setName("optimal_force");
+	_propOptimalForce.setValue(1.0);
+	_propertySet.append( &_propOptimalForce );
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy the member data of the specified actuator.
+ */
+void GeneralizedForce::
+copyData(const GeneralizedForce &aGenForce)
+{
+	// MEMBER VARIABLES
+	setQ(aGenForce.getQ());
+	setOptimalForce(aGenForce.getOptimalForce());
+	_excitation = aGenForce._excitation;
 }
 
 
@@ -195,10 +232,9 @@ GeneralizedForce& GeneralizedForce::
 operator=(const GeneralizedForce &aGenForce)
 {
 	// BASE CLASS
-	Actuator::operator =(aGenForce);
+	AbstractActuator::operator =(aGenForce);
 
-	// MEMBER VARIABLES
-	setQID(aGenForce.getQID());
+	copyData(aGenForce);
 
 	return(*this);
 }
@@ -214,24 +250,63 @@ operator=(const GeneralizedForce &aGenForce)
 /**
  * Set the generalized coordinate to which the generalized force is applied.
  *
- * @param aQID ID (or number, or index) of the generalized coordinate.
+ * @param aQ ID Pointer to the generalized coordinate.
  */
 void GeneralizedForce::
-setQID(int aQID)
+setQ(AbstractCoordinate* aQ)
 {
-	_qID = aQID;
+	_q = aQ;
+	if (aQ)
+		_qName = aQ->getName();
 }
 //_____________________________________________________________________________
 /**
- * Get the ID of the generalized coordinate to which the generalized force
+ * Get the generalized coordinate to which the generalized force
  * is applied.
  *
- * @param aID Body ID.
+ * @return Pointer to the coordinate
  */
-int GeneralizedForce::
-getQID() const
+AbstractCoordinate* GeneralizedForce::
+getQ() const
 {
-	return(_qID);
+	return(_q);
+}
+
+//-----------------------------------------------------------------------------
+// OPTIMAL FORCE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the optimal force of the force.
+ *
+ * @param aOptimalForce Optimal force.
+ */
+void GeneralizedForce::
+setOptimalForce(double aOptimalForce)
+{
+	_optimalForce = aOptimalForce;
+}
+//_____________________________________________________________________________
+/**
+ * Get the optimal force of the force.
+ *
+ * @return Optimal force.
+ */
+double GeneralizedForce::
+getOptimalForce() const
+{
+	return(_optimalForce);
+}
+//_____________________________________________________________________________
+/**
+ * Get the stress of the force.
+ *
+ * @return Stress.
+ */
+double GeneralizedForce::
+getStress() const
+{
+	return fabs(_force/_optimalForce); 
 }
 
 
@@ -249,10 +324,10 @@ computeActuation()
 	if(_model==NULL) return;
 
 	// SPEED
-	_speed = _model->getSpeed(_qID);
+	if (_u) _speed = _u->getValue();
 
 	// FORCE
-	double force = getControl(0) * _optimalForce;
+	double force = _excitation * _optimalForce;
 	setForce(force);
 }
 
@@ -268,7 +343,20 @@ void GeneralizedForce::
 apply()
 {
 	if(_model==NULL) return;
-	if(isQIDValid()) _model->applyGeneralizedForce(_qID,_force);
+	if(isQValid()) _model->getDynamicsEngine().applyGeneralizedForce(*_q,_force);
+}
+//_____________________________________________________________________________
+/**
+ * setup sets the actual Coordinate reference _q
+ */
+void GeneralizedForce::
+setup(AbstractModel* aModel)
+{
+	AbstractActuator::setup(aModel);
+	if (_model) {
+		_q = _model->getDynamicsEngine().getCoordinateSet()->get(_qName);
+		_u = _model->getDynamicsEngine().getSpeedSet()->get(AbstractSpeed::getSpeedName(_qName));
+	}
 }
 
 
@@ -284,13 +372,13 @@ apply()
 bool GeneralizedForce::
 check() const
 {
-	if(!Actuator::check()) return(false);
+	if(!AbstractActuator::check()) return(false);
 
 	// QID
-	if(!isQIDValid()) {
+	if(!isQValid()) {
 		printf("GeneralizedForce.check: ERROR- %s actuates ",
 			getName().c_str());
-		printf("an invalid generalized coordinate (%d).\n",getQID());
+		printf("an invalid generalized coordinate (%s).\n", _qName.c_str());
 		return(false);
 	}
 
@@ -301,11 +389,12 @@ check() const
  * Is the.
  */
 bool GeneralizedForce::
-isQIDValid() const
+isQValid() const
 {
-	if(_model==NULL) return(false);
-	if((_qID>=0)&&(_qID<_model->getNU())) return(true);
-	return(false);
+	if (_model == NULL || _q == NULL || _u == NULL)
+		return false;
+
+	return true;
 }
 
 
@@ -326,8 +415,8 @@ isQIDValid() const
 void GeneralizedForce::
 updateFromXMLNode()
 {
-	Actuator::updateFromXMLNode();
-	setQID(_qID);
+	AbstractActuator::updateFromXMLNode();
+	setQ(_q);
 	setOptimalForce(_optimalForce);
 }	
 

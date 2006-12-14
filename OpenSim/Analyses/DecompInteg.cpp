@@ -13,7 +13,9 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include "DecompInteg.h"
 
 //=============================================================================
@@ -72,7 +74,7 @@ DecompInteg::~DecompInteg()
  */
 DecompInteg::
 DecompInteg(const Manager *aManager,const Contact *aContact,
-	const Actuation *aActuation,Model *aModelTwin,double aDT,double aDF) :
+	const Actuation *aActuation,AbstractModel *aModelTwin,double aDT,double aDF) :
 	Decomp(aModelTwin)
 {
 	setNull();
@@ -97,7 +99,7 @@ DecompInteg(const Manager *aManager,const Contact *aContact,
 
 	// ACTUATION
 	_actuationNom = aActuation;
-	int na = _model->getNA();
+	int na = _model->getNumActuators();
 	if(na>0) _fAct = new double[na];
 
 	// DESCRIPTIONS
@@ -228,9 +230,9 @@ updateStorageDescriptions()
 void DecompInteg::
 allocate()
 {
-	_y = new double[_model->getNY()];
-	_pctx = new double[6*_model->getNP()];
-	_fctx = new double[6*_model->getNP()];
+	_y = new double[_model->getNumStates()];
+	_pctx = new double[6*_model->getNumContacts()];
+	_fctx = new double[6*_model->getNumContacts()];
 }
 
 
@@ -449,7 +451,7 @@ compute(double *aXPrev,double *aYPrev,
 	double tReal = aT * _model->getTimeNormConstant();
 
 	// GET CONTACT POINTS
-	int np = _managerNom->getIntegrand()->getModel()->getNP();
+	int np = _managerNom->getIntegrand()->getModel()->getNumContacts();
 	Storage *pointsNom = _contactNom->getPointsStorage();
 
 	// DESIRED INITIAL TIME
@@ -478,12 +480,12 @@ compute(double *aXPrev,double *aYPrev,
 
 	// INITIAL STATES
 	Storage *yStore = _managerNom->getIntegrand()->getStateStorage();
-	yStore->getDataAtTime(ti,_model->getNY(),_y);
+	yStore->getDataAtTime(ti,_model->getNumStates(),_y);
 	_model->setInitialStates(_y);
 
 	// ACTUATOR FORCES
 	Storage *fActStore = _actuationNom->getForceStorage();
-	fActStore->getDataAtTime(tf,_model->getNA(),_fAct);
+	fActStore->getDataAtTime(tf,_model->getNumActuators(),_fAct);
 
 	// INITIAL CONTACT POINTS
 	pointsNom->getDataAtTime(ti,6*np,_pctx);
@@ -496,18 +498,20 @@ compute(double *aXPrev,double *aYPrev,
 	}
 
 	// LOOP OVER ACTUATORS
-	int c,j,I,a;
-	int iMus = _model->getActuatorIndex("RVAS");
+	int c,j,I;
+	AbstractBody *a;
 	static double com[] = { 0.0, 0.0, 0.0 };
 	double pcom[3],pctx[3];
 	char outName[Object::NAME_LENGTH];
 	StateVector *vec;
 	Storage *forces,*forcesNom;
-	//for(c=0;c<=getLastActuatorIndex();c++) {
-	for(c=iMus;c<=iMus;c++) {
+	AbstractActuator *actuator;
+	int lastIndex = getLastActuatorIndex();
+	for(c=0;c<=lastIndex;c++) {
 
 		// SET WHICH ACTUATOR FORCE TO PERTURB
-		_perturbCallback->setActuator(c);
+		actuator = _model->getActuatorSet()->get(c);
+		_perturbCallback->setActuator(actuator);
 
 		// SET THE MODEL STATES
 		_model->set(aT,aX,_y);
@@ -517,11 +521,11 @@ compute(double *aXPrev,double *aYPrev,
 			I = Mtx::ComputeIndex(i,6,0);
 
 			// CONTACT POINT A
-			a = _model->getContactBodyA(i);
-			_model->getPosition(a,com,pcom);
+			a = _model->getContactSet()->getContactBodyA(i);
+			_model->getDynamicsEngine().getPosition(*a,com,pcom);
 			Mtx::Subtract(1,3,&_pctx[I],pcom,pctx);
-			_model->transform(_model->getGroundID(),pctx,a,pctx);
-			_model->setContactPointA(i,pctx);
+			_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),pctx,*a,pctx);
+			_model->getContactSet()->setContactPointA(i,pctx);
 
 			// CONTACT POINT B
 			//b = _model->getContactBodyB(i);
@@ -546,7 +550,7 @@ compute(double *aXPrev,double *aYPrev,
 
 			// PERTURBED CONTACT RESULTS
 			sprintf(outName,"fs_%s_%.5lf_dt%.3lf_df%.3lf.sto",
-				_model->getActuatorName(c).c_str(),tf,getIntegrationWindow(),
+				actuator->getName().c_str(),tf,getIntegrationWindow(),
 				getPerturbation());
 			forces->print(outName);
 
@@ -564,14 +568,14 @@ compute(double *aXPrev,double *aYPrev,
 		for(i=0;i<forces->getSize();i++) {
 			vec = forces->getStateVector(i);  if(vec==NULL) continue;
 			t = vec->getTime();
-			fActStore->getDataAtTime(t,_model->getNA(),_fAct);
+			fActStore->getDataAtTime(t,_model->getNumActuators(),_fAct);
 			vec->multiply(dfRecip*_fAct[c]);
 		}
 
 		// PRINT WINDOW
 		if(_printWindow) {
 			sprintf(outName,"fsm_%s_%.5lf_dt%.3lf_df%.3lf.sto",
-				_model->getActuatorName(c).c_str(),tf,getIntegrationWindow(),
+				actuator->getName().c_str(),tf,getIntegrationWindow(),
 				getPerturbation());
 			forces->print(outName);
 		}

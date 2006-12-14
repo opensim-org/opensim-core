@@ -12,6 +12,10 @@
 #include <OpenSim/Tools/PropertyDbl.h>
 #include "JointMoment.h"
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Simm/SpeedSet.h>
 
 
 
@@ -40,8 +44,8 @@ JointMoment::~JointMoment()
  * Default constructor.
  */
 JointMoment::
-JointMoment(int aQID,int aNX,int aNY,int aNYP) :
-	GeneralizedForceAtv(aQID,aNX,aNY,aNYP),
+JointMoment(string aQName) :
+	GeneralizedForceAtv(aQName),
 	_optimalNegForce(_propOptimalNegForce.getValueDbl())
 {
 	setNull();
@@ -51,13 +55,10 @@ JointMoment(int aQID,int aNX,int aNY,int aNYP) :
  * Construct the actuator from an XML Element.
  *
  * @param aElement XML element.
- * @param aNX Number of controls.
- * @param aNY Number of states.
- * @param aNYP Number of pseudostates.
  */
 JointMoment::
-JointMoment(DOMElement *aElement,int aNX,int aNY,int aNYP) :
-	GeneralizedForceAtv(aElement,aNX,aNY,aNYP),
+JointMoment(DOMElement *aElement) :
+	GeneralizedForceAtv(aElement),
 	_optimalNegForce(_propOptimalNegForce.getValueDbl())
 {
 	setNull();
@@ -87,7 +88,7 @@ JointMoment(const JointMoment &aActuator) :
 Object* JointMoment::
 copy() const
 {
-	Actuator *act = new JointMoment(*this);
+	AbstractActuator *act = new JointMoment(*this);
 	return(act);
 }
 //_____________________________________________________________________________
@@ -108,8 +109,7 @@ Object* JointMoment::
 copy(DOMElement *aElement) const
 {
 	// ESTABLISH RELATIONSHIP WITH XML NODE
-	JointMoment *act = new
-		JointMoment(aElement,getNX(),getNY(),getNYP());
+	JointMoment *act = new JointMoment(aElement);
 
 	// ASSIGNMENT OPERATOR
 	*act = *this;
@@ -134,11 +134,12 @@ setNull()
 	setType("JointMoment");
 	setupProperties();
 
+	setNumControls(1); setNumStates(1); setNumPseudoStates(0);
+	bindControl(0, _excitation, "excitation");
+	bindState(0, _a, "activation");
+
 	// APPLIES FORCE
 	_appliesForce = true;
-
-	// MEMBER VARIABLES
-	_a = 0.0;
 }
 //_____________________________________________________________________________
 /**
@@ -244,7 +245,12 @@ computeActuation()
 	if(_model==NULL) return;
 
 	// SPEED
-	_speed = _model->getSpeed(_qID);
+	if (_q)
+	{
+		AbstractSpeed *speed =  _model->getDynamicsEngine().getSpeedSet()->get(_q->getName());
+		if (speed)
+			_speed = speed->getValue();
+	}
 
 	// FORCE
 	double force;

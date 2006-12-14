@@ -1,7 +1,7 @@
 // SimmCoordinate.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,24 +22,23 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "SimmCoordinate.h"
-#include "SimmJoint.h"
-#include "SimmDof.h"
+#include "AbstractDof.h"
+#include "DofSet.h"
+#include "AbstractJoint.h"
 #include "SimmKinematicsEngine.h"
-#include "simmIO.h"
-#include "simmMacros.h"
+#include "AbstractDynamicsEngine.h"
+#include "SimmIO.h"
+#include "SimmMacros.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -50,10 +49,10 @@ using namespace std;
  */
 SimmCoordinate::SimmCoordinate() :
    _defaultValue(_defaultValueProp.getValueDbl()),
-   _valueStr(_valueStrProp.getValueStr()),
+   _value(_valueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
-   _PDStiffness(_PDStiffnessProp.getValueDbl()),
-   _IKweight(_IKweightProp.getValueDbl()),
+   _stiffness(_stiffnessProp.getValueDbl()),
+   _weight(_weightProp.getValueDbl()),
 	_range(_rangeProp.getValueDblArray()),
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
@@ -64,23 +63,22 @@ SimmCoordinate::SimmCoordinate() :
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
-	_RTtype(SimmDof::Rotational),
-	_value(0.0)
+	_motionType(AbstractDof::Rotational)
 {
 	setNull();
-
+	setupProperties();
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML node
  */
 SimmCoordinate::SimmCoordinate(DOMElement *aElement) :
-   Coordinate(aElement),
+   AbstractCoordinate(aElement),
 	_defaultValue(_defaultValueProp.getValueDbl()),
-   _valueStr(_valueStrProp.getValueStr()),
+   _value(_valueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
-   _PDStiffness(_PDStiffnessProp.getValueDbl()),
-   _IKweight(_IKweightProp.getValueDbl()),
+   _stiffness(_stiffnessProp.getValueDbl()),
+   _weight(_weightProp.getValueDbl()),
 	_range(_rangeProp.getValueDblArray()),
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
@@ -91,17 +89,11 @@ SimmCoordinate::SimmCoordinate(DOMElement *aElement) :
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
-	_RTtype(SimmDof::Rotational),
-	_value(0.0)
+	_motionType(AbstractDof::Rotational)
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
-
-	/* In case "value" was specified in the DOMelement
-	 * (as a string), set the _value member accordingly.
-	 */
-	setValue(_valueStr);
 }
 
 //_____________________________________________________________________________
@@ -119,12 +111,12 @@ SimmCoordinate::~SimmCoordinate()
  * @param aCoordinate SimmCoordinate to be copied.
  */
 SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
-   Coordinate(aCoordinate),
+   AbstractCoordinate(aCoordinate),
 	_defaultValue(_defaultValueProp.getValueDbl()),
-   _valueStr(_valueStrProp.getValueStr()),
+   _value(_valueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
-   _PDStiffness(_PDStiffnessProp.getValueDbl()),
-   _IKweight(_IKweightProp.getValueDbl()),
+   _stiffness(_stiffnessProp.getValueDbl()),
+   _weight(_weightProp.getValueDbl()),
 	_range(_rangeProp.getValueDblArray()),
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
@@ -135,11 +127,13 @@ SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
-	_RTtype(SimmDof::Rotational)
+	_motionType(AbstractDof::Rotational)
 {
+	setNull();
 	setupProperties();
 	copyData(aCoordinate);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this coordinate and return a pointer to the copy.
@@ -152,6 +146,7 @@ Object* SimmCoordinate::copy() const
 	SimmCoordinate *gc = new SimmCoordinate(*this);
 	return(gc);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this SimmCoordinate and modify the copy so that it is consistent
@@ -175,14 +170,22 @@ Object* SimmCoordinate::copy(DOMElement *aElement) const
 	return(gc);
 }
 
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one SimmCoordinate to another.
+ *
+ * @param aCoordinate SimmCoordinate to be copied.
+ */
 void SimmCoordinate::copyData(const SimmCoordinate &aCoordinate)
 {
 	_defaultValue = aCoordinate.getDefaultValue();
-	_valueStr = aCoordinate._valueStr;
 	_value = aCoordinate.getValue();
 	_tolerance = aCoordinate.getTolerance();
-	_PDStiffness = aCoordinate._PDStiffness;
-	_IKweight = aCoordinate._IKweight;
+	_stiffness = aCoordinate._stiffness;
+	_weight = aCoordinate._weight;
 	_range = aCoordinate._range;
 	_keys = aCoordinate._keys;
 	_clamped = aCoordinate._clamped;
@@ -193,22 +196,18 @@ void SimmCoordinate::copyData(const SimmCoordinate &aCoordinate)
 	_restraintActive = aCoordinate._restraintActive;
 	_jointList = aCoordinate._jointList;
 	_pathList = aCoordinate._pathList;
-	_RTtype = aCoordinate._RTtype;
+	_motionType = aCoordinate._motionType;
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmCoordinate to their null values.
  */
 void SimmCoordinate::setNull(void)
 {
-	setupProperties();
 	setType("SimmCoordinate");
 }
+
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
@@ -219,22 +218,23 @@ void SimmCoordinate::setupProperties(void)
 	_defaultValueProp.setValue(0.0);
 	_propertySet.append(&_defaultValueProp);
 
-	_valueStrProp.setName("value");
-	_propertySet.append(&_valueStrProp);
+	_valueProp.setName("value");
+	_valueProp.setValue(0.0);
+	_propertySet.append(&_valueProp);
 
 	_toleranceProp.setName("tolerance");
 	_toleranceProp.setValue(0.0);
 	_propertySet.append(&_toleranceProp);
 
-	_PDStiffnessProp.setName("stiffness");
-	_PDStiffnessProp.setValue(0.0);
-	_propertySet.append(&_PDStiffnessProp);
+	_stiffnessProp.setName("stiffness");
+	_stiffnessProp.setValue(0.0);
+	_propertySet.append(&_stiffnessProp);
 
-	_IKweightProp.setName("weight");
-	_IKweightProp.setValue(0.0);
-	_propertySet.append(&_IKweightProp);
+	_weightProp.setName("weight");
+	_weightProp.setValue(1.0);
+	_propertySet.append(&_weightProp);
 
-	const double defaultRange[] = {0.0, 90.0};
+	const double defaultRange[] = {-999999.9, 999999.9};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
 	_propertySet.append(&_rangeProp);
@@ -252,15 +252,15 @@ void SimmCoordinate::setupProperties(void)
 
 	ArrayPtrs<Object> func;
 
-	_restraintFunctionProp.setName("RestraintFunctions");
+	_restraintFunctionProp.setName("restraint_function");
 	_restraintFunctionProp.setValue(func);
 	_propertySet.append(&_restraintFunctionProp);
 
-	_minRestraintFunctionProp.setName("MinRestraintFunctions");
+	_minRestraintFunctionProp.setName("min_restraint_function");
 	_minRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_minRestraintFunctionProp);
 
-	_maxRestraintFunctionProp.setName("MaxRestraintFunctions");
+	_maxRestraintFunctionProp.setName("max_restraint_function");
 	_maxRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_maxRestraintFunctionProp);
 
@@ -269,36 +269,79 @@ void SimmCoordinate::setupProperties(void)
 	_propertySet.append(&_restraintActiveProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aEngine dynamics engine containing this SimmCoordinate.
+ */
+void SimmCoordinate::setup(AbstractDynamicsEngine* aEngine)
+{
+	// Base class;
+	AbstractCoordinate::setup(aEngine);
+
+	// Make sure the range is min to max.
+	if (_range[1] < _range[0])
+	{
+		double tmp = _range[0];
+		_range[0] = _range[1];
+		_range[1] = tmp;
+	}
+
+	// Make sure the default value is in the range
+	if (_defaultValue < _range[0])
+		_defaultValue = _range[0];
+	else if (_defaultValue > _range[1])
+		_defaultValue = _range[1];
+
+	// Make sure the starting value is in the range
+	if (_value < _range[0])
+		_value = _range[0];
+	else if (_value > _range[1])
+		_value = _range[1];
+
+	// If the user specified a default value but not a value, set the
+	// current value to the default value, whether or not the coordinate
+	// is locked.
+	if (!_defaultValueProp.getUseDefault() && _valueProp.getUseDefault())
+	{
+		bool lockedState = getLocked();
+		setLocked(false);
+		setValue(_defaultValue);
+		setLocked(lockedState);
+	}
+
+	// can't call this here now that coordinates are stored in AbstractDynamicsEngine,
+	// because this function is called before SimmKinematicsEngine::createCoordinateJointLists()
+	//determineType();
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 SimmCoordinate& SimmCoordinate::operator=(const SimmCoordinate &aCoordinate)
 {
 	// BASE CLASS
-	Coordinate::operator=(aCoordinate);
+	AbstractCoordinate::operator=(aCoordinate);
 
 	copyData(aCoordinate);
 
 	return(*this);
 }
 
-/* Perform some set up functions that happen after the
- * object has been deserialized or copied.
- */
-void SimmCoordinate::setup(SimmKinematicsEngine* aEngine)
-{
-	if (_defaultValue < _range[0])
-		_defaultValue = _range[0];
-	else if (_defaultValue > _range[1])
-		_defaultValue = _range[1];
-
-	/* If 'value' was not specified in the XML node, set the
-	 * current value to the default value.
-	 */
-	if (_valueStrProp.getUseDefault())
-		setValue(_defaultValue);
-
-	determineType(aEngine);
-}
-
-/* This function tries to determine whether the coordinate is primarily rotational
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * This function tries to determine whether the coordinate is primarily rotational
  * or translational. This information is needed for two reasons:
  * 1. to know how big to set the step size for the arrow buttons on the slider for
  *    that gencoord in the Model Viewer (0.001 for translations, 1.0 for rotations).
@@ -317,30 +360,31 @@ void SimmCoordinate::setup(SimmKinematicsEngine* aEngine)
  * then the gencoord is translational. If one or more is rotational, then the coordinate
  * is rotational.
  */
-void SimmCoordinate::determineType(SimmKinematicsEngine* aEngine)
+void SimmCoordinate::determineType()
 {
-   SimmDof* dof;
+   AbstractDof* dof;
+	AbstractJoint* jnt;
 
-   if ((dof = aEngine->markUnconstrainedDof(this)))
+   if ((dof = _dynamicsEngine->findUnconstrainedDof(*this, jnt)))
    {
-		_RTtype = dof->getDofType();
+		_motionType = dof->getMotionType();
    }
    else
    {
-		_RTtype = SimmDof::Translational;
+		_motionType = AbstractDof::Translational;
 
       for (int i = 0; i < _jointList.getSize(); i++)
       {
-			SimmDofSet& dofList = _jointList[i]->getDofSet();
+			DofSet* dofs = _jointList[i]->getDofSet();
 
-			for (int j = 0; j < dofList.getSize(); j++)
+			for (int j = 0; j < dofs->getSize(); j++)
          {
-				if (dofList[i]->getCoordinate() == this && dofList[i]->getDofType() == SimmDof::Rotational)
+				if (dofs->get(i)->getCoordinate() == this && dofs->get(i)->getMotionType() == AbstractDof::Rotational)
             {
 					/* You've found one rotational DOF: set the coordinate's type
 					 * to rotational and you're done.
 					 */
-               _RTtype = SimmDof::Rotational;
+               _motionType = AbstractDof::Rotational;
                return;
             }
          }
@@ -348,155 +392,64 @@ void SimmCoordinate::determineType(SimmKinematicsEngine* aEngine)
    }
 }
 
-bool SimmCoordinate::setValue(double value)
-{
-	if (_locked)
-	{
-		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
-		return false;
-	}
-
-	if (DABS(value - _value) > _tolerance &&
-		 value >= _range[0] && value <= _range[1])
-	{
-		_value = value;
-
-		int i;
-		for (i = 0; i < _jointList.getSize(); i++)
-			_jointList[i]->invalidate();
-
-		int pListSize = _pathList.getSize();
-		for (i = 0; i < pListSize; i++)
-			_pathList[i]->invalidate();
-
-		// Potential source of slowdown!
-		/* Store the updated value as a string in the value property. */
-		// TODO: use sprintf (recommended) instead of gcvt
-#ifdef __linux__
-		gcvt(value, 8, (char*)_valueStr.c_str());
-#else
-		_gcvt(value, 8, (char*)_valueStr.c_str());
-#endif
-	}
-
-	return true;
-}
-
-bool SimmCoordinate::setValue(string& aValueStr)
-{
-	if (_locked && aValueStr != "fromFile" && aValueStr != "Unassigned")
-	{
-		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
-		return false;
-	}
-
-	double value;
-	string strCopy(aValueStr);
-
-	if (readDoubleFromString(strCopy, &value))
-	{
-		return setValue(value);
-	}
-	else if (aValueStr != "fromFile" && aValueStr != "Unassigned")
-	{
-		cout << "___WARNING___: Unable to set coordinate " << getName() << " to value \"" << aValueStr << "\"" << endl;
-		return false;
-	}
-
-	return true;
-}
-
-void SimmCoordinate::getKeys(string keys[]) const
-{
-	for (int i = 0; i < _keys.getSize(); i++)
-		keys[i] = _keys[i];
-}
-
-Function* SimmCoordinate::getRestraintFunction(void) const
-{
-	if (_restraintFunction.getSize() < 1)
-		return NULL;
-
-	return _restraintFunction[0];
-}
-
-Function* SimmCoordinate::getMinRestraintFunction(void) const
-{
-	if (_minRestraintFunction.getSize() < 1)
-		return NULL;
-
-	return _minRestraintFunction[0];
-}
-
-Function* SimmCoordinate::getMaxRestraintFunction(void) const
-{
-	if (_maxRestraintFunction.getSize() < 1)
-		return NULL;
-
-	return _maxRestraintFunction[0];
-}
-
-/* Update an existing coordinate with parameter values from a
+//_____________________________________________________________________________
+/**
+ * Update an existing coordinate with parameter values from a
  * new one, but only for the parameters that were explicitly
  * specified in the XML node.
+ *
+ * @param aCoordinate coordinate to update from
  */
-void SimmCoordinate::updateFromCoordinate(const SimmCoordinate &aCoordinate)
+void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
 {
-	if (!aCoordinate._defaultValueProp.getUseDefault())
+	if (!aCoordinate.getDefaultValueUseDefault())
+		setDefaultValue(aCoordinate.getDefaultValue());
+
+	if (!aCoordinate.getValueUseDefault())
 	{
-		_defaultValue = aCoordinate._defaultValue;
-		_defaultValueProp.setUseDefault(false);
+		setValue(aCoordinate.getValue());
+		_valueProp.setUseDefault(false);
 	}
 
-	if (!aCoordinate._valueStrProp.getUseDefault())
+	if (!aCoordinate.getRangeUseDefault())
 	{
-		_valueStr = aCoordinate._valueStr;
-		setValue(_valueStr);
-		_valueStrProp.setUseDefault(false);
-	}
-
-	if (!aCoordinate._toleranceProp.getUseDefault())
-	{
-		_tolerance = aCoordinate._tolerance;
-		_toleranceProp.setUseDefault(false);
-	}
-
-	if (!aCoordinate._PDStiffnessProp.getUseDefault())
-	{
-		_PDStiffness = aCoordinate._PDStiffness;
-		_PDStiffnessProp.setUseDefault(false);
-	}
-
-	if (!aCoordinate._IKweightProp.getUseDefault())
-	{
-		_IKweight = aCoordinate._IKweight;
-		_IKweightProp.setUseDefault(false);
-	}
-
-	if (!aCoordinate._rangeProp.getUseDefault())
-	{
-		_range = aCoordinate._range;
+		setRangeMin(aCoordinate.getRangeMin());
+		setRangeMax(aCoordinate.getRangeMax());
 		_rangeProp.setUseDefault(false);
 	}
 
-	if (!aCoordinate._keysProp.getUseDefault())
+	if (!aCoordinate.getToleranceUseDefault())
 	{
-		_keys = aCoordinate._keys;
-		_keysProp.setUseDefault(false);
+		setTolerance(aCoordinate.getTolerance());
+		_toleranceProp.setUseDefault(false);
 	}
 
-	if (!aCoordinate._clampedProp.getUseDefault())
+	if (!aCoordinate.getWeightUseDefault())
 	{
-		_clamped = aCoordinate._clamped;
+		setWeight(aCoordinate.getWeight());
+		_weightProp.setUseDefault(false);
+	}
+
+	if (!aCoordinate.getStiffnessUseDefault())
+	{
+		setStiffness(aCoordinate.getStiffness());
+		_stiffnessProp.setUseDefault(false);
+	}
+
+	if (!aCoordinate.getClampedUseDefault())
+	{
+		setClamped(aCoordinate.getClamped());
 		_clampedProp.setUseDefault(false);
 	}
 
-	if (!aCoordinate._lockedProp.getUseDefault())
+	if (!aCoordinate.getLockedUseDefault())
 	{
-		_locked = aCoordinate._locked;
+		setLocked(aCoordinate.getLocked());
 		_lockedProp.setUseDefault(false);
 	}
 
+#if 0
+	// TODO
 	if (!aCoordinate._restraintFunctionProp.getUseDefault())
 	{
 		_restraintFunction = aCoordinate._restraintFunction;
@@ -514,49 +467,225 @@ void SimmCoordinate::updateFromCoordinate(const SimmCoordinate &aCoordinate)
 		_restraintActive = aCoordinate._restraintActive;
 		_restraintActiveProp.setUseDefault(false);
 	}
+#endif
 }
 
-void SimmCoordinate::writeSIMM(ofstream& out, int& aFunctionIndex) const
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the value.
+ *
+ * @param aValue value to change to.
+ * @return Whether or not the value was changed.
+ */
+bool SimmCoordinate::setValue(double aValue)
 {
-	int RFIndex = -1, minRFIndex = -1, maxRFIndex = -1;
-	out << "begingencoord " << getName() << endl;
-	out << "default_value " << _defaultValue << endl;
-	out << "range " << _range[0] << " " << _range[1] << endl;
-	out << "tolerance " << _tolerance << endl;
-	/* SIMM41 out << "pd_stiffness " << _PDStiffness << endl; */
-	if (_keys.getSize() > 0)
+	if (_locked)
 	{
-		out << "keys ";
-		for (int i = 0; i < MIN(2, _keys.getSize()); i++)
-			out << _keys[i] << " ";
-		out << endl;
+		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+		return false;
 	}
-	out << "clamped " << ((_clamped) ? ("yes") : ("no")) << endl;
-	out << "locked " << ((_locked) ? ("yes") : ("no")) << endl;
-	out << "active " << ((_restraintActive) ? ("yes") : ("no")) << endl;
-	if (_restraintFunction.getSize() > 0)
-	{
-		RFIndex = aFunctionIndex++;
-		out << "restraint f" << RFIndex << endl;
-	}
-	if (_minRestraintFunction.getSize() > 0)
-	{
-		minRFIndex = aFunctionIndex++;
-		out << "minrestraint f" << minRFIndex << endl;
-	}
-	if (_maxRestraintFunction.getSize() > 0)
-	{
-		maxRFIndex = aFunctionIndex++;
-		out << "maxrestraint f" << maxRFIndex << endl;
-	}
-	out << "endgencoord" << endl << endl;
 
-	if (RFIndex >= 0)
-		_restraintFunction[0]->writeSIMM(out, RFIndex);
-	if (minRFIndex >= 0)
-		_minRestraintFunction[0]->writeSIMM(out, minRFIndex);
-	if (maxRFIndex >= 0)
-		_maxRestraintFunction[0]->writeSIMM(out, maxRFIndex);
+	if (DABS(aValue - _value) > _tolerance &&
+		 aValue >= _range[0] && aValue <= _range[1])
+	{
+		_value = aValue;
+
+		int i;
+		for (i = 0; i < _jointList.getSize(); i++)
+			_jointList[i]->invalidate();
+
+		int pListSize = _pathList.getSize();
+		for (i = 0; i < pListSize; i++)
+			_pathList[i]->invalidate();
+	}
+
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the range min and max.
+ *
+ * @param aRange range min and man to change to.
+ * @return Whether or not the range was changed.
+ */
+bool SimmCoordinate::setRange(double aRange[2])
+{
+	if (aRange[1] >= aRange[0])
+	{
+		_range[0] = aRange[0];
+		_range[1] = aRange[1];
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the range min.
+ *
+ * @param aRange range min to change to.
+ * @return Whether or not the range min was changed.
+ */
+bool SimmCoordinate::setRangeMin(double aMin)
+{
+	if (aMin <= _range[1])
+	{
+		_range[0] = aMin;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the range max.
+ *
+ * @param aRange range max to change to.
+ * @return Whether or not the range max was changed.
+ */
+bool SimmCoordinate::setRangeMax(double aMax)
+{
+	if (aMax >= _range[0])
+	{
+		_range[1] = aMax;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the default value.
+ *
+ * @param aRange default value to change to.
+ * @return Whether or not the default value was changed.
+ */
+bool SimmCoordinate::setDefaultValue(double aDefaultValue)
+{
+	if (aDefaultValue >= _range[0] && aDefaultValue <= _range[1])
+	{
+		_defaultValue = aDefaultValue;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the tolerance.
+ *
+ * @param aTolerance tolerance to change to.
+ * @return Whether or not the tolerance was changed.
+ */
+bool SimmCoordinate::setTolerance(double aTolerance)
+{
+	if (aTolerance >= 0.0)
+	{
+		_tolerance = aTolerance;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the weight.
+ *
+ * @param aWeight weight to change to.
+ * @return Whether or not the weight was changed.
+ */
+bool SimmCoordinate::setWeight(double aWeight)
+{
+	if (aWeight >= 0.0)
+	{
+		_weight = aWeight;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the stiffness.
+ *
+ * @param aStiffness stiffness to change to.
+ * @return Whether or not the stiffness was changed.
+ */
+bool SimmCoordinate::setStiffness(double aStiffness)
+{
+	if (aStiffness >= 0.0)
+	{
+		_stiffness = aStiffness;
+		return true;
+	}
+
+	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the names of the keys used in the GUI to control this coordinate.
+ *
+ * @param rKeys names of the keys are returned here.
+ */
+void SimmCoordinate::getKeys(string rKeys[]) const
+{
+	for (int i = 0; i < _keys.getSize(); i++)
+		rKeys[i] = _keys[i];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the restraint function used to keep this coordinate inside its range.
+ *
+ * @return Pointer to the restraint function.
+ */
+Function* SimmCoordinate::getRestraintFunction() const
+{
+	if (_restraintFunction.getSize() < 1)
+		return NULL;
+
+	return _restraintFunction[0];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the restraint function used to keep this coordinate from going below
+ * its minimum.
+ *
+ * @return Pointer to the min restraint function.
+ */
+Function* SimmCoordinate::getMinRestraintFunction(void) const
+{
+	if (_minRestraintFunction.getSize() < 1)
+		return NULL;
+
+	return _minRestraintFunction[0];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the restraint function used to keep this coordinate from going above
+ * its maximum.
+ *
+ * @return Pointer to the max restraint function.
+ */
+Function* SimmCoordinate::getMaxRestraintFunction(void) const
+{
+	if (_maxRestraintFunction.getSize() < 1)
+		return NULL;
+
+	return _maxRestraintFunction[0];
 }
 
 void SimmCoordinate::peteTest(void) const
@@ -565,8 +694,8 @@ void SimmCoordinate::peteTest(void) const
 	cout << "   default_value: " << _defaultValue << endl;
 	cout << "   value: " << _value << endl;
 	cout << "   tolerance: " << _tolerance << endl;
-	cout << "   PDstiffness: " << _PDStiffness << endl;
-	cout << "   IKweight: " << _IKweight << endl;
+	cout << "   stiffness: " << _stiffness << endl;
+	cout << "   weight: " << _weight << endl;
 	cout << "   range: " << _range << endl;
 	cout << "   keys: " << _keys << endl;
 	cout << "   clamped: " << ((_clamped) ? ("true") : ("false")) << endl;

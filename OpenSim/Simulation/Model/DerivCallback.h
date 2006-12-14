@@ -35,7 +35,6 @@
 
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
-#include "Model.h"
 #include "Callback.h"
 
 
@@ -52,16 +51,16 @@
  * making adjustments to model states and applied forces,
  * applying additional forces, and/or altering state derivatives.
  * Each of these methods is intended to be called FOLLOWING the 
- * corresponding action in Model::deriv(), although Model::deriv()
+ * corresponding action in AbstractModel::deriv(), although AbstractModel::deriv()
  * can be written to call these methods in any order or not at all.
  * 
  * Derivative callbacks are meant to make alterations to the "normal" model
  * of simulation either for analysis or to achieve some unusual effect.
  * Alternately, this class can be used to implement the entirety of the
- * Model::deriv() method, giving the user nearly complete control of how
+ * AbstractModel::deriv() method, giving the user nearly complete control of how
  * derivatives are computed without making changes to the model.  To
  * accomplish this, the user may need to make a new derived model class
- * that overrides Model::deriv() with a new method that makes the
+ * that overrides AbstractModel::deriv() with a new method that makes the
  * appropriate DerivCallback method calls.
  *
  * On a final note, it is possible to register many derivative callbacks
@@ -71,9 +70,11 @@
  *
  * @author Frank C. Anderson
  * @version 1.0
- * @see Model::deriv()
+ * @see AbstractModel::deriv()
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class RDSIMULATION_API DerivCallback : public Callback
 {
@@ -90,7 +91,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	DerivCallback(Model *aModel);
+	DerivCallback(AbstractModel *aModel);
 	virtual ~DerivCallback();
 	DerivCallback(const DerivCallback &aDerivCallback);
 private:

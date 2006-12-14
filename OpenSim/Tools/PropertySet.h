@@ -35,6 +35,7 @@
 
 
 // INCLUDES
+#include <Exception>
 #include "rdTools.h"
 #include "ArrayPtrs.h"
 #include "Property.h"
@@ -106,11 +107,11 @@ public:
 	// Number of properties
 	int getSize() const;
 	// Get
-	virtual Property* get(int i);
+	virtual Property* get(int i) throw (Exception);
 #ifndef SWIG
 	virtual const Property* get(int i) const;
 #endif
-	virtual Property* get(const std::string &aName);
+	virtual Property* get(const std::string &aName) throw (Exception);
 #ifndef SWIG
 	virtual const Property* get(const std::string &aName) const;
 #endif

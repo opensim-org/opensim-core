@@ -15,7 +15,9 @@
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include "LinearSpring.h"
 
@@ -44,7 +46,7 @@ LinearSpring::~LinearSpring()
  * @param aModel Model for which external forces are to be applied.
  */
 LinearSpring::
-LinearSpring(Model *aModel,int aBody) :
+LinearSpring(AbstractModel *aModel, AbstractBody *aBody) :
 	ForceApplier(aModel,aBody)
 {
 	setNull();
@@ -292,58 +294,30 @@ void LinearSpring::
 computePointAndTargetFunctions(
 	Storage *aQStore,Storage *aUStore,VectorFunction &aPGlobal)
 {
-	int i;
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	computePointFunction(aQStore, aUStore, aPGlobal);
+
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	int size = aQStore->getSize();
-	int ground = _model->getGroundID();
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
-	Array<double> comGlobal(0.0,3),origin(0.0,3);
 	Array<double> pGlobal(0.0,3),pLocal(0.0,3);
 	Array<double> vGlobal(0.0,3),vLocal(0.0,3);
 	Storage pStore,pGlobalStore,vGlobalStore;
-	for(i=0;i<size;i++) {
-		// Set the model state
-		aQStore->getTime(i,*(&t[0]));
-		aQStore->getData(i,nq,&q[0]);
-		aUStore->getData(i,nu,&u[0]);
-		_model->setConfiguration(&q[0],&u[0]);
-
-		// Point Position in the local frame
-		_model->getPosition(_body,&origin[0],&comGlobal[0]);
-		aPGlobal.evaluate(t,pGlobal);
-		Mtx::Subtract(1,3,&pGlobal[0],&comGlobal[0],&pLocal[0]);
-		_model->transform(ground,&pLocal[0],_body,&pLocal[0]);
-		pStore.append(t[0],3,&pLocal[0]);
-	}
-
-	// CREATE POSITION FUNCTION
-	double *time=NULL;
-	double *p0=0,*p1=0,*p2=0;
-	int padSize = size / 4;
-	if(padSize>100) padSize = 100;
-	pStore.pad(padSize);
-	size = pStore.getTimeColumn(time);
-	pStore.getDataColumn(0,p0);
-	pStore.getDataColumn(1,p1);
-	pStore.getDataColumn(2,p2);
-	VectorGCVSplineR1R3 *pFunc = new VectorGCVSplineR1R3(3,size,time,p0,p1,p2);
-	setPointFunction(pFunc);
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
 	size = aQStore->getSize();
-	for(i=0;i<size;i++) {
+	for(int i=0;i<size;i++) {
 		// Set the model state
 		aQStore->getTime(i,*(&t[0]));
 		aQStore->getData(i,nq,&q[0]);
 		aUStore->getData(i,nu,&u[0]);
-		_model->setConfiguration(&q[0],&u[0]);
+		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity
-		pFunc->evaluate(t,pLocal);
-		_model->getPosition(_body,&pLocal[0],&pGlobal[0]);
-		_model->getVelocity(_body,&pLocal[0],&vGlobal[0]);
+		_pointFunction->evaluate(t,pLocal);
+		_model->getDynamicsEngine().getPosition(*_body,&pLocal[0],&pGlobal[0]);
+		_model->getDynamicsEngine().getVelocity(*_body,&pLocal[0],&vGlobal[0]);
 
 		// Append to storage
 		pGlobalStore.append(t[0],3,&pGlobal[0]);
@@ -352,8 +326,10 @@ computePointAndTargetFunctions(
 
 	// CREATE TARGET FUNCTIONS
 	// Position
-	if(time!=NULL) { delete[] time; time=NULL; }
+	double *time=NULL;
 	double *pg0=0,*pg1=0,*pg2=0;
+	int padSize = size / 4;
+	if(padSize>100) padSize = 100;
 	pGlobalStore.pad(padSize);
 	size = pGlobalStore.getTimeColumn(time);
 	pGlobalStore.getDataColumn(0,pg0);
@@ -361,8 +337,12 @@ computePointAndTargetFunctions(
 	pGlobalStore.getDataColumn(2,pg2);
 	VectorGCVSplineR1R3 *pGlobalFunc = new VectorGCVSplineR1R3(3,size,time,pg0,pg1,pg2);
 	setTargetPosition(pGlobalFunc);
+	delete[] time;
+	delete[] pg0;
+	delete[] pg1;
+	delete[] pg2;
 	// Velocity
-	if(time!=NULL) { delete[] time; time=NULL; }
+	time=NULL;
 	double *vg0=0,*vg1=0,*vg2=0;
 	vGlobalStore.pad(padSize);
 	size = vGlobalStore.getTimeColumn(time);
@@ -371,7 +351,10 @@ computePointAndTargetFunctions(
 	vGlobalStore.getDataColumn(2,vg2);
 	VectorGCVSplineR1R3 *vGlobalFunc = new VectorGCVSplineR1R3(3,size,time,vg0,vg1,vg2);
 	setTargetVelocity(vGlobalFunc);
-
+	delete[] time;
+	delete[] vg0;
+	delete[] vg1;
+	delete[] vg2;
 }
 
 
@@ -396,7 +379,6 @@ applyActuation(double aT,double *aX,double *aY)
 	double scaleFactor;
 
 	int i;
-	int ground = _model->getGroundID();
 	Array<int> derivWRT(0,1);
 	Array<double> origin(0.0,3);
 	Array<double> vcomGlobal(0.0,3);
@@ -440,8 +422,8 @@ applyActuation(double aT,double *aX,double *aY)
 		}
 
 		// GET GLOBAL POSITION AND VELOCITY
-		_model->getPosition(_body,&pLocal[0],&pGlobal[0]);
-		_model->getVelocity(_body,&pLocal[0],&vGlobal[0]);
+		_model->getDynamicsEngine().getPosition(*_body,&pLocal[0],&pGlobal[0]);
+		_model->getDynamicsEngine().getVelocity(*_body,&pLocal[0],&vGlobal[0]);
 	
 		if(_scaleFunction != NULL){
 			scaleFactor = _scaleFunction->evaluate(0,aT*_model->getTimeNormConstant());
@@ -454,7 +436,7 @@ applyActuation(double aT,double *aX,double *aY)
 			force[i] = _scaleFactor*(_k[i]*dx[i] + _b[i]*dv[i]);
 		}
 		setForce(force);
-		_model->applyForce(_body,&pLocal[0],force);
+		_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
 
 		if(_storeForces) _appliedForceStore->append(aT,3,_force);
 	}	

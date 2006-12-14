@@ -597,11 +597,3 @@ evaluate(int aDerivOrder,double aX,double aY,double aZ)
 	return(value);
 }
 
-void GCVSpline::writeSIMM(ofstream& out, int functionIndex) const
-{
-	out << "beginfunction f" << functionIndex << endl;
-	for (int i = 0; i < _x.getSize(); i++)
-		out << "(" << _x[i] << ", " << _y[i] << ")" << endl;
-	out << "endfunction" << endl << endl;
-}
-

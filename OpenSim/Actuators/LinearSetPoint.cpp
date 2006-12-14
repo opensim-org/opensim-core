@@ -39,8 +39,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 #include "LinearSetPoint.h"
 
+using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // STATICS
@@ -51,9 +54,6 @@
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-
-
-using namespace OpenSim;
 /**
  * Destructor.
  */
@@ -64,7 +64,7 @@ LinearSetPoint::~LinearSetPoint()
 /**
  * Default constructor.
  */
-LinearSetPoint::LinearSetPoint(int aBodyA,int aBodyB) :
+LinearSetPoint::LinearSetPoint(string aBodyA, string aBodyB) :
 	SetPoint(aBodyA,aBodyB),
 	_knp(_propKNP.getValueDbl()),
 	_knv(_propKNV.getValueDbl())
@@ -115,7 +115,7 @@ LinearSetPoint::LinearSetPoint(const LinearSetPoint &aContact) :
 Object* LinearSetPoint::
 copy() const
 {
-	Actuator *act = new LinearSetPoint(*this);
+	AbstractActuator *act = new LinearSetPoint(*this);
 	return(act);
 }
 //_____________________________________________________________________________
@@ -155,6 +155,11 @@ setNull()
 {
 	setupProperties();
 	setType("LinearSetPoint");
+
+	setNumControls(0); setNumStates(0); setNumPseudoStates(3);
+	bindPseudoState(0, _pA[0], "px");
+	bindPseudoState(1, _pA[1], "py");
+	bindPseudoState(2, _pA[2], "pz");
 }
 //_____________________________________________________________________________
 /**

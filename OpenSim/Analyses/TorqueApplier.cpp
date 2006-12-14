@@ -15,7 +15,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include "TorqueApplier.h"
@@ -39,11 +41,11 @@ TorqueApplier::~TorqueApplier()
  * Construct a derivative callback instance for applying external torques
  * during an integration.
  *
- * @param aModel Model for which external torques are to be applied.
+ * @param aModel AbstractModel for which external torques are to be applied.
  * @param aBody Body to which external torques are to be applied.
  */
 TorqueApplier::
-TorqueApplier(Model *aModel,int aBody) :
+TorqueApplier(AbstractModel *aModel,AbstractBody *aBody) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -75,7 +77,7 @@ TorqueApplier(Model *aModel,int aBody) :
  * @param tzNum Column index of applied torque's z coordinate in storage object.
  */
 TorqueApplier::
-TorqueApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *torqueData,
+TorqueApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage *torqueData,
               int txNum, int tyNum, int tzNum) :
 	DerivCallback(aModel)
 {
@@ -197,10 +199,10 @@ deleteStorage()
 /**
  * Set to which body an external torque should be applied.
  *
- * @param aIndex Index of the body to which an external torque should be applied.
+ * @param aBody Pointer to the body to which an external torque should be applied.
  */
 void TorqueApplier::
-setBody(int aBody)
+setBody(AbstractBody *aBody)
 {
 	_body = aBody;
 }
@@ -208,9 +210,9 @@ setBody(int aBody)
 /**
  * Get to which body an external torque should be applied.
  *
- * @return aIndex Index of the body to which an external torque should be applied.
+ * @return Pointer to the body to which an external torque should be applied.
  */
-int TorqueApplier::
+AbstractBody* TorqueApplier::
 getBody() const
 {
 	return(_body);
@@ -379,7 +381,6 @@ void TorqueApplier::
 applyActuation(double aT,double *aX,double *aY)
 {
 	double torque[3] = {0,0,0};
-	const int ground = _model->getGroundID();
 	double treal = aT*_model->getTimeNormConstant();
 
 	if(_model==NULL) {
@@ -396,9 +397,9 @@ applyActuation(double aT,double *aX,double *aY)
 		}
 	
 		if(_inputTorquesInGlobalFrame == false){
-			_model->applyTorqueBodyLocal(_body,_torque);
+			_model->getDynamicsEngine().applyTorqueBodyLocal(*_body,_torque);
 		} else {
-			_model->applyTorque(_body,_torque);
+			_model->getDynamicsEngine().applyTorque(*_body,_torque);
 		}
 
 		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);

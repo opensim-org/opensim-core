@@ -37,7 +37,7 @@
 // INCLUDE
 #include "rdSDFastDLL.h"
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 #include <OpenSim/Tools/NamedValueArray.h>
 
 #ifdef SWIG
@@ -64,7 +64,7 @@
  */
 namespace OpenSim { 
 
-class RDSDFAST_API rdSDFast : public Model  
+class RDSDFAST_API rdSDFast : public AbstractModel  
 {
 
 //=============================================================================
@@ -87,15 +87,8 @@ protected:
 	/** Map from generalized speed (degree of freedom) to axis. */
 	int *_u2aMap;
 
-	/** Number of joints. */
-	int _nj;
 	/** Accelerations of the independent generalized coordinates. */
 	double *_dudt;
-
-	/** Array of generalized coordinates and associated names */
-	NamedValueArray<double> _q;
-	/** Generalized speeds (names, values) */
-	NamedValueArray<double> _u;
 
 //=============================================================================
 // METHODS
@@ -115,7 +108,6 @@ private:
 	virtual void init();	
 	void constructSystemVariables();
 	void constructJointAndAxisMaps();
-	void constructNames();
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -124,11 +116,10 @@ protected:
 	virtual void setCoordinateName(int aIndex,const std::string &aName);
 	virtual void setSpeedName(int aIndex,const std::string &aName);
 public:
-	virtual void constructBodies();
 	// NUMBERS OF THINGS
-	virtual int getNJ() const;
-	virtual int getNQ() const;
-	virtual int getNU() const;
+	virtual int getNumJoints() const;
+	virtual int getNumCoordinates() const;
+	virtual int getNumSpeeds() const;
 
 	//--------------------------------------------------------------------------
 	// NAMES, INDICES, MAPPING BACK AND FORTH
@@ -145,14 +136,14 @@ public:
 	virtual double getSpeed(int aIndex) const;
 	virtual double getSpeed(const std::string &aName) const;
 	virtual int getSpeedIndex(const std::string &aName) const;
-	virtual void getSpeeds(double rU[]) const;
+	virtual void getSpeedValues(double rU[]) const;
 	// Accelerations
 	virtual void getAccelerations(double rDUDT[]) const;
 	virtual double getAcceleration(const std::string &aSpeedName) const;
 	virtual double getAcceleration(int aIndex) const;
 
 	// GRAVITY
-	virtual void
+	virtual bool
 		setGravity(double aGrav[3]);
 	virtual void
 		getGravity(double rGrav[3]) const;

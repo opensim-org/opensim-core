@@ -14,10 +14,10 @@
 #include <float.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 #include <OpenSim/Simulation/Model/Springs.h>
 #include <OpenSim/SQP/rdSQP.h>
-#include <OpenSim/Tools/PointConstraint.h>
+#include <OpenSim/Simulation/Model/PointConstraint.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "DecompTarget.h"
 #include "DecompHard.h"
@@ -59,18 +59,18 @@ DecompHard::~DecompHard()
 /**
  * Construct a hard-constraint decomposition analysis 
  */
-DecompHard::DecompHard(Model *aModel) :
+DecompHard::DecompHard(AbstractModel *aModel) :
 	Decomp(aModel)
 {
 	setNull();
 
 	// LOCAL WORK ARRAYS
-	_yCopy = new double[_model->getNY()];
-	_yTmp = new double[_model->getNY()];
-	_x = new double[_model->getNX()];
+	_yCopy = new double[_model->getNumStates()];
+	_yTmp = new double[_model->getNumStates()];
+	_x = new double[_model->getNumControls()];
 
 	// MAPPING ARRAYS
-	int ns = _model->getNP();
+	int ns = _model->getNumContacts();
 	_xsSprMap = new int[3*ns];
 	_xsXYZMap = new int[3*ns];
 
@@ -128,7 +128,7 @@ setNull()
 double* DecompHard::
 getContactPoint(int aIndex)
 {
-	_model->getContactPointB(aIndex,_point);
+	_model->getContactSet()->getContactPointB(aIndex,_point);
 	return(_point);
 }
 
@@ -147,9 +147,9 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 	printf("\n\ntime = %lf\n",t);
 
 	// INDEX TO ACTIVATIONS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
-	int nx = _model->getNX();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int nx = _model->getNumControls();
 	int iatv = nq + nu + nx;
 
 	// SET CONFIGURATION (Why twice??)
@@ -157,7 +157,7 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 
 	// VARIABLE DECLARATIONS
 	int i,j;
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 	Array<double> xs(0.0,3*np);
 	
 	v3d *fs = new v3d[np];
@@ -178,22 +178,22 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 	// ACTUATION
 	// Until DerivCallbackSet is implemented, actuator forces will be set
 	// to one in the main code
-	//_model->computeActuation();	// muscle forces are computed
+	//_model->getActuatorSet()->computeActuation();	// muscle forces are computed
 	//_model->getDerivCallbackSet()->computeActuation(t,xt,y);
-	_model->applyActuatorForces();
+	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(t,xt,y);
 
 	// CONTACT - not necessary for doing the decomposition
-	_model->computeContact();
+	_model->getContactSet()->computeContact();
 	_model->getDerivCallbackSet()->computeContact(t,xt,y);
-	_model->applyContactForces();
+	_model->getContactSet()->apply();
 	_model->getDerivCallbackSet()->applyContact(t,xt,y);
 
 	// ACCELERATIONS
-	_model->computeAccelerations(&dqdt[0],&dudt[0]);
+	_model->getDynamicsEngine().computeDerivatives(&dqdt[0],&dudt[0]);
 	// ----------------------------------
 	for(i=0;i<np;i++) {
-		_model->getAcceleration(_model->getContactBodyB(i),getContactPoint(i),
+		_model->getDynamicsEngine().getAcceleration(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),
 			sacc[i]);
 	}
 
@@ -219,19 +219,7 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 	// SOLVE OPTIMIZATION PROBLEM FOR EACH COMPONENT
 	int status = 0;
 	int id[] = {0,1,2,3,4,5,6,7,8,9};
-	int ncomp=6,comp[6];
-	comp[0] = _model->getActuatorIndex("RSOL");
-	comp[1] = _model->getActuatorIndex("RGAS");
-	comp[2] = _model->getActuatorIndex("RVAS");
-	comp[3] = _model->getActuatorIndex("RRF");
-	comp[4] = _model->getActuatorIndex("RHAMS");
-	comp[5] = _model->getActuatorIndex("RILPSO");
-	//for(_c=0;_c<_nic;_c++) {
-	//for(_c=_model->getActuatorIndex("RVAS");_c<=_model->getActuatorIndex("RHAMS");_c++) {
-	//for(_c=getGravityIndex();_c<getInertialIndex();_c++) {
-	//for(_c=0;_c<3;_c++) {
-	//for(cc=0,_c=comp[cc];cc<ncomp;cc++,_c=comp[cc]) {
-	for(_c=comp[1];_c<=comp[1];_c++) {
+	for(_c=0;_c<_nic;_c++) {
 
 		cout<<"component = "<<_cNames[_c]<<endl;
 
@@ -262,14 +250,14 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 		for(i=0;i<np;i++) for(j=0;j<3;j++) _f[_c][i][j] = fs[i][j];
 
 		// DRAW
-		//if(_c<_model->getNX()) {
+		//if(_c<_model->getNumControls()) {
 		//	y[iatv+_c] = 1.0;
 		//	model->setMuson(_c,1);
 		//}
 		//while(status!=-1) {
 		//	status = model->draw(t,xt,y,&fs[0][0],&spos[0][0]);
 		//}
-		//if(_c<_model->getNX()) {
+		//if(_c<_model->getNumControls()) {
 		//	y[iatv+_c] = 0.0;
 		//	model->setMuson(_c,0);
 		//}
@@ -296,7 +284,7 @@ determineControls()
 	int i;
 
 	// RESET MAPPINGS
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 	_nxs = 0;
 	for(i=0;i<3*np;i++) {
 		_xsSprMap[i] = -1;
@@ -356,10 +344,10 @@ determineConstraints()
 
 		// pc0
 		if(ipc==0) {
-			_bc[ibc].setID(_model->getContactBodyB(i));
+			_bc[ibc].setBody(_model->getContactSet()->getContactBodyB(i));
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			pc[ipc]->setC0(x);
 			pc[ipc]->setC1(y);
@@ -370,7 +358,7 @@ determineConstraints()
 		} else if(ipc==1) {
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			_bc[ibc].constructConstraintsForPoint1();
 			ipc++;
@@ -379,7 +367,7 @@ determineConstraints()
 		} else if(ipc==2) {
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			_bc[ibc].constructConstraintsForPoint2();
 			ipc++;
@@ -398,10 +386,10 @@ determineConstraints()
 
 		if(!_contactEstablished[i]) continue;
 
-		_bc[ibc].setID(_model->getContactBodyB(i));
+		_bc[ibc].setBody(_model->getContactSet()->getContactBodyB(i));
 		pc[0] = _bc[ibc].getPC(ipc);
 		pc[0]->setID(i);
-		_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+		_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 		pc[ipc]->setPoint(p);
 
 		// THREE CONSTRAINT DIRECTIONS BECAUSE HINDFOOT IS NOT IN CONTACT
@@ -417,9 +405,9 @@ determineConstraints()
 		// HINDFOOT IS IN CONTACT
 		} else {
 			double p2[3],p3[3],p4[3],c0[3];
-			_model->getPosition(_model->getContactBodyB(2),getContactPoint(2),p2);
-			_model->getPosition(_model->getContactBodyB(3),getContactPoint(3),p3);
-			_model->getPosition(_model->getContactBodyB(4),getContactPoint(4),p4);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(2),getContactPoint(2),p2);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(3),getContactPoint(3),p3);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(4),getContactPoint(4),p4);
 			double r23[3],r34[3];
 			Mtx::Subtract(1,3,p3,p2,r23);
 			Mtx::Subtract(1,3,p4,p3,r34);
@@ -439,10 +427,10 @@ determineConstraints()
 
 		// pc0
 		if(ipc==0) {
-			_bc[ibc].setID(_model->getContactBodyB(i));
+			_bc[ibc].setBody(_model->getContactSet()->getContactBodyB(i));
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			pc[ipc]->setC0(x);
 			pc[ipc]->setC1(y);
@@ -453,7 +441,7 @@ determineConstraints()
 		} else if(ipc==1) {
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			_bc[ibc].constructConstraintsForPoint1();
 			ipc++;
@@ -462,7 +450,7 @@ determineConstraints()
 		} else if(ipc==2) {
 			pc[ipc] = _bc[ibc].getPC(ipc);
 			pc[ipc]->setID(i);
-			_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 			pc[ipc]->setPoint(p);
 			_bc[ibc].constructConstraintsForPoint2();
 			ipc++;
@@ -480,10 +468,10 @@ determineConstraints()
 
 		if(!_contactEstablished[i]) continue;
 
-		_bc[ibc].setID(_model->getContactBodyB(i));
+		_bc[ibc].setBody(_model->getContactSet()->getContactBodyB(i));
 		pc[0] = _bc[ibc].getPC(ipc);
 		pc[0]->setID(i);
-		_model->getPosition(_model->getContactBodyB(i),getContactPoint(i),p);
+		_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),p);
 		pc[ipc]->setPoint(p);
 
 		// THREE CONSTRAINT DIRECTIONS BECAUSE HINDFOOT IS NOT IN CONTACT
@@ -499,9 +487,9 @@ determineConstraints()
 		// HINDFOOT IS IN CONTACT
 		} else {
 			double p2[3],p3[3],p4[3],c0[3];
-			_model->getPosition(_model->getContactBodyB(7),getContactPoint(7),p2);
-			_model->getPosition(_model->getContactBodyB(8),getContactPoint(8),p3);
-			_model->getPosition(_model->getContactBodyB(9),getContactPoint(9),p4);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(7),getContactPoint(7),p2);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(8),getContactPoint(8),p3);
+			_model->getDynamicsEngine().getPosition(*_model->getContactSet()->getContactBodyB(9),getContactPoint(9),p4);
 			double r23[3],r34[3];
 			Mtx::Subtract(1,3,p3,p2,r23);
 			Mtx::Subtract(1,3,p4,p3,r34);
@@ -576,7 +564,7 @@ setSpringForces(double *aXS,double aFS[][3])
 	int i,j;
 
 	// ZERO SPRING FORCES
-	for(i=0;i<_model->getNP();i++) {
+	for(i=0;i<_model->getNumContacts();i++) {
 		for(j=0;j<3;j++) aFS[i][j] = 0.0;
 	}
 
@@ -609,8 +597,8 @@ applyComponentForce(int aC)
 	_model->setGravity(g0);
 
 	// ZERO VELOCITIES
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	for(i=0;i<nu;i++) _yTmp[nq+i] = 0.0;
 
 	// SET STATES
@@ -623,9 +611,9 @@ applyComponentForce(int aC)
 		callbackSet = _model->getDerivCallbackSet();
 		// Until DerivCallbackSet is implemented, actuator forces will be set
 		// to one in the main code
-		//_model->computeActuation();
+		//_model->getActuatorSet()->computeActuation();
 		//callbackSet->computeActuation(_model->getTime(),_x,_yTmp);
-		_model->applyActuatorForce(aC);
+		_model->getActuatorSet()->get(aC)->apply();
 		callbackSet->applyActuation(_model->getTime(),_x,_yTmp);
 
 	// GRAVITY
@@ -701,18 +689,18 @@ suComputeConstraint(double *x,int ic,double *c)
 	applyComponentForce(_c);
 
 	// APPLY SPRING FORCES
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 	v3d *fs = new v3d[np];
 	setSpringForces(x,fs);
 	for(i=0;i<np;i++) {
-		_model->applyForce(_model->getContactBodyB(i),getContactPoint(i),fs[i]);
+		_model->getDynamicsEngine().applyForce(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),fs[i]);
 	}
 
 	// COMPUTE ACCELERATIONS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	Array<double> dqdt(0.0,nq),dudt(0.0,nu);
-	_model->computeAccelerations(&dqdt[0],&dudt[0]);
+	_model->getDynamicsEngine().computeDerivatives(&dqdt[0],&dudt[0]);
 
 	// EVALUATE THE CONSTRAINT
 	bool evaluated = false;
@@ -727,7 +715,7 @@ suComputeConstraint(double *x,int ic,double *c)
 
 			// GET THE ACCELERATION
 			id = _bc[i].getPC(j)->getID();
-			_model->getAcceleration(_model->getContactBodyB(id),
+			_model->getDynamicsEngine().getAcceleration(*_bc[i].getBody(),
 				getContactPoint(id),fsAcc);
 
 			// WHICH CONSTRAINT DIRECTION
@@ -784,24 +772,24 @@ suComputeContactPointAccelerations(double *x,int c,double cpa[][3])
 	applyComponentForce(c);
 
 	// APPLY SPRING FORCES
-	int np = _model->getNP();
+	int np = _model->getNumContacts();
 
 	v3d *fs = new v3d[np];
 
 	setSpringForces(x,fs);
 	for(i=0;i<np;i++) {
-		_model->applyForce(_model->getContactBodyB(i),getContactPoint(i),fs[i]);
+		_model->getDynamicsEngine().applyForce(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),fs[i]);
 	}
 
 	// COMPUTE ACCELERATIONS
-	int nq = _model->getNQ();
-	int nu = _model->getNU();
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
 	Array<double> dqdt(0.0,nq),dudt(0.0,nu);
-	_model->computeAccelerations(&dqdt[0],&dudt[0]);
+	_model->getDynamicsEngine().computeDerivatives(&dqdt[0],&dudt[0]);
 
 	// RECORD CONTACT POINT ACCELERATIONS
 	for(i=0;i<np;i++) {
-		_model->getAcceleration(_model->getContactBodyB(i),getContactPoint(i),
+		_model->getDynamicsEngine().getAcceleration(*_model->getContactSet()->getContactBodyB(i),getContactPoint(i),
 			cpa[i]);
 	}
 

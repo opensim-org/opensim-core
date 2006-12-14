@@ -12,14 +12,12 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/VectorFunction.h>
 #include <OpenSim/Tools/FunctionSet.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 
 
 //=============================================================================
@@ -33,6 +31,9 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractBody;
+
 class SUANALYSES_API ForceApplier : public DerivCallback 
 {
 //=============================================================================
@@ -40,7 +41,7 @@ class SUANALYSES_API ForceApplier : public DerivCallback
 //=============================================================================
 protected:
 	/** Which body segment. */
-	int _body;
+	AbstractBody* _body;
 	/** Point of force application. */
 	double _point[3];
 	/** Force to be applied. */
@@ -63,11 +64,10 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ForceApplier(Model *aModel,int aBody);
-	ForceApplier(Model *aModel, int bodyFrom, int bodyTo, Storage *forceData,
-	             int fxNum, int fyNum, int fzNum,
-				 int pxNum, int pyNum, int pzNum,
-				 Storage *aQStore, Storage *aUStore);
+	ForceApplier(AbstractModel *aModel,AbstractBody *aBody);	
+	ForceApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
+		Storage *forceData,int fxNum,int fyNum,int fzNum,
+		int pxNum,int pyNum,int pzNum,Storage *aQStore,Storage *aUStore);
 	virtual ~ForceApplier();
 private:
 	void setNull();
@@ -80,8 +80,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setBody(int aBody);
-	int getBody() const;
+	void setBody(AbstractBody *aBody);
+	AbstractBody* getBody() const;
 	void setPoint(double aPoint[3]);
 	void getPoint(double rPoint[3]) const;
 	void setForce(double aForce[3]);
@@ -102,8 +102,7 @@ public:
 
 	virtual void reset(); 
 	
-	void
-		computePointFunction(Storage *aQStore,Storage *aUStore,
+	void computePointFunction(Storage *aQStore,Storage *aUStore,
 		VectorFunction &aPGlobal);
 
 	//--------------------------------------------------------------------------

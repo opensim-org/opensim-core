@@ -28,20 +28,16 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmSubject.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Subject/SimmSubject.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 #include <OpenSim/Simulation/SIMM/SimmMotionData.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/Scale/SimmScalerImpl.h>
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 string filesToCompare[] = {
 							"CrouchGaitSP.jnt",
@@ -59,68 +55,33 @@ string filesToCompare[] = {
  */
 int main(int argc,char **argv)
 {
-
 	// Construct model and read parameters file
+	//Object::RegisterType(VisibleObject());
+	Object::RegisterType(SimmSubject());
+	SimmSubject::registerTypes();
 	SimmSubject* subject = new SimmSubject("CrouchGait.xml");
-	SimmModel* model = subject->createModel();
-	model->peteTest();
-	SimmScalingParams& params = subject->getScalingParams();
-	ScalerInterface *scaler = new SimmScalerImpl(*model);
-
-	if (!scaler->scaleModel(params.getScaleSet(*model, ""), params.getPreserveMassDist(), subject->getMass()))
+	AbstractModel* model = subject->createModel();
+	if (!subject->isDefaultModelScaler())
 	{
-		cout << "===ERROR===: Unable to scale generic model." << endl;
-		return 0;
+		SimmModelScaler& scaler = subject->getModelScaler();
+		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
 	}
-	params.writeOutputFiles(model);
-
-	if (!subject->isDefaultMarkerPlacementParams()){
-		SimmMarkerPlacementParams& markerPlacementParams = subject->getMarkerPlacementParams();
-		// Update markers to correspond to those specified in IKParams block
-		model->updateMarkers(markerPlacementParams.getMarkerSet());
-
-
-		/**
-		* Load the static pose marker file, and average all the
-		* frames in the user-specified time range.
-		*/
-		SimmMarkerData staticPose(markerPlacementParams.getStaticPoseFilename());
-		// Convert read trc fil into "common" rdStroage format
-		Storage inputStorage;
-		// Convert read trc fil into "common" rdStroage format
-		staticPose.makeRdStorage(inputStorage);
-		// Convert the marker data into the model's units.
-		double startTime, endTime;
-		Array<double> range = markerPlacementParams.getTimeRange();
-		startTime=range[0]; endTime=range[1];
-		staticPose.averageFrames(markerPlacementParams.getMaxMarkerMovement(), startTime, endTime);
-		staticPose.convertToUnits(model->getLengthUnits());
-
-		/* Delete any markers from the model that are not in the static
-		* pose marker file.
-		*/
-		model->deleteUnusedMarkers(staticPose.getMarkerNames());
-
-		/* Now solve the static pose, by faking it as an IKTrial */
-		SimmIKTrialParams options;
-		options.setStartTime(startTime);
-		options.setEndTime(startTime);
-		options.setIncludeMarkers(true);
-
-		// Create target
-		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
-		// Create solver
-		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
-		// Solve
-		Storage	outputStorage;
-		ikSolver->solveFrames(options, inputStorage, outputStorage);
-
-		delete ikSolver;
-		delete target;
+	else
+	{
+		cout << "Scaling parameters not set. Model is not scaled." << endl;
 	}
-	else {
+
+	if (!subject->isDefaultMarkerPlacer())
+	{
+		SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+		placer.processModel(model, subject->getPathToSubject());
+	}
+	else
+	{
 		cout << "Marker placement parameters not set. No markers have been moved." << endl;
 	}
+
+	delete model;
 	delete subject;
 
 	/* Compare results with standard*/

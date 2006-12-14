@@ -7,7 +7,8 @@
 //=============================================================================
 #include "Investigation.h"
 #include "LoadModel.h"
-#include <OpenSim/Tools/IO.h>	
+#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 
@@ -32,7 +33,7 @@ Investigation::~Investigation()
 Investigation::Investigation():
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
-	_actuatorSetFile(_actuatorSetFileProp.getValueStr()),
+	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
@@ -62,7 +63,7 @@ Investigation::Investigation(const string &aFileName):
 	Object(aFileName),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
-	_actuatorSetFile(_actuatorSetFileProp.getValueStr()),
+	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
@@ -97,7 +98,7 @@ Investigation::Investigation(DOMElement *aElement):
 	Object(aElement),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
-	_actuatorSetFile(_actuatorSetFileProp.getValueStr()),
+	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
@@ -155,7 +156,7 @@ Investigation::Investigation(const Investigation &aInvestigation):
 	Object(aInvestigation),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
-	_actuatorSetFile(_actuatorSetFileProp.getValueStr()),
+	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
@@ -185,7 +186,6 @@ setNull()
 	_model = NULL;
 	_modelLibrary = "";
 	_modelFile = "";
-	_actuatorSetFile = "";
 	_contactForceSetFile = "";
 	_paramsFile = "";
 	_resultsDir = "./";
@@ -217,9 +217,10 @@ void Investigation::setupProperties()
 	_propertySet.append( &_modelFileProp );
 
 	comment = "Name of the xml file used to construct an actuator set for the model.";
-	_actuatorSetFileProp.setComment(comment);
-	_actuatorSetFileProp.setName("actuator_set_file");
-	_propertySet.append( &_actuatorSetFileProp );
+	_actuatorSetFilesProp.setComment(comment);
+	_actuatorSetFilesProp.setValue(Array<string>(""));
+	_actuatorSetFilesProp.setName("actuator_set_files");
+	_propertySet.append( &_actuatorSetFilesProp );
 
 	comment = "Name of the xml file used to construct a contact force set for the model.";
 	_contactForceSetFileProp.setComment(comment);
@@ -300,7 +301,7 @@ operator=(const Investigation &aInvestigation)
 
 	_modelLibrary = aInvestigation._modelLibrary;
 	_modelFile = aInvestigation._modelFile;
-	_actuatorSetFile = aInvestigation._actuatorSetFile;
+	_actuatorSetFiles = aInvestigation._actuatorSetFiles;
 	_contactForceSetFile = aInvestigation._contactForceSetFile;
 	_paramsFile = aInvestigation._paramsFile;
 	_resultsDir = aInvestigation._resultsDir;
@@ -328,7 +329,7 @@ operator=(const Investigation &aInvestigation)
  * Set the model to be investigated.
  */
 void Investigation::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	_model = aModel;
 	_analysisSet.setModel(_model);
@@ -337,7 +338,7 @@ setModel(Model *aModel)
 /**
  * Get the model to be investigated.
  */
-Model* Investigation::
+AbstractModel* Investigation::
 getModel() const
 {
 	return(_model);
@@ -392,58 +393,22 @@ loadModel()
 	// If _modelLibrary is not specified, we do not try to load the model here and assume
 	// the caller/user of this investigation will take care of setting it up.
 	if (_modelLibrary != "") {
-		cout<<"Investigation "<<getName()<<" loading a model using the ";
-		cout<<"following command line:\n";
+		cout<<"Investigation "<<getName()<<" loading a model:" << endl;
+		cout<<"ModelLibrary = " << _modelLibrary << ", ModelFile = " << _modelFile << endl;
 
-		Array<string> args("");
-		constructCommandLineForLoadModel(args);
-		cout<<args<<endl;
+		AbstractModel *model = LoadModel(_modelLibrary, _modelFile);
 
-		int i;
-		int argc = args.getSize();
-		if(argc==0) { setModel(NULL);  return; }
-		char **argv = new char*[argc];
-		for(i=0;i<argc;i++) {
-			argv[i] = (char *)args[i].c_str();
+		// Load actuator set(s)
+		for(int i=0;i<_actuatorSetFiles.getSize();i++) {
+			cout<<"Adding actuator set from "<<_actuatorSetFiles[i]<<endl;
+			ActuatorSet *actuatorSet=new ActuatorSet(_actuatorSetFiles[i]);
+			model->getActuatorSet()->append(*actuatorSet);
 		}
 
-		Model *model = LoadModel(argc,argv);
+		model->setup();
+		if(!model->getActuatorSet()->check())
+			throw(Exception("ERROR ActuatorSet::check() failed",__FILE__,__LINE__));
 		setModel(model);
-	}
-}
-//_____________________________________________________________________________
-/**
- * Construct a command line for LoadModel().
- */
-void Investigation::
-constructCommandLineForLoadModel(Array<string> &args)
-{
-	args.setSize(0);
-	args.append(getName());
-
-	if(_modelLibrary!="") {
-		args.append("-ModelLibrary");
-		args.append(_modelLibrary);
-	}
-
-	if(_modelFile!="") {
-		args.append("-ModelFile");
-		args.append(_modelFile);
-	}
-
-	if(_actuatorSetFile!="") {
-		args.append("-Actuators");
-		args.append(_actuatorSetFile); 
-	}
-
-	if(_contactForceSetFile!="") {
-		args.append("-Contacts");
-		args.append(_contactForceSetFile);
-	}
-
-	if(_paramsFile!="") {
-		args.append("-Params");
-		args.append(_paramsFile);
 	}
 }
 //_____________________________________________________________________________

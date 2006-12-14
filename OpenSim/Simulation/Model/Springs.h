@@ -33,10 +33,15 @@
  * Author: Frank C. Anderson 
  */
 
+//INCLUDES
+#include <OpenSim/Simulation/rdSimulationDLL.h>
 
-// INCLUDES
-#include "Model.h"
-
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
 
 //=============================================================================
 //=============================================================================

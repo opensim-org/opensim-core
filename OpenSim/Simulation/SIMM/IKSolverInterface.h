@@ -6,7 +6,7 @@
 
 namespace OpenSim { 
 
-class SimmIKTrialParams;
+class SimmIKTrial;
 class Storage;
 class SimmInverseKinematicsTarget;
 
@@ -43,7 +43,7 @@ public:
 	_ikTarget(aOptimizationTarget)
 	{
 	}
-	virtual void solveFrames(const SimmIKTrialParams& aIKOptions, Storage& inputData, Storage& outputData) 
+	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData) 
 	{
 		std::cout<< "Error, IKSolverInterface::solveFrames() - not implemented.\n";
 	};

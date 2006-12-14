@@ -11,12 +11,10 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include "Contact.h"
-#include "Decomp.h"
 #include "ActuatorPerturbation.h"
 
 
@@ -83,7 +81,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ActuatorPerturbationIndependent(Model *aModel);
+	ActuatorPerturbationIndependent(AbstractModel *aModel);
 	virtual ~ActuatorPerturbationIndependent();
 	
 private:

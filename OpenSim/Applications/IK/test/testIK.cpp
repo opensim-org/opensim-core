@@ -28,21 +28,12 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/Scale/SimmScalerImpl.h>
-#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
+#include <OpenSim/Subject/SimmSubject.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Subject/SdfastFileWriter.h>
 
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 string filesToCompare[] = {
 	"subject_trial_ik.mot"
@@ -56,69 +47,49 @@ string filesToCompare[] = {
 */
 int main(int argc,char **argv)
 {
-
+// Eran: comment out everything for now because we now use InvestigationIK
+#if 0
 	// Construct model and read parameters file
+	Object::RegisterType(SimmSubject());
+	SimmSubject::registerTypes();
 	SimmSubject* subject = new SimmSubject("subject_ik_setup.xml");
-	SimmModel* model = subject->createModel();
-	model->setup();
+	AbstractModel* model = subject->createModel();
+
+	//----------------------- Model scaling section
+	if (!subject->isDefaultModelScaler())
+	{
+		SimmModelScaler& scaler = subject->getModelScaler();
+		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
+	}
+	else
+	{
+		cout << "SimmModelScaler parameters have not been defined. The generic model will not be scaled." << endl;
+	}
+
+	//----------------------- Marker placement section
+	if (!subject->isDefaultMarkerPlacer())
+	{
+		SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+		placer.processModel(model, subject->getPathToSubject());
+	}
+	else
+	{
+		cout << "SimmMarkerPlacer parameters have not been defined. No markers have been moved." << endl;
+	}
 
 	//--------------------- IK proper section
 	{
-		try
-		{	
-			/* CLAY- Commented out until we fix, so things would compile...
-
-			// Update markers to correspond to those specified in IKParams block, potentially adding new ones
-			model->updateMarkers(subject->getIKParams().getMarkerSet());
-			// Initialize coordinates based on user input
-			model->updateCoordinates(subject->getIKParams().getCoordinateSet());
-
-			// Get trial params
-			SimmIKTrialParams& trialParams = subject->getIKParams().getTrialParams(0);
-			// Handle coordinates file
-			SimmMotionData* coordinateValues = trialParams.getCoordinateValues(*model);
-
-			// Setup IK problem for trial
-			// We need SimmInverseKinematicsTarget, iksolver (SimmIKSolverImpl)
-			// Create SimmMarkerData Object from trc file of experimental motion data
-			SimmMarkerData motionTrialData(trialParams.getMarkerDataFilename());
-			motionTrialData.convertToUnits(model->getLengthUnits());
-			Storage inputStorage;
-			// Convert read trc fil into "common" rdStroage format
-			motionTrialData.makeRdStorage(inputStorage);
-
-			if (coordinateValues != 0) {
-				// Adjust the user-defined start and end times to make sure they are in the
-				// range of the marker data. This must be done so that you only look in the
-				// coordinate data for rows that will actually be solved.
-				double firstStateTime = inputStorage.getFirstTime();
-				double lastStateTime = inputStorage.getLastTime();
-				double startTime = (firstStateTime>trialParams.getStartTime()) ? firstStateTime : trialParams.getStartTime();
-				double endTime =  (lastStateTime<trialParams.getEndTime()) ? lastStateTime : trialParams.getEndTime();
-
-				// Add the coordinate data to the marker data. There must be a row of
-				// corresponding coordinate data for every row of marker data that will
-				// be solved, or it is a fatal error.
-				coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
+		try 
+		{
+			if (!subject->isDefaultIKSolver())
+			{
+				SimmIKSolver& solver = subject->getIKSolver();
+				solver.processModel(model, subject->getPathToSubject());
 			}
-
-			// Create target
-			SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(*model, inputStorage);
-			// Create solver
-			SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
-			// Solve
-			Storage	outputStorage; 
-			ikSolver->solveFrames(trialParams, inputStorage, outputStorage);
-
-			OpenSim::IO::SetPrecision(6);
-			outputStorage.setWriteSIMMHeader(true);
-			outputStorage.print(trialParams.getOutputMotionFilename().c_str());
-
-			delete coordinateValues;
-			delete ikSolver;
-			delete target;
-
-			CLAY- Commented out so things would compile. */
+			else
+			{
+				cout << "IK Solver parameters not set. No IK has been performed." << endl;
+			}
 		}
 		catch (Exception &x)
 		{
@@ -139,5 +110,6 @@ int main(int argc,char **argv)
 	}
 
 	return (success?0:1);
+#endif
 }
 

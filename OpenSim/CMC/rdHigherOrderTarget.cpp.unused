@@ -1,0 +1,713 @@
+// rdHigherOrderTarget.cpp
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
+// Contributors: Frank C. Anderson, Ph.D.
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject
+// to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS,
+// CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+// THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// This software, originally developed by Realistic Dynamics, Inc., was
+// transferred to Stanford University on November 1, 2006.
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//==============================================================================
+// INCLUDES
+//==============================================================================
+#include "rdHigherOrderTarget.h"
+#include <NMBLTK/Tools/rdException.h>
+#include <NMBLTK/Simulation/Model/rdAnalysisSet.h>
+
+
+//==============================================================================
+// DESTRUCTOR & CONSTRUCTIOR(S)
+//==============================================================================
+//______________________________________________________________________________
+/**
+ * Destructor.
+ */
+rdHigherOrderTarget::~rdHigherOrderTarget()
+{
+}
+//______________________________________________________________________________
+/**
+ * Constructor.
+ *
+ * @param aNX Number of controls.
+ * @param aController Controller.
+ * @param aTargetDT Target time step size.
+ * @param aTolerance Integration tolerance.
+ * @param aFineTolerance Fine integration tolerance.
+ * @see rdOptimizationTarget
+ * @see rdController
+ * @see rdController::setTargetTime()
+ */
+rdHigherOrderTarget::
+rdHigherOrderTarget(int aNX,rdCMC *aController,double aTargetDT,
+	double aTolerance,double aFineTolerance) :
+	rdOptimizationTarget(aNX)
+{
+	setNull();
+
+	// CONTROLLER
+	_controller = aController;
+
+	// NUMBER OF CONTROLS
+	if(_nx<=0) {
+		throw(rdException("rdHigherOrderTarget.rdHigherOrderTarget: ERROR- no controls.\n"));
+	}
+
+	// ALLOCATE ARRAYS
+	rdModel *model = _controller->getModel();
+	if(model==NULL) {
+		throw(rdException("rdHigherOrderTarget.rdHigherOrderTarget: ERROR- no model.\n"));
+	}
+	// States
+	int ny = model->getNY();
+	_yOrig = new double[ny];
+	_y = new double[ny];
+	// Pseudostates
+	int nyp = model->getNYP();
+	if(nyp>0) _ypOrig = new double[nyp];
+	// Generalized coordinates and speeds
+	int nq = model->getNQ();
+	int nu = model->getNU();
+	_dqdt = new double[nq];
+	_dudt = new double[nu];
+
+	// CONSTRUCT THE INTEGRATOR
+	_rkf = new rdRKF(model,aTolerance,aFineTolerance);
+
+	// SET CONTROLLER TO USE CHECK TARGET TIME
+	_controller->setCheckTargetTime(true);
+	_controller->setTargetDT(aTargetDT);
+
+	// NUMBERS OF CONSTRAINTS
+	_nineqn = 0;
+	_nineq = 0;
+	_neqn = 0;
+	_neq = 0;
+
+	// DERIVATIVE PERTURBATION SIZES;
+	setDX(0.0001);
+}
+
+
+//==============================================================================
+// CONSTRUCTION AND DESTRUCTION
+//==============================================================================
+//______________________________________________________________________________
+/**
+ * Set all member variables to their NULL values.
+ */
+void rdHigherOrderTarget::
+setNull()
+{
+	_controller = NULL;
+	_yOrig = NULL;
+	_ypOrig = NULL;
+	_y = NULL;
+	_dqdt = NULL;
+	_dudt = NULL;
+	_rkf = NULL;
+}
+
+
+//==============================================================================
+// SET AND GET
+//==============================================================================
+
+
+
+//==============================================================================
+// PERFORMANCE AND CONSTRAINTS
+//==============================================================================
+//------------------------------------------------------------------------------
+// PERFORMANCE AND CONSTRAINTS
+//------------------------------------------------------------------------------
+//______________________________________________________________________________
+/**
+ * Compute performance and the constraints given x.
+ * Note - used by paramopt.
+ */
+int rdHigherOrderTarget::
+compute(double *x,double *p,double *c)
+{
+	int status = 0;
+	return(status);
+}
+//______________________________________________________________________________
+/**
+ * Compute the gradients of the performance and the constraints given x.
+ * The array dx is an array of perturbation sizes which can be used to
+ * compute the gradients numerically.
+ *
+ * Note- used by paramopt.
+ */
+int rdHigherOrderTarget::
+computeGradients(double *dx,double *x,double *dpdx,double *dcdx)
+{
+	int status = 0;
+	return(status);
+}
+
+
+//------------------------------------------------------------------------------
+// PERFORMANCE- TRACK ACCELERATIONS
+//------------------------------------------------------------------------------
+//______________________________________________________________________________
+/**
+ * Compute performance given x.
+ *
+ * @param aParams Control parameters- these are the controls for the
+ * optimization problem.
+ * @param rPerf Performance.
+ * @return Status (always 0 at this point).
+ */
+int rdHigherOrderTarget::
+computePerformance(double *aParams,double *rPerf)
+{
+	// MODIFY CONTROL SET
+	rdControlSet *controlSet = _controller->getControlSet();
+	rdArray<int> *pList = _controller->getParameterList();
+	controlSet->setParameterValues(aParams,pList);
+
+	// GET TIME, TIME STEP, STATES
+	rdModel *model = _controller->getModel();
+	rdCMC_TaskSet *trackSet = _controller->getTaskSet();
+	double dt = _controller->getDT();
+	double t = model->getTime();
+	double targetDT = _controller->getTargetDT();
+	double targetDTReal = targetDT * model->getTimeNormConstant();
+	double tf = t + targetDT;
+	double tfReal = model->getTimeNormConstant()*tf;
+
+	// GET THE CONTROLS
+	// (at the end of the simulation interval)
+	rdArray<double> x(0.0);
+	controlSet->getControlValues(tf,x);
+
+	// GET STATES AND PSEUDOSTATES
+	model->getStates(_y);
+	model->getStates(_yOrig);
+	if(_ypOrig!=NULL) model->getPseudoStates(_ypOrig);
+
+	// INTEGRATE TO THE TARGET TIME
+	//_rkf->stepFixed(targetDT,t,aX,_y);
+	step(dt,t,tf,*controlSet,_y);
+	model->deriv(tf,&x[0],_y,_dqdt,_dudt);
+
+	// COMPUTE NECESSARY QUANTITIES
+	trackSet->computeErrors(tfReal);
+	trackSet->computeDesiredAccelerations(tfReal);
+	trackSet->computeAccelerations();
+
+	// GET RESULTS
+	//rdArray<double> &pErrLast = trackSet->getPositionErrorsLast();
+	//rdArray<double> &pErr = trackSet->getPositionErrors();
+	//rdArray<double> &vErr = trackSet->getVelocityErrors();
+	//rdArray<double> &wa = trackSet->getWeights();
+	//rdArray<double> &aDes = trackSet->getDesiredAccelerations();
+	//rdArray<double> &a = trackSet->getAccelerations();
+
+	// PERFORMANCE
+	int i,j;
+	// Kinematics
+	//for(pa=pv=pp=0.0,i=0;i<aDes.getSize();i++) {
+	//	pa += wa[i]*(aDes[i]-a[i])*(aDes[i]-a[i]);
+	//	pv += wa[i]*(
+	//	//printf("aDes[%d]=%lf a[%d]=%lf pa=%lf px=%lf\n",i,aDes[i],i,a[i],pa,px);
+	//}
+	//printf("\n");
+	double w,kp,kv,ka,pErr,vErr,pErrErr,vErrErr;
+	double wErr=8.0,aV,aP,aVErr,aPErr,aDes,a;
+	double pa,pv,pp;
+	double decay,c1,c2;
+	double eop,eov,ep,ev;
+	rdCMC_Task *obj;
+	rdFunction *func;
+	for(pa=pv=pp=0.0,i=0;i<trackSet->getSize();i++) {
+
+		// GET TRACK OBJECT
+		obj = trackSet->get(i);
+		if(obj==NULL) continue;
+
+		// LOOP THROUGH ACTIVE TARGETS
+		for(j=0;j<3;j++) {
+
+			if(!obj->getActive(j)) continue;
+			func = obj->getTrackFunction(j);
+
+			// GAINS
+			w = obj->getWeight(j);
+			kp = obj->getKP(j);
+			kv = obj->getKV(j);
+			ka = obj->getKA(j);
+
+			// ERROR
+			eop = obj->getPositionErrorLast(j);
+			eov = obj->getVelocityErrorLast(j);
+			pErr = obj->getPositionError(j);
+			vErr = obj->getVelocityError(j);
+
+			// The following two terms are to ensure that the evolution of the velocity
+			// and position errors follows the expected error dynamics.  That is, we
+			// don't want the desired accelerations to be generate at the expense of
+			// greater velocity and position errors.  When the velocity or position
+			// errors follow the epected dynamics, these two terms contribute nothing
+			// to the performance criterion.
+
+			// EXPECTED POSITION ERROR
+			decay = exp(-0.5*kv*targetDTReal);
+			c1 = eov + 0.5*kv*eop; 
+			c2 = eop;
+			ep = (targetDTReal*c1 + c2)*decay;
+			pErrErr = pErr - ep;
+
+			// EXPECTED VELOCITY ERROR
+			ev = ((1.0 - 0.5*kv*targetDTReal)*c1 - 0.5*kv*c2)*decay;
+			vErrErr = vErr - ev;
+
+			// DESIRED ACCELERATION
+			aV = kv*vErr;
+			aP = kp*pErr;
+			//aV = 0.0;
+			//aP = 0.0;
+			aVErr = 8.0*kv*vErrErr;
+			aPErr = 16.0*kp*pErrErr;
+			//aPErr = 0.0;
+			//aVErr = 0.0;
+
+			aDes = func->evaluate(2,tfReal) + aV + aP + aVErr + aPErr;
+			//printf("aV=%lf aP=%lf aVErr=%lf aPErr=%lf\n",aV,aP,aVErr,aPErr);
+
+			// ACCELERATION
+			a = obj->getAcceleration(j);
+			pa += w*(aDes-a)*(aDes-a);
+
+			//----------------
+			// TOTALLY DIFFERENT APPROACH
+			//pa += kp*pErr*pErr + kv*vErr*vErr;
+			//printf("%d:  pErr=%lf  vErr=%lf\n",i,pErr,vErr);
+			//----------------
+		}
+	}
+
+	// Excitations.
+	double px,stress;
+	for(px=0.0,i=0;i<pList->getSize();i++) {
+		px += aParams[i]*aParams[i];
+	}
+
+	// Actuator stresses.
+	//double px,stress;
+	//for(px=0.0,i=0;i<model->getNA();i++) {
+	//	stress = model->getActuatorStress(i);
+	//	px += stress * stress;
+	//}
+
+	// SARYN IS WORKING ON THIS PART
+
+	// Excitation curvature criterion
+	//double pe=0;
+	//double t_prev = t-targetDT;
+	//double t_cur = t;
+	//double t_next= t+targetDT;
+	//double *curvature;
+	//double kc1, kc2, c0;
+
+	//c0=1/(dt*dt);
+	//kc1=1;
+	//kc2=1;
+
+	//curvature = new double[_nx];
+
+	//rdArray<double> x_prev(0.0);
+	//controlSet->getControlValues(t_prev,x_prev);
+
+	//rdArray<double> x_cur(0.0);
+	//controlSet->getControlValues(t_cur,x_cur);
+
+	//rdArray<double> x_next(0.0);
+	//controlSet->getControlValues(t_next,x_next);
+
+	//for(i=0;i<_nx;i++) {
+	//	curvature[0] = (((x_cur[i]-x_prev[i])/dt)-((x_next[i]-x_cur[i])/dt))/dt;
+	//	pe += kc1*exp(kc2*(curvature[i]-c0));
+	//}
+
+	
+	// TOTAL PERFORMANCE
+	//*rP = pa;
+	//*rP = pa + pv + pp;
+	//*rP = px + pa + pv + pp;
+	px *= 10.0;
+	*rPerf = px + pa;
+	//*rPerf = 10.0*px + pa + pe;
+
+
+	//printf("p=%.2le pa=%.2le aV=%.2le aP=%.2le pErr=%.2le vErr=%.2le a=%.2le aDes=%.2le\n",
+	//	*rPerf,pa,aV,aP,pErr,vErr,a,aDes);
+	//printf("p=%.2le pa=%.2le px=%.2le\n",*rPerf,pa,px);
+
+	// RETURN ORIGNAL TIME, STATES, AND PSEUDOSTATES
+	model->setTime(t);
+	model->setStates(_yOrig);
+	if(_ypOrig!=NULL) model->setPseudoStates(_ypOrig);
+
+	return(0);
+}
+
+//______________________________________________________________________________
+/**
+ * Compute performance given x.
+int rdHigherOrderTarget::
+computePerformance(double *aX,double *rP)
+{
+	
+	// GET TIME, TIME STEP, STATES
+	rdModel *model = _controller->getModel();
+	rdCMC_TaskSet *trackSet = _controller->getTrackObjectSet();
+	double dt = _controller->getDT();
+	double t = model->getTime();
+	double targetDT = _controller->getTargetDT();
+	double targetDTReal = targetDT * model->getTimeNormConstant();
+	double tf = t + targetDT;
+	double tfReal = model->getTimeNormConstant()*tf;
+
+	// GET STATES AND PSEUDOSTATES
+	model->getStates(_y);
+	model->getStates(_yOrig);
+	if(_ypOrig!=NULL) model->getPseudoStates(_ypOrig);
+
+	// EXPONENTIAL FOR EXPECTED ERROR REDUCTION
+
+	// INTEGRATE TO THE TARGET TIME
+	//_rkf->stepFixed(targetDT,t,aX,_y);
+	step(dt,t,tf,aX,_y);
+	model->deriv(tf,aX,_y,_dqdt,_dudt);
+
+	// ACCELERATIONS
+	trackSet->computeDesiredAccelerations(tfReal);
+	trackSet->computeAccelerations();
+	//rdArray<double> &wa = trackSet->getWeights();
+	//rdArray<double> &aDes = trackSet->getDesiredAccelerations();
+	//rdArray<double> &a = trackSet->getAccelerations();
+
+	// PERFORMANCE
+	int i,j;
+	// Kinematics
+	//for(pa=0.0,i=0;i<aDes.getSize();i++) {
+	//	pa += wa[i]*(aDes[i]-a[i])*(aDes[i]-a[i]);
+	//	pv += wv[i]*(
+	//	//printf("aDes[%d]=%lf a[%d]=%lf pa=%lf px=%lf\n",i,aDes[i],i,a[i],pa,px);
+	//}
+	//printf("\n");
+	double w,kp,kv,ka,pErr,vErr,a,aDes;
+	double pa,pv,pp;
+	double e,eo,tmp;
+	rdCMC_Task *obj;
+	rdFunction *func;
+	for(pa=pv=pp=0.0,i=0;i<trackSet->getFirstEmpty();i++) {
+
+		// GET TRACK OBJECT
+		obj = trackSet->get(i);
+		if(obj==NULL) continue;
+
+		// LOOP THROUGH ACTIVE TARGETS
+		for(j=0;j<3;j++) {
+
+			if(!obj->getActive(j)) continue;
+			func = obj->getTrackFunction(j);
+
+			// GAINS
+			w = obj->getWeight(j);
+			kp = obj->getKP(j);
+			kv = obj->getKV(j);
+			ka = obj->getKA(j);
+
+			// ERROR
+			obj->computeErrors(tfReal);
+			eo = obj->getPositionErrorLast(j);
+			pErr = obj->getPositionError(j);
+			vErr = obj->getVelocityError(j);
+
+			// DESIRED ACCELERATION
+			a = obj->getAcceleration(j);
+			aDes = func->evaluate(2,tfReal) + kv*vErr + kp*pErr;
+
+			// ACCELERATION
+			pa += w*(aDes-a)*(aDes-a);
+
+
+			// The following two terms are to ensure that the evolution of the velocity
+			// and position errors follows the expected error dynamics.  That is, we
+			// don't want the desired accelerations to be generate at the expense of
+			// greater velocity and position errors.  When the velocity or position
+			// errors follow the epected dynamics, these two terms contribute nothing
+			// to the performance criterion.
+
+			// VELOCITY ERROR
+			e = eo*exp(-kv*targetDTReal/2.0);	// EXPECTED CHANGE IN POSITION ERROR
+			tmp = (vErr + kv*e/2.0);
+			pv += w*tmp*tmp;
+		
+			// POSITION ERROR
+			tmp = (pErr - e);
+			pp += w*tmp*tmp;
+
+			// PRINTING
+			//printf("pa=%le pv=%le pp=%le pErr=%le vErr=%le a=%le aDes=%le\n",pa,pv,pp,pErr,vErr,a,aDes);
+		}
+	}
+
+	// Controls
+	double px;
+	for(px=0.0,i=0;i<model->getNX();i++) {
+		px += aX[i]*aX[i];
+	}
+
+	
+	// TOTAL PERFORMANCE
+	*rP = px + pa + pv + pp;
+
+	// RETURN ORIGNAL TIME, STATES, AND PSEUDOSTATES
+	model->setTime(t);
+	model->setStates(_yOrig);
+	if(_ypOrig!=NULL) model->setPseudoStates(_ypOrig);
+
+	return(0);
+}
+*/
+
+//------------------------------------------------------------------------------
+// PERFORMANCE - TRACK POSITIONS AND VELOCITIES
+//------------------------------------------------------------------------------
+//______________________________________________________________________________
+/**
+ * Compute performance given x.
+int rdHigherOrderTarget::
+computePerformance(double *aX,double *rP)
+{
+	
+	// GET TIME, TIME STEP, STATES
+	rdModel *model = _controller->getModel();
+	rdCMC_TaskSet *trackSet = _controller->getTrackObjectSet();
+	double dt = _controller->getDT();
+	double t = model->getTime();
+	double targetDT = _controller->getTargetDT();
+	double tf = t + targetDT;
+	double tfReal = model->getTimeNormConstant()*tf;
+	model->getStates(_y);
+	model->getStates(_yOrig);
+
+	// INTEGRATE TO THE TARGET TIME
+	//_rkf->stepFixed(targetDT,t,aX,_y);
+	step(dt,t,tf,aX,_y);
+	model->deriv(tf,aX,_y,_dqdt,_dudt);
+
+	// COMPUTE ACCELERATIONS
+	trackSet->computeAccelerations();
+
+	// COMPUTE TRAJECTORY PERFORMANCE
+	int i,j;
+	double pa;
+	double w,kp,kv,ka,pErr,vErr,a,aErr,aDes;
+	rdCMC_Task *obj;
+	rdFunction *func;
+	for(pa=0.0,i=0;i<trackSet->getFirstEmpty();i++) {
+
+		// GET TRACK OBJECT
+		obj = trackSet->get(i);
+		if(obj==NULL) continue;
+
+		// LOOP THROUGH ACTIVE TARGETS
+		for(j=0;j<3;j++) {
+
+			if(!obj->getActive(j)) continue;
+			func = obj->getTrackFunction(j);
+
+			// ERROR
+			obj->computeErrors(tfReal);
+			w = obj->getWeight(j);
+			kp = obj->getKP(j);
+			kv = obj->getKV(j);
+			ka = obj->getKA(j);
+			pErr = obj->getPositionError(j);
+			vErr = obj->getVelocityError(j);
+
+			// DESIRED ACCELERATION
+			a = obj->getAcceleration(j);
+			aDes = func->evaluate(2,tfReal) + kv*vErr + kp*pErr;
+
+			// SUM
+			//pa += w*(aErr*aErr + kp*kp*pErr*pErr + kv*kv*vErr*vErr);  // DOESN'T WORK VERY WELL
+			pa += w*(aDes-a)*(aDes-a);  // WORKS WELL
+			printf("pa=%le  pErr=%le  vErr=%le a=%le aDes=%le\n",pa,pErr,vErr,a,aDes);
+			//pa += w*(kp*pErr*pErr);
+		}
+	}
+
+	// CONTROLS PERFORMANCE
+	double px;
+	for(px=0.0,i=0;i<model->getNX();i++) {
+		px += aX[i]*aX[i];
+	}
+
+	// TOTAL PERFORMANCE
+	*rP = px + pa;
+
+	// RETURN ORIGNAL STATES
+	model->setTime(t);
+	model->setStates(_yOrig);
+
+	return(0);
+}
+ */
+
+//______________________________________________________________________________
+/**
+ * Execute a variable step integration.
+ *
+ * @param aDT First integration step size to take.
+ * @param aTI Initial time.
+ * @param aTF Final time.
+ * @param aX Controls.
+ * @param rY States.
+ */
+void rdHigherOrderTarget::
+step(double aDT,double aTI,double aTF,rdControlSet &aControlSet,double *rY)
+{
+
+	rdModel *model = _controller->getModel();
+	int status,steps=0,trys=0,maxSteps=1000;
+	double dtMax = 1.0e-3;
+	double dt = aDT;
+	double t = aTI;
+	double tf = aTF;
+	rdArray<double> x(0.0);
+
+	// TURN OFF ANALYSES
+	rdAnalysisSet *analysisSet = model->getAnalysisSet();
+	analysisSet->setOn(false);
+
+	// INTEGRATION LOOP
+	while(t<tf) {
+
+		// DT
+		if((t+dt)>tf) {
+			dt = tf - t;
+		}
+
+		// STEP
+		status = _rkf->step(dt,t,aControlSet,rY);
+		trys++;
+
+		// SUCCESSFUL INTEGRATION
+		if((status==rdRKF::rdRKF_NORMAL)||(status==rdRKF::rdRKF_FINE)) {
+
+				// INCREMENT TIME AND STEPS
+				t += dt;
+				steps++;
+
+				// CALL INTEGRATION STEP CALLBACKS
+				aControlSet.getControlValues(t,x);
+				model->getIntegCallbackSet()->step(&x[0],rY,steps,dt,t,&x[0],rY);
+
+				// FINE ACCURACY- DOUBLE DT
+				if((status==rdRKF::rdRKF_FINE)&&(dt<dtMax)) {
+					dt*=2.0;
+					if(dt>dtMax) dt=dtMax;
+				}
+
+
+		// POOR ACCURACY OR NOT A NUMBER- HALVE DT
+		} else if((status==rdRKF::rdRKF_POOR)||(status==rdRKF::rdRKF_NAN)) {
+				if(status==rdRKF::rdRKF_NAN) {
+					printf("rdHigherOrderTarget.computePerformance:  NAN error encountered.\n");
+				}
+				dt *= 0.5;
+				if(dt<1.0e-8) {
+					printf("rdHigherOrderTarget.computePerformance:  dt below minimum allowed value.\n");
+					break;
+				}
+	
+		// ERROR
+		} else if(status==rdRKF::rdRKF_ERROR) {
+				printf("rdHigherOrderTarget.computePerformance:  Error encountered.\n");
+				break;
+		}
+
+		// CHECK FOR TOO MANY STEPS
+		if(steps>maxSteps) {
+			printf("rdHigherOrderTarget.computePerformance:  exceded the maximum number of allowed steps.\n");
+			status = rdRKF::rdRKF_TOO_MANY_STEPS;
+			break;
+		}
+	}
+
+	// TURN ON ANALYSES
+	analysisSet->setOn(true);
+
+	//printf("step:  t=%lf  steps=%d  trys=%d\n",t,steps,trys);  
+
+}
+
+//______________________________________________________________________________
+/**
+ * Compute the gradient of performance given x.
+ */
+int rdHigherOrderTarget::
+computePerformanceGradient(double *x,double *dpdx)
+{
+	//int i;
+	int status = rdFSQP::CentralDifferences(this,_dx,x,dpdx);
+	//printf("dpdx = ");
+	//for(i=0;i<_nx;i++) printf(" %lf",dpdx[i]);
+	//printf("\n");
+	return(status);
+}
+
+//------------------------------------------------------------------------------
+// CONSTRAINT
+//------------------------------------------------------------------------------
+//______________________________________________________________________________
+/**
+ * Compute constraint i given x.
+ * Note that the indexing starts at 1;
+ */
+int rdHigherOrderTarget::
+computeConstraint(double *x,int ic,double *c)
+{
+	int status = 0;
+	return(status);
+}
+//______________________________________________________________________________
+/**
+ * Compute the gradient of constraint i given x.
+ */
+int rdHigherOrderTarget::
+computeConstraintGradient(double *x,int ic,double *dcdx)
+{
+	// COMPUTE GRADIENT
+	int status = rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
+	return(0);
+}
+

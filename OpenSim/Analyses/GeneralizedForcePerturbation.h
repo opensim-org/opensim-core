@@ -11,13 +11,11 @@
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "suAnalysesDLL.h"
 #include <OpenSim/Tools/GCVSpline.h>
 #include "Contact.h"
-#include "Decomp.h"
 
 
 //=============================================================================
@@ -31,6 +29,9 @@
  */
 namespace OpenSim { 
 
+class AbstractModel;
+class AbstractCoordinate;
+
 class SUANALYSES_API GeneralizedForcePerturbation : public DerivCallback 
 {
 //=============================================================================
@@ -40,7 +41,7 @@ public:
 
 protected:
 	/** Which generalized coordinate. */
-	int _genCoord;
+	AbstractCoordinate *_genCoord;
 	/** Perturbation to be applied */
 	double _perturbation;
 	/** Scaling factor to be applied to perturbation */
@@ -53,8 +54,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForcePerturbation(Model *aModel);
-	GeneralizedForcePerturbation(Model *aModel, GCVSpline *_aSpline);
+	GeneralizedForcePerturbation(AbstractModel *aModel);
+	GeneralizedForcePerturbation(AbstractModel *aModel, GCVSpline *_aSpline);
 	virtual ~GeneralizedForcePerturbation();
 private:
 	void setNull();
@@ -63,8 +64,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setGenCoord(int aGenCoord);
-	int getGenCoord() const;
+	void setGenCoord(AbstractCoordinate *aCoord);
+	AbstractCoordinate *getGenCoord() const;
 
 	void setScaleFactor(double aScaleFactor);
 	double getScaleFactor() const;

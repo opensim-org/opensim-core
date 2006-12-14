@@ -1,7 +1,7 @@
 // SimmPath.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,23 +22,20 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include "SimmPath.h"
-#include "SimmBody.h"
-#include "SimmJoint.h"
+#include "AbstractBody.h"
+#include "AbstractJoint.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -54,7 +51,15 @@ SimmPath::SimmPath() :
 {
 }
 
-SimmPath::SimmPath(JointPath aPath, const SimmBody* aFromBody, const SimmBody* aToBody) :
+//_____________________________________________________________________________
+/**
+ * Constructor from a path, starting body, and ending body
+ *
+ * @param aPath the path from aFromBody to aToBody
+ * @param aFromBody the first body in aPath
+ * @param aToBody the last body in aPath
+ */
+SimmPath::SimmPath(JointPath aPath, const AbstractBody* aFromBody, const AbstractBody* aToBody) :
    _path(aPath),
    _from(aFromBody),
 	_to(aToBody),
@@ -70,6 +75,15 @@ SimmPath::~SimmPath()
 {
 }
 
+//=============================================================================
+// TRANSFORMS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the forward transform for the path, recalculating it if necessary.
+ *
+ * @return Reference to the transform
+ */
 Transform& SimmPath::getForwardTransform()
 {
 	if (!_transformsValid)
@@ -78,6 +92,12 @@ Transform& SimmPath::getForwardTransform()
 	return _forwardTransform;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the inverse transform for the path, recalculating it if necessary.
+ *
+ * @return Reference to the transform
+ */
 Transform& SimmPath::getInverseTransform()
 {
 	if (!_transformsValid)
@@ -86,6 +106,13 @@ Transform& SimmPath::getInverseTransform()
 	return _inverseTransform;
 }
 
+//_____________________________________________________________________________
+/**
+ * Calculate the transform for the path by concatenating the transforms for
+ * all of the joints in the path.
+ *
+ * @return Reference to the transform
+ */
 void SimmPath::calcTransforms()
 {
 	if (_path.size() >= 1)

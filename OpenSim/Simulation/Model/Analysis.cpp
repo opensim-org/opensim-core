@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 
@@ -51,7 +51,7 @@ using namespace std;
  *
  * @param aModel Model on which the analysis is to be performed.
  */
-Analysis::Analysis(Model *aModel):
+Analysis::Analysis(AbstractModel *aModel):
 	IntegCallback(aModel),
 	_inDegrees(_inDegreesProp.getValueBool())
 {
@@ -259,7 +259,7 @@ getInDegrees() const
  */
 
 void Analysis::
-setModel(Model *aModel)
+setModel(AbstractModel *aModel)
 {
 	// BASE CLASS
 	IntegCallback::setModel(aModel);

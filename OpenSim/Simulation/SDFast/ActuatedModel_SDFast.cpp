@@ -42,9 +42,8 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Simm/AbstractBody.h>
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
@@ -161,8 +160,8 @@ init()
 	addIntegCallback(integCallback);
 
 	// INITIAL STATES AND PSEUDO-STATES
-	_yi.setSize( ActuatedModel_SDFast::getNY() );
-	_ypi.setSize( ActuatedModel_SDFast::getNYP() );
+	_yi.setSize( ActuatedModel_SDFast::getNumStates() );
+	_ypi.setSize( ActuatedModel_SDFast::getNumPseudoStates() );
 }
 
 
@@ -176,9 +175,9 @@ init()
  * @return Number of model controls.
  */
 int ActuatedModel_SDFast::
-getNX() const
+getNumControls() const
 {
-	return( _actuatorSet.getNX() );
+	return( _actuatorSet.getNumControls() );
 }
 //_____________________________________________________________________________
 /**
@@ -187,7 +186,7 @@ getNX() const
  * @return Number of actuators.
  */
 int ActuatedModel_SDFast::
-getNA() const
+getNumActuators() const
 {
 	return(_actuatorSet.getSize());
 }
@@ -203,7 +202,7 @@ getNA() const
  * @see getContactPointsBodyLocal()
  */
 int ActuatedModel_SDFast::
-getNP() const
+getNumContacts() const
 {
 	return(_contactSet.getSize());
 }
@@ -215,11 +214,11 @@ getNP() const
  * @todo Contact sets should be able to support having states.
  */
 int ActuatedModel_SDFast::
-getNY() const
+getNumStates() const
 {
-	int ny = getNQ() + getNU();
-	ny += _actuatorSet.getNY();
-	//ny += _contactSet.getNY();
+	int ny = getNumCoordinates() + getNumSpeeds();
+	ny += _actuatorSet.getNumStates();
+	//ny += _contactSet.getNumStates();
 
 	return(ny);
 }
@@ -230,10 +229,10 @@ getNY() const
  * @return Number of pseudo-states.
  */
 int ActuatedModel_SDFast::
-getNYP() const
+getNumPseudoStates() const
 {
-	int nyp = _actuatorSet.getNYP();
-	nyp += _contactSet.getNYP();
+	int nyp = _actuatorSet.getNumPseudoStates();
+	nyp += _contactSet.getNumPseudoStates();
 
 	return(nyp);
 }
@@ -248,7 +247,7 @@ getNYP() const
  * @param aIndex Index of the control whose name is desired.  aIndex should
  * be greater than or equal to 0 and less than the number of controls.
  * @return Control name.
- * @see getNX()
+ * @see getNumControls()
  */
 string ActuatedModel_SDFast::
 getControlName(int aIndex) const
@@ -262,12 +261,12 @@ getControlName(int aIndex) const
  * @param aIndex Index of the actuator whose name is desired.  aIndex should
  * be greater than or equal to 0 and less than the number of actuators.
  * @return Control name.
- * @see getNA()
+ * @see getNumActuators()
  */
 string ActuatedModel_SDFast::
 getActuatorName(int aIndex) const
 {
-	Actuator *act = _actuatorSet.get(aIndex);
+	AbstractActuator *act = _actuatorSet.get(aIndex);
 	if(act==NULL) return("");
 	return(act->getName());
 }
@@ -290,22 +289,22 @@ getStateName(int aIndex) const
 		return(name);
 
 	// COORDINATE
-	}else if(aIndex < getNQ()) {
+	}else if(aIndex < getNumCoordinates()) {
 		name = rdSDFast::getCoordinateName(aIndex);
 
 	// SPEED
-	} else if(aIndex < (getNQ()+getNU())) {
-		index = aIndex - getNQ();
+	} else if(aIndex < (getNumCoordinates()+getNumSpeeds())) {
+		index = aIndex - getNumCoordinates();
 		name = rdSDFast::getSpeedName(index);
 
 	// ACTUATOR
-	} else if(aIndex < (getNQ()+getNU()+_actuatorSet.getNY())) {
-		index = aIndex - getNQ() - getNU();
+	} else if(aIndex < (getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates())) {
+		index = aIndex - getNumCoordinates() - getNumSpeeds();
 		name = _actuatorSet.getStateName(index);
 
 	// CONTACT
-	//} else if(aIndex < (getNQ()+getNU()+_actuatorSet.getNY()+_contactSet.getNY())) {
-	//	index = aIndex - getNQ() - getNU() - _actuatorSet.getNY();
+	//} else if(aIndex < (getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()+_contactSet.getNumStates())) {
+	//	index = aIndex - getNumCoordinates() - getNumSpeeds() - _actuatorSet.getNumStates();
 	//	name = _contactSet.getStateName(index);
 	}
 
@@ -318,7 +317,7 @@ getStateName(int aIndex) const
  * @param aIndex Index of the pseudo-state whose name is desired.  aIndex
  * should be greater than or equal to 0 and less than the number of states.
  * @return Pseudo-state name.
- * @see getNYP()
+ * @see getNumPseudoStates()
  */
 string ActuatedModel_SDFast::
 getPseudoStateName(int aIndex) const
@@ -331,12 +330,12 @@ getPseudoStateName(int aIndex) const
 		return("");
 
 	// ACTUATOR
-	} else if(aIndex < (_actuatorSet.getNYP())) {
+	} else if(aIndex < (_actuatorSet.getNumPseudoStates())) {
 		name = _actuatorSet.getPseudoStateName(aIndex);
 
 	// CONTACT SET
-	} else if(aIndex< (_actuatorSet.getNYP()+_contactSet.getNYP())) {
-		index = aIndex - _actuatorSet.getNYP();
+	} else if(aIndex< (_actuatorSet.getNumPseudoStates()+_contactSet.getNumPseudoStates())) {
+		index = aIndex - _actuatorSet.getNumPseudoStates();
 		name = _contactSet.getPseudoStateName(index);
 	}
 
@@ -395,8 +394,8 @@ int ActuatedModel_SDFast::
 getStateIndex(const string &aName) const
 {
 	int index;
-	int nq = getNQ();
-	int nu = getNU();
+	int nq = getNumCoordinates();
+	int nu = getNumSpeeds();
 
 	// COORDINATES
 	index = getCoordinateIndex(aName);
@@ -485,7 +484,7 @@ getContactForceSet()
 /**
  * Set the value of a control by index.
  *
- * @param aIndex Index of the control to be set:  0 <= aIndex < getNX().
+ * @param aIndex Index of the control to be set:  0 <= aIndex < getNumControls().
  * @param aValue Value of the control.
  */
 void ActuatedModel_SDFast::
@@ -511,7 +510,7 @@ setControl(const string &aName,double aValue)
 /**
  * Get the current value of a control by index.
  *
- * @param aIndex Index of the control:  0 <= aIndex < getNX().
+ * @param aIndex Index of the control:  0 <= aIndex < getNumControls().
  * @return Value of the control.  rdMath::NAN is returned on an error.
  */
 double ActuatedModel_SDFast::
@@ -549,7 +548,7 @@ getControl(const std::string &aName) const
  * The controls must be set for the model and the actuators.
  *
  * @param aX Array of controls.  The size of aX should be the value returned
- * by getNX().
+ * by getNumControls().
  * @see ActuatedModel_SDFast::setControls();
  */
 void ActuatedModel_SDFast::
@@ -564,7 +563,7 @@ setControls(const double aX[])
  * The controls must be set for the model and the actuators.
  *
  * @param rX Array of controls.  The size of aX should be the value returned
- * by getNX().
+ * by getNumControls().
  * @see ActuatedModel_SDFast::setControls();
  */
 void ActuatedModel_SDFast::
@@ -584,7 +583,7 @@ getControls(double rX[]) const
  * and also the states of the actuators.
  *
  * @param aY Array of states.  The size of aY should be the value returned by
- * getNY().
+ * getNumStates().
  * @see ActuatedModel_SDFast::setStates();
  * @see ActuatedModel_SDFast::setConfiguration().
  * @see rdSDFast::setConfiguration().
@@ -596,8 +595,8 @@ setStates(const double aY[])
 	rdSDFast::setConfiguration(aY);
 
 	// ACTUATORS
-	int iAct = getNQ() + getNU();
-	if(iAct>=ActuatedModel_SDFast::getNY()) return;
+	int iAct = getNumCoordinates() + getNumSpeeds();
+	if(iAct>=ActuatedModel_SDFast::getNumStates()) return;
 	_actuatorSet.setStates(&aY[iAct]);
 	//_contactSet.setStates(....);
 }
@@ -606,17 +605,17 @@ setStates(const double aY[])
  * Get the current states.
  *
  * @param aY Array of states.  The size of aYP should be the value
- * returned by getNY().
+ * returned by getNumStates().
  * @see ActuatedModel_SDFast::setStates();
  */
 void ActuatedModel_SDFast::
 getStates(double rY[]) const
 {
 	// GENERALIZED COORDINATES AND SPEEDS
-	int nq = getNQ();
-	int nu = getNU();
+	int nq = getNumCoordinates();
+	int nu = getNumSpeeds();
 	getCoordinates(&rY[0]);
-	getSpeeds(&rY[nq]);
+	getSpeedValues(&rY[nq]);
 
 	// ACTUATORS
 	_actuatorSet.getStates(&rY[nq+nu]);
@@ -632,8 +631,8 @@ double ActuatedModel_SDFast::
 getState(int aIndex) const
 {
 	// NUMBERS
-	int nyAct = _actuatorSet.getNY();
-	//int nyCtx = _contactSet.getNY();
+	int nyAct = _actuatorSet.getNumStates();
+	//int nyCtx = _contactSet.getNumStates();
 	double value = rdMath::NAN;
 
 	// NEGATIVE
@@ -682,7 +681,7 @@ getState(const string &aName) const
  * Set the current pseudo-states for this model.
  *
  * @param aYP Array of pseudo-states.  The size of aYP should be the value
- * returned by getNYP().
+ * returned by getNumPseudoStates().
  * @see ActuatedModel_SDFast::setPseudoStates();
  */
 void ActuatedModel_SDFast::
@@ -692,26 +691,26 @@ setPseudoStates(const double aYP[])
 	_actuatorSet.setPseudoStates(aYP);
 
 	// CONTACTS
-	_contactSet.setPseudoStates( &aYP[_actuatorSet.getNYP()] );
+	_contactSet.setPseudoStates( &aYP[_actuatorSet.getNumPseudoStates()] );
 }
 //_____________________________________________________________________________
 /**
  * Get the current pseudo-states for this model.
  *
  * @param aYP Array of pseudo-states.  The size of aYP should be the value
- * returned by getNYP().
+ * returned by getNumPseudoStates().
  * @see ActuatedModel_SDFast::setPseudoStates();
  */
 void ActuatedModel_SDFast::
 getPseudoStates(double rYP[]) const
 {
-	if(getNYP()<=0) return;
+	if(getNumPseudoStates()<=0) return;
 
 	// ACTUATORS
 	_actuatorSet.getPseudoStates(rYP);
 
 	// CONTACTS
-	_contactSet.getPseudoStates( &rYP[_actuatorSet.getNYP()] );
+	_contactSet.getPseudoStates( &rYP[_actuatorSet.getNumPseudoStates()] );
 }
 //_____________________________________________________________________________
 /**
@@ -724,8 +723,8 @@ double ActuatedModel_SDFast::
 getPseudoState(int aIndex) const
 {
 	// NUMBERS
-	int nypAct = _actuatorSet.getNYP();
-	int nypCtx = _contactSet.getNYP();
+	int nypAct = _actuatorSet.getNumPseudoStates();
+	int nypCtx = _contactSet.getNumPseudoStates();
 	double value = rdMath::NAN;
 
 	// NEGATIVE
@@ -766,7 +765,7 @@ getPseudoState(const string &aName) const
  * Set the initial pseudo-states for this model.
  *
  * @param aYPI Array of pseudo-states.  The size of rYP must be at least the
- * number of pseudo-states, which can be found by calling getNYP().
+ * number of pseudo-states, which can be found by calling getNumPseudoStates().
  */
 void ActuatedModel_SDFast::
 setInitialPseudoStates(const double aYPI[])
@@ -774,7 +773,7 @@ setInitialPseudoStates(const double aYPI[])
 	if(aYPI==NULL) return;
 
 	// SIZE
-	int nyp = ActuatedModel_SDFast::getNYP();
+	int nyp = ActuatedModel_SDFast::getNumPseudoStates();
 	_ypi.setSize(nyp);
 
 	// SET
@@ -789,7 +788,7 @@ setInitialPseudoStates(const double aYPI[])
  *
  * @param rYPI Array to be filled with the initial pseudo-states.  The size of
  * rYP must be at least the number of pseudo-states, which can be found by
- * calling getNYP().
+ * calling getNumPseudoStates().
  */
 void ActuatedModel_SDFast::
 getInitialPseudoStates(double rYPI[]) const
@@ -798,7 +797,7 @@ getInitialPseudoStates(double rYPI[]) const
 
 	// GET
 	int i;
-	int nyp = ActuatedModel_SDFast::getNYP();
+	int nyp = ActuatedModel_SDFast::getNumPseudoStates();
 	for(i=0;i<nyp;i++) {
 		rYPI[i] = _ypi[i];
 	}
@@ -807,7 +806,7 @@ getInitialPseudoStates(double rYPI[]) const
 /**
  * Get the current value of an initial pseudo-state by index.
  *
- * @param aIndex Index of the initial pseudo-state:  0 <= aIndex < getNYP().
+ * @param aIndex Index of the initial pseudo-state:  0 <= aIndex < getNumPseudoStates().
  * @return Value of the initial pseudo-state.  rdMath::NAN is returned on an
  * error.
  * @see getInitialPseudoStates(double rYP[])
@@ -816,7 +815,7 @@ getInitialPseudoStates(double rYPI[]) const
 double ActuatedModel_SDFast::
 getInitialPseudoState(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=ActuatedModel_SDFast::getNYP())) {
+	if((aIndex<0)||(aIndex>=ActuatedModel_SDFast::getNumPseudoStates())) {
 		printf("ActuatedModel_SDFast.getInitialPseudoState: ERROR- index out of bounds");
 		printf(" %d.\n",aIndex);
 		return(rdMath::NAN);
@@ -855,7 +854,7 @@ getInitialPseudoState(const string &aName) const
  * Set the initial states for this model.
  *
  * @param aYI Array of states.  The size of rY must be at least the number
- * of states, which can be found by calling getNY().
+ * of states, which can be found by calling getNumStates().
  */
 void ActuatedModel_SDFast::
 setInitialStates(const double aYI[])
@@ -863,7 +862,7 @@ setInitialStates(const double aYI[])
 	if(aYI==NULL) return;
 
 	// SIZE
-	int ny = ActuatedModel_SDFast::getNY();
+	int ny = ActuatedModel_SDFast::getNumStates();
 	_yi.setSize(ny);
 
 	// SET
@@ -877,7 +876,7 @@ setInitialStates(const double aYI[])
  * Get the initial states currently set for this model.
  *
  * @param rYI Array to be filled with the initial states.  The size of rY must
- * be at least the number of states, which can be found by calling getNY().
+ * be at least the number of states, which can be found by calling getNumStates().
  */
 void ActuatedModel_SDFast::
 getInitialStates(double rYI[]) const
@@ -885,7 +884,7 @@ getInitialStates(double rYI[]) const
 	if(rYI==NULL) return;
 
 	int i;
-	int ny = ActuatedModel_SDFast::getNY();
+	int ny = ActuatedModel_SDFast::getNumStates();
 	for(i=0;i<ny;i++) {
 		rYI[i] = _yi[i];
 	}
@@ -894,7 +893,7 @@ getInitialStates(double rYI[]) const
 /**
  * Get the current value of an initial state by index.
  *
- * @param aIndex Index of the initial state:  0 <= aIndex < getNY().
+ * @param aIndex Index of the initial state:  0 <= aIndex < getNumStates().
  * @return Value of the initial state.  rdMath::NAN is returned on an error.
  * @see getInitialStates(double rYI[])
  * @see getInitialState(const char* aName);
@@ -902,7 +901,7 @@ getInitialStates(double rYI[]) const
 double ActuatedModel_SDFast::
 getInitialState(int aIndex) const
 {
-	if((aIndex<0)||(aIndex>=ActuatedModel_SDFast::getNY())) {
+	if((aIndex<0)||(aIndex>=ActuatedModel_SDFast::getNumStates())) {
 		printf("ActuatedModel_SDFast.getInitialState: ERROR- index out of bounds %d.\n",
 			aIndex);
 		return(rdMath::NAN);
@@ -969,7 +968,7 @@ computeActuatorStateDerivatives(double rDY[])
 void ActuatedModel_SDFast::
 applyActuatorForce(int aID)
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act!=NULL) act->apply();
 }
 //_____________________________________________________________________________
@@ -990,13 +989,13 @@ applyActuatorForces()
  * Set the magnitude of force experted by a particular actuator.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Magnitude of actuator force.
  */
 void ActuatedModel_SDFast::
 setActuatorForce(int aID,double aForce)
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act==NULL) return;
 
 	act->setForce(aForce);
@@ -1009,13 +1008,13 @@ setActuatorForce(int aID,double aForce)
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Magnitude of actuator force.
  */
 double ActuatedModel_SDFast::
 getActuatorForce(int aID) const
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act==NULL) return(0.0);
 
 	double force = act->getForce();
@@ -1029,13 +1028,13 @@ getActuatorForce(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Actuator stress.
  */
 double ActuatedModel_SDFast::
 getActuatorStress(int aID) const
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act==NULL) return(0.0);
 
 	double stress = act->getStress();
@@ -1049,13 +1048,13 @@ getActuatorStress(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Speed at which actuator force is applied.
  */
 double ActuatedModel_SDFast::
 getActuatorSpeed(int aID) const
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act==NULL) return(0.0);
 
 	double force = act->getSpeed();
@@ -1072,13 +1071,13 @@ getActuatorSpeed(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Power delivered (positive) or absorbed (negative).
  */
 double ActuatedModel_SDFast::
 getActuatorPower(int aID) const
 {
-	Actuator *act = _actuatorSet.get(aID);
+	AbstractActuator *act = _actuatorSet.get(aID);
 	if(act==NULL) return(0.0);
 
 	double power = act->getPower();
@@ -1097,7 +1096,7 @@ getActuatorPower(int aID) const
  * These quantities include at least the contact bodies, contact points, and
  * contact forces.
  *
- * @see getNP()
+ * @see getNumContacts()
  */
 void ActuatedModel_SDFast::
 computeContact()
@@ -1118,7 +1117,7 @@ computeContact()
 void ActuatedModel_SDFast::
 applyContactForce(int aID)
 {
-	Actuator *contact = _contactSet.get(aID);
+	AbstractActuator *contact = _contactSet.get(aID);
 	if(contact!=NULL) contact->apply();
 }
 //_____________________________________________________________________________
@@ -1145,17 +1144,17 @@ applyContactForces()
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
- * @return Body ID of BodyA.
+ * equal to zero and less than the value returned by getNumContacts().
+ * @return Pointer to BodyA.
  */
-int ActuatedModel_SDFast::
+AbstractBody* ActuatedModel_SDFast::
 getContactBodyA(int aID) const
 {
-	ContactForce *contact = (ContactForce*)_contactSet.get(aID);
-	if(contact==NULL) return(getGroundID()-1);
+	ContactForce *contact = (ContactForce *)_contactSet.get(aID);
+	if (contact == NULL)
+		return NULL;
 
-	int body = contact->getBodyA();
-	return(body);
+	return contact->getBodyA();
 }
 //_____________________________________________________________________________
 /**
@@ -1165,17 +1164,17 @@ getContactBodyA(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
- * @return Body ID of BodyB.
+ * equal to zero and less than the value returned by getNumContacts().
+ * @return Pointer to BodyB.
  */
-int ActuatedModel_SDFast::
+AbstractBody* ActuatedModel_SDFast::
 getContactBodyB(int aID) const
 {
 	ContactForce *contact = (ContactForce *)_contactSet.get(aID);
-	if(contact==NULL) return(getGroundID()-1);
+	if (contact == NULL)
+		return NULL;
 
-	int body = contact->getBodyB();
-	return(body);
+	return contact->getBodyB();
 }
 
 //-----------------------------------------------------------------------------
@@ -1187,7 +1186,7 @@ getContactBodyB(int aID) const
  * for a specified contact.
  *
  * @param aID Index of the desired contact- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param aPoint Contact point on BodyA expressed in the local frame of
  * BodyA.
  */
@@ -1207,7 +1206,7 @@ setContactPointA(int aID,const double aPoint[3])
  * prior to calling this method.
  *
  * @param aID Index of the desired contact- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rPoint Contact point on BodyA expressed in the local frame of
  * BodyA.
  */
@@ -1228,7 +1227,7 @@ getContactPointA(int aID,double rPoint[3]) const
  * for a specified contact.
  *
  * @param aID Index of the desired contact- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param aPoint Contact point on BodyB expressed in the local frame of
  * BodyA.
  */
@@ -1248,7 +1247,7 @@ setContactPointB(int aID,const double aPoint[3])
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rPoint Contact point on BodyB expressed in the local frame of
  * BodyB.
  */
@@ -1272,7 +1271,7 @@ getContactPointB(int aID,double rPoint[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rF Contact force acting on BodyB expressed in the local frame of
  * BodyA.
  */
@@ -1303,7 +1302,7 @@ getContactForce(int aID,double rF[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rFP Elastic normal contact force NOT corrected to enforce friction
  * constraints.
  * @param rFV Viscous normal contact force NOT corrected to enforce friction
@@ -1329,7 +1328,7 @@ getContactNormalForce(int aID,double rFP[3],double rFV[3],double rF[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rFP Elastic tangential contact force NOT corrected to enforce
  * friction constraints.
  * @param rFV Viscous tangential contact force NOT corrected to enforce
@@ -1372,7 +1371,7 @@ getContactTangentForce(int aID,double rFP[3],double rFV[3],double rF[3])
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param aDX Displacement of the BodyB contact point expressed in the
  * local frame of BodyA.
  * @param rDF Change in force applied to BodyB for the given displacement
@@ -1423,7 +1422,7 @@ getContactStiffness(int aID,const double aDX[3],double rDF[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param aDV Change in velocity of the BodyB contact point expressed in the
  * local frame of BodyA.
  * @param rDF Change in force applied to BodyB for the given velocity change
@@ -1474,7 +1473,7 @@ getContactViscosity(int aID,const double aDV[3],double rDF[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @param rCorrection Change in contact force due to enforcing friction
  * constraints.  This correction is returned as the change in contact force
  * applied to BodyA expressed in the local frame of BodyA.
@@ -1499,7 +1498,7 @@ getContactFrictionCorrection(int aID,double rDFFric[3]) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Magnitude of contact force.
  */
 double ActuatedModel_SDFast::
@@ -1519,7 +1518,7 @@ getContactForce(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Speed at which contact force is applied.
  */
 double ActuatedModel_SDFast::
@@ -1542,13 +1541,13 @@ getContactSpeed(int aID) const
  * prior to calling this method.
  *
  * @param aID Index of the desired contact force- should be greater than or
- * equal to zero and less than the value returned by getNP().
+ * equal to zero and less than the value returned by getNumContacts().
  * @return Power delivered (positive) or absorbed (negative).
  */
 double ActuatedModel_SDFast::
 getContactPower(int aID) const
 {
-	Actuator *contact = _contactSet.get(aID);
+	AbstractActuator *contact = _contactSet.get(aID);
 	if(contact==NULL) return(0.0);
 
 	double power = contact->getPower();

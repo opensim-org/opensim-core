@@ -33,13 +33,14 @@
  * Author: Frank C. Anderson 
  */
 
+#include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/VectorFunction.h>
-#include "Model.h"
-#include "Actuator.h"
+#include <OpenSim/Simulation/Simm/AbstractActuator.h>
 
 
 //=============================================================================
@@ -57,7 +58,9 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Torque : public Actuator
+class AbstractBody;
+
+class RDSIMULATION_API Torque : public AbstractActuator
 {
 
 //=============================================================================
@@ -65,24 +68,32 @@ class RDSIMULATION_API Torque : public Actuator
 //=============================================================================
 protected:
 	// PROPERTIES
-	/** BodyA. */
-	PropertyInt _propBodyA;
+	/** name of BodyA. */
+	PropertyStr _propBodyAName;
 	/** Unit vector expressed in the local frame of BodyA that
 	specifies the direction a positive torque is applied to BodyA.
 	(serialized) */
 	PropertyDblArray _propUnitVectorA;
-	/** BodyB. */
-	PropertyInt _propBodyB;
+	/** name of BodyB. */
+	PropertyStr _propBodyBName;
+	/** Optimal force. */
+	PropertyDbl _propOptimalForce;
 
 	// REFERENCES
-	int &_bA;
+	std::string& _bodyAName;
 	Array<double> &_uA;
-	int &_bB;
+	std::string& _bodyBName;
+	double &_optimalForce;
+
+	AbstractBody *_bA;
+	AbstractBody *_bB;
 
 	/** Unit vector expressed in the local frame of BodyB that
 	specifies the direction a positive actuator force is applied to BodyB. */
 	double _uB[3];
 
+	/** Excitation (control 0). */
+	double _excitation;
 
 //=============================================================================
 // METHODS
@@ -91,9 +102,9 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Torque(int aBodyA=0,int aBodyB=0,int aNX=1,int aNY=0,int aNYP=0);
-	Torque(DOMElement *aElement,int aNX=1,int aNY=0,int aNYP=0);
-	Torque(const Torque &aForce);
+	Torque(const std::string &aBodyAName="",const std::string &aBodyBName="");
+	Torque(DOMElement *aElement);
+	Torque(const Torque &aTorque);
 	virtual ~Torque();
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
@@ -106,23 +117,28 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	Torque& operator=(const Torque &aForce);
+	Torque& operator=(const Torque &aTorque);
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
 	// BODY A
-	void setBodyA(int aID);
-	int getBodyA() const;
+	void setBodyA(AbstractBody* aBody);
+	AbstractBody* getBodyA() const;
 	// DIRECTION A
 	void setDirectionA(const double aDirection[3]);
 	void getDirectionA(double rDirection[3]) const;
 	// BODY B
-	void setBodyB(int aID);
-	int getBodyB() const;
+	void setBodyB(AbstractBody* aBody);
+	AbstractBody* getBodyB() const;
 	// DIRECTION B
 	void getDirectionB(double rDirection[3]) const;
+	// OPTIMAL FORCE
+	void setOptimalForce(double aOptimalForce);
+	double getOptimalForce() const;
+	// STRESS
+	double getStress() const;
 
 	//--------------------------------------------------------------------------
 	// APPLICATION
@@ -140,6 +156,8 @@ public:
 	// CHECK
 	//--------------------------------------------------------------------------
 	virtual bool check() const;
+	// Setup method to initialize Body references
+	void setup(AbstractModel* aModel);
 
 	//--------------------------------------------------------------------------
 	// UTILITY

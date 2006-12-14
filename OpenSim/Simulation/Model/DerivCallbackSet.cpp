@@ -36,6 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "DerivCallbackSet.h"
+#include <OpenSim/Simulation/Simm/AbstractModel.h>
 
 
 //=============================================================================
@@ -63,7 +64,7 @@ DerivCallbackSet::~DerivCallbackSet()
 /**
  * Construct an empty callback set for a model.
  */
-DerivCallbackSet::DerivCallbackSet(Model *aModel) :
+DerivCallbackSet::DerivCallbackSet(AbstractModel *aModel) :
 	CallbackSet(aModel)
 {
 	// NULL
@@ -110,9 +111,9 @@ getDerivCallback(int aIndex) const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after the
- * states of a model have been set (e.g., after Model::set() or
- * Model::setStates()).
+ * This method is intended to be called from AbstractModel::deriv() after the
+ * states of a model have been set (e.g., after AbstractModel::set() or
+ * AbstractModel::setStates()).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.
@@ -132,9 +133,9 @@ set(double aT,double *aX,double *aY)
 }
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after 
+ * This method is intended to be called from AbstractModel::deriv() after 
  * actuation quantities have been computed (e.g., after
- * Model::computeActuation()).
+ * AbstractModel::computeActuation()).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.
@@ -154,9 +155,9 @@ computeActuation(double aT,double *aX,double *aY)
 }
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after 
+ * This method is intended to be called from AbstractModel::deriv() after 
  * actuator forces have been applied (e.g., after
- * Model::applyActuatorForces()).
+ * AbstractModel::applyActuatorForces()).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.
@@ -176,9 +177,9 @@ applyActuation(double aT,double *aX,double *aY)
 }
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after 
+ * This method is intended to be called from AbstractModel::deriv() after 
  * contact quantities have been computed (e.g., after
- * Model::computeContact()).
+ * AbstractModel::computeContact()).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.
@@ -198,9 +199,9 @@ computeContact(double aT,double *aX,double *aY)
 }
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after 
+ * This method is intended to be called from AbstractModel::deriv() after 
  * contact forces have been applied (e.g., after
- * Model::applyContactForces()).
+ * AbstractModel::applyContactForces()).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.
@@ -220,9 +221,9 @@ applyContact(double aT,double *aX,double *aY)
 }
 //_____________________________________________________________________________
 /**
- * This method is intended to be called from Model::deriv() after 
+ * This method is intended to be called from AbstractModel::deriv() after 
  * derivatives of the model states have been computed (e.g., after
- * Model::computeAccelerations(), ...).
+ * AbstractModel::computeAccelerations(), ...).
  *
  * @param aT Current time in the simulation.
  * @param aX Current controls of the model.

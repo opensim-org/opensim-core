@@ -37,7 +37,6 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/FunctionSet.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
-#include "Model.h"
 #include "ModelIntegrand.h"
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/Controller.h>
@@ -52,12 +51,14 @@
 //=============================================================================
 //=============================================================================
 /**
- * This class makes Model into a valid Integrand.
+ * This class makes AbstractModel into a valid Integrand.
  *
  * @version 1.0
  * @author Frank C. Anderson
  */
 namespace OpenSim { 
+
+class AbstractModel;
 
 class RDSIMULATION_API ModelIntegrandForActuators : public ModelIntegrand
 {
@@ -96,7 +97,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ModelIntegrandForActuators(Model *aModel);
+	ModelIntegrandForActuators(AbstractModel *aModel);
 	virtual ~ModelIntegrandForActuators();
 private:
 	void setNull();

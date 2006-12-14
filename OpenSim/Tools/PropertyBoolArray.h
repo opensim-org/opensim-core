@@ -33,12 +33,12 @@
  * Author: Frank C. Anderson 
  */
 
-
 // INCLUDES
 #include "rdTools.h"
 #include <string>
 #include "Property.h"
 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
@@ -50,8 +50,6 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class RDTOOLS_API PropertyBoolArray : public Property
 {
 

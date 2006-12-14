@@ -1,7 +1,7 @@
 // BodyScale.cpp
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -22,7 +22,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 //=============================================================================
 // INCLUDES
 //=============================================================================
@@ -31,10 +30,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-
-
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -47,6 +44,7 @@ BodyScale::BodyScale() :
 	_axisNames(_axisNamesProp.getValueStrArray())
 {
 	setNull();
+	setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -57,7 +55,7 @@ BodyScale::BodyScale(DOMElement *aElement) :
 	_axisNames(_axisNamesProp.getValueStrArray())
 {
 	setNull();
-
+	setupProperties();
 	updateFromXMLNode();
 }
 
@@ -79,9 +77,11 @@ BodyScale::BodyScale(const BodyScale &aBodyScale) :
    Object(aBodyScale),
 	_axisNames(_axisNamesProp.getValueStrArray())
 {
+	setNull();
 	setupProperties();
 	copyData(aBodyScale);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this BodyScale and return a pointer to the copy.
@@ -94,6 +94,7 @@ Object* BodyScale::copy() const
 	BodyScale *bodyScale = new BodyScale(*this);
 	return(bodyScale);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this BodyScale and modify the copy so that it is consistent
@@ -117,24 +118,27 @@ Object* BodyScale::copy(DOMElement *aElement) const
 	return(bodyScale);
 }
 
+//=============================================================================
+// CONSTRUCTION
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one BodyScale to another.
+ *
+ * @param aBodyScale BodyScale to be copied.
+ */
 void BodyScale::copyData(const BodyScale &aBodyScale)
 {
 	_axisNames = aBodyScale._axisNames;
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the data members of this BodyScale to their null values.
  */
 void BodyScale::setNull()
 {
-	setupProperties();
 	setType("BodyScale");
-	setName("");
 }
 //_____________________________________________________________________________
 /**
@@ -146,6 +150,15 @@ void BodyScale::setupProperties()
 	_propertySet.append(&_axisNamesProp);
 }
 
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
 BodyScale& BodyScale::operator=(const BodyScale &aBodyScale)
 {
 	// BASE CLASS

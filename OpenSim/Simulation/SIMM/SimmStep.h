@@ -1,10 +1,10 @@
-#ifndef _SimmStep_h_
-#define _SimmStep_h_
+#ifndef __SimmStep_h__
+#define __SimmStep_h__
 
 // SimmStep.h
 // Author: Peter Loan
-/* Copyright (c) 2005, Stanford University and Peter Loan.
- * 
+/*
+ * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -35,9 +35,9 @@
 #include <OpenSim/Tools/Transform.h>
 #include <OpenSim/Tools/Storage.h>
 
-namespace OpenSim { 
+namespace OpenSim {
 
-class SimmJoint;
+class AbstractJoint;
 
 //=============================================================================
 //=============================================================================
@@ -61,7 +61,7 @@ public:
 // DATA
 //=============================================================================
 private:
-	SimmJoint* _joint;
+	AbstractJoint* _joint;
 	Direction _direction;
 	Transform  _transformCache;
 //=============================================================================
@@ -72,11 +72,11 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmStep();
-	SimmStep(SimmJoint* aJoint, Direction aDirection);
+	SimmStep(AbstractJoint* aJoint, Direction aDirection);
 	virtual ~SimmStep();
 
 	Direction getDirection() const { return _direction; }
-	SimmJoint* getJoint() const { return _joint; }
+	AbstractJoint* getJoint() const { return _joint; }
 	Transform& getJointTransform();
 	void peteTest() const;
 
@@ -85,10 +85,10 @@ private:
 
 //=============================================================================
 };	// END of class SimmStep
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __SimmStep_h__
 
