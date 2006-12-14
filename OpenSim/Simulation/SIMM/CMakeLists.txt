@@ -12,7 +12,7 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 INCLUDE_DIRECTORIES(${NMBLApp_SOURCE_DIR} 
 					${NMBLApp_SOURCE_DIR}/Vendors 
-					${NMBLApp_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src
+					${XERCES_INCLUDE_DIR}
 					)
 
 

@@ -33,7 +33,7 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src
+		    ${XERCES_INCLUDE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Tools)
 
 LINK_LIBRARIES( rdTools rdSimulation )

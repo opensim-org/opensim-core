@@ -1,6 +1,6 @@
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
-		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src)
+		    ${XERCES_INCLUDE_DIR})
 
 FILE(GLOB SOURCE_FILES *.cpp ../../Subject/Simm*.cpp ../IK/SimmInverseKinematicsTarget.cpp ../IK/SimmIKSolverImpl.cpp)
 FILE(GLOB INCLUDE_FILES *.h ../../Subject/Simm*.h ../IK/SimmInverseKinematicsTarget.h ../IK/SimmIKSolverImpl.h)

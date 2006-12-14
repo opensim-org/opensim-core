@@ -38,7 +38,7 @@ FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Simtk/*
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src
+		    ${XERCES_INCLUDE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Tools)
 
 SET(EXPORT_MACRO RD${UKIT}_EXPORTS)

@@ -26,15 +26,14 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src2_4_0/src
+		    ${XERCES_INCLUDE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Tools)
 
 SET(EXPORT_MACRO SU${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(
-	debug rdTools_d optimized rdTools
-	debug rdSimulation_d optimized rdSimulation
-	debug rdSQP_d optimized rdSQP)
+LINK_LIBRARIES( debug rdTools_d optimized rdTools
+				debug rdSimulation_d optimized rdSimulation
+				debug rdSQP_d optimized rdSQP)
 
 ADD_LIBRARY(su${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
