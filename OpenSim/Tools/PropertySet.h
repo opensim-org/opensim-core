@@ -35,7 +35,6 @@
 
 
 // INCLUDES
-#include <Exception>
 #include "rdTools.h"
 #include "ArrayPtrs.h"
 #include "Property.h"
