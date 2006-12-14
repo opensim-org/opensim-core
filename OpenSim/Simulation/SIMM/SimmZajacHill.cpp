@@ -595,8 +595,6 @@ double SimmZajacHill::getStress() const
 
 void SimmZajacHill::peteTest() const
 {
-	int i;
-
 	AbstractSimmMuscle::peteTest();
 
 	cout << "   timeScale: " << _timeScale << endl;

@@ -76,7 +76,7 @@ void stripExtraWhiteSpace(std::string &aBuffer)
 		aBuffer.erase(0, front);
 	}
 
-	int back = aBuffer.find_last_not_of(" \t\r\n");
+	std::size_t back = aBuffer.find_last_not_of(" \t\r\n");
 	if (back < aBuffer.size() - 1)
 		aBuffer.erase(back + 1);
 }
@@ -647,9 +647,8 @@ updateFromXMLNode()
 	updateDefaultObjectsFromXMLNode();
 
 	// LOOP THROUGH PROPERTIES
-	int i,listLength;
 	DOMElement *elmt;
-	for(i=0;i<_propertySet.getSize();i++) {
+	for(int i=0;i<_propertySet.getSize();i++) {
 
 		Property *property = _propertySet.get(i);
 
@@ -758,7 +757,6 @@ updateFromXMLNode()
 			} else {
 
 				// VARIABLES
-				unsigned int j;
 				XMLCh *tagName;
 				DOMElement *objNode = NULL;
 				DOMNodeList *list;
@@ -771,8 +769,8 @@ updateFromXMLNode()
 
 				// CHECK NAME
 				string objName = object.getName();
-				listLength = list->getLength();
-				for(j=0;j<listLength;j++) {
+				unsigned int listLength = list->getLength();
+				for(unsigned int j=0;j<listLength;j++) {
 
 					// GET ELEMENT
 					elmt = (DOMElement*) list->item(j);
@@ -941,7 +939,7 @@ updateFromXMLNode()
 
 			// LOOP THROUGH SUPPORTED OBJECT TYPES
 			DOMNodeList *list = elmt->getChildNodes();
-			listLength = list->getLength();
+			unsigned int listLength = list->getLength();
 			for(unsigned int j=0;j<listLength;j++) {
 				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
 				// to process element nodes
@@ -1050,7 +1048,6 @@ updateDefaultObjectsFromXMLNode()
 	if(_node!=_document->getDOMDocument()->getDocumentElement()) return;
 
 	// VARIABLES
-	int i;
 	DOMElement *defaultsElmt,*elmt;
 	Object *defaultObject,*object;
 
@@ -1059,7 +1056,7 @@ updateDefaultObjectsFromXMLNode()
 	if(defaultsElmt==NULL) return;
 
 	// LOOP THROUGH SUPPORTED OBJECT TYPES
-	for(i=0;i<_Types.getSize();i++) {
+	for(int i=0;i<_Types.getSize();i++) {
 
 		// GET DEFAULT OBJECT
 		defaultObject = _Types.get(i);
@@ -1157,7 +1154,6 @@ updateXMLNode(DOMElement *aParent)
 	XMLNode::SetAttribute(_node,"name",getName());
 
 	// DEFAULT OBJECTS
-	int i;
 	DOMElement *elmt;
 	string defaultsTag = "defaults";
 	elmt = XMLNode::GetFirstChildElementByTagName(_node,defaultsTag);
@@ -1169,7 +1165,7 @@ updateXMLNode(DOMElement *aParent)
 	} else if(aParent==NULL) {
 		if(elmt==NULL) elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
 		XMLNode::RemoveChildren(elmt);
-		for(i=0;i<_Types.getSize();i++) {
+		for(int i=0;i<_Types.getSize();i++) {
 			Object *defaultObject = _Types.get(i);
 			if( isValidDefaultType(defaultObject) && 
 				(Object::getSerializeAllDefaults() || _defaultsReadFromFile[defaultObject->getType()])) {
@@ -1180,7 +1176,7 @@ updateXMLNode(DOMElement *aParent)
 	}
 
 	// LOOP THROUGH PROPERTIES
-	for(i=0;i<_propertySet.getSize();i++) {
+	for(int i=0;i<_propertySet.getSize();i++) {
 
 		Property *property = _propertySet.get(i);
 
