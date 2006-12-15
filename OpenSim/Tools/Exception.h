@@ -76,7 +76,7 @@ protected:
 //=============================================================================
 public:
 	// CONSTRUCTORS
-	Exception(const std::string &aMsg=NULL,const std::string &aFile="",int aLine=-1);
+	Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
 private:
 	void setNull();
 

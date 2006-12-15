@@ -389,7 +389,7 @@ void InvestigationPerturbation::run()
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 
 	// INPUT
 	// Controls
@@ -399,14 +399,14 @@ void InvestigationPerturbation::run()
 	// Center of pressure
 	cout<<endl<<endl<<"Loading center of pressure data from file ";
 	cout<<_copFileName<<".\n";
-	_copStore = new Storage(_copFileName.c_str());
+	_copStore = new Storage(_copFileName);
 	// Qs and Us
 	cout<<endl<<endl<<"Loading generalized coordinates and speeds from files ";
 	cout<<_qFileName<<" and "<<_uFileName<<".\n";
-	_qStore = new Storage(_qFileName.c_str());
-	_uStore = new Storage(_uFileName.c_str());
+	_qStore = new Storage(_qFileName);
+	_uStore = new Storage(_uFileName);
 	// States
-	_yStore = new Storage(_yFileName.c_str());
+	_yStore = new Storage(_yFileName);
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
@@ -582,8 +582,8 @@ void InvestigationPerturbation::run()
 		perturbation->setOn(false);
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert<<endl;
 		manager.integrate();
-		IO::makeDir(getResultsDir().c_str());
-		_model->getAnalysisSet()->printResults("Gc05g1_unpert",getResultsDir().c_str());
+		IO::makeDir(getResultsDir());
+		_model->getAnalysisSet()->printResults("Gc05g1_unpert",getResultsDir());
 		
 		// INTEGRATE (2) - Record unperturbed muscle forces
 		integ->setUseSpecifiedDT(true);
@@ -697,7 +697,7 @@ void InvestigationPerturbation::run()
 
 	} // end time loop
 	//***************************************************************************
-	IO::chDir(saveWorkingDirectory.c_str());
+	IO::chDir(saveWorkingDirectory);
 
 }
 

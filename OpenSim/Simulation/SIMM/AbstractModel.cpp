@@ -104,9 +104,9 @@ AbstractModel::AbstractModel(const string &aFileName) :
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 	updateFromXMLNode();
-	IO::chDir(saveWorkingDirectory.c_str());
+	IO::chDir(saveWorkingDirectory);
 
 	_fileName = aFileName;
 }

@@ -452,9 +452,9 @@ double SimmModelScaler::takeModelMeasurement(const AbstractModel& aModel, const 
 		else
 		{
 			if (!marker1)
-				cout << "___WARNING___: marker " << name1->c_str() << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
+				cout << "___WARNING___: marker " << *name1 << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
 			if (!marker2)
-				cout << "___WARNING___: marker " << name2->c_str() << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
+				cout << "___WARNING___: marker " << *name2 << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
 		}
 	}
 

@@ -317,7 +317,7 @@ void InvestigationForward::run()
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 
 	// INPUT
 	// Controls
@@ -331,7 +331,7 @@ void InvestigationForward::run()
 	Storage *yiStore = NULL;
 	if(_initialStatesFileName!="") {
 		cout<<"\nLoading initial states from file "<<_initialStatesFileName<<".\n";
-		yiStore = new Storage(_initialStatesFileName.c_str());
+		yiStore = new Storage(_initialStatesFileName);
 		cout<<"Found "<<yiStore->getSize()<<" state vectors with time stamps ranging\n";
 		cout<<"from "<<yiStore->getFirstTime()<<" to "<<yiStore->getLastTime()<<".\n";
 	}
@@ -444,8 +444,8 @@ void InvestigationForward::run()
 	xStore->print("controls_forward.sto");
 	yStore->print("states_forward.sto");
 	ypStore->print("pseudo_forward.sto");
-	printResults(getName().c_str(),getResultsDir().c_str());
-	IO::chDir(saveWorkingDirectory.c_str());
+	printResults(getName(),getResultsDir());
+	IO::chDir(saveWorkingDirectory);
 }
 
 //=============================================================================
@@ -474,7 +474,7 @@ initializeExternalLoads()
 		return;
 	}
 	cout<<"\n\nLoading external loads kinematics from file "<<_externalLoadsModelKinematicsFileName<<" ...\n";
-	Storage loadsKinStore(_externalLoadsModelKinematicsFileName.c_str());
+	Storage loadsKinStore(_externalLoadsModelKinematicsFileName);
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
@@ -496,10 +496,10 @@ initializeExternalLoads()
 	cout<<"\nConstruction function set for tracking...\n\n";
 	GCVSplineSet qSet(5,qStore);
 	Storage *uStore = qSet.constructStorage(1);
-	
+
 
 	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(_externalLoadsFileName.c_str());
+	Storage kineticsStore(_externalLoadsFileName);
 	int copSize = kineticsStore.getSize();
 	if(copSize<=0) return;
 
@@ -616,39 +616,39 @@ initializeExternalLoads()
 	}
 
 	// BODY INDICES
-	// Right 
-	AbstractBody *rightFoot = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-	if(rightFoot<0) {
+	// Right
+	AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
+	if(body1<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the first set of external loads";
 		msg+="should be applied (" + _externalLoadsBody1 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	// Left
 	//int  leftFoot = _model->getBodyIndex("calcn_l");
-	AbstractBody *leftFoot = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-	if(leftFoot<0) {
+	AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+	if(body2<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the second set of external loads";
 		msg+="should be applied (" + _externalLoadsBody2 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	// Ground
-	AbstractBody* ground = _model->getDynamicsEngine().getBodySet()->get("ground");  // CLAY- DOES THIS WORK?
+	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
 
 
 	// CREATE FORCE AND TORQUE APPLIERS
 	ForceApplier *rightForceApp, *leftForceApp;
 	TorqueApplier *rightTorqueApp, *leftTorqueApp;
-	rightForceApp = new ForceApplier(_model, ground, rightFoot, &kineticsStore,
+	rightForceApp = new ForceApplier(_model, &ground, body1, &kineticsStore,
 												rightForceX, rightForceY, rightForceZ,
 												rightCopX, rightCopY, rightCopZ,
 												qStore, uStore);
-	leftForceApp  = new ForceApplier(_model, ground, leftFoot, &kineticsStore,
+	leftForceApp  = new ForceApplier(_model, &ground, body2, &kineticsStore,
 												leftForceX, leftForceY, leftForceZ,
 												leftCopX, leftCopY, leftCopZ,
 												qStore, uStore);
-	rightTorqueApp = new TorqueApplier(_model, ground, rightFoot, &kineticsStore,
+	rightTorqueApp = new TorqueApplier(_model, &ground, body1, &kineticsStore,
 												rightTorqueX, rightTorqueY, rightTorqueZ);
-	leftTorqueApp  = new TorqueApplier(_model, ground, leftFoot, &kineticsStore,
+	leftTorqueApp  = new TorqueApplier(_model, &ground, body2, &kineticsStore,
 												leftTorqueX, leftTorqueY, leftTorqueZ);
 
 	// Add force and torque appliers as derivative callbacks for model.

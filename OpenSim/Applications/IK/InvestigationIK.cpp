@@ -69,7 +69,7 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 	setNull();
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 
 	updateFromXMLNode();
 
@@ -81,7 +81,7 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 		_model->setup();
 		addAnalysisSetToModel();
 	}
-	IO::chDir(saveWorkingDirectory.c_str());
+	IO::chDir(saveWorkingDirectory);
 }
 //_____________________________________________________________________________
 /**
@@ -263,7 +263,7 @@ void InvestigationIK::run()
 	string aFileName = string(getDocument()->getFileName());
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 
 	/* Update the markers. */
 	_model->getDynamicsEngine().updateMarkerSet(_markerSet);
@@ -277,6 +277,6 @@ void InvestigationIK::run()
 			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
 	}
 
-	IO::chDir(saveWorkingDirectory.c_str());
+	IO::chDir(saveWorkingDirectory);
 }
 

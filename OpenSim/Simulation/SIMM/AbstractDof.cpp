@@ -153,7 +153,7 @@ void AbstractDof::setup(AbstractDynamicsEngine* aEngine, AbstractJoint* aJoint)
 	Function* f = getFunction();
 	if (f && f->getNumberOfPoints() > 0 && !_coordinate){
 		errorMessage += "Invalid coordinate (" + _coordinateName + ") specified in dof " + getName() + " in joint " + aJoint->getName();
-		throw (Exception(errorMessage.c_str()));
+		throw (Exception(errorMessage));
 	}
 }
 

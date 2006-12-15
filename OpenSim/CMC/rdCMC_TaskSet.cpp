@@ -76,7 +76,7 @@ rdCMC_TaskSet::rdCMC_TaskSet() :
  *
  * @param aFileName Name of the file.
  */
-rdCMC_TaskSet::rdCMC_TaskSet(const char *aFileName) :
+rdCMC_TaskSet::rdCMC_TaskSet(const string &aFileName) :
 	Set<rdCMC_Task>(aFileName),
 	_pTask(0.0),_vTask(0.0),_aTask(0.0),
 	_pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),

@@ -95,7 +95,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	rdCMC_TaskSet();
-	rdCMC_TaskSet(const char *aFileName);
+	rdCMC_TaskSet(const std::string &aFileName);
 	virtual ~rdCMC_TaskSet();
 private:
 	void setNull();

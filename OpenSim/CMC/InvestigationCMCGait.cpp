@@ -610,7 +610,7 @@ void InvestigationCMCGait::run()
 		IO::chDir(saveWorkingDirectory);
 		return;
 	}
-	rdCMC_TaskSet taskSet(_taskSetFileName.c_str());
+	rdCMC_TaskSet taskSet(_taskSetFileName);
 	cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
 	taskSet.setModel(_model);
 	taskSet.setFunctions(qSet);
