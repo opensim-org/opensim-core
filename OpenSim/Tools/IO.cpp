@@ -472,21 +472,15 @@ ReadCharacters(FILE *aFP,int aNChar)
  * Open a file.
  */
 FILE* IO::
-OpenFile(const char *aFileName,const char *aMode)
+OpenFile(const string &aFileName,const string &aMode)
 {
 	FILE *fp = NULL;
 
-	// CHECK FOR VALID FILE NAME
-	if(aFileName==NULL) {
-		printf("IO.OpenFile(const char*,const char*): null filename.\n");
-		return(NULL);
-	}
-
 	// OPEN THE FILE
-	fp = fopen(aFileName,aMode);
+	fp = fopen(aFileName.c_str(),aMode.c_str());
 	if(fp==NULL) {
-		printf("IO.OpenFile(const char*,const char*): failed to open %s\n",
-		 aFileName);
+		printf("IO.OpenFile(const string&,const string&): failed to open %s\n",
+		 aFileName.c_str());
 		return(NULL);
 	}
 
@@ -498,13 +492,13 @@ OpenFile(const char *aFileName,const char *aMode)
   * @return int 0 on success, EEXIST or other error condition
 */
 int IO::
-makeDir(const char *aDirName)
+makeDir(const string &aDirName)
 {
 
 #ifdef __linux__
-	return mkdir(aDirName,S_IRWXU);
+	return mkdir(aDirName.c_str(),S_IRWXU);
 #else
-	return _mkdir(aDirName);
+	return _mkdir(aDirName.c_str());
 #endif
 }
 //_____________________________________________________________________________
@@ -513,13 +507,13 @@ makeDir(const char *aDirName)
   * @return int 0 on success, error condition otherwise
 */
 int IO::
-chDir(const char *aDirName)
+chDir(const string &aDirName)
 {
 
 #ifdef __linux__
-	return chdir(aDirName); 
+	return chdir(aDirName.c_str()); 
 #else
-	return _chdir(aDirName);
+	return _chdir(aDirName.c_str());
 #endif
 
 }
