@@ -156,8 +156,8 @@ public:
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual void run();
-	virtual void printResults(const char *aBaseName,const char *aDir=NULL,
-		double aDT=-1.0,const char *aExtension=".sto");
+	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
+		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class InvestigationPerturbation

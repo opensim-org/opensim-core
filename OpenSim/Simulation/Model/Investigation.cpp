@@ -448,8 +448,8 @@ addAnalysisSetToModel()
  * @param aExtension Extension for written files.
  */
 void Investigation::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	cout<<"Printing results of investigation "<<getName()<<" to "<<aDir<<".\n";
 	IO::makeDir(aDir);

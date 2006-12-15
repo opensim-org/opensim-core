@@ -295,8 +295,8 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,void *aClientData)
  * @return Callback at index aIndex.
  */
 void AnalysisSet::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	int i;
 	int size = getSize();

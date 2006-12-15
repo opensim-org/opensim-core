@@ -490,46 +490,15 @@ sumPowerResults()
  * @return 0 on success, -1 on error.
  */
 int BodyIndPowers::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	char baseName[NAME_LENGTH];
-	if(aBaseName==NULL) {
-		strcpy(baseName,"null");
-	} else {
-		strncpy(baseName,aBaseName,NAME_LENGTH);
-		baseName[NAME_LENGTH-1] = 0;
-	}
-
-	// CONSTRUCT PATH
-	char path[NAME_LENGTH];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// SUM RESULTS
 	sumPowerResults();
 
 	// COMPONENTS
-	int c;
-	char name[2048];
-	for(c=0;c<_nc;c++) {
-
-		// POWERS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/%s_%s_%s",path,baseName,getName().c_str(),_cNames[c]);
-		} else {
-			sprintf(name,"%s/%s_%s_%s%s",path,baseName,getName().c_str(),_cNames[c],
-				aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_powerStore[c]!=NULL) _powerStore[c]->print(name);
-		} else {
-			if(_powerStore[c]!=NULL) _powerStore[c]->print(name,aDT);
-		}
-
+	for(int c=0;c<_nc;c++) {
+		Storage::printResult(_powerStore[c],aBaseName+"_"+getName()+"_"+_cNames[c],aDir,aDT,aExtension);
 	}
 
 	return(0);

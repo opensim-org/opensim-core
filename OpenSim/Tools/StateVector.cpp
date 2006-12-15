@@ -543,7 +543,7 @@ divide(StateVector *aStateVector)
  * Print the contents of this StateVector to standard out.
  */
 void StateVector::
-print()
+print() const
 {
 	// TIME
 	char format[IO_STRLEN];
@@ -565,7 +565,7 @@ print()
  * occurs, a negative value is returned.
  */
 int StateVector::
-print(FILE *fp)
+print(FILE *fp) const
 {
 	// CHECK FILE POINTER
 	if(fp==NULL) {

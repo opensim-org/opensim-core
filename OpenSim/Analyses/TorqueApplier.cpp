@@ -426,34 +426,12 @@ applyActuation(double aT,double *aX,double *aY)
  * @return 0 on success, -1 on error.
  */
 int TorqueApplier::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const std::string &aBaseName,const std::string &aDir,double aDT,
+				 const std::string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048],bodyName[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
-	sprintf(bodyName,"body_%d",_body);
-
-
 	// ACCELERATIONS
 	_appliedTorqueStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_appTorque",path,aBaseName,bodyName);
-	} else {
-		sprintf(name,"%s/%s_%s_appTorque%s",path,aBaseName,bodyName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_appliedTorqueStore!=NULL)  _appliedTorqueStore->print(name);
-	} else {
-		if(_appliedTorqueStore!=NULL)  _appliedTorqueStore->print(name,aDT);
-	}
+	Storage::printResult(_appliedTorqueStore,aBaseName+"_"+_body->getName()+"_appTorque",aDir,aDT,aExtension);
 
 	return(0);
 }

@@ -140,8 +140,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void store();
 	virtual int
-		printResults(const char *aBaseName,const char *aDir=NULL,
-		double aDT=-1.0,const char *aExtension=".sto");
+		printResults(const std::string &aBaseName,const std::string &aDir="",
+		double aDT=-1.0,const std::string &aExtension=".sto");
 private:
 	virtual int
 		readDecomposition(char *aBaseName,char *aDir=NULL,

@@ -475,105 +475,23 @@ computeBodyCOMAccelerations()
  * @return 0 on success, -1 on error.
  */
 int BodyIndAccCOM::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const std::string &aBaseName,const std::string &aDir,double aDT,
+				 const std::string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
-	char name[2048];
-
-		// COM INDUCED ACCELERATIONS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/aCOMbody_%s",path,aBaseName);
-		} else {
-			sprintf(name,"%s/aCOMbody_%s%s",path,aBaseName,aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_aeCOMBodyStore!=NULL) _aeCOMBodyStore->print(name);
-		} else {
-			if(_aeCOMBodyStore!=NULL) _aeCOMBodyStore->print(name,aDT);
-		}
-
-		// COM INDUCED VELOCITIES
-		if(aExtension==NULL) {
-			sprintf(name,"%s/vCOMbody_%s",path,aBaseName);
-		} else {
-			sprintf(name,"%s/vCOMbody_%s%s",path,aBaseName,aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_veCOMBodyStore!=NULL) _veCOMBodyStore->print(name);
-		} else {
-			if(_veCOMBodyStore!=NULL) _veCOMBodyStore->print(name,aDT);
-		}
-
-		// COM INDUCED POSITIONS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/pCOMbody_%s",path,aBaseName);
-		} else {
-			sprintf(name,"%s/pCOMbody_%s%s",path,aBaseName,aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_peCOMBodyStore!=NULL) _peCOMBodyStore->print(name);
-		} else {
-			if(_peCOMBodyStore!=NULL) _peCOMBodyStore->print(name,aDT);
-		}
-
-		// COM VELOCITIES
-		if(aExtension==NULL) {
-			sprintf(name,"%s/COMbodyVelocity_%s",path,aBaseName);
-		} else {
-			sprintf(name,"%s/COMbodyVelocity_%s%s",path,aBaseName,aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_velStore!=NULL) _velStore->print(name);
-		} else {
-			if(_velStore!=NULL) _velStore->print(name,aDT);
-		}
-
-		// COM POSITIONS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/COMbodyPosition_%s",path,aBaseName);
-		} else {
-			sprintf(name,"%s/COMbodyPosition_%s%s",path,aBaseName,aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_posStore!=NULL) _posStore->print(name);
-		} else {
-			if(_posStore!=NULL) _posStore->print(name,aDT);
-		}
-
+	// COM INDUCED ACCELERATIONS
+	Storage::printResult(_aeCOMBodyStore,"aCOMbody_%s"+aBaseName,aDir,aDT,aExtension);
+	// COM INDUCED VELOCITIES
+	Storage::printResult(_veCOMBodyStore,"vCOMbody_%s"+aBaseName,aDir,aDT,aExtension);
+	// COM INDUCED POSITIONS
+	Storage::printResult(_peCOMBodyStore,"pCOMbody_%s"+aBaseName,aDir,aDT,aExtension);
+	// COM VELOCITIES
+	Storage::printResult(_velStore,"COMbodyVelocity_"+aBaseName,aDir,aDT,aExtension);
+	// COM POSITIONS
+	Storage::printResult(_posStore,"COMbodyPosition_"+aBaseName,aDir,aDT,aExtension);
 	//INITIAL VELOCITY
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_initVel",path,aBaseName);
-	} else {
-		sprintf(name,"%s/%s_initVel%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iVelStore!=NULL) _iVelStore->print(name);
-	} else {
-		if(_iVelStore!=NULL) _iVelStore->print(name,aDT);
-	}
-
+	Storage::printResult(_iVelStore,aBaseName+"_initVel",aDir,aDT,aExtension);
 	//INDUCED POSTION DUE TO INITIAL VELOCITY AND POSITION
-	if(aExtension==NULL) {
-		sprintf(name,"%s/p_%s_initVelPos",path,aBaseName);
-	} else {
-		sprintf(name,"%s/p_%s_initVelPos%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iPosStore!=NULL) _iPosStore->print(name, 0.005);
-	} else {
-		if(_iPosStore!=NULL) _iPosStore->print(name,aDT);
-	}		
-
+	Storage::printResult(_iPosStore,"p_"+aBaseName+"_initVelPos",aDir,(aDT<=0)?0.005:aDT,aExtension);
 
 	return(0);
 }

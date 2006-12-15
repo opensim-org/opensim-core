@@ -329,8 +329,8 @@ proceed(int aStep)
  * @return -1 on error, 0 otherwise.
  */
 int Analysis::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	printf("Analysis.printResults: Printing results of analysis %s.\n",
 		getName().c_str());

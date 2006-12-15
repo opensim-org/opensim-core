@@ -569,74 +569,32 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
  * @return 0 on success, -1 on error.
  */
 int Kinematics::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	if(!getOn()) {
 		printf("Kinematics.printResults: Off- not printing.\n");
 		return(0);
 	}
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
 
 	// ACCELERATIONS
 	_aStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_dudt",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_dudt%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_aStore!=NULL)  _aStore->print(name);
-	} else {
-		if(_aStore!=NULL)  _aStore->print(name,aDT);
-	}
+	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
 
 	// VELOCITIES
 	_vStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_u",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_u%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vStore!=NULL)  _vStore->print(name);
-	} else {
-		if(_vStore!=NULL)  _vStore->print(name,aDT);
-	}
+	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_u",aDir,aDT,aExtension);
 
 	// POSITIONS
 	_pStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_q",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_q%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pStore!=NULL)  _pStore->print(name);
-	} else {
-		if(_pStore!=NULL)  _pStore->print(name,aDT);
-	}
+	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,aExtension);
 
 	// POSITIONS (.mot file)
 	// For now (until we resolve the .sto vs .mot issue) also write
 	// an .mot file so the motion can be viewed in SIMM -- Eran.
-	_pStore->scaleTime(_model->getTimeNormConstant());
 	bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
 	_pStore->setWriteSIMMHeader(true);
-	sprintf(name,"%s/%s_%s_q.mot",path,aBaseName,getName().c_str());
-	if(aDT<=0.0) {
-		if(_pStore!=NULL)  _pStore->print(name);
-	} else {
-		if(_pStore!=NULL)  _pStore->print(name,aDT);
-	}
+	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,".mot");
 	_pStore->setWriteSIMMHeader(writeSIMMHeader);
 
 	return(0);

@@ -723,57 +723,20 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
  * @return 0 on success, -1 on error.
  */
 int BodyKinematics::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// ACCELERATIONS
 	_aStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_acc",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_acc%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_aStore!=NULL)  _aStore->print(name);
-	} else {
-		if(_aStore!=NULL)  _aStore->print(name,aDT);
-	}
+	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc",aDir,aDT,aExtension);
 
 	// VELOCITIES
 	_vStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_vel",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_vel%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vStore!=NULL)  _vStore->print(name);
-	} else {
-		if(_vStore!=NULL)  _vStore->print(name,aDT);
-	}
+	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel",aDir,aDT,aExtension);
 
 	// POSITIONS
 	_pStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_pos",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_pos%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pStore!=NULL)  _pStore->print(name);
-	} else {
-		if(_pStore!=NULL)  _pStore->print(name,aDT);
-	}
+	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos",aDir,aDT,aExtension);
 
 	return(0);
 }

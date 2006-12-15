@@ -484,32 +484,11 @@ applyActuation(double aT,double *aX,double *aY)
  * @return 0 on success, -1 on error.
  */
 int GeneralizedForceApplier::
-printResults(char *aBaseName,char *aDir,double aDT,char *aExtension)
+printResults(const std::string &aBaseName,const std::string &aDir,double aDT,const std::string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048],genCoordName[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
-	sprintf(genCoordName,"body_%s",_genCoord->getName());
-
 	// ACCELERATIONS
 	_appliedGeneralizedForceStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_appTorque",path,aBaseName,genCoordName);
-	} else {
-		sprintf(name,"%s/%s_%s_appTorque%s",path,aBaseName,genCoordName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_appliedGeneralizedForceStore!=NULL)  _appliedGeneralizedForceStore->print(name);
-	} else {
-		if(_appliedGeneralizedForceStore!=NULL)  _appliedGeneralizedForceStore->print(name,aDT);
-	}
+	Storage::printResult(_appliedGeneralizedForceStore,aBaseName+"_body_"+_genCoord->getName()+"_appTorque",aDir,aDT,aExtension);
 
 	return(0);
 }

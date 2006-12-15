@@ -755,8 +755,8 @@ readDecomposition(char *aBaseName,char *aDir,char *aExtension)
  * @return 0 on success, -1 on error.
  */
 int DecompNoComp::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	if(!getOn()) {
 		printf("DecompNoComp.printResults: Off- not printing.\n");
@@ -764,62 +764,10 @@ printResults(const char *aBaseName,const char *aDir,double aDT,
 	}
 	if(getUseNullDecomposition()) return(-1);
 
-	char baseName[NAME_LENGTH];
-	if(aBaseName==NULL) {
-		strcpy(baseName,"null");
-	} else {
-		strncpy(baseName,aBaseName,NAME_LENGTH);
-		baseName[NAME_LENGTH-1] = 0;
-	}
-
-	// CONSTRUCT PATH
-	char path[NAME_LENGTH];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// COMPONENTS
 	int c=0;
-	char name[2048];
-
-	if(_fStore[c]!=NULL){
-
-		// FILE NAME
-		if(aExtension==NULL) {
-			sprintf(name,"%s/%s_%s_noComp",path,baseName,getName().c_str());	
-		} else {
-			sprintf(name,"%s/%s_%s_noComp%s",path,baseName,getName().c_str(),
-			aExtension);
-		}
-
-		// PRINT
-		if(aDT<=0.0) {
-			_fStore[c]->print(name);
-		} else {
-			_fStore[c]->print(name,aDT);
-		}
-
-	}
-	
-	if(_cpaStore!=NULL) {
-
-		// FILE NAME
-		if(aExtension==NULL) {
-			sprintf(name,"%s/%s_%s_cpAccel_noComp",path,baseName,getName().c_str());
-		} else {
-			sprintf(name,"%s/%s_%s_cpAccel_noComp%s",path,baseName,getName().c_str(),
-				aExtension);
-		}
-
-		// PRINT
-		if(aDT<=0.0) {
-			_cpaStore[c]->print(name);
-		} else {
-			_cpaStore[c]->print(name,aDT);
-		}
-	}
+	if(_fStore) Storage::printResult(_fStore[c],aBaseName+"_"+getName()+"_noComp",aDir,aDT,aExtension);
+	if(_cpaStore) Storage::printResult(_cpaStore[c],aBaseName+"_"+getName()+"_cpAccel_noComp",aDir,aDT,aExtension);
 	
 	return(0);
 }

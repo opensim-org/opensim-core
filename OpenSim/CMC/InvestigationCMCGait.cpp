@@ -542,7 +542,7 @@ void InvestigationCMCGait::run()
 	string aFileName = string(getDocument()->getFileName());
 	string saveWorkingDirectory = IO::getCwd(0, 256);
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile.c_str());
+	IO::chDir(directoryOfSetupFile);
 
 	// ASSIGN NUMBERS OF THINGS
 	int i;
@@ -558,11 +558,11 @@ void InvestigationCMCGait::run()
 	// DESIRED KINEMATICS
 	if(_desiredKinematicsFileName=="") {
 		cout<<"ERROR- a desired kinematics file was not specified.\n\n";
-		IO::chDir(saveWorkingDirectory.c_str());
+		IO::chDir(saveWorkingDirectory);
 		return;
 	}
 	cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-	Storage desiredKinStore(_desiredKinematicsFileName.c_str());
+	Storage desiredKinStore(_desiredKinematicsFileName);
 
 	// Filter
 	// Eran: important to filter *before* calling formCompleteStorages because we need the
@@ -607,7 +607,7 @@ void InvestigationCMCGait::run()
 	// TASK SET
 	if(_taskSetFileName=="") {
 		cout<<"ERROR- a task set was not specified\n\n";
-		IO::chDir(saveWorkingDirectory.c_str());
+		IO::chDir(saveWorkingDirectory);
 		return;
 	}
 	rdCMC_TaskSet taskSet(_taskSetFileName.c_str());
@@ -794,17 +794,17 @@ void InvestigationCMCGait::run()
 
 	// ---- RESULTS -----
 	double dt = 0.001;
-	printResults(getName().c_str(),getResultsDir().c_str(),dt); // this will create results directory if necessary
+	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
 	controlSet->print(getResultsDir() + "/" + getName() + "_controls.xml");
 	Storage *xStore = integrand.getControlStorage();
 	Storage *yStore = integrand.getStateStorage();
 	Storage *ypStore = integrand.getPseudoStateStorage();
-	xStore->print((getResultsDir() + "/" + getName() + "_controls.sto").c_str());
-	yStore->print((getResultsDir() + "/" + getName() + "_states.sto").c_str());
-	ypStore->print((getResultsDir() + "/" + getName() + "_pseudo.sto").c_str());
-	controller.getPositionErrorStorage()->print((getResultsDir() + "/" + getName() + "_pErr.sto").c_str());
+	xStore->print(getResultsDir() + "/" + getName() + "_controls.sto");
+	yStore->print(getResultsDir() + "/" + getName() + "_states.sto");
+	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+	controller.getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
-	IO::chDir(saveWorkingDirectory.c_str());
+	IO::chDir(saveWorkingDirectory);
 }
 
 
@@ -1138,7 +1138,7 @@ initializeExternalLoads()
 		return;
 	}
 	cout<<"\n\nLoading external loads kinematics from file "<<_externalLoadsModelKinematicsFileName<<" ...\n";
-	Storage loadsKinStore(_externalLoadsModelKinematicsFileName.c_str());
+	Storage loadsKinStore(_externalLoadsModelKinematicsFileName);
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
@@ -1163,7 +1163,7 @@ initializeExternalLoads()
 
 
 	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(_externalLoadsFileName.c_str());
+	Storage kineticsStore(_externalLoadsFileName);
 	int copSize = kineticsStore.getSize();
 	if(copSize<=0) return;
 

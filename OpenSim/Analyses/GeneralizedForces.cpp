@@ -599,70 +599,20 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
  * @return 0 on success, -1 on error.
  */
 int GeneralizedForces::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// GRAVITY GENERALIZED FORCES
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_Grav%s",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_Grav%s%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_gravGenForcesStore!=NULL)  _gravGenForcesStore->print(name);
-	} else {
-		if(_gravGenForcesStore!=NULL)  _gravGenForcesStore->print(name,aDT);
-	}
+	Storage::printResult(_gravGenForcesStore,aBaseName+"_Grav"+getName(),aDir,aDT,aExtension);
 
 	// VELOCITY GENERALIZED FORCES
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_Vel%s",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_Vel%s%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_velGenForcesStore!=NULL)  _velGenForcesStore->print(name);
-	} else {
-		if(_velGenForcesStore!=NULL)  _velGenForcesStore->print(name,aDT);
-	}
+	Storage::printResult(_velGenForcesStore,aBaseName+"_Vel"+getName(),aDir,aDT,aExtension);
 
 	// ACTUATOR GENERALIZED FORCES
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_Actuator%s",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_Actuator%s%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_actuatorGenForcesStore!=NULL)  _actuatorGenForcesStore->print(name);
-	} else {
-		if(_actuatorGenForcesStore!=NULL)  _actuatorGenForcesStore->print(name,aDT);
-	}
+	Storage::printResult(_actuatorGenForcesStore,aBaseName+"_Actuator"+getName(),aDir,aDT,aExtension);
 
 	// CONTACT GENERALIZED FORCES
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_Contact%s",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_Contact%s%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_contactGenForcesStore!=NULL)  _contactGenForcesStore->print(name);
-	} else {
-		if(_contactGenForcesStore!=NULL)  _contactGenForcesStore->print(name,aDT);
-	}
+	Storage::printResult(_contactGenForcesStore,aBaseName+"_Contact"+getName(),aDir,aDT,aExtension);
 
 	return(0);
 }

@@ -104,8 +104,8 @@ public:
 	// RESULTS
 	//--------------------------------------------------------------------------
 	virtual void
-		printResults(const char *aBaseName,const char *aPath=NULL,
-		double aDT=-1.0,const char *aExtension=".sto");
+		printResults(const std::string &aBaseName,const std::string &aPath="",
+		double aDT=-1.0,const std::string &aExtension=".sto");
 
 
 //=============================================================================

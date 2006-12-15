@@ -717,108 +717,34 @@ resetStorage()
  * @return 0 on success, -1 on error.
  */
 int Contact::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	if(!getOn()) {
 		printf("Contact.printResults: Off- not printing.\n");
 		return(-1);
 	}
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
 
 	// POINTS
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_points",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_points%s",path,aBaseName,getName().c_str(),
-		aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pStore!=NULL)  _pStore->print(name);
-	} else {
-		if(_pStore!=NULL)  _pStore->print(name,aDT);
-	}
+	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_points",aDir,aDT,aExtension);
 
 	// VELOCITIES
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_velocities",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_velocities%s",path,aBaseName,getName().c_str(),
-		aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vStore!=NULL)  _vStore->print(name);
-	} else {
-		if(_vStore!=NULL)  _vStore->print(name,aDT);
-	}
+	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_velocities",aDir,aDT,aExtension);
 
 	// FORCES
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_forces",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_forces%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_fStore!=NULL)  _fStore->print(name);
-	} else {
-		if(_fStore!=NULL)  _fStore->print(name,aDT);
-	}
+	Storage::printResult(_fStore,aBaseName+"_"+getName()+"_forces",aDir,aDT,aExtension);
 
 	// POWERS
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_powers",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_powers%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pwrStore!=NULL)  _pwrStore->print(name);
-	} else {
-		if(_pwrStore!=NULL)  _pwrStore->print(name,aDT);
-	}
+	Storage::printResult(_pwrStore,aBaseName+"_"+getName()+"_powers",aDir,aDT,aExtension);
 
 	// RESULTANT FORCE POINT
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%sresultantForcePoint",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_resultantForcePoints%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_resultantForcePointsStore!=NULL)  _resultantForcePointsStore->print(name);
-	} else {
-		if(_resultantForcePointsStore!=NULL)  _resultantForcePointsStore->print(name,aDT);
-	}
+	Storage::printResult(_resultantForcePointsStore,aBaseName+"_"+getName()+"_resultantForcePoints",aDir,aDT,aExtension);
 
 	// TOTAL CONTACT FORCES
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%stotForce",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_totForce%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_totFStore!=NULL)  _totFStore->print(name);
-	} else {
-		if(_totFStore!=NULL)  _totFStore->print(name,aDT);
-	}
+	Storage::printResult(_totFStore,aBaseName+"_"+getName()+"_totForce",aDir,aDT,aExtension);
 
 	// TOTAL CONTACT TORQUES
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%stotTorque",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_totTorque%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_totTorqueStore!=NULL)  _totTorqueStore->print(name);
-	} else {
-		if(_totTorqueStore!=NULL)  _totTorqueStore->print(name,aDT);
-	}
+	Storage::printResult(_totTorqueStore,aBaseName+"_"+getName()+"_totTorque",aDir,aDT,aExtension);
 
 	return(0);
 }

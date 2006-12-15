@@ -608,31 +608,12 @@ applyActuation(double aT,double *aX,double *aY)
  * @return 0 on success, -1 on error.
  */
 int ForceApplier::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// ACCELERATIONS
 	_appliedForceStore->scaleTime(_model->getTimeNormConstant());
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_appForce",path,aBaseName,_body->getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_appForce%s",path,aBaseName,_body->getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_appliedForceStore!=NULL)  _appliedForceStore->print(name);
-	} else {
-		if(_appliedForceStore!=NULL)  _appliedForceStore->print(name,aDT);
-	}
+	Storage::printResult(_appliedForceStore,aBaseName+"_"+_body->getName()+"_appForce",aDir,aDT,aExtension);
 
 	return(0);
 }

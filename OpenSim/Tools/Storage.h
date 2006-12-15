@@ -33,7 +33,6 @@
  * Author: Frank C. Anderson 
  */
 
-
 #include "rdTools.h"
 #include "Object.h"
 #include "StateVector.h"
@@ -95,7 +94,7 @@ protected:
 	store(). */
 	int _stepInterval;
 	/** Last index at which a search was started. */
-	int _lastI;
+	mutable int _lastI;
 	/** Flag for whether or not to insert a SIMM style header. */
 	bool _writeSIMMHeader;
 
@@ -103,9 +102,10 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
-		const char *aName="UNKNOWN");
-	Storage(const char* aFileName);
+	// make this constructor explicit so you don't get implicit casting of int to Storage
+	explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
+		const std::string &aName="UNKNOWN");
+	Storage(const std::string &aFileName);
 	Storage(const Storage &aStorage,bool aCopyData=true);
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
@@ -128,12 +128,12 @@ public:
 	// SIZE
 	int getSize() const { return(_storage.getSize()); }
 	// STATEVECTOR
-	int getSmallestNumberOfStates();
+	int getSmallestNumberOfStates() const;
 	StateVector* getStateVector(int aTimeIndex) const;
 	StateVector* getLastStateVector() const;
 	// TIME
-	double getFirstTime();
-	double getLastTime();
+	double getFirstTime() const;
+	double getLastTime() const;
 	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
 	// DATA
@@ -141,8 +141,8 @@ public:
 	int getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const;
 	int getData(int aTimeIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aN,double *rData) const;
-	int getDataAtTime(double aTime,int aN,double **rData);
-	int getDataAtTime(double aTime,int aN,double *rData);
+	int getDataAtTime(double aTime,int aN,double **rData) const;
+	int getDataAtTime(double aTime,int aN,double *rData) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(std::string& columnName,double *&rData) const;
@@ -211,21 +211,24 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	int findIndex(double aT);
-	int findIndex(int aI,double aT);
+	int findIndex(double aT) const;
+	int findIndex(int aI,double aT) const;
 	void resample(const double aDT, const int aDegree);
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
-	void print();
-	bool print(const char *aFileName,const char *aMode="w");
-	int print(const char *aFileName,double aDT,const char *aMode="w");
+	void print() const;
+	bool print(const std::string &aFileName,const std::string &aMode="w") const;
+	int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
+	// convenience function for Analyses and DerivCallbacks
+	static void printResult(const Storage *aStorage,const std::string &aName,
+		const std::string &aDir,double aDT,const std::string &aExtension);
 private:
-	int writeHeader(FILE *rFP,double aDT=-1);
-	int writeSIMMHeader(FILE *rFP,double aDT=-1);
-	int writeDescription(FILE *rFP);
-	int writeColumnLabels(FILE *rFP);
-	int writeDefaultColumnLabels(FILE *rFP);
+	int writeHeader(FILE *rFP,double aDT=-1) const;
+	int writeSIMMHeader(FILE *rFP,double aDT=-1) const;
+	int writeDescription(FILE *rFP) const;
+	int writeColumnLabels(FILE *rFP) const;
+	int writeDefaultColumnLabels(FILE *rFP) const;
 
 //=============================================================================
 };	// END of class Storage

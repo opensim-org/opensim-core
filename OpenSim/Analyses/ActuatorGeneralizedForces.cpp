@@ -508,31 +508,10 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
  * @return 0 on success, -1 on error.
  */
 int ActuatorGeneralizedForces::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
-	// ACTUATOR GENERALIZED FORCES
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_actuatorGenForcesStore!=NULL)  _actuatorGenForcesStore->print(name);
-	} else {
-		if(_actuatorGenForcesStore!=NULL)  _actuatorGenForcesStore->print(name,aDT);
-	}
+	Storage::printResult(_actuatorGenForcesStore,aBaseName+"_"+getName(),aDir,aDT,aExtension);
 	return(0);
 }
 

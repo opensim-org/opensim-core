@@ -572,89 +572,26 @@ sumBodyAccelerationResults()
  * @return 0 on success, -1 on error.
  */
 int BodyIndAcc::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// SUM RESULTS
 	sumBodyAccelerationResults();
 
 	// COMPONENTS
-	int c;
-	char name[2048];
-	for(c=0;c<_nc;c++) {
-
+	for(int c=0;c<_nc;c++) {
 		// ACCELERATIONS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/abody_%s_%s",path,aBaseName,_cNames[c]);
-		} else {
-			sprintf(name,"%s/abody_%s_%s%s",path,aBaseName,_cNames[c],
-				aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_aeBodyStore[c]!=NULL) _aeBodyStore[c]->print(name);
-		} else {
-			if(_aeBodyStore[c]!=NULL) _aeBodyStore[c]->print(name,aDT);
-		}
-
+		Storage::printResult(_aeBodyStore[c],"abody_"+aBaseName+"_"+_cNames[c],aDir,aDT,aExtension);
 		// VELOCITIES
-		if(aExtension==NULL) {
-			sprintf(name,"%s/vbody_%s_%s",path,aBaseName,_cNames[c]);
-		} else {
-			sprintf(name,"%s/vbody_%s_%s%s",path,aBaseName,_cNames[c],aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_velStore[c]!=NULL) _velStore[c]->print(name);
-		} else {
-			if(_velStore[c]!=NULL) _velStore[c]->print(name,aDT);
-		}
-
+		Storage::printResult(_velStore[c],"vbody_"+aBaseName+"_"+_cNames[c],aDir,aDT,aExtension);
 		// POSITIONS
-		if(aExtension==NULL) {
-			sprintf(name,"%s/pbody_%s_%s",path,aBaseName,_cNames[c]);
-		} else {
-			sprintf(name,"%s/pbody_%s_%s%s",path,aBaseName,_cNames[c],aExtension);
-		}
-		if(aDT<=0.0) {
-			if(_posStore[c]!=NULL) _posStore[c]->print(name);
-		} else {
-			if(_posStore[c]!=NULL) _posStore[c]->print(name,aDT);
-		}
+		Storage::printResult(_posStore[c],"pbody_"+aBaseName+"_"+_cNames[c],aDir,aDT,aExtension);
 	}
 
 	//INITIAL VELOCITY
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_initVelBody",path,aBaseName);
-	} else {
-		sprintf(name,"%s/%s_initVelBody%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iVelStore!=NULL) _iVelStore->print(name);
-	} else {
-		if(_iVelStore!=NULL) _iVelStore->print(name,aDT);
-	}
-
+	Storage::printResult(_iVelStore,aBaseName+"_initVelBody",aDir,aDT,aExtension);
 	//INDUCED POSTION DUE TO INITIAL VELOCITY AND POSITION
-	if(aExtension==NULL) {
-		sprintf(name,"%s/pbody_%s_initVelPos",path,aBaseName);
-	} else {
-		sprintf(name,"%s/p_%s_initVelPos%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iPosStore!=NULL) _iPosStore->print(name, 0.005);
-	} else {
-		if(_iPosStore!=NULL) _iPosStore->print(name,aDT);
-	}		
-
+	Storage::printResult(_iPosStore,"p_"+aBaseName+"_initVelPos",aDir,(aDT<=0)?0.005:aDT,aExtension);
 
 	return(0);
 }

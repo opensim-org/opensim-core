@@ -573,58 +573,18 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
  * @return 0 on success, -1 on error.
  */
 int Actuation::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const string &aBaseName,const string &aDir,double aDT,
+				 const string &aExtension)
 {
 	if(!getOn()) {
 		printf("Actuation.printResults: Off- not printing.\n");
 		return(0);
 	}
-	if(aBaseName==NULL) return(-1);
 
-	// CONSTRUCT PATH
-	char path[2048],name[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
-	// FORCES
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_force",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_force%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_forceStore!=NULL)  _forceStore->print(name);
-	} else {
-		if(_forceStore!=NULL)  _forceStore->print(name,aDT);
-	}
-
-	// SPEEDS
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_speed",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_speed%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_speedStore!=NULL)  _speedStore->print(name);
-	} else {
-		if(_speedStore!=NULL)  _speedStore->print(name,aDT);
-	}
-
-	// POWERS
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_%s_power",path,aBaseName,getName().c_str());
-	} else {
-		sprintf(name,"%s/%s_%s_power%s",path,aBaseName,getName().c_str(),aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_powerStore!=NULL)  _powerStore->print(name);
-	} else {
-		if(_powerStore!=NULL)  _powerStore->print(name,aDT);
-	}
+	std::string prefix=aBaseName+"_"+getName()+"_";
+	Storage::printResult(_forceStore, prefix+"force", aDir, aDT, aExtension);
+	Storage::printResult(_speedStore, prefix+"speed", aDir, aDT, aExtension);
+	Storage::printResult(_powerStore, prefix+"power", aDir, aDT, aExtension);
 
 	return(0);
 }

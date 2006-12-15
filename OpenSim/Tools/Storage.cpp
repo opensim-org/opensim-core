@@ -86,7 +86,7 @@ Storage::~Storage()
 /**
  * Default constructor.
  */
-Storage::Storage(int aCapacity,const char *aName) :
+Storage::Storage(int aCapacity,const string &aName) :
 	_storage(StateVector()),
 	_columnLabelsArray("")
 {
@@ -108,7 +108,7 @@ Storage::Storage(int aCapacity,const char *aName) :
  * @param aFileName Name of the file from which the Storage is to be
  * constructed.
  */
-Storage::Storage(const char *aFileName) :
+Storage::Storage(const string &aFileName) :
 	_storage(StateVector()),
 	_columnLabelsArray("")
 {
@@ -118,7 +118,7 @@ Storage::Storage(const char *aFileName) :
 	// OPEN FILE
 	FILE *fp = IO::OpenFile(aFileName,"r");
 	if(fp==NULL) {
-		printf("Storage: ERROR- failed to open file %s.\n",aFileName);
+		printf("Storage: ERROR- failed to open file %s.\n",aFileName.c_str());
 		return;
 	}
 
@@ -135,7 +135,7 @@ Storage::Storage(const char *aFileName) :
 	for(i=0;i<3;i++) {
 		line = IO::ReadLine(fp);
 		if(line==NULL) {
-			printf("Storage: ERROR- no lines in %s.\n",aFileName);
+			printf("Storage: ERROR- no lines in %s.\n",aFileName.c_str());
 			return;
 		}
 		tok = strtok(line,"=");
@@ -170,7 +170,7 @@ Storage::Storage(const char *aFileName) :
 		delete[] line;
 		line = NULL;
 	}
-	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName,nr,nc);
+	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName.c_str(),nr,nc);
 
 	// DESCRIPTION
 	char *d=NULL;
@@ -629,7 +629,7 @@ getCapacityIncrement() const
  * @return Smallest number of states.
  */
 int Storage::
-getSmallestNumberOfStates()
+getSmallestNumberOfStates() const
 {
 	int n,nmin=0;
 	for(int i=0;i<_storage.getSize();i++) {
@@ -686,7 +686,7 @@ getStateVector(int aTimeIndex) const
  * the constant rdMath::NAN (not a number) is returned.
  */
 double Storage::
-getFirstTime()
+getFirstTime() const
 {
 	if(_storage.getSize()<=0) {
 		return(rdMath::NAN);
@@ -701,7 +701,7 @@ getFirstTime()
  * the constant rdMath::NAN (not a number) is returned.
  */
 double Storage::
-getLastTime()
+getLastTime() const
 {
 	if(_storage.getSize()<=0) {
 		return(rdMath::NAN);
@@ -926,7 +926,7 @@ getData(int aTimeIndex,int aN,double *rData) const
  * @return Number of states that were set.
  */
 int Storage::
-getDataAtTime(double aT,int aN,double **rData)
+getDataAtTime(double aT,int aN,double **rData) const
 {
 
 	// FIND THE CORRECT INTERVAL FOR aT
@@ -999,7 +999,7 @@ getDataAtTime(double aT,int aN,double **rData)
  * @return Number of states that were set.
  */
 int Storage::
-getDataAtTime(double aT,int aN,double *rData)
+getDataAtTime(double aT,int aN,double *rData) const
 {
 	if(rData==NULL) return(0);
 
@@ -2252,7 +2252,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
  * time, 0 is returned.
  */
 int Storage::
-findIndex(int aI,double aT)
+findIndex(int aI,double aT) const
 {
 	// MAKE SURE aI IS VALID
 	if(_storage.getSize()<=0) return(-1);
@@ -2282,7 +2282,7 @@ findIndex(int aI,double aT)
  * time, 0 is returned.
  */
 int Storage::
-findIndex(double aT)
+findIndex(double aT) const
 {
 	if(_storage.getSize()<=0) return(-1);
 	int i;
@@ -2309,7 +2309,7 @@ resample(const double aDT, const int aDegree)
 
 	GCVSplineSet *splineSet = new GCVSplineSet(aDegree,this);
 
-	char *saveLabels = strdup(getColumnLabels());
+	string saveLabels = getColumnLabels();
 	// Free up memory used by Storage
 	_storage.setSize(0);
 	// For every column, collect data and fit spline to originalTimes, dataColumn.
@@ -2317,7 +2317,7 @@ resample(const double aDT, const int aDegree)
 
 	copyData(*newStorage);
 
-	setColumnLabels(saveLabels);
+	setColumnLabels(saveLabels.c_str());
 
 	delete newStorage;
 	delete splineSet;
@@ -2332,7 +2332,7 @@ resample(const double aDT, const int aDegree)
  * Print the contents of this storage instance to standard output.
  */
 void Storage::
-print()
+print() const
 {
 	cout<<"\nStorage.print:  "<<getName()<<"."<<endl;;  
 	for(int i=0;i<_storage.getSize();i++) {
@@ -2356,7 +2356,7 @@ print()
  * @return true on success
  */
 bool Storage::
-print(const char *aFileName,const char *aMode)
+print(const string &aFileName,const string &aMode) const
 {
 	// OPEN THE FILE
 	FILE *fp = IO::OpenFile(aFileName,aMode);
@@ -2368,8 +2368,8 @@ print(const char *aFileName,const char *aMode)
 	int nc = getSmallestNumberOfStates()+1;
 	n = writeHeader(fp);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*): failed to\n");
-		printf(" write header to file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&): failed to\n");
+		printf(" write header to file %s\n",aFileName.c_str());
 		return(false);
 	}
 
@@ -2377,8 +2377,8 @@ print(const char *aFileName,const char *aMode)
 	if(_writeSIMMHeader) {
 		n = writeSIMMHeader(fp);
 		if(n<0) {
-			printf("Storage.print(const char*,const char*): failed to\n");
-			printf(" write SIMM header to file %s\n",aFileName);
+			printf("Storage.print(const string&,const string&): failed to\n");
+			printf(" write SIMM header to file %s\n",aFileName.c_str());
 			return(false);
 		}
 	}
@@ -2386,16 +2386,16 @@ print(const char *aFileName,const char *aMode)
 	// WRITE THE DESCRIPTION
 	n = writeDescription(fp);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*): failed to\n");
-		printf(" write description to file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&): failed to\n");
+		printf(" write description to file %s\n",aFileName.c_str());
 		return(false);
 	}
 
 	// WRITE THE COLUMN LABELS
 	n = writeColumnLabels(fp);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*): failed to\n");
-		printf(" write column labels to file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&): failed to\n");
+		printf(" write column labels to file %s\n",aFileName.c_str());
 		return(false);
 	}
 
@@ -2403,8 +2403,8 @@ print(const char *aFileName,const char *aMode)
 	for(int i=0;i<_storage.getSize();i++) {
 		n = getStateVector(i)->print(fp);
 		if(n<0) {
-			printf("Storage.print(const char*,const char*): error printing to %s",
-			 aFileName);
+			printf("Storage.print(const string&,const string&): error printing to %s",
+			 aFileName.c_str());
 			return(false);
 		}
 		nTotal += n;		
@@ -2430,7 +2430,7 @@ print(const char *aFileName,const char *aMode)
  * a negative number is returned.
  */
 int Storage::
-print(const char *aFileName,double aDT,const char *aMode)
+print(const string &aFileName,double aDT,const string &aMode) const
 {
 	// CHECK FOR VALID DT
 	if(aDT<=0) return(0);
@@ -2449,8 +2449,8 @@ print(const char *aFileName,double aDT,const char *aMode)
 	int n,nTotal=0;
 	n = writeHeader(fp,aDT);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*,double): failed to\n");
-		printf(" write header of file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&,double): failed to\n");
+		printf(" write header of file %s\n",aFileName.c_str());
 		return(n);
 	}
 
@@ -2458,8 +2458,8 @@ print(const char *aFileName,double aDT,const char *aMode)
 	if(_writeSIMMHeader) {
 		n = writeSIMMHeader(fp,aDT);
 		if(n<0) {
-			printf("Storage.print(const char*,const char*): failed to\n");
-			printf(" write SIMM header to file %s\n",aFileName);
+			printf("Storage.print(const string&,const string&): failed to\n");
+			printf(" write SIMM header to file %s\n",aFileName.c_str());
 			return(n);
 		}
 	}
@@ -2467,16 +2467,16 @@ print(const char *aFileName,double aDT,const char *aMode)
 	// WRITE THE DESCRIPTION
 	n = writeDescription(fp);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*): failed to\n");
-		printf(" write description to file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&): failed to\n");
+		printf(" write description to file %s\n",aFileName.c_str());
 		return(n);
 	}
 
 	// WRITE THE COLUMN LABELS
 	n = writeColumnLabels(fp);
 	if(n<0) {
-		printf("Storage.print(const char*,const char*): failed to\n");
-		printf(" write column labels to file %s\n",aFileName);
+		printf("Storage.print(const string&,const string&): failed to\n");
+		printf(" write column labels to file %s\n",aFileName.c_str());
 		return(n);
 	}
 
@@ -2493,8 +2493,8 @@ print(const char *aFileName,double aDT,const char *aMode)
 		// PRINT
 		n = vec.print(fp);
 		if(n<0) {
-			printf("Storage.print(const char*,const char*): error printing to %s",
-			 aFileName);
+			printf("Storage.print(const string&,const string&): error printing to %s",
+			 aFileName.c_str());
 			return(n);
 		}
 		nTotal += n;		
@@ -2507,12 +2507,23 @@ print(const char *aFileName,double aDT,const char *aMode)
 	return(nTotal);
 }
 
+void Storage::
+printResult(const Storage *aStorage,const std::string &aName,
+				const std::string &aDir,double aDT,const std::string &aExtension)
+{
+	if(!aStorage) return;
+	std::string path = (aDir=="") ? "." : aDir;
+	std::string name = path + "/" + aName + aExtension;
+	if(aDT<=0.0) aStorage->print(name);
+	else aStorage->print(name,aDT);
+}
+
 //_____________________________________________________________________________
 /**
  * Write the header.
  */
 int Storage::
-writeHeader(FILE *rFP,double aDT)
+writeHeader(FILE *rFP,double aDT) const
 {
 	if(rFP==NULL) return(-1);
 
@@ -2541,7 +2552,7 @@ writeHeader(FILE *rFP,double aDT)
  * @return SIMM header.
  */
 int Storage::
-writeSIMMHeader(FILE *rFP,double aDT)
+writeSIMMHeader(FILE *rFP,double aDT) const
 {
 	if(rFP==NULL) return(-1);
 
@@ -2576,20 +2587,17 @@ writeSIMMHeader(FILE *rFP,double aDT)
  * Write the description.
  */
 int Storage::
-writeDescription(FILE *rFP)
+writeDescription(FILE *rFP) const
 {
 	if(rFP==NULL) return(-1);
 
 	// DESCRIPTION
-	size_t len;
-	const char *descrip = getDescription().c_str();
-	if(descrip!=NULL) {
-		len = strlen(descrip);
-		if((len>0)&&(descrip[len-1]!='\n')) {
-			fprintf(rFP,"%s\n",descrip);
-		} else {
-			fprintf(rFP,"%s",descrip);
-		}
+	string descrip = getDescription();
+	size_t len = descrip.size();
+	if((len>0)&&(descrip[len-1]!='\n')) {
+		fprintf(rFP,"%s\n",descrip.c_str());
+	} else {
+		fprintf(rFP,"%s",descrip.c_str());
 	}
 
 	// DESCRIPTION TOKEN
@@ -2608,7 +2616,7 @@ writeDescription(FILE *rFP)
  * @param rFP File pointer.
  */
 int Storage::
-writeColumnLabels(FILE *rFP)
+writeColumnLabels(FILE *rFP) const
 {
 	if(rFP==NULL) return(-1);
 
@@ -2627,7 +2635,7 @@ writeColumnLabels(FILE *rFP)
  * @param rFP File pointer.
  */
 int Storage::
-writeDefaultColumnLabels(FILE *rFP)
+writeDefaultColumnLabels(FILE *rFP) const
 {
 	if(rFP==NULL) return(-1);
 

@@ -129,8 +129,8 @@ public:
 	// RESULTS
 	//--------------------------------------------------------------------------
 	virtual int
-		printResults(const char *aBaseName,const char *aDir=NULL,
-		double aDT=-1.0,const char *aExtension=".sto");
+		printResults(const std::string &aBaseName,const std::string &aDir="",
+		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class Analysis

@@ -619,154 +619,29 @@ computePointAccelerations()
  * @return 0 on success, -1 on error.
  */
 int BodyPointIndAcc::
-printResults(const char *aBaseName,const char *aDir,double aDT,
-				 const char *aExtension)
+printResults(const std::string &aBaseName,const std::string &aDir,double aDT,
+				 const std::string &aExtension)
 {
-	if(aBaseName==NULL) return(-1);
-
-	// CONSTRUCT PATH
-	char path[2048];
-	if(aDir==NULL) {
-		strcpy(path,".");
-	} else {
-		strcpy(path,aDir);
-	}
-
 	// X
-	char name[2048];
-	if(aExtension==NULL) {
-		sprintf(name,"%s/ap_%s_%s_X",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/ap_%s_%s_X%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_axPointStore!=NULL) _axPointStore->print(name);
-	} else {
-		if(_axPointStore!=NULL) _axPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/vp_%s_%s_X",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/vp_%s_%s_X%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vxPointStore!=NULL) _vxPointStore->print(name);
-	} else {
-		if(_vxPointStore!=NULL) _vxPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/pp_%s_%s_X",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/pp_%s_%s_X%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pxPointStore!=NULL) _pxPointStore->print(name);
-	} else {
-		if(_pxPointStore!=NULL) _pxPointStore->print(name,aDT);
-	}
+	Storage::printResult(_axPointStore,"ap_"+aBaseName+"_"+getPointName()+"_X",aDir,aDT,aExtension);
+	Storage::printResult(_vxPointStore,"vp_"+aBaseName+"_"+getPointName()+"_X",aDir,aDT,aExtension);
+	Storage::printResult(_pxPointStore,"pp_"+aBaseName+"_"+getPointName()+"_X",aDir,aDT,aExtension);
 
 	// Y
-	if(aExtension==NULL) {
-		sprintf(name,"%s/ap_%s_%s_Y",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/ap_%s_%s_Y%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_ayPointStore!=NULL) _ayPointStore->print(name);
-	} else {
-		if(_ayPointStore!=NULL) _ayPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/vp_%s_%s_Y",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/vp_%s_%s_Y%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vyPointStore!=NULL) _vyPointStore->print(name);
-	} else {
-		if(_vyPointStore!=NULL) _vyPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/pp_%s_%s_Y",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/pp_%s_%s_Y%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pyPointStore!=NULL) _pyPointStore->print(name);
-	} else {
-		if(_pyPointStore!=NULL) _pyPointStore->print(name,aDT);
-	}
+	Storage::printResult(_ayPointStore,"ap_"+aBaseName+"_"+getPointName()+"_Y",aDir,aDT,aExtension);
+	Storage::printResult(_vyPointStore,"vp_"+aBaseName+"_"+getPointName()+"_Y",aDir,aDT,aExtension);
+	Storage::printResult(_pyPointStore,"pp_"+aBaseName+"_"+getPointName()+"_Y",aDir,aDT,aExtension);
 
 	// Z
-	if(aExtension==NULL) {
-		sprintf(name,"%s/ap_%s_%s_Z",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/ap_%s_%s_Z%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_azPointStore!=NULL) _azPointStore->print(name);
-	} else {
-		if(_azPointStore!=NULL) _azPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/vp_%s_%s_Z",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/vp_%s_%s_Z%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_vzPointStore!=NULL) _vzPointStore->print(name);
-	} else {
-		if(_vzPointStore!=NULL) _vzPointStore->print(name,aDT);
-	}
-
-	if(aExtension==NULL) {
-		sprintf(name,"%s/pp_%s_%s_Z",path,aBaseName,getPointName());
-	} else {
-		sprintf(name,"%s/pp_%s_%s_Z%s",path,aBaseName,getPointName(),
-			aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_pzPointStore!=NULL) _pzPointStore->print(name);
-	} else {
-		if(_pzPointStore!=NULL) _pzPointStore->print(name,aDT);
-	}
+	Storage::printResult(_azPointStore,"ap_"+aBaseName+"_"+getPointName()+"_Z",aDir,aDT,aExtension);
+	Storage::printResult(_vzPointStore,"vp_"+aBaseName+"_"+getPointName()+"_Z",aDir,aDT,aExtension);
+	Storage::printResult(_pzPointStore,"pp_"+aBaseName+"_"+getPointName()+"_Z",aDir,aDT,aExtension);
 
 	//INITIAL VELOCITY
-	if(aExtension==NULL) {
-		sprintf(name,"%s/%s_initVel",path,aBaseName);
-	} else {
-		sprintf(name,"%s/%s_initVel%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iVelStore!=NULL) _iVelStore->print(name);
-	} else {
-		if(_iVelStore!=NULL) _iVelStore->print(name,aDT);
-	}
+	Storage::printResult(_iVelStore,aBaseName+"_initVel",aDir,aDT,aExtension);
 
 	//INDUCED POSTION DUE TO INITIAL VELOCITY AND POSITION
-	if(aExtension==NULL) {
-		sprintf(name,"%s/p_%s_initVelPos",path,aBaseName);
-	} else {
-		sprintf(name,"%s/p_%s_initVelPos%s",path,aBaseName,aExtension);
-	}
-	if(aDT<=0.0) {
-		if(_iPosStore!=NULL) _iPosStore->print(name, 0.005);
-	} else {
-		if(_iPosStore!=NULL) _iPosStore->print(name,aDT);
-	}		
+	Storage::printResult(_iPosStore,"p_"+aBaseName+"_initVelPos",aDir,(aDT<=0)?0.005:aDT,aExtension);
 
 	return(0);
 }
