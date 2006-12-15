@@ -386,7 +386,8 @@ void InvestigationForward::run()
 	int nb = _model->getNumBodies();
 
 	// GROUND REACTION FORCES
-	initializeExternalLoads();
+	initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// SETUP SIMULATION
 	// Manager
@@ -457,9 +458,13 @@ void InvestigationForward::run()
  * are assumed to be applied to the right and left foot.
  */
 void InvestigationForward::
-initializeExternalLoads()
+initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileName,
+								const string &aExternalLoadsModelKinematicsFileName,
+								const string &aExternalLoadsBody1,
+								const string &aExternalLoadsBody2,
+								double aLowpassCutoffFrequencyForLoadKinematics)
 {
-	if(_externalLoadsFileName=="") {
+	if(aExternalLoadsFileName=="") {
 		cout<<"\n\nWARNING- a file name for external loads was not specified.";
 		cout<<" No loads will be applied.\n\n";
 		return;
@@ -469,26 +474,26 @@ initializeExternalLoads()
 	// To get the forces to be applied in the correct location, this file
 	// should be from the IK solution, not from pass 2 of rra which alters
 	// the kinematics.
-	if(_externalLoadsModelKinematicsFileName=="") {
+	if(aExternalLoadsModelKinematicsFileName=="") {
 		cout<<"\n\nERROR- a external loads kinematics file was not specified.\n\n";
 		return;
 	}
-	cout<<"\n\nLoading external loads kinematics from file "<<_externalLoadsModelKinematicsFileName<<" ...\n";
-	Storage loadsKinStore(_externalLoadsModelKinematicsFileName);
+	cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
+	Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
 	Storage *qStore=NULL;
 	Storage *uStoreTmp=NULL;
-	_model->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
-	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
+	aModel->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
+	aModel->getDynamicsEngine().convertDegreesToRadians(qStore);
 	// Filter
 	qStore->pad(60); 
-	if(_lowpassCutoffFrequencyForLoadKinematics>=0) {
+	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
 		int order = 50;
 		cout<<"\n\nLow-pass filtering external load kinematics with a cutoff frequency of ";
-		cout<<_lowpassCutoffFrequencyForLoadKinematics<<"...\n\n";
-		qStore->lowpassFIR(order,_lowpassCutoffFrequencyForLoadKinematics);
+		cout<<aLowpassCutoffFrequencyForLoadKinematics<<"...\n\n";
+		qStore->lowpassFIR(order,aLowpassCutoffFrequencyForLoadKinematics);
 	} else {
 		cout<<"\n\nNote- not filtering the external loads model kinematics.\n\n";
 	}
@@ -499,7 +504,7 @@ initializeExternalLoads()
 
 
 	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(_externalLoadsFileName);
+	Storage kineticsStore(aExternalLoadsFileName);
 	int copSize = kineticsStore.getSize();
 	if(copSize<=0) return;
 
@@ -509,146 +514,146 @@ initializeExternalLoads()
 	int rightForceX  = kineticsStore.getColumnIndex("ground_force_vx");
 	if(rightForceX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vx not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightForceY  = kineticsStore.getColumnIndex("ground_force_vy");
 	if(rightForceY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vy not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightForceZ  = kineticsStore.getColumnIndex("ground_force_vz");
 	if(rightForceZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vz not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceX   = kineticsStore.getColumnIndex("ground_force_vx", rightForceX + 2);
 	if(leftForceX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vx not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceY   = kineticsStore.getColumnIndex("ground_force_vy", rightForceY + 2);
 	if(leftForceY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vy not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceZ   = kineticsStore.getColumnIndex("ground_force_vz", rightForceZ + 2);
 	if(leftForceZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vz not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopX    = kineticsStore.getColumnIndex("ground_force_px");
 	if(rightCopX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_px not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopY    = kineticsStore.getColumnIndex("ground_force_py");
 	if(rightCopY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_py not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopZ    = kineticsStore.getColumnIndex("ground_force_pz");
 	if(rightCopZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_pz not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopX     = kineticsStore.getColumnIndex("ground_force_px", rightCopX + 2);
 	if(leftCopX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_px not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopY     = kineticsStore.getColumnIndex("ground_force_py", rightCopY + 2);
 	if(leftCopY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_py not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopZ     = kineticsStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
 	if(leftCopZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_pz not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueX = kineticsStore.getColumnIndex("ground_torque_x");
 	if(rightTorqueX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_x not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueY = kineticsStore.getColumnIndex("ground_torque_y");
 	if(rightTorqueY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_y not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueZ = kineticsStore.getColumnIndex("ground_torque_z");
 	if(rightTorqueZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_z not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueX  = kineticsStore.getColumnIndex("ground_torque_x", rightTorqueX + 2);
 	if(leftTorqueX<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_x not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueY  = kineticsStore.getColumnIndex("ground_torque_y", rightTorqueY + 2);
 	if(leftTorqueY<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_y not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueZ  = kineticsStore.getColumnIndex("ground_torque_z", rightTorqueZ + 2);
 	if(leftTorqueZ<0) {
 		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_z not found in ";
-		msg += _externalLoadsFileName + ".";
+		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 
 	// BODY INDICES
 	// Right
-	AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
+	AbstractBody *body1 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody1);
 	if(body1<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the first set of external loads";
-		msg+="should be applied (" + _externalLoadsBody1 + ") is not a segment in the model.";
+		msg+="should be applied (" + aExternalLoadsBody1 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	// Left
-	//int  leftFoot = _model->getBodyIndex("calcn_l");
-	AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+	//int  leftFoot = aModel->getBodyIndex("calcn_l");
+	AbstractBody *body2 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody2);
 	if(body2<0) {
 		string msg = "InvestigationCMCGait.run: ERR- The body to which the second set of external loads";
-		msg+="should be applied (" + _externalLoadsBody2 + ") is not a segment in the model.";
+		msg+="should be applied (" + aExternalLoadsBody2 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	// Ground
-	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
+	AbstractBody &ground = aModel->getDynamicsEngine().getGroundBody();
 
 
 	// CREATE FORCE AND TORQUE APPLIERS
 	ForceApplier *rightForceApp, *leftForceApp;
 	TorqueApplier *rightTorqueApp, *leftTorqueApp;
-	rightForceApp = new ForceApplier(_model, &ground, body1, &kineticsStore,
+	rightForceApp = new ForceApplier(aModel, &ground, body1, &kineticsStore,
 												rightForceX, rightForceY, rightForceZ,
 												rightCopX, rightCopY, rightCopZ,
 												qStore, uStore);
-	leftForceApp  = new ForceApplier(_model, &ground, body2, &kineticsStore,
+	leftForceApp  = new ForceApplier(aModel, &ground, body2, &kineticsStore,
 												leftForceX, leftForceY, leftForceZ,
 												leftCopX, leftCopY, leftCopZ,
 												qStore, uStore);
-	rightTorqueApp = new TorqueApplier(_model, &ground, body1, &kineticsStore,
+	rightTorqueApp = new TorqueApplier(aModel, &ground, body1, &kineticsStore,
 												rightTorqueX, rightTorqueY, rightTorqueZ);
-	leftTorqueApp  = new TorqueApplier(_model, &ground, body2, &kineticsStore,
+	leftTorqueApp  = new TorqueApplier(aModel, &ground, body2, &kineticsStore,
 												leftTorqueX, leftTorqueY, leftTorqueZ);
 
 	// Add force and torque appliers as derivative callbacks for model.
@@ -658,10 +663,10 @@ initializeExternalLoads()
 	leftForceApp->setInputForcesInGlobalFrame(true);
 	rightTorqueApp->setInputTorquesInGlobalFrame(true);
 	leftTorqueApp->setInputTorquesInGlobalFrame(true);
-	_model->addDerivCallback(rightForceApp);
-	_model->addDerivCallback(leftForceApp);
-	_model->addDerivCallback(rightTorqueApp);
-	_model->addDerivCallback(leftTorqueApp);
+	aModel->addDerivCallback(rightForceApp);
+	aModel->addDerivCallback(leftForceApp);
+	aModel->addDerivCallback(rightTorqueApp);
+	aModel->addDerivCallback(leftTorqueApp);
 }
 
 

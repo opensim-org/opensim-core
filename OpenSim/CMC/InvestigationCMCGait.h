@@ -198,7 +198,6 @@ public:
 	void
 		setControlsToUseStepsExceptResiduals(
 		const ControlSet *aRRAControlSet,ControlSet *ControlSet);
-	void initializeExternalLoads();
 	void computeInitialStatesFromCoordinates(
 		const FunctionSet &aQSet,Array<double> &rYI);
 	void computeAverageResiduals(
@@ -215,5 +214,3 @@ public:
 }; // end namespace
 
 #endif  // InvestigationCMCGait_h__
-
-

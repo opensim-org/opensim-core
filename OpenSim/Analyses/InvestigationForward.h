@@ -116,9 +116,14 @@ public:
 	virtual void run();
 
 	//--------------------------------------------------------------------------
-	// UTILITY
+	// UTILITY (also used by InvestigationCMCGait)
 	//--------------------------------------------------------------------------
-	void initializeExternalLoads();
+	static void initializeExternalLoads(AbstractModel *aModel, 
+		const std::string &aExternalLoadsFileName,
+		const std::string &aExternalLoadsModelKinematicsFileName,
+		const std::string &aExternalLoadsBody1,
+		const std::string &aExternalLoadsBody2,
+		double aLowpassCutoffFrequencyForLoadKinematics);
 
 //=============================================================================
 };	// END of class InvestigationForward
