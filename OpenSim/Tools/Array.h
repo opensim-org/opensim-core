@@ -103,7 +103,7 @@ virtual ~Array()
  * @param aCapacity Initial capacity of the array.  The initial capacity
  * is guarranteed to be at least as large as aSize + 1.
  */
-Array(const T &aDefaultValue,int aSize=0,int aCapacity=Array_CAPMIN)
+Array(const T &aDefaultValue=T(),int aSize=0,int aCapacity=Array_CAPMIN)
 {
 	setNull();
 
