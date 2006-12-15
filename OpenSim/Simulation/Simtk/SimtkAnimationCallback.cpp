@@ -154,6 +154,10 @@ int SimtkAnimationCallback::
 step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	double *aX,double *aY,void *aClientData)
 {
+	// update muscle geometry
+	ActuatorSet* actSet = _model->getActuatorSet();
+	for(int i=0; i < actSet->getSize(); i++)
+		actSet->get(i)->updateGeometry();
 	return (0);
 }
 const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
