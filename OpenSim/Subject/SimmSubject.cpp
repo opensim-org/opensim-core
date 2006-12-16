@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "SimmSubject.h"
-#include <OpenSim/Simulation/SIMM/simmIO.h>
+#include <OpenSim/Simulation/SIMM/SimmIO.h>
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
