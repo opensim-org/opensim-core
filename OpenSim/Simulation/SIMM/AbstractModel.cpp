@@ -39,14 +39,6 @@
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 
-// PATH stuff from Kenny
-#ifdef _MSC_VER
-	#include <direct.h>
-	#define PATH_MAX _MAX_PATH
-#else
-	#include <unistd.h>
-#endif
-
 using namespace std;
 using namespace OpenSim;
 
@@ -102,7 +94,7 @@ AbstractModel::AbstractModel(const string &aFileName) :
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile);
 	updateFromXMLNode();
@@ -300,22 +292,11 @@ void AbstractModel::setup()
 	// Set the current directory to the directory containing the model
 	// file.  This is allow files (i.e. bone files) to be specified using
 	// relative paths in the model file.  KMS 4/26/06
-	char origDirPath[PATH_MAX] = "";
-	
-	string::size_type dirSep = _fileName.rfind('/'); // Unix/Mac dir separator
-	
-	if (dirSep == string::npos)
-		dirSep = _fileName.rfind('\\'); // DOS dir separator
-	
-	if (dirSep != string::npos) // if '_fileName' contains path information...
-	{
-		string dirPath(_fileName, 0, dirSep);
-		
-		if (dirPath.length() > 0)
-		{
-			IO::getCwd(origDirPath, PATH_MAX);
-			IO::chDir(dirPath);
-		}
+	string origDirPath;
+	string dirPath = IO::getParentDirectory(_fileName);
+	if(!dirPath.empty()) {
+		origDirPath = IO::getCwd();
+		IO::chDir(dirPath);
 	}
 
 	int i;
@@ -394,7 +375,7 @@ void AbstractModel::setup()
 	}
 
 	// Restore the current directory.
-	if (origDirPath[0] != '\0')
+	if(!origDirPath.empty())
 		IO::chDir(origDirPath);
 
 	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;

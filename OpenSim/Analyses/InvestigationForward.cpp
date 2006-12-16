@@ -306,7 +306,7 @@ void InvestigationForward::run()
 			Array<double> com(0.0,3);
 			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
 			AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
-			cout<<"NOTE- altering center of mass for "<<_adjustedCOMBody<<"(index="<<body<<"):\n";
+			cout<<"NOTE- altering center of mass for "<<_adjustedCOMBody<<endl;
 			cout<<com<<endl<<endl;
 			body->setMassCenter(&com[0]);
 			fclose(fpCOM);
@@ -315,7 +315,7 @@ void InvestigationForward::run()
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
 	IO::chDir(directoryOfSetupFile);
 

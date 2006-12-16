@@ -106,7 +106,7 @@ public:
 	// Directory management
 	static int makeDir(const std::string &aDirName);
 	static int chDir(const std::string &aDirName);
-	static char* getCwd(char *buffer, int maxlength);
+	static std::string getCwd();
 	static std::string getParentDirectory(const std::string& fileName);
 //=============================================================================
 };	// END CLASS IO

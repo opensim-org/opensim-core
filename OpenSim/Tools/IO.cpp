@@ -45,6 +45,14 @@
 	#include <unistd.h>
 #endif
 
+// PATH stuff from Kenny
+#ifdef _MSC_VER
+	#include <direct.h>
+	#define PATH_MAX _MAX_PATH
+#else
+	#include <unistd.h>
+#endif
+
 // CONSTANTS
 
 
@@ -522,15 +530,16 @@ chDir(const string &aDirName)
  * Get current working directory. Potentially platform dependent.
   * @return working directory on success, NULL on error
 */
-char* IO::
-getCwd(char *buffer, int maxlength)
+string IO::
+getCwd()
 {
+	char buffer[PATH_MAX];
 #ifdef __linux__
-	return getcwd(buffer, maxlength); 
+	getcwd(buffer, PATH_MAX); 
 #else
-	return _getcwd(buffer, maxlength);
+	_getcwd(buffer, PATH_MAX);
 #endif
-
+	return string(buffer);
 }
 
 //_____________________________________________________________________________

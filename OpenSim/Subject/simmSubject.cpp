@@ -81,7 +81,7 @@ SimmSubject::SimmSubject(const string &aFileName) :
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile);
 
@@ -383,26 +383,6 @@ AbstractModel* SimmSubject::createModel()
 	}
 	return 0;
 }
-
-/*
-string SimmSubject::getParentDirectory(const string& fileName)
-{
-	string	result="";
-
-	string::size_type dirSep = fileName.rfind('/'); // Unix/Mac dir separator
-	
-	if (dirSep == string::npos)
-		dirSep = fileName.rfind('\\'); // DOS dir separator
-	
-	if (dirSep != string::npos) // if '_fileName' contains path information...
-	{
-		string dirPath(fileName, 0, dirSep+1);	// include trailing slashes
-		result=dirPath;
-	}
-
-	return result;	// Eventually this will be moved to simmIO as a platform specific thing
-}
-*/
 
 void SimmSubject::peteTest() const
 {

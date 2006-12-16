@@ -67,7 +67,7 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 {
 	setType("InvestigationIK");
 	setNull();
-	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile);
 
@@ -261,7 +261,7 @@ void InvestigationIK::run()
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
 	string aFileName = string(getDocument()->getFileName());
-	string saveWorkingDirectory = IO::getCwd(0, 256);
+	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile);
 
