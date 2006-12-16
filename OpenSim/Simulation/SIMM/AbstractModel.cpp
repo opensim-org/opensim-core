@@ -313,8 +313,8 @@ void AbstractModel::setup()
 		
 		if (dirPath.length() > 0)
 		{
-			getcwd(origDirPath, PATH_MAX);
-			chdir(dirPath.c_str());
+			IO::getCwd(origDirPath, PATH_MAX);
+			IO::chDir(dirPath);
 		}
 	}
 
@@ -395,7 +395,7 @@ void AbstractModel::setup()
 
 	// Restore the current directory.
 	if (origDirPath[0] != '\0')
-		chdir(origDirPath);
+		IO::chDir(origDirPath);
 
 	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;
 }
