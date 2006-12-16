@@ -814,6 +814,11 @@ computeControls(double &rDT,double aT,const double *aY,
 				//cout<<" found\n";
 				xmin[i] = xConstraint->getControlValueMin(tiReal);
 				xmax[i] = xConstraint->getControlValueMax(tiReal);
+				// For controls whose constraints are constant min/max values we'll just specify
+				// it using the default parameter min/max rather than creating a control curve
+				// (using nodes) in the xml.  So we catch this case here.
+				if(xmin[i] == rdMath::NAN) xmin[i] = xConstraint->getDefaultParameterMin();
+				if(xmax[i] == rdMath::NAN) xmax[i] = xConstraint->getDefaultParameterMax();
 			}
 		}
 	}
