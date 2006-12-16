@@ -30,6 +30,7 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
+#include <stdexcept>
 
 namespace OpenSim {
 namespace DebugUtilities {

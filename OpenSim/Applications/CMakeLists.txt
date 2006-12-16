@@ -1,5 +1,5 @@
 IF(OPENSIM_MINIMAL_BUILD)
 	SUBDIRS(Forward Perturb Scale IK MkModel CMCGait)
 ELSE(OPENSIM_MINIMAL_BUILD)
-	SUBDIRS(Forward Perturb Scale IK MkModel testSdfast workflow CMCGait)
+	SUBDIRS(Forward Perturb Scale IK MkModel testSdfast Workflow CMCGait)
 ENDIF(OPENSIM_MINIMAL_BUILD)

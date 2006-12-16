@@ -33,7 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
 
 
 //=============================================================================

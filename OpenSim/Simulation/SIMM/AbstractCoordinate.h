@@ -31,7 +31,7 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Set.h>
-#include <OpenSim/Simulation/Simm/AbstractDof.h>
+#include <OpenSim/Simulation/SIMM/AbstractDof.h>
 
 namespace OpenSim {
 

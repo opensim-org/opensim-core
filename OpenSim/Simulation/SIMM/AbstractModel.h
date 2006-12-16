@@ -31,7 +31,7 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/tools/PropertyObj.h>
+#include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/ScaleSet.h>

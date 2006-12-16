@@ -76,7 +76,7 @@ public:
 #ifndef SWIG
 	SimmMuscleGroup& operator=(const SimmMuscleGroup &aGroup);
 #endif
-   void SimmMuscleGroup::copyData(const SimmMuscleGroup &aGroup);
+   void copyData(const SimmMuscleGroup &aGroup);
 
    void setup(AbstractModel* aModel);
 

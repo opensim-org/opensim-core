@@ -33,7 +33,7 @@
 #ifdef WIN32
 #define OPENSIM_NORETURN(declaration) __declspec(noreturn) declaration
 #else
-#define OPENSIM_NORETURN(declaration) __attribute__ ((noreturn))
+#define OPENSIM_NORETURN(declaration) declaration __attribute__ ((noreturn))
 #endif
 
 #define OPENSIM_ERROR_IF_NOT_OVERRIDDEN() \
