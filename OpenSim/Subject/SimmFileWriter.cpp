@@ -25,6 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <sstream>
 #include "SimmFileWriter.h"
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
@@ -396,7 +397,7 @@ void SimmFileWriter::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) co
 bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofstream& aStream) const
 {
 	int transDofIndex = 0, rotDofIndex = 0;
-	string order;
+	stringstream order;
 	char* translationLabels[] = {"tx", "ty", "tz"};
 	DofSet* dofs = aJoint.getDofSet();
 	int* funcIndex = new int [dofs->getSize()];
@@ -422,7 +423,7 @@ bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofst
 				aStream << " function f" << funcIndex[i] << "(" << td->getCoordinate()->getName() << ")" << endl;
 			}
 			if (transDofIndex++ == 0)
-				order += " t";
+				order << " t";
 		}
 		else if (dofs->get(i)->getMotionType() == AbstractDof::Rotational)
 		{
@@ -439,10 +440,10 @@ bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofst
 			}
 			const double* axis = rd->getAxisPtr();
 			aStream << "axis" << rotDofIndex << " " << axis[0] << " " << axis[1] << " " << axis[2] << endl;
-			order += " r" + string(itoa(rotDofIndex, buffer, 10));
+			order << " r" << rotDofIndex;
 		}
 	}
-	aStream << "order" << order << endl;
+	aStream << "order" << order.str() << endl;
 	aStream << "endjoint" << endl << endl;
 
 	double conversionX, conversionY;
