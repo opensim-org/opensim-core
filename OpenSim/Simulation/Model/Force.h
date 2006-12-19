@@ -38,7 +38,7 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/VectorFunction.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
 
 
 //=============================================================================

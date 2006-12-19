@@ -7,10 +7,10 @@
 #include "InvestigationPerturbation.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Simm/ActuatorSet.h>
-#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
+#include <OpenSim/Simulation/SIMM/BodySet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>

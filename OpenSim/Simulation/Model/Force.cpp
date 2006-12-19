@@ -41,9 +41,9 @@
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/BodySet.h>
 #include "Force.h"
 
 

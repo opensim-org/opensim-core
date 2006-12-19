@@ -90,7 +90,7 @@ public:
 #ifndef SWIG
 	SimmBody& operator=(const SimmBody &aBody);
 #endif
-   void SimmBody::copyData(const SimmBody &aBody);
+   void copyData(const SimmBody &aBody);
 
    virtual void setup(AbstractDynamicsEngine* aEngine);
 

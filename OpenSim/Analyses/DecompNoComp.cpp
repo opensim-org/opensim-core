@@ -11,7 +11,7 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include "DecompNoComp.h"
 
 

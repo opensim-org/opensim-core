@@ -13,10 +13,10 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Simm/BodySet.h>
-#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
 #include "BodyIndPowers.h"
 
 

@@ -37,7 +37,7 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Simulation/Simm/PolyObject.h>
+#include <OpenSim/Simulation/SIMM/PolyObject.h>
 
 #ifdef SWIG
 	#ifdef RDSIMULATION_API

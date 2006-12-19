@@ -18,9 +18,9 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Simm/SpeedSet.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/SpeedSet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "GeneralizedForces.h"
 

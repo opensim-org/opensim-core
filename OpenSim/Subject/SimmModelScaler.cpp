@@ -31,7 +31,7 @@
 #include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 #include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Simulation/SIMM/markerSet.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include "SimmFileWriter.h"
 
 //=============================================================================

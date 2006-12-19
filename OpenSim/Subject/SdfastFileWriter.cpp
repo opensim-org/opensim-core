@@ -389,7 +389,7 @@ string SdfastFileWriter::makeSdfastBodyName(const string& bodyName, int timesSpl
 	string sdfastName = bodyName;
 
 	if (sdfastName[0] >= '0' && sdfastName[0] <= '9')
-		sdfastName.insert(0, '_');
+		sdfastName.insert(0, "_");
 
 	for (int i = 0; i < timesSplit; i++)
 		sdfastName.append("p");
@@ -494,7 +494,7 @@ void SdfastFileWriter::makeSdfastJointOrder()
 	 * are valid one-token C strings. Do not touch the ground segment name ($ground)
 	 * because SD/FAST requires exactly that name.
 	 */
-	for (i = 0; i < _joints.getSize(); i++)
+	for (int i = 0; i < _joints.getSize(); i++)
 	{
 		if (_joints[i].type != dpSkippable)
 		{
@@ -1461,7 +1461,8 @@ void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 
 	out << "void init_joint_functions(void)\n{\n\n   int i, numpts;" << endl << endl;
 
-	for (int i = 0, count = 0; i < _joints.getSize(); i++)
+	int count = 0;
+	for (int i = 0; i < _joints.getSize(); i++)
 	{
 		JointInfo &joint = _joints.get(i);
 		DofInfo *dofs = joint.dofs;
@@ -3022,7 +3023,8 @@ AbstractDof* SdfastFileWriter::findNthFunctionRotation(JointInfo& aJointInfo, in
  */
 AbstractDof* SdfastFileWriter::findNthFunctionTranslation(JointInfo& aJointInfo, int aN, int& rIndex) const
 {
-	for (int i = 0, count = 0; i < aJointInfo.numDofs; i++)
+	int i, count = 0;
+	for (i = 0; i < aJointInfo.numDofs; i++)
 	{
 		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Translational &&
 			 aJointInfo.dofs[i].modelDof->getCoordinate() != NULL)

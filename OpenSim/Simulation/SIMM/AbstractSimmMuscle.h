@@ -104,7 +104,7 @@ public:
 	virtual void setup(AbstractModel *aModel);
 
 	AbstractSimmMuscle& operator=(const AbstractSimmMuscle &aMuscle);
-   void AbstractSimmMuscle::copyData(const AbstractSimmMuscle &aMuscle);
+   void copyData(const AbstractSimmMuscle &aMuscle);
 	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
 
 	const Array<std::string>* getGroupNames() const { return &_groupNames; }

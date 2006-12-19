@@ -106,7 +106,7 @@ public:
 #ifndef SWIG
 	SimmSubject& operator=(const SimmSubject &aSubject);
 #endif
-	void SimmSubject::copyData(const SimmSubject &aSubject);
+	void copyData(const SimmSubject &aSubject);
 
 	bool processModel();
 	AbstractModel* createModel();

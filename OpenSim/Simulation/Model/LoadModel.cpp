@@ -6,7 +6,7 @@
 #include <iostream>
 #include <OpenSim/Tools/IO.h>
 #include "LoadModel.h"
-#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
 #include "ContactForceSet.h"
 
 #ifdef __linux__

@@ -18,8 +18,8 @@
 #include <string.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
 #include "ActuatorPerturbation.h"
 
 //=============================================================================

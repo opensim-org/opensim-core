@@ -41,11 +41,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 #include <OpenSim/Models/SdfastEngine/SdfastBody.h>
-#include <OpenSim/Simulation/Simm/BodyIterator.h>
+#include <OpenSim/Simulation/SIMM/BodyIterator.h>
 #include <OpenSim/Models/SdfastEngine/SdfastCoordinate.h>
-#include <OpenSim/Simulation/Simm/CoordinateIterator.h>
+#include <OpenSim/Simulation/SIMM/CoordinateIterator.h>
 #include "rdSDFastDLL.h"
 #include "sdfast.h"
 #include "rdSDFast.h"

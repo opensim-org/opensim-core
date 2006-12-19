@@ -32,8 +32,8 @@
 
 // INCLUDES
 #include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
 
 using namespace OpenSim;
 using namespace std;

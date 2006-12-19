@@ -6,7 +6,7 @@
 #include <iostream>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Analyses/InvestigationForward.h>

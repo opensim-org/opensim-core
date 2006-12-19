@@ -39,8 +39,8 @@
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include "ContactForce.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 
 
 

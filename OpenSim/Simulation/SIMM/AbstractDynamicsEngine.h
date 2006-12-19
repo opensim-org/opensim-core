@@ -183,7 +183,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual MarkerSet* getMarkerSet() { return &_markerSet; }
 	virtual const MarkerSet* getMarkerSet() const { return &_markerSet; }
-	virtual void writeMarkerFile(std::string& aFileName) const;
+	virtual void writeMarkerFile(const std::string& aFileName) const;
 	virtual int replaceMarkerSet(MarkerSet& aMarkerSet);
 	virtual void updateMarkerSet(MarkerSet& aMarkerSet);
 	virtual int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);

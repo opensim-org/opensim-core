@@ -11,7 +11,7 @@
 //==============================================================================
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include "PointConstraint.h"
-#include <OpenSim/Simulation/Simm/AbstractBody.h>
+#include <OpenSim/Simulation/SIMM/AbstractBody.h>
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

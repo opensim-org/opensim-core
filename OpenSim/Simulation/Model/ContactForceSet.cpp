@@ -37,7 +37,7 @@
 //=============================================================================
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
 #include "ContactForce.h"
 #include "ContactForceSet.h"
 

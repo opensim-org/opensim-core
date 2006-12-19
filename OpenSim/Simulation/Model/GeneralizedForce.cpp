@@ -39,10 +39,10 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include "GeneralizedForce.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Simm/CoordinateSet.h>
-#include <OpenSim/Simulation/Simm/SpeedSet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+#include <OpenSim/Simulation/SIMM/SpeedSet.h>
 
 
 

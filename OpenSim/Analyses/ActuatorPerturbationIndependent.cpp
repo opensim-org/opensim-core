@@ -12,9 +12,9 @@
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
-//#include <OpenSim/Simulation/Simm/ActuatorIterator.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+//#include <OpenSim/Simulation/SIMM/ActuatorIterator.h>
 #include <OpenSim/Tools/Object.h>
 #include "ActuatorPerturbationIndependent.h"
 
@@ -211,7 +211,7 @@ getPerturbedForceStorage()
 {
 //	char name[Object::NAME_LENGTH];
 	char name[500]; // needs to be changed to [Object::NAME LENGTH]
-	sprintf(name,"PerturbedForce_%s",getActuator()->getName());
+	sprintf(name,"PerturbedForce_%s",getActuator()->getName().c_str());
 	_perturbedForceStorage->setName(name);
 	return(_perturbedForceStorage);
 }

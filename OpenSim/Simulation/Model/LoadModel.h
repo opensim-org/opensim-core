@@ -5,7 +5,7 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <string>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
 
 RDSIMULATION_API void LoadOpenSimLibraries(int argc,char **argv);

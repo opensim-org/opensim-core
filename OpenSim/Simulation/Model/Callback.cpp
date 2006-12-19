@@ -41,7 +41,7 @@
 #include <OpenSim/Tools/PropertyDbl.h>
 
 #include "Callback.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
 //=============================================================================
 // STATICS

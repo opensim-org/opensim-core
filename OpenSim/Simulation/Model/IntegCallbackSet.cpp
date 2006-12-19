@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "IntegCallbackSet.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
 //=============================================================================
 // STATICS

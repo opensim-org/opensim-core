@@ -37,7 +37,7 @@
 // INCLUDE
 #include "rdSDFastDLL.h"
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Tools/NamedValueArray.h>
 
 #ifdef SWIG

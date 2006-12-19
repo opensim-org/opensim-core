@@ -324,7 +324,7 @@ int AbstractDynamicsEngine::getNumMarkers() const { return _markerSet.getSize();
  *
  * @param aFileName the name of the file to create
  */
-void AbstractDynamicsEngine::writeMarkerFile(string& aFileName) const
+void AbstractDynamicsEngine::writeMarkerFile(const string& aFileName) const
 {
 	_markerSet.print(aFileName);
 }

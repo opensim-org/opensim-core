@@ -96,7 +96,7 @@ public:
 #ifndef SWIG
 	SimmMusclePoint& operator=(const SimmMusclePoint &aPoint);
 #endif
-   void SimmMusclePoint::copyData(const SimmMusclePoint &aPoint);
+   void copyData(const SimmMusclePoint &aPoint);
 
 	Array<double>& getAttachment() const { return _attachment; }
 	const AbstractBody* getBody() const { return _body; }

@@ -143,7 +143,7 @@ public:
 	virtual Object* copy(DOMElement *aElement) const;
 
 	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);
-   void SimmDarrylMuscle::copyData(const SimmDarrylMuscle &aMuscle);
+   void copyData(const SimmDarrylMuscle &aMuscle);
 
 	virtual void computeStateDerivatives(double rDYDT[]);
 	virtual void computeActuation();

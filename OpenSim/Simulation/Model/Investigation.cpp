@@ -8,7 +8,7 @@
 #include "Investigation.h"
 #include "LoadModel.h"
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
 
 
 

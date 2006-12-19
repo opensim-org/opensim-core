@@ -15,8 +15,8 @@
 #include <OpenSim/Analyses/ForceApplier.h>
 #include <OpenSim/Analyses/TorqueApplier.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/BodySet.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/BodySet.h>
 
 using namespace OpenSim;
 using namespace std;

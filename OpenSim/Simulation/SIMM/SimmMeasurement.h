@@ -91,7 +91,7 @@ public:
 #ifndef SWIG
 	SimmMeasurement& operator=(const SimmMeasurement &aMeasurement);
 #endif
-   void SimmMeasurement::copyData(const SimmMeasurement &aMeasurement);
+   void copyData(const SimmMeasurement &aMeasurement);
 
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
 	const SimmMarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }

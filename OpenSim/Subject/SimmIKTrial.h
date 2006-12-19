@@ -116,7 +116,7 @@ public:
 #ifndef SWIG
 	SimmIKTrial& operator=(const SimmIKTrial &aIKTrialParams);
 #endif
-   void SimmIKTrial::copyData(const SimmIKTrial &aIKTrialParams);
+   void copyData(const SimmIKTrial &aIKTrialParams);
 
 	double getStartTime() const { return _timeRange[0]; }
 	double getEndTime() const { return _timeRange[1]; }

@@ -13,11 +13,11 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Simm/AbstractBody.h>
-#include <OpenSim/Simulation/Simm/AbstractActuator.h>
-//#include <OpenSim/Simulation/Simm/ActuatorIterator.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractBody.h>
+#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+//#include <OpenSim/Simulation/SIMM/ActuatorIterator.h>
 #include "BodyPointIndAcc.h"
 
 

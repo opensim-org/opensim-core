@@ -5,7 +5,7 @@
 //==============================================================================
 #include <iostream>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/Simm/ActuatorSet.h>
+#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>

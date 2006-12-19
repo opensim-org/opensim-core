@@ -28,10 +28,10 @@
 #include "SimmMarkerPlacer.h"
 #include "SimmIKTrial.h"
 #include "SimmFileWriter.h"
-#include <OpenSim/Simulation/Simm/AbstractModel.h>
-#include <OpenSim/Simulation/Simm/SimmMarkerData.h>
-#include <OpenSim/Simulation/Simm/SimmMotionData.h>
-#include <OpenSim/Simulation/Simm/AbstractBody.h>
+#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
+#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
+#include <OpenSim/Simulation/SIMM/AbstractBody.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
