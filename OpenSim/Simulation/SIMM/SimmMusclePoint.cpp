@@ -203,16 +203,12 @@ void SimmMusclePoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
 	// Muscle points depend on body
 	_body->getDisplayer()->addDependent(&_displayer);
 	_displayer.addGeometry(_defaultGeometry);
-	double defaultColor[3] = { 1.0, 0.0, 0.0 };
-	double defaultOffColor[3] = { 0.5, 0.5, 0.0 };
-	if (isActive())
-		_displayer.getVisibleProperties().setColor(defaultColor);
-	else
-		_displayer.getVisibleProperties().setColor(defaultOffColor);
 
 	Transform position;
 	position.translate(_attachment.get());
 	getDisplayer()->setTransform(position);
+	double defaultColor[3] = { 1.0, 0.0, 0.0 };
+	_displayer.getVisibleProperties().setColor(defaultColor);
 }
 //_____________________________________________________________________________
 /**

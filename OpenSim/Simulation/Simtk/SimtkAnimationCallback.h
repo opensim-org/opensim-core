@@ -53,7 +53,6 @@ namespace OpenSim {
 
 class RDSIMULATION_API SimtkAnimationCallback : public IntegCallback
 {
-static bool _busy;
 //=============================================================================
 // DATA
 //=============================================================================
@@ -70,6 +69,10 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
+	// A Factory method to create the callback, so that it's created on the C++ side
+	// and memory menagement on the Java side is side-stepped
+	static SimtkAnimationCallback* CreateAnimationCallback(AbstractModel *aModel);
+protected:
 	SimtkAnimationCallback(AbstractModel *aModel);
 	virtual ~SimtkAnimationCallback();
 private:
@@ -94,16 +97,32 @@ public:
 		return 0;
 	}
 	const Transform* getBodyTransform(int bodyIndex) const;
-	// Handle _busy flag to make sure all xforms are read for the same time step
-	// by keeping mutual exclusion access to the xforms
-	void getMutex() {};
-	void releaseMutex() {};
 
 	void extractOffsets(AbstractModel& displayModel);
 private:
 	// Load transforms vector from KinematicsEngine
 	void getTransformsFromKinematicsEngine(AbstractModel& simmModel);
+	// Synchronization stuff
+	// Implementation of Peterson's Algorithm that doesn't work!
+/*
+	static int _turn;
+	static bool _flag[2];
+public:
+	void mutex_begin(int i) { 
+		int j = 1-i; // i=me, j=other 
+		_flag[i] = true;                         
+		_turn = j;                               
+		//std::cout << "In mutex_begin:" << i << j 
+		//	<< _flag[0] << _flag[1] 
+		//	<< _turn << std::endl;
+		while (_flag[j] && _turn==j) ;// skip 
+		//std::cout << "Leave mutex_begin:" << i << std::endl;
 
+	}
+	void mutex_end(int i){
+		_flag[i] = false;                         
+	}
+*/
 //=============================================================================
 };	// END of class SimtkAnimationCallback
 

@@ -55,7 +55,7 @@ InvestigationIK::InvestigationIK() :
  *
  * @param aFileName File name of the document.
  */
-InvestigationIK::InvestigationIK(const string &aFileName) :
+InvestigationIK::InvestigationIK(const string &aFileName, AbstractModel* guiModel) :
 	Investigation(aFileName),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
@@ -74,12 +74,20 @@ InvestigationIK::InvestigationIK(const string &aFileName) :
 	updateFromXMLNode();
 
 	if (_model) throw( Exception("InvestigationIK did not expect initialized model") );
-	if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
-	setModel(new AbstractModel(_modelFile));
-	// Cast to SimmModel so we can call functions that don't exist in base Model class
-	if (_model) {
-		_model->setup();
+	if (guiModel){
+		// A valid model is passed in, and is initialized (likely from GUI)
+		// In this scenario, _modelFile is ignored (probably with a warning)
+		setModel(guiModel);
 		addAnalysisSetToModel();
+	}
+	else {
+		if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
+		setModel(new AbstractModel(_modelFile));
+		// Cast to SimmModel so we can call functions that don't exist in base Model class
+		if (_model) {
+			_model->setup();
+			addAnalysisSetToModel();
+		}
 	}
 	IO::chDir(saveWorkingDirectory);
 }

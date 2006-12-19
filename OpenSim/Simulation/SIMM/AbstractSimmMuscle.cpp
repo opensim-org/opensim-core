@@ -228,7 +228,12 @@ void AbstractSimmMuscle::updateGeometrySize()
 	// Track whether we're creating geometry from scratch or
 	// just updating
 	bool update = (numberOfSegements!=0);  
-	int newNumberOfSegments=_attachmentSet.getSize()-1;
+	int newNumberOfSegments=0;
+	// Get number from iterator. Very inefficient but temporary until Wrapping is in
+	AttachmentPointIterator *api = newAttachmentPointIterator();
+	while(api->next())
+		newNumberOfSegments++;
+	newNumberOfSegments--;
 	// Keep track whether any Geometry needs to be created/deleted.
 	bool segmentsChanged = (update && (newNumberOfSegments!= numberOfSegements));
 	// update geom array to have correct number of entries
@@ -259,27 +264,34 @@ void AbstractSimmMuscle::updateGeometrySize()
  */
 void AbstractSimmMuscle::updateGeometryLocations()
 {
-	double globalLocation[3];
-	double previousPointGlobalLocation[3];
+	double startGlobalLocation[3];
+	double endGlobalLocation[3];
 
-	for (int i = 0; i < _attachmentSet.getSize(); i++){
-		SimmMusclePoint* nextPoint = _attachmentSet.get(i);
+	AttachmentPointIterator *api = newAttachmentPointIterator();
+
+	SimmMusclePoint *start, *end;
+	int i;
+	// This should use end point of one segment as start point of next
+	// @todo implement this after wrapping points are in since the iterator will go away anyway.
+	// -Ayman 12/06
+	for(start=api->next(), end=api->next(), i=0; start && end; start=end, end=api->next(), i++){
 		// xform point to global frame
-		Array<double>& location=nextPoint->getAttachment();
-		const AbstractBody* body = nextPoint->getBody();
+
+		Array<double>& location=start->getAttachment();
+		const AbstractBody* body = start->getBody();
 		AbstractDynamicsEngine* engine = (const_cast<AbstractBody*> (body))->getDynamicsEngine();
 		Transform xform = engine->getTransform(*body);
-		if (i > 0){
-			for(int j=0; j < 3; j++)
-				previousPointGlobalLocation[j] = globalLocation[j];
-		}
-		engine->transformPosition(*body, location.get(), globalLocation);
+		engine->transformPosition(*body, location.get(), startGlobalLocation);
+		// repeat for end
+		Array<double>& endlocation=end->getAttachment();
+		const AbstractBody* endbody = end->getBody();
+		Transform endxform = engine->getTransform(*endbody);
+		engine->transformPosition(*endbody, endlocation.get(), endGlobalLocation);
+
 		// Make a segment between globalLocation, previousPointGlobalLocation
-		if (i > 0){
-			// Geometry will be deleted when the object is deleted.
-			LineGeometry *g = dynamic_cast<LineGeometry *>(_displayer.getGeometry(i-1));
-			g->setPoints(previousPointGlobalLocation, globalLocation);
-		}
+		// Geometry will be deleted when the object is deleted.
+		LineGeometry *g = dynamic_cast<LineGeometry *>(_displayer.getGeometry(i));
+		g->setPoints(startGlobalLocation, endGlobalLocation);		
 	}
 }
 //_____________________________________________________________________________

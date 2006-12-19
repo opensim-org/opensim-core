@@ -63,7 +63,7 @@ private:
 public:
 	virtual ~InvestigationIK();
 	InvestigationIK();
-	InvestigationIK(const std::string &aFileName);
+	InvestigationIK(const std::string &aFileName, AbstractModel* guiModel=0);
 	InvestigationIK(DOMElement *aElement);
 	InvestigationIK(const InvestigationIK &aObject);
 	virtual OpenSim::Object* copy() const;

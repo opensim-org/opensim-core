@@ -49,12 +49,25 @@
 using namespace std;
 using namespace OpenSim;
 
-
+//Synchronization stuff 
+//int SimtkAnimationCallback::_turn = 1;
+//bool SimtkAnimationCallback::_flag[] = {false, false};
 //=============================================================================
 // STATICS
 //=============================================================================
-bool SimtkAnimationCallback::_busy = false;
 
+/**
+ * Create an animation callback associated with the passed in model, add it to
+ * the model and return it.
+ * Callbacks are auto deleted by the model destructor.
+ */
+SimtkAnimationCallback*
+SimtkAnimationCallback::CreateAnimationCallback(AbstractModel *aModel)
+{
+	SimtkAnimationCallback* newAnimationCallback = new SimtkAnimationCallback(aModel);
+	aModel->addIntegCallback(newAnimationCallback);
+	return newAnimationCallback;
+}
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -80,13 +93,14 @@ SimtkAnimationCallback::~SimtkAnimationCallback()
 SimtkAnimationCallback::SimtkAnimationCallback(AbstractModel *aModel) :
 	IntegCallback(aModel)
 {
-	cout<<"\n\nCreating new SimtkAnimationCallback...\n";
+	//cout<<"\n\nCreating new SimtkAnimationCallback...\n";
 	// NULL
 	setNull();
 	AbstractDynamicsEngine& de = aModel->getDynamicsEngine();
-	// We keep pointer to body's xform. Don't delete them on exit
+	// We could keep pointer to body's xform, but that requires display
+	// to be synchronous.
+	// For now we make new list, copy then we'll fix performance
 	_transforms = new Transform[de.getNumBodies()];
-	static double Orig[3] = { 0.0, 0.0, 0.0 };	// Zero 
 
 	BodySet *bodySet = de.getBodySet();
 	AbstractBody* body;
@@ -97,7 +111,7 @@ SimtkAnimationCallback::SimtkAnimationCallback(AbstractModel *aModel) :
 	}
 
 	_currentTime=0.0;
-	cout<<endl<<endl;
+	//cout<<endl<<endl;
 }
 
 //=============================================================================
@@ -154,12 +168,21 @@ int SimtkAnimationCallback::
 step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
 	double *aX,double *aY,void *aClientData)
 {
+	if((aStep% getStepInterval())!=0)
+		return (0);
+
+	_currentTime = aT;
+	
+	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
+	getTransformsFromKinematicsEngine(*_model);
 	// update muscle geometry
 	ActuatorSet* actSet = _model->getActuatorSet();
 	for(int i=0; i < actSet->getSize(); i++)
 		actSet->get(i)->updateGeometry();
+	//mutex_end(0);
 	return (0);
 }
+
 const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
 {
 	return &_transforms[index];
@@ -174,9 +197,17 @@ void SimtkAnimationCallback::extractOffsets(AbstractModel& displayModel)
 /*------------------------------------------------------------------
  * getTransformsFromKinematicsEngine is a utility used to filll the 
  * _transforms array from a SimmKinematicsEngine
- * @param simmModel: The model to use with associated kinematicsEngine
+ * @param dModel: The model to use with associated kinematicsEngine
  */
 void SimtkAnimationCallback::
-getTransformsFromKinematicsEngine(AbstractModel& simmModel)
+getTransformsFromKinematicsEngine(AbstractModel& dModel)
 {
+	AbstractDynamicsEngine& de = dModel.getDynamicsEngine();
+	BodySet *bodySet = de.getBodySet();
+	AbstractBody* body;
+	int i,nb = bodySet->getSize();
+	for(i=0;i<nb;i++) {
+		body = bodySet->get(i);
+		_transforms[i] = de.getTransform(*body);
+	}
 }
