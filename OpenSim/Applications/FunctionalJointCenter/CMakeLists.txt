@@ -21,10 +21,10 @@ INSTALL_TARGETS(/bin/ fjc)
 # Testing
 #
 
-IF (UNIX)
-  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-  LINK_LIBRARIES(gcov)
-ENDIF (UNIX)
+#IF (UNIX)
+#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
+#  LINK_LIBRARIES(gcov)
+#ENDIF (UNIX)
 
 ENABLE_TESTING()
 

@@ -14,7 +14,7 @@ INSTALL_TARGETS(/bin/ cmcgait)
 # Testing
 #
 
-IF (UNIX)
-  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-  LINK_LIBRARIES(gcov)
-ENDIF (UNIX)
+#IF (UNIX)
+#  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
+#  LINK_LIBRARIES(gcov)
+#ENDIF (UNIX)
