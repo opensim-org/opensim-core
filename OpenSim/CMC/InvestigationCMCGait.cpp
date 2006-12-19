@@ -888,7 +888,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	// COMPUTE TORSO WEIGHT
 	AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
 	double bodyMass = body->getMass();
-	double bodyWeight = abs(g[1])*bodyMass;
+	double bodyWeight = fabs(g[1])*bodyMass;
 	if(bodyWeight<rdMath::ZERO) {
 		cout<<"\nInvestigationCMCGait.adjustCOMToReduceResiduals: ERR- ";
 		cout<<_adjustedCOMBody<<" has no weight.\n";
