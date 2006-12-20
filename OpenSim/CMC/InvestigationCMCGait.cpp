@@ -288,8 +288,8 @@ setNull()
 	_desiredKinematicsFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
-	_externalLoadsBody1 = -1;
-	_externalLoadsBody2 = -1;
+	_externalLoadsBody1 = "";
+	_externalLoadsBody2 = "";
 	_taskSetFileName = "";
 	_constraintsFileName = "";
 	_rraControlsFileName = "";

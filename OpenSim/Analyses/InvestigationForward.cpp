@@ -191,8 +191,8 @@ setNull()
 	_initialStatesFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
-	_externalLoadsBody1 = -1;
-	_externalLoadsBody2 = -1;
+	_externalLoadsBody1 = "";
+	_externalLoadsBody2 = "";
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 	_useSpecifiedDt = false;
 	_adjustedCOMBody = "";

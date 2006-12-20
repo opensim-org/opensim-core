@@ -73,7 +73,12 @@ InvestigationPerturbation::InvestigationPerturbation() :
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
+	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -111,7 +116,12 @@ InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
+	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -146,7 +156,12 @@ InvestigationPerturbation::InvestigationPerturbation(DOMElement *aElement):
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
+	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -213,7 +228,12 @@ InvestigationPerturbation(const InvestigationPerturbation &aInvestigation):
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
+	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setNull();
 	*this = aInvestigation;
@@ -274,6 +294,11 @@ setNull()
 
 	_adjustedCOMBody = "";
 	_adjustedCOMFileName = "";
+	_externalLoadsFileName = "";
+	_externalLoadsModelKinematicsFileName = "";
+	_externalLoadsBody1 = "";
+	_externalLoadsBody2 = "";
+	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 }
 //_____________________________________________________________________________
 /**
@@ -350,6 +375,22 @@ void InvestigationPerturbation::setupProperties()
 
 	_lToeOffProp.setName("l_toe_off");
 	_propertySet.append( &_lToeOffProp );
+
+	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
+	_externalLoadsFileNameProp.setName("external_loads_file_name");
+	_propertySet.append( &_externalLoadsFileNameProp );
+
+	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file_name");
+	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
+
+	_externalLoadsBody1Prop.setName("external_loads_body1");
+	_propertySet.append( &_externalLoadsBody1Prop );
+
+	_externalLoadsBody2Prop.setName("external_loads_body2");
+	_propertySet.append( &_externalLoadsBody2Prop );
+
+	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
+	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 }
 
 
@@ -437,6 +478,10 @@ void InvestigationPerturbation::run()
 	int na = _model->getNumActuators();
 	int nb = _model->getNumBodies();
 	int numBodyKinCols = 6*nb + 3;
+
+	// GROUND REACTION FORCES
+	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
 	_model->getDynamicsEngine().convertDegreesToRadians(_qStore);
