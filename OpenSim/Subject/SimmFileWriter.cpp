@@ -427,7 +427,6 @@ bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofst
 		}
 		else if (dofs->get(i)->getMotionType() == AbstractDof::Rotational)
 		{
-			char buffer[5];
 			SimmRotationDof* rd = dynamic_cast<SimmRotationDof*>(dofs->get(i));
 			rotDofIndex++;
 			aStream << "r" << rotDofIndex;
