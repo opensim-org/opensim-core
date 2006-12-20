@@ -133,19 +133,6 @@ private:
 	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
 
-	// WORK VARIABLES
-	/** Control set. */
-	ControlSet *_controlSet;
-	/** Center of pressure storage. */
-	Storage *_copStore;
-	/** Generalized coordinates storage. */
-	Storage *_qStore;
-	/** Generalized speed storage. */
-	Storage *_uStore;
-	/** States storage. */
-	Storage *_yStore;
-
-
 //=============================================================================
 // METHODS
 //=============================================================================

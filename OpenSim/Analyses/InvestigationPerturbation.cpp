@@ -40,11 +40,6 @@ using namespace std;
  */
 InvestigationPerturbation::~InvestigationPerturbation()
 {
-	if(_controlSet!=0) delete _controlSet;
-	if(_copStore!=0) delete _copStore;
-	if(_qStore!=0) delete _qStore;
-	if(_uStore!=0) delete _uStore;
-	if(_yStore!=0) delete _yStore;
 }
 //_____________________________________________________________________________
 /**
@@ -270,13 +265,6 @@ setNull()
 {
 	setupProperties();
 
-	// POINTERS
-	_controlSet = NULL;
-	_copStore = NULL;
-	_qStore = NULL;
-	_uStore = NULL;
-	_yStore = NULL;
-
 	// FOOT CONTACT EVENTS
 	_rHeelStrike = _rFootFlat =_rHeelOff = _rToeOff = 0.0;
 	_lHeelStrike = _lFootFlat =_lHeelOff = _lToeOff = 0.0;
@@ -457,19 +445,10 @@ void InvestigationPerturbation::run()
 	// INPUT
 	// Controls
 	cout<<endl<<endl<<"Loading controls from file "<<_controlsFileName<<".\n";
-	_controlSet = new ControlSet(_controlsFileName);
-	cout<<"Found "<<_controlSet->getSize()<<" controls.\n\n";
-	// Center of pressure
-	cout<<endl<<endl<<"Loading center of pressure data from file ";
-	cout<<_copFileName<<".\n";
-	_copStore = new Storage(_copFileName);
-	// Qs and Us
-	cout<<endl<<endl<<"Loading generalized coordinates and speeds from files ";
-	cout<<_qFileName<<" and "<<_uFileName<<".\n";
-	_qStore = new Storage(_qFileName);
-	_uStore = new Storage(_uFileName);
+	ControlSet *controlSet = new ControlSet(_controlsFileName);
+	cout<<"Found "<<controlSet->getSize()<<" controls.\n\n";
 	// States
-	_yStore = new Storage(_yFileName);
+	Storage *yStore = new Storage(_yFileName);
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
@@ -482,11 +461,6 @@ void InvestigationPerturbation::run()
 	// GROUND REACTION FORCES
 	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
-
-	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
-	_model->getDynamicsEngine().convertDegreesToRadians(_qStore);
-	_model->getDynamicsEngine().convertAnglesToQuaternions(_qStore);
-	_model->getDynamicsEngine().convertDegreesToRadians(_uStore);
 
 	// CONSTRUCT CORRECTIVE SPRINGS
 	constructCorrectiveSprings();
@@ -510,14 +484,14 @@ void InvestigationPerturbation::run()
 	// SETUP SIMULATION
 	// Manager
 	ModelIntegrand integrand(_model);
-	integrand.setControlSet(*_controlSet);
+	integrand.setControlSet(*controlSet);
 	Manager manager(&integrand);
 	manager.setSessionName(getName());
 	// Initial and final times
 	// If the times lie outside the range for which control values are
 	// available, the initial and final times are altered.
 	int first = 0;
-	ControlLinear *control = (ControlLinear*)_controlSet->get(first);
+	ControlLinear *control = (ControlLinear*)controlSet->get(first);
 	if(control==NULL) {
 		cout<<"\n\nError- There are no controls.\n\n";
 		exit(-1);
@@ -623,9 +597,9 @@ void InvestigationPerturbation::run()
 	for(tiPert=_ti;tiPert<=lastPertTime;tiPert+=_pertIncrement) {
 
 		// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
-		index = _yStore->findIndex(tiPert);
-		_yStore->getTime(index,tiPert);
-		_yStore->getData(index,ny,&yi[0]);
+		index = yStore->findIndex(tiPert);
+		yStore->getTime(index,tiPert);
+		yStore->getData(index,ny,&yi[0]);
 		tfPert = tiPert + _pertWindow;
 		manager.setInitialTime(tiPert);
 		manager.setFinalTime(tfPert);
@@ -769,10 +743,21 @@ void InvestigationPerturbation::run()
 void InvestigationPerturbation::
 constructCorrectiveSprings()
 {
+	// Qs and Us
+	cout<<"\n\nLoading generalized coordinates and speeds from files "
+	    <<_qFileName<<" and "<<_uFileName<<".\n";
+	Storage qStore(_qFileName);
+	Storage uStore(_uFileName);
+
+	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
+	_model->getDynamicsEngine().convertDegreesToRadians(&qStore);
+	_model->getDynamicsEngine().convertAnglesToQuaternions(&qStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(&uStore);
+
 	// SCALING FUNCTIONS FOR SPRINGS
 	double tScale,dtScale=0.001;
-	double tiScale = _qStore->getFirstTime();
-	double tfScale = _qStore->getLastTime();
+	double tiScale = qStore.getFirstTime();
+	double tfScale = qStore.getLastTime();
 	double value1,value2;
 	Array<double> timeScale(0.0);
 	Array<double> rLinearScale(0.0),rTorsionalScale(0.0);
@@ -807,20 +792,24 @@ constructCorrectiveSprings()
 	GCVSpline *lScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lTorsionalScale[0]);
 	lScaleTorsionalSpline->setName("Left_Torsional");
 
+	// Center of pressure
+	cout<<"\n\nLoading center of pressure data from file "<<_copFileName<<".\n";
+	Storage copStore(_copFileName);
+
 	// CONSTRUCT SPRINGS
 	VectorGCVSplineR1R3 *cop;
-	int size = _copStore->getSize();
+	int size = copStore.getSize();
 	double *t=0,*x=0,*y=0,*z=0;
-	_copStore->getTimeColumn(t);
+	copStore.getTimeColumn(t);
 
 	// LINEAR
 	// right
-	_copStore->getDataColumn("ground_force_px_r",x);
-	_copStore->getDataColumn("ground_force_py_r",y);
-	_copStore->getDataColumn("ground_force_pz_r",z);
+	copStore.getDataColumn("ground_force_px_r",x);
+	copStore.getDataColumn("ground_force_py_r",y);
+	copStore.getDataColumn("ground_force_pz_r",z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
-	rLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
+	rLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
 	rLin->setScaleFunction(rScaleTranslationalSpline);
@@ -828,12 +817,12 @@ constructCorrectiveSprings()
 	delete cop;
 
 	// left linear
-	_copStore->getDataColumn("ground_force_px_l",x);
-	_copStore->getDataColumn("ground_force_py_l",y);
-	_copStore->getDataColumn("ground_force_pz_l",z);
+	copStore.getDataColumn("ground_force_px_l",x);
+	copStore.getDataColumn("ground_force_py_l",y);
+	copStore.getDataColumn("ground_force_pz_l",z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
-	lLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
+	lLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
 	lLin->setScaleFunction(lScaleTranslationalSpline);
@@ -844,14 +833,14 @@ constructCorrectiveSprings()
 	// TORSIONAL
 	// right
 	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
-	rTrq->computeTargetFunctions(_qStore,_uStore);
+	rTrq->computeTargetFunctions(&qStore,&uStore);
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
 	rTrq->setScaleFunction(rScaleTorsionalSpline);
 	_model->addDerivCallback(rTrq);
 	// left
 	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
-	lTrq->computeTargetFunctions(_qStore,_uStore);
+	lTrq->computeTargetFunctions(&qStore,&uStore);
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);
 	lTrq->setScaleFunction(lScaleTorsionalSpline);
