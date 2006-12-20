@@ -26,6 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include <fstream>
+#include <sstream>
 #include <OpenSim/Tools/rdMath.h>
 #include "SimmMotionData.h"
 #include "SimmIO.h"
@@ -770,15 +771,9 @@ void SimmMotionData::addToRdStorage(Storage& rStorage, double aStartTime, double
 		}
 		if (j == _numRows)
 		{
-			char timeText[8];
-			// TODO: use sprintf (recommended) instead of gcvt
-#ifdef __linux__
-			gcvt(stateTime, 6, timeText);
-#else
-			_gcvt(stateTime, 6, timeText);
-#endif
-			string errorMessage = "Error: no coordinate data found at time " + string(timeText) + " in " + _fileName;
-			throw (Exception(errorMessage.c_str()));
+			stringstream errorMessage;
+			errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << _fileName;
+			throw (Exception(errorMessage.str()));
 		}
 	}
 
