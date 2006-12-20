@@ -105,6 +105,13 @@ private:
 	/** Damping for torsional corrective springs. */
 	PropertyDblArray _bTorProp;
 	Array<double> &_bTor;
+	/** Name of the body whose center of mass is adjusted. */
+	PropertyStr _adjustedCOMBodyProp;
+	std::string &_adjustedCOMBody;
+	/** Name of the file specifying a change to the center of mass of a body.
+	This adjustment is made to remove dc offset in the residuals. */
+	PropertyStr _adjustedCOMFileNameProp;
+	std::string &_adjustedCOMFileName;
 
 	// WORK VARIABLES
 	/** Control set. */

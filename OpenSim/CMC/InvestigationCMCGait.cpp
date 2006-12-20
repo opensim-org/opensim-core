@@ -524,18 +524,7 @@ void InvestigationCMCGait::run()
 	_model->printDetailedInfo(cout);
 
 	// ALTER COM ?
-	if(_adjustedCOMFileName!="") {
-		FILE *fpCOM = fopen(_adjustedCOMFileName.c_str(),"r");
-		if(fpCOM!=NULL) {
-			Array<double> com(0.0,3);
-			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
-			AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
-			cout<<"NOTE- altering center of mass for "<<_adjustedCOMBody<<endl;
-			cout<<com<<endl<<endl;
-			body->setMassCenter(&com[0]);
-			fclose(fpCOM);
-		}
-	}
+	InvestigationForward::adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// OUTPUT DIRECTORY
 	// Do the maneuver to change then restore working directory 

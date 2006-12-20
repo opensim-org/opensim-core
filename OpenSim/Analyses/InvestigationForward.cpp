@@ -300,18 +300,7 @@ void InvestigationForward::run()
 	IO::SetPrecision(_outputPrecision);
 
 	// ALTER COM ?
-	if(_adjustedCOMFileName!="") {
-		FILE *fpCOM = fopen(_adjustedCOMFileName.c_str(),"r");
-		if(fpCOM!=NULL) {
-			Array<double> com(0.0,3);
-			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
-			AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
-			cout<<"NOTE- altering center of mass for "<<_adjustedCOMBody<<endl;
-			cout<<com<<endl<<endl;
-			body->setMassCenter(&com[0]);
-			fclose(fpCOM);
-		}
-	}
+	adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
@@ -669,4 +658,23 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	aModel->addDerivCallback(leftTorqueApp);
 }
 
-
+//_____________________________________________________________________________
+/**
+ * Adjust center of mass of given body using COM stored in given file.
+ */
+void InvestigationForward::
+adjustCOM(AbstractModel *aModel, const std::string &aAdjustedCOMFileName, const std::string &aAdjustedCOMBody)
+{
+	if(aAdjustedCOMFileName!="") {
+		FILE *fpCOM = fopen(aAdjustedCOMFileName.c_str(),"r");
+		if(fpCOM!=NULL) {
+			Array<double> com(0.0,3);
+			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
+			AbstractBody *body = aModel->getDynamicsEngine().getBodySet()->get(aAdjustedCOMBody);
+			cout<<"NOTE- altering center of mass for "<<aAdjustedCOMBody<<endl;
+			cout<<com<<endl<<endl;
+			body->setMassCenter(&com[0]);
+			fclose(fpCOM);
+		}
+	}
+}

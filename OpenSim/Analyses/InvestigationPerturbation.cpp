@@ -5,6 +5,7 @@
 // INCLUDES
 //=============================================================================
 #include "InvestigationPerturbation.h"
+#include "InvestigationForward.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
@@ -70,7 +71,9 @@ InvestigationPerturbation::InvestigationPerturbation() :
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray())
+	_bTor(_bTorProp.getValueDblArray()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -106,7 +109,9 @@ InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray())
+	_bTor(_bTorProp.getValueDblArray()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -139,7 +144,9 @@ InvestigationPerturbation::InvestigationPerturbation(DOMElement *aElement):
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray())
+	_bTor(_bTorProp.getValueDblArray()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setType("InvestigationPerturbation");
 	setNull();
@@ -204,7 +211,9 @@ InvestigationPerturbation(const InvestigationPerturbation &aInvestigation):
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray())
+	_bTor(_bTorProp.getValueDblArray()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
 {
 	setNull();
 	*this = aInvestigation;
@@ -262,6 +271,9 @@ setNull()
 	_kTor[0] = _kTor[1] = _kTor[2] = 100000.0;
 	_bTor.setSize(3);
 	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
+
+	_adjustedCOMBody = "";
+	_adjustedCOMFileName = "";
 }
 //_____________________________________________________________________________
 /**
@@ -378,8 +390,18 @@ void InvestigationPerturbation::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
+	// CHECK FOR A MODEL
+	if(_model==NULL) {
+		string msg = "ERROR- A model has not been set.";
+		cout<<endl<<msg<<endl;
+		throw(Exception(msg,__FILE__,__LINE__));
+	}
+
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
+
+	// ALTER COM ?
+	InvestigationForward::adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// REGISTER TYPES
 	Object::RegisterType(ControlLinear());
@@ -407,13 +429,6 @@ void InvestigationPerturbation::run()
 	_uStore = new Storage(_uFileName);
 	// States
 	_yStore = new Storage(_yFileName);
-
-	// CHECK FOR A MODEL
-	if(_model==NULL) {
-		string msg = "ERROR- A model has not been set.";
-		cout<<endl<<msg<<endl;
-		throw(Exception(msg,__FILE__,__LINE__));
-	}
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
@@ -495,7 +510,7 @@ void InvestigationPerturbation::run()
 
 
 	// RESULT VARIABLES
-	int i,m,endIndex;
+	int i,endIndex;
 	char fileName[Object::NAME_LENGTH];
 	double PXBody,PYBody,PZBody;
 	Array<double> PFXBody(0.0,na),PFYBody(0.0,na),PFZBody(0.0,na);
@@ -619,7 +634,7 @@ void InvestigationPerturbation::run()
 		//for (m=tib_ant_l;m<=tib_ant_l;m++)	{
 		//ai->reset();
 		//act = ai->next();
-		for (m=0;m<na;m++)	{
+		for (int m=0;m<na;m++)	{
 			AbstractActuator *act = as->get(m);
 			// Set up pertubation callback
 			cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
@@ -755,36 +770,31 @@ constructCorrectiveSprings()
 
 	// LINEAR
 	// right
-	string colName;
-	colName = "ground_force_px_r";
-	_copStore->getDataColumn(colName,x);
-	colName = "ground_force_py_r";
-	_copStore->getDataColumn(colName,y);
-	colName = "ground_force_pz_r";
-	_copStore->getDataColumn(colName,z);
+	_copStore->getDataColumn("ground_force_px_r",x);
+	_copStore->getDataColumn("ground_force_py_r",y);
+	_copStore->getDataColumn("ground_force_pz_r",z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
 	rLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
 	rLin->setScaleFunction(rScaleTranslationalSpline);
-	Storage *rLinStore = rLin->getAppliedForceStorage();
 	_model->addDerivCallback(rLin);
+	delete cop;
+
 	// left linear
-	colName = "ground_force_px_l";
-	_copStore->getDataColumn(colName,x);
-	colName = "ground_force_py_l";
-	_copStore->getDataColumn(colName,y);
-	colName = "ground_force_pz_l";
-	_copStore->getDataColumn(colName,z);
+	_copStore->getDataColumn("ground_force_px_l",x);
+	_copStore->getDataColumn("ground_force_py_l",y);
+	_copStore->getDataColumn("ground_force_pz_l",z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
 	lLin->computePointAndTargetFunctions(_qStore,_uStore,*cop);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
 	lLin->setScaleFunction(lScaleTranslationalSpline);
-	Storage *lLinStore = lLin->getAppliedForceStorage();
 	_model->addDerivCallback(lLin);
+	delete cop;
+	delete[] t; delete[] x; delete[] y; delete[] z;
 
 	// TORSIONAL
 	// right
@@ -793,7 +803,6 @@ constructCorrectiveSprings()
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
 	rTrq->setScaleFunction(rScaleTorsionalSpline);
-	Storage *rTrqStore = rTrq->getAppliedTorqueStorage();
 	_model->addDerivCallback(rTrq);
 	// left
 	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
@@ -801,7 +810,6 @@ constructCorrectiveSprings()
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);
 	lTrq->setScaleFunction(lScaleTorsionalSpline);
-	Storage *lTrqStore = lTrq->getAppliedTorqueStorage();
 	_model->addDerivCallback(lTrq);
 }
 

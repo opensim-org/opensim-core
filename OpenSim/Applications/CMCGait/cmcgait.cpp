@@ -89,7 +89,7 @@ int main(int argc,char **argv)
 
 	// ERROR CHECK
 	if(setupFileName=="") {
-		cout<<"\n\ncmc.exe: ERROR- A setup file must be specified.\n";
+		cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
 		PrintUsage(cout);
 		return(-1);
 	}
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
 	// PRINT MODEL INFORMATION
 	AbstractModel *model = cmcgait.getModel();
 	if(model==NULL) {
-		cout<<"\nperturb:  ERROR- failed to load model.\n";
+		cout<<"\n"<<argv[0]<<":  ERROR- failed to load model.\n";
 		exit(-1);
 	}
 	cout<<"-----------------------------------------------------------------------\n";

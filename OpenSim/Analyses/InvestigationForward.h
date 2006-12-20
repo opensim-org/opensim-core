@@ -124,6 +124,7 @@ public:
 		const std::string &aExternalLoadsBody1,
 		const std::string &aExternalLoadsBody2,
 		double aLowpassCutoffFrequencyForLoadKinematics);
+	static void adjustCOM(AbstractModel *aModel, const std::string &aAdjustedCOMFileName, const std::string &aAdjustedCOMBody);
 
 //=============================================================================
 };	// END of class InvestigationForward
