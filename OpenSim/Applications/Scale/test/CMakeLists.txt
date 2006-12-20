@@ -2,8 +2,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${XERCES_INCLUDE_DIR})
 
-FILE(GLOB SOURCE_FILES ../../IK/simm*.cpp ../../../Subject/Simm*.cpp testScale.cpp)
-FILE(GLOB INCLUDE_FILES ../../IK/simm*.h ../../../Subject/Simm*.h)
+FILE(GLOB SOURCE_FILES ../../IK/Simm*.cpp ../../../Subject/Simm*.cpp testScale.cpp)
+FILE(GLOB INCLUDE_FILES ../../IK/Simm*.h ../../../Subject/Simm*.h)
 
 
 

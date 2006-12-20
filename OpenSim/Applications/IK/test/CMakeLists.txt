@@ -2,8 +2,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${XERCES_INCLUDE_DIR})
 
-FILE(GLOB SOURCE_FILES ../simm*.cpp  ../../../Subject/Simm*.cpp testIK.cpp)
-FILE(GLOB INCLUDE_FILES ../simm*.h ../../../Subject/Simm*.h)
+FILE(GLOB SOURCE_FILES ../Simm*.cpp  ../../../Subject/Simm*.cpp testIK.cpp)
+FILE(GLOB INCLUDE_FILES ../Simm*.h ../../../Subject/Simm*.h)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
 		debug rdTools_d optimized rdTools
