@@ -50,7 +50,9 @@
 
 #include <fcntl.h>
 
-#ifdef WIN32
+#if defined(WIN32)
+   #include <time.h>
+#elif defined(__linux__)
    #include <time.h>
 #else
    #define _IEEE 1
@@ -1219,7 +1221,7 @@ int check_title_area(int title_mask, int mx, int my, WindowParams* win_params,
 #endif /* ! NO_GUI */
 #endif /* ENGINE */
 
-#ifndef WIN32 /* ==== TEMPORARILY COMMENTED-OUT TO COMPILE FOR WIN32 */
+#if !defined(WIN32) && !defined(__linux__) /* ==== TEMPORARILY COMMENTED-OUT TO COMPILE FOR WIN32 AND LINUX */
 
 static struct timeval start_tp;
 static struct timezone start_tzp;
@@ -2247,7 +2249,7 @@ public ReturnCode read_double (FILE* f, double* value)
    {
 #ifdef __MWERKS__
       *value = NAN;
-#elif defined MS_VISUAL_C
+#elif defined(MS_VISUAL_C) || defined(__linux__)
 	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
 #else
       NaN(*value);
@@ -2309,7 +2311,7 @@ public ReturnCode read_double_tab(FILE* f, double* value)
    {
 #ifdef __MWERKS__
       *value = NAN;
-#elif defined MS_VISUAL_C
+#elif defined(MS_VISUAL_C) || defined(__linux__)
 	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
 #else
       NaN(*value);
@@ -2405,6 +2407,11 @@ int findHighestUserFuncNum(int mod)
 
 int strings_equal_case_insensitive(const char str1[], const char str2[])
 {
+#if defined(__linux__)
+	return !strcasecmp(str1,str2);
+#elif defined(WIN32)
+	return !stricmp(str1,str2);
+#else
    char buf1[1024];
 
    /* make the strings upper case and compare them */
@@ -2415,10 +2422,16 @@ int strings_equal_case_insensitive(const char str1[], const char str2[])
    _strupr(buf1);
 
    return !strcmp(buffer, buf1);
+#endif
 }
 
 int strings_equal_n_case_insensitive(const char str1[], const char str2[], int n)
 {
+#if defined(__linux__)
+	return !strncasecmp(str1,str2,n);
+#elif defined(WIN32)
+	return !strnicmp(str1,str2,n);
+#else
    char buf1[1024];
 
    if ((int)strlen(str1) < n || (int)strlen(str2) < n)
@@ -2434,6 +2447,7 @@ int strings_equal_n_case_insensitive(const char str1[], const char str2[], int n
    _strupr(buf1);
 
    return !strcmp(buffer, buf1);
+#endif
 }
 
 

@@ -46,7 +46,6 @@
 //#include "constrainteditor.h"
 //#include "cefunctions.h"
 
-
 /*************** DEFINES (for this file only) *********************************/
 #define EVENT_QUEUE_SIZE 50
 #define RAMPSIZE 32
@@ -1602,7 +1601,7 @@ const char* get_simm_resources_directory()
    static char  simm_resources_buf[512];
    static char* simm_resources_dir = NULL;
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__linux__)
    return root.simm_dir;
 #else
 
@@ -1617,6 +1616,7 @@ const char* get_simm_resources_directory()
 #endif
 }
 
+#ifndef ENGINE
 static void make_mocap_model_filepath(void)
 {
    const char* p = getpref("MOCAP_MODEL");
@@ -1643,6 +1643,7 @@ static void make_mocap_model_filepath(void)
 
    mstrcpy(&root.mocap_model, buffer);
 }
+#endif
 
 #if INCLUDE_PERSISTENT_SIMM_STATE
 

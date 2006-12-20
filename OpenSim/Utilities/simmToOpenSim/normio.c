@@ -36,6 +36,11 @@
 #include "normio.h"
 #include "normtools.h"
 
+// Linux doesn't use O_BINARY
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 
 /*************** DEFINES (for this file only) *********************************/
 
