@@ -1130,7 +1130,7 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
  * required to have the same number of states.
  */
 int Storage::
-getDataColumn(std::string& aColumnName,double *&rData) const
+getDataColumn(const std::string& aColumnName,double *&rData) const
 {
 	return getDataColumn(getColumnIndex(aColumnName), rData);
 }

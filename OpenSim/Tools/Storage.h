@@ -145,7 +145,7 @@ public:
 	int getDataAtTime(double aTime,int aN,double *rData) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
-	int getDataColumn(std::string& columnName,double *&rData) const;
+	int getDataColumn(const std::string& columnName,double *&rData) const;
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;
