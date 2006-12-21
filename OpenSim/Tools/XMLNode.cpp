@@ -261,7 +261,7 @@ RemoveChildren(DOMNode *aNode)
 	if(aNode==NULL) return;
 
 	DOMNode *child;
-	while(child = aNode->getFirstChild()) {
+	while((child = aNode->getFirstChild())) {
 		aNode->removeChild(child);
 	}
 

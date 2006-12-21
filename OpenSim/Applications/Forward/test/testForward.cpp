@@ -23,8 +23,6 @@ using namespace OpenSim;
 using namespace std;
 
 
-static void PrintUsage(ostream &aOStream);
-
 string filesToCompare[] = {
 							"check.xml",
 							"test_Kinematics_u.sto",
@@ -76,18 +74,3 @@ int main(int argc,char **argv)
 	return (success?0:1);
 
 }
-
-
-//_____________________________________________________________________________
-/**
- * Print the usage for this application
- */
-void PrintUsage(ostream &aOStream)
-{
-	aOStream<<"\n\nforward.exe:\n\n";
-	aOStream<<"Option              Argument            Action / Notes\n";
-	aOStream<<"------              --------            --------------\n";
-	aOStream<<"-Help, -H                               Print the command-line options for forward.exe.\n";
-	aOStream<<"-PrintSetup, -PS                        Print a default setup file for forward.exe (default_forward.xml).\n";
-}
-

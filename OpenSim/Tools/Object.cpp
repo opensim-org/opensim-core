@@ -1283,7 +1283,7 @@ updateXMLNode(DOMElement *aParent)
 		case(Property::ObjArray) : {
 			ArrayPtrs<Object> &value = property->getValueObjArray();
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt==NULL) elmt = elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			if(elmt==NULL) elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
 			if((elmt==NULL) && (!property->getUseDefault())) { // Is this ever used??
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
 			}

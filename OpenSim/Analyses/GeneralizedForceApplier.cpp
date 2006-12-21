@@ -201,12 +201,7 @@ constructColumnLabels()
 void GeneralizedForceApplier::
 allocateStorage()
 {
-	char genCoordName[2048];
-	char title[2048];
-	sprintf(title,"Generalized forces applied to ");
-	sprintf(genCoordName,"genCoord_%d",_genCoord);
-	strcat(title, genCoordName);
-	_appliedGeneralizedForceStore = new Storage(1000,title);
+	_appliedGeneralizedForceStore = new Storage(1000,"Generalized forces applied to " + _genCoord->getName());
 	_appliedGeneralizedForceStore->setDescription(getDescription());
 	_appliedGeneralizedForceStore->setColumnLabels(_appliedGeneralizedForceStore->getColumnLabels());
 }
@@ -433,7 +428,6 @@ setStorageCapacityIncrements(int aIncrement)
 void GeneralizedForceApplier::
 applyActuation(double aT,double *aX,double *aY)
 {
-	double genForce = 0.0;
 	double genForceToStore[1];
 	double *genForceArray = new double[_model->getNumCoordinates()];
 	double time;

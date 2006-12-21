@@ -180,7 +180,6 @@ constructColumnLabels(int nResultantForcePointgroups)
 	string labels = "Time";
 
 	// VECTOR LABELS
-	int nb = _model->getNumBodies();
 	int p;
 	AbstractBody *a, *b;
 	char tmp[Object::NAME_LENGTH];
@@ -515,7 +514,7 @@ record(double aT,double *aX,double *aY)
 	double contactPosRelCOMLocal[3];
 	double contactPosRelCOMGlobal[3];
 	//double contactPosGlobal[3];
-	double posBodyCOMLocal[3] = {0,0,0};
+	//double posBodyCOMLocal[3] = {0,0,0};
 	//double posBodyCOMGlobal[3];
 	double contactTorque[3];
 
@@ -645,7 +644,7 @@ step(double *aXPrev,double *aYPrev,
 {
 	if(!proceed(aStep)) return(0);
 
-	int status = record(aT,aX,aY);
+	record(aT,aX,aY);
 
 	return(0);
 }

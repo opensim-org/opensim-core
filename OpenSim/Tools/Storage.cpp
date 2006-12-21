@@ -298,7 +298,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 	if(label==NULL) return;
 	strcpy(newLabels,label);
 	int I;
-	for(I=i=0;label=strtok(NULL,aDelimiter);i++) {
+	for(I=i=0;(label=strtok(NULL,aDelimiter));i++) {
 		if(i<aStateIndex) continue;
 		strcat(newLabels,"\t");
 		strcat(newLabels,label);
@@ -2364,8 +2364,6 @@ print(const string &aFileName,const string &aMode) const
 
 	// WRITE THE HEADER
 	int n=0,nTotal=0;
-	int nr = _storage.getSize();
-	int nc = getSmallestNumberOfStates()+1;
 	n = writeHeader(fp);
 	if(n<0) {
 		printf("Storage.print(const string&,const string&): failed to\n");
@@ -2445,7 +2443,6 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
 
 	// WRITE THE HEADER
-	int nc = getSmallestNumberOfStates()+1;
 	int n,nTotal=0;
 	n = writeHeader(fp,aDT);
 	if(n<0) {

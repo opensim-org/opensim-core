@@ -222,7 +222,7 @@ computePerformance(double *aX,double *rP)
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
 	// TIME STUFF
-	double window = 0.100;
+	//double window = 0.100;
 	double timeNorm = model->getTimeNormConstant();
 	double tfReal = _tf * timeNorm;
 
@@ -301,7 +301,7 @@ int rdInitialStatesTarget::
 computeConstraintGradient(double *x,int ic,double *dcdx)
 {
 	// COMPUTE GRADIENT
-	int status = rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
+	rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
 	return(0);
 }
 

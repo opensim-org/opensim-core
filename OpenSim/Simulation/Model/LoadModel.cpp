@@ -42,9 +42,6 @@ typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const str
 }
 
 
-static void PrintUsage(ostream &aOStream);
-
-
 //_____________________________________________________________________________
 /**
  * A wrapper around Window's LoadLibrary that implements library naming
@@ -221,24 +218,3 @@ RDSIMULATION_API AbstractModel* LoadModel(const string &aModelLibraryName, const
 	
 	return(model);
 }
-
-
-//_____________________________________________________________________________
-/**
- * Print the usage for this application
- */
-void PrintUsage(ostream &aOStream)
-{
-	aOStream<<"Options for LoadModel(int argc,char **argv):\n";
-	aOStream<<"\t-Help or -H           Print the options for LoadModel(int argc,char **argv)\n";
-	aOStream<<"\t-ModelLibrary or -ML  NameOfModelLibrary (do not include the library extension [e.g., .dll or .lib])\n";
-	aOStream<<"\t-ModelFile or -MF     NameOfModelDeserializationFile (including path)\n";
-	aOStream<<"\t-Actuators or -A      NameOfActuatorSet (including path)\n";
-	aOStream<<"\t-Contacts or -C       NameofContactSet (including path)\n";
-	aOStream<<"\t-Params or -P         NameOfPipelineParamsFile (including path)\n";
-	aOStream<<"\t-Library or -L        NameOfAdditionalLibraryToLoad (to load more than one library,\n";
-	aOStream<<"\t                      add as many -Library options as needed)\n";
-}
-
-
-

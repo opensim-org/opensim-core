@@ -72,11 +72,11 @@ VisibleObject::~VisibleObject()
  */
 VisibleObject::VisibleObject():
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
+_allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
-_dependents(0),
-_allGeometry(0)
+_dependents(0)
 {
 	// NULL STATES
 	setNull();
@@ -98,11 +98,11 @@ _allGeometry(0)
 VisibleObject::VisibleObject(const string &aFileName):
 Object(aFileName),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
+_allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
-_dependents(0),
-_allGeometry(0)
+_dependents(0)
 {
 	// NULL STATES
 	setNull();
@@ -116,11 +116,11 @@ _allGeometry(0)
 VisibleObject::VisibleObject(DOMElement *aElement):
 Object(aElement),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
+_allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
-_dependents(0),
-_allGeometry(0)
+_dependents(0)
 {
 	// NULL STATES
 	setNull();
@@ -166,11 +166,11 @@ _allGeometry(0)
 VisibleObject::VisibleObject(const VisibleObject &aObject):
 Object(aObject),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
+_allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
-_dependents(0),
-_allGeometry(0)
+_dependents(0)
 {
 	// NULL MEMBER VARIABLES
 	setNull();

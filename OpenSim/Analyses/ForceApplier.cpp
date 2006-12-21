@@ -559,7 +559,6 @@ applyActuation(double aT,double *aX,double *aY)
 {
 	double force[3] = {0,0,0};
 	double point[3] = {0,0,0};
-	double posBodyCOMLocal[3] = {0,0,0};
 	double treal = aT*_model->getTimeNormConstant();
 	
 	if(_model==NULL) {

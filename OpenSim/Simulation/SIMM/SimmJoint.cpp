@@ -55,8 +55,8 @@ SimmJoint::SimmJoint() :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj()),
-	_parentBody(NULL),
-	_childBody(NULL)
+	_childBody(NULL),
+	_parentBody(NULL)
 {
 	setNull();
 	setupProperties();
@@ -71,8 +71,8 @@ SimmJoint::SimmJoint(DOMElement *aElement) :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj()),
-	_parentBody(NULL),
-	_childBody(NULL)
+	_childBody(NULL),
+	_parentBody(NULL)
 {
 	setNull();
 	setupProperties();
@@ -98,8 +98,8 @@ SimmJoint::SimmJoint(const SimmJoint &aJoint) :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj()),
-	_parentBody(NULL),
-	_childBody(NULL)
+	_childBody(NULL),
+	_parentBody(NULL)
 {
 	setNull();
 	setupProperties();

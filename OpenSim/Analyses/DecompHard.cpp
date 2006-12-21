@@ -149,8 +149,8 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 	// INDEX TO ACTIVATIONS
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int nx = _model->getNumControls();
-	int iatv = nq + nu + nx;
+	//int nx = _model->getNumControls();
+	//int iatv = nq + nu + nx;
 
 	// SET CONFIGURATION (Why twice??)
 	_model->set(t,xt,y);
@@ -217,7 +217,6 @@ compute(double *aXPrev,double *aYPrev,int step,double dt,double t,
 	sqp->setPrintLevel(0);
 
 	// SOLVE OPTIMIZATION PROBLEM FOR EACH COMPONENT
-	int status = 0;
 	int id[] = {0,1,2,3,4,5,6,7,8,9};
 	for(_c=0;_c<_nic;_c++) {
 

@@ -95,7 +95,7 @@ AbstractSimmMuscle::AbstractSimmMuscle(DOMElement *aElement) :
 AbstractSimmMuscle::~AbstractSimmMuscle()
 {
 	VisibleObject* disp;
-	if (disp = getDisplayer()){
+	if ((disp = getDisplayer())){
 		 // Free up allocated geometry objects
 		disp->freeGeometry();
 	}

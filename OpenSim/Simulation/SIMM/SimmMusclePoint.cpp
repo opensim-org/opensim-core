@@ -49,9 +49,9 @@ Geometry *SimmMusclePoint::_defaultGeometry= AnalyticGeometry::createSphere(0.00
  */
 SimmMusclePoint::SimmMusclePoint() :
    _attachment(_attachmentProp.getValueDblArray()),
+	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_bodyName(_bodyNameProp.getValueStr())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -63,9 +63,9 @@ SimmMusclePoint::SimmMusclePoint() :
 SimmMusclePoint::SimmMusclePoint(DOMElement *aElement) :
    Object(aElement),
    _attachment(_attachmentProp.getValueDblArray()),
+	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_bodyName(_bodyNameProp.getValueStr())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -89,9 +89,9 @@ SimmMusclePoint::~SimmMusclePoint()
 SimmMusclePoint::SimmMusclePoint(const SimmMusclePoint &aPoint) :
    Object(aPoint),
    _attachment(_attachmentProp.getValueDblArray()),
+	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_bodyName(_bodyNameProp.getValueStr())
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();

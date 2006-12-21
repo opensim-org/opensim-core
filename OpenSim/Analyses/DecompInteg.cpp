@@ -448,7 +448,7 @@ compute(double *aXPrev,double *aYPrev,
 		getIntegrationWindow(),getPerturbation(), getPerturbationType());
 
 	// REAL TIME
-	double tReal = aT * _model->getTimeNormConstant();
+	//double tReal = aT * _model->getTimeNormConstant();
 
 	// GET CONTACT POINTS
 	int np = _managerNom->getIntegrand()->getModel()->getNumContacts();

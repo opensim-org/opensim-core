@@ -452,8 +452,6 @@ void InvestigationPerturbation::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
 	int na = _model->getNumActuators();
 	int nb = _model->getNumBodies();
 	int numBodyKinCols = 6*nb + 3;
@@ -547,7 +545,7 @@ void InvestigationPerturbation::run()
 	for(i=0;i<na;i++)	{
 		PFXBody[i] = PFYBody[i] = PFZBody[i] = 0.0;
 		daXdf[i] = daYdf[i] = daZdf[i] = 0.0;
-		deltaAX[i] = deltaAY[i] = deltaAZ[i] = 0,0;
+		deltaAX[i] = deltaAY[i] = deltaAZ[i] = 0.0;
 	}
 
 	// Storage objects for results

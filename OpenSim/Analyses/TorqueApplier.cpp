@@ -162,12 +162,7 @@ constructColumnLabels()
 void TorqueApplier::
 allocateStorage()
 {
-	char bodyName[2048];
-	char title[2048];
-	sprintf(title,"Forces applied to ");
-	sprintf(bodyName,"body_%d",_body);
-	strcat(title, bodyName);
-	_appliedTorqueStore = new Storage(1000,title);
+	_appliedTorqueStore = new Storage(1000,"Forces applied to " + _body->getName());
 	_appliedTorqueStore->setDescription(getDescription());
 	_appliedTorqueStore->setColumnLabels(_appliedTorqueStore->getColumnLabels());
 

@@ -113,7 +113,6 @@ void SimmMarkerData::readTRCFile(const string& aFileName, SimmMarkerData& aSMD)
    string line, buffer;
    int frameNum, coordsRead;
    double time, coords[3];
-   bool ok = true;
 
    in.open(aFileName.c_str());
 

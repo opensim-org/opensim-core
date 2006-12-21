@@ -195,9 +195,9 @@ computePerformance(double *aF,double *rP)
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
 	// TIME STUFF
-	double timeNorm = model->getTimeNormConstant();
+	//double timeNorm = model->getTimeNormConstant();
 	double t = model->getTime();
-	double tReal = t * timeNorm;
+	//double tReal = t * timeNorm;
 
 	// SET
 	model->getStates(&_y[0]);
@@ -296,7 +296,7 @@ int rdActuatorForceTarget::
 computeConstraintGradient(double *x,int ic,double *dcdx)
 {
 	// COMPUTE GRADIENT
-	int status = rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
+	rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
 	return(0);
 }
 

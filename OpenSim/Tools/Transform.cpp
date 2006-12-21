@@ -220,9 +220,10 @@ rotate(const double r[3], const AnglePreference preference, const RotationOrder 
 			case Z:
 				rotateZ(r[rotAxisIndex], preference);
 				break;
+			case W: // should we return an error in this case?
+				break;
 			case NoAxis:
 				break;
-
 		}
 	}
 	_translationOnly = false;

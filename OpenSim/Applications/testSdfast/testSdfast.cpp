@@ -40,8 +40,6 @@ using namespace std;
 using namespace OpenSim;
 
 
-static void PrintUsage(ostream &aOStream);
-
 //______________________________________________________________________________
 /**
  * Program to read an xml file for an openSim Model and generate
@@ -76,21 +74,4 @@ int main(int argc, char **argv)
 		x.print(cout);
 	}
 
-}
-	
-//_____________________________________________________________________________
-/**
- * Print the usage for this application
- */
-void PrintUsage(ostream &aOStream)
-{
-	aOStream<<"\n\nscale.exe:\n\n";
-	aOStream<<"Option                   Argument            Action / Notes\n";
-	aOStream<<"------                   --------            --------------\n";
-	aOStream<<"-Help, -H                                    Print the command-line options for testSdfast.exe.\n";
-	aOStream<<"-ModelFile, -MF          ModelFile           input XML model file\n";
-	aOStream<<"-SdfastFile, -SF         ModelFile           Sdfast file to create (model.sd in SIMM)\n";
-	aOStream<<"-SourceFile, -CF         ModelFile           C source file to create (sdfor.c in SIMM)\n";
-	aOStream<<"-HeaderFile, -HF         ModelFile           C Header file to create (model.h in SIMM)\n";
-	aOStream<<"-ParametersFile, -PF     ModelFile           Parameters file to create (params.txt in SIMM)\n";
 }

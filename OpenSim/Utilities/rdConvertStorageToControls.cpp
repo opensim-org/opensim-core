@@ -70,7 +70,7 @@ int main(int argc,char **argv)
 	strcpy(labels,colLabels);
 	cout<<endl<<endl<<labels<<endl<<endl;
 	char *tok = strtok(labels," \t");
-	for(i=0;tok=strtok(NULL," \t");i++) {
+	for(i=0;(tok=strtok(NULL," \t"));i++) {
 
 		if(strcmp(tok,columnName)==0) break;
 	}

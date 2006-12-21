@@ -19,8 +19,8 @@ Scale::~Scale(void)
  * Default constructor of an Scale
  */
 Scale::Scale():
-_segmentName(_propSegmentName.getValueStr()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
+_segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();
@@ -34,8 +34,8 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const Scale &aScale) :
 Object(aScale),
-_segmentName(_propSegmentName.getValueStr()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
+_segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();
@@ -51,8 +51,8 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(DOMElement *aElement) :
 Object(aElement),
-_segmentName(_propSegmentName.getValueStr()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
+_segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();
@@ -64,8 +64,8 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const string& scaleFileName):
 Object(scaleFileName),
-_segmentName(_propSegmentName.getValueStr()),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
+_segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();

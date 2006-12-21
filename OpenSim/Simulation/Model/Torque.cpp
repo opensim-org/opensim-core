@@ -207,7 +207,6 @@ setNull()
 void Torque::
 setupProperties()
 {
-	double origin[3] = { 0.0, 0.0, 0.0 };
 	double x_axis[3] = { 1.0, 0.0, 0.0 };
 
 	_propBodyAName.setName("body_A");

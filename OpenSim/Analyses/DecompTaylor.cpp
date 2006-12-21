@@ -766,9 +766,6 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 
 	// NUMBERS
 	int i,j,I,J;
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int ny = _model->getNumStates();
 	int np = _model->getNumContacts();
 
 	// SET
@@ -999,7 +996,6 @@ computeHigherOrderDerivatives(int c,double t,double *dudt,
 	// NUMBERS
 	int i,I,J;
 	int nu = _model->getNumSpeeds();
-	int np = _model->getNumContacts();
 
 	// SET NEW ACCELERATIONS HISTORY
 	J = Mtx::ComputeIndex(c,3,0);

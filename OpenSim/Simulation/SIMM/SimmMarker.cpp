@@ -45,8 +45,8 @@ Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
  * Default constructor.
  */
 SimmMarker::SimmMarker() :
-   _weight(_weightProp.getValueDbl()),
    _offset(_offsetProp.getValueDblArray()),
+   _weight(_weightProp.getValueDbl()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -63,8 +63,8 @@ SimmMarker::SimmMarker() :
  */
 SimmMarker::SimmMarker(DOMElement *aElement) :
    AbstractMarker(aElement),
-   _weight(_weightProp.getValueDbl()),
    _offset(_offsetProp.getValueDblArray()),
+   _weight(_weightProp.getValueDbl()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -92,8 +92,8 @@ SimmMarker::~SimmMarker()
  */
 SimmMarker::SimmMarker(const SimmMarker &aMarker) :
    AbstractMarker(aMarker),
-   _weight(_weightProp.getValueDbl()),
    _offset(_offsetProp.getValueDblArray()),
+   _weight(_weightProp.getValueDbl()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),

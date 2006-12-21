@@ -192,7 +192,6 @@ void DecompNoComp::
 initializeNumbers()
 {
 	// NUMBERS OF THINGS
-	int na = _model->getNumActuators();
 	_nc = 1;
 	_nic = 1;
 	_np = _model->getNumContacts();

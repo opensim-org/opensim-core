@@ -56,10 +56,10 @@ ActuatorSet::~ActuatorSet()
  * Default constructor.
  */
 ActuatorSet::ActuatorSet() :
-	_actuatorToControl(-1), _controlToActuator(-1),
-	_actuatorToState(-1), _stateToActuator(-1),
-	_actuatorToPseudo(-1), _pseudoToActuator(-1),
-	_model(NULL)
+	_model(NULL),
+	_controlToActuator(-1), _actuatorToControl(-1), 
+	_stateToActuator(-1), _actuatorToState(-1), 
+	_pseudoToActuator(-1), _actuatorToPseudo(-1)
 {
 	setNull();
 
@@ -75,10 +75,10 @@ ActuatorSet::ActuatorSet() :
  */
 ActuatorSet::ActuatorSet(const std::string &aFileName) :
 	Set<AbstractActuator>(aFileName),
-	_actuatorToControl(-1), _controlToActuator(-1),
-	_actuatorToState(-1), _stateToActuator(-1),
-	_actuatorToPseudo(-1), _pseudoToActuator(-1),
-	_model(NULL)
+	_model(NULL),
+	_controlToActuator(-1), _actuatorToControl(-1),
+	_stateToActuator(-1), _actuatorToState(-1),
+	_pseudoToActuator(-1), _actuatorToPseudo(-1)
 {
 	setNull();
 
@@ -97,10 +97,10 @@ ActuatorSet::ActuatorSet(const std::string &aFileName) :
  */
 ActuatorSet::ActuatorSet(const ActuatorSet &aActuatorSet) :
 	Set<AbstractActuator>(aActuatorSet),
-	_actuatorToControl(-1), _controlToActuator(-1),
-	_actuatorToState(-1), _stateToActuator(-1),
-	_actuatorToPseudo(-1), _pseudoToActuator(-1),
-	_model(NULL)
+	_model(NULL),
+	_controlToActuator(-1), _actuatorToControl(-1),
+	_stateToActuator(-1), _actuatorToState(-1),
+	_pseudoToActuator(-1), _actuatorToPseudo(-1)
 {
 	setNull();
 

@@ -368,8 +368,8 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
  */
 void SimmFileWriter::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) const
 {
-	int i;
 #if NOT_READY_YET
+	int i;
 	WrapObjectSet* wrapObjects = aBody.getWrapObjectSet();
 
 	for (i = 0; i < wrapObjects->getSize(); i++) {
@@ -452,14 +452,14 @@ bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofst
 		if (funcIndex[i] >= 0)
 		{
 			NatCubicSpline* spline;
-			if (spline = dynamic_cast<NatCubicSpline*>(dofs->get(i)->getFunction()))
+			if ((spline = dynamic_cast<NatCubicSpline*>(dofs->get(i)->getFunction())))
 			{
 				if (dofs->get(i)->getMotionType() == AbstractDof::Rotational)
 					conversionY = rdMath::RTD;
 				else
 					conversionY = 1.0;
 				const AbstractCoordinate* coord = dofs->get(i)->getCoordinate();
-				if (dofs->get(i)->getCoordinate() && (dofs->get(i)->getCoordinate()->getMotionType() == AbstractDof::Rotational))
+				if (coord && (coord->getMotionType() == AbstractDof::Rotational))
 					conversionX = rdMath::RTD;
 				else
 					conversionX = 1.0;
@@ -552,7 +552,7 @@ bool SimmFileWriter::writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunc
 		if (RFIndex >= 0)
 		{
 			func = sc->getRestraintFunction();
-			if (spline = dynamic_cast<NatCubicSpline*>(func))
+			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
 			{
 				aStream << "beginfunction f" << RFIndex << endl;
 				for (int i = 0; i < spline->getNumberOfPoints(); i++)
@@ -564,7 +564,7 @@ bool SimmFileWriter::writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunc
 		if (minRFIndex >= 0)
 		{
 			func = sc->getMinRestraintFunction();
-			if (spline = dynamic_cast<NatCubicSpline*>(func))
+			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
 			{
 				aStream << "beginfunction f" << minRFIndex << endl;
 				for (int i = 0; i < spline->getNumberOfPoints(); i++)
@@ -576,7 +576,7 @@ bool SimmFileWriter::writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunc
 		if (maxRFIndex >= 0)
 		{
 			func = sc->getMaxRestraintFunction();
-			if (spline = dynamic_cast<NatCubicSpline*>(func))
+			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
 			{
 				aStream << "beginfunction f" << maxRFIndex << endl;
 				for (int i = 0; i < spline->getNumberOfPoints(); i++)
@@ -713,7 +713,7 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		if (szh->getActiveForceLengthCurve())
 		{
 			NatCubicSpline* ncs;
-			if (ncs = dynamic_cast<NatCubicSpline*>(szh->getActiveForceLengthCurve()))
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getActiveForceLengthCurve())))
 			{
 				aStream << "beginactiveforcelengthcurve" << endl;
 				for (i = 0; i < ncs->getNumberOfPoints(); i++)
@@ -725,7 +725,7 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		if (szh->getPassiveForceLengthCurve())
 		{
 			NatCubicSpline* ncs;
-			if (ncs = dynamic_cast<NatCubicSpline*>(szh->getPassiveForceLengthCurve()))
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getPassiveForceLengthCurve())))
 			{
 				aStream << "beginpassiveforcelengthcurve" << endl;
 				for (i = 0; i < ncs->getNumberOfPoints(); i++)
@@ -737,7 +737,7 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		if (szh->getTendonForceLengthCurve())
 		{
 			NatCubicSpline* ncs;
-			if (ncs = dynamic_cast<NatCubicSpline*>(szh->getTendonForceLengthCurve()))
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getTendonForceLengthCurve())))
 			{
 				aStream << "begintendonforcelengthcurve" << endl;
 				for (i = 0; i < ncs->getNumberOfPoints(); i++)
@@ -749,7 +749,7 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		if (szh->getForceVelocityCurve())
 		{
 			NatCubicSpline* ncs;
-			if (ncs = dynamic_cast<NatCubicSpline*>(szh->getForceVelocityCurve()))
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getForceVelocityCurve())))
 			{
 				aStream << "beginforcevelocitycurve" << endl;
 				for (i = 0; i < ncs->getNumberOfPoints(); i++)

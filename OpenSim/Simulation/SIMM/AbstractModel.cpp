@@ -57,16 +57,14 @@ using namespace OpenSim;
  */
 AbstractModel::AbstractModel() :
 	_fileName("Unassigned"),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
+   _gravity(_gravityProp.getValueDblArray()),
+	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
-   _gravity(_gravityProp.getValueDblArray()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_yi(0.0),
-	_ypi(0.0)
+	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -78,16 +76,14 @@ AbstractModel::AbstractModel() :
 AbstractModel::AbstractModel(const string &aFileName) :
 	Object(aFileName),
 	_fileName("Unassigned"),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
+   _gravity(_gravityProp.getValueDblArray()),
+	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
-   _gravity(_gravityProp.getValueDblArray()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_yi(0.0),
-	_ypi(0.0)
+	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -109,16 +105,14 @@ AbstractModel::AbstractModel(const string &aFileName) :
 AbstractModel::AbstractModel(DOMElement *aElement) :
    Object(aElement),
 	_fileName("Unassigned"),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
+   _gravity(_gravityProp.getValueDblArray()),
+	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
-   _gravity(_gravityProp.getValueDblArray()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_yi(0.0),
-	_ypi(0.0)
+	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -133,16 +127,14 @@ AbstractModel::AbstractModel(DOMElement *aElement) :
 
 AbstractModel::AbstractModel(const AbstractModel &aModel) :
    Object(aModel),
+	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
+	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
+   _gravity(_gravityProp.getValueDblArray()),
+	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
-   _gravity(_gravityProp.getValueDblArray()),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_yi(0.0),
-	_ypi(0.0)
+	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -334,7 +326,7 @@ void AbstractModel::setup()
 	AbstractSimmMuscle *sm;
 	for (i = 0; i < _actuatorSet.getSize(); i++)
 	{
-		if (sm = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(i)))
+		if ((sm = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(i))))
 		{
 			const Array<string>* groupNames = sm->getGroupNames();
 			for (int j = 0; j < groupNames->getSize(); j++)
@@ -1413,7 +1405,6 @@ void AbstractModel::kinTest()
 #endif
 void AbstractModel::kinTest()
 {
-	int m1 = 0, m2 = 1;
 	AbstractSimmMuscle* ms1;
 	AbstractSimmMuscle* ms2;
 	AbstractCoordinate* hip_flex_r;

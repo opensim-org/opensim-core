@@ -54,8 +54,6 @@ SimmMotionData::SimmMotionData() :
 	Object(),
 	_numRows(0),
 	_numColumns(0),
-	_keys(""),
-	_columnNames(""),
 	_rows(NULL),
 	_wrap(false),
 	_calcDerivatives(false),
@@ -75,8 +73,6 @@ SimmMotionData::SimmMotionData(const string& aFileName) :
 	Object(),
 	_numRows(0),
 	_numColumns(0),
-	_keys(""),
-	_columnNames(""),
 	_rows(NULL),
 	_wrap(false),
 	_calcDerivatives(false),
@@ -139,8 +135,6 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 	Object(),
 	_numRows(0),
 	_numColumns(0),
-	_keys(""),
-	_columnNames(""),
 	_rows(NULL),
 	_wrap(false),
 	_calcDerivatives(false),
@@ -186,16 +180,13 @@ SimmMotionData::SimmMotionData(DOMElement *aElement) :
    Object(aElement),
 	_numRows(0),
 	_numColumns(0),
-	_keys(""),
-	_columnNames(""),
 	_rows(NULL),
 	_wrap(false),
 	_calcDerivatives(false),
 	_enforceLoops(false),
 	_enforceConstraints(false),
 	_showCursor(false),
-	_slidingTimeScale(false),
-	_events(NULL)
+	_slidingTimeScale(false)
 {
 	setNull();
 	updateFromXMLNode();
@@ -219,16 +210,13 @@ SimmMotionData::SimmMotionData(const SimmMotionData &aData) :
    Object(aData),
 	_numRows(0),
 	_numColumns(0),
-	_keys(""),
-	_columnNames(""),
 	_rows(NULL),
 	_wrap(false),
 	_calcDerivatives(false),
 	_enforceLoops(false),
 	_enforceConstraints(false),
 	_showCursor(false),
-	_slidingTimeScale(false),
-	_events(NULL)
+	_slidingTimeScale(false)
 {
 	setNull();
 	copyData(aData);

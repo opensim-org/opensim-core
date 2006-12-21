@@ -51,10 +51,10 @@ PointKinematics::~PointKinematics()
  */
 PointKinematics::PointKinematics(AbstractModel *aModel) :
 Analysis(aModel),
+_body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr()),
-_body(NULL)
+_pointName(_pointNameProp.getValueStr())
 {
 	// NULL
 	setNull();
@@ -99,10 +99,10 @@ _body(NULL)
  */
 PointKinematics::PointKinematics(const std::string &aFileName):
 Analysis(aFileName),
+_body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr()),
-_body(NULL)
+_pointName(_pointNameProp.getValueStr())
 {
 	setNull();
 
@@ -124,10 +124,10 @@ _body(NULL)
  */
 PointKinematics::PointKinematics(DOMElement *aElement):
 Analysis(aElement),
+_body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr()),
-_body(NULL)
+_pointName(_pointNameProp.getValueStr())
 {
 	setNull();
 
@@ -152,10 +152,10 @@ _body(NULL)
  */
 PointKinematics::PointKinematics(const PointKinematics &aPointKinematics):
 Analysis(aPointKinematics),
+_body(aPointKinematics._body),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr()),
-_body(aPointKinematics._body)
+_pointName(_pointNameProp.getValueStr())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -663,7 +663,7 @@ step(double *aXPrev,double *aYPrev,
 {
 	if(!proceed(aStep)) return(0);
 
-	int status = record(aT,aX,aY);
+	record(aT,aX,aY);
 
 	return(0);
 }

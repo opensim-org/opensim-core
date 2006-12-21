@@ -27,7 +27,7 @@ static void printUsage(char programName[])
 	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-a degrees | radians]\n", programName);
 }
 
-void main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
    ModelStruct* ms;
    SBoolean foo;

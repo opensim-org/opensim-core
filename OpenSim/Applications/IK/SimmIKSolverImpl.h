@@ -45,6 +45,7 @@ class workflow_API SimmIKSolverImpl : public IKSolverInterface
 {
 public:
 	SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget);
+	virtual ~SimmIKSolverImpl() {}
 
 	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 private:

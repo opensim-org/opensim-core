@@ -117,7 +117,6 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 			cout << _unconstrainedQs.get(i)->getName() << " = " << _unconstrainedQs.get(i)->getValue() << endl;
 	}
 
-	int numCalls = 0;
 	double time;
 
 	_experimentalDataStorage.getTime(_indexToSolve, time);

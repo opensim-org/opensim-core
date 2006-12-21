@@ -140,7 +140,7 @@ int DecompTarget::
 computeConstraintGradient(double *x,int ic,double *dcdx)
 {
 	// COMPUTE GRADIENT
-	int status = rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
+	rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
 	return(0);
 }
 

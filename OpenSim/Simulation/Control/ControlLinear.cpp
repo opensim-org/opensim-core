@@ -1289,7 +1289,7 @@ simplify(const PropertySet &aProperties)
 	double distance = aProperties.get("distance")->getValueDbl();
 	cout<<"ControlLinear.simplify: reducing points with distance tolerance = ";
 	cout<<distance<<".\n";
-	int nRemoved = Signal::ReduceNumberOfPoints(distance,t,xFilt);	
+	Signal::ReduceNumberOfPoints(distance,t,xFilt);	
 
 	// CLEAR OLD NODES
 	_nodes.trim();

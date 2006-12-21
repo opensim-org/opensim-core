@@ -43,10 +43,14 @@ public:
 	_ikTarget(aOptimizationTarget)
 	{
 	}
+
+	virtual ~IKSolverInterface() {}
+
 	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData) 
 	{
 		std::cout<< "Error, IKSolverInterface::solveFrames() - not implemented.\n";
 	};
+
 };
 
 }; //namespace

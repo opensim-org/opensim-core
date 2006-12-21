@@ -262,9 +262,9 @@ computeConstraint(double *x,int ic,double *c)
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
 	// TIME STUFF
-	double timeNorm = model->getTimeNormConstant();
+	//double timeNorm = model->getTimeNormConstant();
 	double t = model->getTime();
-	double tReal = t * timeNorm;
+	//double tReal = t * timeNorm;
 
 	// SET
 	model->getStates(&_y[0]);
@@ -297,7 +297,6 @@ computeConstraint(double *x,int ic,double *c)
 	Array<double> &a = taskSet->getAccelerations();
 
 	// CONSTRAINTS
-	int nacc = aDes.getSize();
 	i = ic - 1;
 	*c = w[i]*(aDes[i]-a[i]);
 	//cout<<"Constraint: ic="<<ic<<" i="<<i<<" *c="<<*c<<endl;
@@ -344,7 +343,7 @@ int rdActuatorForceTargetFast::
 computeConstraintGradient(double *x,int ic,double *dcdx)
 {
 	// COMPUTE GRADIENT
-	int status = rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
+	rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
 	return(0);
 }
 

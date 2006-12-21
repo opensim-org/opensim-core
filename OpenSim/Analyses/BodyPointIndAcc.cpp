@@ -403,7 +403,6 @@ computePointAccelerations()
 	// NUMBERS
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int nb = _model->getNumBodies();
 	int ny = _model->getNumStates();
 	int nx = _model->getNumControls();
 	int np = _model->getNumContacts();

@@ -172,7 +172,7 @@ computeEffectiveMassMatrix()
 
 	// Add an integer pass that informs the routine the size of the x variable
 	// HOW MANY POINTS BEING TRACKED?
-	int nx = 1;
+	//int nx = 1;
 	int nu = _model->getNumSpeeds();
 
 	// JACOBIAN

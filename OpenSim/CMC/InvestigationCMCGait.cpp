@@ -85,8 +85,8 @@ InvestigationCMCGait::InvestigationCMCGait() :
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_targetDT(_targetDTProp.getValueDbl()),
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
+	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -120,8 +120,8 @@ InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_targetDT(_targetDTProp.getValueDbl()),
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
+	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -160,8 +160,8 @@ InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_targetDT(_targetDTProp.getValueDbl()),
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
+	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -227,8 +227,8 @@ InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_targetDT(_targetDTProp.getValueDbl()),
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
+	_useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -536,12 +536,10 @@ void InvestigationCMCGait::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int i;
-	int nx = _model->getNumControls();
 	int ny = _model->getNumStates();
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
 	int na = _model->getNumActuators();
-	int nb = _model->getNumBodies();
 
 
 	// ---- INPUT ----

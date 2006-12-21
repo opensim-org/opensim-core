@@ -667,7 +667,7 @@ step(double *aXPrev,double *aYPrev,
 {
 	if(!proceed(aStep)) return(0);
 
-	int status = record(aT,aX,aY);
+	record(aT,aX,aY);
 
 	return(0);
 }

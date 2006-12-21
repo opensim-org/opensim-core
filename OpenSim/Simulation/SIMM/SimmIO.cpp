@@ -48,7 +48,7 @@ using namespace OpenSim;
  */
 bool OpenSim::readNonCommentStringFromStream(istream &aStream, string &rBuffer)
 {
-   int start, end;
+   size_t start, end;
 
 	rBuffer = "\0";
 	while (1)
@@ -213,7 +213,7 @@ bool OpenSim::readTabDelimitedStringFromString(string &aString, string &rBuffer)
  */
 bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
 {
-   int i, end;
+   size_t i, end;
    string buffer;
 
    if (aString.empty())
@@ -261,7 +261,7 @@ bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
  */
 bool OpenSim::readDoubleFromString(string &aString, double *rNumber)
 {
-   int i, end;
+   size_t i, end;
    string buffer;
 
    if (aString.empty())

@@ -58,11 +58,11 @@ using namespace std;
 ModelIntegrandForActuators::
 ModelIntegrandForActuators(AbstractModel *aModel) :
 	ModelIntegrand(aModel),
+	_qCorrections(0.0),
+	_uCorrections(0.0),
 	_qWork(0.0),
 	_uWork(0.0),
-	_yModel(0.0),
-	_qCorrections(0.0),
-	_uCorrections(0.0)
+	_yModel(0.0)
 {
 	setNull();
 }
@@ -324,7 +324,6 @@ convertStatesIntegrandToModel(double t,const double y[],double yModel[])
 	int i;
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int ny = _model->getNumStates();
 	int nqnu = nq + nu;
 	int size = getSize();
 

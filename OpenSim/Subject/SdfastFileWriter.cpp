@@ -58,7 +58,7 @@ static char fixedString[] = "fixed";
 static SdfastFileWriter::JointInfo defJoint = {false, "", SdfastFileWriter::dpUnknownJoint, -1, SimmStep::forward, "", "", false, 0, NULL, NULL, -1, -1, ""};
 static SdfastFileWriter::CoordinateInfo defCoord = {-1, -1, -1, NULL};
 static SdfastFileWriter::ModelBodyInfo defBody = {false, 0, 0.0, false, NULL};
-static SdfastFileWriter::SdfastBodyInfo defSdfastBody = {"", 0.0, 0.0};
+static SdfastFileWriter::SdfastBodyInfo defSdfastBody = {"", 0.0, {0.0, 0.0, 0.0}};
 
 
 //=============================================================================
@@ -508,7 +508,7 @@ void SdfastFileWriter::makeSdfastJointOrder()
 
 void SdfastFileWriter::makeSdfastModel()
 {
-	int i, j, rDofCount = 0, rConstrainedCount = 0, bodyCount = 0;
+	int i, j, rDofCount = 0, rConstrainedCount = 0;
 
 	makeDofSdfastNames();
 	makeSdfastJointOrder();
@@ -815,6 +815,9 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 		case dpBushing:
 		case dpReverseBushing:
 			makeSdfastBushing(aJointIndex, rDofCount, rConstrainedCount);
+			break;
+		default:
+			throw Exception("Unhandled SD/Fast joint type",__FILE__,__LINE__);
 			break;
    }
 
@@ -1179,7 +1182,7 @@ void SdfastFileWriter::writeSdfastQRestraintData(ofstream& out)
 			}
 			else
 			{
-				if (func = sc->getMinRestraintFunction())
+				if ((func = sc->getMinRestraintFunction()))
 				{
 					NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 					if (cubicSpline)
@@ -1197,7 +1200,7 @@ void SdfastFileWriter::writeSdfastQRestraintData(ofstream& out)
 					}
 				}
 
-				if (func = sc->getMaxRestraintFunction())
+				if ((func = sc->getMaxRestraintFunction()))
 				{
 					NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 					if (cubicSpline)
@@ -3055,7 +3058,7 @@ AbstractDof* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo,
 
 	aRotDof->getAxis(rotAxis);
 
-	for (int i = 0, count = 0; i < aJointInfo.numDofs; i++)
+	for (int i = 0; i < aJointInfo.numDofs; i++)
 	{
 		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Translational)
 		{

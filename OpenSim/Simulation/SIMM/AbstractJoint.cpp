@@ -42,8 +42,8 @@ using namespace OpenSim;
  */
 AbstractJoint::AbstractJoint() :
 	Object(),
-	_transformsValid(false),
-	_dynamicsEngine(NULL)
+	_dynamicsEngine(NULL),
+	_transformsValid(false)
 {
 	setNull();
 }
@@ -54,8 +54,8 @@ AbstractJoint::AbstractJoint() :
  */
 AbstractJoint::AbstractJoint(DOMElement *aElement) :
 	Object(aElement),
-	_transformsValid(false),
-	_dynamicsEngine(NULL)
+	_dynamicsEngine(NULL),
+	_transformsValid(false)
 {
 	setNull();
 	updateFromXMLNode();
@@ -77,8 +77,8 @@ AbstractJoint::~AbstractJoint()
  */
 AbstractJoint::AbstractJoint(const AbstractJoint &aJoint) :
 	Object(aJoint),
-	_transformsValid(false),
-	_dynamicsEngine(NULL)
+	_dynamicsEngine(NULL),
+	_transformsValid(false)
 {
 	copyData(aJoint);
 }

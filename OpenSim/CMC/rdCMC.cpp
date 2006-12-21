@@ -1047,7 +1047,7 @@ constrainControlsBasedOnReflexes(double t,Array<double> &xmin,Array<double> &xma
 	int nr = reflexName.getSize();
 
 	// REFLEX THRESHOLDS
-	double gain = 10.0;
+	//double gain = 10.0;
 	Array<double> threshold(10.0,nr);
 	threshold[0] = 0.1;  // RF
 	threshold[1] = 0.1;	// VAS MED
@@ -1151,7 +1151,7 @@ FilterControls(const ControlSet &aControlSet,double aDT,double aT,
 	double curvature;
 	double thresholdCurvature = 2.0 * 0.05 / (aDT * aDT);
 	
-	double thresholdSlopeDiff = 0.2 / aDT;
+	//double thresholdSlopeDiff = 0.2 / aDT;
 	for(i=0;i<size;i++) {
 		m2 = (x2[i]-x1[i]) / aDT;
 		m1 = (x1[i]-x0[i]) / aDT;

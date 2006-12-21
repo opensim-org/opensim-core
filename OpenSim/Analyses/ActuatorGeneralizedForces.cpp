@@ -69,8 +69,8 @@ ActuatorGeneralizedForces::~ActuatorGeneralizedForces()
  */
 ActuatorGeneralizedForces::ActuatorGeneralizedForces(AbstractModel *aModel) : 
 Analysis(aModel),
-_actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(NULL)
+_actuatorList(NULL),
+_actuatorNames(_propActuatorNames.getValueStrArray())
 {
 	setNull();
 
@@ -94,8 +94,8 @@ _actuatorList(NULL)
 ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(const std::string &aFileName) :
 Analysis(aFileName),
-_actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(NULL)
+_actuatorList(NULL),
+_actuatorNames(_propActuatorNames.getValueStrArray())
 {
 	setNull();
 	// Serialize from XML
@@ -107,8 +107,8 @@ _actuatorList(NULL)
 ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(DOMElement *aElement) :
 Analysis(aElement),
-_actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(NULL)
+_actuatorList(NULL),
+_actuatorNames(_propActuatorNames.getValueStrArray())
 {
 	setNull();
 
@@ -125,8 +125,8 @@ _actuatorList(NULL)
 ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(const ActuatorGeneralizedForces &aObject) :
 Analysis(aObject),
-_actuatorNames(_propActuatorNames.getValueStrArray()),
-_actuatorList(NULL)
+_actuatorList(NULL),
+_actuatorNames(_propActuatorNames.getValueStrArray())
 {
 	setNull();
 
@@ -357,9 +357,7 @@ int ActuatorGeneralizedForces::
 record(double aT,double *aX,double *aY)
 {
 	// NUMBERS
-	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int ny = _model->getNumStates();
 
 	// COMPUTE ACCELERATIONS OF GENERALIZED COORDINATES
 	_model->set(aT,aX,aY);
@@ -451,7 +449,7 @@ step(double *aXPrev,double *aYPrev,
 {
 	if(!proceed(aStep)) return(0);
 
-	int status = record(aT,aX,aY);
+	record(aT,aX,aY);
 
 	return(0);
 }

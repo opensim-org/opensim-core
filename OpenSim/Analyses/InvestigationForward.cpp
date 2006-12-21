@@ -369,10 +369,6 @@ void InvestigationForward::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int na = _model->getNumActuators();
-	int nb = _model->getNumBodies();
 
 	// GROUND REACTION FORCES
 	initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
