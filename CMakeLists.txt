@@ -3,6 +3,8 @@ PROJECT (OpenSim)
 SET(OPENSIM_MINIMAL_BUILD OFF)
 
 IF(NOT WIN32)
+# Turn on all warnings in linux
+SET(CMAKE_CXX_FLAGS -Wall)
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug CACHE STRING
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
