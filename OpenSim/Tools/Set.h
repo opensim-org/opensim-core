@@ -599,6 +599,10 @@ T* get(const std::string &aName)
 {
 	return( _objects.get(aName) );
 }
+const T* get(const std::string &aName) const
+{
+	return( _objects.get(aName) );
+}
 //_____________________________________________________________________________
 /**
  * Get names of objects in the set.
