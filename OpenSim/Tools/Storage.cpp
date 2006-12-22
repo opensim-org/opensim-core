@@ -116,89 +116,64 @@ Storage::Storage(const string &aFileName) :
 	setNull();
 
 	// OPEN FILE
-	FILE *fp = IO::OpenFile(aFileName,"r");
+	ifstream *fp = IO::OpenInputFile(aFileName);
 	if(fp==NULL) {
 		printf("Storage: ERROR- failed to open file %s.\n",aFileName.c_str());
 		return;
 	}
 
 	// NAME
-	char *line = IO::ReadLine(fp);
+	string line = IO::ReadLine(*fp);
 	setName(line);
-	delete[] line;
 
 	// ATTRIBUTES
 	bool oldStyleDescription = false;
-	int i,nr=0,nc=0,nd=0;
-	long begin = ftell(fp);
-	char *tok,*val,key[2048];
-	for(i=0;i<3;i++) {
-		line = IO::ReadLine(fp);
-		if(line==NULL) {
+	int nr=0,nc=0,nd=0;
+	streampos begin = fp->tellg();
+	for(int i=0;i<3;i++) {
+		line = IO::ReadLine(*fp);
+		if(line.empty() && !fp->good()) {
 			printf("Storage: ERROR- no lines in %s.\n",aFileName.c_str());
 			return;
 		}
-		tok = strtok(line,"=");
-		if(tok==NULL) {
-			strcpy(key,"badAttribute");
-		} else {
-			sscanf(tok,"%s",key);
-		}
-		if((strcmp(key,"nr")==0)||(strcmp(key,"nRows")==0)||(strcmp(key,"datarows")==0)) {
-			if (strcmp(key,"datarows")==0){
-				sscanf(tok, "%s %d", key, &nr);
-			}
-			else {
-				val = strtok(NULL,"=");
-				sscanf(val,"%d",&nr);
-			}
-			begin = ftell(fp);
-		} else if((strcmp(key,"nc")==0)||(strcmp(key,"nColumns")==0) || (strcmp(key,"datacolumns")==0)) {
-			if (strcmp(key,"datacolumns")==0){
-				sscanf(tok, "%s %d", key, &nc);
-			}
-			else {
-				val = strtok(NULL,"=");
-				sscanf(val,"%d",&nc);
-			}
-			begin = ftell(fp);
-		} else if((strcmp(key,"nd")==0)||(strcmp(key,"nDescrip")==0)) {
-			val = strtok(NULL,"=");
-			sscanf(val,"%d",&nd);
+		size_t delim = line.find_first_of(" \t=");
+		string key = line.substr(0, delim);
+		size_t restidx = line.find_first_not_of(" \t=", delim);
+		string rest = (restidx==string::npos) ? "" : line.substr(restidx);
+		if(key=="nr" || key=="nRows" || key=="datarows") {
+			nr = atoi(rest.c_str());
+			begin = fp->tellg();
+		} else if(key=="nc" || key=="nColumns" || key=="datacolumns") {
+			nc = atoi(rest.c_str());
+			begin = fp->tellg();
+		} else if(key=="nd" || key=="nDescrip") {
+			nd = atoi(rest.c_str());
 			oldStyleDescription = true;
 		}
-		delete[] line;
-		line = NULL;
 	}
 	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName.c_str(),nr,nc);
 
 	// DESCRIPTION
-	char *d=NULL;
+	string descrip;
 	if(oldStyleDescription) {
-		d = IO::ReadCharacters(fp,nd);
+		descrip = IO::ReadCharacters(*fp,nd);
 	} else {
 		// REWIND TO START OF DESCRIPTION
-		fseek(fp,begin,SEEK_SET);
-		d = IO::ReadToTokenLine(fp,_headerToken);
-	}
-	string descrip("");
-	if(d!=NULL) {
-		descrip = d;
-		delete[] d;
+		fp->seekg(begin);
+		descrip = IO::ReadToTokenLine(*fp,_headerToken);
 	}
 	setDescription(descrip);
 
-	// IGNORE blank lines after header
-	int c;
-	while((c=getc(fp))=='\n' && c != EOF)
-		;
-	if (c!= EOF)
-		ungetc(c, fp);
+	// IGNORE blank lines after header -- treat \r and \n as end of line chars
+	while(fp->good()) {
+		int c = fp->peek();
+		if(c!='\n' && c!='\r') break;
+		fp->get();
+	}
 	// COLUMN LABELS
 	if(!oldStyleDescription) {
-		line = IO::ReadLine(fp);
-		setColumnLabels(line);
-		delete[] line;
+		getline(*fp, line);
+		setColumnLabels(line.c_str());
 	}
 	// CAPACITY
 	_storage.ensureCapacity(nr);
@@ -209,16 +184,15 @@ Storage::Storage(const string &aFileName) :
 	double time;
 	double *y = new double[ny];
 	for(int r=0;r<nr;r++) {
-		fscanf(fp,"%lf",&time);
-		for(i=0;i<ny;i++) {
-			fscanf(fp,"%lf",&y[i]);
-		}
+		(*fp)>>time;
+		for(int i=0;i<ny;i++)
+			(*fp)>>y[i];
 		append(time,ny,y);
 	}
 	delete[] y;
 
 	// CLOSE FILE
-	fclose(fp);
+	delete fp;
 }
 //_____________________________________________________________________________
 /**
@@ -410,21 +384,10 @@ getWriteSIMMHeader() const
  * @param aToken Header token.
  */
 void Storage::
-setHeaderToken(const char *aToken)
+setHeaderToken(const std::string &aToken)
 {
-	int n = Object::NAME_LENGTH;
-
-	// HANDLE NULL POINTER
-	if(aToken==NULL) {
-		strncpy(_headerToken,DEFAULT_HEADER_TOKEN,n);
-
-	// COPY TOKEN
-	} else {
-		strncpy(_headerToken,aToken,n);
-	}
-
-	// NULL TERMINATE
-	_headerToken[n] = 0;
+	if(aToken.empty()) _headerToken = DEFAULT_HEADER_TOKEN;
+	else _headerToken = aToken;
 }
 //_____________________________________________________________________________
 /**
@@ -433,7 +396,7 @@ setHeaderToken(const char *aToken)
  * @return Header token.
  * @see setHeaderToken()
  */
-const char* Storage::
+const string &Storage::
 getHeaderToken() const
 {
 	return(_headerToken);
@@ -2598,11 +2561,7 @@ writeDescription(FILE *rFP) const
 	}
 
 	// DESCRIPTION TOKEN
-	if(_headerToken!=NULL) {
-		fprintf(rFP,"%s\n",_headerToken);
-	} else {
-		fprintf(rFP,"%s\n",DEFAULT_HEADER_TOKEN);
-	}
+	fprintf(rFP,"%s\n",_headerToken.c_str());
 
 	return(0);
 }

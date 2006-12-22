@@ -36,6 +36,7 @@
 
 // INCLUDES
 #include "rdTools.h"
+#include <fstream>
 
 
 // DEFINES
@@ -97,12 +98,13 @@ private:
 
 public:
 	// READ
-	static char* ReadToTokenLine(FILE *aFP,const char *aToken);
-	static char* ReadLine(FILE *aFP);
-	static int ComputeLineLength(FILE *aFP);
+	static std::string ReadToTokenLine(std::istream &aIS,const std::string &aToken);
+	static std::string ReadLine(std::istream &aIS);
 	static int ComputeNumberOfSteps(double aTI,double aTF,double aDT);
-	static char* ReadCharacters(FILE *aFP,int aNChar);
+	static std::string ReadCharacters(std::istream &aIS,int aNChar);
 	static FILE* OpenFile(const std::string &aFileName,const std::string &aMode);
+	static std::ifstream* OpenInputFile(const std::string &aFileName,std::ios_base::openmode mode=0);
+	static std::ofstream* OpenOutputFile(const std::string &aFileName,std::ios_base::openmode mode=0);
 	// Directory management
 	static int makeDir(const std::string &aDirName);
 	static int chDir(const std::string &aDirName);

@@ -85,7 +85,7 @@ protected:
 	/** Array of StateVectors. */
 	Array<StateVector> _storage;
 	/** Token used to mark the end of the description in a file. */
-	char _headerToken[Object::NAME_LENGTH];
+	std::string _headerToken;
 	/** Column labels for the states, usually tab delimited. */
 	char *_columnLabels;
 	/** Parsed version of _columnLabels to be used to query data by column */
@@ -155,8 +155,8 @@ public:
 	// IO
 	void setWriteSIMMHeader(bool aTrueFalse);
 	bool getWriteSIMMHeader() const;
-	void setHeaderToken(const char *aToken);
-	const char* getHeaderToken() const;
+	void setHeaderToken(const std::string &aToken);
+	const std::string& getHeaderToken() const;
 	// COLUMN LABELS
 	const int getColumnIndex(const std::string &aColumnName, int startIndex=0) const;
 	void setColumnLabels(const char *aLabels=NULL);

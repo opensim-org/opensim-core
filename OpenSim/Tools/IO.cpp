@@ -289,131 +289,44 @@ ConstructDoubleOutputFormat()
  * Memory is allocated for the description, so the caller is responsible
  * for deleting the returned description.
  *
- * @param aFilePointer File pointer that points to the file.
+ * @param aIS input stream.
  * @param aToken Token to which to read.  The token should not contain
  * a carriage return.
- * @return Null terminated String up to a token line.  The ending carriage
+ * @return String up to a token line.  The ending carriage
  * return is included in the returned string.
  */
-char* IO::
-ReadToTokenLine(FILE *aFP,const char *aToken)
+string IO::
+ReadToTokenLine(istream &aIS,const string &aToken)
 {
-	if(aFP==NULL) return(NULL);
-	if(aToken==NULL) return(NULL);
-
-	// READ FIRST LINE
-	char *line = ReadLine(aFP);
-	if(line==NULL)  return(NULL);
-	if(strcmp(line,aToken)==0) {
-		delete[] line;
-		return(NULL);
+	string text;
+	while(aIS) {
+		string line = IO::ReadLine(aIS);
+		if(line == aToken) break;
+		text+=line+"\n";
 	}
-
-	// READ REMAINING LINES
-	int nNeeded=0,n=0;
-	char *s=NULL,*sCopy=NULL;
-	while((line!=NULL) && (strcmp(line,aToken)!=0)) {
-
-		// NEEDED LENGTH
-		nNeeded += strlen(line) + 2;
-
-		// MAKE ALLOCATIONS
-		if(n<=nNeeded) {
-
-			// SIZE
-			while(n<=nNeeded) n += STRING_INCREMENT;
-
-			// COPY IF NEEDED
-			if(s!=NULL) {
-				if(sCopy!=NULL) delete[] sCopy;
-				sCopy = new char[strlen(s)+1];
-				strcpy(sCopy,s);
-			}
-
-			// INCREASE ALLOCATION
-			if(s!=NULL) delete[] s;
-			s = new char[n];
-			strcpy(s,"");
-
-			// REFORM S1
-			if(sCopy!=NULL) strcpy(s,sCopy);
-		}
-
-		// ADD LINE
-		strcat(s,line);
-		strcat(s,"\n");
-
-		// GET NEXT LINE
-		delete[] line;
-		line = ReadLine(aFP);
-	}
-
-	// CLEANUP
-	if(line!=NULL) delete[] line;
-
-	return(s);
+	return text;
 }
+
 //_____________________________________________________________________________
 /**
  * Read a line of text from file.
  *
  * The terminating carriage return is not included in the returned string.
  *
- * This routine allocates memory to store the line, so the caller is
- * responsible for deleting this memory.
+ * This handles both dos and unix style line endings.
  *
- * @param aFP Pointer to the file.
+ * @param aIS Input stream.
  * @return Line of text not including the terminating carriage return.
  */
-char* IO::
-ReadLine(FILE *aFP)
+string IO::
+ReadLine(istream &aIS)
 {
-	if(aFP==NULL) return(NULL);
-
-	// ALLOCATE SPACE
-	int length = ComputeLineLength(aFP);
-	if(length==0) return(NULL);
-	char *line = new char[length];
-	
-	// READ THE LINE
-	int i,c;
-	for(c=i=0;(c!='\n')&&(c!=EOF);i++) {
-		c = getc(aFP);
-		if((c=='\n')||(c==EOF)) {
-			line[i] = '\0';
-		} else {
-			line[i] = c;
-		}
-	}
-
-	return(line);
-}
-
-//_____________________________________________________________________________
-/**
- * Compute the length of a line.
- *
- * A carriage return defines the end of a line.
- *
- * @param aFP File pointer.
- * @return Length of a line.
- */
-int IO::
-ComputeLineLength(FILE *aFP)
-{
-	if(aFP==NULL) return(0);
-
-	// STORE THE STREAM LOCATION
-	long begin = ftell(aFP);
-
-	// COMPUTE LINE LENGTH
-	int c,length;
-	for(length=0,c=0;(c!='\n')&&(c!=EOF);length++)  { c = getc(aFP); }
-
-	// RETURN TO THE BEGINNING OF THE LINE
-	fseek(aFP,begin,SEEK_SET);
-
-	return(length);
+	std::string line;
+	getline(aIS, line);
+	int len=line.length();
+	// deal with reading a DOS-format file in Linux
+	if(len>0 && line[len-1]=='\r') line=line.substr(0,len-1);
+	return line;
 }
 //_____________________________________________________________________________
 /**
@@ -447,32 +360,19 @@ ComputeNumberOfSteps(double aTI,double aTF,double aDT)
 /**
  * Read a specified number of characters from file.
  *
- * Memory is allocated for the returned string, so the caller is
- * responsible for deleting this memory.
- *
- * @param aFP File pointer that points to the file.
+ * @param aIS Input stream.
  * @param aNChar Number of characters in the description.
- * @return Pointer to the string of characters.
+ * @return read string.
  */
-char* IO::
-ReadCharacters(FILE *aFP,int aNChar)
+string IO::
+ReadCharacters(istream &aIS,int aNChar)
 {
-	if(aFP==NULL) return(NULL);
-
-	int i,c;
-	char *s = new char[aNChar+1];
-	for(i=0;i<aNChar;i++) {
-		c = getc(aFP);
-		if(c==EOF) {
-			printf("IO.ReadCharacters: ERROR- premature end of file.\n");
-			s[i] = 0;
-			break;
-		}
-		s[i] = c;
-	}
-	s[aNChar] = 0;
-
-	return(s);
+	char *buffer=new char[aNChar+1];
+	aIS.read(buffer,aNChar);
+	buffer[aIS.gcount()] = '\0';
+	string str = buffer;
+	delete[] buffer;
+	return str;
 }
 
 //_____________________________________________________________________________
@@ -493,6 +393,32 @@ OpenFile(const string &aFileName,const string &aMode)
 	}
 
 	return(fp);
+}
+//_____________________________________________________________________________
+/**
+ * Open a file.
+ */
+ifstream *IO::
+OpenInputFile(const string &aFileName,ios_base::openmode mode)
+{
+	ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
+	if(!fs || !(*fs)) {
+		printf("IO.OpenInputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+		return(NULL);
+	}
+
+	return(fs);
+}
+ofstream *IO::
+OpenOutputFile(const string &aFileName,ios_base::openmode mode)
+{
+	ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
+	if(!fs || !(*fs)) {
+		printf("IO.OpenOutputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+		return(NULL);
+	}
+
+	return(fs);
 }
 //_____________________________________________________________________________
 /**
