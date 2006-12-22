@@ -1,6 +1,6 @@
 PROJECT (OpenSim)
 
-SET(OPENSIM_MINIMAL_BUILD OFF)
+SET(OPENSIM_MINIMAL_BUILD ON)
 
 IF(NOT WIN32)
 # Turn on all warnings in linux
