@@ -50,7 +50,8 @@
 
 #define ENGINE
 #define CONVERTER
-
+// Ayman: Replacement for TOXML macro that was undefined and caused problems locating bone files
+#define SIMM_OPENSIM	
 // Eran: replaced glut dependency with some reasonable(?) typedefs
 //#include "glut.h"     /* GLUT includes GL/gl.h and GL/glu.h for us */
 //#include "glutDialogs.h"

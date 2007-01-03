@@ -230,7 +230,8 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 		fprintf(fp, "\t\t\t<max_contraction_velocity>%.12lf</max_contraction_velocity>\n", *m->max_contraction_vel);
 
 		/* muscle model. */
-		fprintf(fp, "\t\t\t<muscle_model>%d</muscle_model>\n", *m->muscle_model_index);
+		if (m->muscle_model_index)	// Conservative fix in case muscle model is not specified. Ayman 1/07
+			fprintf(fp, "\t\t\t<muscle_model>%d</muscle_model>\n", *m->muscle_model_index);
 
 		/* Dynamic parameters. */
 		for (j = 0; j < m->num_dynamic_params; j++)

@@ -2911,7 +2911,7 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
    ph = &seg->bone[seg->numBones++];
 
 #ifdef ENGINE
-#if !TOXML
+#ifndef SIMM_OPENSIM
    preread_init_polyhedron(ph);
 #endif
 #endif
@@ -2922,7 +2922,7 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
    if (lookup_polyhedron(ph, filename, ms) == code_bad)
 	   simm_printf(yes, "Unable to find bone file %s\n", filename);
 #else
-#if TOXML
+#ifdef SIMM_OPENSIM
    if (lookup_polyhedron(ph, filename, ms) == code_bad)
 	   simm_printf(yes, "Unable to find bone file %s\n", filename);
 #endif

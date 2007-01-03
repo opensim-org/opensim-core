@@ -2028,8 +2028,10 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
 		/* If the joint file name is just a file name with no path,
 		 * make the jointpath empty so the next step will work.
 		 */
-		if (i == -1)
-			jointpath[0] = STRING_TERMINATOR;
+		if (i == -1){
+			jointpath[0] = '.';	// For jnt file name that has no absolute path we need '.'
+			jointpath[1] = STRING_TERMINATOR;
+		}
    }
 
    /* (1) first check the bone directory specified in the joint file: */
