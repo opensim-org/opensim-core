@@ -1,6 +1,6 @@
 PROJECT (OpenSim)
 
-SET(OPENSIM_MINIMAL_BUILD ON)
+SET(OPENSIM_MINIMAL_BUILD ON CACHE BOOL "Minimal build (only build essential libraries and excutables)")
 
 IF(NOT WIN32)
 # Turn on all warnings in linux
