@@ -99,7 +99,7 @@ public:
 	const Transform* getBodyTransform(int bodyIndex) const;
 
 	void extractOffsets(AbstractModel& displayModel);
-private:
+public:
 	// Load transforms vector from KinematicsEngine
 	void getTransformsFromKinematicsEngine(AbstractModel& simmModel);
 	// Synchronization stuff

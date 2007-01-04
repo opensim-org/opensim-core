@@ -1,5 +1,5 @@
+/*Directors %module(directors="1") opensimModel */
 %module opensimModel
-
 %{
 #include <OpenSim/Tools/rdToolsDLL.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
@@ -120,6 +120,9 @@
 
 using namespace OpenSim;
 %}
+
+/*Directors %feature("director") OpenSim::SimtkAnimationCallback; */
+
 
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
