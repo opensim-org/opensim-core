@@ -368,22 +368,26 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
  */
 void SimmFileWriter::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) const
 {
-#if NOT_READY_YET
 	int i;
 	WrapObjectSet* wrapObjects = aBody.getWrapObjectSet();
 
 	for (i = 0; i < wrapObjects->getSize(); i++) {
 		AbstractWrapObject* wo = wrapObjects->get(i);
 		aStream << "beginwrapobject " << wo->getName() << endl;
-		//type
+		aStream << "wraptype " << wo->getWrapTypeName() << endl;
 		aStream << "segment " << aBody.getName() << endl;
+		aStream << wo->getDimensionsString() << endl;
+		if (!wo->getQuadrantNameUseDefault())
+			aStream << "quadrant " << wo->getQuadrantName() << endl;
+		if (!wo->getActiveUseDefault())
+			aStream << "active " << (wo->getActive() ? "yes" : "no") << endl;
 		aStream << "translation " << wo->getTranslation()[0] << " " <<
 			wo->getTranslation()[1] << " " << wo->getTranslation()[2] << endl;
-		aStream << "xyz_body_rotation " << wo->getXYZBodyRotation()[0] << " " <<
-			wo->getXYZBodyRotation()[1] << " " << wo->getXYZBodyRotation()[2] << endl;
+		aStream << "xyz_body_rotation " << wo->getXYZBodyRotation()[0] * rdMath::RTD <<
+			" " << wo->getXYZBodyRotation()[1] * rdMath::RTD <<
+			" " << wo->getXYZBodyRotation()[2] * rdMath::RTD << endl;
 		aStream << "endwrapobject" << endl << endl;
 	}
-#endif
 }
 
 //_____________________________________________________________________________
@@ -709,6 +713,8 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		aStream << "pennation_angle " << szh->getPennationAngle() * rdMath::RTD << endl;
 		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
 		aStream << "timescale " << szh->getTimeScale() << endl;
+		if (!szh->getMuscleModelIndexUseDefault())
+			aStream << "muscle_model " << szh->getMuscleModelIndex() << endl;
 
 		if (szh->getActiveForceLengthCurve())
 		{
@@ -777,6 +783,8 @@ bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream)
 		aStream << "damping " << sdm->getDamping() << endl;
 		aStream << "Af " << sdm->getAf() << endl;
 		aStream << "Flen " << sdm->getFlen() << endl;
+		if (!sdm->getMuscleModelIndexUseDefault())
+			aStream << "muscle_model " << sdm->getMuscleModelIndex() << endl;
 	}
 
 	aStream << "endmuscle" << endl << endl;

@@ -49,6 +49,7 @@
 #endif
 
 #define ENGINE
+#define TOXML 1
 #define CONVERTER
 // Ayman: Replacement for TOXML macro that was undefined and caused problems locating bone files
 #define SIMM_OPENSIM	

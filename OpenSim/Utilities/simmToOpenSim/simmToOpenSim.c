@@ -30,11 +30,10 @@ static void printUsage(char programName[])
 int main(int argc, char* argv[])
 {
    ModelStruct* ms;
-   SBoolean foo;
 	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL;
 	int angleUnits = RADIANS;
 
-	printf("SimmToXML, version 0.7.7 (Dec. 5, 2006)\n");
+	printf("SimmToXML, version 0.7.8 (Jan. 5, 2007)\n");
 
    if (argc < 5)
    {
@@ -118,6 +117,7 @@ int main(int argc, char* argv[])
 
 	if (ms->musclefilename)
 	{
+		SBoolean foo;
 		read_muscle_file(ms, ms->musclefilename, &foo);
 		printf("Read muscle file %s\n", ms->musclefilename);
 	}
@@ -169,6 +169,7 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 {
 	int i, j;
 	double conversion;
+	char muscleClassName[64];
 
 	if (angleUnits == RADIANS)
 		conversion = DEG_TO_RAD;
@@ -180,7 +181,17 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 	for (i = 0; i < ms->nummuscles; i++)
 	{
 		MuscleStruct* m = &ms->muscle[i];
-		fprintf(fp, "\t\t<SimmDarrylMuscle name=\"%s\">\n", m->name);
+
+		// For now, model = 9 and model = NULL map to SimmDarrylMuscle.
+		// All other values map to SimmZajacHill. Eventually, each model
+		// index should map to a distinct muscle class in OpenSim,
+		// especially model = 7, which is a ligament model.
+		if (m->muscle_model_index == NULL || *m->muscle_model_index == 9)
+			strcpy(muscleClassName, "SimmDarrylMuscle");
+		else
+			strcpy(muscleClassName, "SimmZajacHill");
+
+		fprintf(fp, "\t\t<%s name=\"%s\">\n", muscleClassName, m->name);
 
 		/* Attachment points. */
 		fprintf(fp, "\t\t\t<SimmMusclePointSet>\n");
@@ -252,8 +263,8 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 				WrapObject* wo = &ms->wrapobj[m->wrapStruct[j]->wrap_object];
 				fprintf(fp, "\t\t\t\t<MuscleWrap>\n");
 				fprintf(fp, "\t\t\t\t\t<wrap_object> %s </wrap_object>\n", wo->name);
-				if (wo->wrap_type == wrap_ellipsoid && m->wrapStruct[j]->wrap_algorithm != WE_HYBRID_ALGORITHM)
-					fprintf(fp, "\t\t\t\t\t<algorithm> %s </algorithm>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
+				if (wo->wrap_type == wrap_ellipsoid)
+					fprintf(fp, "\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
 				if (m->wrapStruct[j]->startPoint > 0 || m->wrapStruct[j]->endPoint > 0)
 					fprintf(fp,"\t\t\t\t\t<range> %d %d </range>\n", m->wrapStruct[j]->startPoint, m->wrapStruct[j]->endPoint);
 				fprintf(fp, "\t\t\t\t</MuscleWrap>\n");
@@ -327,7 +338,7 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 			fprintf(fp, "</groups>\n");
 		}
 
-		fprintf(fp, "\t\t</SimmDarrylMuscle>\n");
+		fprintf(fp, "\t\t</%s>\n", muscleClassName);
 	}
 	fprintf(fp, "\t</objects>\n");
 	fprintf(fp, "\t</ActuatorSet>\n");
@@ -443,11 +454,10 @@ void write_xml_wrap_object(FILE* fp, WrapObject* wo, int angleUnits)
 		case wrap_cylinder:
 			fprintf(fp, "\t\t\t\t\t\t<WrapCylinder name=\"%s\">\n", wo->name);
 			fprintf(fp, "\t\t\t\t\t\t\t<radius> %.8lf </radius>\n", wo->radius.xyz[0]);
-			fprintf(fp, "\t\t\t\t\t\t\t<height> %.8lf </height>\n", wo->radius.xyz[1]);
+			fprintf(fp, "\t\t\t\t\t\t\t<length> %.8lf </length>\n", wo->radius.xyz[1]);
 			break;
 		case wrap_ellipsoid:
 			fprintf(fp, "\t\t\t\t\t\t<WrapEllipsoid name=\"%s\">\n", wo->name);
-			fprintf(fp, "\t\t\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(wo->wrap_algorithm));
 			fprintf(fp, "\t\t\t\t\t\t\t<dimensions> %.8lf %.8lf %.8lf </dimensions>\n",
 				wo->radius.xyz[0], wo->radius.xyz[1], wo->radius.xyz[2]);
 			break;
@@ -463,7 +473,7 @@ void write_xml_wrap_object(FILE* fp, WrapObject* wo, int angleUnits)
 	recalc_xforms(wo);
 	extract_xyz_rot_bodyfixed(wo->from_local_xform, xyz);
 
-	fprintf(fp, "\t\t\t\t\t\t\t<xyz_body_rotation> %.4lf %.4lf %.4lf </xyz_body_rotation>\n",
+	fprintf(fp, "\t\t\t\t\t\t\t<xyz_body_rotation> %.8lf %.8lf %.8lf </xyz_body_rotation>\n",
 		xyz[0] * conversion, xyz[1] * conversion, xyz[2] * conversion);
 
 	fprintf(fp,"\t\t\t\t\t\t\t<translation> %.8lf %.8lf %.8lf </translation>\n",
