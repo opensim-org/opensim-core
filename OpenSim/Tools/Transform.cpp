@@ -307,6 +307,51 @@ rotateAxis(double r, const AnglePreference preference, const double axis[3])
 }
 //_____________________________________________________________________________
 /**
+ * Rotate by r degrees or radians around the local X axis
+ *
+ */
+void Transform::
+rotateXBodyFixed(double r, const AnglePreference preference)
+{
+	double axis[3];
+	// the local X axis is the first row in the matrix
+	axis[0] = _matrix4[0][0];
+	axis[1] = _matrix4[0][1];
+	axis[2] = _matrix4[0][2];
+	rotateAxis(r, preference, axis);
+}
+//_____________________________________________________________________________
+/**
+ * Rotate by r degrees or radians around the local Y axis
+ *
+ */
+void Transform::
+rotateYBodyFixed(double r, const AnglePreference preference)
+{
+	double axis[3];
+	// the local Y axis is the second row in the matrix
+	axis[0] = _matrix4[1][0];
+	axis[1] = _matrix4[1][1];
+	axis[2] = _matrix4[1][2];
+	rotateAxis(r, preference, axis);
+}
+//_____________________________________________________________________________
+/**
+ * Rotate by r degrees or radians around the local Z axis
+ *
+ */
+void Transform::
+rotateZBodyFixed(double r, const AnglePreference preference)
+{
+	double axis[3];
+	// the local Z axis is the third row in the matrix
+	axis[0] = _matrix4[2][0];
+	axis[1] = _matrix4[2][1];
+	axis[2] = _matrix4[2][2];
+	rotateAxis(r, preference, axis);
+}
+//_____________________________________________________________________________
+/**
  * Translate by double in X direction
  *
  */

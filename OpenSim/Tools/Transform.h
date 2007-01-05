@@ -118,6 +118,9 @@ public:
 	void rotateY(double r, const AnglePreference preference);
 	void rotateZ(double r, const AnglePreference preference);
 	void rotateAxis(double r, const AnglePreference preference, const double axis[3]);
+	void rotateXBodyFixed(double r, const AnglePreference preference);
+	void rotateYBodyFixed(double r, const AnglePreference preference);
+	void rotateZBodyFixed(double r, const AnglePreference preference);
 	void translateX(const double t);
 	void translateY(const double t);
 	void translateZ(const double t);
