@@ -52,7 +52,7 @@ static void PrintUsage(ostream &aOStream);
 int main(int argc,char **argv)
 {
 	// PARSE COMMAND LINE
-	static string unassigned = "unassigned";
+	static string unassigned = "Unassigned";
 	string inName = unassigned;
 	string sdfastName = unassigned;
 	string headerName = unassigned;
