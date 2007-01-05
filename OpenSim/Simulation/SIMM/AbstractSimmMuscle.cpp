@@ -30,11 +30,11 @@
 #include "SimmMuscleGroup.h"
 #include "SimmMuscleViaPoint.h"
 #include "SimmMuscleWrapPoint.h"
+#include "WrapResult.h"
 #include "AbstractModel.h"
 #include "AbstractBody.h"
 #include "AbstractDof.h"
 #include "SimmMacros.h"
-#include "SimmMusclePointSetIterator.h"
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
@@ -62,6 +62,7 @@ AbstractSimmMuscle::AbstractSimmMuscle() :
 	_groups(NULL),
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
+   _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_currentPath(NULL)
 {
 	setNull();
@@ -81,6 +82,7 @@ AbstractSimmMuscle::AbstractSimmMuscle(DOMElement *aElement) :
 	_groups(NULL),
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
+   _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_currentPath(NULL)
 {
 	setNull();
@@ -117,6 +119,7 @@ AbstractSimmMuscle::AbstractSimmMuscle(const AbstractSimmMuscle &aMuscle) :
 	_groups(NULL),
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
+   _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
 	_currentPath(NULL)
 {
 	setNull();
@@ -140,6 +143,7 @@ void AbstractSimmMuscle::copyData(const AbstractSimmMuscle &aMuscle)
 	_groupNames = aMuscle._groupNames;
 	_groups = aMuscle._groups;
 	_muscleWrapSet = aMuscle._muscleWrapSet;
+	_muscleModelIndex = aMuscle._muscleModelIndex;
 	_preScaleLength = 0.0;
 }
 
@@ -175,6 +179,10 @@ void AbstractSimmMuscle::setupProperties()
 
 	_muscleWrapSetProp.setName("MuscleWrapSet");
 	_propertySet.append(&_muscleWrapSetProp);
+
+	_muscleModelIndexProp.setName("muscle_model");
+	_muscleModelIndexProp.setValue(4);
+	_propertySet.append(&_muscleModelIndexProp);
 }
 
 //_____________________________________________________________________________
@@ -211,9 +219,10 @@ void AbstractSimmMuscle::setup(AbstractModel* aModel)
 	for (i = 0; i < _groupNames.getSize(); i++)
 		_groups.append(aModel->enterGroup(_groupNames[i]));
 
-	//calculatePath();
+	for (i = 0; i < _muscleWrapSet.getSize(); i++)
+		_muscleWrapSet[i]->setup(&aModel->getDynamicsEngine());
 
-	// setup muscle wraps
+	calculatePath();
 }
 //_____________________________________________________________________________
 /**
@@ -228,12 +237,7 @@ void AbstractSimmMuscle::updateGeometrySize()
 	// Track whether we're creating geometry from scratch or
 	// just updating
 	bool update = (numberOfSegements!=0);  
-	int newNumberOfSegments=0;
-	// Get number from iterator. Very inefficient but temporary until Wrapping is in
-	AttachmentPointIterator *api = newAttachmentPointIterator();
-	while(api->next())
-		newNumberOfSegments++;
-	newNumberOfSegments--;
+	int newNumberOfSegments=_currentPath.getSize()-1;
 	// Keep track whether any Geometry needs to be created/deleted.
 	bool segmentsChanged = (update && (newNumberOfSegments!= numberOfSegements));
 	// update geom array to have correct number of entries
@@ -264,34 +268,27 @@ void AbstractSimmMuscle::updateGeometrySize()
  */
 void AbstractSimmMuscle::updateGeometryLocations()
 {
-	double startGlobalLocation[3];
-	double endGlobalLocation[3];
+	double globalLocation[3];
+	double previousPointGlobalLocation[3];
 
-	AttachmentPointIterator *api = newAttachmentPointIterator();
-
-	SimmMusclePoint *start, *end;
-	int i;
-	// This should use end point of one segment as start point of next
-	// @todo implement this after wrapping points are in since the iterator will go away anyway.
-	// -Ayman 12/06
-	for(start=api->next(), end=api->next(), i=0; start && end; start=end, end=api->next(), i++){
+	for (int i = 0; i < _currentPath.getSize(); i++){
+		SimmMusclePoint* nextPoint = _attachmentSet.get(i);
 		// xform point to global frame
-
-		Array<double>& location=start->getAttachment();
-		const AbstractBody* body = start->getBody();
+		Array<double>& location=nextPoint->getAttachment();
+		const AbstractBody* body = nextPoint->getBody();
 		AbstractDynamicsEngine* engine = (const_cast<AbstractBody*> (body))->getDynamicsEngine();
 		Transform xform = engine->getTransform(*body);
-		engine->transformPosition(*body, location.get(), startGlobalLocation);
-		// repeat for end
-		Array<double>& endlocation=end->getAttachment();
-		const AbstractBody* endbody = end->getBody();
-		Transform endxform = engine->getTransform(*endbody);
-		engine->transformPosition(*endbody, endlocation.get(), endGlobalLocation);
-
+		if (i > 0){
+			for(int j=0; j < 3; j++)
+				previousPointGlobalLocation[j] = globalLocation[j];
+		}
+		engine->transformPosition(*body, location.get(), globalLocation);
 		// Make a segment between globalLocation, previousPointGlobalLocation
-		// Geometry will be deleted when the object is deleted.
-		LineGeometry *g = dynamic_cast<LineGeometry *>(_displayer.getGeometry(i));
-		g->setPoints(startGlobalLocation, endGlobalLocation);		
+		if (i > 0){
+			// Geometry will be deleted when the object is deleted.
+			LineGeometry *g = dynamic_cast<LineGeometry *>(_displayer.getGeometry(i-1));
+			g->setPoints(previousPointGlobalLocation, globalLocation);
+		}
 	}
 }
 //_____________________________________________________________________________
@@ -387,7 +384,7 @@ void AbstractSimmMuscle::postScale(const ScaleSet& aScaleSet)
 	// so we may not have enough info to update (e.g. wrapping, via points)
 	updateGeometry();	
 
-	//calculatePath();
+	calculatePath();
 }
 
 //--------------------------------------------------------------------------
@@ -405,38 +402,39 @@ void AbstractSimmMuscle::computeActuation()
 	double posStart[3], posEnd[3], velStart[3], velEnd[3];
 	SimmMusclePoint *start, *end;
 
+	calculatePath();
+
 	_speed = 0.0;
 
 	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
-	AttachmentPointIterator *api = newAttachmentPointIterator();
 
-	for(start=api->next(), end=api->next(); start && end; start=end, end=api->next())
-	{
-		/* Find the positions and velocities in the inertial frame. */
+	int i;
+	for (i = 0; i < _currentPath.getSize() - 1; i++) {
+		start = _currentPath[i];
+		end = _currentPath[i+1];
+
+		// Find the positions and velocities in the inertial frame.
 		engine.getPosition(*(start->getBody()), start->getAttachment().get(), posStart);
 		engine.getPosition(*(end->getBody()), end->getAttachment().get(), posEnd);
 		engine.getVelocity(*(start->getBody()), start->getAttachment().get(), velStart);
 		engine.getVelocity(*(end->getBody()), end->getAttachment().get(), velEnd);
 
-		/* Calculate the relative positions and velocities. */
-		for (int j = 0; j < 3; j++)
-		{
+		// Calculate the relative positions and velocities.
+		for (int j = 0; j < 3; j++) {
 			posRelative[j] = posEnd[j] - posStart[j];
 			velRelative[j] = velEnd[j] - velStart[j];
 		}
 
-		/* Normalize the vector from start to end. */
+		// Normalize the vector from start to end.
 		Mtx::Normalize(3, posRelative, posRelative);
 
-		/* Dot the relative velocity with the unit vector from start to end,
-		 * and add this speed to the running total.
-		 */
+		// Dot the relative velocity with the unit vector from start to end,
+		// and add this speed to the running total.
+		//
 		_speed += (velRelative[0] * posRelative[0] +
 			        velRelative[1] * posRelative[1] +
 			        velRelative[2] * posRelative[2]);
 	}
-
-	delete api;
 }
 
 //=============================================================================
@@ -444,50 +442,371 @@ void AbstractSimmMuscle::computeActuation()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Calculate the current length of the muscle.
+ * Calculate the current path of the muscle.
+ *
+ */
+void AbstractSimmMuscle::calculatePath()
+{
+	if (_pathValid == true)
+		return;
+
+	// empty out the current path
+	_currentPath.setSize(0);
+
+	// add the fixed and active via points to the path
+	int i;
+   for (i = 0; i < _attachmentSet.getSize(); i++) {
+		if (_attachmentSet[i]->isActive())
+			_currentPath.append(_attachmentSet[i]);
+	}
+
+   // use the current path so far to check for intersection
+	// with wrap objects, which may add additional points to
+	// the path
+	applyWrapObjects();
+
+	calculateLength();
+
+	_pathValid = true;
+}
+
+//_____________________________________________________________________________
+/**
+ * Apply the wrap objects to the current muscle path.
+ *
+ */
+void AbstractSimmMuscle::applyWrapObjects()
+{
+   int i, j, kk, pt1, pt2, maxIterations;
+   int start, end, wrapStart, wrapEnd;
+   double min_length_change, last_length;
+   WrapResult best_wrap;
+   SimmMusclePoint *smp, *emp;
+   MuscleWrap* ws;
+   AbstractWrapObject* wo;
+   Array<int> result;
+	Array<int> order;
+
+	if (_muscleWrapSet.getSize() < 1)
+		return;
+
+	result.setSize(_muscleWrapSet.getSize());
+	order.setSize(_muscleWrapSet.getSize());
+
+   /* Set the initial order to be the order they are listed in the muscle. */
+   for (i = 0; i < _muscleWrapSet.getSize(); i++)
+      order[i] = i;
+
+   /* If there is only one wrap object, calculate the wrapping only once.
+    * If there are two or more objects, perform up to 8 iterations where
+    * the result from one wrap object is used as the starting point for
+    * the next wrap.
+    */
+   if (_muscleWrapSet.getSize() < 2)
+      maxIterations = 1;
+   else
+      maxIterations = 8;
+
+   for (kk = 0, last_length = 999999.999; kk < maxIterations; kk++)
+   {
+      for (i = 0; i < _muscleWrapSet.getSize(); i++)
+      {
+         result[i] = 0;
+         ws = _muscleWrapSet.get(order[i]);
+			wo = ws->getWrapObject();
+         best_wrap.wrap_pts.setSize(0);
+			min_length_change = rdMath::INFINITY;
+
+         /* First remove this object's wrapping points from the current muscle path. */
+         for (j = 0; j < _currentPath.getSize(); j++)
+         {
+				if (_currentPath.get(j) == &ws->getWrapPoint(0))
+            {
+					_currentPath.remove(j); // remove the first wrap point
+					_currentPath.remove(j); // remove the second wrap point
+               break;
+            }
+         }
+
+         if (wo->getActive())
+         {
+            /* startPoint and endPoint in wrapStruct represent the user-defined
+             * starting and ending points in the array of muscle points that should
+             * be considered for wrapping. These indices take into account via points,
+             * whether or not they are active. Thus they are indices into mp_orig[],
+             * not mp[] (also, mp[] may contain wrapping points from previous wrap
+             * objects, which would mess up the starting and ending indices). But the
+             * goal is to find starting and ending indices in mp[] to consider for
+             * wrapping over this wrap object. Here is how that is done:
+             */
+
+            /* 1. startPoint and endPoint are 1-based, so subtract 1 from them to get
+             * indices into _attachmentSet. -1 (or any value less than 1) means use the first
+             * (or last) point.
+             */
+				if (ws->getStartPoint() < 1)
+               wrapStart = 0;
+            else
+               wrapStart = ws->getStartPoint() - 1;
+
+            if (ws->getEndPoint() < 1)
+               wrapEnd = _attachmentSet.getSize() - 1;
+            else
+               wrapEnd = ws->getEndPoint() - 1;
+
+				/* 2. Scan forward from wrapStart in _attachmentSet to find the first point
+				 * that is active. Store a pointer to it (smp).
+				 */
+				for (j = wrapStart; j <= wrapEnd; j++)
+					if (_attachmentSet.get(j)->isActive())
+						break;
+				if (j > wrapEnd) // there are no active points in the muscle
+					return;
+				smp = _attachmentSet.get(j);
+
+				/* 3. Scan backwards from wrapEnd in _attachmentSet to find the last
+				 * point that is active. Store a pointer to it (emp).
+				 */
+				for (j = wrapEnd; j >= wrapStart; j--)
+					if (_attachmentSet.get(j)->isActive())
+						break;
+				if (j < wrapStart) // there are no active points in the muscle
+					return;
+				emp = _attachmentSet.get(j);
+
+				/* 3. Now find the indices of smp and emp in _currentPath.
+				 */
+				for (j = 0, start = -1, end = -1; j < _currentPath.getSize(); j++)
+				{
+					if (_currentPath.get(j) == smp)
+						start = j;
+					if (_currentPath.get(j) == emp)
+						end = j;
+				}
+				if (start == -1 || end == -1) // this should never happen
+					return;
+
+				/* You now have indices into _currentPath (which is a list of all currently active points,
+             * including wrap points) that represent the used-defined range of points to consider
+             * for wrapping over this wrap object. Check each muscle segment in this range, choosing
+             * the best wrap as the one that changes the muscle segment length the least:
+             */
+            for (pt1 = start; pt1 < end; pt1++)
+            {
+               pt2 = pt1 + 1;
+
+               /* As long as the two points are not auto wrap points on the
+                * same wrap object, check them for wrapping.
+                */
+					if (_currentPath.get(pt1)->getWrapObject() == NULL &&
+						_currentPath.get(pt2)->getWrapObject() == NULL)
+               {
+                  WrapResult wr;
+
+						wr.startPoint = pt1;
+						wr.endPoint = pt2;
+
+                  result[i] = wo->wrapMuscleSegment(*_currentPath.get(pt1), *_currentPath.get(pt2), *ws, wr);
+                  if (result[i] == AbstractWrapObject::mandatoryWrap)
+                  {
+                     /* mandatoryWrap means the muscle line actually intersected
+                      * the wrap object. In this case, you *must* choose this segment
+                      * as the "best" one for wrapping. If the muscle has more than
+                      * one segment that intersects the object, the first one is taken
+                      * as the mandatory wrap (this is considered an ill-conditioned case).
+                      */
+                     best_wrap = wr;
+							// store the best wrap in the muscleWrap for possible use next time
+							ws->setPreviousWrap(wr);
+                     break;
+                  }
+                  else if (result[i] == AbstractWrapObject::wrapped)
+                  {
+                     /* E_WRAPPED means the muscle segment was wrapped over the object,
+                      * but you should consider the other segments as well to see if one
+                      * wraps with a smaller length change.
+                      */
+                     double muscle_length_change = _calc_muscle_length_change(*wo, wr);
+                     if (muscle_length_change < min_length_change)
+                     {
+                        best_wrap = wr;
+								// store the best wrap in the muscleWrap for possible use next time
+								ws->setPreviousWrap(wr);
+                        min_length_change = muscle_length_change;
+                     }
+                     else
+                     {
+                        /* the wrap was not shorter than the current minimum,
+                         * so just free the wrap points that were allocated.
+                         */
+								wr.wrap_pts.setSize(0);
+                     }
+                  }
+                  else
+                  {
+                  }
+               }
+            }
+
+            /* deallocate previous wrapping points if necessary: */
+				ws->getWrapPoint(1).getWrapPath().setSize(0);
+
+				if (best_wrap.wrap_pts.getSize() == 0)
+            {
+					if (ws) {
+						ws->resetPreviousWrap();
+                  ws->getWrapPoint(1).getWrapPath().setSize(0);
+					}
+            }
+            else
+            {
+               /* if wrapping did occur, copy wrap information into the MuscleStruct */
+               ws->getWrapPoint(0).getWrapPath().setSize(0);
+
+					Array<SimmPoint>& wrapPath = ws->getWrapPoint(1).getWrapPath();
+					wrapPath = best_wrap.wrap_pts;
+
+					// In OpenSim, all conversion to/from the wrap object's reference
+					// frame will be performed inside wrapMuscleSegment(). Thus, all
+					// points in this function will be in their respective body
+					// reference frames.
+               // for (j = 0; j < wrapPath.getSize(); j++){
+               //    convert_from_wrap_object_frame(wo, wrapPath.get(j));
+               //    convert(ms->modelnum, wrapPath.get(j), wo->segment, ms->ground_segment);
+               // }
+
+					ws->getWrapPoint(0).setWrapLength(0.0);
+					ws->getWrapPoint(1).setWrapLength(best_wrap.wrap_path_length);
+					ws->getWrapPoint(0).setBody(*wo->getBody());
+					ws->getWrapPoint(1).setBody(*wo->getBody());
+
+					ws->getWrapPoint(0).setAttachment(best_wrap.r1);
+					ws->getWrapPoint(1).setAttachment(best_wrap.r2);
+
+               // Now insert the two new wrapping points into the mp[] array.
+					_currentPath.insert(best_wrap.endPoint, &ws->getWrapPoint(0));
+					_currentPath.insert(best_wrap.endPoint + 1, &ws->getWrapPoint(1));
+            }
+         }
+      }
+
+		calculateLength(); // length is stored in _length
+
+      if (DABS(_length - last_length) < 0.0005)
+      {
+         break;
+      }
+      else
+      {
+         last_length = _length;
+      }
+
+      if (kk == 0 && _muscleWrapSet.getSize() > 1)
+      {
+         /* If the first wrap was a no wrap, and the second was a no wrap
+          * because a point was inside the object, switch the order of
+          * the first two objects and try again.
+          */
+			if (result[0] == AbstractWrapObject::noWrap && result[1] == AbstractWrapObject::insideRadius)
+         {
+            order[0] = 1;
+            order[1] = 0;
+
+            // remove wrap object 0 from the list of muscle points
+				int index = 0;
+            ws = _muscleWrapSet.get(index);
+				for (j = 0; j < _currentPath.getSize(); j++)
+				{
+					if (_currentPath.get(j) == &ws->getWrapPoint(0))
+					{
+						_currentPath.remove(j); // remove the first wrap point
+						_currentPath.remove(j); // remove the second wrap point
+						break;
+					}
+				}
+         }
+      }
+   }
+}
+
+/* -------------------------------------------------------------------------
+   _calc_muscle_length_change - given the output of a successful muscle wrap
+      over a wrap object, determine the percent change in length of the
+      muscle segment incurred by wrapping.
+---------------------------------------------------------------------------- */
+double AbstractSimmMuscle::_calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr)
+{
+	SimmMusclePoint* pt1 = _currentPath.get(wr.startPoint);
+	SimmMusclePoint* pt2 = _currentPath.get(wr.endPoint);
+
+   double straight_length = getModel()->getDynamicsEngine().calcDistance(*pt1->getBody(), pt1->getAttachment(),
+		*pt2->getBody(), pt2->getAttachment());
+
+	double* p1 = &pt1->getAttachment()[0];
+	double* p2 = &pt2->getAttachment()[0];
+   double wrap_length = getModel()->getDynamicsEngine().calcDistance(*pt1->getBody(), p1, *wo.getBody(), wr.r1);
+   wrap_length += wr.wrap_path_length;
+   wrap_length += getModel()->getDynamicsEngine().calcDistance(*wo.getBody(), wr.r2, *pt2->getBody(), p2);
+
+   return wrap_length - straight_length; // return absolute diff, not relative
+}
+
+//_____________________________________________________________________________
+/**
+ * Calculate the current length of the muscle. This function assumes that the
+ * path of the muscle has already been updated.
+ *
+ */
+void AbstractSimmMuscle::calculateLength()
+{
+	_length = 0.0;
+
+	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
+
+	int i;
+
+	for (i = 0; i < _currentPath.getSize() - 1; i++) {
+		SimmMusclePoint* p1 = _currentPath[i];
+		SimmMusclePoint* p2 = _currentPath[i+1];
+
+      /* If both points are wrap points on the same wrap object, then this muscle
+       * segment wraps over the surface of a wrap object, so just add in the
+       * pre-calculated length.
+       */
+      if (p1->getWrapObject() && p2->getWrapObject() && p1->getWrapObject() == p2->getWrapObject()) {
+			SimmMuscleWrapPoint* smwp = dynamic_cast<SimmMuscleWrapPoint*>(p2);
+			if (smwp) {
+				_length += smwp->getWrapLength();
+				//printf("%d to %d (w)= %.6lf\n", i, i+1, smwp->getWrapLength());
+			}
+      } else {
+         _length += engine.calcDistance(*p1->getBody(), p1->getAttachment(), *p2->getBody(), p2->getAttachment());
+#if 0
+			printf("%d to %d (-)= %.6lf (%.6lf %.6lf %.6lf) (%.6lf %.6lf %.6lf)\n", i, i+1, engine.calcDistance(*p1->getBody(), p1->getAttachment(), *p2->getBody(), p2->getAttachment()),
+				p1->getAttachment()[0],
+				p1->getAttachment()[1],
+				p1->getAttachment()[2],
+				p2->getAttachment()[0],
+				p2->getAttachment()[1],
+				p2->getAttachment()[2]);
+#endif
+      }
+   }
+	//printf("total length = %.12lf\n", _length);
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the current length of the muscle.
  *
  * @return Current length of the muscle.
  */
 double AbstractSimmMuscle::getLength()
 {
-	double length = 0.0;
-	SimmMusclePoint *start, *end;
+	if (_pathValid == false)
+		calculatePath();
 
-	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
-	AttachmentPointIterator *api = newAttachmentPointIterator();
-
-	if (!api)
-		return 0.0;
-
-	start = api->next();
-	end = api->next();
-
-	while (start && end)
-	{
-#if 0
-      /* If both points are wrap points on the same wrap object, then this muscle
-       * segment wraps over the surface of a wrap object, so just add in the
-       * pre-calculated distance.
-       */
-      if (dynamic_cast<SimmMuscleWrapPoint&>start &&
-			 dynamic_cast<SimmMuscleWrapPoint&>end &&
-			 start.getWrapObject() == end.getWrapObject())
-      {
-         length += end.getWrapDistance();
-      }
-      else
-      {
-         length += engine.calcDistance(*start->getBody(), start->getAttachment(), *end->getBody(), end->getAttachment());
-      }
-#else
-		length += engine.calcDistance(*start->getBody(), start->getAttachment(), *end->getBody(), end->getAttachment());
-#endif
-		start = end;
-		end = api->next();
-   }
-	delete api;
-
-	return length;
+	return _length;
 }
 
 //_____________________________________________________________________________
@@ -505,7 +824,7 @@ double AbstractSimmMuscle::getMomentArm(AbstractCoordinate& aCoord)
    double delta, originalValue, x[3], y[3];
 	bool clampedSave, lockedSave;
 
-	//calculatePath();
+	calculatePath();
 
 	if (aCoord.getMotionType() == AbstractDof::Rotational)
 		delta = 0.000873; /* 0.05 degrees * DEG_TO_RAD */
@@ -594,13 +913,17 @@ void AbstractSimmMuscle::apply()
 		return;
 
 	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
-	AttachmentPointIterator *api = newAttachmentPointIterator();
-	SimmMusclePoint *start, *end;
 
-	for(start=api->next(), end=api->next(); start && end; start=end, end=api->next())
-	{
-		const AbstractBody* startBody = start->getBody();
-		const AbstractBody* endBody = end->getBody();
+	int i;
+	SimmMusclePoint* start;
+	SimmMusclePoint* end;
+	const AbstractBody* startBody;
+	const AbstractBody* endBody;
+	for (i = 0; i < _currentPath.getSize() - 1; i++) {
+		start = _currentPath[i];
+		end = _currentPath[i+1];
+		startBody = start->getBody();
+		endBody = end->getBody();
 
 		if (startBody != endBody)
 		{
@@ -628,24 +951,11 @@ void AbstractSimmMuscle::apply()
 			engine.applyForce(*(end->getBody()), end->getAttachment().get(), bodyForce);
 		}
 	}
-
-	delete api;
 }
 
 //=============================================================================
-// FORCE APPLICATION
+// TESTING
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Make a new muscle point iterator.
- *
- * @return Pointer to the muscle point iterator.
- */
-AttachmentPointIterator* AbstractSimmMuscle::newAttachmentPointIterator() const
-{
-	return new SimmMusclePointSetIterator(_attachmentSet);
-}
-
 void AbstractSimmMuscle::peteTest() const
 {
 	int i;

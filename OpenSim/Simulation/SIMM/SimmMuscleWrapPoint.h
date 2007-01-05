@@ -31,6 +31,8 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/Array.h>
+#include "SimmPoint.h"
 #include "SimmMusclePoint.h"
 
 namespace OpenSim {
@@ -39,6 +41,7 @@ class AbstractCoordinate;
 class AbstractModel;
 class AbstractSimmMuscle;
 class AbstractDynamicsEngine;
+class AbstractWrapObject;
 
 //=============================================================================
 //=============================================================================
@@ -56,6 +59,10 @@ class RDSIMULATION_API SimmMuscleWrapPoint : public SimmMusclePoint
 // DATA
 //=============================================================================
 private:
+	Array<SimmPoint> _wrapPath; // points defining muscle path on surface of wrap object
+   double _wrapPathLength; // length of _wrapPath
+
+	AbstractWrapObject* _wrapObject; // the wrap object this point is on
 
 protected:
 
@@ -77,7 +84,11 @@ public:
    void copyData(const SimmMuscleWrapPoint &aPoint);
 	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
 
-	double getWrapLength() const;
+	Array<SimmPoint>& getWrapPath() { return _wrapPath; }
+	double getWrapLength() const { return _wrapPathLength; }
+	void setWrapLength(double aLength) { _wrapPathLength = aLength; }
+	virtual AbstractWrapObject* getWrapObject() const { return _wrapObject; }
+	void setWrapObject(AbstractWrapObject* aWrapObject) { _wrapObject = aWrapObject; }
 
 	virtual void peteTest() const;
 

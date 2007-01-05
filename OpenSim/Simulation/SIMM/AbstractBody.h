@@ -93,7 +93,7 @@ public:
 	virtual void scale(Array<double>& aScaleFactors, bool aScaleMass = false) = 0;
 	virtual void scaleInertialProperties(Array<double>& aScaleFactors) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
-	AbstractWrapObject* getWrapObject(const std::string& aName);
+	AbstractWrapObject* getWrapObject(const std::string& aName) const;
 	WrapObjectSet* getWrapObjectSet() { return &_wrapObjectSet; }
 
 	virtual void peteTest(void) const { }

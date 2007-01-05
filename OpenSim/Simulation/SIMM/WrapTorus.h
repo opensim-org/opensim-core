@@ -41,6 +41,9 @@ namespace OpenSim {
 class VisibleObject;
 class AbstractBody;
 class AbstractDynamicsEngine;
+class SimmMusclePoint;
+class MuscleWrap;
+class WrapResult;
 
 //=============================================================================
 //=============================================================================
@@ -80,9 +83,14 @@ public:
 	WrapTorus& operator=(const WrapTorus& aWrapTorus);
 #endif
    void copyData(const WrapTorus& aWrapTorus);
+	virtual const char* getWrapTypeName() const;
+	virtual std::string getDimensionsString() const;
 
 	virtual void scale(Array<double>& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
+
+	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
 	virtual VisibleObject* getDisplayer() { return NULL; }
 	virtual void peteTest() const;

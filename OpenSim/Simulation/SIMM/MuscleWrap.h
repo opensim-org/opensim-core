@@ -35,6 +35,7 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyIntArray.h>
 #include "SimmMuscleWrapPoint.h"
+#include "WrapResult.h"
 
 namespace OpenSim {
 
@@ -57,21 +58,31 @@ class RDSIMULATION_API MuscleWrap : public Object
 //=============================================================================
 // DATA
 //=============================================================================
+public:
 
+	enum WrapMethod
+	{
+		hybrid,
+		midpoint,
+		axial
+	};
+
+protected:
 	PropertyStr _wrapObjectNameProp;
    std::string &_wrapObjectName;
 
-	PropertyStr _algorithmNameProp;   /* currently used only for ellipsoid wrapping */
-   std::string &_algorithmName;
+	PropertyStr _methodNameProp;   // currently used only for ellipsoid wrapping
+	std::string& _methodName;
+	WrapMethod _method;
 
    PropertyIntArray _rangeProp;
    Array<int> &_range;
 
 	AbstractWrapObject* _wrapObject;
-   double _c[3];                       /* previous c point */
-   double _r1[3];                      /* previous r1 (tangent) point */
-   double _r2[3];                      /* previous r2 (tangent) point */
-   SimmMuscleWrapPoint _wrapPoints[2]; /* the two muscle points created when the muscle wraps */
+
+	WrapResult _previousWrap;  // results from previous wrapping
+
+   SimmMuscleWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
 
 //=============================================================================
 // METHODS
@@ -92,6 +103,17 @@ public:
    void copyData(const MuscleWrap& aMuscleWrap);
 
 	virtual void setup(AbstractDynamicsEngine* aEngine);
+
+	int getStartPoint() const { return _range[0]; }
+	int getEndPoint() const { return _range[1]; }
+	const std::string& getWrapObjectName() const { return _wrapObjectName; }
+	AbstractWrapObject* getWrapObject() const { return _wrapObject; }
+	SimmMuscleWrapPoint& getWrapPoint(int aIndex);
+	WrapMethod getMethod() const { return _method; }
+
+	const WrapResult& getPreviousWrap() const { return _previousWrap; }
+	void setPreviousWrap(const WrapResult& aWrapResult);
+	void resetPreviousWrap();
 
 	virtual void peteTest() const;
 

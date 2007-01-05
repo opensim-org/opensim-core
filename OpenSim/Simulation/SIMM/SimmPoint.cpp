@@ -175,6 +175,19 @@ void SimmPoint::set(double x, double y, double z)
 
 //_____________________________________________________________________________
 /**
+ * Scale the XYZ coordinates by a scalar.
+ *
+ * @param The scale factor.
+ */
+void SimmPoint::scale(double aScaleFactor)
+{
+	_location[0] *= aScaleFactor;
+	_location[1] *= aScaleFactor;
+	_location[2] *= aScaleFactor;
+}
+
+//_____________________________________________________________________________
+/**
  * Is the SimmPoint visible? It is considered invisible if
  * any coordinate is NAN.
  *

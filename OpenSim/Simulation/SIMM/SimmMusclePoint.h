@@ -99,7 +99,9 @@ public:
    void copyData(const SimmMusclePoint &aPoint);
 
 	Array<double>& getAttachment() const { return _attachment; }
+	void setAttachment(double aAttachment[3]);
 	const AbstractBody* getBody() const { return _body; }
+	void setBody(AbstractBody& aBody);
 	std::string& getBodyName() const { return _bodyName; }
 	void scale(Array<double>& aScaleFactors);
 

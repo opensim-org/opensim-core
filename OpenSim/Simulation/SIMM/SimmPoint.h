@@ -70,6 +70,7 @@ public:
 #endif
 	void set(double x, double y, double z);
 	double* get() { return _location; }
+	void scale(double aScaleFactor);
 	bool isVisible() const;
 	void peteTest() const;
 

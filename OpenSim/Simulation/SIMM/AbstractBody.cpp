@@ -165,12 +165,11 @@ AbstractBody& AbstractBody::operator=(const AbstractBody &aBody)
  * @param aName Name of the wrap object.
  * @return Pointer to the wrap object.
  */
-AbstractWrapObject* AbstractBody::getWrapObject(const string& aName)
+AbstractWrapObject* AbstractBody::getWrapObject(const string& aName) const
 {
 	int i;
 
-	for (i = 0; i < _wrapObjectSet.getSize(); i++)
-	{
+	for (i = 0; i < _wrapObjectSet.getSize(); i++) {
 		if (aName == _wrapObjectSet.get(i)->getName())
 			return _wrapObjectSet.get(i);
 	}

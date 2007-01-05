@@ -42,6 +42,8 @@ namespace OpenSim {
 class VisibleObject;
 class AbstractBody;
 class AbstractDynamicsEngine;
+class MuscleWrap;
+class WrapResult;
 
 //=============================================================================
 //=============================================================================
@@ -57,23 +59,10 @@ class RDSIMULATION_API WrapEllipsoid : public AbstractWrapObject
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-
-	enum WrapMethod
-	{
-		hybrid,
-		midpoint,
-		axial
-	};
-
 protected:
 
 	PropertyDblArray _dimensionsProp;
 	Array<double>& _dimensions;
-
-	PropertyStr _methodNameProp;
-	std::string& _methodName;
-	WrapMethod _method;
 
 //=============================================================================
 // METHODS
@@ -92,9 +81,14 @@ public:
 	WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
 #endif
    void copyData(const WrapEllipsoid& aWrapEllipsoid);
+	virtual const char* getWrapTypeName() const;
+	virtual std::string getDimensionsString() const;
 
 	virtual void scale(Array<double>& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
+
+	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
 	virtual VisibleObject* getDisplayer() { return NULL; }
 	virtual void peteTest() const;
@@ -104,6 +98,17 @@ protected:
 
 private:
 	void setNull();
+	int calc_r(double p1e, double r1[], double p1[], double m[],
+		double a[], double vs[], double vs4) const;
+	void dell(double r1[], double r2[], double m[], double a[], 
+		double vs[], double vs4, bool far_side_wrap,
+		WrapResult& aWrapResult) const;
+	double closestPoint(double a, double b, double c,
+		double u, double v, double w,
+		double* x, double* y, double* z,
+		int specialCaseAxis = -1) const;
+	double closestPointToEllipse(double a, double b, double u,
+		double v, double* x, double* y) const;
 //=============================================================================
 };	// END of class WrapEllipsoid
 //=============================================================================

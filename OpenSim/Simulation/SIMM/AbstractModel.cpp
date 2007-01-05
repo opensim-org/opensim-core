@@ -337,12 +337,12 @@ void AbstractModel::setup()
 	for (i = 0; i < _muscleGroups.getSize(); i++)
 		_muscleGroups[i]->setup(this);
 
+	for (i = 0; i < _dynamicsEngine.getSize(); i++)
+		_dynamicsEngine.get(i)->setup(this);
+
 	_actuatorSet.setup(this);
 
 	_contactSet.setup(this);
-
-	for (i = 0; i < _dynamicsEngine.getSize(); i++)
-		_dynamicsEngine.get(i)->setup(this);
 
 	_yi.setSize(getNumStates());
 	_ypi.setSize(getNumPseudoStates());
@@ -1421,10 +1421,11 @@ void AbstractModel::kinTest()
 
 		hip_flex_r->setValue(0.0);
 
-		for (double angle = 0.0; angle < 91.0 * rdMath::DTR; angle += 30.0 * rdMath::DTR)
+		cout << ms2->getName() << endl;
+		for (double angle = 0.0 * rdMath::DTR; angle < 121.0 * rdMath::DTR; angle += 30.0 * rdMath::DTR)
 		{
 			knee_flex_r->setValue(angle);
-			cout << "knee_flex_r = " << angle << ", len = " << ms2->getLength() << ", ma = " << ms2->getMomentArm(*knee_flex_r) << endl;
+			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = " << ms2->getMomentArm(*knee_flex_r) << endl;
 		}
 	}
 #if 0
@@ -1434,10 +1435,11 @@ void AbstractModel::kinTest()
 
 		knee_flex_r->setValue(0.0);
 
+		cout << ms1->getName() << endl;
 		for (double angle = 0.0; angle < 91.0 * rdMath::DTR; angle += 5.0 * rdMath::DTR)
 		{
 			hip_flex_r->setValue(angle);
-			cout << "hip_flex_r = " << angle << ", len = " << ms1->getLength() << ", ma = " << ms1->getMomentArm(*hip_flex_r) << endl;
+			cout << "hip_flex_r = " << angle * rdMath::RTD << ", len = " << ms1->getLength() << ", ma = " << ms1->getMomentArm(*hip_flex_r) << endl;
 		}
 	}
 #endif

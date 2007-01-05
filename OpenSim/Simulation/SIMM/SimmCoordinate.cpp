@@ -31,6 +31,9 @@
 #include "AbstractJoint.h"
 #include "SimmKinematicsEngine.h"
 #include "AbstractDynamicsEngine.h"
+#include "ActuatorSet.h"
+#include "AbstractSimmMuscle.h"
+#include "AbstractModel.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
 
@@ -500,6 +503,20 @@ bool SimmCoordinate::setValue(double aValue)
 		int pListSize = _pathList.getSize();
 		for (i = 0; i < pListSize; i++)
 			_pathList[i]->invalidate();
+
+		// TODO: use Observer mechanism for _jointList, _pathList, and muscles
+		ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
+		for (i = 0; i < act->getSize(); i++) {
+			AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+			if (sm)
+				sm->invalidatePath();
+		}
+	}
+	else if (aValue < _range[0] || aValue > _range[1])
+	{
+		cout << "___WARNING___: Attempting to set coordinate " << getName() << " to a value (" <<
+			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
+		return false;
 	}
 
 	return true;

@@ -22,7 +22,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 // INCLUDES
 #include <string>
 #include <OpenSim/Tools/rdTools.h>
@@ -33,7 +32,6 @@
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
-#include <OpenSim/Subject/SdfastFileWriter.h>
 #include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
 
 using namespace std;

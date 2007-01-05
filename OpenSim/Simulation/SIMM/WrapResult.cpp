@@ -1,4 +1,4 @@
-// AttachmentPointIterator.cpp
+// WrapResult.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "AttachmentPointIterator.h"
+#include "WrapResult.h"
 
 //=============================================================================
 // STATICS
@@ -40,8 +40,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-AttachmentPointIterator::AttachmentPointIterator() :
-	_counter(0)
+WrapResult::WrapResult()
 {
 }
 
@@ -49,6 +48,45 @@ AttachmentPointIterator::AttachmentPointIterator() :
 /**
  * Destructor.
  */
-AttachmentPointIterator::~AttachmentPointIterator()
+WrapResult::~WrapResult()
 {
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy data members from one WrapResult to another.
+ *
+ * @param aWrapResult WrapResult to be copied.
+ */
+void WrapResult::copyData(const WrapResult& aWrapResult)
+{
+	wrap_pts = aWrapResult.wrap_pts;
+	wrap_path_length = aWrapResult.wrap_path_length;
+
+	startPoint = aWrapResult.startPoint;
+	endPoint = aWrapResult.endPoint;
+
+	int i;
+	for (i = 0; i < 3; i++) {
+		r1[i] = aWrapResult.r1[i];
+		r2[i] = aWrapResult.r2[i];
+		c1[i] = aWrapResult.c1[i];
+		sv[i] = aWrapResult.sv[i];
+	}
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+WrapResult& WrapResult::operator=(const WrapResult& aWrapResult)
+{
+	copyData(aWrapResult);
+
+	return(*this);
 }

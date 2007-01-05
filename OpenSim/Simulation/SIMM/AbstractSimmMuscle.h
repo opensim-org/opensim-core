@@ -30,6 +30,7 @@
 #include <iostream>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/XMLDocument.h>
@@ -38,13 +39,12 @@
 #include "AbstractActuator.h"
 #include "SimmMusclePointSet.h"
 #include "MuscleWrapSet.h"
-#include "AttachmentPointIterator.h"
 
 namespace OpenSim {
 
 class SimmMuscleGroup;
 class AbstractCoordinate;
-class AttachmentPointIterator;
+class WrapResult;
 
 //=============================================================================
 //=============================================================================
@@ -76,6 +76,12 @@ protected:
 	PropertyObj _muscleWrapSetProp;
 	MuscleWrapSet &_muscleWrapSet;
 
+	// muscle model index is not used in OpenSim, but is
+	// stored here so that it can be written to a SIMM
+	// muscle file if needed.
+	PropertyInt _muscleModelIndexProp;
+	int &_muscleModelIndex;
+
 	// current length of muscle-tendon actuator
 	double _length;
 
@@ -106,6 +112,8 @@ public:
 	AbstractSimmMuscle& operator=(const AbstractSimmMuscle &aMuscle);
    void copyData(const AbstractSimmMuscle &aMuscle);
 	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
+	int getMuscleModelIndex() const { return _muscleModelIndex; }
+	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 
 	const Array<std::string>* getGroupNames() const { return &_groupNames; }
 
@@ -119,20 +127,21 @@ public:
 	//=============================================================================
 	void calculatePath();
 	void applyWrapObjects();
-	double getLength();
+	double _calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr);
 	void calculateLength();
+	double getLength();
 	virtual double getMomentArm(AbstractCoordinate& aCoord);
 	virtual double getSpeed() const;
 	double calcPennation(double aFiberLength, double aOptimalFiberLength,
 		double aInitialPennationAngle) const;
 	virtual void computeActuation();
+	void invalidatePath() { _pathValid = false; }
 
 	//=============================================================================
 	// FORCE APPLICATION
 	//=============================================================================
 	virtual void apply();
 
-	virtual AttachmentPointIterator* newAttachmentPointIterator() const;
 	virtual void peteTest() const;
 
 	// Visible Object Support

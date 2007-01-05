@@ -1102,7 +1102,7 @@
 						<tolerance>       0.00000000 </tolerance>
 						<stiffness>       0.20000000 </stiffness>
 						<weight>       1.00000000 </weight>
-						<range>      -0.17453293       2.09439510 </range>
+						<range>      -0.17453293       2.194395102393 </range>
 						<keys> </keys>
 						<clamped> true </clamped>
 						<locked> false </locked>
@@ -1318,7 +1318,7 @@
 						<tolerance>       0.00000000 </tolerance>
 						<stiffness>       0.20000000 </stiffness>
 						<weight>       1.00000000 </weight>
-						<range>      -0.17453293       2.09439510 </range>
+						<range>      -0.17453293       2.194395102393 </range>
 						<keys> </keys>
 						<clamped> true </clamped>
 						<locked> false </locked>

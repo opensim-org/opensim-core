@@ -1,7 +1,7 @@
-#ifndef __SimmMusclePointSetIterator_h__
-#define __SimmMusclePointSetIterator_h__
+#ifndef __WrapResult_h__
+#define __WrapResult_h__
 
-// SimmMusclePointSetIterator.h
+// WrapResult.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,28 +29,36 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include "AttachmentPointIterator.h"
+#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Tools/Array.h>
+#include "SimmPoint.h"
 
 namespace OpenSim {
-
-class SimmMusclePoint;
-class SimmMusclePointSet;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an iterator for a set of muscle points.
+ * A class for holding the results of a wrapping calculation.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMusclePointSetIterator : public AttachmentPointIterator
+class RDSIMULATION_API WrapResult
 {
+
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-	SimmMusclePointSet& _simmMusclePointSet;
+public:
+	int startPoint;            // first point in muscle line that is wrapped
+	int endPoint;              // second point in muscle line that is wrapped
+	Array<SimmPoint> wrap_pts; // array of wrapping path points
+   double wrap_path_length;   // distance along curved r1->r2 path
+   double r1[3];              // wrap tangent point nearest to p1
+   double r2[3];              // wrap tangent point nearest to p2
+	double c1[3];              // intermediate point used by some wrap objects
+	double sv[3];              // intermediate point used by some wrap objects
+	double factor;             // scale factor used to normalize parameters
 
 //=============================================================================
 // METHODS
@@ -59,22 +67,18 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMusclePointSetIterator(SimmMusclePointSet& aSimmMusclePointSet);
-	virtual ~SimmMusclePointSetIterator();
-
-	virtual bool finished() const;
-	virtual SimmMusclePoint* getCurrent();
-	virtual SimmMusclePoint* next();
-	virtual void reset();
-	virtual void end();
+	WrapResult();
+	virtual ~WrapResult();
+	void copyData(const WrapResult& aWrapResult);
+	WrapResult& operator=(const WrapResult& aWrapResult);
 
 //=============================================================================
-};	// END of class SimmMusclePointSetIterator
+};	// END of class WrapResult
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMusclePointSetIterator_h__
+#endif // __WrapResult_h__
 
 

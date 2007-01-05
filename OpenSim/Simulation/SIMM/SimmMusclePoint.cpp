@@ -240,6 +240,19 @@ SimmMusclePoint& SimmMusclePoint::operator=(const SimmMusclePoint &aPoint)
 	return(*this);
 }
 
+void SimmMusclePoint::setBody(AbstractBody& aBody)
+{
+	_body = &aBody;
+	_bodyName = aBody.getName();
+}
+
+void SimmMusclePoint::setAttachment(double aAttachment[3])
+{
+	_attachment[0] = aAttachment[0];
+	_attachment[1] = aAttachment[1];
+	_attachment[2] = aAttachment[2];
+}
+
 //=============================================================================
 // SCALING
 //=============================================================================

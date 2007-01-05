@@ -26,6 +26,10 @@
 // INCLUDES
 //=============================================================================
 #include "WrapTorus.h"
+#include "SimmMusclePoint.h"
+#include "MuscleWrap.h"
+#include "WrapResult.h"
+#include <sstream>
 
 //=============================================================================
 // STATICS
@@ -33,6 +37,7 @@
 using namespace std;
 using namespace OpenSim;
 
+static char* wrapTypeName = "torus";
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -195,6 +200,19 @@ void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 	_outerRadius = aWrapTorus._outerRadius;
 }
 
+const char* WrapTorus::getWrapTypeName() const
+{
+	return wrapTypeName;
+}
+
+string WrapTorus::getDimensionsString() const
+{
+	stringstream dimensions;
+	dimensions << "radius " << _innerRadius << " " << _outerRadius;
+
+	return dimensions.str();
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -210,6 +228,15 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
 	AbstractWrapObject::operator=(aWrapTorus);
 
 	return(*this);
+}
+
+//=============================================================================
+// WRAPPING
+//=============================================================================
+int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+								const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+{
+	return noWrap;
 }
 
 //=============================================================================

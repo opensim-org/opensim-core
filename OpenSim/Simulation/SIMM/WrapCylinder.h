@@ -41,6 +41,9 @@ namespace OpenSim {
 class VisibleObject;
 class AbstractBody;
 class AbstractDynamicsEngine;
+class SimmMusclePoint;
+class MuscleWrap;
+class WrapResult;
 
 //=============================================================================
 //=============================================================================
@@ -60,10 +63,8 @@ class RDSIMULATION_API WrapCylinder : public AbstractWrapObject
 	PropertyDbl _radiusProp;
 	double& _radius;
 
-	// Height is used only for diplaying the cylinder, not for wrapping.
-	// It is specified here as a parameter to remain consistent with SIMM.
-	PropertyDbl _heightProp;
-	double& _height;
+	PropertyDbl _lengthProp;
+	double& _length;
 
 //=============================================================================
 // METHODS
@@ -83,8 +84,13 @@ public:
 #endif
    void copyData(const WrapCylinder& aWrapCylinder);
 
+	virtual const char* getWrapTypeName() const;
+	virtual std::string getDimensionsString() const;
 	virtual void scale(Array<double>& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
+
+	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
 	virtual VisibleObject* getDisplayer() { return NULL; }
 	virtual void peteTest() const;
@@ -94,6 +100,13 @@ protected:
 
 private:
 	void setNull();
+	void _make_spiral_path(double aPoint1[3], double aPoint2[3],
+		bool far_side_wrap, WrapResult& aWrapResult) const;
+	void _calc_spiral_wrap_point(const double	r1a[3], const double axial_vec[3],
+		double m[4][4], const double axis[3], double sense,
+		double t, double theta, double wrap_pt[3]) const;
+	bool _adjust_tangent_point(double pt1[3], double dn[3], double r1[3], double w1[3]) const;
+
 //=============================================================================
 };	// END of class WrapCylinder
 //=============================================================================

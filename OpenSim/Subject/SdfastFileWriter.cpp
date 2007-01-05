@@ -1501,9 +1501,11 @@ void SdfastFileWriter::writeSdfastWrapObjects(ofstream& out)
 	out << "void init_wrap_objects(void)" << endl;
 	out << "{" << endl << endl;
 
+
 	//if (ms->num_wrap_objects < 1)
 	{
-		out << "   /* There are no wrap objects in this model. */" << endl << endl;
+		out << "   /* Wrap objects are handled by the native OpenSim code, so */" << endl;
+		out << "   /* they are not exported to the Pipeline source code. */" << endl << endl;
 		out << "  sdm.num_wrap_objects = 0;" << endl;
 		out << "  sdm.wrap_object = NULL;" << endl << endl;
 		out << "}" << endl << endl;

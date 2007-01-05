@@ -6726,7 +6726,7 @@
 					</max_restraint_function>
 				</SimmCoordinate>
 				<SimmCoordinate name="knee_flex_r">
-					<range>-0.174532925199 2.094395102393</range>
+					<range>-0.174532925199 2.194395102393</range>
 					<default_value>0.000000000000</default_value>
 					<tolerance>0.000000000000</tolerance>
 					<stiffness>0.200000000000</stiffness>
@@ -6873,7 +6873,7 @@
 					</max_restraint_function>
 				</SimmCoordinate>
 				<SimmCoordinate name="knee_flex_l">
-					<range>-0.174532925199 2.094395102393</range>
+					<range>-0.174532925199 2.194395102393</range>
 					<default_value>0.000000000000</default_value>
 					<tolerance>0.000000000000</tolerance>
 					<stiffness>0.200000000000</stiffness>

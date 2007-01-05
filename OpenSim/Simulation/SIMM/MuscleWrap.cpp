@@ -26,6 +26,9 @@
 // INCLUDES
 //=============================================================================
 #include "MuscleWrap.h"
+#include "BodySet.h"
+#include "AbstractDynamicsEngine.h"
+#include <OpenSim/Tools/rdMath.h>
 
 //=============================================================================
 // STATICS
@@ -43,7 +46,7 @@ using namespace OpenSim;
 MuscleWrap::MuscleWrap() :
 	Object(),
 	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_algorithmName(_algorithmNameProp.getValueStr()),
+	_methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
 {
 	setNull();
@@ -57,7 +60,7 @@ MuscleWrap::MuscleWrap() :
 MuscleWrap::MuscleWrap(DOMElement* aElement) :
 	Object(aElement),
 	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_algorithmName(_algorithmNameProp.getValueStr()),
+	_methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
 {
 	setNull();
@@ -82,7 +85,7 @@ MuscleWrap::~MuscleWrap()
 MuscleWrap::MuscleWrap(const MuscleWrap& aMuscleWrap) :
 	Object(aMuscleWrap),
 	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_algorithmName(_algorithmNameProp.getValueStr()),
+	_methodName(_methodNameProp.getValueStr()),
    _range(_rangeProp.getValueIntArray())
 {
 	setNull();
@@ -136,6 +139,10 @@ Object* MuscleWrap::copy(DOMElement *aElement) const
 void MuscleWrap::setNull()
 {
 	setType("MuscleWrap");
+
+	_method = hybrid;
+
+	resetPreviousWrap();
 }
 
 //_____________________________________________________________________________
@@ -147,8 +154,9 @@ void MuscleWrap::setupProperties()
 	_wrapObjectNameProp.setName("wrap_object");
 	_propertySet.append(&_wrapObjectNameProp);
 
-	_algorithmNameProp.setName("algorithm");
-	_propertySet.append(&_algorithmNameProp);
+	_methodNameProp.setName("method");
+	_methodNameProp.setValue("Unassigned");
+	_propertySet.append(&_methodNameProp);
 
 	const int defaultRange[] = {-1, -1};
 	_rangeProp.setName("range");
@@ -165,7 +173,32 @@ void MuscleWrap::setupProperties()
  */
 void MuscleWrap::setup(AbstractDynamicsEngine* aEngine)
 {
-	// get pointer to wrap object
+	int i;
+	const BodySet* bodySet = aEngine->getBodySet();
+
+	for (i = 0; i < bodySet->getSize(); i++) {
+		AbstractWrapObject* wo = bodySet->get(i)->getWrapObject(getWrapObjectName());
+		if (wo) {
+			_wrapObject = wo;
+			_wrapPoints[0].setWrapObject(wo);
+			_wrapPoints[1].setWrapObject(wo);
+			break;
+		}
+	}
+
+	if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
+		_method = hybrid;
+	else if (_methodName == "midpoint" || _methodName == "Midpoint" || _methodName == "MIDPOINT")
+		_method = midpoint;
+	else if (_methodName == "axial" || _methodName == "Axial" || _methodName == "AXIAL")
+		_method = axial;
+	else if (_methodName == "Unassigned") {  // method was not specified in wrap object definition; use default
+		_method = hybrid;
+		_methodName = "hybrid";
+	} else {  // method was specified incorrectly in wrap object definition; throw an exception
+		string errorMessage = "Error: wrapping method for wrap object " + getName() + " was either not specified, or specified incorrectly.";
+		throw Exception(errorMessage);
+	}
 }
 
 //_____________________________________________________________________________
@@ -177,16 +210,11 @@ void MuscleWrap::setup(AbstractDynamicsEngine* aEngine)
 void MuscleWrap::copyData(const MuscleWrap& aMuscleWrap)
 {
 	_wrapObjectName = aMuscleWrap._wrapObjectName;
-	_algorithmName = aMuscleWrap._algorithmName;
+	_methodName = aMuscleWrap._methodName;
+	_method = aMuscleWrap._method;
 	_range = aMuscleWrap._range;
 	_wrapObject = aMuscleWrap._wrapObject;
-
-	int i;
-	for (i = 0; i < 3; i++) {
-		_c[i] = aMuscleWrap._c[i];
-		_r1[i] = aMuscleWrap._r1[i];
-		_r2[i] = aMuscleWrap._r2[i];
-	}
+	_previousWrap = aMuscleWrap._previousWrap;
 
 	_wrapPoints[0] = aMuscleWrap._wrapPoints[0];
 	_wrapPoints[1] = aMuscleWrap._wrapPoints[1];
@@ -209,6 +237,37 @@ MuscleWrap& MuscleWrap::operator=(const MuscleWrap& aMuscleWrap)
 	return(*this);
 }
 
+SimmMuscleWrapPoint& MuscleWrap::getWrapPoint(int aIndex)
+{
+	if (aIndex < 0 || aIndex > 1)
+	{
+		// TODO string errorMessage = "MuscleWrap::getWrapPoint(): invalid index (" + aIndex + ")";
+		// throw Exception(errorMessage);
+	}
+
+	return _wrapPoints[aIndex];
+}
+
+void MuscleWrap::resetPreviousWrap()
+{
+	_previousWrap.startPoint = -1;
+	_previousWrap.endPoint = -1;
+
+	_previousWrap.wrap_pts.setSize(0);
+	_previousWrap.wrap_path_length = 0.0;
+
+	int i;
+	for (i = 0; i < 3; i++) {
+		_previousWrap.r1[i] = rdMath::MINUS_INFINITY;
+		_previousWrap.r2[i] = rdMath::MINUS_INFINITY;
+		_previousWrap.sv[i] = rdMath::MINUS_INFINITY;
+	}
+}
+void MuscleWrap::setPreviousWrap(const WrapResult& aWrapResult)
+{
+	_previousWrap = aWrapResult;
+}
+
 //=============================================================================
 // TEST
 //=============================================================================
@@ -217,6 +276,6 @@ void MuscleWrap::peteTest() const
 	cout << "   Muscle Wrap " << getName() << endl;
 
 	cout << "      wrap_object: " << _wrapObjectName << endl;
-	cout << "      algorithm: " << _algorithmName << endl;
+	cout << "      method: " << _methodName << endl;
 	cout << "      range: " << _range[0] << " " << _range[1] << endl;
 }

@@ -1,49 +1,62 @@
 // WrapCylinder.cpp
 // Author: Peter Loan
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including 
- * without limitation the rights to use, copy, modify, merge, publish, 
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject
- * to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included 
- * in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+* Copyright (c) 2006, Stanford University. All rights reserved. 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including 
+* without limitation the rights to use, copy, modify, merge, publish, 
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject
+* to the following conditions:
+* 
+* The above copyright notice and this permission notice shall be included 
+* in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "WrapCylinder.h"
+#include "SimmMusclePoint.h"
+#include "MuscleWrap.h"
+#include "WrapResult.h"
+#include "SimmMacros.h"
+#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Tools/Mtx.h>
+#include <sstream>
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+static char* wrapTypeName = "cylinder";
+static double p0[] = {0.0, 0.0, 0.0};
+static double dn[] = {0.0, 0.0, 1.0};
+#define NUM_WRAP_SEGS     100
+#define MAX_ITERATIONS    100
+#define TANGENCY_THRESHOLD (0.1 * DTOR) /* find tangency to within 1 degree */
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Default constructor.
- */
+* Default constructor.
+*/
 WrapCylinder::WrapCylinder() :
-	AbstractWrapObject(),
-   _radius(_radiusProp.getValueDbl()),
-   _height(_heightProp.getValueDbl())
+AbstractWrapObject(),
+_radius(_radiusProp.getValueDbl()),
+_length(_lengthProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -51,12 +64,12 @@ WrapCylinder::WrapCylinder() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
+* Constructor from an XML node
+*/
 WrapCylinder::WrapCylinder(DOMElement* aElement) :
-	AbstractWrapObject(aElement),
-   _radius(_radiusProp.getValueDbl()),
-   _height(_heightProp.getValueDbl())
+AbstractWrapObject(aElement),
+_radius(_radiusProp.getValueDbl()),
+_length(_lengthProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -65,22 +78,22 @@ WrapCylinder::WrapCylinder(DOMElement* aElement) :
 
 //_____________________________________________________________________________
 /**
- * Destructor.
- */
+* Destructor.
+*/
 WrapCylinder::~WrapCylinder()
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor.
- *
- * @param aWrapCylinder WrapCylinder to be copied.
- */
+* Copy constructor.
+*
+* @param aWrapCylinder WrapCylinder to be copied.
+*/
 WrapCylinder::WrapCylinder(const WrapCylinder& aWrapCylinder) :
-	AbstractWrapObject(aWrapCylinder),
-   _radius(_radiusProp.getValueDbl()),
-   _height(_heightProp.getValueDbl())
+AbstractWrapObject(aWrapCylinder),
+_radius(_radiusProp.getValueDbl()),
+_length(_lengthProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -89,11 +102,11 @@ WrapCylinder::WrapCylinder(const WrapCylinder& aWrapCylinder) :
 
 //_____________________________________________________________________________
 /**
- * Copy this WrapCylinder and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this WrapCylinder.
- */
+* Copy this WrapCylinder and return a pointer to the copy.
+* The copy constructor for this class is used.
+*
+* @return Pointer to a copy of this WrapCylinder.
+*/
 Object* WrapCylinder::copy() const
 {
 	WrapCylinder *wrapCylinder = new WrapCylinder(*this);
@@ -102,19 +115,19 @@ Object* WrapCylinder::copy() const
 
 //_____________________________________________________________________________
 /**
- * Copy this WrapCylinder and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * WrapCylinder::WrapCylinder(DOMElement*) in order to establish the
- * relationship of the WrapCylinder object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this WrapCylinder object. Finally, the data members of the copy are
- * updated using WrapCylinder::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this WrapCylinder.
- */
+* Copy this WrapCylinder and modify the copy so that it is consistent
+* with a specified XML element node.
+*
+* The copy is constructed by first using
+* WrapCylinder::WrapCylinder(DOMElement*) in order to establish the
+* relationship of the WrapCylinder object with the XML node. Then, the
+* assignment operator is used to set all data members of the copy to the
+* values of this WrapCylinder object. Finally, the data members of the copy are
+* updated using WrapCylinder::updateFromXMLNode().
+*
+* @param aElement XML element. 
+* @return Pointer to a copy of this WrapCylinder.
+*/
 Object* WrapCylinder::copy(DOMElement *aElement) const
 {
 	WrapCylinder *wrapCylinder = new WrapCylinder(aElement);
@@ -128,8 +141,8 @@ Object* WrapCylinder::copy(DOMElement *aElement) const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this WrapCylinder to their null values.
- */
+* Set the data members of this WrapCylinder to their null values.
+*/
 void WrapCylinder::setNull()
 {
 	setType("WrapCylinder");
@@ -137,8 +150,8 @@ void WrapCylinder::setNull()
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
- */
+* Connect properties to local pointers.
+*/
 void WrapCylinder::setupProperties()
 {
 	// BASE CLASS
@@ -148,24 +161,24 @@ void WrapCylinder::setupProperties()
 	_radiusProp.setValue(-1.0);
 	_propertySet.append(&_radiusProp);
 
-	_heightProp.setName("height");
-	_heightProp.setValue(1.0);
-	_propertySet.append(&_heightProp);
+	_lengthProp.setName("length");
+	_lengthProp.setValue(1.0);
+	_propertySet.append(&_lengthProp);
 }
 
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aEngine dynamics engine containing this SimmBody.
- */
+* Perform some set up functions that happen after the
+* object has been deserialized or copied.
+*
+* @param aEngine dynamics engine containing this SimmBody.
+*/
 void WrapCylinder::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 {
 	// Base class
 	AbstractWrapObject::setup(aEngine, aBody);
 
-   // maybe set a parent pointer, _body = aBody;
+	// maybe set a parent pointer, _body = aBody;
 
 	if (_radius < 0.0)
 	{
@@ -176,17 +189,30 @@ void WrapCylinder::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 
 //_____________________________________________________________________________
 /**
- * Copy data members from one WrapCylinder to another.
- *
- * @param aWrapCylinder WrapCylinder to be copied.
- */
+* Copy data members from one WrapCylinder to another.
+*
+* @param aWrapCylinder WrapCylinder to be copied.
+*/
 void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
 {
 	// BASE CLASS
 	AbstractWrapObject::copyData(aWrapCylinder);
 
 	_radius = aWrapCylinder._radius;
-	_height = aWrapCylinder._height;
+	_length = aWrapCylinder._length;
+}
+
+const char* WrapCylinder::getWrapTypeName() const
+{
+	return wrapTypeName;
+}
+
+string WrapCylinder::getDimensionsString() const
+{
+	stringstream dimensions;
+	dimensions << "radius " << _radius << "\nheight " << _length;
+
+	return dimensions.str();
 }
 
 //=============================================================================
@@ -194,10 +220,10 @@ void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
+* Assignment operator.
+*
+* @return Reference to this object.
+*/
 WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 {
 	// BASE CLASS
@@ -205,6 +231,613 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 
 	return(*this);
 }
+
+//=============================================================================
+// WRAPPING
+//=============================================================================
+int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+									const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+{
+	double dist, pp[3], vv[3], uu[3], r1a[3], r1b[3], r2a[3], r2b[3],
+		r1am[3], r1bm[3], r2am[3], r2bm[3], p11_dist, p22_dist, t, t1, t2, apex[3],
+		dot1, dot2, dot3, dot4, plane_normal[3], d, sum_musc[3], sin_theta,
+		p11[3], p22[3], *r11, *r22, r1p[3], r2p[3], alpha, beta, r_squared = _radius * _radius;
+	double dist1, dist2, axispt[3], vert1[3], vert2[3], mpt[3], apex1[3], apex2[3], l1[3], l2[3];
+	double near12[3], t12, mag12,
+		near00[3], t00, mag00, p00[3];
+	int i, return_code = wrapped;
+	bool r1_inter, r2_inter;
+	bool constrained   = (bool) (_wrapSign != 0);
+	bool far_side_wrap = false, long_wrap = false;
+
+	// In case you need any variables from the previous wrap, copy them from
+	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
+	// un-normalized at the end of the previous wrap calculation.
+	const WrapResult& previousWrap = aMuscleWrap.getPreviousWrap();
+	aWrapResult.factor = previousWrap.factor;
+	for (i = 0; i < 3; i++)
+	{
+		aWrapResult.r1[i] = previousWrap.r1[i] * previousWrap.factor;
+		aWrapResult.r2[i] = previousWrap.r2[i] * previousWrap.factor;
+		aWrapResult.c1[i] = previousWrap.c1[i];
+		aWrapResult.sv[i] = previousWrap.sv[i];
+	}
+
+	aFlag = false;
+	aWrapResult.wrap_path_length = 0.0;
+	aWrapResult.wrap_pts.setSize(0);
+
+	/* abort if aPoint1 or aPoint2 is inside the cylinder. */
+	if (get_distsqr_point_line(&aPoint1[0], p0, dn) < r_squared ||
+		get_distsqr_point_line(&aPoint2[0], p0, dn) < r_squared)
+	{
+		return insideRadius;
+	}
+
+	/* Find the closest intersection between the muscle line and the axis of the
+	* cylinder. This intersection is used in several places further down in the
+	* code to check for various wrapping conditions.
+	*/
+	for (i = 0; i < 3; i++)
+		p00[i] = p0[i] + dn[i];
+
+	intersect_lines_scaled(&aPoint1[0], &aPoint2[0], p0, p00, near12, &t12, &mag12, near00, &t00, &mag00);
+
+	/* abort if the cylinder is unconstrained and p1p2 misses the cylinder.
+	* Use the return values from the above call to intersect_lines_scaled()
+	* to perform the check.
+	*/
+	if ( ! constrained)
+	{
+		if (distancesqr_between_vertices(near12, near00) < r_squared && t12 > 0.0 && t12 < mag12)
+		{
+			return_code = mandatoryWrap;
+		}
+		else
+		{
+			return noWrap;
+		}
+	}
+
+	/* find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2: */
+	get_point_from_point_line(&aPoint1[0], p0, dn, p11);
+	get_point_from_point_line(&aPoint2[0], p0, dn, p22);
+
+	/* find preliminary tangent point candidates r1a & r1b: */
+	MAKE_3DVECTOR(p11, aPoint1, vv);
+
+	p11_dist = Mtx::Normalize(3, vv, vv);
+
+	sin_theta = _radius / p11_dist;
+
+	dist = _radius * sin_theta;
+
+	for (i = 0; i < 3; i++)
+		pp[i] = p11[i] + dist * vv[i];
+
+	dist = sqrt(r_squared - dist * dist);
+
+	Mtx::CrossProduct(dn, vv, uu);
+
+	for (i = 0; i < 3; i++)
+	{
+		r1a[i] = pp[i] + dist * uu[i];
+		r1b[i] = pp[i] - dist * uu[i];
+	}
+
+	/* find preliminary tangent point candidates r2a & r2b: */
+	MAKE_3DVECTOR(p22, aPoint2, vv);
+
+	p22_dist = Mtx::Normalize(3, vv, vv);
+
+	sin_theta = _radius / p22_dist;
+
+	dist = _radius * sin_theta;
+
+	for (i = 0; i < 3; i++)
+		pp[i] = p22[i] + dist * vv[i];
+
+	dist = sqrt(r_squared - dist * dist);
+
+	Mtx::CrossProduct(dn, vv, uu);
+
+	for (i = 0; i < 3; i++)
+	{
+		r2a[i] = pp[i] + dist * uu[i];
+		r2b[i] = pp[i] - dist * uu[i];
+	}
+
+	/* choose the best preliminary tangent points r1 & r2 from the 4 candidates. */
+	if (constrained)
+	{
+		double sum_r[3];
+
+		if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
+		{
+			/* If either muscle point is on the constrained side, then check for intersection
+			* of the muscle line and the cylinder. If there is an intersection, then
+			* you've found a mandatory wrap. If not, then if one point is not on the constrained
+			* side and the closest point on the line is not on the constrained side, you've
+			* found a potential wrap. Otherwise, there is no wrap.
+			* Use the return values from the previous call to intersect_lines_scaled()
+			* to perform these checks.
+			*/
+			if (distancesqr_between_vertices(near12, near00) < r_squared && t12 > 0.0 && t12 < mag12)
+			{
+				return_code = mandatoryWrap;
+			}
+			else
+			{
+				if (DSIGN(aPoint1[_wrapAxis]) != DSIGN(aPoint2[_wrapAxis]) && DSIGN(near12[_wrapAxis]) != _wrapSign)
+				{
+					return_code = wrapped;
+				}
+				else
+				{
+					return noWrap;
+				}
+			}
+		}
+
+		MAKE_3DVECTOR(p11, r1a, r1am);
+		MAKE_3DVECTOR(p11, r1b, r1bm);
+		MAKE_3DVECTOR(p22, r2a, r2am);
+		MAKE_3DVECTOR(p22, r2b, r2bm);
+
+		alpha = Mtx::Angle(r1am, r2bm);
+		beta = Mtx::Angle(r1bm, r2am);
+
+		/* check to see which of the four tangent points should be chosen by seeing which
+		* ones are on the 'active' portion of the cylinder. If r1a and r1b are both on or
+		* both off the active portion, then use r2a and r2b to decide.
+		*/
+		if (DSIGN(r1a[_wrapAxis]) == _wrapSign && DSIGN(r1b[_wrapAxis]) == _wrapSign)
+		{
+			if (DSIGN(r2a[_wrapAxis]) == _wrapSign)
+			{
+				COPY_1X3VECTOR(r1b, aWrapResult.r1);
+				COPY_1X3VECTOR(r2a, aWrapResult.r2);
+				if (alpha > beta)
+					far_side_wrap = false;
+				else
+					far_side_wrap = true;
+			}
+			else
+			{
+				COPY_1X3VECTOR(r1a, aWrapResult.r1);
+				COPY_1X3VECTOR(r2b, aWrapResult.r2);
+				if (alpha > beta)
+					far_side_wrap = true;
+				else
+					far_side_wrap = false;
+			}
+		}
+		else if (DSIGN(r1a[_wrapAxis]) == _wrapSign && DSIGN(r1b[_wrapAxis]) != _wrapSign)
+		{
+			COPY_1X3VECTOR(r1a, aWrapResult.r1);
+			COPY_1X3VECTOR(r2b, aWrapResult.r2);
+			if (alpha > beta)
+				far_side_wrap = true;
+			else
+				far_side_wrap = false;
+		}
+		else if (DSIGN(r1a[_wrapAxis]) != _wrapSign && DSIGN(r1b[_wrapAxis]) == _wrapSign)
+		{
+			COPY_1X3VECTOR(r1b, aWrapResult.r1);
+			COPY_1X3VECTOR(r2a, aWrapResult.r2);
+			if (alpha > beta)
+				far_side_wrap = false;
+			else
+				far_side_wrap = true;
+		}
+		else if (DSIGN(r1a[_wrapAxis]) != _wrapSign && DSIGN(r1b[_wrapAxis]) != _wrapSign)
+		{
+			if (DSIGN(r2a[_wrapAxis]) == _wrapSign)
+			{
+				COPY_1X3VECTOR(r1b, aWrapResult.r1);
+				COPY_1X3VECTOR(r2a, aWrapResult.r2);
+				if (alpha > beta)
+					far_side_wrap = false;
+				else
+					far_side_wrap = true;
+			}
+			else if (DSIGN(r2b[_wrapAxis]) == _wrapSign)
+			{
+				COPY_1X3VECTOR(r1a, aWrapResult.r1);
+				COPY_1X3VECTOR(r2b, aWrapResult.r2);
+				if (alpha > beta)
+					far_side_wrap = true;
+				else
+					far_side_wrap = false;
+			}
+			else // none of the four tangent points is on the active portion
+			{
+				if (alpha > beta)
+				{
+					COPY_1X3VECTOR(r1a, aWrapResult.r1);
+					COPY_1X3VECTOR(r2b, aWrapResult.r2);
+					far_side_wrap = true;
+				}
+				else
+				{
+					COPY_1X3VECTOR(r1b, aWrapResult.r1);
+					COPY_1X3VECTOR(r2a, aWrapResult.r2);
+					far_side_wrap = true;
+				}
+			}
+		}
+		/* determine if the resulting tangent points create a short wrap
+		* (less than half the cylinder) or a long wrap.
+		*/
+		for (i = 0; i < 3; i++)
+		{
+			sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
+			sum_r[i] = (aWrapResult.r1[i] - p11[i]) + (aWrapResult.r2[i] - p22[i]);
+		}
+
+		if (Mtx::DotProduct(3, sum_r, sum_musc) < 0.0)
+			long_wrap = true;
+	}
+	else
+	{
+		MAKE_3DVECTOR(p11, r1a, r1am);
+		MAKE_3DVECTOR(p11, r1b, r1bm);
+		MAKE_3DVECTOR(p22, r2a, r2am);
+		MAKE_3DVECTOR(p22, r2b, r2bm);
+
+		Mtx::Normalize(3, r1am, r1am);
+		Mtx::Normalize(3, r1bm, r1bm);
+		Mtx::Normalize(3, r2am, r2am);
+		Mtx::Normalize(3, r2bm, r2bm);
+
+		dot1 = Mtx::DotProduct(3, r1am, r2am);
+		dot2 = Mtx::DotProduct(3, r1am, r2bm);
+		dot3 = Mtx::DotProduct(3, r1bm, r2am);
+		dot4 = Mtx::DotProduct(3, r1bm, r2bm);
+
+		if (dot1 > dot2 && dot1 > dot3 && dot1 > dot4)
+		{
+			COPY_1X3VECTOR(r1a, aWrapResult.r1);
+			COPY_1X3VECTOR(r2a, aWrapResult.r2);
+			r11 = r1b;
+			r22 = r2b;
+		}
+		else if (dot2 > dot3 && dot2 > dot4)
+		{
+			COPY_1X3VECTOR(r1a, aWrapResult.r1);
+			COPY_1X3VECTOR(r2b, aWrapResult.r2);
+			r11 = r1b;
+			r22 = r2a;
+		}
+		else if (dot3 > dot4)
+		{
+			COPY_1X3VECTOR(r1b, aWrapResult.r1);
+			COPY_1X3VECTOR(r2a, aWrapResult.r2);
+			r11 = r1a;
+			r22 = r2b;
+		}
+		else
+		{
+			COPY_1X3VECTOR(r1b, aWrapResult.r1);
+			COPY_1X3VECTOR(r2b, aWrapResult.r2);
+			r11 = r1a;
+			r22 = r2a;
+		}
+	}
+
+	/* bisect angle between r1 & r2 vectors to find the apex edge of the
+	* cylinder:
+	*/
+	MAKE_3DVECTOR(p11, aWrapResult.r1, uu);
+	MAKE_3DVECTOR(p22, aWrapResult.r2, vv);
+
+	for (i = 0; i < 3; i++)
+		vv[i] = uu[i] + vv[i];
+
+	Mtx::Normalize(3, vv, vv);
+
+	// find the apex point by using a ratio of the lengths of the
+	// aPoint1-p11 and aPoint2-p22 segments:
+	t = p11_dist / (p11_dist + p22_dist);
+
+	// find point along muscle line according to calculated t value
+	for (i = 0; i < 3; i++)
+		mpt[i] = aPoint1[i] + t * (aPoint2[i] - aPoint1[i]);
+
+	// find closest point on cylinder axis to mpt
+	get_point_from_point_line(mpt, p0, dn, axispt);
+
+	// find normal of plane through aPoint1, aPoint2, axispt
+	MAKE_3DVECTOR(axispt, aPoint1, l1);
+	MAKE_3DVECTOR(axispt, aPoint2, l2);
+
+	Mtx::Normalize(3, l1, l1);
+	Mtx::Normalize(3, l2, l2);
+
+	Mtx::CrossProduct(l1, l2, plane_normal);
+	Mtx::Normalize(3, plane_normal, plane_normal);
+
+	// cross plane normal and cylinder axis (each way) to
+	// get vectors pointing from axispt towards mpt and
+	// away from mpt (you can't tell which is which yet).
+	Mtx::CrossProduct(dn, plane_normal, vert1);
+	Mtx::Normalize(3, vert1, vert1);
+	Mtx::CrossProduct(plane_normal, dn, vert2);
+	Mtx::Normalize(3, vert2, vert2);
+
+	// now find two potential apex points, one along each vector
+	for (i = 0; i < 3; i++)
+	{
+		apex1[i] = axispt[i] + _radius * vert1[i];
+		apex2[i] = axispt[i] + _radius * vert2[i];
+	}
+
+	// Now use the distance from these points to mpt to
+	// pick the right one.
+	dist1 = distancesqr_between_vertices(mpt, apex1);
+	dist2 = distancesqr_between_vertices(mpt, apex2);
+	if (far_side_wrap)
+	{
+		if (dist1 < dist2)
+		{
+			for (i = 0; i < 3; i++)
+				apex[i] = apex2[i];
+		}
+		else
+		{
+			for (i = 0; i < 3; i++)
+				apex[i] = apex1[i];
+		}
+	}
+	else
+	{
+		if (dist1 < dist2)
+		{
+			for (i = 0; i < 3; i++)
+				apex[i] = apex1[i];
+		}
+		else
+		{
+			for (i = 0; i < 3; i++)
+				apex[i] = apex2[i];
+		}
+	}
+
+	/* determine how far to slide the preliminary r1/r2 along their
+	* "edge of tangency" with the cylinder by intersecting the aPoint1-ax
+	* line with the plane formed by aPoint1, aPoint2, and apex:
+	*/
+	MAKE_3DVECTOR(apex, aPoint1, uu);
+	MAKE_3DVECTOR(apex, aPoint2, vv);
+
+	Mtx::Normalize(3, uu, uu);
+	Mtx::Normalize(3, vv, vv);
+
+	Mtx::CrossProduct(uu, vv, plane_normal);
+	Mtx::Normalize(3, plane_normal, plane_normal);
+
+	d = - aPoint1[0] * plane_normal[0] - aPoint1[1] * plane_normal[1] - aPoint1[2] * plane_normal[2];
+
+	for (i = 0; i < 3; i++)
+	{
+		r1a[i] = aWrapResult.r1[i] - 10.0 * dn[i];
+		r2a[i] = aWrapResult.r2[i] - 10.0 * dn[i];
+
+		r1b[i] = aWrapResult.r1[i] + 10.0 * dn[i];
+		r2b[i] = aWrapResult.r2[i] + 10.0 * dn[i];
+	}
+
+	r1_inter = intersect_line_plane01(r1a, r1b, plane_normal, d, r1p, &t1);
+	r2_inter = intersect_line_plane01(r2a, r2b, plane_normal, d, r2p, &t2);
+
+	if (r1_inter)
+	{
+		get_point_from_point_line(r1p, p11, p22, r1a);
+
+		if (distancesqr_between_vertices(r1a, p22) < distancesqr_between_vertices(p11, p22))
+			for (i = 0; i < 3; i++)
+				aWrapResult.r1[i] = r1p[i];
+	}
+
+	if (r2_inter)
+	{
+		get_point_from_point_line(r2p, p11, p22, r2a);
+
+		if (distancesqr_between_vertices(r2a, p11) < distancesqr_between_vertices(p22, p11))
+			for (i = 0; i < 3; i++)
+				aWrapResult.r2[i] = r2p[i];
+	}
+
+	/* Now that you have r1 and r2, check to see if they are beyond the
+	* [display] length of the cylinder. If both are, there should be
+	* no wrapping. Since the axis of the cylinder is the Z axis, and
+	* the cylinder is centered on Z=0, check the Z components of r1 and r2
+	* to see if they are within _length/2.0 of zero.
+	*/
+	if ((aWrapResult.r1[2] < -_length/2.0 || aWrapResult.r1[2] > _length/2.0) && (aWrapResult.r2[2] < -_length/2.0 || aWrapResult.r2[2] > _length/2.0))
+		return noWrap;
+
+	// make the path and calculate the muscle length:
+	_make_spiral_path(&aPoint1[0], &aPoint2[0], long_wrap, aWrapResult);
+
+	aFlag = true;
+
+	return return_code;
+
+} /* _spiral_wrap_cylinder */
+
+/* -------------------------------------------------------------------------
+_make_spiral_path - this routine calculates wrapping points along a
+spiral path from r1 to r2.
+
+IMPORTANT:  if necessary this routine will slide r1 and r2 axially along
+the cylinder's surface to acheive tangency to within 1 degree at r1
+and r2.
+---------------------------------------------------------------------------- */
+
+void WrapCylinder::_make_spiral_path(double aPoint1[3],  /* input: muscle point 1 */
+												 double aPoint2[3],  /* input: muscle point 2 */
+												 bool far_side_wrap, /* input: is it a far side wrap? */
+												 WrapResult& aWrapResult) const
+{
+	double r1a[3], r2a[3], uu[3], vv[3], ax[3], x,y, axial_vec[3], axial_dist, theta, wrap_pt[3];
+	double sense = far_side_wrap ? -1.0 : 1.0;
+	double m[4][4];
+	int i, iterations = 0;
+
+restart_spiral_wrap:
+
+	/* determine the axial vector: */
+
+	get_point_from_point_line(aWrapResult.r1, p0, dn, r1a);
+	get_point_from_point_line(aWrapResult.r2, p0, dn, r2a);
+
+	MAKE_3DVECTOR(r1a, r2a, axial_vec);
+
+	axial_dist = Mtx::Magnitude(3, axial_vec);
+
+	/* determine the radial angle: */
+	MAKE_3DVECTOR(r1a, aWrapResult.r1, uu);
+	MAKE_3DVECTOR(r2a, aWrapResult.r2, vv);
+
+	for (i = 0; i < 3; i++)
+	{
+		uu[i] /= _radius;
+		vv[i] /= _radius;
+	}
+
+	theta = Mtx::Angle(uu,vv);
+
+	if (far_side_wrap)
+		theta = 2.0 * rdMath::PI - theta;
+
+	/* use pythagorus to calculate the length of the spiral path (imaging
+	* a right triangle wrapping around the surface of a cylinder):
+	*/
+	x = _radius * theta;
+	y = axial_dist;
+
+	aWrapResult.wrap_path_length = sqrt(x * x + y * y);
+
+	/* build path segments:
+	*/
+	Mtx::CrossProduct(uu, vv, ax);
+	Mtx::Normalize(3, ax, ax);
+
+	Mtx::CrossProduct(ax, uu, vv);
+
+	m[0][0] = ax[0]; m[0][1] = ax[1]; m[0][2] = ax[2]; m[0][3] = 0.0;
+	m[1][0] = uu[0]; m[1][1] = uu[1]; m[1][2] = uu[2]; m[1][3] = 0.0;
+	m[2][0] = vv[0]; m[2][1] = vv[1]; m[2][2] = vv[2]; m[2][3] = 0.0;
+	m[3][0] = 0.0;   m[3][1] = 0.0;   m[3][2] = 0.0;   m[3][3] = 1.0;
+
+	for (i = 0; i < NUM_WRAP_SEGS; i++)
+	{
+		double t = (double) i / NUM_WRAP_SEGS;
+
+		_calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
+
+		/* adjust r1/r2 tangent points if necessary to acheive tangency with
+		* the spiral path:
+		*/
+		if (i == 1 && iterations < MAX_ITERATIONS)
+		{
+			bool did_adjust_r2 = false;
+			bool did_adjust_r1 = _adjust_tangent_point(aPoint1, dn, aWrapResult.r1, wrap_pt);
+
+			double temp_wrap_pt[3];
+
+			_calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t, theta, temp_wrap_pt);
+
+			did_adjust_r2 = _adjust_tangent_point(aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
+
+			if (did_adjust_r1 || did_adjust_r2)
+			{
+				iterations++;
+				goto restart_spiral_wrap;
+			}
+		}
+		SimmPoint wppt(wrap_pt);
+		aWrapResult.wrap_pts.append(wppt);
+	}
+}
+
+/* -------------------------------------------------------------------------
+_calc_spiral_wrap_point - calculate a point along the spiral wrap path.
+---------------------------------------------------------------------------- */
+void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
+														 const double axial_vec[3],
+														 double m[4][4],
+														 const double axis[3],
+														 double sense,
+														 double t,
+														 double theta,
+														 double wrap_pt[3]) const
+{
+	double n[4][4];
+	int i, j;
+
+	for (i = 0; i < 4; i++)
+		for (j = 0; j < 4; j++)
+			n[i][j] = m[i][j];
+
+	rotate_matrix_axis_angle(n, axis, sense * t * theta);
+
+	for (i = 0; i < 3; i++)
+	{
+		double radial_component = _radius * n[1][i];
+		double axial_component = t * axial_vec[i];
+
+		wrap_pt[i] = r1a[i] + radial_component + axial_component;
+	}
+}
+
+/* -------------------------------------------------------------------------
+_adjust_tangent_point - detect whether the specified tangent point 'r1'
+needs to be adjusted or not.  If so, slide it in the appropriate
+direction and return true, otherwise return false.
+---------------------------------------------------------------------------- */
+bool WrapCylinder::_adjust_tangent_point(
+											  double pt1[3],  /* input: muscle point 1 */
+											  double dn[3],   /* input: direction vector of cyl axis */
+											  double r1[3],   /* input/output: wrap tangent point 1 */
+											  double w1[3]) const   /* input: wrap point 1 */
+{
+	double pr_vec[3], rw_vec[3], alpha, omega;
+	int i;
+	bool did_adust = false;
+
+	MAKE_3DVECTOR(pt1, r1, pr_vec);
+	MAKE_3DVECTOR(r1, w1, rw_vec);
+
+	Mtx::Normalize(3, pr_vec, pr_vec);
+	Mtx::Normalize(3, rw_vec, rw_vec);
+
+	alpha = acos(Mtx::DotProduct(3, pr_vec, dn));
+	omega = acos(Mtx::DotProduct(3, rw_vec, dn));
+
+	if (fabs(alpha - omega) > TANGENCY_THRESHOLD)
+	{
+		double p1a[3], w1a[3], p1w1_int[3], p1w1_t, p1aw1a_int[3], p1aw1a_t;
+		double save[3];
+
+		get_point_from_point_line(pt1, r1, dn, p1a);
+		get_point_from_point_line(w1, r1, dn, w1a);
+
+		intersect_lines(pt1, w1, p1a, w1a, p1w1_int, &p1w1_t, p1aw1a_int, &p1aw1a_t);
+
+		for (i = 0; i < 3; i++)
+		{
+			save[i] = r1[i];
+			r1[i] += 1.5 * (p1aw1a_int[i] - r1[i]);
+		}
+
+		did_adust = true;
+	}
+
+	return did_adust;
+}
+
 
 //=============================================================================
 // TEST
@@ -216,5 +849,5 @@ void WrapCylinder::peteTest() const
 	AbstractWrapObject::peteTest();
 
 	cout << "      radius: " << _radius << endl;
-	cout << "      height: " << _height << endl;
+	cout << "      length: " << _length << endl;
 }

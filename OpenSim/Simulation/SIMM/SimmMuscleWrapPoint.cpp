@@ -105,6 +105,9 @@ void SimmMuscleWrapPoint::copyData(const SimmMuscleWrapPoint &aPoint)
 void SimmMuscleWrapPoint::setNull()
 {
 	setType("SimmMuscleWrapPoint");
+
+	_wrapPath.setSize(0);
+	_wrapPathLength = 0.0;
 }
 
 //_____________________________________________________________________________
@@ -118,11 +121,6 @@ void SimmMuscleWrapPoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMusc
 {
 	// base class
 	SimmMusclePoint::setup(aModel, aMuscle);
-}
-
-double SimmMuscleWrapPoint::getWrapLength() const
-{
-	return 0.0;
 }
 
 //=============================================================================
