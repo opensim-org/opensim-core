@@ -366,12 +366,6 @@ bool SimmIKTrial::processTrial(AbstractModel& aModel, CoordinateSet& aCoordinate
  */
 void SimmIKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const
 {
-	int i;
-	double time;
-
-	oStartFrame = 0;
-	oEndFrame = aData.getSize() - 1;
-
 	if (_timeRange[0] > _timeRange[1])
 	{
 		double tmp = _timeRange[0];
@@ -379,25 +373,8 @@ void SimmIKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oE
 		_timeRange[1] = tmp;
 	}
 
-	for (i = aData.getSize() - 1; i >= 0 ; i--)
-	{
-		aData.getTime(i, time);
-		if (time <= _timeRange[0] + rdMath::ZERO)
-		{
-			oStartFrame = i;
-			break;
-		}
-	}
-
-	for (i = oStartFrame; i < aData.getSize(); i++)
-	{
-		aData.getTime(i, time);
-		if (time >= _timeRange[1] - rdMath::ZERO)
-		{
-			oEndFrame = i;
-			break;
-		}
-	}
+	oStartFrame = aData.findIndex(0, _timeRange[0]);
+	oEndFrame = aData.findIndex(aData.getSize()-1, _timeRange[1]);
 }
 
 void SimmIKTrial::peteTest() const
