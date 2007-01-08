@@ -131,31 +131,23 @@ ExtractControl(Storage* storage,int index)
 	cout<<"nValue = "<<nValues<<", ";
 
 	// CONSTRUCT LINEAR CONTROL NODE
-	ControlLinear *control = new ControlLinear(NULL,colName);
-	ArrayPtrs<ControlLinearNode> &nodes = control->getNodeArray();
-	nodes.setSize(0);
+	ControlLinear *control = new ControlLinear;
+	control->setName(colName);
+	control->clearControlNodes();
 
 	// APPEND CONTROL ELEMENTS
 	int n = nTimes;
 	if(n>nValues) n = nValues;
-	ControlLinearNode *node;
-	PropertySet *propSet;
-	Property *prop;
-	char nodeName[256];
 	for(i=0;i<n;i++) {
-		node = new ControlLinearNode(times[i],values[i]);
-		sprintf(nodeName,"%d",i);
-		node->setName(nodeName);
-		propSet = &node->getPropertySet();
-		prop = propSet->get("min");
-		prop->setUseDefault(true);
-		prop = propSet->get("max");
-		prop->setUseDefault(true);
-		nodes.append(node);
+		control->setControlValue(times[i],values[i]);
+		//ControlLinearNode *node;
+		//char nodeName[256];
+		//sprintf(nodeName,"%d",i);
+		//node->setName(nodeName);
 	}
 
 	// CHECK
-	cout<<"Control "<<control->getName()<<" has "<<nodes.getSize()<<" nodes."
+	cout<<"Control "<<control->getName()<<" has "<<control->getNumParameters()<<" nodes."
 		<<endl;
 
 	// CLEAN UP

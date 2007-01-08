@@ -106,10 +106,9 @@ int main(int argc,char **argv)
 	controlSet.getControlList("ControlLinear",list);
 	if(list.getSize()>0) {
 		control = (ControlLinear*)controlSet.get(list[0]);
-		ArrayPtrs<ControlLinearNode> &nodes = control->getNodeArray();
-		if(nodes.getSize()>0) {
-			ti = nodes.get(0)->getTime();
-			tf = nodes.getLast()->getTime();
+		if(control->getNumParameters()>0) {
+			ti = control->getFirstTime();
+			tf = control->getLastTime();
 		}
 	}
 

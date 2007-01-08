@@ -60,17 +60,13 @@ double ControlLinearNode::_EqualityTolerance = rdMath::ZERO;
  *
  */
 ControlLinearNode::
-ControlLinearNode(double aT,double aX,double aMin,double aMax) :
+ControlLinearNode(double aT,double aValue) :
 	_t(_propT.getValueDbl()),
-	_x(_propX.getValueDbl()),
-	_min(_propMin.getValueDbl()),
-	_max(_propMax.getValueDbl())
+	_value(_propValue.getValueDbl())
 {
 	setNull();
 	_t = aT;
-	_x = aX;
-	_min = aMin;
-	_max = aMax;
+	_value = aValue;
 }
 //_____________________________________________________________________________
 /**
@@ -81,9 +77,7 @@ ControlLinearNode(double aT,double aX,double aMin,double aMax) :
 ControlLinearNode::ControlLinearNode(DOMElement *aElement) :
 	Object(aElement),
 	_t(_propT.getValueDbl()),
-	_x(_propX.getValueDbl()),
-	_min(_propMin.getValueDbl()),
-	_max(_propMax.getValueDbl())
+	_value(_propValue.getValueDbl())
 {
 	setNull();
 	updateFromXMLNode();
@@ -96,9 +90,7 @@ ControlLinearNode::ControlLinearNode(DOMElement *aElement) :
  */
 ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
 	_t(_propT.getValueDbl()),
-	_x(_propX.getValueDbl()),
-	_min(_propMin.getValueDbl()),
-	_max(_propMax.getValueDbl())
+	_value(_propValue.getValueDbl())
 {
 	setNull();
 	*this = aControl;
@@ -173,17 +165,9 @@ setupProperties()
 	_propT.setValue(0.0);
 	_propertySet.append(&_propT);
 
-	_propX.setName("x");
-	_propX.setValue(0.0);
-	_propertySet.append(&_propX);
-
-	_propMin.setName("min");
-	_propMin.setValue(0.0);
-	_propertySet.append(&_propMin);
-
-	_propMax.setName("max");
-	_propMax.setValue(1.0);
-	_propertySet.append(&_propMax);
+	_propValue.setName("value");
+	_propValue.setValue(0.0);
+	_propertySet.append(&_propValue);
 }
 
 
@@ -203,9 +187,7 @@ ControlLinearNode& ControlLinearNode::
 operator=(const ControlLinearNode &aNode)
 {
 	_t = aNode._t;
-	_x = aNode._x;
-	_min = aNode._min;
-	_max = aNode._max;
+	_value = aNode._value;
 	return(*this);
 }
 
@@ -336,8 +318,8 @@ getTime() const
 void ControlLinearNode::
 setValue(double aValue)
 {
-	_x = aValue;
-	_propX.setUseDefault(false);
+	_value = aValue;
+	_propValue.setUseDefault(false);
 }
 //_____________________________________________________________________________
 /**
@@ -348,75 +330,8 @@ setValue(double aValue)
 double ControlLinearNode::
 getValue() const
 {
-	return(_x);
+	return(_value);
 }
-
-//-----------------------------------------------------------------------------
-// MIN
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum allowed value of this control node.
- *
- * @param aMin Minimum allowed value of this control node.  If aMin is
- * greater than the current maximum allowed value, the current
- * maximum allowed value is set to aMin.
- */
-void ControlLinearNode::
-setMin(double aMin)
-{
-	_min = aMin;
-	_propMin.setUseDefault(false);
-	if(_min>_max){
-		_max = _min;
-		_propMax.setUseDefault(false);
-	}
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum allowed value of this control node.
- *
- * @return Minimum allowed value of this control node.
- */
-double ControlLinearNode::
-getMin() const
-{
-	return(_min);
-}
-
-//-----------------------------------------------------------------------------
-// MAX
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum allowed value of this control node.
- *
- * @param aMax Maximum allowed value of this control node.  If aMax is
- * less than the current minimum allowed value, the current
- * minimum allowed value is set to aMax.
- */
-void ControlLinearNode::
-setMax(double aMax)
-{
-	_max = aMax;
-	_propMax.setUseDefault(false);
-	if(_max<_min){
-		_min = _max;
-		_propMin.setUseDefault(false);
-	}
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum allowed value of this control node.
- *
- * @return Maximum allowed value of this control node.
- */
-double ControlLinearNode::
-getMax() const
-{
-	return(_max);
-}
-
 
 //=============================================================================
 // UTILITY
@@ -446,16 +361,8 @@ toString()
 	sprintf(tmp,format,_t);
 	strcat(string,tmp);
 
-	strcat(string," x=");
-	sprintf(tmp,format,_x);
-	strcat(string,tmp);
-
-	strcat(string," min=");
-	sprintf(tmp,format,_min);
-	strcat(string,tmp);
-
-	strcat(string," max=");
-	sprintf(tmp,format,_max);
+	strcat(string," value=");
+	sprintf(tmp,format,_value);
 	strcat(string,tmp);
 
 	return(string);

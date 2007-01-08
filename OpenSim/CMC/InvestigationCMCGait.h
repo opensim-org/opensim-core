@@ -133,9 +133,6 @@ private:
 	0 = no printing, ..., 3 = detailed printing. */
 	PropertyInt _printLevelProp;
 	int &_printLevel;
-	/** Flag indicating whether or not to include SIMM Pipeline actuators. */
-	PropertyBool _includePipelineActuatorsProp;
-	bool &_includePipelineActuators;
 	/** Name of the body whose center of mass is adjusted. */
 	PropertyStr _adjustedCOMBodyProp;
 	std::string &_adjustedCOMBody;
@@ -196,8 +193,8 @@ public:
 	ControlSet*
 		constructRRAControlSet(ControlSet *aControlConstraints);
 	void
-		setControlsToUseStepsExceptResiduals(
-		const ControlSet *aRRAControlSet,ControlSet *ControlSet);
+		initializeControlSetUsingConstraints(
+		const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *ControlSet);
 	void computeInitialStatesFromCoordinates(
 		const FunctionSet &aQSet,Array<double> &rYI);
 	void computeAverageResiduals(

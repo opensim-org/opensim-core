@@ -286,10 +286,10 @@ constructControlSet() const
 	controlSet->setName(_model->getName());
 
 	ArrayPtrs<ControlLinearNode> array;
-	array.append( new ControlLinearNode(0.0,0.0,0.0,1.0));
 
 	for(int i=0;i<nx;i++) {
-		ControlLinear *control = new ControlLinear(&array,_model->getControlName(i));
+		ControlLinear *control = new ControlLinear();
+		control->setName(_model->getControlName(i));
 		controlSet->append(control);
 	}
 

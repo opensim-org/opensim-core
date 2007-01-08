@@ -48,6 +48,7 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/InvestigationForward.h>
+#include <OpenSim/Tools/DebugUtilities.h>
 #include "rdCMC.h"
 #include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"
@@ -91,7 +92,6 @@ InvestigationCMCGait::InvestigationCMCGait() :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_includePipelineActuators(_includePipelineActuatorsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
@@ -126,7 +126,6 @@ InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_includePipelineActuators(_includePipelineActuatorsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
@@ -166,7 +165,6 @@ InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_includePipelineActuators(_includePipelineActuatorsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
@@ -233,7 +231,6 @@ InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_includePipelineActuators(_includePipelineActuatorsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
@@ -303,7 +300,6 @@ setNull()
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
 	_printLevel = 0;
-	_includePipelineActuators = true;
 	_adjustedCOMBody = "";
 	_adjustedCOMFileName = "";
 	_computeAverageResiduals = false;
@@ -421,11 +417,6 @@ void InvestigationCMCGait::setupProperties()
 	_printLevelProp.setName("optimizer_print_level");
 	_propertySet.append( &_printLevelProp );
 
-	comment = "Flag indicating whether or not to include SIMM Pipeline actuators.";
-	_includePipelineActuatorsProp.setComment(comment);
-	_includePipelineActuatorsProp.setName("include_pipeline_actuators");
-	_propertySet.append( &_includePipelineActuatorsProp );
-
 	comment = "Name of the body whose center of mass is adjusted.";
 	_adjustedCOMBodyProp.setComment(comment);
 	_adjustedCOMBodyProp.setName("adjusted_com_body");
@@ -484,7 +475,6 @@ operator=(const InvestigationCMCGait &aInvestigation)
 	_useReflexes = aInvestigation._useReflexes;
 	_maxIterations = aInvestigation._maxIterations;
 	_printLevel = aInvestigation._printLevel;
-	_includePipelineActuators = aInvestigation._includePipelineActuators;
 	_adjustedCOMBody = aInvestigation._adjustedCOMBody;
 	_adjustedCOMFileName = aInvestigation._adjustedCOMFileName;
 	_computeAverageResiduals = aInvestigation._computeAverageResiduals;
@@ -520,7 +510,6 @@ void InvestigationCMCGait::run()
 	IO::SetPrecision(_outputPrecision);
 
 	// USE PIPELINE ACTUATORS?
-	//_model->setIncludePipelineActuators(_includePipelineActuators);  All actuators are now in the OpenSim model.
 	_model->printDetailedInfo(cout);
 
 	// ALTER COM ?
@@ -652,7 +641,6 @@ void InvestigationCMCGait::run()
 	controller.setUseCurvatureFilter(_useCurvatureFilter);
 	controller.setTargetDT(_targetDT);
 	controller.setCheckTargetTime(true);
-	controller.setControlConstraints(controlConstraints);
 
 	// Actuator force predictor
 	// This requires the trajectories of the generalized coordinates
@@ -661,7 +649,7 @@ void InvestigationCMCGait::run()
 	ModelIntegrandForActuators cmcIntegrand(_model);
 	cmcIntegrand.setCoordinateTrajectories(&qSet);
 	ControlSet *rootSet = cmcIntegrand.getControlSet();
-	if(_includePipelineActuators) setControlsToUseStepsExceptResiduals(rraControlSet,rootSet);
+	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,rootSet);
 	VectorFunctionForActuators *predictor =
 		new VectorFunctionForActuators(&cmcIntegrand);
 	controller.setActuatorForcePredictor(predictor);
@@ -710,38 +698,37 @@ void InvestigationCMCGait::run()
 	time_t startTime,finishTime;
 	struct tm *localTime;
 	double elapsedTime;
-	if(_includePipelineActuators) {
-	cout<<"\n\n\n";
-	cout<<"================================================================\n";
-	cout<<"================================================================\n";
-	cout<<"Computing initial values for muscles states (activation, length)\n";
-	time(&startTime);
-	localTime = localtime(&startTime);
-	cout<<"Start time = "<<asctime(localTime);
-	cout<<"================================================================";
-	controller.computeInitialStates(_ti,&yi[0]);
-	manager.setInitialTime(_ti);
-	_model->setInitialStates(&yi[0]);
-	time(&finishTime);
-	cout<<endl;
-	cout<<"-----------------------------------------------------------------\n";
-	cout<<"Finished computing initial states:\n";
-	cout<<"-----------------------------------------------------------------\n";
-	cout<<yi<<endl;
-	cout<<"=================================================================\n";
-	localTime = localtime(&startTime);
-	cout<<"Start time   = "<<asctime(localTime);
-	localTime = localtime(&finishTime);
-	cout<<"Finish time  = "<<asctime(localTime);
-	elapsedTime = difftime(finishTime,startTime);
-	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-	cout<<"=================================================================\n";
+	if(ny > 0) {
+		cout<<"\n\n\n";
+		cout<<"================================================================\n";
+		cout<<"================================================================\n";
+		cout<<"Computing initial values for muscles states (activation, length)\n";
+		time(&startTime);
+		localTime = localtime(&startTime);
+		cout<<"Start time = "<<asctime(localTime);
+		cout<<"================================================================";
+		controller.computeInitialStates(_ti,&yi[0]);
+		manager.setInitialTime(_ti);
+		_model->setInitialStates(&yi[0]);
+		time(&finishTime);
+		cout<<endl;
+		cout<<"-----------------------------------------------------------------\n";
+		cout<<"Finished computing initial states:\n";
+		cout<<"-----------------------------------------------------------------\n";
+		cout<<yi<<endl;
+		cout<<"=================================================================\n";
+		localTime = localtime(&startTime);
+		cout<<"Start time   = "<<asctime(localTime);
+		localTime = localtime(&finishTime);
+		cout<<"Finish time  = "<<asctime(localTime);
+		elapsedTime = difftime(finishTime,startTime);
+		cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
+		cout<<"=================================================================\n";
 	}
 
 	// Set controls to use steps.
 	ControlSet *controlSet = integrand.getControlSet();
-	if(_includePipelineActuators) setControlsToUseStepsExceptResiduals(rraControlSet,controlSet);
-
+	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,controlSet);
 
 	// ---- INTEGRATE ----
 	cout<<"\n\n\n";
@@ -983,32 +970,27 @@ addNecessaryAnalyses()
  * be set elsewhere, preferably in a file.
  */
 void InvestigationCMCGait::
-setControlsToUseStepsExceptResiduals(
-	const ControlSet *aRRAControlSet,ControlSet *rControlSet)
+initializeControlSetUsingConstraints(
+	const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *rControlSet)
 {
-	// SET BOUNDS AND ALL TO USE STEPS
-	int i;
+	// Initialize control set with control constraints file
 	int size = rControlSet->getSize();
-	for(i=0;i<size;i++) {
-		ControlLinear *control = (ControlLinear*)rControlSet->get(i);
-		if(i>=6) {
-			control->setUseSteps(true);
-		} else {
-			control->setUseSteps(false);
+	if(aControlConstraints) {
+		for(int i=0;i<size;i++) {
+			const Control *control = aControlConstraints->get(rControlSet->get(i)->getName());
+			if(control)
+				rControlSet->set(i,(Control*)control->copy());
 		}
-		control->getNodeArray().setSize(0);
-		control->setControlValueMin(0.0,0.02);
-		control->setControlValueMax(0.0,1.0);
-		control->setDefaultParameterMin(0.02);
-		control->setDefaultParameterMax(1.0);
 	}
 
 	// FOR RESIDUAL CONTROLS, SET TO USE LINEAR INTERPOLATION
-	string rraControlName;
 	if(aRRAControlSet!=NULL) {
+		OPENSIM_FUNCTION_NOT_IMPLEMENTED();
+		// Need to make sure code below still works after changes to controls/control constraints
+#if 0
 		size = aRRAControlSet->getSize();
 		for(i=0;i<size;i++){
-			rraControlName = aRRAControlSet->get(i)->getName();
+			string rraControlName = aRRAControlSet->get(i)->getName();
 			ControlLinear *control;
 			try {
 				control = (ControlLinear*)rControlSet->get(rraControlName);
@@ -1019,6 +1001,7 @@ setControlsToUseStepsExceptResiduals(
 			control->setUseSteps(false);
 			cout<<"Set "<<rraControlName<<" to use linear interpolation.\n";
 		}
+#endif
 	}	
 }
 //_____________________________________________________________________________
@@ -1037,7 +1020,10 @@ ControlSet* InvestigationCMCGait::
 constructRRAControlSet(ControlSet *aControlConstraints)
 {
 	if(_rraControlsFileName=="") return(NULL);
-
+	
+	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
+	// Need to make sure code below still works after changes to controls/control constraints
+#if 0
 	int i;
 	ControlLinear *controlConstraint=NULL;
 	string rraControlName,cmcControlName;
@@ -1103,4 +1089,5 @@ constructRRAControlSet(ControlSet *aControlConstraints)
 	//if(aControlConstraints!=NULL) aControlConstraints->print("cmc_aControlConstraints_check.xml");
 
 	return(rraControlSet);
+#endif
 }

@@ -138,27 +138,22 @@ ExtractControl(DOMElement *aElmt)
 	cout<<"nMaxs = "<<nMaxs<<endl;
 
 	// CONSTRUCT LINEAR CONTROL NODE
-	ControlLinear *control = new ControlLinear(NULL,elmtName);
-	ArrayPtrs<ControlLinearNode> &nodes = control->getNodeArray();
-	nodes.setSize(0);
+	ControlLinear *control = new ControlLinear;
+	control->setName(elmtName);
+	control->clearControlNodes();
 
 	// APPEND CONTROL ELEMENTS
-	int i;
-	int n = nTimes;
-	if(n>nValues) n = nValues;
-	if(n>nMins) n = nMins;
-	if(n>nMaxs) n = nMaxs;
-	ControlLinearNode *node;
-	char nodeName[256];
-	for(i=0;i<n;i++) {
-		node = new ControlLinearNode(times[i],values[i],mins[i],maxs[i]);
-		sprintf(nodeName,"%d",i);
-		node->setName(nodeName);
-		nodes.append(node);
-	}
+	for(int i=0;i<min(nTimes,nValues);i++)
+		control->setControlValue(times[i],values[i]);
+
+	for(int i=0;i<min(nTimes,nMins);i++)
+		control->setControlValueMin(times[i],mins[i]);
+
+	for(int i=0;i<min(nTimes,nMaxs);i++)
+		control->setControlValueMax(times[i],maxs[i]);
 
 	// CHECK
-	cout<<"Control "<<control->getName()<<" has "<<nodes.getSize()<<" nodes."
+	cout<<"Control "<<control->getName()<<" has "<<control->getNumParameters()<<" nodes."
 		<<endl;
 
 	// CLEAN UP

@@ -64,17 +64,15 @@ class RDSIMULATION_API ControlLinear : public Control
 //=============================================================================
 // MEMBER DATA
 //=============================================================================
-public:
-	/** Default control node. */
-	static const ControlLinearNode DEFAULT_NODE;
-
 protected:
 	// PROPERTIES
 	/** Flag that indicates whether or not to linearly interpolate between
 	nodes or use step functions. */
 	PropertyBool _propUseSteps;
 	/** Array of control nodes. */
-	PropertyObjArray _propNodes;
+	PropertyObjArray _propXNodes;
+	PropertyObjArray _propMinNodes;
+	PropertyObjArray _propMaxNodes;
 	/** Position gain for PD follower filter. */
 	PropertyDbl _propKp;
 	/** Velocity gain for PD follower filter. */
@@ -82,7 +80,9 @@ protected:
 
 	// REFERENCES
 	bool &_useSteps;
-	ArrayPtrs<ControlLinearNode> &_nodes;
+	ArrayPtrs<ControlLinearNode> &_xNodes;
+	ArrayPtrs<ControlLinearNode> &_minNodes;
+	ArrayPtrs<ControlLinearNode> &_maxNodes;
 	double &_kp;
 	double &_kv;
 
@@ -98,8 +98,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ControlLinear(ArrayPtrs<ControlLinearNode> *aX=NULL,
-		const std::string &aName="UNKOWN");
+	ControlLinear();
 	ControlLinear(DOMElement *aElement);
 	ControlLinear(const ControlLinear &aControl);
 	virtual ~ControlLinear();
@@ -167,10 +166,8 @@ public:
 	virtual void setControlValueMax(double aT,double aX);
 
 	// NODE ARRAY
-#ifndef SWIG
-	const ArrayPtrs<ControlLinearNode>& getNodeArray() const;
-#endif
-	ArrayPtrs<ControlLinearNode>& getNodeArray(); 
+	void clearControlNodes();
+
 	// Convenience methods
 	virtual const double getFirstTime() const;
 	virtual const double getLastTime() const;
@@ -180,6 +177,12 @@ public:
 	virtual void filter(double aT);
 
 	OpenSim_DERIVED(ControlLinear, Control)
+
+private:
+	void setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aX);
+	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
+	double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
+	double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
 
 //=============================================================================
 };	// END of class ControlLinear

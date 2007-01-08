@@ -40,6 +40,7 @@
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertySet.h>
+#include <OpenSim/Tools/DebugUtilities.h>
 #include "ControlLinear.h"
 #include "ControlLinearNode.h"
 
@@ -48,12 +49,6 @@
 
 using namespace OpenSim;
 using namespace std;
-
-
-//=============================================================================
-// STATIC CONSTANTS
-//=============================================================================
-const ControlLinearNode ControlLinear::DEFAULT_NODE(0.0,0.0,0.0,1.0);
 
 
 //=============================================================================
@@ -80,17 +75,15 @@ ControlLinear::~ControlLinear()
  *
  */
 ControlLinear::
-ControlLinear(ArrayPtrs<ControlLinearNode> *aX,const string &aName) :
+ControlLinear() :
 	_useSteps(_propUseSteps.getValueBool()),
-	_nodes((ArrayPtrs<ControlLinearNode>&)_propNodes.getValueObjArray()),
+	_xNodes((ArrayPtrs<ControlLinearNode>&)_propXNodes.getValueObjArray()),
+	_minNodes((ArrayPtrs<ControlLinearNode>&)_propMinNodes.getValueObjArray()),
+	_maxNodes((ArrayPtrs<ControlLinearNode>&)_propMaxNodes.getValueObjArray()),
 	_kp(_propKp.getValueDbl()),
 	_kv(_propKv.getValueDbl())
 {
 	setNull();
-	if(aX!=NULL) {
-		_nodes = *aX;
-	}
-	setName(aName);
 }
 //_____________________________________________________________________________
 /**
@@ -101,7 +94,9 @@ ControlLinear(ArrayPtrs<ControlLinearNode> *aX,const string &aName) :
 ControlLinear::ControlLinear(DOMElement *aElement) :
 	Control(aElement),
 	_useSteps(_propUseSteps.getValueBool()),
-	_nodes((ArrayPtrs<ControlLinearNode>&)_propNodes.getValueObjArray()),
+	_xNodes((ArrayPtrs<ControlLinearNode>&)_propXNodes.getValueObjArray()),
+	_minNodes((ArrayPtrs<ControlLinearNode>&)_propMinNodes.getValueObjArray()),
+	_maxNodes((ArrayPtrs<ControlLinearNode>&)_propMaxNodes.getValueObjArray()),
 	_kp(_propKp.getValueDbl()),
 	_kv(_propKv.getValueDbl())
 {
@@ -117,7 +112,9 @@ ControlLinear::ControlLinear(DOMElement *aElement) :
 ControlLinear::ControlLinear(const ControlLinear &aControl) :
 	Control(aControl),
 	_useSteps(_propUseSteps.getValueBool()),
-	_nodes((ArrayPtrs<ControlLinearNode>&)_propNodes.getValueObjArray()),
+	_xNodes((ArrayPtrs<ControlLinearNode>&)_propXNodes.getValueObjArray()),
+	_minNodes((ArrayPtrs<ControlLinearNode>&)_propMinNodes.getValueObjArray()),
+	_maxNodes((ArrayPtrs<ControlLinearNode>&)_propMaxNodes.getValueObjArray()),
 	_kp(_propKp.getValueDbl()),
 	_kv(_propKv.getValueDbl())
 {
@@ -187,10 +184,18 @@ setupProperties()
 	_propUseSteps.setValue(false);
 	_propertySet.append( &_propUseSteps );
 
-	_propNodes.setName("nodes");
 	ArrayPtrs<Object> nodes;
-	_propNodes.setValue(nodes);
-	_propertySet.append( &_propNodes );
+	_propXNodes.setName("x_nodes");
+	_propXNodes.setValue(nodes);
+	_propertySet.append( &_propXNodes );
+
+	_propMinNodes.setName("min_nodes");
+	_propMinNodes.setValue(nodes);
+	_propertySet.append( &_propMinNodes );
+
+	_propMaxNodes.setName("max_nodes");
+	_propMaxNodes.setValue(nodes);
+	_propertySet.append( &_propMaxNodes );
 
 	_propKp.setName("kp");
 	_propKp.setValue(100);
@@ -208,7 +213,9 @@ void ControlLinear::
 copyData(const ControlLinear &aControl)
 {
 	_useSteps = aControl.getUseSteps();
-	_nodes = aControl.getNodeArray();
+	_xNodes = aControl._xNodes;
+	_minNodes = aControl._minNodes;
+	_maxNodes = aControl._maxNodes;
 	_kp = aControl.getKp();
 	_kv = aControl.getKv();
 }
@@ -344,7 +351,7 @@ getKv() const
 int ControlLinear::
 getNumParameters() const
 {
-	return(_nodes.getSize());
+	return(_xNodes.getSize());
 }
 
 //-----------------------------------------------------------------------------
@@ -361,7 +368,7 @@ getNumParameters() const
 void ControlLinear::
 setParameterMin(int aI,double aMin)
 {
-	_nodes.get(aI)->setMin(aMin);
+	_minNodes.get(aI)->setValue(aMin);
 }
 //_____________________________________________________________________________
 /**
@@ -374,7 +381,7 @@ setParameterMin(int aI,double aMin)
 double ControlLinear::
 getParameterMin(int aI) const
 {
-	return(_nodes.get(aI)->getMin());
+	return(_minNodes.get(aI)->getValue());
 }
 
 //-----------------------------------------------------------------------------
@@ -391,7 +398,7 @@ getParameterMin(int aI) const
 void ControlLinear::
 setParameterMax(int aI,double aMax)
 {
-	_nodes.get(aI)->setMax(aMax);
+	_maxNodes.get(aI)->setValue(aMax);
 }
 //_____________________________________________________________________________
 /**
@@ -404,7 +411,7 @@ setParameterMax(int aI,double aMax)
 double ControlLinear::
 getParameterMax(int aI) const
 {
-	return(_nodes.get(aI)->getMax());
+	return(_maxNodes.get(aI)->getValue());
 }
 
 //-----------------------------------------------------------------------------
@@ -429,7 +436,7 @@ getParameterMax(int aI) const
 double ControlLinear::
 getParameterTime(int aI) const
 {
-	return(_nodes.get(aI)->getTime());
+	return(_xNodes.get(aI)->getTime());
 }
 
 //-----------------------------------------------------------------------------
@@ -465,10 +472,10 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 
 	// CHECK THAT THE NODE EXISTS
 	// An exception is thrown if aI is out of bounds. 
-	_nodes.get(aI);
+	_xNodes.get(aI);
 
 	// NEIGHBORING NODES
-	int size = _nodes.getSize();
+	int size = _xNodes.getSize();
 	if(size==1) {
 		rTLower = rdMath::MINUS_INFINITY;
 		rTUpper = rdMath::PLUS_INFINITY;
@@ -480,8 +487,8 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 	if(_useSteps) upper = aI;
 	else  upper = aI + 1;
 	if(upper>=size) upper = size-1;
-	rTLower = _nodes.get(lower)->getTime();
-	rTUpper = _nodes.get(upper)->getTime();
+	rTLower = _xNodes.get(lower)->getTime();
+	rTUpper = _xNodes.get(upper)->getTime();
 }
 
 //-----------------------------------------------------------------------------
@@ -508,12 +515,12 @@ getParameterList(double aT,Array<int> &rList)
 	rList.setSize(0);
 
 	// CHECK SIZE
-	int size = _nodes.getSize();
+	int size = _xNodes.getSize();
 	if(size<=0) return(0);
 
 	// FIND THE NODE
 	_searchNode.setTime(aT);
-	int i = _nodes.searchBinary(_searchNode);
+	int i = _xNodes.searchBinary(_searchNode);
 
 	// LESS THAN TIME OF FIRST NODE
 	if(i<0) {
@@ -524,7 +531,7 @@ getParameterList(double aT,Array<int> &rList)
 		rList.append(size-1);
 
 	// EQUAL & LINEAR INTERPOLATION
-	} else if((!_useSteps) && (_searchNode == (*_nodes.get(i)) )) {
+	} else if((!_useSteps) && (_searchNode == (*_xNodes.get(i)) )) {
 		rList.append(i);
 
 	// BETWEEN & LINEAR INTERPOLATION
@@ -571,7 +578,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 	rList.setSize(0);
 
 	// CHECK SIZE
-	int size = _nodes.getSize();
+	int size = _xNodes.getSize();
 	if(size<=0) return(0);
 
 	// CHECK FOR VALID INTERVAL
@@ -579,12 +586,12 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 
 	// LOWER NODE
 	_searchNode.setTime(aTLower);
-	int iL = _nodes.searchBinary(_searchNode);
+	int iL = _xNodes.searchBinary(_searchNode);
 	if(iL==-1) {
 		iL += 1;
 	} else if(iL==(size-1)) {
 		return(0);
-	} else if( (*_nodes.get(iL)) == _searchNode ) {
+	} else if( (*_xNodes.get(iL)) == _searchNode ) {
 		iL += 1;
 	} else {
 		iL += 2;
@@ -592,10 +599,10 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 
 	// UPPER NODE
 	_searchNode.setTime(aTUpper);
-	int iU = _nodes.searchBinary(_searchNode);
+	int iU = _xNodes.searchBinary(_searchNode);
 	if(iU==-1) {
 		return(0);
-	} else if( (*_nodes.get(iU)) < _searchNode) {
+	} else if( (*_xNodes.get(iU)) < _searchNode) {
 		iU += 1;
 	}
 
@@ -625,7 +632,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 void ControlLinear::
 setParameterValue(int aI,double aX)
 {
-	_nodes.get(aI)->setValue(aX);
+	_xNodes.get(aI)->setValue(aX);
 }
 //_____________________________________________________________________________
 /**
@@ -638,7 +645,145 @@ setParameterValue(int aI,double aX)
 double ControlLinear::
 getParameterValue(int aI) const
 {
-	return(_nodes.get(aI)->getValue());
+	return(_xNodes.get(aI)->getValue());
+}
+
+//-----------------------------------------------------------------------------
+// UTILITY
+//-----------------------------------------------------------------------------
+void ControlLinear::
+setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
+{
+	ControlLinearNode node(aT,aValue);
+	int lower = aNodes.searchBinary(node);
+
+	// NO NODE
+	if(lower<0) {
+		aNodes.insert(0, (ControlLinearNode*)node.copy() );
+
+	// CHECK NODE
+	} else {
+
+		int upper = lower + 1;
+
+		// EQUAL TO LOWER NODE
+		if( (*aNodes[lower]) == node) {
+			aNodes[lower]->setTime(aT);
+			aNodes[lower]->setValue(aValue);
+
+		// NOT AT END OF ARRAY
+		} else if(upper<aNodes.getSize()) {
+
+			// EQUAL TO UPPER NODE
+			if( (*aNodes[upper]) == node) {
+				aNodes[upper]->setTime(aT);
+				aNodes[upper]->setValue(aValue);
+
+			// NOT EQUAL
+			} else {
+				aNodes.insert(upper, (ControlLinearNode*)node.copy() );
+			}
+
+		// AT END OF ARRAY
+		} else {
+			aNodes.append( (ControlLinearNode*)node.copy() );
+		}
+	}
+}
+
+double ControlLinear::
+getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
+{
+	// CHECK SIZE
+	int size = aNodes.getSize();
+	if(size<=0) return(rdMath::NAN);
+
+	// GET NODE
+	_searchNode.setTime(aT);
+	int i = aNodes.searchBinary(_searchNode);
+
+	// BEFORE FIRST
+	double value;
+	if(i<0) {
+		if(getExtrapolate()) {
+			value = extrapolateBefore(aT);
+		} else {
+			value = aNodes[0]->getValue();
+		}
+
+	// AFTER LAST
+	} else if(i>=(size-1)) {
+		if(getExtrapolate()) {
+			value = extrapolateAfter(aT);
+		} else {
+			value = aNodes.getLast()->getValue();
+		}
+
+	// IN BETWEEN
+	} else {
+
+		// LINEAR INTERPOLATION
+		if(!_useSteps) {
+			double t1,v1,t2,v2;
+			t1 = aNodes[i]->getTime();
+			v1 = aNodes[i]->getValue();
+			t2 = aNodes[i+1]->getTime();
+			v2 = aNodes[i+1]->getValue();
+			value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+
+		// STEPS
+		} else {
+			// Eran: Changed semantics of piecewise constant controls so that
+			// the control value stored at time t(i+1) is applied to the time
+			// interval (t(i),t(i+1)] *exclusive* of time t(i).
+			// This was essential to get forward simulation to match cmcgait simulation
+			// much better.  During cmcgait simulation of interval [t1,t2] when the
+			// integrator reaches time t2 it would pick up the control value at t2
+			// because it had yet to compute the piecewise linear control value
+			// at time t3.  During forward simulation, when the integrator reaches t2
+			// the control at t3 is known but for consistency with cmcgait we need to
+			// use the control value at t2.  Hence the (t(i),t(i+1)] choice.
+			if (aT == aNodes[i]->getTime()) value = aNodes[i]->getValue();
+			else value = aNodes[i+1]->getValue();
+		}
+	}
+
+	return(value);
+}
+
+double ControlLinear::
+extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
+{
+	if(aNodes.getSize()<=0) return(rdMath::NAN);
+	if(aNodes.getSize()==1) return(aNodes[0]->getValue());
+
+	double t1,v1,t2,v2;
+	t1 = aNodes[0]->getTime();
+	v1 = aNodes[0]->getValue();
+	t2 = aNodes[1]->getTime();
+	v2 = aNodes[1]->getValue();
+	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+
+	return(value);
+}
+
+double ControlLinear::
+extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
+{
+	int size = aNodes.getSize();
+	if(size<=0) return(rdMath::NAN);
+	if(size==1) return(aNodes[0]->getValue());
+
+	int n1 = size - 2;
+	int n2 = size - 1;
+	double t1,v1,t2,v2;
+	t1 = aNodes[n1]->getTime();
+	v1 = aNodes[n1]->getValue();
+	t2 = aNodes[n2]->getTime();
+	v2 = aNodes[n2]->getValue();
+	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+
+	return(value);
 }
 
 //-----------------------------------------------------------------------------
@@ -658,41 +803,7 @@ getParameterValue(int aI) const
 void ControlLinear::
 setControlValue(double aT,double aX)
 {
-	ControlLinearNode node(aT,aX,getDefaultParameterMin(),getDefaultParameterMax());
-	int lower = _nodes.searchBinary(node);
-
-	// NO NODE
-	if(lower<0) {
-		_nodes.insert(0, (ControlLinearNode*)node.copy() );
-
-	// CHECK NODE
-	} else {
-
-		int upper = lower + 1;
-
-		// EQUAL TO LOWER NODE
-		if( (*_nodes[lower]) == node) {
-			_nodes[lower]->setTime(aT);
-			_nodes[lower]->setValue(aX);
-
-		// NOT AT END OF ARRAY
-		} else if(upper<_nodes.getSize()) {
-
-			// EQUAL TO UPPER NODE
-			if( (*_nodes[upper]) == node) {
-				_nodes[upper]->setTime(aT);
-				_nodes[upper]->setValue(aX);
-
-			// NOT EQUAL
-			} else {
-				_nodes.insert(upper, (ControlLinearNode*)node.copy() );
-			}
-
-		// AT END OF ARRAY
-		} else {
-			_nodes.append( (ControlLinearNode*)node.copy() );
-		}
-	}
+	setControlValue(_xNodes,aT,aX);
 }
 //_____________________________________________________________________________
 /**
@@ -709,61 +820,7 @@ setControlValue(double aT,double aX)
 double ControlLinear::
 getControlValue(double aT)
 {
-	// CHECK SIZE
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-
-	// GET NODE
-	_searchNode.setTime(aT);
-	int i = _nodes.searchBinary(_searchNode);
-
-	// BEFORE FIRST
-	double value;
-	if(i<0) {
-		if(getExtrapolate()) {
-			value = extrapolateBefore(aT);
-		} else {
-			value = _nodes[0]->getValue();
-		}
-
-	// AFTER LAST
-	} else if(i>=(size-1)) {
-		if(getExtrapolate()) {
-			value = extrapolateAfter(aT);
-		} else {
-			value = _nodes.getLast()->getValue();
-		}
-
-	// IN BETWEEN
-	} else {
-
-		// LINEAR INTERPOLATION
-		if(!_useSteps) {
-			double t1,v1,t2,v2;
-			t1 = _nodes[i]->getTime();
-			v1 = _nodes[i]->getValue();
-			t2 = _nodes[i+1]->getTime();
-			v2 = _nodes[i+1]->getValue();
-			value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-		// STEPS
-		} else {
-			// Eran: Changed semantics of piecewise constant controls so that
-			// the control value stored at time t(i+1) is applied to the time
-			// interval (t(i),t(i+1)] *exclusive* of time t(i).
-			// This was essential to get forward simulation to match cmcgait simulation
-			// much better.  During cmcgait simulation of interval [t1,t2] when the
-			// integrator reaches time t2 it would pick up the control value at t2
-			// because it had yet to compute the piecewise linear control value
-			// at time t3.  During forward simulation, when the integrator reaches t2
-			// the control at t3 is known but for consistency with cmcgait we need to
-			// use the control value at t2.  Hence the (t(i),t(i+1)] choice.
-			if (aT == _nodes[i]->getTime()) value = _nodes[i]->getValue();
-			else value = _nodes[i+1]->getValue();
-		}
-	}
-
-	return(value);
+	return getControlValue(_xNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -778,17 +835,7 @@ getControlValue(double aT)
 double ControlLinear::
 extrapolateBefore(double aT) const
 {
-	if(_nodes.getSize()<=0) return(rdMath::NAN);
-	if(_nodes.getSize()==1) return(_nodes[0]->getValue());
-
-	double t1,v1,t2,v2;
-	t1 = _nodes[0]->getTime();
-	v1 = _nodes[0]->getValue();
-	t2 = _nodes[1]->getTime();
-	v2 = _nodes[1]->getValue();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateBefore(_xNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -803,20 +850,7 @@ extrapolateBefore(double aT) const
 double ControlLinear::
 extrapolateAfter(double aT) const
 {
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-	if(size==1) return(_nodes[0]->getValue());
-
-	int n1 = size - 2;
-	int n2 = size - 1;
-	double t1,v1,t2,v2;
-	t1 = _nodes[n1]->getTime();
-	v1 = _nodes[n1]->getValue();
-	t2 = _nodes[n2]->getTime();
-	v2 = _nodes[n2]->getValue();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateAfter(_xNodes,aT);
 }
 
 //-----------------------------------------------------------------------------
@@ -836,42 +870,7 @@ extrapolateAfter(double aT) const
 void ControlLinear::
 setControlValueMin(double aT,double aMin)
 {
-	ControlLinearNode node(aT,0.0,getDefaultParameterMin(),getDefaultParameterMax());
-	node.setMin(aMin);
-	int lower = _nodes.searchBinary(node);
-
-	// NO NODE
-	if(lower<0) {
-		_nodes.insert(0, (ControlLinearNode*)node.copy() );
-
-	// CHECK NODE
-	} else {
-
-		int upper = lower + 1;
-
-		// EQUAL TO LOWER NODE
-		if( (*_nodes[lower]) == node) {
-			_nodes[lower]->setTime(aT);
-			_nodes[lower]->setMin(aMin);
-
-		// NOT AT END OF ARRAY
-		} else if(upper<_nodes.getSize()) {
-
-			// EQUAL TO UPPER NODE
-			if( (*_nodes[upper]) == node) {
-				_nodes[upper]->setTime(aT);
-				_nodes[upper]->setMin(aMin);
-
-			// NOT EQUAL
-			} else {
-				_nodes.insert(upper, (ControlLinearNode*)node.copy() );
-			}
-
-		// AT END OF ARRAY
-		} else {
-			_nodes.append( (ControlLinearNode*)node.copy() );
-		}
-	}
+	setControlValue(_minNodes,aT,aMin);
 }
 //_____________________________________________________________________________
 /**
@@ -888,50 +887,7 @@ setControlValueMin(double aT,double aMin)
 double ControlLinear::
 getControlValueMin(double aT)
 {
-	// CHECK SIZE
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-
-	// GET NODE
-	_searchNode.setTime(aT);
-	int i = _nodes.searchBinary(_searchNode);
-
-	// BEFORE FIRST
-	double t1,v1,t2,v2;
-	double value;
-	if(i<0) {
-		if(getExtrapolate()) {
-			value = extrapolateMinBefore(aT);
-		} else {
-			value = _nodes[0]->getMin();
-		}
-
-	// AFTER LAST
-	} else if(i>=(size-1)) {
-		if(getExtrapolate()) {
-			value = extrapolateMinAfter(aT);
-		} else {
-			value = _nodes.getLast()->getMin();
-		}
-
-	// IN BETWEEN
-	} else {
-
-		// LINEAR INTERPOLATION
-		if(!_useSteps) {
-			t1 = _nodes[i]->getTime();
-			v1 = _nodes[i]->getMin();
-			t2 = _nodes[i+1]->getTime();
-			v2 = _nodes[i+1]->getMin();
-			value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-		// STEPS
-		} else {
-			value = _nodes[i+1]->getMin();
-		}
-	}
-
-	return(value);
+	return getControlValue(_minNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -946,17 +902,7 @@ getControlValueMin(double aT)
 double ControlLinear::
 extrapolateMinBefore(double aT) const
 {
-	if(_nodes.getSize()<=0) return(rdMath::NAN);
-	if(_nodes.getSize()==1) return(_nodes[0]->getMin());
-
-	double t1,v1,t2,v2;
-	t1 = _nodes[0]->getTime();
-	v1 = _nodes[0]->getMin();
-	t2 = _nodes[1]->getTime();
-	v2 = _nodes[1]->getMin();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateBefore(_minNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -971,20 +917,7 @@ extrapolateMinBefore(double aT) const
 double ControlLinear::
 extrapolateMinAfter(double aT) const
 {
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-	if(size==1) return(_nodes[0]->getMin());
-
-	int n1 = size - 2;
-	int n2 = size - 1;
-	double t1,v1,t2,v2;
-	t1 = _nodes[n1]->getTime();
-	v1 = _nodes[n1]->getMin();
-	t2 = _nodes[n2]->getTime();
-	v2 = _nodes[n2]->getMin();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateAfter(_minNodes,aT);
 }
 
 
@@ -1005,42 +938,7 @@ extrapolateMinAfter(double aT) const
 void ControlLinear::
 setControlValueMax(double aT,double aMax)
 {
-	ControlLinearNode node(aT,0.0,getDefaultParameterMin(),getDefaultParameterMax());
-	node.setMax(aMax);
-	int lower = _nodes.searchBinary(node);
-
-	// NO NODE
-	if(lower<0) {
-		_nodes.insert(0, (ControlLinearNode*)node.copy() );
-
-	// CHECK NODE
-	} else {
-
-		int upper = lower + 1;
-
-		// EQUAL TO LOWER NODE
-		if( (*_nodes[lower]) == node) {
-			_nodes[lower]->setTime(aT);
-			_nodes[lower]->setMax(aMax);
-
-		// NOT AT END OF ARRAY
-		} else if(upper<_nodes.getSize()) {
-
-			// EQUAL TO UPPER NODE
-			if( (*_nodes[upper]) == node) {
-				_nodes[upper]->setTime(aT);
-				_nodes[upper]->setMax(aMax);
-
-			// NOT EQUAL
-			} else {
-				_nodes.insert(upper, (ControlLinearNode*)node.copy() );
-			}
-
-		// AT END OF ARRAY
-		} else {
-			_nodes.append( (ControlLinearNode*)node.copy() );
-		}
-	}
+	setControlValue(_maxNodes,aT,aMax);
 }
 //_____________________________________________________________________________
 /**
@@ -1057,50 +955,7 @@ setControlValueMax(double aT,double aMax)
 double ControlLinear::
 getControlValueMax(double aT)
 {
-	// CHECK SIZE
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-
-	// GET NODE
-	_searchNode.setTime(aT);
-	int i = _nodes.searchBinary(_searchNode);
-
-	// BEFORE FIRST
-	double t1,v1,t2,v2;
-	double value;
-	if(i<0) {
-		if(getExtrapolate()) {
-			value = extrapolateMaxBefore(aT);
-		} else {
-			value = _nodes[0]->getMax();
-		}
-
-	// AFTER LAST
-	} else if(i>=(size-1)) {
-		if(getExtrapolate()) {
-			value = extrapolateMaxAfter(aT);
-		} else {
-			value = _nodes.getLast()->getMax();
-		}
-
-	// IN BETWEEN
-	} else {
-
-		// LINEAR INTERPOLATION
-		if(!_useSteps) {
-			t1 = _nodes[i]->getTime();
-			v1 = _nodes[i]->getMax();
-			t2 = _nodes[i+1]->getTime();
-			v2 = _nodes[i+1]->getMax();
-			value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-		// STEPS
-		} else {
-			value = _nodes[i+1]->getMax();
-		}
-	}
-
-	return(value);
+	return getControlValue(_maxNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -1115,17 +970,7 @@ getControlValueMax(double aT)
 double ControlLinear::
 extrapolateMaxBefore(double aT) const
 {
-	if(_nodes.getSize()<=0) return(rdMath::NAN);
-	if(_nodes.getSize()==1) return(_nodes[0]->getMax());
-
-	double t1,v1,t2,v2;
-	t1 = _nodes[0]->getTime();
-	v1 = _nodes[0]->getMax();
-	t2 = _nodes[1]->getTime();
-	v2 = _nodes[1]->getMax();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateBefore(_maxNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -1140,46 +985,16 @@ extrapolateMaxBefore(double aT) const
 double ControlLinear::
 extrapolateMaxAfter(double aT) const
 {
-	int size = _nodes.getSize();
-	if(size<=0) return(rdMath::NAN);
-	if(size==1) return(_nodes[0]->getMax());
-
-	int n1 = size - 2;
-	int n2 = size - 1;
-	double t1,v1,t2,v2;
-	t1 = _nodes[n1]->getTime();
-	v1 = _nodes[n1]->getMax();
-	t2 = _nodes[n2]->getTime();
-	v2 = _nodes[n2]->getMax();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
-
-	return(value);
+	return extrapolateAfter(_maxNodes,aT);
 }
 
 //-----------------------------------------------------------------------------
 // NODE ARRAY
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the array of control nodes.
- *
- * @return Array of nodes.
- */
-const ArrayPtrs<ControlLinearNode>& ControlLinear::
-getNodeArray() const
+void ControlLinear::
+clearControlNodes()
 {
-	return(_nodes);
-}
-//_____________________________________________________________________________
-/**
- * Get the array of control nodes.
- *
- * @return Array of nodes.
- */
-ArrayPtrs<ControlLinearNode>& ControlLinear::
-getNodeArray()
-{
-	return(_nodes);
+	_xNodes.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -1189,7 +1004,7 @@ getNodeArray()
  */
 const double ControlLinear::getFirstTime() const
 {
-	const ControlLinearNode *node=getNodeArray().get(0);
+	const ControlLinearNode *node=_xNodes.get(0);
 	return node->getTime();
 }
 //_____________________________________________________________________________
@@ -1200,7 +1015,7 @@ const double ControlLinear::getFirstTime() const
  */
 const double ControlLinear::getLastTime() const
 {
-	const ControlLinearNode *node=getNodeArray().getLast();
+	const ControlLinearNode *node=_xNodes.getLast();
 	return node->getTime();
 }
 
@@ -1227,14 +1042,14 @@ void ControlLinear::
 simplify(const PropertySet &aProperties)
 {
 	// INITIAL SIZE
-	int size = _nodes.getSize();
+	int size = _xNodes.getSize();
 	cout<<"\nControlLinear.simplify: initial size = "<<size<<".\n";
 	
 	// GET THE NODE TIMES
 	int i;
 	Array<double> t(0.0,size);
 	for(i=0;i<size;i++) {
-		t[i] = _nodes[i]->getTime();
+		t[i] = _xNodes[i]->getTime();
 	}
 
 	// SEARCH FOR THE MINIMUM TIME INTERVAL
@@ -1292,8 +1107,8 @@ simplify(const PropertySet &aProperties)
 	Signal::ReduceNumberOfPoints(distance,t,xFilt);	
 
 	// CLEAR OLD NODES
-	_nodes.trim();
-	_nodes.setSize(0);
+	_xNodes.trim();
+	_xNodes.setSize(0);
 
 	// ADD NEW NODES
 	int newSize = t.getSize();
@@ -1303,10 +1118,10 @@ simplify(const PropertySet &aProperties)
 		node = new ControlLinearNode(t[i],xFilt[i]);
 		sprintf(name,"%d",i);
 		node->setName(name);
-		_nodes.append(node);
+		_xNodes.append(node);
 	}
 
-	cout<<"ControlLinear.simplify: final size = "<<_nodes.getSize()<<".\n";
+	cout<<"ControlLinear.simplify: final size = "<<_xNodes.getSize()<<".\n";
 }
 
 
@@ -1328,19 +1143,19 @@ filter(double aT)
 
 	// CHECK SIZE
 	// TO DO - should we print some error/warning message here?
-	int size = _nodes.getSize();
+	int size = _xNodes.getSize();
 	if(size<=0) return;
 
 	// FIND CONTROL NODE
 	// Find the control node at time aT
 	_searchNode.setTime(aT);
-	int i = _nodes.searchBinary(_searchNode);
+	int i = _xNodes.searchBinary(_searchNode);
 	// The following property is true after binary search:
-	// _nodes[i].getValue() <= getControlValue(aT)
+	// _xNodes[i].getValue() <= getControlValue(aT)
 	// i.e. the node whose index (i) was returned is the node
 	// that occurs immediately before, or exactly at, the time aT.
 	// An equivalent property is that
-	// _searchNode >= (*_nodes.get(i))
+	// _searchNode >= (*_xNodes.get(i))
 	// which is computed below as the "nodeOccursAtGivenTime" variable.
 
 	// COMPUTE AND SET CONTROL VALUE
@@ -1357,8 +1172,8 @@ filter(double aT)
 		setControlValue(aT, 0.0);
 		return;
 	}
-	// True iff _nodes[i] occurs at aT
-	bool nodeOccursAtGivenTime = (_searchNode == (*_nodes.get(i)));
+	// True iff _xNodes[i] occurs at aT
+	bool nodeOccursAtGivenTime = (_searchNode == (*_xNodes.get(i)));
 	// This if statement represents the case where the second
 	// node occurs at aT.
 	if ((i == 1) && nodeOccursAtGivenTime) {
@@ -1373,17 +1188,17 @@ filter(double aT)
 	// ControlLinearNode class):
 	// (i <= 1 cases were handled above)
 	if (nodeOccursAtGivenTime) {
-		dt = _nodes[i]->getTime() - _nodes[i-1]->getTime();
-		dtPrev = _nodes[i-1]->getTime() - _nodes[i-2]->getTime();
-		xPrev = _nodes[i-1]->getValue();
-		xPrevPrev = _nodes[i-2]->getValue();
+		dt = _xNodes[i]->getTime() - _xNodes[i-1]->getTime();
+		dtPrev = _xNodes[i-1]->getTime() - _xNodes[i-2]->getTime();
+		xPrev = _xNodes[i-1]->getValue();
+		xPrevPrev = _xNodes[i-2]->getValue();
 
 	// If the time of the node at index i is less than aT:
 	} else {
-		dt = aT - _nodes[i]->getTime();
-		dtPrev = _nodes[i]->getTime() - _nodes[i-1]->getTime();
-		xPrev = _nodes[i]->getValue();
-		xPrevPrev = _nodes[i-1]->getValue();
+		dt = aT - _xNodes[i]->getTime();
+		dtPrev = _xNodes[i]->getTime() - _xNodes[i-1]->getTime();
+		xPrev = _xNodes[i]->getValue();
+		xPrevPrev = _xNodes[i-1]->getValue();
 	}
 
 	// GET CURRENT CONTROL VALUE

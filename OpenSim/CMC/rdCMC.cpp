@@ -121,7 +121,6 @@ setNull()
 	_vErrStore = NULL;
 	_stressTermWeightStore = NULL;
 	_controlSet = NULL;
-	_controlConstraints = NULL;
 	_useCurvatureFilter = false;
 	_useReflexes = false;
 	_controlConstraintsFromReflexes = NULL;
@@ -132,33 +131,6 @@ setNull()
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// CONTROL CONSTRAINTS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the control set that is used for placing constraints on the controls.
- *
- * @param Control set containint the constraints- max and minx.
- */
-void rdCMC::
-setControlConstraints(ControlSet *aControlSet)
-{
-	_controlConstraints = aControlSet;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the control set that is used for placing constraints on the controls.
- *
- * @return Constraint control set.
- */
-ControlSet* rdCMC::
-getControlConstraints()
-{
-	return(_controlConstraints);
-}
-
 //-----------------------------------------------------------------------------
 // CONTROL SET
 //-----------------------------------------------------------------------------
@@ -482,7 +454,7 @@ computeInitialStates(double &rTI,double *rYI)
 	int nqnu = _model->getNumCoordinates() + _model->getNumSpeeds();
 	int N = _predictor->getNX();
 	Array<double> y(0.0,ny),yi(0.0,ny);
-	Array<double> xmin(0.01,N),forces(0.0,N);
+	Array<double> xmin(0.02,N),forces(0.0,N);
 	double normConstant = _model->getTimeNormConstant();
 	double tiReal = rTI * normConstant;
 
@@ -495,10 +467,17 @@ computeInitialStates(double &rTI,double *rYI)
 
 	// CONSTRUCT CONTROL SET
 	ControlSet xiSet;
+	ControlSet *predictorControlSet = (_predictor && _predictor->getIntegrand()) ? _predictor->getIntegrand()->getControlSet() : 0;
 	for(i=0;i<nx;i++) {
 		ControlConstant *x = new ControlConstant();
 		x->setName(_model->getControlName(i));
 		x->setIsModelControl(true);
+		// This is not a very good way to set the bounds on the controls because ConrtolConstant only supports constant
+		// min/max bounds but we may have time-dependent min/max curves specified in the controls constraints file
+		if(predictorControlSet) {
+			x->setDefaultParameterMin(predictorControlSet->get(i)->getDefaultParameterMin());
+			x->setDefaultParameterMax(predictorControlSet->get(i)->getDefaultParameterMax());
+		}
 		xiSet.append(x);
 	}
 
@@ -538,7 +517,7 @@ computeInitialStates(double &rTI,double *rYI)
 		// CLEAR ANY PREVIOUS CONTROL NODES
 		for(j=0;j<pControlSet->getSize();j++) {
 			ControlLinear *control = (ControlLinear*)pControlSet->get(j);
-			control->getNodeArray().setSize(0);
+			control->clearControlNodes();
 		}
 
 		// COMPUTE CONTROLS
@@ -601,7 +580,7 @@ computeInitialStates(double &rTI,double *rYI)
  */
 void rdCMC::
 obtainActuatorEquilibrium(double tiReal,double dtReal,
-								  Array<double> &x,Array<double> &y,bool hold)
+								  const Array<double> &x,Array<double> &y,bool hold)
 {
 	// HOLD COORDINATES
 	ModelIntegrandForActuators *predictorIntegrand = 
@@ -795,32 +774,13 @@ computeControls(double &rDT,double aT,const double *aY,
 	Array<double> xmin(0.0,N),xmax(1.0,N);
 	for(i=0;i<N;i++) {
 		x = _controlSet->get(i);
-		xmin[i] = x->getControlValueMin(0.0);
-		xmax[i] = x->getControlValueMax(0.0);
-	}
-	if(_controlConstraints!=NULL) {
-		//cout<<"\nLooking for constraints on the following controls:\n";
-		for(i=0;i<N;i++) {
-			x = _controlSet->get(i);
-			xName = x->getName();
-			//cout<<xName;
-			try {
-				xConstraint = _controlConstraints->get(xName);
-			} catch(Exception x) {
-				//cout<<" not found\n";
-				continue;
-			}
-			if(xConstraint!=NULL) {
-				//cout<<" found\n";
-				xmin[i] = xConstraint->getControlValueMin(tiReal);
-				xmax[i] = xConstraint->getControlValueMax(tiReal);
-				// For controls whose constraints are constant min/max values we'll just specify
-				// it using the default parameter min/max rather than creating a control curve
-				// (using nodes) in the xml.  So we catch this case here.
-				if(xmin[i] == rdMath::NAN) xmin[i] = xConstraint->getDefaultParameterMin();
-				if(xmax[i] == rdMath::NAN) xmax[i] = xConstraint->getDefaultParameterMax();
-			}
-		}
+		xmin[i] = x->getControlValueMin(tiReal);
+		xmax[i] = x->getControlValueMax(tiReal);
+		// For controls whose constraints are constant min/max values we'll just specify
+		// it using the default parameter min/max rather than creating a control curve
+		// (using nodes) in the xml.  So we catch this case here.
+		if(xmin[i] == rdMath::NAN) xmin[i] = x->getDefaultParameterMin();
+		if(xmax[i] == rdMath::NAN) xmax[i] = x->getDefaultParameterMax();
 	}
 
 	/*

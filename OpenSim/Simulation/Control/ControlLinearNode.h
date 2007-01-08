@@ -72,31 +72,20 @@ protected:
 	// PROPERTIES
 	/** Time at which the node occurs. */
 	PropertyDbl _propT;
-	/** Control value of the node. */
-	PropertyDbl _propX;
-	/** Minimum control value of the node. */
-	PropertyDbl _propMin;
-	/** Maximum control value of the node. */
-	PropertyDbl _propMax;
+	/** Value of the node (may represent control value or min or max bounds, depending on which curve it's in). */
+	PropertyDbl _propValue;
 
 	// REFERENCES
 	/** Reference to the value of the T property. */
 	double &_t;
 	/** Reference to the value of the X property. */
-	double &_x;
-	/** Reference to the value of the Min property. */
-	double &_min;
-	/** Reference to the value of the Max property. */
-	double &_max;
-
-	/** Local control node for doing searches.  This improves performance. */
+	double &_value;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	ControlLinearNode(double aT=0.0,double aX=0.0,
-		double aMin=0.0,double aMax=1.0);
+	ControlLinearNode(double aT=0.0,double aValue=0.0);
 	ControlLinearNode(DOMElement *aElement);
 	ControlLinearNode(const ControlLinearNode &aNode);
 	virtual Object* copy() const;
@@ -124,12 +113,8 @@ public:
 	static double GetEqualityTolerance();
 	void setTime(double aT);
 	double getTime() const;
-	void setValue(double aX);
+	void setValue(double aValue);
 	double getValue() const;
-	void setMin(double aMin);
-	double getMin() const;
-	void setMax(double aMax);
-	double getMax() const;
 
 	//--------------------------------------------------------------------------
 	// UTILITY

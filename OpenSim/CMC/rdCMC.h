@@ -119,8 +119,6 @@ protected:
 	Storage *_stressTermWeightStore;
 	/** Control set for the simulation. */
 	ControlSet *_controlSet;
-	/** Control set for constraining the values of the controls */
-	ControlSet *_controlConstraints;
 	/** Flag indicating whether or not a curvature filter should be
 	applied to the controls. */
 	bool _useCurvatureFilter;
@@ -154,8 +152,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setControlConstraints(ControlSet *aCcontrolSet);
-	ControlSet* getControlConstraints();
 	ControlSet* getControlSet() const;
 	rdCMC_TaskSet* getTaskSet() const;
 	Array<int>* getParameterList();
@@ -186,7 +182,7 @@ public:
 	//--------------------------------------------------------------------------
 	void restoreConfiguration(int nqnu,const double *yi,double *y);
 	void obtainActuatorEquilibrium(double tiReal,double dtReal,
-		Array<double> &x,Array<double> &y,bool hold);
+		const Array<double> &x,Array<double> &y,bool hold);
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
