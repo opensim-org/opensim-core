@@ -262,6 +262,8 @@ protected:
 private:
 	void generateXMLDocument();
 	void generateDocument();
+	static std::string transcode(const XMLCh *aCh);
+	static std::string transcodeAndTrim(const XMLCh *aCh);
 
 	//--------------------------------------------------------------------------
 	// IO

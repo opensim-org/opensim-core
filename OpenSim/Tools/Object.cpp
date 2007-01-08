@@ -777,12 +777,11 @@ updateFromXMLNode()
 					if(elmt==NULL) continue;
 					// Make sure this is not the default
 					DOMNode *parent = elmt->getParentNode();
-					char *parentName = XMLString::transcode(parent->getNodeName());
+					string parentName = transcode(parent->getNodeName());
 					// Add check for _type so that only nodes with proper parent are used.
 					// A more robust solution is traversing only immediate children of _node
 					// outside the loop.
-					if (string(parentName)=="defaults" || string(parentName)!=_type) {
-						delete[] parentName;
+					if (parentName=="defaults" || parentName!=_type) {
 						continue;
 					}
 					// NAME ATTRIBUTE
@@ -797,7 +796,6 @@ updateFromXMLNode()
 
 					// CLEAN UP
 					delete[] elmtName;
-					delete[] parentName;
 				}
 
 				// WAS A NODE NOT FOUND?
@@ -947,10 +945,7 @@ updateFromXMLNode()
 				DOMElement *objElmt = (DOMElement*) list->item(j);
 
 				const XMLCh *objType = objElmt->getTagName();
-				char *buffer = XMLString::transcode(objType);
-				XMLString::trim(buffer);
-				string objectType(buffer);
-				delete[] buffer;
+				string objectType = transcodeAndTrim(objType);
 
 				if ( find(recognizedTypes.begin(), recognizedTypes.end(), objectType)== recognizedTypes.end()){
 					continue;
@@ -980,16 +975,12 @@ updateFromXMLNode()
 					if( (parent!=elmt) && (parent!=NULL) && (_node!=NULL) &&
 						(parent->getOwnerDocument()==_node->getOwnerDocument()) ) {
 						if(Object_DEBUG) {
-							char *elmtName,*parentName,*nodeName;
-							elmtName = XMLString::transcode(objElmt->getNodeName());
-							parentName = XMLString::transcode(parent->getNodeName());
-							nodeName = XMLString::transcode(elmt->getNodeName());
+							string elmtName = transcode(objElmt->getNodeName());
+							string parentName = transcode(parent->getNodeName());
+							string nodeName = transcode(elmt->getNodeName());
 							cout<<"Object.updateFromXMLNode: "<<elmtName;
 							cout<<" is a child of "<<parentName<<", not of ";
 							cout<<nodeName<<endl;
-							delete[] elmtName;
-							delete[] parentName;
-							delete[] nodeName;
 						}
 						continue;
 					}
@@ -1072,16 +1063,12 @@ updateDefaultObjectsFromXMLNode()
 		DOMNode *parent = elmt->getParentNode();
 		if(parent != defaultsElmt) {
 			if(Object_DEBUG) {
-				char *elmtName,*parentName,*nodeName;
-				elmtName = XMLString::transcode(elmt->getNodeName());
-				parentName = XMLString::transcode(parent->getNodeName());
-				nodeName = XMLString::transcode(_node->getNodeName());
+				string elmtName = transcode(elmt->getNodeName());
+				string parentName = transcode(parent->getNodeName());
+				string nodeName = transcode(_node->getNodeName());
 				cout<<"Object.updateFromXMLNode: "<<elmtName;
 				cout<<" is a child of "<<parentName<<", not of ";
 				cout<<nodeName<<endl;
-				delete[] elmtName;
-				delete[] parentName;
-				delete[] nodeName;
 			}
 			continue;
 		}
@@ -1578,6 +1565,25 @@ print(const string &aFileName)
 	return _document->print(aFileName);
 }
 
+string Object::
+transcode(const XMLCh *aCh)
+{
+	char *buffer = XMLString::transcode(aCh);
+	string str(buffer);
+	delete[] buffer;
+	return str;
+}
+
+string Object::
+transcodeAndTrim(const XMLCh *aCh)
+{
+	char *buffer = XMLString::transcode(aCh);
+	XMLString::trim(buffer);
+	string str(buffer);
+	delete[] buffer;
+	return str;
+}
+
 //=============================================================================
 // Utilities, factory methods
 //=============================================================================
@@ -1599,9 +1605,8 @@ makeObjectFromFile(const std::string &aFileName)
 	try{
 		XMLDocument *doc = new XMLDocument(aFileName);
 		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
-		char *rootName = XMLString::transcode(elt->getNodeName());
+		string rootName = transcode(elt->getNodeName());
 		Object* newObject = newInstanceOfType(rootName);
-		delete[] rootName;
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);
 		newObject->updateFromXMLNode();
