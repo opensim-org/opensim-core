@@ -272,7 +272,7 @@ void AbstractSimmMuscle::updateGeometryLocations()
 	double previousPointGlobalLocation[3];
 
 	for (int i = 0; i < _currentPath.getSize(); i++){
-		SimmMusclePoint* nextPoint = _attachmentSet.get(i);
+		SimmMusclePoint* nextPoint = _currentPath.get(i);
 		// xform point to global frame
 		Array<double>& location=nextPoint->getAttachment();
 		const AbstractBody* body = nextPoint->getBody();
