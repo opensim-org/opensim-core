@@ -454,7 +454,7 @@ computeInitialStates(double &rTI,double *rYI)
 	int nqnu = _model->getNumCoordinates() + _model->getNumSpeeds();
 	int N = _predictor->getNX();
 	Array<double> y(0.0,ny),yi(0.0,ny);
-	Array<double> xmin(0.02,N),forces(0.0,N);
+	Array<double> xmin(0.01,N),forces(0.0,N);
 	double normConstant = _model->getTimeNormConstant();
 	double tiReal = rTI * normConstant;
 
