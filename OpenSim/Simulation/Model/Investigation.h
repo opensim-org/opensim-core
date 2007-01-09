@@ -42,6 +42,10 @@ protected:
 	/** Name of the xml file used to deserialize or construct a model. */
 	PropertyStr _modelFileProp;
 	std::string &_modelFile;
+	/** Whether the actuator set included in the model file is replaced 
+	(if true) or appended to (if false) with actuator sets read in from file */
+	PropertyBool _replaceActuatorSetProp;
+	bool &_replaceActuatorSet;
 	/** Names of the xml files used to construct an actuator set for the
 	model. */
 	PropertyStrArray _actuatorSetFilesProp;

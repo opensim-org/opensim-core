@@ -33,6 +33,7 @@ Investigation::~Investigation()
 Investigation::Investigation():
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
+	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
@@ -63,6 +64,7 @@ Investigation::Investigation(const string &aFileName):
 	Object(aFileName),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
+	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
@@ -98,6 +100,7 @@ Investigation::Investigation(DOMElement *aElement):
 	Object(aElement),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
+	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
@@ -156,6 +159,7 @@ Investigation::Investigation(const Investigation &aInvestigation):
 	Object(aInvestigation),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
+	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
 	_paramsFile(_paramsFileProp.getValueStr()),
@@ -186,6 +190,7 @@ setNull()
 	_model = NULL;
 	_modelLibrary = "";
 	_modelFile = "";
+	_replaceActuatorSet = true;
 	_contactForceSetFile = "";
 	_paramsFile = "";
 	_resultsDir = "./";
@@ -215,6 +220,12 @@ void Investigation::setupProperties()
 	_modelFileProp.setComment(comment);
 	_modelFileProp.setName("model_file");
 	_propertySet.append( &_modelFileProp );
+
+	comment = "Replace model's actuator set with sets specified in <actuator_set_files>? "
+				 "If false then the actuator set is appended to.";
+	_replaceActuatorSetProp.setComment(comment);
+	_replaceActuatorSetProp.setName("replace_actuator_set");
+	_propertySet.append( &_replaceActuatorSetProp );
 
 	comment = "Name of the xml file used to construct an actuator set for the model.";
 	_actuatorSetFilesProp.setComment(comment);
@@ -397,6 +408,9 @@ loadModel()
 		cout<<"ModelLibrary = " << _modelLibrary << ", ModelFile = " << _modelFile << endl;
 
 		AbstractModel *model = LoadModel(_modelLibrary, _modelFile);
+
+		// If replacing actuator set read in from model file, clear it here
+		if(_replaceActuatorSet) model->getActuatorSet()->setSize(0);
 
 		// Load actuator set(s)
 		for(int i=0;i<_actuatorSetFiles.getSize();i++) {
