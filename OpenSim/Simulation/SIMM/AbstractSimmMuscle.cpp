@@ -365,6 +365,7 @@ void AbstractSimmMuscle::scale(const ScaleSet& aScaleSet)
 			}
 		}
 	}
+	invalidatePath();
 }
 
 //_____________________________________________________________________________
