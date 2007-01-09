@@ -698,7 +698,7 @@ void InvestigationCMCGait::run()
 	time_t startTime,finishTime;
 	struct tm *localTime;
 	double elapsedTime;
-	if(ny > 0) {
+	if(_model->getActuatorSet()->getNumStates() > 0) {
 		cout<<"\n\n\n";
 		cout<<"================================================================\n";
 		cout<<"================================================================\n";
