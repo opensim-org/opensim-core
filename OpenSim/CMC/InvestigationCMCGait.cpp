@@ -648,8 +648,6 @@ void InvestigationCMCGait::run()
 	string rraControlName;
 	ModelIntegrandForActuators cmcIntegrand(_model);
 	cmcIntegrand.setCoordinateTrajectories(&qSet);
-	ControlSet *rootSet = cmcIntegrand.getControlSet();
-	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,rootSet);
 	VectorFunctionForActuators *predictor =
 		new VectorFunctionForActuators(&cmcIntegrand);
 	controller.setActuatorForcePredictor(predictor);
@@ -686,6 +684,12 @@ void InvestigationCMCGait::run()
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf-_targetDT-rdMath::ZERO);
+
+	// Initialize integrand controls using controls read in from file (which specify min/max control values)
+	// and set the CMC integrand's control set to be a reference to the model integrand's control set.
+	ControlSet *controlSet = integrand.getControlSet();
+	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,controlSet);
+	cmcIntegrand.setControlSetReference(*controlSet);
 
 	// Integrator settings
 	IntegRKF *integ = manager.getIntegrator();
@@ -725,10 +729,6 @@ void InvestigationCMCGait::run()
 		cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 		cout<<"=================================================================\n";
 	}
-
-	// Set controls to use steps.
-	ControlSet *controlSet = integrand.getControlSet();
-	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,controlSet);
 
 	// ---- INTEGRATE ----
 	cout<<"\n\n\n";

@@ -78,6 +78,7 @@ public:
 	ControlSet(const std::string &aFileName);
 	ControlSet(const ControlSet &aSet);
 	virtual ~ControlSet();
+	virtual Object* copy() const;
 private:
 	void setNull();
 	void setupProperties();

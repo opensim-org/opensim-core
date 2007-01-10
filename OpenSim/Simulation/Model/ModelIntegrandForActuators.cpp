@@ -417,7 +417,7 @@ compute(double t,double y[],double dydt[])
 
    // ----------------------------------
 	// GET CONTROLS
-	_controlSet.getControlValues(t,_x);
+	_controlSet->getControlValues(t,_x);
 	
 	// TIME, CONTROLS, STATES
 	_model->set(t,&_x[0],&_yModel[0]);

@@ -64,9 +64,8 @@ ModelIntegrand::ModelIntegrand(AbstractModel *aModel):
 
 	// MEMBER VARIABLES
 	_model = aModel;
-	ControlSet *tmpControlSet = constructControlSet();
-	_controlSet = *tmpControlSet;
-	delete tmpControlSet;
+	_controlSet = constructControlSet();
+	_ownsControlSet = true;
 
 	// WORK VARIABLES
 	_x.setSize(_model->getNumControls());
@@ -81,6 +80,7 @@ ModelIntegrand::ModelIntegrand(AbstractModel *aModel):
  */
 ModelIntegrand::~ModelIntegrand()
 {
+	if (_ownsControlSet) delete _controlSet;
 }
 
 
@@ -224,7 +224,26 @@ setControlSet(const ControlSet &aControlSet)
 		cout<<"ModelIntegrand.setControlSet: incorrect number of controls.\n";
 		return;
 	}
-	_controlSet = aControlSet;
+	if(_ownsControlSet) delete _controlSet;
+	_controlSet = (ControlSet*)aControlSet.copy();
+	_ownsControlSet = true;
+}
+//_____________________________________________________________________________
+/**
+ * Set the control set for this integrand to be a reference to an existing conrtol set.
+ *
+ * @param aControlSet Set of controls for the integrand.
+ */
+void ModelIntegrand::
+setControlSetReference(ControlSet &aControlSet)
+{
+	if(aControlSet.getSize() != _model->getNumControls()) {
+		cout<<"ModelIntegrand.setControlSetReference: incorrect number of controls.\n";
+		return;
+	}
+	if(_ownsControlSet) delete _controlSet;
+	_controlSet = &aControlSet;
+	_ownsControlSet = false;
 }
 //_____________________________________________________________________________
 /**
@@ -235,7 +254,7 @@ setControlSet(const ControlSet &aControlSet)
 ControlSet* ModelIntegrand::
 getControlSet()
 {
-	return(&_controlSet);
+	return(_controlSet);
 }
 
 
@@ -375,7 +394,7 @@ void ModelIntegrand::
 compute(double t,double y[],double dydt[])
 {
 	// GET CONTROLS
-	_controlSet.getControlValues(t,_x);
+	_controlSet->getControlValues(t,_x);
 	
 	// TIME, CONTROLS, STATES
 	_model->set(t,&_x[0],y);
@@ -435,9 +454,9 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 
 	// INITIAL CONTROLS
 	if(_controller!=NULL) {
-		_controller->computeControls(dt,_ti,y,_controlSet);
+		_controller->computeControls(dt,_ti,y,*_controlSet);
 	}
-	_controlSet.getControlValues(_ti,_x);
+	_controlSet->getControlValues(_ti,_x);
 	_model->setControls(&_x[0]);
 
 	// INITIALIZE PREVIOUS CONTROL AND STATE VALUES
@@ -492,9 +511,9 @@ processAfterStep(int step,double &dt,double t,double y[])
 
 	// GET THE CONTROLS AT THE NEW TIME t
 	if(_controller!=NULL) {
-		_controller->computeControls(dt,t,y,_controlSet);
+		_controller->computeControls(dt,t,y,*_controlSet);
 	}
-	_controlSet.getControlValues(t,_x);
+	_controlSet->getControlValues(t,_x);
 
 	// STORE CONTROLS
 	int nx = _x.getSize();

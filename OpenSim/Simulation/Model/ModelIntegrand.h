@@ -67,7 +67,8 @@ protected:
 	/** Model. */
 	AbstractModel *_model;
 	/** Control set. */
-	ControlSet _controlSet;
+	bool _ownsControlSet;
+	ControlSet *_controlSet;
 	/** Controller. */
 	Controller *_controller;
 	/** Storage for the controls. */
@@ -117,6 +118,7 @@ public:
 	AbstractModel* getModel();
 	// Control Set
 	void setControlSet(const ControlSet &aControlSet);
+	void setControlSetReference(ControlSet &aControlSet);
 	ControlSet* getControlSet();
 	// CONTROL STORAGE
 	void setControlStorage(Storage *aStorage);

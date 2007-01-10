@@ -129,6 +129,19 @@ setupProperties()
 {
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy this ControlSet and return a pointer to the copy.
+ * The copy constructor for this class is used.
+ *
+ * @return Pointer to a copy of this ControlSet.
+ */
+Object* ControlSet::
+copy() const
+{
+	ControlSet *controlSet = new ControlSet(*this);
+	return(controlSet);
+}
 
 //=============================================================================
 // OPERATORS
