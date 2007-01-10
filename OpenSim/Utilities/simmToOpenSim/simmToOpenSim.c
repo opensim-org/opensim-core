@@ -212,7 +212,7 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 				// not convert the range values. If it's rotational, then use the passed-in
 				// conversion factor, which is either 1.0 or DEG_TO_RAD.
 				double conv;
-				if (ms->gencoord[i].type == translation_gencoord)
+				if (ms->gencoord[mp->ranges[0].genc].type == translation_gencoord)
 					conv = 1.0;
 				else
 					conv = conversion;
