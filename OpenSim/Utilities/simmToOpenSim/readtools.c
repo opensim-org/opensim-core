@@ -1690,7 +1690,6 @@ static void acpp (char in_file[], const char out_file[])
 
    remove(out_file); /* required to work-around CodeWarrior bug */
 
-#ifndef __linux__
    if (acpp_main(argc, sAcppOptions, acpp_message_proc) != 0)
    {
       const char* infile = strrchr(in_file, DIR_SEP_CHAR);
@@ -1704,12 +1703,6 @@ static void acpp (char in_file[], const char out_file[])
       
       error(none, errorbuffer);
    }
-#else
-	char cmdline[1024];
-	sprintf(cmdline,"cp %s %s",in_file,out_file);
-	printf("Executing '%s' in place of acpp_main", cmdline);
-	system(cmdline);
-#endif
 
 #if 0
    /* copy the preprocessed file so we can get a look at it:

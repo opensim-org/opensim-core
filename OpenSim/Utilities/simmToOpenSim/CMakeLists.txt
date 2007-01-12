@@ -6,8 +6,11 @@ LINK_LIBRARIES(
 	debug acpp_d optimized acpp
 	)
 ELSE(WIN32)
-# Math library for linux
-LINK_LIBRARIES(m)
+# m is math library for linux
+LINK_LIBRARIES(
+	m
+	debug acpp_d optimized acpp
+	)
 ENDIF(WIN32)
 
 ADD_EXECUTABLE(simmToOpenSim ${SOURCE_FILES} ${INCLUDE_FILES})
