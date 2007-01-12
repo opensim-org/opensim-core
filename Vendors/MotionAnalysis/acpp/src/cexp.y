@@ -28,6 +28,9 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "stdlib.h"
 #include "math.h"
 #include "config.h"
+#ifdef __linux__
+#include "strings.h"
+#endif
 #include <setjmp.h>
 #include <ctype.h>
 /* #define YYDEBUG 1 */
@@ -44,13 +47,13 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
   /* some external tables of character types */
   extern unsigned char is_idstart[], is_idchar[];
-#if defined sgi || defined WIN32
+#if defined sgi || defined WIN32 || defined __linux__
 /* table to tell if c is horizontal space.  isspace () thinks that
    newline is space; this is not a good idea for this program. */
 char is_hor_space[256];
 #endif
 
-#ifdef WIN32
+#if defined WIN32 || defined __linux__
 #define gettxt(S1,S2) (S1 ## S2)
 #endif
 
@@ -379,6 +382,7 @@ struct token {
   int token;
 };
 
+#undef NULL
 #define NULL 0
 
 static struct token tokentab2[] = {

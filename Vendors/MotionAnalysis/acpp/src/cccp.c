@@ -118,6 +118,13 @@ typedef unsigned char U_CHAR;
 #endif /* __GNUC__ */
 #endif /* VMS */
 
+#ifdef __linux__
+#include <time.h>
+#ifdef __GNUC__
+#define BSTRING			/* linux/GCC supplies the bstring routines */
+#endif /* __GNUC__ */
+#endif /* linux */
+
 #ifdef WIN32
   #include <errno.h>
   #include <assert.h>
@@ -253,7 +260,7 @@ int dump_macros;
 #endif
 
 int pedantic;
-#if defined sgi || defined WIN32
+#if defined sgi || defined WIN32 || defined __linux__
 /* value of > 0 means turn warnings off */
 int warnings_off;
 /*
@@ -5727,7 +5734,7 @@ error_from_errno (name)
 {
   int i;
   FILE_BUF *ip = NULL;
-#ifndef WIN32
+#if !defined WIN32 && !defined __linux__
   extern int errno, sys_nerr;
   extern char *sys_errlist[];
 #endif
@@ -5741,7 +5748,7 @@ error_from_errno (name)
   if (ip != NULL)
     USER_MESSAGE("%s:%d: ", _get_filename_without_path(ip->fname), ip->lineno);
 
-#ifdef WIN32
+#if defined WIN32 || defined __linux__
   perror(name);
 #else
   if (errno < sys_nerr)
@@ -6365,14 +6372,14 @@ void
 perror_with_name (name)
      char *name;
 {
-#ifndef WIN32
+#if !defined WIN32 && !defined __linux__ 
    extern int errno, sys_nerr;
    extern char *sys_errlist[];
 #endif
 
    USER_MESSAGE("%s: ", acpp_progname);
 
-#ifdef WIN32
+#if defined WIN32 || defined __linux__
   perror(name);
 #else
    if (errno < sys_nerr)
