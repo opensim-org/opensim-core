@@ -20,6 +20,8 @@ if fid == -1
 end
 % Process the file header;
 % store # data rows, # data columns.
+q.nr = 0; % Added to ensure that the q structures from reading a motion file
+q.nc = 0; % are always the same, even if nr and nc are different orders in file.
 nextline = fgetl(fid);	
 while ~strncmpi(nextline, 'endheader', length('endheader'))
 	if strncmpi(nextline, 'datacolumns', length('datacolumns'))
