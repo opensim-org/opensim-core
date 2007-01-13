@@ -74,9 +74,9 @@ refTrials(4).ictoMatrix = [  348   477   924  1059  1511; ...
                              924  1059  1511  1646  2127; ...
                             1511  1646  2127  2266  2754; ...
                             2127  2266  2754  2842  3303];
-prepro_GilletteControls(subject, ss);
-detect_c3dContactEvents(subject, ss);
-get_c3dEmgAveOnOff(subject, ss, refTrials);
+prepro_GilletteControls(subject, ss, ref_dataFormatGillette);
+detect_c3dContactEvents(subject, ss, ref_dataFormatGillette);
+get_c3dEmgAveOnOff(subject, ss, refTrials, ref_dataFormatGillette);
 clear ss refTrials;
 
 

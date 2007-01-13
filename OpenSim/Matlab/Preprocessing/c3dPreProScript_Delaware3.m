@@ -6,7 +6,7 @@ end
 
 [sInfo, tInfo] = ref_trialInfoDelaware;
 
-eval(sprintf('trial = tInfo.%s;', trialname));
+trial = tInfo.(trialname);
 
 %plot icto to test it...
 if 0
@@ -47,6 +47,6 @@ refTrials={};
 fileNames = {trial.c3dFile};
 
 %prepro_GilletteControls(sInfo.subject, ss, ref_dataFormatDelaware, fileNames{1});
-%detect_c3dContactEvents(sInfo.subject, ss);
+%detect_c3dContactEvents(sInfo.subject, ss, ref_dataFormatDelaware);
 get_c3dEmgAveOnOff(sInfo.subject, ss, refTrials, ref_dataFormatDelaware, fileNames);
 clear ss refTrials;
