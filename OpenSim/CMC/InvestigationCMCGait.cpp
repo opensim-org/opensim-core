@@ -923,6 +923,8 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	}
 	cout<<"\n\nRecommended mass adjustments:\n";
 	for(i=0;i<nb;i++) {
+		body = (*bodySet)[i];
+		if(body==NULL) continue;
 		massChange[i] = dmass * mass[i]/massTotal;
 		massNew[i] = mass[i] + massChange[i];
 		cout<<body->getName()<<":  orig mass = "<<mass[i]<<", new mass = "<<massNew[i]<<endl;
