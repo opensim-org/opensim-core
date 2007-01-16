@@ -424,13 +424,13 @@ void InvestigationForward::run()
 
 
 	// PRINT RESULTS
+	printResults(getName(),getResultsDir()); // this will create results directory if necessary
 	Storage *xStore = integrand.getControlStorage();
 	Storage *yStore = integrand.getStateStorage();
 	Storage *ypStore = integrand.getPseudoStateStorage();
-	xStore->print("controls_forward.sto");
-	yStore->print("states_forward.sto");
-	ypStore->print("pseudo_forward.sto");
-	printResults(getName(),getResultsDir());
+	xStore->print(getResultsDir() + "/" + getName() + "_controls.sto");
+	yStore->print(getResultsDir() + "/" + getName() + "_states.sto");
+	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
 	IO::chDir(saveWorkingDirectory);
 }
 

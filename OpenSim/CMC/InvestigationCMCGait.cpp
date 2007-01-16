@@ -780,6 +780,19 @@ void InvestigationCMCGait::run()
 	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
 	controller.getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
+	if(_adjustCOMToReduceResiduals || _computeAverageResiduals) {
+		// Write the average residuals (DC offsets) out to a file
+		ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());
+		residualFile << "Average Residuals:\n\n";
+		residualFile << "FX average = " << FAve[0] << "\n";
+		residualFile << "FY average = " << FAve[1] << "\n";
+		residualFile << "FZ average = " << FAve[2] << "\n";
+		residualFile << "MX average = " << MAve[0] << "\n";
+		residualFile << "MY average = " << MAve[1] << "\n";
+		residualFile << "MZ average = " << MAve[2] << "\n";
+		residualFile.close();
+	}
+
 	IO::chDir(saveWorkingDirectory);
 }
 

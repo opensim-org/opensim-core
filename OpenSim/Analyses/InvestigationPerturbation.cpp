@@ -707,24 +707,24 @@ void InvestigationPerturbation::run()
 		PFZBodyStore.append(tiPert,na,&PFZBody[0]);
 
 		// Print results
-		IO::makeDir("ResultsPerturbed");
-		sprintf(fileName,"./ResultsPerturbed/daXdf_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		IO::makeDir(getResultsDir());
+		sprintf(fileName,"%s/daXdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		daXdfStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/deltaAX_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/deltaAX_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		deltaAXStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/PFXBody_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/PFXBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		PFXBodyStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/daYdf_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/daYdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		daYdfStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/deltaAY_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/deltaAY_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		deltaAYStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/PFYBody_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/PFYBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		PFYBodyStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/daZdf_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/daZdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		daZdfStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/deltaAZ_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/deltaAZ_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		deltaAZStore.print(fileName);
-		sprintf(fileName,"./ResultsPerturbed/PFZBody_dt_%.3f_df_%.3lf.sto",_pertWindow,_pertDF);
+		sprintf(fileName,"%s/PFZBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		PFZBodyStore.print(fileName);
 
 	} // end time loop
