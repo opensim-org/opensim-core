@@ -74,6 +74,7 @@
 #include <OpenSim/Tools/Constant.h>
 #include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
 #include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
 
 #include <OpenSim/Simulation/SIMM/AbstractDof.h>
 
@@ -313,6 +314,8 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/AbstractDof.h>
 %include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
 %include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+%template(SetCoordinates) OpenSim::Set<OpenSim::AbstractCoordinate>;
+%include <OpenSim/Simulation/SIMM/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SIMM/AbstractJoint.h>
 %include <OpenSim/Simulation/SIMM/SimmJoint.h>
