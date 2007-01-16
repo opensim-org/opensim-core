@@ -36,7 +36,6 @@ Investigation::Investigation():
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
-	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -67,7 +66,6 @@ Investigation::Investigation(const string &aFileName):
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
-	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -103,7 +101,6 @@ Investigation::Investigation(DOMElement *aElement):
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
-	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -162,7 +159,6 @@ Investigation::Investigation(const Investigation &aInvestigation):
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
 	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
-	_paramsFile(_paramsFileProp.getValueStr()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -192,7 +188,6 @@ setNull()
 	_modelFile = "";
 	_replaceActuatorSet = true;
 	_contactForceSetFile = "";
-	_paramsFile = "";
 	_resultsDir = "./";
 	_outputPrecision = 8;
 	_ti = 0.0;
@@ -237,11 +232,6 @@ void Investigation::setupProperties()
 	_contactForceSetFileProp.setComment(comment);
 	_contactForceSetFileProp.setName("contact_force_set_file");
 	_propertySet.append( &_contactForceSetFileProp );
-
-	comment = "Name of the params files used to construct a SIMM Pipeline model.";
-	_paramsFileProp.setComment(comment);
-	_paramsFileProp.setName("params_file");
-	_propertySet.append( &_paramsFileProp );
 
 	comment = "Directory used for writing results.";
 	_resultsDirProp.setComment(comment);
@@ -314,7 +304,6 @@ operator=(const Investigation &aInvestigation)
 	_modelFile = aInvestigation._modelFile;
 	_actuatorSetFiles = aInvestigation._actuatorSetFiles;
 	_contactForceSetFile = aInvestigation._contactForceSetFile;
-	_paramsFile = aInvestigation._paramsFile;
 	_resultsDir = aInvestigation._resultsDir;
 
 	_outputPrecision = aInvestigation._outputPrecision;

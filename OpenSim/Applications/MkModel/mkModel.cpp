@@ -47,7 +47,7 @@ static void PrintUsage(ostream &aOStream);
  * SDFast corresponding code.
  *
  * @param argc Number of command line arguments (should be 2 or more).
- * @param argv Command line arguments:  mkModel -IM inFile and at least one of [-SD SdfastFile] [-FF SourceFile] [-MH HeaderFile] [-PF ParametersFile] [-OM SimulationModelFile] [-D OutputDirectory]
+ * @param argv Command line arguments:  mkModel -IM inFile and at least one of [-SD SdfastFile] [-FF SourceFile] [-MH HeaderFile] [-OM SimulationModelFile] [-D OutputDirectory]
  */
 int main(int argc,char **argv)
 {
@@ -57,7 +57,6 @@ int main(int argc,char **argv)
 	string sdfastName = unassigned;
 	string headerName = unassigned;
 	string sourceName = unassigned;
-	string parametersName = unassigned;
 	string simModelName = unassigned;
 	string folderName = ".";
 	string option = "";
@@ -90,9 +89,6 @@ int main(int argc,char **argv)
 				}
 				else if((option=="-MH")||(option=="-ModelHeader")) {
 					headerName = argv[++i];
-				}
-				else if((option=="-PF")||(option=="-ParametersFile")) {
-					parametersName = argv[++i];
 				}
 				else if((option=="-OM")||(option=="-OutputModel")) {
 					simModelName = argv[++i];
@@ -130,9 +126,6 @@ int main(int argc,char **argv)
 			if (headerName != unassigned)
 				sfw.writeModelHeaderFile(headerName);
 
-			if (parametersName != unassigned)
-				sfw.writeSimulationParametersFile(parametersName);
-
 			if (simModelName != unassigned)
 				sfw.writeSimulationModelFile(simModelName);
 
@@ -159,7 +152,6 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";
 	aOStream<<"-ModelHeader, -MH         FileName         Output model header file (model.h in SIMM)\n";
-	aOStream<<"-ParametersFile, -PF      FileName         Output Parameters file (params.txt in SIMM)\n";
 	aOStream<<"-OuputModel, -OM          ModelFile        Output SDfastEngine model file (XML format).\n";
 	aOStream<<"-Directory, -D            DirectoryName    Directory into which to write output.\n";
 }

@@ -54,9 +54,6 @@ protected:
 	model. */
 	PropertyStr _contactForceSetFileProp;
 	std::string &_contactForceSetFile;
-	/** Name of the params files used for a SIMM Pipeline model. */
-	PropertyStr _paramsFileProp;
-	std::string &_paramsFile;
 	/** Directory used for writing results. */
 	PropertyStr _resultsDirProp;
 	std::string &_resultsDir;
