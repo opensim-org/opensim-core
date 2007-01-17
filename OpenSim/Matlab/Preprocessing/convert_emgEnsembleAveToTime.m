@@ -44,65 +44,32 @@ function [emgEnsembleAveSim, emgEnsembleAveTime] = ...
 % ASA, 12-05
 
 cycTimes = convert_cycleToTime(cycle, tInfo, ictoEvents, analogRate, ref_dataFormat);
-nRcycles = size(cycTimes.R,2);
-nLcycles = size(cycTimes.L,2);
 nPts = size(cycTimes.R,1);
+maxCycles = 2;
 
 % GENERATE TIME ARRAYS
-% Generate array for limb that hit first.
-if strcmpi(tInfo.limb{1}, 'R')
-    emgEnsembleAveTime.R = cycTimes.R(:, 1);    % 1st FP hit by this limb
-    if nRcycles > 1                             % additional FP hit
-        startIndex = nPts;
-        stopIndex = 2*nPts - 1;
-        emgEnsembleAveTime.R(startIndex:stopIndex) = cycTimes.R(:, 2);
+for fpHit = 1:2
+    limb = tInfo.limb{fpHit};
+    if ~strcmp(limb,'R') & ~strcmp(limb,'L') error('Expected limb R or L'); end
+    nCycles = min(maxCycles,size(cycTimes.(limb),2));
+
+    emgEnsembleAveTime.(limb) = cycTimes.(limb)(:, 1);  % 1st cycle
+    for cycle = 2:nCycles
+        emgEnsembleAveTime.(limb)(end:(end+nPts-1)) = cycTimes.(limb)(:,cycle);  % the rest of the cycles
     end
-    first_nCycles = nRcycles;
-    first_nPts = length(emgEnsembleAveTime.R);
-     
-elseif strcmpi(tInfo.limb{1}, 'L')
-    emgEnsembleAveTime.L = cycTimes.L(:, 1);    % 1st FP hit by this limb
-    if nLcycles > 1                             % additional FP hit
-        startIndex = nPts;
-        stopIndex = 2*nPts - 1;
-        emgEnsembleAveTime.L(startIndex:stopIndex) = cycTimes.L(:, 2);
+
+    % For the limb that hit the FP second (i.e. later), we add an initial padding to its time
+    % vector to get it to start at the same time as the first hit limb.
+    if fpHit == 2
+        otherlimb=setdiff('LR',limb);
+        appendIndex = ...
+            max(find(emgEnsembleAveTime.(otherlimb) <= emgEnsembleAveTime.(limb)(1)));
+        emgEnsembleAveTime.(limb) = ...
+            [emgEnsembleAveTime.(otherlimb)(1:appendIndex); emgEnsembleAveTime.(limb)];
     end
-    first_nCycles = nLcycles;
-    first_nPts = length(emgEnsembleAveTime.L);
 end
 
-% Generate array for limb that hit second.
-if strcmpi(tInfo.limb{2}, 'R')
-    emgEnsembleAveTime.R = cycTimes.R(:, 1);    % 1st FP hit by this limb
-    if nRcycles > 1                             % additional FP hit
-        startIndex = nPts;
-        stopIndex = 2*nPts - 1;
-        emgEnsembleAveTime.R(startIndex:stopIndex) = cycTimes.R(:, 2);
-    end
-    appendIndex = ...
-        max(find(emgEnsembleAveTime.L <= emgEnsembleAveTime.R(1)));
-    emgEnsembleAveTime.R = ...
-        [emgEnsembleAveTime.L(1:appendIndex); emgEnsembleAveTime.R];
-   second_nCycles = nRcycles;
-   second_nPts = length(emgEnsembleAveTime.R);
-        
-elseif strcmpi(tInfo.limb{2}, 'L')
-    emgEnsembleAveTime.L = cycTimes.L(:, 1);    % 1st FP hit
-    if nLcycles > 1                             % additional FP hit
-        startIndex = nPts;
-        stopIndex = 2*nPts - 1;
-        emgEnsembleAveTime.L(startIndex:stopIndex) = cycTimes.L(:, 2);
-    end
-    appendIndex = ...
-        max(find(emgEnsembleAveTime.R <= emgEnsembleAveTime.L(1)));
-    emgEnsembleAveTime.L = ...
-        [emgEnsembleAveTime.R(1:appendIndex); emgEnsembleAveTime.L];
-    second_nCycles = nLcycles;
-    second_nPts = length(emgEnsembleAveTime.L);
-end
-    
-
-% % GENERATE EMG ENSEMBLE AVE STRUCTURE
+% GENERATE EMG ENSEMBLE AVE STRUCTURE
 nChannels = length(emgEnsembleAve);
 for emgChannel = 1:nChannels       
     
@@ -110,36 +77,20 @@ for emgChannel = 1:nChannels
     emgEnsembleAveSim(emgChannel).limb = emgEnsembleAve(emgChannel).limb;
     emgEnsembleAveSim(emgChannel).muscle = emgEnsembleAve(emgChannel).muscle;
 
-    % If EMG is from the limb that hit first ...
-    if strcmpi(emgEnsembleAve(emgChannel).limb, tInfo.limb{1}) 
-        emgEnsembleAveSim(emgChannel).envAve = ...
-                                emgEnsembleAve(emgChannel).envAve';
-        emgEnsembleAveSim(emgChannel).envSD = ...
-                                emgEnsembleAve(emgChannel).envSD';
-        if first_nCycles > 1                    
-            startIndex = nPts;
-            stopIndex = 2*nPts - 1;
-            emgEnsembleAveSim(emgChannel).envAve(startIndex:stopIndex) = ...
-                                emgEnsembleAve(emgChannel).envAve';
-            emgEnsembleAveSim(emgChannel).envSD(startIndex:stopIndex) = ...
-                                emgEnsembleAve(emgChannel).envSD';
-        end
-        
-    % Else if EMG is from the limb that hit second ...
-    elseif strcmpi(emgEnsembleAve(emgChannel).limb, tInfo.limb{2}) 
-        emgEnsembleAveSim(emgChannel).envAve = ...
-                                emgEnsembleAve(emgChannel).envAve';
-        emgEnsembleAveSim(emgChannel).envSD = ...
-                                emgEnsembleAve(emgChannel).envSD';
-        if second_nCycles > 1                    
-            startIndex = nPts;
-            stopIndex = 2*nPts - 1;
-            emgEnsembleAveSim(emgChannel).envAve(startIndex:stopIndex) = ...
-                                emgEnsembleAve(emgChannel).envAve';
-            emgEnsembleAveSim(emgChannel).envSD(startIndex:stopIndex) = ...
-                                emgEnsembleAve(emgChannel).envSD';
-        end
-        
+    limb = emgEnsembleAve(emgChannel).limb;
+    if ~strcmp(limb, tInfo.limb{1}) & ~strcmp(limb, tInfo.limb{2}) 
+        error('Expected limb R or L');
+    end
+
+    nCycles = min(maxCycles,size(cycTimes.(limb),2));
+    emgEnsembleAveSim(emgChannel).envAve = emgEnsembleAve(emgChannel).envAve';
+    emgEnsembleAveSim(emgChannel).envSD = emgEnsembleAve(emgChannel).envSD';
+    for cycle = 2:nCycles
+        emgEnsembleAveSim(emgChannel).envAve(end:(end+nPts-1)) = emgEnsembleAve(emgChannel).envAve';
+        emgEnsembleAveSim(emgChannel).envSD(end:(end+nPts-1)) = emgEnsembleAve(emgChannel).envSD';
+    end
+
+    if strcmp(limb, tInfo.limb{2})
         % Append data before IC of 2nd FP hit.
         appendStart = nPts - appendIndex + 1;
         appendEnd = nPts;
@@ -152,6 +103,3 @@ for emgChannel = 1:nChannels
     end
 end
 return;
-
-
-

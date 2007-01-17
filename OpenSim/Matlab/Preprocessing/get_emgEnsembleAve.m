@@ -27,9 +27,6 @@ nFiles = length(emgEnvResamp);
 % For each analog EMG channel ...
 for emgChannel = 1:nChannels        
 
-    % Initialize counter for counting trials/cycles.    
-    count = 0;
-    
     % Get limb and muscle corresponding to the current EMG channel.
     [limb, muscle] = get_emgLabels(emgChannel, ref_dataFormat);
    
@@ -37,6 +34,9 @@ for emgChannel = 1:nChannels
 		error('Expected limb R or L');
 	end
 
+    % Initialize counter for counting trials/cycles.    
+    count = 0;
+    
 	for fileNum = 1:nFiles                             % for each file             
 		nCycles = length(emgEnvResamp(fileNum).(limb));     % for each cycle 
 		for cycleNum = 1:nCycles

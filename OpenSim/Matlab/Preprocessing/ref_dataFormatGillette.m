@@ -121,6 +121,7 @@ ref.emgChannelsOfInterest = 1:length(ref.emgChannels);
 ref.analogRate = 1080;
 
 ref.tZeroAtFirstIC = 1;
+ref.extractSimulateableSegment = 1;
 
 ref.muscleActPlotLabels = @ref_muscleActPlotLabelsGillette;
 

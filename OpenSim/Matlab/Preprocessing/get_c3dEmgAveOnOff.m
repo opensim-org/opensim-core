@@ -85,6 +85,8 @@ if nargin < 5
 	fileNames = {};
 end
 
+cycle = 0:0.2:100;
+
 %%% CALCULATE ENSEMBLE-AVERAGED EMG ENVELOPES
 % For each file to be included in the ensemble average ...
 nRefTrials = length(refTrials);
@@ -140,7 +142,6 @@ for fileNum = 1:nFiles
 
     % Re-sample each cycle of EMG envelope data to have the same # pts,
     % as specified by cycle.
-    cycle = 0:0.2:100;
     emgEnvResamp(fileNum) = resample_emgEnvCycle(emgCyc, cycle);
     
     % Store processed EMG data for the trial of interest ('TOI').
@@ -158,7 +159,7 @@ emgEnsembleAve = get_emgEnsembleAve(emgEnvResamp, nChannels, ref_dataFormat);
  
 % Plot EMG envelopes vs gait cycle.
 % NOTE:  set algEval_flag == 0 to skip these commands.
-algEval_flag = 1;                       % 'algorithm evaluation' flag
+algEval_flag = 0;                       % 'algorithm evaluation' flag
 if algEval_flag == 1       
     create_emgEnsembleAveFigs(emgEnsembleAve, cycle, ...
                                         TOI_emgCyc, tInfo, nChannels, ref_dataFormat);
@@ -171,8 +172,14 @@ ictoEvents = TOI_ictoEvents;
 proEMG = TOI_proEMG;
 
 % Extract 'simulateable' segments of data from the trial of interest.
-cSim = extract_c3dSimData(c, ictoEvents); 
-emgSim = extract_emgSimData(proEMG, c, ictoEvents);
+if ref_dataFormat.extractSimulateableSegment
+    cSim = extract_c3dSimData(c, ictoEvents); 
+    emgSim = extract_emgSimData(proEMG, c, ictoEvents);
+else
+    cSim = c;
+    cSim.tDS = 0;
+    emgSim = proEMG;
+end
 
 % Visually assess algorithms for EMG processing based on entire trial by 
 % plotting raw, band-passed, rectified, and low-pass filtered data vs time.

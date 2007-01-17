@@ -91,6 +91,7 @@ ref.emgChannelsOfInterest = [ 16 7 15 8 14 1 13 10 12 11 9 6 5 4 3 2 ]; % a bett
 ref.analogRate = 600;
 
 ref.tZeroAtFirstIC = 0;
+ref.extractSimulateableSegment = 0;
 
 ref.muscleActPlotLabels = @ref_muscleActPlotLabelsDelaware;
 
