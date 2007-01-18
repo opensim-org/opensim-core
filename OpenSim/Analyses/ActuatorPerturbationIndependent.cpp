@@ -80,6 +80,7 @@ setNull()
 	_forces = new double[na];
 	_recordUnperturbedForces = true;
 	_allowNegForce = true;
+	_unperturbedForce = 0;
 }
 //-----------------------------------------------------------------------------
 // DESCRIPTION
@@ -135,15 +136,9 @@ constructColumnLabels()
 void ActuatorPerturbationIndependent::
 deleteStorage()
 {
-	if(_forces!=NULL) { delete[] _forces;  _forces=NULL; }
-	if(_unperturbedForceStorage!=NULL) {
-		delete _unperturbedForceStorage;
-		_unperturbedForceStorage=NULL;
-	}
-	if(_perturbedForceStorage!=NULL) {
-		delete _perturbedForceStorage;
-		_perturbedForceStorage=NULL;
-	}
+	delete[] _forces; _forces=NULL;
+	delete _unperturbedForceStorage; _unperturbedForceStorage=NULL;
+	delete _perturbedForceStorage; _perturbedForceStorage=NULL;
 }
 
 
@@ -209,10 +204,7 @@ getUnperturbedForceStorage()
 Storage* ActuatorPerturbationIndependent::
 getPerturbedForceStorage()
 {
-//	char name[Object::NAME_LENGTH];
-	char name[500]; // needs to be changed to [Object::NAME LENGTH]
-	sprintf(name,"PerturbedForce_%s",getActuator()->getName().c_str());
-	_perturbedForceStorage->setName(name);
+	_perturbedForceStorage->setName("PerturbedForce_"+getActuator()->getName());
 	return(_perturbedForceStorage);
 }
 
@@ -276,53 +268,53 @@ computeActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	// RECORD OR SET UNPERTURBED FORCES
-	int i = 0;
 	ActuatorSet *as = _model->getActuatorSet();
+
+	int actuatorIndex = -1;
 
 	// Set unperturbed forces
 	if(!_recordUnperturbedForces){
 		_unperturbedForceStorage->getData(_step,_model->getNumActuators(),_forces);
-		for (i=0; i<as->getSize(); i++)
+		// sanity check
+		double checkTime;
+		if(!_unperturbedForceStorage->getTime(_step,checkTime) || checkTime!=aT*_model->getTimeNormConstant())
+			throw Exception("ActuatorPerturbationIndependent: ERR- time match error",__FILE__,__LINE__);
+
+		for (int i=0; i<as->getSize(); i++)
 		{
 			AbstractActuator *act=as->get(i);
-			act->setForce(_forces[i++]);
+			if(act==_actuator) actuatorIndex = i;
+			act->setForce(_forces[i]);
 		}
 
 	// Record
 	} else {
-		for (i=0; i<as->getSize(); i++)
+		for (int i=0; i<as->getSize(); i++)
 		{
 			AbstractActuator *act=as->get(i);
-			_forces[i++] = act->getForce();
+			_forces[i] = act->getForce();
 		}
 		_unperturbedForceStorage->append(
 			aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces);
-
-		//printf("SHOULD BE RECORDING\n");
 	}	
 
 	// COMPUTE PERTURBED FORCE
-	double force = 0.0;
 	if(!_recordUnperturbedForces) {
-		force = 0.0;//_forces[_actuator]; // TODOAUG
+		_unperturbedForce = _actuator->getForce();
+		double force = _unperturbedForce;
 		if((aT>=getStartTime()) && (aT<=getEndTime())){
-			if( _perturbationType == SCALE)	{
-				force = 0.0;// TODOAUG _forces[_actuator] + _perturbation*_forces[_actuator];
+			if( _perturbationType == SCALE) {
+				force = force + _perturbation*force;
 			}
-			else if( _perturbationType == DELTA)	{
-				force = 0.0; // TODOAUG _forces[_actuator] + _perturbation;
-
-				//printf("SHOULD BE PERTURBING\n");
-
+			else if( _perturbationType == DELTA) {
+				force = force + _perturbation;
 			}
-			else if( _perturbationType == CONSTANT)	{
+			else if( _perturbationType == CONSTANT) {
 				force = _perturbation;
 			}
-			else	{
+			else {
 				printf("ActuatorPerturbationIndependent.computeActuation:WARN - unrecognized perturbationType.\n");
-				force = _force;
 			}
-		
 		}
 
 		// MAKE CORRECTION IF PERTRUBED FORCE IS NEGATIVE AND NEG FORCE FLAG IS SET
@@ -334,16 +326,10 @@ computeActuation(double aT,double *aX,double *aY)
 		//printf("\n%d: perturbed=%.16lf",_step+1,force);
 		_actuator->setForce(force);
 
-		// RECORD PERTURBED FORCE
-		// TODOAUG _forces[_actuator] =  force;
-
-		// BUG??
-		// The perturbed forces may not be recording correctly.
-		// Maybe off by one step?
-		//_perturbedForceStorage->append(
-		//		aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces);
+		// Update _forces array and add it to the perturbed force storage
+		if(actuatorIndex>=0) _forces[actuatorIndex] = force;
+		_perturbedForceStorage->append(aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces);
 	}
-
 }
 //_____________________________________________________________________________
 /**
@@ -363,12 +349,11 @@ applyActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	// RESTORE UNPERTURBED FORCE
+	// NOTE: We used to try to get unperturbed force from _unperturbedForceStorage, but instead I
+	// just record it in a special variable in computeActuation (to avoid having to figure out
+	// the actuator index corresponding to _actuator)
 	if(!_recordUnperturbedForces) {
-	//if(false) {
-		double force = 0.0;
-//		_unperturbedForceStorage->getData(_step+1,_actuator,force);
-		// TODOAUG _unperturbedForceStorage->getData(_step,_actuator,force);
-		_actuator->setForce(force);
+		_actuator->setForce(_unperturbedForce);
 		//printf("\t\t%d: unperturbed=%.16lf\n",_step+1,force);
 	}
 

@@ -538,7 +538,6 @@ void InvestigationPerturbation::run()
 	// RESULT VARIABLES
 	int i,endIndex;
 	char fileName[Object::NAME_LENGTH];
-	double PXBody,PYBody,PZBody;
 	Array<double> PFXBody(0.0,na),PFYBody(0.0,na),PFZBody(0.0,na);
 	int indexCOMX = numBodyKinCols - 3;
 	int indexCOMY = numBodyKinCols - 2;
@@ -558,7 +557,6 @@ void InvestigationPerturbation::run()
 	}
 
 	// Storage objects for results
-	Storage *perturbedPos;
 	Storage daXdfStore,deltaAXStore,PFXBodyStore;
 	Storage daYdfStore,deltaAYStore,PFYBodyStore;
 	Storage daZdfStore,deltaAZStore,PFZBodyStore;
@@ -619,6 +617,7 @@ void InvestigationPerturbation::run()
 		actuation->getForceStorage()->reset();
 
 		// INTEGRATE (1)
+		_model->getActuatorSet()->setComputeActuationEnabled(true);
 		integ->setUseSpecifiedDT(false);
 		perturbation->setOn(false);
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert<<endl;
@@ -635,11 +634,15 @@ void InvestigationPerturbation::run()
 		manager.integrate();
 		perturbation->setRecordUnperturbedForces(false);
 
+		// From here on in the perturbation derivcallback will override the actuator
+		// forces, so we don't actually need to have the actuators compute anything.
+		_model->getActuatorSet()->setComputeActuationEnabled(false);
+
 		// COPY UNPERTURBED DATA
-		if(unperturbedPos!=0) { delete unperturbedPos;  unperturbedPos=0; }
-		if(unperturbedVel!=0) { delete unperturbedVel;  unperturbedVel=0; }
-		if(unperturbedAcc!=0) { delete unperturbedAcc;  unperturbedAcc=0; }
-		if(unperturbedFrc!=0) { delete unperturbedFrc;  unperturbedFrc=0; }
+		delete unperturbedPos;
+		delete unperturbedVel;
+		delete unperturbedAcc;
+		delete unperturbedFrc;
 		unperturbedPos = new Storage(*kin->getPositionStorage());
 		unperturbedVel = new Storage(*kin->getVelocityStorage());
 		unperturbedAcc = new Storage(*kin->getAccelerationStorage());
@@ -648,18 +651,14 @@ void InvestigationPerturbation::run()
 		// Get unperturbed kinmatics
 		endIndex = unperturbedPos->getSize() - 1;
 		unperturbedPos->getData(endIndex,numBodyKinCols,&rowUnperturbedKin[0]);
-		PXBody = rowUnperturbedKin[indexCOMX];
-		PYBody = rowUnperturbedKin[indexCOMY];
-		PZBody = rowUnperturbedKin[indexCOMZ];
+		double PXBody = rowUnperturbedKin[indexCOMX];
+		double PYBody = rowUnperturbedKin[indexCOMY];
+		double PZBody = rowUnperturbedKin[indexCOMZ];
 
 		// Get unperturbed forces
 		unperturbedFrc->getData(0,na,&rowUnperturbedForces[0]);
 
 		// Loop over muscles
-		//int tib_ant_l = _model->getActuatorIndex("tib_ant_l");
-		//for (m=tib_ant_l;m<=tib_ant_l;m++)	{
-		//ai->reset();
-		//act = ai->next();
 		for (int m=0;m<na;m++)	{
 			AbstractActuator *act = as->get(m);
 			// Set up pertubation callback
@@ -678,7 +677,7 @@ void InvestigationPerturbation::run()
  			manager.integrate();
 
 			// Get perturbed kinematics
-			perturbedPos = kin->getPositionStorage();
+			Storage *perturbedPos = kin->getPositionStorage();
 			endIndex = perturbedPos->getSize() - 1;
 			perturbedPos->getData(endIndex,numBodyKinCols,&lastRowPerturbedKin[0]);
 			PFXBody[m] = lastRowPerturbedKin[indexCOMX];

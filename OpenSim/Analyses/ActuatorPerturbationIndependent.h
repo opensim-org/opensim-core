@@ -73,10 +73,15 @@ protected:
 	Storage *_perturbedForceStorage;
 	/** Flag that determines whether the nominal forces should be recorded. */
 	bool _recordUnperturbedForces;
-	/** Vector of nominal forces at current time step. */
-	double *_forces;
 	/** Counter to track the number of integration steps. */
 	int _step;
+private:
+	/** Buffer to store nominal forces at current time step (basically used as 
+	 *  a local variable in computeActuation, but is made a member to avoid
+	 *  having to allocate a new array in each call). */
+	double *_forces;
+	/** Saved unperturbed force of actuator currently being perturbed. */
+	double _unperturbedForce;
 //=============================================================================
 // METHODS
 //=============================================================================

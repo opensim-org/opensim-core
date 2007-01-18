@@ -130,6 +130,7 @@ void ActuatorSet::setNull()
 
 	// MODEL
 	_model = NULL;
+	_computeActuationEnabled = true;
 }
 
 //_____________________________________________________________________________
@@ -1163,6 +1164,16 @@ getPseudoStates(double rYP[]) const
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * If computeActuation is disabled, computeActuation() does nothing
+ * and computeStateDerivatives returns all state derivatives as zero.
+ */
+void ActuatorSet::
+setComputeActuationEnabled(bool aTrueFalse)
+{
+	_computeActuationEnabled = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
  * Promote a set of controls to state variables.  This method is
  * normally useful when solving for controls that will optimize some
  * aspect of a model performance.  For example, in models in which the
@@ -1190,6 +1201,7 @@ promoteControlsToStates(const double aX[],double aDT)
 void ActuatorSet::
 computeActuation()
 {
+	if(!_computeActuationEnabled) return;
 	int i;
 	AbstractActuator *act;
 	for(i=0;i<getSize();i++) {
@@ -1207,6 +1219,10 @@ computeActuation()
 void ActuatorSet::
 computeStateDerivatives(double rDY[])
 {
+	if(!_computeActuationEnabled) {
+		memset(rDY,0,getNumStates()*sizeof(double));
+	  	return;
+	}
 	int i,I;
 	AbstractActuator *act;
 	for(i=0;i<getSize();i++) {

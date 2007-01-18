@@ -84,6 +84,8 @@ protected:
 	/** Actuator to pseudo-state map. */
 	Array<int> _actuatorToPseudo;
 
+	bool _computeActuationEnabled;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -182,6 +184,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
+	void setComputeActuationEnabled(bool aTrueFalse);
 	void promoteControlsToStates(const double aX[],double aDT);
 	void computeActuation();
 	void computeStateDerivatives(double rDY[]);
