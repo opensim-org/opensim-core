@@ -379,6 +379,15 @@ void InvestigationPerturbation::setupProperties()
 
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
+
+	_adjustedCOMBodyProp.setComment("Name of the body whose center of mass is adjusted.");
+	_adjustedCOMBodyProp.setName("adjusted_com_body");
+	_propertySet.append( &_adjustedCOMBodyProp );
+
+	_adjustedCOMFileNameProp.setComment("Name of the file specifying a change to the center of mass of a body."
+												   " This adjustment is made to remove dc offset in the residuals.");
+	_adjustedCOMFileNameProp.setName("adjusted_com_file_name");
+	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 
 
