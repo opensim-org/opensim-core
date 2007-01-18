@@ -1,7 +1,9 @@
+% TODO: Turn into a function and take these things as arguments... for now they're hardcoded here
 trialname = 'ss_walking1';
 tstart = 0;
 tend = 2.5;
 min_excitation = 0.02;
+max_only = 1;
 
 ref_dataFormat = ref_dataFormatDelaware;
 [sInfo, tInfo] = ref_trialInfoDelaware;
@@ -57,11 +59,13 @@ for limb = [ 'R' 'L' ]
 
         if length(curves.t)
             fprintf(fid, '\t\t<ControlLinear name="%s.excitation">\n', msl);
-            fprintf(fid, '\t\t\t<min_nodes>\n');
-            for j = 1:length(curves.t)
-                fprintf(fid, '\t\t\t\t<ControlLinearNode> <t> %f </t> <value> %f </value> </ControlLinearNode>\n', curves.t(j), curves.min(j));
+            if ~max_only
+                fprintf(fid, '\t\t\t<min_nodes>\n');
+                for j = 1:length(curves.t)
+                    fprintf(fid, '\t\t\t\t<ControlLinearNode> <t> %f </t> <value> %f </value> </ControlLinearNode>\n', curves.t(j), curves.min(j));
+                end
+                fprintf(fid, '\t\t\t</min_nodes>\n');
             end
-            fprintf(fid, '\t\t\t</min_nodes>\n');
             fprintf(fid, '\t\t\t<max_nodes>\n');
             for j = 1:length(curves.t)
                 fprintf(fid, '\t\t\t\t<ControlLinearNode> <t> %f </t> <value> %f </value> </ControlLinearNode>\n', curves.t(j), curves.max(j));
