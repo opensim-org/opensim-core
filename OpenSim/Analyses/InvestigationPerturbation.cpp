@@ -800,11 +800,40 @@ constructCorrectiveSprings()
 	double *t=0,*x=0,*y=0,*z=0;
 	copStore.getTimeColumn(t);
 
+	// Look for center of pressure columns in the storage file.  We handle two types of column labels: ground_force_p{x,y,z}_{r,l} (i.e. explicitly
+	// suffixing with right and left sides, and ground_force_p{x,y,z} which doesn't explicitly give side and instead we assume the first occurence
+	// is the right side and the second occurence is the left side.
+	int rightCopX, rightCopY, rightCopZ, leftCopX, leftCopY, leftCopZ;
+	rightCopX = copStore.getColumnIndex("ground_force_px_r");
+	if(rightCopX<0) {
+		rightCopX = copStore.getColumnIndex("ground_force_px");
+		rightCopY = copStore.getColumnIndex("ground_force_py");
+		rightCopZ = copStore.getColumnIndex("ground_force_pz");
+		leftCopX = copStore.getColumnIndex("ground_force_px", rightCopX + 2);
+		leftCopY = copStore.getColumnIndex("ground_force_py", rightCopY + 2);
+		leftCopZ = copStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
+		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
+			string msg = "InvestigationPerturbation: ERR- One or more of the COP columns ground_force_p{x,y,z} not found in "+_copFileName+".";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
+	} 
+	else {
+		rightCopY = copStore.getColumnIndex("ground_force_py_r");
+		rightCopZ = copStore.getColumnIndex("ground_force_pz_r");
+		leftCopX = copStore.getColumnIndex("ground_force_px_l");
+		leftCopY = copStore.getColumnIndex("ground_force_py_l");
+		leftCopZ = copStore.getColumnIndex("ground_force_pz_l");
+		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
+			string msg = "InvestigationPerturbation: ERR- One or more of the COP columns ground_force_p{x,y,z}_{r,l} not found in "+_copFileName+".";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
+	}
+
 	// LINEAR
 	// right
-	copStore.getDataColumn("ground_force_px_r",x);
-	copStore.getDataColumn("ground_force_py_r",y);
-	copStore.getDataColumn("ground_force_pz_r",z);
+	copStore.getDataColumn(rightCopX,x);
+	copStore.getDataColumn(rightCopY,y);
+	copStore.getDataColumn(rightCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
 	rLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
@@ -815,9 +844,9 @@ constructCorrectiveSprings()
 	delete cop;
 
 	// left linear
-	copStore.getDataColumn("ground_force_px_l",x);
-	copStore.getDataColumn("ground_force_py_l",y);
-	copStore.getDataColumn("ground_force_pz_l",z);
+	copStore.getDataColumn(leftCopX,x);
+	copStore.getDataColumn(leftCopY,y);
+	copStore.getDataColumn(leftCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
 	lLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
