@@ -106,6 +106,7 @@ public:
 	double getValue(const std::string& aName, int aFrameIndex);
 	double getRangeMin() const { return _rangeMin; }
 	double getRangeMax() const { return _rangeMax; }
+	int getNumberOfFrames() const { return _rows.getSize(); }
 	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	bool deleteColumn(const std::string& aColumnName);
 	void scaleColumn(int aColumnIndex, double aScaleFactor);

@@ -350,6 +350,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
          if (getline(in, line))
          {
 				rData._name = buffer;
+				setName(line);	// Set object name as well to be used by the GUI
          }
          else
          {
