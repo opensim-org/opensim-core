@@ -441,10 +441,6 @@ void InvestigationPerturbation::run()
 	// ALTER COM ?
 	InvestigationForward::adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
-	// REGISTER TYPES
-	Object::RegisterType(ControlLinear());
-	Object::RegisterType(ControlLinearNode());
-
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
@@ -473,11 +469,6 @@ void InvestigationPerturbation::run()
 	constructCorrectiveSprings();
 
 	// ADD ANALYSES
-	// Kinematics
-	Kinematics *kinAngles = new Kinematics(_model);
-	_model->addAnalysis(kinAngles);
-	kinAngles->getPositionStorage()->setWriteSIMMHeader(true);
-	kinAngles->setOn(true);
 	// Body kinematics
 	BodyKinematics *kin = new BodyKinematics(_model);
 	_model->addAnalysis(kin);
@@ -536,21 +527,14 @@ void InvestigationPerturbation::run()
 
 
 	// RESULT VARIABLES
-	int i,endIndex;
-	char fileName[Object::NAME_LENGTH];
 	Array<double> PFXBody(0.0,na),PFYBody(0.0,na),PFZBody(0.0,na);
 	int indexCOMX = numBodyKinCols - 3;
 	int indexCOMY = numBodyKinCols - 2;
 	int indexCOMZ = numBodyKinCols - 1;
-	Array<double> lastRowPerturbedKin(0.0,numBodyKinCols);
-	Array<double> lastRowPerturbedVel(0.0,numBodyKinCols);
-	Array<double> rowUnperturbedKin(0.0,numBodyKinCols);
-	Array<double> rowUnperturbedVel(0.0,numBodyKinCols);
-	Array<double> rowUnperturbedForces(0.0,na);
 	Array<double> daXdf(0.0,na),deltaAX(0.0,na);
 	Array<double> daYdf(0.0,na),deltaAY(0.0,na);
 	Array<double> daZdf(0.0,na),deltaAZ(0.0,na);
-	for(i=0;i<na;i++)	{
+	for(int i=0;i<na;i++)	{
 		PFXBody[i] = PFYBody[i] = PFZBody[i] = 0.0;
 		daXdf[i] = daYdf[i] = daZdf[i] = 0.0;
 		deltaAX[i] = deltaAY[i] = deltaAZ[i] = 0.0;
@@ -562,10 +546,9 @@ void InvestigationPerturbation::run()
 	Storage daZdfStore,deltaAZStore,PFZBodyStore;
 	string columnLabels = "time";
 	ActuatorSet *as = _model->getActuatorSet();
-	for(i=0; i<as->getSize(); i++)
+	for(int i=0; i<as->getSize(); i++)
 	{
-		AbstractActuator *act=as->get(i);
-		columnLabels += "\t" + act->getName();
+		columnLabels += "\t" + as->get(i)->getName();
 	}
 
 	daXdfStore.setName("daXdf");
@@ -587,27 +570,20 @@ void InvestigationPerturbation::run()
 	PFZBodyStore.setName("PFZBody");
 	PFZBodyStore.setColumnLabels(columnLabels.c_str());
 
-	// Storage objects for unperturbed data
-	Storage *unperturbedPos=0,*unperturbedVel=0,*unperturbedAcc=0;
-	Storage *unperturbedFrc=0;
-
 
 	//********************************************************************
 	// LOOP
 	//********************************************************************
-	int index;
-	double tiPert,tfPert;
 	double lastPertTime = _tf - _pertWindow;
-	Array<double> yi(0.0,ny);
-	for(tiPert=_ti;tiPert<=lastPertTime;tiPert+=_pertIncrement) {
+	for(double tiPert=_ti;tiPert<=lastPertTime;tiPert+=_pertIncrement) {
 
 		// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
-		index = yStore->findIndex(tiPert);
+		int index = yStore->findIndex(tiPert);
 		yStore->getTime(index,tiPert);
-		yStore->getData(index,ny,&yi[0]);
-		tfPert = tiPert + _pertWindow;
+		double tfPert = tiPert + _pertWindow;
 		manager.setInitialTime(tiPert);
 		manager.setFinalTime(tfPert);
+		const Array<double> &yi = yStore->getStateVector(index)->getData();
 		_model->setInitialStates(&yi[0]);
 
 		// RESET ANALYSES
@@ -616,7 +592,6 @@ void InvestigationPerturbation::run()
 		kin->getAccelerationStorage()->reset();
 		actuation->getForceStorage()->reset();
 
-		kinAngles->setStepInterval(1);
 		kin->setStepInterval(1);
 		actuation->setStepInterval(1);
 
@@ -629,7 +604,6 @@ void InvestigationPerturbation::run()
 		IO::makeDir(getResultsDir());
 		_model->getAnalysisSet()->printResults("Gc05g1_unpert",getResultsDir());
 
-		kinAngles->setStepInterval(1000000);
 		kin->setStepInterval(1000000);
 		actuation->setStepInterval(1000000);
 		
@@ -646,25 +620,14 @@ void InvestigationPerturbation::run()
 		// forces, so we don't actually need to have the actuators compute anything.
 		_model->getActuatorSet()->setComputeActuationEnabled(false);
 
-		// COPY UNPERTURBED DATA
-		delete unperturbedPos;
-		delete unperturbedVel;
-		delete unperturbedAcc;
-		delete unperturbedFrc;
-		unperturbedPos = new Storage(*kin->getPositionStorage());
-		unperturbedVel = new Storage(*kin->getVelocityStorage());
-		unperturbedAcc = new Storage(*kin->getAccelerationStorage());
-		unperturbedFrc = new Storage(*actuation->getForceStorage());
-
 		// Get unperturbed kinmatics
-		endIndex = unperturbedPos->getSize() - 1;
-		unperturbedPos->getData(endIndex,numBodyKinCols,&rowUnperturbedKin[0]);
+		const Array<double> &rowUnperturbedKin = kin->getPositionStorage()->getLastStateVector()->getData();
 		double PXBody = rowUnperturbedKin[indexCOMX];
 		double PYBody = rowUnperturbedKin[indexCOMY];
 		double PZBody = rowUnperturbedKin[indexCOMZ];
 
-		// Get unperturbed forces
-		unperturbedFrc->getData(0,na,&rowUnperturbedForces[0]);
+		// Get unperturbed forces -- make a copy of the array
+		Array<double> rowUnperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData();
 
 		// Loop over muscles
 		for (int m=0;m<na;m++)	{
@@ -672,7 +635,7 @@ void InvestigationPerturbation::run()
 			// Set up pertubation callback
 			cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 			DerivCallbackSet *callbackSet = _model->getDerivCallbackSet();
-			for(i=0;i<callbackSet->getSize();i++)	{
+			for(int i=0;i<callbackSet->getSize();i++)	{
 				DerivCallback *callback = callbackSet->getDerivCallback(i);
 				if(callback == NULL) continue;
 				callback->reset();
@@ -685,9 +648,7 @@ void InvestigationPerturbation::run()
  			manager.integrate();
 
 			// Get perturbed kinematics
-			Storage *perturbedPos = kin->getPositionStorage();
-			endIndex = perturbedPos->getSize() - 1;
-			perturbedPos->getData(endIndex,numBodyKinCols,&lastRowPerturbedKin[0]);
+			const Array<double> &lastRowPerturbedKin = kin->getPositionStorage()->getLastStateVector()->getData();
 			PFXBody[m] = lastRowPerturbedKin[indexCOMX];
 			PFYBody[m] = lastRowPerturbedKin[indexCOMY];
 			PFZBody[m] = lastRowPerturbedKin[indexCOMZ];
@@ -701,14 +662,10 @@ void InvestigationPerturbation::run()
 			deltaAZ[m] = rowUnperturbedForces[m] *daZdf[m];
 
 			cout << "muscle:\t"<<m<<"\tforce:\t"<<rowUnperturbedForces[m]<<endl;
-			printf("PFXBody:\t%.16f\tPXBody:\t%.16f\tdifference:\t%.16f\n",
-				PFXBody[m],PXBody,PFXBody[m]-PXBody);
-			printf("daXdf:\t%.16f\tdeltaAX:\t%.16f\n",daXdf[m],deltaAX[m]);
-
-			printf("PFYBody:\t%.16f\tPYBody:\t%.16f\tdifference:\t%.16f\n",
-				PFYBody[m],PYBody,PFYBody[m]-PYBody);
-			printf("daYdf:\t%.16f\tdeltaAY:\t%.16f\n",daYdf[m],deltaAY[m]);
-			//act = ai->next();
+			cout << "PFXBody:\t"<<PFXBody[m]<<"\tPXBody:\t"<<PXBody<<"\tdifference:\t"<<PFXBody[m]-PXBody<<endl;
+			cout << "daXdf:\t"<<daXdf[m]<<"\tdeltaAX:\t"<<deltaAX[m]<<endl;
+			cout << "PFYBody:\t"<<PFYBody[m]<<"\tPYBody:\t"<<PYBody<<"\tdifference:\t"<<PFYBody[m]-PYBody<<endl;
+			cout << "daYdf:\t"<<daYdf[m]<<"\tdeltaAY:\t"<<deltaAY[m]<<endl;
 		} //end muscle loop
 
 		// Append to storage objects
@@ -724,6 +681,7 @@ void InvestigationPerturbation::run()
 
 		// Print results
 		IO::makeDir(getResultsDir());
+		char fileName[Object::NAME_LENGTH];
 		sprintf(fileName,"%s/daXdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
 		daXdfStore.print(fileName);
 		sprintf(fileName,"%s/deltaAX_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
