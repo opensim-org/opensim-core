@@ -616,6 +616,10 @@ void InvestigationPerturbation::run()
 		kin->getAccelerationStorage()->reset();
 		actuation->getForceStorage()->reset();
 
+		kinAngles->setStepInterval(1);
+		kin->setStepInterval(1);
+		actuation->setStepInterval(1);
+
 		// INTEGRATE (1)
 		_model->getActuatorSet()->setComputeActuationEnabled(true);
 		integ->setUseSpecifiedDT(false);
@@ -624,6 +628,10 @@ void InvestigationPerturbation::run()
 		manager.integrate();
 		IO::makeDir(getResultsDir());
 		_model->getAnalysisSet()->printResults("Gc05g1_unpert",getResultsDir());
+
+		kinAngles->setStepInterval(1000000);
+		kin->setStepInterval(1000000);
+		actuation->setStepInterval(1000000);
 		
 		// INTEGRATE (2) - Record unperturbed muscle forces
 		integ->setUseSpecifiedDT(true);

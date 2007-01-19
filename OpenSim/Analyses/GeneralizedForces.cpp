@@ -573,6 +573,7 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
 		void *aClientData)
 {
 	if(!proceed()) return(0);
+	record(aT,aX,aY);
 	printf("rdJointTorques.end: Finalizing analysis %s.\n",getName().c_str());
 	return(0);
 }

@@ -692,6 +692,8 @@ int PointKinematics::
 end(int aStep,double aDT,double aT,double *aX,double *aY,
 		void *aClientData)
 {
+	if(!proceed()) return(0);
+	record(aT,aX,aY);
 	cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
 	return(0);
 }

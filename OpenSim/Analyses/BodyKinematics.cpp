@@ -696,8 +696,10 @@ int BodyKinematics::
 end(int aStep,double aDT,double aT,double *aX,double *aY,
 		void *aClientData)
 {
-	if(!proceed(aStep)) return(0);
-	printf("rdKinematics.end: Finalizing analysis %s.\n",getName().c_str());
+	if(!proceed()) return(0);
+
+	record(aT,aX,aY);
+
 	return(0);
 }
 

@@ -838,6 +838,7 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,
 		void *aClientData)
 {
 	if(!proceed()) return(0);
+	compute(aX,aY,aStep,aDT,aT,aX,aY);
 	printf("Decomp.end: Finalizing analysis %s.\n",getName().c_str());
 	return(0);
 }
