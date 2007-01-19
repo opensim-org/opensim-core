@@ -478,6 +478,9 @@ void AbstractSimmMuscle::calculatePath()
  */
 void AbstractSimmMuscle::applyWrapObjects()
 {
+	if (_muscleWrapSet.getSize() < 1)
+		return;
+
    int i, j, kk, pt1, pt2, maxIterations;
    int start, end, wrapStart, wrapEnd;
    double min_length_change, last_length;
@@ -487,9 +490,6 @@ void AbstractSimmMuscle::applyWrapObjects()
    AbstractWrapObject* wo;
    Array<int> result;
 	Array<int> order;
-
-	if (_muscleWrapSet.getSize() < 1)
-		return;
 
 	result.setSize(_muscleWrapSet.getSize());
 	order.setSize(_muscleWrapSet.getSize());
