@@ -272,7 +272,7 @@ int AbstractWrapObject::wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePo
 
 	return_code = wrapLine(pt1, pt2, aMuscleWrap, aWrapResult, p_flag);
 
-   if (p_flag == TRUE && return_code > 0)
+   if (p_flag && return_code > 0)
    {
 		//printf("r1 in wrap frame = %.6lf %.6lf %.6lf\n", aWrapResult.r1[0], aWrapResult.r1[1], aWrapResult.r1[2]);
 		//printf("r2 in wrap frame = %.6lf %.6lf %.6lf\n", aWrapResult.r2[0], aWrapResult.r2[1], aWrapResult.r2[2]);
