@@ -920,7 +920,7 @@ void SdfastFileWriter::writeSdfastFile(const string& aFileName)
 	if (!_initialized)
 		initialize();
 
-	string fullPath = _outputFolder + '\\' + aFileName;
+	string fullPath = _outputFolder + '/' + aFileName;
 
    /* Open the SD/FAST input file and write the header information. */
 	out.open(fullPath.c_str());
@@ -1021,7 +1021,7 @@ void SdfastFileWriter::writeModelHeaderFile(const string& aFileName)
 	if (!_initialized)
 		initialize();
 
-	string fullPath = _outputFolder + '\\' + aFileName;
+	string fullPath = _outputFolder + '/' + aFileName;
 
 	out.open(fullPath.c_str());
 	out.setf(ios::fixed);
@@ -1710,7 +1710,7 @@ void SdfastFileWriter::writeSdfastConstraintObjects(ofstream& out)
 void SdfastFileWriter::writeModelSourceFile(const string& aFileName, const string& aModelHeaderFileName)
 {
 	ofstream out;
-	string fullPath = _outputFolder + '\\' + aFileName;
+	string fullPath = _outputFolder + '/' + aFileName;
 
 	if (!_initialized)
 		initialize();
