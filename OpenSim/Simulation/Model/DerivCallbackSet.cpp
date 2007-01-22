@@ -241,3 +241,15 @@ computeDerivatives(double aT,double *aX,double *aY,double *aDY)
 		callback->computeDerivatives(aT,aX,aY,aDY);
 	}
 }
+//_____________________________________________________________________________
+/**
+ * Calls reset() method of all deriv callbacks in this set.
+ */
+void DerivCallbackSet::
+resetCallbacks()
+{
+	for(int i=0;i<getSize();i++) {
+		DerivCallback *callback=getDerivCallback(i);
+		if(callback) callback->reset();
+	}
+}

@@ -94,6 +94,8 @@ public:
 		computeDerivatives(double aT,double *aX,double *aY,
 		double *aDY);
 
+	void resetCallbacks();
+
 
 //=============================================================================
 };	// END of class DerivCallbackSet
