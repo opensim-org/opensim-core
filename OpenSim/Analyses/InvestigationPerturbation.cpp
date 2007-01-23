@@ -456,7 +456,6 @@ void InvestigationPerturbation::run()
 	Storage *yStore = new Storage(_yFileName);
 
 	// ASSIGN NUMBERS OF THINGS
-	int ny = _model->getNumStates();
 	int na = _model->getNumActuators();
 	int nb = _model->getNumBodies();
 	int numBodyKinCols = 6*nb + 3;
@@ -570,15 +569,40 @@ void InvestigationPerturbation::run()
 	PFZBodyStore.setName("PFZBody");
 	PFZBodyStore.setColumnLabels(columnLabels.c_str());
 
+	//********************************************************************
+	// Run an unperturbed forward simulation to compute and write out
+	// unperturbed data
+	//********************************************************************
+	{
+		int index = yStore->findIndex(_ti);
+		double tiPert;
+		yStore->getTime(index,tiPert);
+		double tfPert = _tf;
+		manager.setInitialTime(tiPert);
+		manager.setFinalTime(tfPert);
+		const Array<double> &yi = yStore->getStateVector(index)->getData();
+		_model->setInitialStates(&yi[0]);
+		perturbation->setOn(false);
+		cout<<"\nFull unperturbed integration from "<<tiPert<<" to "<<tfPert<<endl;
+		manager.integrate();
+		IO::makeDir(getResultsDir());
+		_model->getAnalysisSet()->printResults(getName()+"_unpert",getResultsDir());
+	}
+
+	// From now on we'll only need the last state vectors recorded in these analyses, so we
+	// set their step interval to a large number to avoid them computing and writing their
+	// data at the (many) individual integration steps.
+	kin->setStepInterval(1000000);
+	actuation->setStepInterval(1000000);
 
 	//********************************************************************
 	// LOOP
 	//********************************************************************
 	double lastPertTime = _tf - _pertWindow;
-	for(double tiPert=_ti;tiPert<=lastPertTime;tiPert+=_pertIncrement) {
-
+	for(double t=_ti;t<=lastPertTime;t+=_pertIncrement) {
 		// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
-		int index = yStore->findIndex(tiPert);
+		int index = yStore->findIndex(t);
+		double tiPert;
 		yStore->getTime(index,tiPert);
 		double tfPert = tiPert + _pertWindow;
 		manager.setInitialTime(tiPert);
@@ -592,20 +616,11 @@ void InvestigationPerturbation::run()
 		kin->getAccelerationStorage()->reset();
 		actuation->getForceStorage()->reset();
 
-		kin->setStepInterval(1);
-		actuation->setStepInterval(1);
-
 		// INTEGRATE (1)
-		_model->getActuatorSet()->setComputeActuationEnabled(true);
 		integ->setUseSpecifiedDT(false);
 		perturbation->setOn(false);
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert<<endl;
 		manager.integrate();
-		IO::makeDir(getResultsDir());
-		_model->getAnalysisSet()->printResults("Gc05g1_unpert",getResultsDir());
-
-		kin->setStepInterval(1000000);
-		actuation->setStepInterval(1000000);
 		
 		// INTEGRATE (2) - Record unperturbed muscle forces
 		integ->setUseSpecifiedDT(true);
@@ -615,10 +630,6 @@ void InvestigationPerturbation::run()
 		cout<<"\nUnperturbed integration 2 to record forces and kinematics\n";
 		manager.integrate();
 		perturbation->setRecordUnperturbedForces(false);
-
-		// From here on in the perturbation derivcallback will override the actuator
-		// forces, so we don't actually need to have the actuators compute anything.
-		_model->getActuatorSet()->setComputeActuationEnabled(false);
 
 		// Get unperturbed kinmatics
 		const Array<double> &rowUnperturbedKin = kin->getPositionStorage()->getLastStateVector()->getData();
@@ -634,12 +645,7 @@ void InvestigationPerturbation::run()
 			AbstractActuator *act = as->get(m);
 			// Set up pertubation callback
 			cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
-			DerivCallbackSet *callbackSet = _model->getDerivCallbackSet();
-			for(int i=0;i<callbackSet->getSize();i++)	{
-				DerivCallback *callback = callbackSet->getDerivCallback(i);
-				if(callback == NULL) continue;
-				callback->reset();
-			}
+			_model->getDerivCallbackSet()->resetCallbacks();
 			perturbation->reset(); 
 			perturbation->setActuator(act); 
 			perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
