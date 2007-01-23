@@ -112,7 +112,7 @@ public:
 	void scaleColumn(int aColumnIndex, double aScaleFactor);
 	void convertDegreesToRadians(AbstractModel& aModel);
 	void convertRadiansToDegrees(AbstractModel& aModel);
-
+	int getFrameNumberForTime(double time) const;
 	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aComment) const;
 
 	const char* getUnassignedColName() const { return "Unassigned"; }

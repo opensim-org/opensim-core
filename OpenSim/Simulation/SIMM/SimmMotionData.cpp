@@ -805,6 +805,28 @@ void SimmMotionData::scaleColumn(int aColumnIndex, double aScaleFactor)
 	for (i = 0; i < _rows.getSize(); i++)
 		_rows.get(i)[aColumnIndex] *= aScaleFactor;
 }
+//_____________________________________________________________________________
+/**
+ * find frame number closest to passed in time.
+ */
+int SimmMotionData::getFrameNumberForTime(double time) const
+{
+	int i;
+	if (time >= getRangeMax())
+		return _rows.getSize()-1;
+	// Here, it's between two rows. 
+	bool done=false;
+	for (i = 0; i < _rows.getSize() && !done; i++){
+		done= (_rows.get(i)[0] > time);
+	}
+	// either i or i-1 if exists is closest
+	if (i==0)
+		return 0;
+	if (fabs(_rows.get(i)[0] - time) > fabs(_rows.get(i-1)[0] - time))
+		return i-1;
+	else
+		return i;
+}
 
 void SimmMotionData::convertDegreesToRadians(AbstractModel& aModel)
 {
