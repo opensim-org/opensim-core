@@ -43,6 +43,8 @@
 #include <OpenSim/Simulation/SIMM/SimmIO.h>
 #include <OpenSim/Simulation/SIMM/SimmMacros.h>
 #include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/NatCubicSpline.h>
 #include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
 
@@ -55,7 +57,7 @@ using namespace std;
 static char sdfastGroundName[] = "$ground";
 static char sdfastCodeGroundName[] = "ground";
 static char fixedString[] = "fixed";
-static SdfastFileWriter::JointInfo defJoint = {false, "", SdfastFileWriter::dpUnknownJoint, -1, SimmStep::forward, "", "", false, 0, NULL, NULL, -1, -1, ""};
+static SdfastFileWriter::JointInfo defJoint = {false, "", SdfastFileWriter::dpUnknownJoint, -1, SimmStep::forward, "", "", false, 0, NULL, NULL, -1, -1,{0.0,0.0,0.0},{0.0,0.0,0.0},""};
 static SdfastFileWriter::CoordinateInfo defCoord = {-1, -1, -1, NULL};
 static SdfastFileWriter::ModelBodyInfo defBody = {false, 0, 0.0, false, NULL};
 static SdfastFileWriter::SdfastBodyInfo defSdfastBody = {"", 0.0, {0.0, 0.0, 0.0}};
@@ -194,13 +196,11 @@ void SdfastFileWriter::initInfoStructs(void)
 	_numConstraints = 0;
 	_numRestraintFunctions = 0;
 
-	/* Initialize the joint info. Store a pointer to the model's joint
-	 * in each joint info struct.
-	 */
+	// Initialize the joint info. Store a pointer to the model's joint
+	// in each joint info struct.
 	_joints.setSize(engine.getNumJoints());
 	JointSet* jointSet = engine.getJointSet();
-	for(int index=0; index<jointSet->getSize(); index++)
-	{
+	for(int index=0; index<jointSet->getSize(); index++) {
 		AbstractJoint* joint = jointSet->get(index);
 		_joints[index].used = false;
 		_joints[index].name.erase(_joints[index].name.begin(), _joints[index].name.end());
@@ -821,6 +821,11 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 			break;
    }
 
+	// SET THE LOCATION OF THE JOINT IN THE PARENT AND CHILD
+	// The location in the child should always be the zero vector.
+	Mtx::Add(1,3,body1MassCenter,sdfastBody->inboardToJoint,_joints[aJointIndex].locationInParent);
+	Mtx::Add(1,3,body2MassCenter,sdfastBody->bodyToJoint,_joints[aJointIndex].locationInChild);
+
 	/* Now add the sdfastBody to the array of others. */
    _sdfastBodies.append(*sdfastBody);
 
@@ -852,14 +857,40 @@ void SdfastFileWriter::addJointToSimulationModel(JointInfo& aJointInfo)
 {
 	SdfastJoint *joint = new SdfastJoint();
 	joint->setName(aJointInfo.name);
+
+	// Inboard body name
 	if (aJointInfo.inbname == sdfastGroundName)
 		joint->setParentBodyName(sdfastCodeGroundName);
 	else
 		joint->setParentBodyName(aJointInfo.inbname);
+
+	// Outboard body name
 	if (aJointInfo.outbname == sdfastGroundName)
 		joint->setChildBodyName(sdfastCodeGroundName);
 	else
 		joint->setChildBodyName(aJointInfo.outbname);
+
+	// ------------------------------------
+	// BEGIN  Added by Clay 2007_01_18
+	// To made an SdfastEngine model scalable, two additional properties were
+	// added to an SdfastJoint:  the location of the joint in the parent
+	// (outboard) body and the location of the joint in the child (inboard)
+	// body.  These properties are initialized here.
+	// ------------------------------------
+
+	// Location in parent (inboard) body
+	// This is the position of the center of mass
+	joint->setLocationInParent(aJointInfo.locationInParent);
+
+	// Location in child (outboard) body
+	// The location of the joint is always conincident with the body reference frame
+	joint->setLocationInChild(aJointInfo.locationInChild);
+
+	// ------------------------------------
+	// END  Added by Clay 2007_01_18
+	// ------------------------------------
+
+	// Joint type
 	joint->setSdfastType(getDpJointName(aJointInfo.type, aJointInfo.direction));
 	_simulationEngine->addJoint(joint);
 }
@@ -1984,6 +2015,8 @@ void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, co
 
 void SdfastFileWriter::writeSimulationModelFile(const string& aFileName)
 {
+	IO::SetPrecision(8);
+
 	if (!_initialized)
 		initialize();
 

@@ -114,6 +114,8 @@ public:
 		AbstractJoint* modelJoint;
 		int parentBodyIndex;
 		int childBodyIndex;
+		double locationInParent[3];
+		double locationInChild[3];
 		std::string prescribedString;
 		std::string pinString;
 	} JointInfo;
