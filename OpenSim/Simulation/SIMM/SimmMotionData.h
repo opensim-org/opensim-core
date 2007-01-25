@@ -104,6 +104,7 @@ public:
 	int getColumnIndex(const std::string& aName) const;
 	void setColumnLabel(int aIndex, const std::string& aLabel);
 	double getValue(const std::string& aName, int aFrameIndex);
+	double getValue(const int columnIndex, int aFrameIndex);
 	double getRangeMin() const { return _rangeMin; }
 	double getRangeMax() const { return _rangeMax; }
 	int getNumberOfFrames() const { return _rows.getSize(); }
@@ -114,7 +115,10 @@ public:
 	void convertRadiansToDegrees(AbstractModel& aModel);
 	int getFrameNumberForTime(double time) const;
 	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aComment) const;
-
+	const Array<std::string>& getColumnNames()const
+	{
+		return _columnNames;
+	}
 	const char* getUnassignedColName() const { return "Unassigned"; }
 	void peteTest() const;
 

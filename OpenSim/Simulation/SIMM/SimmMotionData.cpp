@@ -659,6 +659,10 @@ void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& 
  * @param aName the name of the element
  * @param aFrameIndex the index of the frame to get the element from
  * @return The value of the element
+ *
+ * Note: Column names in .mot files are not unique due to:
+ * - old fromat that had all experimental markers having the name ground_marker_..
+ * - Ground reaction forces which will have same name for both feet
  */
 double SimmMotionData::getValue(const string& aName, int aFrameIndex)
 {
@@ -669,6 +673,18 @@ double SimmMotionData::getValue(const string& aName, int aFrameIndex)
 	}
 
 	return rdMath::NAN;
+}
+//_____________________________________________________________________________
+/**
+ * Get the value of one element in one frame.
+ *
+ * @param aColumnIndex the index of the column
+ * @param aFrameIndex the index of the frame to get the element from
+ * @return The value of the element
+ */
+double SimmMotionData::getValue(const int aColumnIndex, int aFrameIndex)
+{
+	return _rows[aFrameIndex][aColumnIndex];
 }
 
 //_____________________________________________________________________________
