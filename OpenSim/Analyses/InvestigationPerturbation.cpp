@@ -24,6 +24,7 @@
 #include <OpenSim/Analyses/LinearSpring.h>
 #include <OpenSim/Analyses/TorsionalSpring.h>
 #include <OpenSim/Analyses/ActuatorPerturbationIndependent.h>
+#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
 
 
 
@@ -459,6 +460,9 @@ void InvestigationPerturbation::run()
 	int na = _model->getNumActuators();
 	int nb = _model->getNumBodies();
 	int numBodyKinCols = 6*nb + 3;
+	int indexCOMX = numBodyKinCols - 3;
+	int indexCOMY = numBodyKinCols - 2;
+	int indexCOMZ = numBodyKinCols - 1;
 
 	// GROUND REACTION FORCES
 	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
@@ -524,16 +528,20 @@ void InvestigationPerturbation::run()
 		new ActuatorPerturbationIndependent(_model);
 	_model->addDerivCallback(perturbation);
 
+	bool gravity_perturbation = true;
+	int gravity_axis = 1;
+	double original_gravity[3];
+	int nperturb = na + (gravity_perturbation ? 1 : 0);
+
+	if(gravity_perturbation) 
+		((SdfastEngine&)_model->getDynamicsEngine()).getGravity(original_gravity);
 
 	// RESULT VARIABLES
-	Array<double> PFXBody(0.0,na),PFYBody(0.0,na),PFZBody(0.0,na);
-	int indexCOMX = numBodyKinCols - 3;
-	int indexCOMY = numBodyKinCols - 2;
-	int indexCOMZ = numBodyKinCols - 1;
-	Array<double> daXdf(0.0,na),deltaAX(0.0,na);
-	Array<double> daYdf(0.0,na),deltaAY(0.0,na);
-	Array<double> daZdf(0.0,na),deltaAZ(0.0,na);
-	for(int i=0;i<na;i++)	{
+	Array<double> PFXBody(0.0,nperturb),PFYBody(0.0,nperturb),PFZBody(0.0,nperturb);
+	Array<double> daXdf(0.0,nperturb),deltaAX(0.0,nperturb);
+	Array<double> daYdf(0.0,nperturb),deltaAY(0.0,nperturb);
+	Array<double> daZdf(0.0,nperturb),deltaAZ(0.0,nperturb);
+	for(int i=0;i<nperturb;i++)	{
 		PFXBody[i] = PFYBody[i] = PFZBody[i] = 0.0;
 		daXdf[i] = daYdf[i] = daZdf[i] = 0.0;
 		deltaAX[i] = deltaAY[i] = deltaAZ[i] = 0.0;
@@ -549,6 +557,8 @@ void InvestigationPerturbation::run()
 	{
 		columnLabels += "\t" + as->get(i)->getName();
 	}
+	if(gravity_perturbation)
+		columnLabels += "\tgravity";
 
 	daXdfStore.setName("daXdf");
 	daXdfStore.setColumnLabels(columnLabels.c_str());
@@ -573,6 +583,7 @@ void InvestigationPerturbation::run()
 	// Run an unperturbed forward simulation to compute and write out
 	// unperturbed data
 	//********************************************************************
+#if 0
 	{
 		int index = yStore->findIndex(_ti);
 		double tiPert;
@@ -588,6 +599,7 @@ void InvestigationPerturbation::run()
 		IO::makeDir(getResultsDir());
 		_model->getAnalysisSet()->printResults(getName()+"_unpert",getResultsDir());
 	}
+#endif
 
 	// From now on we'll only need the last state vectors recorded in these analyses, so we
 	// set their step interval to a large number to avoid them computing and writing their
@@ -641,14 +653,24 @@ void InvestigationPerturbation::run()
 		Array<double> rowUnperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData();
 
 		// Loop over muscles
-		for (int m=0;m<na;m++)	{
-			AbstractActuator *act = as->get(m);
-			// Set up pertubation callback
-			cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
+		for (int m=0;m<nperturb;m++)	{
 			_model->getDerivCallbackSet()->resetCallbacks();
 			perturbation->reset(); 
-			perturbation->setActuator(act); 
-			perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
+			if(m<na) {
+				AbstractActuator *act = as->get(m);
+				// Set up pertubation callback
+				cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
+				perturbation->setActuator(act); 
+				perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
+			} else {
+				cout<<"\nGravity perturbation"<<endl;
+				perturbation->setActuator(0); 
+				double grav[3];
+				for(int i=0;i<3;i++) grav[i]=original_gravity[i];
+				grav[gravity_axis] += _pertDF;
+				_model->setGravity(grav);
+				((SdfastEngine&)_model->getDynamicsEngine()).setGravity(grav);
+			}
 
 			// Integrate
  			manager.integrate();
@@ -661,13 +683,24 @@ void InvestigationPerturbation::run()
 
 			// Compute derivatives
 			daXdf[m] = 2*(PFXBody[m]-PXBody)/(_pertDF*_pertWindow*_pertWindow);
-			deltaAX[m] = rowUnperturbedForces[m] *daXdf[m];
 			daYdf[m] = 2*(PFYBody[m]-PYBody)/(_pertDF*_pertWindow*_pertWindow);
-			deltaAY[m] = rowUnperturbedForces[m] *daYdf[m];
 			daZdf[m] = 2*(PFZBody[m]-PZBody)/(_pertDF*_pertWindow*_pertWindow);
-			deltaAZ[m] = rowUnperturbedForces[m] *daZdf[m];
 
-			cout << "muscle:\t"<<m<<"\tforce:\t"<<rowUnperturbedForces[m]<<endl;
+			if(m<na) {
+				cout << "muscle:\t"<<m<<"\tforce:\t"<<rowUnperturbedForces[m]<<endl;
+				deltaAX[m] = rowUnperturbedForces[m] *daXdf[m];
+				deltaAY[m] = rowUnperturbedForces[m] *daYdf[m];
+				deltaAZ[m] = rowUnperturbedForces[m] *daZdf[m];
+			} else {
+				cout << "gravity original:\t"<<original_gravity[gravity_axis]<<endl;
+				deltaAX[m] = original_gravity[gravity_axis] *daXdf[m];
+				deltaAY[m] = original_gravity[gravity_axis] *daYdf[m];
+				deltaAZ[m] = original_gravity[gravity_axis] *daZdf[m];
+				// undo gravity perturbation
+				_model->setGravity(original_gravity);
+				((SdfastEngine&)_model->getDynamicsEngine()).setGravity(original_gravity);
+			}
+
 			cout << "PFXBody:\t"<<PFXBody[m]<<"\tPXBody:\t"<<PXBody<<"\tdifference:\t"<<PFXBody[m]-PXBody<<endl;
 			cout << "daXdf:\t"<<daXdf[m]<<"\tdeltaAX:\t"<<deltaAX[m]<<endl;
 			cout << "PFYBody:\t"<<PFYBody[m]<<"\tPYBody:\t"<<PYBody<<"\tdifference:\t"<<PFYBody[m]-PYBody<<endl;
@@ -675,15 +708,15 @@ void InvestigationPerturbation::run()
 		} //end muscle loop
 
 		// Append to storage objects
-		daXdfStore.append(tiPert,na,&daXdf[0]);
-		deltaAXStore.append(tiPert,na,&deltaAX[0]);
-		PFXBodyStore.append(tiPert,na,&PFXBody[0]);
-		daYdfStore.append(tiPert,na,&daYdf[0]);
-		deltaAYStore.append(tiPert,na,&deltaAY[0]);
-		PFYBodyStore.append(tiPert,na,&PFYBody[0]);
-		daZdfStore.append(tiPert,na,&daZdf[0]);
-		deltaAZStore.append(tiPert,na,&deltaAZ[0]);
-		PFZBodyStore.append(tiPert,na,&PFZBody[0]);
+		daXdfStore.append(tiPert,nperturb,&daXdf[0]);
+		deltaAXStore.append(tiPert,nperturb,&deltaAX[0]);
+		PFXBodyStore.append(tiPert,nperturb,&PFXBody[0]);
+		daYdfStore.append(tiPert,nperturb,&daYdf[0]);
+		deltaAYStore.append(tiPert,nperturb,&deltaAY[0]);
+		PFYBodyStore.append(tiPert,nperturb,&PFYBody[0]);
+		daZdfStore.append(tiPert,nperturb,&daZdf[0]);
+		deltaAZStore.append(tiPert,nperturb,&deltaAZ[0]);
+		PFZBodyStore.append(tiPert,nperturb,&PFZBody[0]);
 
 		// Print results
 		IO::makeDir(getResultsDir());
