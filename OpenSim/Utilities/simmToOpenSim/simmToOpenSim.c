@@ -130,21 +130,21 @@ int main(int argc, char* argv[])
 void write_xml_gravity(FILE* fp, ModelStruct* ms)
 {
 	if (ms->gravity == smX)
-		fprintf(fp, "\t<gravity>9.80665 0.0 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>9.80665 0.0 0.0</gravity>\n");
 	else if (ms->gravity == smNegX)
-		fprintf(fp, "\t<gravity>-9.80665 0.0 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>-9.80665 0.0 0.0</gravity>\n");
 	else if (ms->gravity == smY)
-		fprintf(fp, "\t<gravity>0.0 9.80665 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 9.80665 0.0</gravity>\n");
 	else if (ms->gravity == smNegY)
-		fprintf(fp, "\t<gravity>0.0 -9.80665 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
 	else if (ms->gravity == smZ)
-		fprintf(fp, "\t<gravity>0.0 0.0 9.80665</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 0.0 9.80665</gravity>\n");
 	else if (ms->gravity == smNegZ)
-		fprintf(fp, "\t<gravity>0.0 0.0 -9.80665</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 0.0 -9.80665</gravity>\n");
 	else if (ms->gravity == smNoAlign)
-		fprintf(fp, "\t<gravity>0.0 0.0 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 0.0 0.0</gravity>\n");
 	else // -Y is the default
-		fprintf(fp, "\t<gravity>0.0 -9.80665 0.0</gravity>\n");
+		fprintf(fp, "\t\t\t<gravity>0.0 -9.80665 0.0</gravity>\n");
 }
 
 void write_xml_muscle_groups(FILE* fp, ModelStruct* ms)
@@ -798,6 +798,7 @@ void write_xml_ke(FILE* fp, ModelStruct* ms, int angleUnits)
 {
 	fprintf(fp, "\t<DynamicsEngine>\n");
 	fprintf(fp, "\t\t<SimmKinematicsEngine>\n");
+	write_xml_gravity(fp, ms);
 	write_xml_markers(fp, ms);
 	write_xml_bodies(fp, ms, angleUnits);
 	write_xml_coordinates(fp, ms, angleUnits);
@@ -828,7 +829,6 @@ void write_xml_model(ModelStruct* ms, char filename[], int angleUnits)
 	else
 		fprintf(fp, "\t<angle_units> radians </angle_units>\n");
 	write_xml_units(fp, ms);
-	write_xml_gravity(fp, ms);
 	write_xml_muscles(fp, ms, angleUnits);
 	write_xml_ke(fp, ms, angleUnits);
 	fprintf(fp, "</AbstractModel>\n");

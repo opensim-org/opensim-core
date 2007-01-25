@@ -92,10 +92,6 @@ private:
 	std::string& _forceUnitsStr;
 	SimmUnits _forceUnits;
 
-	/** Array containg the acceleration due to gravity. */
-	PropertyDblArray _gravityProp;
-	Array<double> &_gravity;
-
 	/** Dynamics Engine. */
 	PropertyObjArray _dynamicsEngineProp;
 	ArrayPtrs<AbstractDynamicsEngine> &_dynamicsEngine;

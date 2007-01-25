@@ -35,6 +35,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Tools/PropertyObj.h>
+#include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Object.h>
 
@@ -88,6 +89,10 @@ class RDSIMULATION_API AbstractDynamicsEngine : public Object
 protected:
 	/** Pointer to the model that owns this dynamics engine. */
 	AbstractModel* _model;
+
+	/** Array containg the acceleration due to gravity. */
+	PropertyDblArray _gravityProp;
+	Array<double> &_gravity;
 
 	/** Set containing the bodies in this model. */
 	PropertyObj _bodySetProp;
@@ -148,6 +153,12 @@ public:
 	// MODEL
 	//--------------------------------------------------------------------------
 	AbstractModel* getModel() const { return _model; }
+
+	//--------------------------------------------------------------------------
+	// GRAVITY
+	//--------------------------------------------------------------------------
+	virtual void getGravity(double rGrav[3]) const;
+	virtual bool setGravity(double aGrav[3]);
 
 	//--------------------------------------------------------------------------
 	// BODIES

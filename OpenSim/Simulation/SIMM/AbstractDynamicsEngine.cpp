@@ -67,6 +67,7 @@ AbstractDynamicsEngine::~AbstractDynamicsEngine()
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine() :
 	Object(),
+   _gravity(_gravityProp.getValueDblArray()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -88,6 +89,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine() :
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName) :
 	Object(aFileName),
+   _gravity(_gravityProp.getValueDblArray()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -110,6 +112,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName) :
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine(DOMElement *aElement) :
 	Object(aElement),
+   _gravity(_gravityProp.getValueDblArray()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -131,6 +134,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(DOMElement *aElement) :
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE) :
 	Object(aDE),
+   _gravity(_gravityProp.getValueDblArray()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -158,6 +162,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE
  */
 void AbstractDynamicsEngine::copyData(const AbstractDynamicsEngine& aEngine)
 {
+	_gravity = aEngine._gravity;
 	_model = aEngine._model;
 	_bodySet = aEngine._bodySet;
 	_coordinateSet = aEngine._coordinateSet;
@@ -209,6 +214,11 @@ void AbstractDynamicsEngine::setup(AbstractModel* aModel)
  */
 void AbstractDynamicsEngine::setupProperties()
 {
+	const double defaultGravity[] = {0.0, -9.80665, 0.0};
+	_gravityProp.setName("gravity");
+	_gravityProp.setValue(3, defaultGravity);
+	_propertySet.append(&_gravityProp);
+
 	_bodySetProp.setName("BodySet");
 	_propertySet.append(&_bodySetProp);
 
@@ -311,6 +321,36 @@ int AbstractDynamicsEngine::getNumJoints() const { return _jointSet.getSize(); }
 int AbstractDynamicsEngine::getNumCoordinates() const { return _coordinateSet.getSize(); }
 int AbstractDynamicsEngine::getNumSpeeds() const { return _speedSet.getSize(); }
 int AbstractDynamicsEngine::getNumMarkers() const { return _markerSet.getSize(); }
+
+//--------------------------------------------------------------------------
+// GRAVITY
+//--------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the gravity vector in the gloabl frame.
+ *
+ * @param rGrav the XYZ gravity vector in the global frame is returned here.
+ */
+void AbstractDynamicsEngine::getGravity(double rGrav[3]) const
+{
+	for (int i = 0; i < 3; i++)
+		rGrav[i] = _gravity[i];
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the gravity vector in the gloabl frame.
+ *
+ * @param aGrav the XYZ gravity vector
+ * @return Whether or not the gravity vector was successfully set.
+ */
+bool AbstractDynamicsEngine::setGravity(double aGrav[3])
+{
+	for (int i = 0; i < 3; i++)
+		_gravity[i] = aGrav[i];
+
+	return true;
+}
 
 //=============================================================================
 // BODY INFORMATION

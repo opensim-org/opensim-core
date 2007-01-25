@@ -59,7 +59,6 @@ AbstractModel::AbstractModel() :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-   _gravity(_gravityProp.getValueDblArray()),
 	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
@@ -78,7 +77,6 @@ AbstractModel::AbstractModel(const string &aFileName) :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-   _gravity(_gravityProp.getValueDblArray()),
 	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
@@ -107,7 +105,6 @@ AbstractModel::AbstractModel(DOMElement *aElement) :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-   _gravity(_gravityProp.getValueDblArray()),
 	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
@@ -129,7 +126,6 @@ AbstractModel::AbstractModel(const AbstractModel &aModel) :
    Object(aModel),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-   _gravity(_gravityProp.getValueDblArray()),
 	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
@@ -209,7 +205,6 @@ Object* AbstractModel::copy(DOMElement *aElement) const
 void AbstractModel::copyData(const AbstractModel &aModel)
 {
 	_fileName = aModel._fileName;
-	_gravity = aModel._gravity;
 	_lengthUnits = aModel._lengthUnits;
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
@@ -259,11 +254,6 @@ void AbstractModel::setupProperties()
 
 	_actuatorSetProp.setName("ActuatorSet");
 	_propertySet.append(&_actuatorSetProp);
-
-	const double defaultGravity[] = {0.0, -9.80665, 0.0};
-	_gravityProp.setName("gravity");
-	_gravityProp.setValue(3, defaultGravity);
-	_propertySet.append(&_gravityProp);
 
 	_lengthUnitsStrProp.setName("length_units");
 	_propertySet.append(&_lengthUnitsStrProp);
@@ -416,8 +406,7 @@ AbstractModel& AbstractModel::operator=(const AbstractModel &aModel)
  */
 void AbstractModel::getGravity(double rGrav[3]) const
 {
-	for (int i = 0; i < 3; i++)
-		rGrav[i] = _gravity[i];
+	getDynamicsEngine().getGravity(rGrav);
 }
 //_____________________________________________________________________________
 /**
@@ -428,10 +417,7 @@ void AbstractModel::getGravity(double rGrav[3]) const
  */
 bool AbstractModel::setGravity(double aGrav[3])
 {
-	for (int i = 0; i < 3; i++)
-		_gravity[i] = aGrav[i];
-
-	return true;
+	return getDynamicsEngine().setGravity(aGrav);
 }
 
 
@@ -1334,7 +1320,6 @@ void AbstractModel::peteTest() const
 
 	cout << "AbstractModel " << getName() << endl;
 
-	cout << "gravity = " << _gravity << endl;
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
 	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
 

@@ -24,7 +24,6 @@
 #include <OpenSim/Analyses/LinearSpring.h>
 #include <OpenSim/Analyses/TorsionalSpring.h>
 #include <OpenSim/Analyses/ActuatorPerturbationIndependent.h>
-#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
 
 
 
@@ -533,8 +532,7 @@ void InvestigationPerturbation::run()
 	double original_gravity[3];
 	int nperturb = na + (gravity_perturbation ? 1 : 0);
 
-	if(gravity_perturbation) 
-		((SdfastEngine&)_model->getDynamicsEngine()).getGravity(original_gravity);
+	if(gravity_perturbation) _model->getGravity(original_gravity);
 
 	// RESULT VARIABLES
 	Array<double> PFXBody(0.0,nperturb),PFYBody(0.0,nperturb),PFZBody(0.0,nperturb);
@@ -669,7 +667,6 @@ void InvestigationPerturbation::run()
 				for(int i=0;i<3;i++) grav[i]=original_gravity[i];
 				grav[gravity_axis] += _pertDF;
 				_model->setGravity(grav);
-				((SdfastEngine&)_model->getDynamicsEngine()).setGravity(grav);
 			}
 
 			// Integrate
@@ -698,7 +695,6 @@ void InvestigationPerturbation::run()
 				deltaAZ[m] = original_gravity[gravity_axis] *daZdf[m];
 				// undo gravity perturbation
 				_model->setGravity(original_gravity);
-				((SdfastEngine&)_model->getDynamicsEngine()).setGravity(original_gravity);
 			}
 
 			cout << "PFXBody:\t"<<PFXBody[m]<<"\tPXBody:\t"<<PXBody<<"\tdifference:\t"<<PFXBody[m]-PXBody<<endl;
