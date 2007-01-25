@@ -1,31 +1,31 @@
 // rdMath.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c) 2005, Stanford University. All rights reserved. 
-* Redistribution and use in source and binary forms, with or without 
-* modification, are permitted provided that the following conditions
-* are met: 
-*  - Redistributions of source code must retain the above copyright 
-*    notice, this list of conditions and the following disclaimer. 
-*  - Redistributions in binary form must reproduce the above copyright 
-*    notice, this list of conditions and the following disclaimer in the 
-*    documentation and/or other materials provided with the distribution. 
-*  - Neither the name of the Stanford University nor the names of its 
-*    contributors may be used to endorse or promote products derived 
-*    from this software without specific prior written permission. 
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
-* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
-* COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
-* ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-* POSSIBILITY OF SUCH DAMAGE. 
-*/
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
@@ -38,6 +38,7 @@
 #include "Mtx.h"
 #include "Line.h"
 #include "Plane.h"
+#include <OpenSim/Simulation/SIMM/SimmMacros.h>
 
 
 using namespace OpenSim;
@@ -57,18 +58,19 @@ const double rdMath::INFINITY = 1.0e30;
 const double rdMath::MINUS_INFINITY = -INFINITY;
 const double rdMath::PLUS_INFINITY = INFINITY;
 
+#define LINE_EPSILON 0.00001
 
 //=============================================================================
 // ARITHMATIC
 //=============================================================================
 //_____________________________________________________________________________
 /**
-  * Return the magnitude of aMag with the sign of aSign.
+ * Return the magnitude of aMag with the sign of aSign.
  *
-  * Note that if aSign has a value of 0.0, or aMag has a value of 0.0,
+ * Note that if aSign has a value of 0.0, or aMag has a value of 0.0,
  * the sign of aMag is not changed.
  *
-  * @param aMag   Magnitude
+ * @param aMag   Magnitude
  * @param aSign  Sign
  * @return       Value with size of aMag and sign of aSign.
  */
@@ -167,7 +169,7 @@ SigmaDn(double tau,double to,double t)
  */
 int rdMath::
 FitParabola(double aX1,double aY1,double aX2,double aY2,double aX3,double aY3,
-		double *rC0,double *rC1,double *rC2)
+				double *rC0,double *rC1,double *rC2)
 {
 	// MAPPING CONSTANTS
 	double u = 2.0*aX1-aX3;
@@ -275,11 +277,11 @@ ComputeIntersection(const Line *aLine,const Plane *aPlane,double rPoint[3])
 		aLine->evaluate(a,rPoint);
 		return(0);
 
-	// DO INTERSECT
+		// DO INTERSECT
 	} else if(!rdMath::IsZero(numer)) {
 		return(-1);
 
-	// COINCIDENT
+		// COINCIDENT
 	} else {
 		aLine->getPoint(rPoint);
 		return(1);
@@ -308,9 +310,9 @@ ComputeIntersection(const Line *aLine,const Plane *aPlane,double rPoint[3])
  */
 void rdMath::
 ComputeNormal(double aP1X,double aP1Y,double aP1Z,
-				double aP2X,double aP2Y,double aP2Z,
-				double aP3X,double aP3Y,double aP3Z,
-				double rNormal[3])
+				  double aP2X,double aP2Y,double aP2Z,
+				  double aP3X,double aP3Y,double aP3Z,
+				  double rNormal[3])
 {
 	if(rNormal==NULL) return;
 
@@ -339,4 +341,261 @@ ComputeNormal(double aP1X,double aP1Y,double aP1Z,
 	}
 }
 
+//_____________________________________________________________________________
+/**
+ * Compute the intersection between a line (p1->p2) and
+ * another line (p3->p4). If the lines do not intersect,
+ * this function returns the closest point on each line
+ * to the other line.
+ *
+ * @param p1 first point on first line
+ * @param p2 second point on first line
+ * @param p3 first point on second line
+ * @param p4 second point on second line
+ * @param pInt1 point on first line that is closest to second line
+ * @param s parameterized distance along first line from p1 to pInt1
+ * @param pInt2 point on second line that is closest to first line
+ * @param t parameterized distance along second line from p3 to pInt2
+ * @return false if lines are parallel, true otherwise
+ */
+bool rdMath::
+IntersectLines(double p1[3], double p2[3], double p3[3], double p4[3],
+					double pInt1[3], double& s, double pInt2[3], double& t)
+{
+	double cross_prod[3], vec1[3], vec2[3];
 
+	vec1[0] = p2[0] - p1[0];
+	vec1[1] = p2[1] - p1[1];
+	vec1[2] = p2[2] - p1[2];
+	double mag1 = Mtx::Normalize(3, vec1, vec1);
+
+	vec2[0] = p4[0] - p3[0];
+	vec2[1] = p4[1] - p3[1];
+	vec2[2] = p4[2] - p3[2];
+	double mag2 = Mtx::Normalize(3, vec2, vec2);
+
+	Mtx::CrossProduct(vec1, vec2, cross_prod);
+
+	double denom = cross_prod[0] * cross_prod[0] +
+		cross_prod[1] * cross_prod[1] +
+		cross_prod[2] * cross_prod[2];
+
+	if (EQUAL_WITHIN_ERROR(denom,0.0)) {
+		s = t = rdMath::NAN;
+		return false;
+	}
+
+	double mat[3][3];
+
+	mat[0][0] = p3[0] - p1[0];
+	mat[0][1] = p3[1] - p1[1];
+	mat[0][2] = p3[2] - p1[2];
+	mat[1][0] = vec1[0];
+	mat[1][1] = vec1[1];
+	mat[1][2] = vec1[2];
+	mat[2][0] = cross_prod[0];
+	mat[2][1] = cross_prod[1];
+	mat[2][2] = cross_prod[2];
+
+	t = CALC_DETERMINANT(mat) / denom;
+
+	pInt2[0] = p3[0] + t * (vec2[0]);
+	pInt2[1] = p3[1] + t * (vec2[1]);
+	pInt2[2] = p3[2] + t * (vec2[2]);
+
+	mat[1][0] = vec2[0];
+	mat[1][1] = vec2[1];
+	mat[1][2] = vec2[2];
+
+	s = CALC_DETERMINANT(mat) / denom;
+
+	pInt1[0] = p1[0] + s * (vec1[0]);
+	pInt1[1] = p1[1] + s * (vec1[1]);
+	pInt1[2] = p1[2] + s * (vec1[2]);
+
+	s /= mag1;
+	t /= mag2;
+
+	return true;
+}
+
+/* Compute the intersection of a line segment and a plane
+ * @param pt1 first point on line
+ * @param pt2 second point on line
+ * @param plane normal vector of plane
+ * @param d normal distance of plane to origin
+ * @param inter intersection point of line and plane
+ * @return true if line segment and plane intersect, false otherwise
+ */
+bool rdMath::
+IntersectLineSegPlane(double pt1[3], double pt2[3], 
+							 double plane[3], double d,
+							 double inter[3])
+{
+	double vec[3];
+
+	MAKE_3DVECTOR(pt1,pt2,vec);
+	double dotprod = Mtx::DotProduct(3, vec,plane);
+
+	if (DABS(dotprod) < LINE_EPSILON)
+		return false;
+
+	double t = (-d - plane[0]*pt1[0] - plane[1]*pt1[1] - plane[2]*pt1[2]) / dotprod;
+
+	if ((t < -LINE_EPSILON) || (t > 1.0 + LINE_EPSILON))
+		return false;
+
+	inter[0] = pt1[0] + (t * vec[0]);
+	inter[1] = pt1[1] + (t * vec[1]);
+	inter[2] = pt1[2] + (t * vec[2]);
+
+	return true;
+}
+
+/* Convert an axis/angle rotation into a quaternion
+ * @param axis the axis of rotation
+ * @param angle the angle, in radians
+ * @param quat the quaternion
+ */
+void rdMath::
+ConvertAxisAngleToQuaternion(const double axis[3], double angle, double quat[4])
+{
+	quat[0] = axis[0];
+	quat[1] = axis[1];
+	quat[2] = axis[2];
+	quat[3] = 0.0;
+
+	double n = sqrt(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2]);
+
+	if (NOT_EQUAL_WITHIN_ERROR(n, 0.0))
+	{
+		double halfAngle = 0.5 * angle;
+		double s = sin(halfAngle) / n;
+
+		quat[0] *= s;
+		quat[1] *= s;
+		quat[2] *= s;
+		quat[3] = cos(halfAngle);
+	}
+}
+
+/* Calculate the point (closestPt) on a line (linePt, line)
+ * that is closest to a point (pt). 'line' does not need to
+ * be normalized.
+ * @param pt the point
+ * @param linePt a point on the line
+ * @param line defines the line passing through linePt
+ * @param closestPt the closest point
+ * @param t parameterized distance from linePt along line to closestPt
+ */
+void rdMath::
+GetClosestPointOnLineToPoint(double pt[3], double linePt[3], double line[3],
+									  double closestPt[3], double& t)
+{
+	double v1[3], v2[3];
+
+	v1[0] = pt[0] - linePt[0];
+	v1[1] = pt[1] - linePt[1];
+	v1[2] = pt[2] - linePt[2];
+
+	v2[0] = line[0];
+	v2[1] = line[1];
+	v2[2] = line[2];
+
+	double mag = Mtx::Normalize(3, v1, v1);
+	double mag2 = Mtx::Normalize(3, v2, v2);
+	t = Mtx::DotProduct(3, v1, v2) * mag;
+
+	closestPt[0] = linePt[0] + t * v2[0];
+	closestPt[1] = linePt[1] + t * v2[1];
+	closestPt[2] = linePt[2] + t * v2[2];
+
+	t = t / mag2;
+}
+
+/* Make a 3x3 direction cosine matrix for a
+ * rotation about the X axis.
+ * @param angle the rotation angle, in radians
+ * @param m the 3x3 matrix
+ */
+void rdMath::
+Make3x3DirCosMatrix(double angle, double mat[][3])
+{
+	mat[0][0] = 1.0;
+	mat[0][1] = 0.0;
+	mat[0][2] = 0.0;
+
+	mat[1][0] = 0.0;
+	mat[1][1] = cos(angle);
+	mat[1][2] = sin(angle);
+
+	mat[2][0] = 0.0;
+	mat[2][1] = -mat[1][2];
+	mat[2][2] = mat[1][1];
+}
+
+/* Make a 4x4 direction cosine matrix from an
+ * axis/angle rotation.
+ * @param axis the axis of rotation
+ * @param angle the angle, in radians
+ * @param mat the matrix
+ */
+void rdMath::
+ConvertAxisAngleTo4x4DirCosMatrix(const double axis[3], double angle, double mat[][4])
+{
+	double normAxis[3];
+
+	Mtx::Identity(4, (double*)mat);
+	Mtx::Normalize(3, axis, normAxis);
+
+	double cl = cos(angle);
+	double sl = sin(angle);
+	double omc = 1.0 - cl;
+
+	/* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
+	mat[0][0] = cl + normAxis[0]*normAxis[0]*omc;
+	mat[1][0] = -normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
+	mat[2][0] = normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
+	mat[0][1] = normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
+	mat[1][1] = cl + normAxis[1]*normAxis[1]*omc;
+	mat[2][1] = -normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
+	mat[0][2] = -normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
+	mat[1][2] = normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
+	mat[2][2] = cl + normAxis[2]*normAxis[2]*omc;
+}
+
+/* Compute the square of the distance between two
+ * points.
+ * @param point1 the first point
+ * @param point2 the second point
+ * @return the square of the distance
+ */
+double rdMath::
+CalcDistanceSquaredBetweenPoints(double point1[], double point2[])
+{
+	double vec[3];
+
+	vec[0] = point2[0] - point1[0];
+	vec[1] = point2[1] - point1[1];
+	vec[2] = point2[2] - point1[2];
+
+	return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
+}
+
+/* Compute the square of the distance between a point
+ * and a line.
+ * @param point the point
+ * @param linePt a point on the line
+ * @param line defines the line passing through linePt
+ * @return the square of the distance
+ */
+double rdMath::
+CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[])
+{
+	double ptemp[3], t;
+
+	/* find the closest point on line */
+	GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
+
+	return CalcDistanceSquaredBetweenPoints(point, ptemp);
+}

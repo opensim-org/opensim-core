@@ -132,6 +132,7 @@ public:
 	bool getActiveUseDefault() const { return _activeProp.getUseDefault(); }
 	const char* getQuadrantName() const { return _quadrantName.c_str(); }
 	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getUseDefault(); }
+	void setQuadrantName(std::string& aName);
 	virtual const char* getWrapTypeName() const = 0;
 	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
 	int wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePoint& aPoint2,
@@ -144,23 +145,8 @@ public:
 
 protected:
 	void setupProperties();
-	void get_point_from_point_line2(double point[], double pt[], double vec[],
-		double closest_pt[], double* t) const;
-	void get_point_from_point_line(double point[], double pt[],
-		double vec[], double closest_pt[]) const;
-	void make_3x3_xrot_matrix(double a, double m[][3]) const;
-	void make_4x4dircos_matrix(double angle, double axis[], double mat[][4]) const;
-	double distancesqr_between_vertices(double vertex1[], double vertex2[]) const;
-	double get_distsqr_point_line(double point[], double pl[], double vl[]) const;
-	bool intersect_line_plane01(double pt1[], double pt2[], double plane[], double d,
-		double inter[], double* t) const;
-	bool intersect_lines(double p1[], double p2[], double p3[], double p4[],
-		double p_int1[], double* t, double p_int2[], double* s) const;
-	bool intersect_lines_scaled(double p1[], double p2[], double p3[], double p4[],
-		double p_int1[], double* t, double* mag1,
-		double p_int2[], double* s, double* mag2) const;
+	void setupQuadrant();
 	void rotate_matrix_axis_angle(double m[][4], const double axis[3], double angle) const;
-	void make_quaternion(double q[4], const double axis[3], double angle) const;
 	void quat_to_matrix(const double q[4], double m[][4]) const;
 	void rotate_matrix_by_quat(double m[][4], const double q[4]) const;
 	void x_rotate_matrix_bodyfixed(double m[][4], double radians) const;

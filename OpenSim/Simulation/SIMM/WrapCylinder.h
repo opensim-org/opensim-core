@@ -84,6 +84,11 @@ public:
 #endif
    void copyData(const WrapCylinder& aWrapCylinder);
 
+	double getRadius() const { return _radius; }
+	void setRadius(double aRadius) { _radius = aRadius; }
+	double getLength() const { return _length; }
+	void setLength(double aLength) { _length = aLength; }
+
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 	virtual void scale(Array<double>& aScaleFactors) { }

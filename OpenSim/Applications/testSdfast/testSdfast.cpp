@@ -53,13 +53,13 @@ int main(int argc, char **argv)
 
 	try {
 			// Construct the model with the SimmKinematicsEngine
-			AbstractModel *model1 = new AbstractModel("FullBodyDynamicR.xml");
+			AbstractModel *model1 = new AbstractModel("ellWrap.xml");
 			model1->setup();
 			//model1->peteTest();
 			model1->kinTest();
 
 			// Construct the model with the SdfastEngine
-			AbstractModel *model2 = new AbstractModel("sdfastR.xml");
+			AbstractModel *model2 = new AbstractModel("ellWrapSdfast.xml");
 			model2->setup();
 			//model2->peteTest();
 			model2->kinTest();

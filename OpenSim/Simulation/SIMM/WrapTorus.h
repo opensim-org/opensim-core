@@ -56,6 +56,10 @@ class WrapResult;
 class RDSIMULATION_API WrapTorus : public AbstractWrapObject
 {
 
+	struct CircleCallback {
+		double p1[3], p2[3], r;
+	};
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -100,6 +104,12 @@ protected:
 
 private:
 	void setNull();
+	int findClosestPoint(double radius, double p1[], double p2[],
+		double* xc, double* yc, double* zc,
+		int wrap_sign, int wrap_axis) const;
+	static void calcCircleResids(int numResid, int numQs, double q[],
+		double resid[], int *flag2, void *ptr);
+
 //=============================================================================
 };	// END of class WrapTorus
 //=============================================================================

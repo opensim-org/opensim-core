@@ -343,14 +343,14 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	a1 = asin(_radius / Mtx::Magnitude(3, p1m));
 
-   make_3x3_xrot_matrix(a1, rrx);
+	rdMath::Make3x3DirCosMatrix(a1, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 	// TODO: test that this gives same result as SIMM code
 
    for (i = 0; i < 3; i++)
       r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
 
-   make_3x3_xrot_matrix(-a1, rrx);
+   rdMath::Make3x3DirCosMatrix(-a1, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
@@ -371,13 +371,13 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
    a2 = asin(_radius / Mtx::Magnitude(3, p2m));
    
-   make_3x3_xrot_matrix(a2, rrx);
+   rdMath::Make3x3DirCosMatrix(a2, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
       r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
 
-   make_3x3_xrot_matrix(-a2, rrx);
+   rdMath::Make3x3DirCosMatrix(-a2, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
@@ -454,11 +454,11 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
           * side and the closest point on the line is not on the constrained side, you've
           * found a potential wrap. Otherwise, there is no wrap.
           */
-         get_point_from_point_line2(&origin[0], &aPoint1[0], p1p2, mm, &tt);
+         rdMath::GetClosestPointOnLineToPoint(&origin[0], &aPoint1[0], p1p2, mm, tt);
 
          tt = -tt; /* because p1p2 is actually aPoint2->aPoint1 */
 
-         if (distancesqr_between_vertices(&origin[0], mm) < r_squared && tt > 0.0 && tt < 1.0)
+         if (rdMath::CalcDistanceSquaredBetweenPoints(&origin[0], mm) < r_squared && tt > 0.0 && tt < 1.0)
          {
             return_code = mandatoryWrap;
          }
@@ -565,7 +565,12 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
    axis[3] = 1.0;
 
 	aWrapResult.wrap_pts.setSize(0);
-	int numWrapPoints = 101;
+
+	// Each muscle segment on the surface of the sphere should be
+	// 0.002 meters long. This assumes the model is in meters, of course.
+	int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
+	if (numWrapSegments < 0)
+		numWrapSegments = 0;
 
 	SimmPoint sp1(aWrapResult.r1);
 	aWrapResult.wrap_pts.append(sp1);
@@ -575,10 +580,10 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
    vec[2] = r1m[2];
    vec[3] = 1.0;
 
-   for (i = 0; i < numWrapPoints - 2; i++) {
-		double wangle = angle * (i+1) / (numWrapPoints - 1) * rdMath::DTR;
+   for (i = 0; i < numWrapSegments - 2; i++) {
+		double wangle = angle * (i+1) / (numWrapSegments - 1) * rdMath::DTR;
 
-		make_4x4dircos_matrix(wangle, axis, mat);
+		rdMath::ConvertAxisAngleTo4x4DirCosMatrix(axis, wangle, mat);
 		Mtx::Multiply(4, 4, 1, (double*)mat, (double*)vec, (double*)rotvec);
 
 		double wp[3];

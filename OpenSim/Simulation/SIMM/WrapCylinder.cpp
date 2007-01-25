@@ -40,9 +40,8 @@
 using namespace std;
 using namespace OpenSim;
 static char* wrapTypeName = "cylinder";
-static double p0[] = {0.0, 0.0, 0.0};
+static double p0[] = {0.0, 0.0, -1.0};
 static double dn[] = {0.0, 0.0, 1.0};
-#define NUM_WRAP_SEGS     100
 #define MAX_ITERATIONS    100
 #define TANGENCY_THRESHOLD (0.1 * DTOR) /* find tangency to within 1 degree */
 
@@ -239,12 +238,12 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 									const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	double dist, pp[3], vv[3], uu[3], r1a[3], r1b[3], r2a[3], r2b[3],
-		r1am[3], r1bm[3], r2am[3], r2bm[3], p11_dist, p22_dist, t, t1, t2, apex[3],
+		r1am[3], r1bm[3], r2am[3], r2bm[3], p11_dist, p22_dist, t, apex[3],
 		dot1, dot2, dot3, dot4, plane_normal[3], d, sum_musc[3], sin_theta,
 		p11[3], p22[3], *r11, *r22, r1p[3], r2p[3], alpha, beta, r_squared = _radius * _radius;
 	double dist1, dist2, axispt[3], vert1[3], vert2[3], mpt[3], apex1[3], apex2[3], l1[3], l2[3];
-	double near12[3], t12, mag12,
-		near00[3], t00, mag00, p00[3];
+	double near12[3], t12,
+		near00[3], t00;
 	int i, return_code = wrapped;
 	bool r1_inter, r2_inter;
 	bool constrained   = (bool) (_wrapSign != 0);
@@ -267,29 +266,31 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	aWrapResult.wrap_path_length = 0.0;
 	aWrapResult.wrap_pts.setSize(0);
 
-	/* abort if aPoint1 or aPoint2 is inside the cylinder. */
-	if (get_distsqr_point_line(&aPoint1[0], p0, dn) < r_squared ||
-		get_distsqr_point_line(&aPoint2[0], p0, dn) < r_squared)
+	// abort if aPoint1 or aPoint2 is inside the cylinder.
+	if (rdMath::CalcDistanceSquaredPointToLine(&aPoint1[0], p0, dn) < r_squared ||
+		rdMath::CalcDistanceSquaredPointToLine(&aPoint2[0], p0, dn) < r_squared)
 	{
 		return insideRadius;
 	}
 
-	/* Find the closest intersection between the muscle line and the axis of the
-	* cylinder. This intersection is used in several places further down in the
-	* code to check for various wrapping conditions.
-	*/
-	for (i = 0; i < 3; i++)
-		p00[i] = p0[i] + dn[i];
+	// Find the closest intersection between the muscle line segment and the line
+	// segment from one end of the cylinder to the other. This intersection is
+	// used in several places further down in the code to check for various
+	// wrapping conditions.
+	double cylStart[3], cylEnd[3];
+	cylStart[0] = cylEnd[0] = 0.0;
+	cylStart[1] = cylEnd[1] = 0.0;
+	cylStart[2] = -0.5 * _length;
+	cylEnd[2] = 0.5 * _length;
 
-	intersect_lines_scaled(&aPoint1[0], &aPoint2[0], p0, p00, near12, &t12, &mag12, near00, &t00, &mag00);
+	rdMath::IntersectLines(&aPoint1[0], &aPoint2[0], cylStart, cylEnd, near12, t12, near00, t00);
 
-	/* abort if the cylinder is unconstrained and p1p2 misses the cylinder.
-	* Use the return values from the above call to intersect_lines_scaled()
-	* to perform the check.
-	*/
+	// abort if the cylinder is unconstrained and p1p2 misses the cylinder.
+	// Use the return values from the above call to IntersectLines()
+	// to perform the check.
 	if ( ! constrained)
 	{
-		if (distancesqr_between_vertices(near12, near00) < r_squared && t12 > 0.0 && t12 < mag12)
+		if (rdMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
 		{
 			return_code = mandatoryWrap;
 		}
@@ -299,11 +300,11 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		}
 	}
 
-	/* find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2: */
-	get_point_from_point_line(&aPoint1[0], p0, dn, p11);
-	get_point_from_point_line(&aPoint2[0], p0, dn, p22);
+	// find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2
+	rdMath::GetClosestPointOnLineToPoint(&aPoint1[0], p0, dn, p11, t);
+	rdMath::GetClosestPointOnLineToPoint(&aPoint2[0], p0, dn, p22, t);
 
-	/* find preliminary tangent point candidates r1a & r1b: */
+	// find preliminary tangent point candidates r1a & r1b
 	MAKE_3DVECTOR(p11, aPoint1, vv);
 
 	p11_dist = Mtx::Normalize(3, vv, vv);
@@ -325,7 +326,7 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		r1b[i] = pp[i] - dist * uu[i];
 	}
 
-	/* find preliminary tangent point candidates r2a & r2b: */
+	// find preliminary tangent point candidates r2a & r2b
 	MAKE_3DVECTOR(p22, aPoint2, vv);
 
 	p22_dist = Mtx::Normalize(3, vv, vv);
@@ -347,22 +348,21 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		r2b[i] = pp[i] - dist * uu[i];
 	}
 
-	/* choose the best preliminary tangent points r1 & r2 from the 4 candidates. */
+	// choose the best preliminary tangent points r1 & r2 from the 4 candidates.
 	if (constrained)
 	{
 		double sum_r[3];
 
 		if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
 		{
-			/* If either muscle point is on the constrained side, then check for intersection
-			* of the muscle line and the cylinder. If there is an intersection, then
-			* you've found a mandatory wrap. If not, then if one point is not on the constrained
-			* side and the closest point on the line is not on the constrained side, you've
-			* found a potential wrap. Otherwise, there is no wrap.
-			* Use the return values from the previous call to intersect_lines_scaled()
-			* to perform these checks.
-			*/
-			if (distancesqr_between_vertices(near12, near00) < r_squared && t12 > 0.0 && t12 < mag12)
+			// If either muscle point is on the constrained side, then check for intersection
+			// of the muscle line and the cylinder. If there is an intersection, then
+			// you've found a mandatory wrap. If not, then if one point is not on the constrained
+			// side and the closest point on the line is not on the constrained side, you've
+			// found a potential wrap. Otherwise, there is no wrap.
+			// Use the return values from the previous call to IntersectLines()
+			// to perform these checks.
+			if (rdMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
 			{
 				return_code = mandatoryWrap;
 			}
@@ -387,10 +387,9 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		alpha = Mtx::Angle(r1am, r2bm);
 		beta = Mtx::Angle(r1bm, r2am);
 
-		/* check to see which of the four tangent points should be chosen by seeing which
-		* ones are on the 'active' portion of the cylinder. If r1a and r1b are both on or
-		* both off the active portion, then use r2a and r2b to decide.
-		*/
+		// check to see which of the four tangent points should be chosen by seeing which
+		// ones are on the 'active' portion of the cylinder. If r1a and r1b are both on or
+		// both off the active portion, then use r2a and r2b to decide.
 		if (DSIGN(r1a[_wrapAxis]) == _wrapSign && DSIGN(r1b[_wrapAxis]) == _wrapSign)
 		{
 			if (DSIGN(r2a[_wrapAxis]) == _wrapSign)
@@ -466,9 +465,8 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				}
 			}
 		}
-		/* determine if the resulting tangent points create a short wrap
-		* (less than half the cylinder) or a long wrap.
-		*/
+		// determine if the resulting tangent points create a short wrap
+		// (less than half the cylinder) or a long wrap.
 		for (i = 0; i < 3; i++)
 		{
 			sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
@@ -525,9 +523,8 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		}
 	}
 
-	/* bisect angle between r1 & r2 vectors to find the apex edge of the
-	* cylinder:
-	*/
+	// bisect angle between r1 & r2 vectors to find the apex edge of the
+	// cylinder:
 	MAKE_3DVECTOR(p11, aWrapResult.r1, uu);
 	MAKE_3DVECTOR(p22, aWrapResult.r2, vv);
 
@@ -545,7 +542,7 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		mpt[i] = aPoint1[i] + t * (aPoint2[i] - aPoint1[i]);
 
 	// find closest point on cylinder axis to mpt
-	get_point_from_point_line(mpt, p0, dn, axispt);
+	rdMath::GetClosestPointOnLineToPoint(mpt, p0, dn, axispt, t);
 
 	// find normal of plane through aPoint1, aPoint2, axispt
 	MAKE_3DVECTOR(axispt, aPoint1, l1);
@@ -574,8 +571,8 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	// Now use the distance from these points to mpt to
 	// pick the right one.
-	dist1 = distancesqr_between_vertices(mpt, apex1);
-	dist2 = distancesqr_between_vertices(mpt, apex2);
+	dist1 = rdMath::CalcDistanceSquaredBetweenPoints(mpt, apex1);
+	dist2 = rdMath::CalcDistanceSquaredBetweenPoints(mpt, apex2);
 	if (far_side_wrap)
 	{
 		if (dist1 < dist2)
@@ -603,10 +600,9 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		}
 	}
 
-	/* determine how far to slide the preliminary r1/r2 along their
-	* "edge of tangency" with the cylinder by intersecting the aPoint1-ax
-	* line with the plane formed by aPoint1, aPoint2, and apex:
-	*/
+	// determine how far to slide the preliminary r1/r2 along their
+	// "edge of tangency" with the cylinder by intersecting the aPoint1-ax
+	// line with the plane formed by aPoint1, aPoint2, and apex:
 	MAKE_3DVECTOR(apex, aPoint1, uu);
 	MAKE_3DVECTOR(apex, aPoint2, vv);
 
@@ -627,33 +623,32 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		r2b[i] = aWrapResult.r2[i] + 10.0 * dn[i];
 	}
 
-	r1_inter = intersect_line_plane01(r1a, r1b, plane_normal, d, r1p, &t1);
-	r2_inter = intersect_line_plane01(r2a, r2b, plane_normal, d, r2p, &t2);
+	r1_inter = rdMath::IntersectLineSegPlane(r1a, r1b, plane_normal, d, r1p);
+	r2_inter = rdMath::IntersectLineSegPlane(r2a, r2b, plane_normal, d, r2p);
 
 	if (r1_inter)
 	{
-		get_point_from_point_line(r1p, p11, p22, r1a);
+		rdMath::GetClosestPointOnLineToPoint(r1p, p11, p22, r1a, t);
 
-		if (distancesqr_between_vertices(r1a, p22) < distancesqr_between_vertices(p11, p22))
+		if (rdMath::CalcDistanceSquaredBetweenPoints(r1a, p22) < rdMath::CalcDistanceSquaredBetweenPoints(p11, p22))
 			for (i = 0; i < 3; i++)
 				aWrapResult.r1[i] = r1p[i];
 	}
 
 	if (r2_inter)
 	{
-		get_point_from_point_line(r2p, p11, p22, r2a);
+		rdMath::GetClosestPointOnLineToPoint(r2p, p11, p22, r2a, t);
 
-		if (distancesqr_between_vertices(r2a, p11) < distancesqr_between_vertices(p22, p11))
+		if (rdMath::CalcDistanceSquaredBetweenPoints(r2a, p11) < rdMath::CalcDistanceSquaredBetweenPoints(p22, p11))
 			for (i = 0; i < 3; i++)
 				aWrapResult.r2[i] = r2p[i];
 	}
 
-	/* Now that you have r1 and r2, check to see if they are beyond the
-	* [display] length of the cylinder. If both are, there should be
-	* no wrapping. Since the axis of the cylinder is the Z axis, and
-	* the cylinder is centered on Z=0, check the Z components of r1 and r2
-	* to see if they are within _length/2.0 of zero.
-	*/
+	// Now that you have r1 and r2, check to see if they are beyond the
+	// [display] length of the cylinder. If both are, there should be
+	// no wrapping. Since the axis of the cylinder is the Z axis, and
+	// the cylinder is centered on Z=0, check the Z components of r1 and r2
+	// to see if they are within _length/2.0 of zero.
 	if ((aWrapResult.r1[2] < -_length/2.0 || aWrapResult.r1[2] > _length/2.0) && (aWrapResult.r2[2] < -_length/2.0 || aWrapResult.r2[2] > _length/2.0))
 		return noWrap;
 
@@ -664,7 +659,7 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	return return_code;
 
-} /* _spiral_wrap_cylinder */
+}
 
 /* -------------------------------------------------------------------------
 _make_spiral_path - this routine calculates wrapping points along a
@@ -680,17 +675,19 @@ void WrapCylinder::_make_spiral_path(double aPoint1[3],  /* input: muscle point 
 												 bool far_side_wrap, /* input: is it a far side wrap? */
 												 WrapResult& aWrapResult) const
 {
-	double r1a[3], r2a[3], uu[3], vv[3], ax[3], x,y, axial_vec[3], axial_dist, theta, wrap_pt[3];
+	double r1a[3], r2a[3], uu[3], vv[3], ax[3], x, y, t, axial_vec[3], axial_dist, theta, wrap_pt[3];
 	double sense = far_side_wrap ? -1.0 : 1.0;
 	double m[4][4];
 	int i, iterations = 0;
 
 restart_spiral_wrap:
 
+	aWrapResult.wrap_pts.setSize(0);
+
 	/* determine the axial vector: */
 
-	get_point_from_point_line(aWrapResult.r1, p0, dn, r1a);
-	get_point_from_point_line(aWrapResult.r2, p0, dn, r2a);
+	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
+	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
 
 	MAKE_3DVECTOR(r1a, r2a, axial_vec);
 
@@ -731,9 +728,15 @@ restart_spiral_wrap:
 	m[2][0] = vv[0]; m[2][1] = vv[1]; m[2][2] = vv[2]; m[2][3] = 0.0;
 	m[3][0] = 0.0;   m[3][1] = 0.0;   m[3][2] = 0.0;   m[3][3] = 1.0;
 
-	for (i = 0; i < NUM_WRAP_SEGS; i++)
+	// Each muscle segment on the surface of the cylinder should be
+	// 0.002 meters long. This assumes the model is in meters, of course.
+	int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
+	if (numWrapSegments < 0)
+		numWrapSegments = 0;
+
+	for (i = 0; i < numWrapSegments; i++)
 	{
-		double t = (double) i / NUM_WRAP_SEGS;
+		double t = (double) i / numWrapSegments;
 
 		_calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
 
@@ -803,7 +806,7 @@ bool WrapCylinder::_adjust_tangent_point(
 											  double r1[3],   /* input/output: wrap tangent point 1 */
 											  double w1[3]) const   /* input: wrap point 1 */
 {
-	double pr_vec[3], rw_vec[3], alpha, omega;
+	double pr_vec[3], rw_vec[3], alpha, omega, t;
 	int i;
 	bool did_adust = false;
 
@@ -821,10 +824,10 @@ bool WrapCylinder::_adjust_tangent_point(
 		double p1a[3], w1a[3], p1w1_int[3], p1w1_t, p1aw1a_int[3], p1aw1a_t;
 		double save[3];
 
-		get_point_from_point_line(pt1, r1, dn, p1a);
-		get_point_from_point_line(w1, r1, dn, w1a);
+		rdMath::GetClosestPointOnLineToPoint(pt1, r1, dn, p1a, t);
+		rdMath::GetClosestPointOnLineToPoint(w1, r1, dn, w1a, t);
 
-		intersect_lines(pt1, w1, p1a, w1a, p1w1_int, &p1w1_t, p1aw1a_int, &p1aw1a_t);
+		rdMath::IntersectLines(pt1, w1, p1a, w1a, p1w1_int, p1w1_t, p1aw1a_int, p1aw1a_t);
 
 		for (i = 0; i < 3; i++)
 		{

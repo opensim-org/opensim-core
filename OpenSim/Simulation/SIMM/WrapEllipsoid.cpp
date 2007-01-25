@@ -874,21 +874,19 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 								 double vs[], double vs4, bool far_side_wrap,
 								 WrapResult& aWrapResult) const
 {
-	int i, j, k, l, imax;
+	int i, j, k, l, imax, numWrapSegments;
 	double u[3], ux[3], mu, a0[3], ar1[3], ar2[3], phi, dphi, phi0, len,
 		r0[3][3], vsy[3], vsz[3], rphi[3][3], t[3], r[3], f1[3], f2[3], dr[3],
-		aa, bb, cc, mu3, s[100][3], dv[3], q[3], p[3];
+		aa, bb, cc, mu3, s[500][3], dv[3], q[3], p[3];
 
 	MAKE_3DVECTOR21(r1, r2, dr);
 	len = Mtx::Magnitude(3, dr);
 
-	/* If the distance between r1 and r2 is very small, then don't bother
-	* calculating 100 wrap points along the surface of the ellipsoid.
-	* Just use r1 and r2 as the surface points and return the distance
-	* between them as the distance along the ellipsoid.
-	*/
-	if (len < 0.0001)
-	{
+	if (len < 0.001) {
+		// If the distance between r1 and r2 is very small, then don't bother
+		// calculating wrap points along the surface of the ellipsoid.
+		// Just use r1 and r2 as the surface points and return the distance
+		// between them as the distance along the ellipsoid.
 		aWrapResult.wrap_pts.setSize(0);
 		SimmPoint p1(r1);
 		aWrapResult.wrap_pts.append(p1);
@@ -896,6 +894,17 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 		aWrapResult.wrap_pts.append(p2);
 		aWrapResult.wrap_path_length = len;
 		return;
+	} else {
+		// You don't know the wrap length until you divide it
+		// into N pieces and add up the lengths of each one.
+		// So calculate N based on the distance between r1 and r2.
+		// First unfactor the length, then assume it's in meters
+		// to make each segment about 1mm long.
+		numWrapSegments = (int) (len / (aWrapResult.factor * 0.001));
+		if (numWrapSegments < 0)
+			numWrapSegments = 0;
+		else if (numWrapSegments > 500)
+			numWrapSegments = 500;
 	}
 
 	ux[0] = 1.0;
@@ -924,9 +933,9 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 	phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
 
 	if (far_side_wrap)
-		dphi = - (2 * rdMath::PI - phi0) / 100.0;
+		dphi = - (2 * rdMath::PI - phi0) / (double) numWrapSegments;
 	else
-		dphi = phi0 / 100.0;
+		dphi = phi0 / (double) numWrapSegments;
 
 	Mtx::CrossProduct(ar1, ar2, vsz);
 	Mtx::Normalize(3, vsz, vsz);
@@ -950,7 +959,7 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 
 	rphi[2][2] = 1;
 
-	for (i = 0; i < 100; i++)
+	for (i = 0; i < numWrapSegments; i++)
 	{
 		phi = (i + 1) * dphi;
 		rphi[0][0] = cos(phi);
@@ -992,8 +1001,7 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 	SimmPoint p1(r1);
 	aWrapResult.wrap_pts.append(p1);
 
-	int numWrapPoints = 99;
-	for (i = 0; i < numWrapPoints; i++)
+	for (i = 0; i < numWrapSegments; i++)
 	{
 		SimmPoint spt(&s[i][0]);
 		aWrapResult.wrap_pts.append(spt);
@@ -1012,7 +1020,7 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 
 	aWrapResult.wrap_path_length += Mtx::Magnitude(3, dv);
 
-	for (i = 0; i < numWrapPoints; i++)
+	for (i = 0; i < numWrapSegments - 1; i++)
 	{
 		p[0] = s[i][0];
 		p[1] = s[i][1];
