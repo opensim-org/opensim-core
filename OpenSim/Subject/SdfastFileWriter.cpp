@@ -508,6 +508,11 @@ void SdfastFileWriter::makeSdfastJointOrder()
 
 void SdfastFileWriter::makeSdfastModel()
 {
+	// Copy gravity from SimmKinematicsEngine
+	double gravity[3];
+	_model->getDynamicsEngine().getGravity(gravity);
+	_simulationModel->getDynamicsEngine().setGravity(gravity);
+
 	int i, j, rDofCount = 0, rConstrainedCount = 0;
 
 	makeDofSdfastNames();
