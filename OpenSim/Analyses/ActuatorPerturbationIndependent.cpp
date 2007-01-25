@@ -299,7 +299,7 @@ computeActuation(double aT,double *aX,double *aY)
 	}	
 
 	// COMPUTE PERTURBED FORCE
-	if(!_recordUnperturbedForces) {
+	if(!_recordUnperturbedForces && _actuator) {
 		_unperturbedForce = _actuator->getForce();
 		double force = _unperturbedForce;
 		if((aT>=getStartTime()) && (aT<=getEndTime())){
@@ -352,7 +352,7 @@ applyActuation(double aT,double *aX,double *aY)
 	// NOTE: We used to try to get unperturbed force from _unperturbedForceStorage, but instead I
 	// just record it in a special variable in computeActuation (to avoid having to figure out
 	// the actuator index corresponding to _actuator)
-	if(!_recordUnperturbedForces) {
+	if(!_recordUnperturbedForces && _actuator) {
 		_actuator->setForce(_unperturbedForce);
 		//printf("\t\t%d: unperturbed=%.16lf\n",_step+1,force);
 	}
