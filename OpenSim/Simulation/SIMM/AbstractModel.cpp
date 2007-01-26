@@ -34,6 +34,7 @@
 #include "AbstractSimmMuscle.h"
 #include "CoordinateSet.h"
 #include "SpeedSet.h"
+#include "BodySet.h"
 #include <OpenSim/Simulation/Model/IntegCallback.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
@@ -1249,6 +1250,24 @@ void AbstractModel::printDetailedInfo(std::ostream &aOStream) const
 
 	aOStream << "MODEL: " << getName() << "\n";
 
+	aOStream << "\nANALYSES (" << getNumAnalyses() << ")\n";
+	for (int i = 0; i < _analysisSet->getSize(); i++)
+		aOStream << "analysis[" << i << "] = " << _analysisSet->get(i)->getName() << "\n";
+
+	aOStream << "\nBODIES (" << getNumBodies() << ")\n";
+	BodySet *bodySet = getDynamicsEngine().getBodySet();
+	for(int i=0; i < bodySet->getSize(); i++) {
+		AbstractBody *body = bodySet->get(i);
+		if(body==NULL) continue;
+		aOStream << "body[" << i << "] = " << body->getName();
+		aOStream << " (mass: "<<body->getMass()<<")";
+		double inertia[3][3];
+		body->getInertia(inertia);
+		aOStream << " (inertia:";
+		for(int j=0; j<3; j++) for(int k=0; k<3; k++) aOStream<<" "<<inertia[j][k];
+		aOStream << ")"<<endl;
+	}
+
 	aOStream << "\nACTUATORS (" << getNumActuators() << ")\n";
 	for (int i = 0; i < _actuatorSet.getSize(); i++) {
 		aOStream << "actuator[" << i << "] = " << _actuatorSet.get(i)->getName();
@@ -1262,10 +1281,6 @@ void AbstractModel::printDetailedInfo(std::ostream &aOStream) const
 		}
 		aOStream << std::endl;
 	}
-
-	aOStream << "\nANALYSES (" << getNumAnalyses() << ")\n";
-	for (int i = 0; i < _analysisSet->getSize(); i++)
-		aOStream << "analysis[" << i << "] = " << _analysisSet->get(i)->getName() << "\n";
 
 	aOStream << "\nCONTACTS (" << getNumContacts() << ")\n";
 
