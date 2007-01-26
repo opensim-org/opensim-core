@@ -133,13 +133,6 @@ private:
 	0 = no printing, ..., 3 = detailed printing. */
 	PropertyInt _printLevelProp;
 	int &_printLevel;
-	/** Name of the body whose center of mass is adjusted. */
-	PropertyStr _adjustedCOMBodyProp;
-	std::string &_adjustedCOMBody;
-	/** Name of the file specifying a change to the center of mass of a body.
-	This adjustment is made to remove dc offset in the residuals. */
-	PropertyStr _adjustedCOMFileNameProp;
-	std::string &_adjustedCOMFileName;
 	/** Flag indicating whether or not to compute average residuals. */
 	PropertyBool _computeAverageResidualsProp;
 	bool &_computeAverageResiduals;
@@ -147,6 +140,14 @@ private:
 	mass of a body to reduced DC offsets in MX and MZ. */
 	PropertyBool _adjustCOMToReduceResidualsProp;
 	bool &_adjustCOMToReduceResiduals;
+	/** Name of the body whose center of mass is adjusted. */
+	PropertyStr _adjustedCOMBodyProp;
+	std::string &_adjustedCOMBody;
+	/** Name of the output model file containing adjustments to anthropometry
+	made to reduce average residuals. This file is written if the property
+	adjust_com_to_reduce_residuals is set to true. */
+	PropertyStr _outputModelFileProp;
+	std::string &_outputModelFile;
 
 
 //=============================================================================

@@ -93,7 +93,7 @@ InvestigationCMCGait::InvestigationCMCGait() :
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
@@ -127,7 +127,7 @@ InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
@@ -166,7 +166,7 @@ InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
@@ -232,7 +232,7 @@ InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
@@ -300,10 +300,10 @@ setNull()
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
 	_printLevel = 0;
-	_adjustedCOMBody = "";
-	_adjustedCOMFileName = "";
 	_computeAverageResiduals = false;
+	_adjustedCOMBody = "";
 	_adjustCOMToReduceResiduals = false;
+	_outputModelFile = "";
 }
 //_____________________________________________________________________________
 /**
@@ -417,17 +417,6 @@ void InvestigationCMCGait::setupProperties()
 	_printLevelProp.setName("optimizer_print_level");
 	_propertySet.append( &_printLevelProp );
 
-	comment = "Name of the body whose center of mass is adjusted.";
-	_adjustedCOMBodyProp.setComment(comment);
-	_adjustedCOMBodyProp.setName("adjusted_com_body");
-	_propertySet.append( &_adjustedCOMBodyProp );
-
-	comment = "Name of the file specifying a change to the center of mass of a body.";
-	comment += " This adjustment is made to remove dc offset in the residuals.";
-	_adjustedCOMFileNameProp.setComment(comment);
-	_adjustedCOMFileNameProp.setName("adjusted_com_file_name");
-	_propertySet.append( &_adjustedCOMFileNameProp );
-
 	comment = "Flag indicating whether or not to compute average residuals.";
 	_computeAverageResidualsProp.setComment(comment);
 	_computeAverageResidualsProp.setName("compute_average_residuals");
@@ -438,6 +427,18 @@ void InvestigationCMCGait::setupProperties()
 	_adjustCOMToReduceResidualsProp.setComment(comment);
 	_adjustCOMToReduceResidualsProp.setName("adjust_com_to_reduce_residuals");
 	_propertySet.append( &_adjustCOMToReduceResidualsProp );
+
+	comment = "Name of the body whose center of mass is adjusted.";
+	_adjustedCOMBodyProp.setComment(comment);
+	_adjustedCOMBodyProp.setName("adjusted_com_body");
+	_propertySet.append( &_adjustedCOMBodyProp );
+
+	comment = "Name of the output model file containing adjustments to anthropometry ";
+	comment += "made to reduce average residuals. This file is written if the property ";
+	comment += "adjust_com_to_reduce_residuals is set to true.";
+	_outputModelFileProp.setComment(comment);
+	_outputModelFileProp.setName("output_model_file");
+	_propertySet.append( &_outputModelFileProp );
 }
 
 
@@ -476,7 +477,7 @@ operator=(const InvestigationCMCGait &aInvestigation)
 	_maxIterations = aInvestigation._maxIterations;
 	_printLevel = aInvestigation._printLevel;
 	_adjustedCOMBody = aInvestigation._adjustedCOMBody;
-	_adjustedCOMFileName = aInvestigation._adjustedCOMFileName;
+	_outputModelFile = aInvestigation._outputModelFile;
 	_computeAverageResiduals = aInvestigation._computeAverageResiduals;
 	_adjustCOMToReduceResiduals = aInvestigation._adjustCOMToReduceResiduals;
 
@@ -511,9 +512,6 @@ void InvestigationCMCGait::run()
 
 	// USE PIPELINE ACTUATORS?
 	_model->printDetailedInfo(cout);
-
-	// ALTER COM ?
-	InvestigationForward::adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// OUTPUT DIRECTORY
 	// Do the maneuver to change then restore working directory 
@@ -793,6 +791,18 @@ void InvestigationCMCGait::run()
 		residualFile.close();
 	}
 
+	// Write new model file
+	if(_adjustCOMToReduceResiduals) {
+		if(_outputModelFile=="") {
+			cerr<<"Warning: A name for the output model was not set.\n";
+			cerr<<"Specify a value for the property,"<<_outputModelFileProp.getName();
+			cerr<<", in the setup file.\n";
+			cerr<<"Writing to outputModel.xml ...\n\n";
+			_outputModelFile = "outputModel.xml";
+		}
+		_model->print(_outputModelFile);
+	}
+
 	IO::chDir(saveWorkingDirectory);
 }
 
@@ -872,7 +882,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	double g[3];
 	_model->getGravity(g);
 
-	// COMPUTE TORSO WEIGHT
+	// COMPUTE SEGMENT WEIGHT
 	AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
 	double bodyMass = body->getMass();
 	double bodyWeight = fabs(g[1])*bodyMass;
@@ -895,14 +905,6 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	cout<<_adjustedCOMBody<<" weight = "<<bodyWeight<<"\n";
 	cout<<"dx="<<dx<<", dz="<<dz<<"\n\n";
 
-	if(_adjustedCOMFileName=="") {
-		cout<<"InvestigationCMCGait.adjustCOMToReduceResidulas: WARN-";
-		cout<<" an adjusted COM was computed\n";
-		cout<<"but no file name was specfied for writing the results to file.\n";
-		cout<<"Using the file name rra_newCOM.txt.\n\n";
-		_adjustedCOMFileName = "rra_newCOM.txt";
-	}
-
 	// GET EXISTING COM
 	Array<double> com(0.0,3);
 	body->getMassCenter(&com[0]);
@@ -911,11 +913,8 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	com[0] -= dx;
 	com[2] -= dz;
 
-	// SAVE TO FILE
-	ofstream rraCOMFile;
-	rraCOMFile.open(_adjustedCOMFileName.c_str());
-	rraCOMFile<<com[0]<<" "<<com[1]<<" "<<com[2]<<endl;
-	rraCOMFile.close();
+	// ALTHER THE MODEL
+	body->setMassCenter(&com[0]);
 
 	//---- MASS CHANGE ----
 	// Get recommended mass change.
