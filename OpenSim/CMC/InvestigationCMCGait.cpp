@@ -316,17 +316,17 @@ void InvestigationCMCGait::setupProperties()
 
 	comment = "Name of the file containing the desired kinematic trajectories.";
 	_desiredKinematicsFileNameProp.setComment(comment);
-	_desiredKinematicsFileNameProp.setName("desired_kinematics_file_name");
+	_desiredKinematicsFileNameProp.setName("desired_kinematics_file");
 	_propertySet.append( &_desiredKinematicsFileNameProp );
 
 	comment = "Name of the file containing the external loads applied to the model.";
 	_externalLoadsFileNameProp.setComment(comment);
-	_externalLoadsFileNameProp.setName("external_loads_file_name");
+	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
 	comment = "Name of the file containing the model kinematics corresponding to the external loads.";
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file_name");
+	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
 	comment = "Name of the body to which the first set of external loads ";
@@ -343,18 +343,18 @@ void InvestigationCMCGait::setupProperties()
 
 	comment = "Name of the file containing the tracking tasks.";
 	_taskSetFileNameProp.setComment(comment);
-	_taskSetFileNameProp.setName("task_set_file_name");
+	_taskSetFileNameProp.setName("task_set_file");
 	_propertySet.append( &_taskSetFileNameProp );
 
 	comment = "Name of the file containing the constraints on the controls.";
 	_constraintsFileNameProp.setComment(comment);
-	_constraintsFileNameProp.setName("constraints_file_name");
+	_constraintsFileNameProp.setName("constraints_file");
 	_propertySet.append( &_constraintsFileNameProp );
 
 	comment = "Name of the file containing the actuator controls output by RRA.";
 	comment += " These are used to place constraints on the residuals.";
 	_rraControlsFileNameProp.setComment(comment);
-	_rraControlsFileNameProp.setName("rra_controls_file_name");
+	_rraControlsFileNameProp.setName("rra_controls_file");
 	_propertySet.append( &_rraControlsFileNameProp );
 
 	comment = "Low-pass cut-off frequency for filtering the desired kinematics.";

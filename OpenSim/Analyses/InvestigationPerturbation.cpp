@@ -323,19 +323,19 @@ void InvestigationPerturbation::setupProperties()
 
 
 	// INPUT FILE NAMES
-	_controlsFileNameProp.setName("controls_file_name");
+	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
-	_copFileNameProp.setName("cop_file_name");
+	_copFileNameProp.setName("cop_file");
 	_propertySet.append( &_copFileNameProp );
 
-	_qFileNameProp.setName("coordinates_file_name");
+	_qFileNameProp.setName("coordinates_file");
 	_propertySet.append( &_qFileNameProp );
 
-	_uFileNameProp.setName("speeds_file_name");
+	_uFileNameProp.setName("speeds_file");
 	_propertySet.append( &_uFileNameProp );
 
-	_yFileNameProp.setName("states_file_name");
+	_yFileNameProp.setName("states_file");
 	_propertySet.append( &_yFileNameProp );
 
 
@@ -365,10 +365,10 @@ void InvestigationPerturbation::setupProperties()
 	_propertySet.append( &_lToeOffProp );
 
 	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
-	_externalLoadsFileNameProp.setName("external_loads_file_name");
+	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file_name");
+	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
 	_externalLoadsBody1Prop.setName("external_loads_body1");
@@ -386,7 +386,7 @@ void InvestigationPerturbation::setupProperties()
 
 	_adjustedCOMFileNameProp.setComment("Name of the file specifying a change to the center of mass of a body."
 												   " This adjustment is made to remove dc offset in the residuals.");
-	_adjustedCOMFileNameProp.setName("adjusted_com_file_name");
+	_adjustedCOMFileNameProp.setName("adjusted_com_file");
 	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 

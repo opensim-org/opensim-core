@@ -157,7 +157,7 @@ void SimmGenericModelMaker::setNull()
  */
 void SimmGenericModelMaker::setupProperties()
 {
-	_fileNameProp.setName("file_name");
+	_fileNameProp.setName("model_file");
 	_fileNameProp.setComment("name of xml file for nominal model"); 
 	_propertySet.append(&_fileNameProp);
 

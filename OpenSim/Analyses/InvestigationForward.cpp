@@ -207,16 +207,16 @@ void InvestigationForward::setupProperties()
 	string comment;
 
 	// INPUT FILE NAMES
-	_controlsFileNameProp.setName("controls_file_name");
+	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
-	_initialStatesFileNameProp.setName("initial_states_file_name");
+	_initialStatesFileNameProp.setName("initial_states_file");
 	_propertySet.append( &_initialStatesFileNameProp );
 
-	_externalLoadsFileNameProp.setName("external_loads_file_name");
+	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file_name");
+	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
 	_externalLoadsBody1Prop.setName("external_loads_body1");
@@ -239,7 +239,7 @@ void InvestigationForward::setupProperties()
 	comment = "Name of the file specifying a change to the center of mass of a body.";
 	comment += " This adjustment is made to remove dc offset in the residuals.";
 	_adjustedCOMFileNameProp.setComment(comment);
-	_adjustedCOMFileNameProp.setName("adjusted_com_file_name");
+	_adjustedCOMFileNameProp.setName("adjusted_com_file");
 	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 
