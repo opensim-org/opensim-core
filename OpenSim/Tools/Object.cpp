@@ -1545,7 +1545,7 @@ getOffLineFileName() const
 // IO
 //=============================================================================
 //-----------------------------------------------------------------------------
-// PRINT
+// PRINT OBJECT
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
@@ -1565,6 +1565,134 @@ print(const string &aFileName)
 	return _document->print(aFileName);
 }
 
+//-----------------------------------------------------------------------------
+// PRINT PROPERTY INFORMATION
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Print property information for registered classes.  This method will
+ * print the comment field of a property to an output stream. Input is a
+ * class name and property name.  If the property name is the empty string,
+ * information for all properties in the class is printed.  If the class
+ * name is empty, information in all properties of all registered classes
+ * is printed.
+ *
+ * @param aOStream Output stream to which info is printed.
+ * @param aClassNameDotPropertyName A string combining the class name
+ * and property name. The two names should be seperated by a period
+ * (ClassName.PropertyName).  If no property is specified, the information
+ * for all properties in the class is printed.  If no class is specified,
+ * the information for the properties of all registered classes is
+ * printed.
+ */
+void Object::
+PrintPropertyInfo(ostream &aOStream,
+						const string &aClassNameDotPropertyName)
+{
+	// PARSE NAMES
+	string compoundName = aClassNameDotPropertyName;
+
+  	string::size_type delimPos = compoundName.find(".");
+	string className = compoundName.substr(0,delimPos);
+	string propertyName = "";
+	if(delimPos!=string::npos) {
+		propertyName = compoundName.substr(delimPos+1);
+	}
+	//cout<<"PrintPropertyInfo:  className="<<className<<" propName="<<propertyName<<endl;
+
+	PrintPropertyInfo(aOStream,className,propertyName);
+}
+//_____________________________________________________________________________
+/**
+ * Print property information for registered classes.  This method will
+ * print the comment field of a property to an output stream. Input is a
+ * class name and property name.  If the property name is the empty string,
+ * information for all properties in the class is printed.  If the class
+ * name is empty, information in all properties of all registered classes
+ * is printed.
+ *
+ * @param aOStream Output stream to which info is printed.
+ * @param aClassName Class for which to print properties.  If an empty
+ * string, the property information for all registered classes is
+ * printed.
+ * @pram aPropertyName Property for which to print information.  If an
+ * empty string, information for all properties in the specified class
+ * is printed.
+ */
+void Object::
+PrintPropertyInfo(ostream &aOStream,
+						const string &aClassName,const string &aPropertyName)
+{
+	// NO CLASS
+	if(aClassName=="") {
+		int size = _Types.getSize();
+		aOStream<<"REGISTERED CLASSES ("<<size<<")\n";
+		Object *obj;
+		for(int i=0;i<size;i++) {
+			obj = _Types.get(i);
+			if(obj==NULL) continue;
+			aOStream<<obj->getType()<<endl;
+		}
+		aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+		return;
+	}
+
+	// FIND CLASS
+	Object* object = _mapTypesToDefaultObjects[aClassName];
+	if(object==NULL) {
+		aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+		aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+		return;
+	}
+
+	// NO PROPERTY
+	PropertySet propertySet = object->getPropertySet();
+	Property *property;
+	if((aPropertyName=="")||(aPropertyName=="*")) {
+		int size = propertySet.getSize();
+		aOStream<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
+		string comment;
+		for(int i=0;i<size;i++) {
+			property = propertySet.get(i);
+			if(property==NULL) continue;
+			if(aPropertyName=="") {
+				aOStream<<i+1<<". "<<property->getName()<<endl;
+			} else {
+				comment = property->getComment();
+				string::size_type size = comment.length();
+				if(size>0) {
+					aOStream<<"\n"<<i+1<<". "<<property->getName()<<":  "<<property->getComment()<<"\n";
+				} else {
+					aOStream<<"\n"<<i+1<<". "<<property->getName()<<":\n";
+				}
+			}
+		}
+		aOStream<<"\n\nUse '-PropertyInfo ClassName.PropertyName' to print info for a particular property.\n";
+		if(aPropertyName!="*") {
+			aOStream<<"Use '-PropertyInfo ClassName.*' to print info for all properties in a class.\n";
+		}
+		return;
+	}
+
+	// FIND PROPERTY
+	try {
+		property = propertySet.get(aPropertyName);
+	} catch(...) {
+		aOStream<<"\nPrintPropertyInfo: no property with the name "<<aPropertyName;
+		aOStream<<" was found in class "<<aClassName<<".\n";
+		aOStream<<"Omit the property name to get a listing of all properties in a class.\n";
+		return;
+	}
+
+	// OUTPUT
+	//aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
+	aOStream<<endl<<aClassName<<"."<<aPropertyName<<":  "<<property->getComment()<<"\n";
+}
+
+
+//=============================================================================
+// Utilities, factory methods
+//=============================================================================
 string Object::
 transcode(const XMLCh *aCh)
 {
@@ -1584,9 +1712,6 @@ transcodeAndTrim(const XMLCh *aCh)
 	return str;
 }
 
-//=============================================================================
-// Utilities, factory methods
-//=============================================================================
 /**
  * makeObjectFromFile creates an OpenSim object based on the type of the object at the root
  * node of the XML file passed in. This is useful since the constructor of Object doesn't have the
@@ -1619,8 +1744,8 @@ makeObjectFromFile(const std::string &aFileName)
 }
 
 /**
- * newInstanceOfType Create a new instance of the type indicated by aType. The instance is initialized to the default Object
- * of corresponding type.
+ * Create a new instance of the type indicated by aType.
+ * The instance is initialized to the default Object of corresponding type.
  */
 Object* Object::
 newInstanceOfType(const std::string &aType)

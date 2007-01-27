@@ -69,6 +69,7 @@ int main(int argc,char **argv)
 		// PRINT THE USAGE OPTIONS
 		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 		(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
+
 			PrintUsage(cout);
 			return(0);
  
@@ -85,7 +86,23 @@ int main(int argc,char **argv)
 		} else if((option=="-Setup")||(option=="-S")) {
 			if((i+1)<argc) setupFileName = argv[i+1];
 			break;
+
+		// PRINT PROPERTY INFO
+		} else if((option=="-PropertyInfo")||(option=="-PI")) {
+			if((i+1)>=argc) {
+				Object::PrintPropertyInfo(cout,"");
+
+			} else {
+				char *compoundName = argv[i+1];
+				if(compoundName[0]=='-') {
+					Object::PrintPropertyInfo(cout,"");
+				} else {
+					Object::PrintPropertyInfo(cout,compoundName);
+				}
+			}
+			return(0);
 		}
+
 
 	}
 
@@ -143,11 +160,18 @@ int main(int argc,char **argv)
  */
 void PrintUsage(ostream &aOStream)
 {
-	aOStream<<"\n\nforward.exe:\n\n";
-	aOStream<<"Option              Argument       Action / Notes\n";
-	aOStream<<"------              --------       --------------\n";
-	aOStream<<"-Help, -H                          Print the command-line options for forward.exe.\n";
-	aOStream<<"-PrintSetup, -PS                   Print a default setup file for forward.exe (default_forward.xml).\n";
-	aOStream<<"-Setup, -S          FileName       Specify the name of the setup file to use for this forward investigation.\n";
+	aOStream<<"\nforward.exe:\n\n";
+	aOStream<<"Option              Argument    Action / Notes\n";
+	aOStream<<"------              --------    --------------\n";
+	aOStream<<"-Help, -H                       Print the command-line options for forward.exe.\n";
+	aOStream<<"-PrintSetup, -PS                Print a default setup file for forward.exe (default_forward.xml).\n";
+	aOStream<<"-Setup, -S          FileName    Specify the name of the setup file to use for this forward investigation.\n";
+	aOStream<<"-PropertyInfo, -PI              Print help information for properties in setup files.\n";
+
+
+	//aOStream<<"\nThe input to the -PropertyInfo option is the name of the class to which a property\n";
+	//aOStream<<"belongs, followed by a '.', followed by the name of the property.  If a class name\n";
+	//aOStream<<"is not specified, a list of all registered classes is printed. If a class name is\n";
+	//aOStream<<"specified, but a property is not, a list of all properties in that class is printed.\n";
 }
 

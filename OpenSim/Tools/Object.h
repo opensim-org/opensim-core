@@ -270,6 +270,12 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	bool print(const std::string &aFileName);
+	static void PrintPropertyInfo(std::ostream &aOStream,
+					const std::string &aClassNameDotPropertyName);
+	static void PrintPropertyInfo(std::ostream &aOStream,
+					const std::string &aClassName,const std::string &aPropertyName);
+
+	//--------------------------------------------------------------------------
 	// Observable Interface
 	//--------------------------------------------------------------------------
 	// Manage Observers
