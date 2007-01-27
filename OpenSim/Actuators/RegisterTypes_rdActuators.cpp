@@ -26,7 +26,7 @@ static rdActuatorsInstantiator instantiator;
  */
 RDACTUATORS_API void RegisterTypes_rdActuators()
 {
-	cout<<"RegisterTypes_rdActuators\n";
+	//cout<<"RegisterTypes_rdActuators\n";
 
 	Object::RegisterType( GeneralizedForceAtv() );
 	Object::RegisterType( LinearSetPoint() );

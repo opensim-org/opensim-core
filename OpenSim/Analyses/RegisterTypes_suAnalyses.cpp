@@ -29,7 +29,7 @@ static suAnalysesInstantiator instantiator;
  */
 SUANALYSES_API void RegisterTypes_suAnalyses()
 {
-	cout<<"RegisterTypes_suAnalyses\n";
+	//cout<<"RegisterTypes_suAnalyses\n";
 
 	Object::RegisterType( InvestigationPerturbation() );
 	Object::RegisterType( InvestigationForward() );

@@ -47,9 +47,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	cout<<"\n-------------------------------------------------------\n";
-	cout<<"Library rdSimulation...\n";
-	cout<<"-------------------------------------------------------\n\n";
+	//cout<<"\n-------------------------------------------------------\n";
+	//cout<<"Library rdSimulation...\n";
+	//cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()

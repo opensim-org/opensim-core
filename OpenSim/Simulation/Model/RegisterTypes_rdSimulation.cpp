@@ -71,7 +71,7 @@ static rdSimulationInstantiator instantiator;
  */
 RDSIMULATION_API void RegisterTypes_rdSimulation()
 {
-	cout<<"RegisterTypes_rdSimulation\n";
+	//cout<<"RegisterTypes_rdSimulation\n";
 
 	Object::RegisterType( ControlSet() );
 	Object::RegisterType( ControlConstant() );

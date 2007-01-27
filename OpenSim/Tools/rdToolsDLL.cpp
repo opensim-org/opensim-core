@@ -43,9 +43,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	cout<<"\n-------------------------------------------------------\n";
-	cout<<"Library rdTools...\n";
-	cout<<"This product includes software developed by the\n";
+	cout<<"-------------------------------------------------------\n";
+	//cout<<"Library rdTools...\n";
+	cout<<"This program includes software developed by the\n";
 	cout<<"Apache Software Foundation (http://www.apache.org/).\n";
 	cout<<"-------------------------------------------------------\n\n";
 }

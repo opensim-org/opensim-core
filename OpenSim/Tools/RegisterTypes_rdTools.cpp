@@ -31,7 +31,7 @@ using namespace std;
  */
 RDTOOLS_API void RegisterTypes_rdTools()
 {
-	cout<<"RegisterTypes_rdTools  \n";
+	//cout<<"RegisterTypes_rdTools  \n";
 
 	Object::RegisterType( FunctionSet() );
 	Object::RegisterType( GCVSplineSet() );
