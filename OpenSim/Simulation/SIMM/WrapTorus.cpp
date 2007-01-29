@@ -258,7 +258,7 @@ int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	cyl.setRadius(_innerRadius);
 	cyl.setLength(CYL_LENGTH);
-	cyl.setQuadrantName(string("+x"));
+	cyl.setQuadrantName("+x");
 
 	for (i = 0; i < 3; i++)
 		closestPt[i] = -closestPt[i];

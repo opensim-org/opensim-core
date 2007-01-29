@@ -186,7 +186,7 @@ void AbstractWrapObject::copyData(const AbstractWrapObject& aWrapObject)
  *
  * @param aName The name of the quadrant (e.g., "+x", "-y").
  */
-void AbstractWrapObject::setQuadrantName(string& aName)
+void AbstractWrapObject::setQuadrantName(const string& aName)
 {
 	_quadrantName = aName;
 

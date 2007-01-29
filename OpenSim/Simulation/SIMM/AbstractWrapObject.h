@@ -132,7 +132,7 @@ public:
 	bool getActiveUseDefault() const { return _activeProp.getUseDefault(); }
 	const char* getQuadrantName() const { return _quadrantName.c_str(); }
 	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getUseDefault(); }
-	void setQuadrantName(std::string& aName);
+	void setQuadrantName(const std::string& aName);
 	virtual const char* getWrapTypeName() const = 0;
 	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
 	int wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePoint& aPoint2,
