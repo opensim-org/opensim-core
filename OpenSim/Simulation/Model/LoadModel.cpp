@@ -18,9 +18,11 @@
 #define WINAPI
 #define LoadLibrary(name) dlopen(name, RTLD_LAZY)
 #define GetProcAddress(handle, proc) dlsym(handle, proc)
+#define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
 #else
 #define PORTABLE_HMODULE HMODULE
 #define PORTABLE_HINSTANCE HINSTANCE
+#define LoadLibraryError()
 #endif
 
 
@@ -86,13 +88,16 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 		// if that fails we'll try the one with no _D 
 		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
 			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << fixedLibFileName << endl;
+			LoadLibraryError();
 			// library with _D loading failed, try non _D version
 			actualLibFileName = fixedLibFileName+libraryExtension;
 			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
-			else
+			else {
 				cout << "Failed to load either debug or release library " << actualLibFileName << endl;
+				LoadLibraryError();
+			}
 		}
 		else
 			cout << "Loaded library " << actualLibFileName << endl;
@@ -115,8 +120,10 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
 				cout << "Loaded library " << actualLibFileName << endl;
 			}
-			else
+			else {
 				cout << "Failed to load either debug or release library " << actualLibFileName << endl;
+				LoadLibraryError();
+			}
 
 		}
 		else
