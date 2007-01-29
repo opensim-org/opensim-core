@@ -36,15 +36,21 @@ class SUANALYSES_API BodyKinematics : public Analysis
 private:
 
 protected:
+	/** Names of bodies whose kinematics are to be recorded. */
+	PropertyStrArray _bodiesProp;
+	Array<std::string> &_bodies;
+
+	Array<int> _bodyIndices;
+	bool _recordCenterOfMass;
+	Array<double> _kin;
+
 	double *_dy;
-	double *_kin;
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;
 	/** Whether or not to write output of angles in degrees. */
 	PropertyBool _angVelInLocalFrameProp;
 	bool &_angVelInLocalFrame;
-
 
 //=============================================================================
 // METHODS
@@ -71,6 +77,7 @@ private:
 	void constructColumnLabels();
 	void allocateStorage();
 	void deleteStorage();
+	void updateBodiesToRecord();
 
 public:
 	//--------------------------------------------------------------------------

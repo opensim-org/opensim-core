@@ -12,6 +12,7 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "suAnalysesDLL.h"
 
@@ -35,6 +36,13 @@ class SUANALYSES_API Kinematics : public Analysis
 private:
 
 protected:
+	/** Names of generalized coordinates whose kinematics are to be recorded. */
+	PropertyStrArray _coordinatesProp;
+	Array<std::string> &_coordinates;
+
+	Array<int> _coordinateIndices;
+	Array<double> _values;
+
 	double *_y;
 	double *_dy;
 	Storage *_pStore;
@@ -55,10 +63,12 @@ public:
 	virtual ~Kinematics();
 private:
 	void setNull();
+	void setupProperties();
 	void constructDescription();
 	void constructColumnLabels();
 	void allocateStorage();
 	void deleteStorage();
+	void updateCoordinatesToRecord();
 
 public:
 	//--------------------------------------------------------------------------

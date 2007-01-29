@@ -10,7 +10,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
@@ -27,6 +26,7 @@ using namespace std;
 // CONSTANTS
 //=============================================================================
 #define MAXLEN 10000
+#define CENTER_OF_MASS_NAME string("center_of_mass")
 
 
 //=============================================================================
@@ -39,7 +39,6 @@ using namespace std;
 BodyKinematics::~BodyKinematics()
 {
 	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
-	if(_kin!=NULL) { delete[] _kin; _kin=NULL; }
 	deleteStorage();
 }
 //_____________________________________________________________________________
@@ -51,6 +50,7 @@ BodyKinematics::~BodyKinematics()
  */
 BodyKinematics::BodyKinematics(AbstractModel *aModel, bool aInDegrees) :
 	Analysis(aModel),
+	_bodies(_bodiesProp.getValueStrArray()),
 	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {
 	 setNull();
@@ -63,10 +63,10 @@ BodyKinematics::BodyKinematics(AbstractModel *aModel, bool aInDegrees) :
 
 	// ALLOCATE STATE VECTOR
 	_dy = new double[_model->getNumStates()];
-	_kin = new double[6*_model->getNumBodies() + 3];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
+	updateBodiesToRecord();
 	constructColumnLabels();
 
 }
@@ -80,8 +80,9 @@ BodyKinematics::BodyKinematics(AbstractModel *aModel, bool aInDegrees) :
  * @param aFileName File name of the document.
  */
 BodyKinematics::BodyKinematics(const std::string &aFileName):
-Analysis(aFileName),
-_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
+	Analysis(aFileName),
+	_bodies(_bodiesProp.getValueStrArray()),
+	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {
 	setNull();
 
@@ -91,6 +92,7 @@ _angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 	/* The rest will be done by setModel().
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
+	updateBodiesToRecord();
 	constructColumnLabels();
 
 	// STORAGE
@@ -102,8 +104,9 @@ _angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
  * Construct an object from an DOMElement.
  */
 BodyKinematics::BodyKinematics(DOMElement *aElement):
-Analysis(aElement),
-_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
+	Analysis(aElement),
+	_bodies(_bodiesProp.getValueStrArray()),
+	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {
 	setNull();
 
@@ -113,6 +116,7 @@ _angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 	/* The rest will be done by setModel().
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
+	updateBodiesToRecord();
 	constructColumnLabels();
 
 	// STORAGE
@@ -127,9 +131,9 @@ _angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
  *
  */
 BodyKinematics::BodyKinematics(const BodyKinematics &aBodyKinematics):
-Analysis(aBodyKinematics),
-_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
-
+	Analysis(aBodyKinematics),
+	_bodies(_bodiesProp.getValueStrArray()),
+	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -186,19 +190,34 @@ operator=(const BodyKinematics &aBodyKinematics)
 void BodyKinematics::
 setNull()
 {
+	setupProperties();
 
 	// POINTERS
 	_dy = 0;
-	_kin = 0;
 	_pStore = NULL;
 	_vStore = NULL;
 	_aStore = NULL;
+	_bodies.setSize(1);
+	_bodies[0] = "all";
+	_recordCenterOfMass = true;
 
 	// OTHER VARIABLES
 
 	setType("BodyKinematics");
 	//?_body
 	setName("BodyKinematics");
+}
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void BodyKinematics::
+setupProperties()
+{
+	_bodiesProp.setComment("Names of bodies to record kinematics for.  Use 'all' to record all bodies."
+								  "  The special name '"+CENTER_OF_MASS_NAME+"' refers to the combined center of mass.");
+	_bodiesProp.setName("bodies");
+	_propertySet.append( &_bodiesProp );
 
 	_angVelInLocalFrameProp.setName("angular_velocity_local");
 	_angVelInLocalFrameProp.setValue(true);
@@ -249,12 +268,10 @@ void BodyKinematics::
 constructColumnLabels()
 {
 	string labels = "time";
-	BodySet *bs = _model->getDynamicsEngine().getBodySet();
-	int i=0;
 
-	for (i=0; i< bs->getSize(); i++)
-	{
-		AbstractBody *body = bs->get(i);
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	for(int i=0; i<_bodyIndices.getSize(); i++) {
+		AbstractBody *body = bs->get(_bodyIndices[i]);
 		labels += "\t" + body->getName() + "_X";
 		labels += "\t" + body->getName() + "_Y";
 		labels += "\t" + body->getName() + "_Z";
@@ -263,8 +280,10 @@ constructColumnLabels()
 		labels += "\t" + body->getName() + "_Oz";
 	}
 
-	// ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
-	labels += "\tWholeBody_X\tWholeBody_Y\tWholeBody_Z\n";
+	if(_recordCenterOfMass) {
+		// ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
+		labels += "\t"+CENTER_OF_MASS_NAME+"_X\t"+CENTER_OF_MASS_NAME+"_Y\t"+CENTER_OF_MASS_NAME+"_Z\n";
+	}
 
 	setColumnLabels(labels.c_str());
 }
@@ -308,6 +327,44 @@ deleteStorage()
 	if(_pStore!=NULL) { delete _pStore;  _pStore=NULL; }
 }
 
+//_____________________________________________________________________________
+/**
+ * Update bodies to record
+ */
+void BodyKinematics::
+updateBodiesToRecord()
+{
+	if(!_model) {
+		_bodyIndices.setSize(0);
+		_kin.setSize(0);
+		return;
+	}
+
+	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	_recordCenterOfMass = false;
+	_bodyIndices.setSize(0);
+	for(int i=0; i<_bodies.getSize(); i++) {
+		if(_bodies[i] == "all") {
+			_bodyIndices.setSize(bs->getSize());
+			for(int j=0;j<bs->getSize();j++) _bodyIndices[j]=j;
+			_recordCenterOfMass = true;
+			break;
+		}
+		if(_bodies[i] == CENTER_OF_MASS_NAME) {
+			_recordCenterOfMass = true;
+			continue;
+		}
+		int index = bs->getIndex(_bodies[i]);
+		if(index<0) 
+			throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
+		_bodyIndices.append(index);
+	}
+	_kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
+
+	if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
+}
+
+
 
 //=============================================================================
 // GET AND SET
@@ -326,14 +383,12 @@ setModel(AbstractModel *aModel)
 	// ALLOCATIONS
 	if (_dy != 0)
 		delete[] _dy;
-	if (_kin != 0)
-		delete[] _kin;
 
 	_dy = new double[_model->getNumStates()];
-	_kin = new double[6*_model->getNumBodies() + 3];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
+	updateBodiesToRecord();
 	constructColumnLabels();
 
 	deleteStorage();
@@ -426,7 +481,6 @@ getAngVelInLocalFrame()
 }
 
 
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================
@@ -465,18 +519,12 @@ record(double aT,double *aX,double *aY)
 	double dirCos[3][3];
 	double vec[3],angVec[3];
 	double Mass = 0.0;
-	int I;
-	int nk = 6*_model->getNumBodies() + 3;
 
 	// POSITION
-	double rP[3] = { 0.0, 0.0, 0.0 };
-	int bodyIndex = 0;
 	BodySet *bs = _model->getDynamicsEngine().getBodySet();
-	int i=0;
 
-	for (i=0; i< bs->getSize(); i++)
-	{
-		AbstractBody *body = bs->get(i);
+	for(int i=0;i<_bodyIndices.getSize();i++) {
+		AbstractBody *body = bs->get(_bodyIndices[i]);
 		double com[3];
 		body->getMassCenter(com);
 		// GET POSITIONS AND EULER ANGLES
@@ -484,12 +532,6 @@ record(double aT,double *aX,double *aY)
 		_model->getDynamicsEngine().getDirectionCosines(*body,dirCos);
 		_model->getDynamicsEngine().convertDirectionCosinesToAngles(dirCos,
 			&angVec[0],&angVec[1],&angVec[2]);
-
-		// ADD TO WHOLE BODY MASS
-		Mass += body->getMass();
-		rP[0] += body->getMass() * vec[0];
-		rP[1] += body->getMass() * vec[1];
-		rP[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -499,26 +541,38 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(bodyIndex++,6,0);
+		int I=6*i;
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
 
-	//COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
-	rP[0] /= Mass;
-	rP[1] /= Mass;
-	rP[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
-	memcpy(&_kin[I],rP,3*sizeof(double));
+	if(_recordCenterOfMass) {
+		double rP[3] = { 0.0, 0.0, 0.0 };
+		for(int i=0;i<bs->getSize();i++) {
+			AbstractBody *body = bs->get(i);
+			double com[3];
+			body->getMassCenter(com);
+			_model->getDynamicsEngine().getPosition(*body,com,vec);
+			// ADD TO WHOLE BODY MASS
+			Mass += body->getMass();
+			rP[0] += body->getMass() * vec[0];
+			rP[1] += body->getMass() * vec[1];
+			rP[2] += body->getMass() * vec[2];
+		}
+
+		//COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
+		rP[0] /= Mass;
+		rP[1] /= Mass;
+		rP[2] /= Mass;
+		int I = 6*_bodyIndices.getSize();
+		memcpy(&_kin[I],rP,3*sizeof(double));
+	}
 	
-	_pStore->append(aT,nk,_kin);
+	_pStore->append(aT,_kin.getSize(),&_kin[0]);
 
 	// VELOCITY
-	double rV[3] = { 0.0, 0.0, 0.0 };
-	bodyIndex = 0;
-	for (i=0; i< bs->getSize(); i++)
-	{
-		AbstractBody *body = bs->get(i);
+	for(int i=0;i<_bodyIndices.getSize();i++) {
+		AbstractBody *body = bs->get(_bodyIndices[i]);
 		double com[3];
 		body->getMassCenter(com);
 		// GET VELOCITIES AND ANGULAR VELOCITIES
@@ -528,9 +582,6 @@ record(double aT,double *aX,double *aY)
 		} else {
 			_model->getDynamicsEngine().getAngularVelocity(*body,angVec);
 		}
-		rV[0] += body->getMass() * vec[0];
-		rV[1] += body->getMass() * vec[1];
-		rV[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -540,34 +591,41 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(bodyIndex++,6,0);
+		int I = 6*i;
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
 
-	//COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
-	rV[0] /= Mass;
-	rV[1] /= Mass;
-	rV[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
-	memcpy(&_kin[I],rV,3*sizeof(double));
+	if(_recordCenterOfMass) {
+		double rV[3] = { 0.0, 0.0, 0.0 };
+		for(int i=0;i<bs->getSize();i++) {
+			AbstractBody *body = bs->get(i);
+			double com[3];
+			body->getMassCenter(com);
+			_model->getDynamicsEngine().getVelocity(*body,com,vec);
+			rV[0] += body->getMass() * vec[0];
+			rV[1] += body->getMass() * vec[1];
+			rV[2] += body->getMass() * vec[2];
+		}
 
-	_vStore->append(aT,nk,_kin);
+		//COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
+		rV[0] /= Mass;
+		rV[1] /= Mass;
+		rV[2] /= Mass;
+		int I = 6*_bodyIndices.getSize();
+		memcpy(&_kin[I],rV,3*sizeof(double));
+	}
+
+	_vStore->append(aT,_kin.getSize(),&_kin[0]);
 
 	// ACCELERATIONS
-	double rA[3] = { 0.0, 0.0, 0.0 };
-	bodyIndex = 0;
-	for (i=0; i< bs->getSize(); i++)
-	{
-		AbstractBody *body = bs->get(i);
+	for(int i=0;i<_bodyIndices.getSize();i++) {
+		AbstractBody *body = bs->get(_bodyIndices[i]);
 		double com[3];
 		body->getMassCenter(com);
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
 		_model->getDynamicsEngine().getAcceleration(*body,com,vec);
 		_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angVec);
-		rA[0] += body->getMass() * vec[0];
-		rA[1] += body->getMass() * vec[1];
-		rA[2] += body->getMass() * vec[2];
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -577,19 +635,32 @@ record(double aT,double *aX,double *aY)
 		}			
 
 		// FILL KINEMATICS ARRAY
-		I = Mtx::ComputeIndex(bodyIndex++,6,0);
+		int I = 6*i;
 		memcpy(&_kin[I],vec,3*sizeof(double));
 		memcpy(&_kin[I+3],angVec,3*sizeof(double));
 	}
 
-	//COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY
-	rA[0] /= Mass;
-	rA[1] /= Mass;
-	rA[2] /= Mass;
-	I = Mtx::ComputeIndex(_model->getNumBodies(),6,0);
-	memcpy(&_kin[I],rA,3*sizeof(double));
+	if(_recordCenterOfMass) {
+		double rA[3] = { 0.0, 0.0, 0.0 };
+		for(int i=0;i<bs->getSize();i++) {
+			AbstractBody *body = bs->get(i);
+			double com[3];
+			body->getMassCenter(com);
+			_model->getDynamicsEngine().getAcceleration(*body,com,vec);
+			rA[0] += body->getMass() * vec[0];
+			rA[1] += body->getMass() * vec[1];
+			rA[2] += body->getMass() * vec[2];
+		}
 
-	_aStore->append(aT,nk,_kin);
+		//COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY
+		rA[0] /= Mass;
+		rA[1] /= Mass;
+		rA[2] /= Mass;
+		int I = 6*_bodyIndices.getSize();
+		memcpy(&_kin[I],rA,3*sizeof(double));
+	}
+
+	_aStore->append(aT,_kin.getSize(),&_kin[0]);
 
 	//printf("BodyKinematics:\taT:\t%.16f\trA[1]:\t%.16f\n",aT,rA[1]);
 

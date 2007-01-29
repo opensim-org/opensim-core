@@ -50,16 +50,11 @@ Kinematics::~Kinematics()
  * @param aModel AbstractModel for which the kinematics are to be recorded.
  */
 Kinematics::Kinematics(AbstractModel *aModel) :
-	Analysis(aModel)
+	Analysis(aModel),
+	_coordinates(_coordinatesProp.getValueStrArray())
 {
 	// NULL
 	setNull();
-
-	if (_model != 0){
-		// ALLOCATE STATE VECTOR
-		_y = new double[_model->getNumStates()];
-		_dy = new double[_model->getNumStates()];
-	}
 
 	// DESCRIPTION
 	constructDescription();
@@ -75,6 +70,7 @@ Kinematics::Kinematics(AbstractModel *aModel) :
 	_dy = new double[_model->getNumStates()];
 
 	// LABELS
+	updateCoordinatesToRecord();
 	constructColumnLabels();
 }
 //=============================================================================
@@ -90,7 +86,8 @@ Kinematics::Kinematics(AbstractModel *aModel) :
  * @param aFileName File name of the document.
  */
 Kinematics::Kinematics(const std::string &aFileName):
-Analysis(aFileName)
+	Analysis(aFileName),
+	_coordinates(_coordinatesProp.getValueStrArray())
 {
 	setNull();
 
@@ -108,7 +105,8 @@ Analysis(aFileName)
  * Construct an object from an DOMElement.
  */
 Kinematics::Kinematics(DOMElement *aElement):
-Analysis(aElement)
+	Analysis(aElement),
+	_coordinates(_coordinatesProp.getValueStrArray())
 {
 	setNull();
 
@@ -117,6 +115,7 @@ Analysis(aElement)
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
+	updateCoordinatesToRecord();
 	constructColumnLabels();
 
 	// STORAGE
@@ -130,7 +129,8 @@ Analysis(aElement)
  *
  */
 Kinematics::Kinematics(const Kinematics &aKinematics):
-Analysis(aKinematics)
+	Analysis(aKinematics),
+	_coordinates(_coordinatesProp.getValueStrArray())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -166,12 +166,28 @@ Object* Kinematics::copy(DOMElement *aElement) const
 void Kinematics::
 setNull()
 {
+	setupProperties();
+
 	setType("Kinematics");
 	setName("Kinematics");
 	_y=0;
 	_dy=0;
 	_pStore=_vStore=_aStore=0;
+	_coordinates.setSize(1);
+	_coordinates[0] = "all";
 }
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void Kinematics::
+setupProperties()
+{
+	_coordinatesProp.setComment("Names of generalized coordinates to record kinematics for.  Use 'all' to record all coordinates.");
+	_coordinatesProp.setName("coordinates");
+	_propertySet.append( &_coordinatesProp );
+}
+
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
@@ -192,6 +208,7 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	if(_model!=NULL) {
 		_y = new double[_model->getNumStates()];
 		_dy = new double[_model->getNumStates()];
+		updateCoordinatesToRecord();
 		constructColumnLabels();
 	}
 
@@ -241,6 +258,38 @@ deleteStorage()
 }
 
 
+//_____________________________________________________________________________
+/**
+ * Update coordinates to record
+ */
+void Kinematics::
+updateCoordinatesToRecord()
+{
+	if(!_model) {
+		_coordinateIndices.setSize(0);
+		_values.setSize(0);
+		return;
+	}
+
+	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+	_coordinateIndices.setSize(_coordinates.getSize());
+	for(int i=0; i<_coordinates.getSize(); i++) {
+		if(_coordinates[i] == "all") {
+			_coordinateIndices.setSize(ss->getSize());
+			for(int j=0;j<ss->getSize();j++) _coordinateIndices[j]=j;
+			break;
+		}
+		string speedName = AbstractSpeed::getSpeedName(_coordinates[i]);
+		int index = ss->getIndex(speedName);
+		if(index<0) 
+			throw Exception("Kinematics: ERR- Cound not find coordinate named '"+_coordinates[i]+"'",__FILE__,__LINE__);
+		_coordinateIndices[i] = index;
+	}
+	_values.setSize(_coordinateIndices.getSize());
+
+	if(_values.getSize()==0) cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+}
+
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -287,10 +336,8 @@ constructColumnLabels()
 	string labels = "time";
 	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
 
-	int i;
-	for (i=0; i < ss->getSize(); i++)
-	{
-		AbstractSpeed *speed= ss->get(i);
+	for(int i=0; i<_coordinateIndices.getSize(); i++) {
+		AbstractSpeed *speed= ss->get(_coordinateIndices[i]);
 		labels += "\t" + AbstractSpeed::getCoordinateName(speed->getName());
 	}
 
@@ -361,8 +408,8 @@ void Kinematics::setModel(AbstractModel *aModel)
 		_dy = new double[_model->getNumStates()];
 	}
 
-	constructColumnLabels();
 	// UPDATE LABELS
+	updateCoordinatesToRecord();
 	constructColumnLabels();
 }
 
@@ -438,9 +485,13 @@ record(double aT,double *aX,double *aY)
 	}
 
 	// RECORD RESULTS
-	_pStore->append(aT,nu,_y);
-	_vStore->append(aT,nu,&_y[nq]);
-	_aStore->append(aT,nu,&_dy[nq]);
+	int nvalues = _coordinateIndices.getSize();
+	for(int i=0;i<nvalues;i++) _values[i] = _y[_coordinateIndices[i]];
+	_pStore->append(aT,nvalues,&_values[0]);
+	for(int i=0;i<nvalues;i++) _values[i] = _y[nq+_coordinateIndices[i]];
+	_vStore->append(aT,nvalues,&_values[0]);
+	for(int i=0;i<nvalues;i++) _values[i] = _dy[nq+_coordinateIndices[i]];
+	_aStore->append(aT,nvalues,&_values[0]);
 
 	return(0);
 }
