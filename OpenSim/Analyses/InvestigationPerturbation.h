@@ -64,6 +64,8 @@ private:
 	/** Name of the states file. */
 	PropertyStr _yFileNameProp;
 	std::string &_yFileName;
+
+	// FOOT CONTACT EVENT TIMES
 	/** Time of right heel strike. */
 	PropertyDbl _rHeelStrikeProp;
 	double &_rHeelStrike;
@@ -105,6 +107,8 @@ private:
 	/** Damping for torsional corrective springs. */
 	PropertyDblArray _bTorProp;
 	Array<double> &_bTor;
+
+	// COM ADJUSTMENT PARAMETERS
 	/** Name of the body whose center of mass is adjusted. */
 	PropertyStr _adjustedCOMBodyProp;
 	std::string &_adjustedCOMBody;
@@ -112,6 +116,8 @@ private:
 	This adjustment is made to remove dc offset in the residuals. */
 	PropertyStr _adjustedCOMFileNameProp;
 	std::string &_adjustedCOMFileName;
+
+	// EXTERNAL LOAD PARAMETERS
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;

@@ -295,88 +295,116 @@ setNull()
 void InvestigationPerturbation::setupProperties()
 {
 	// PERTURBATION PARAMETERS
+	_pertWindowProp.setComment("Perturbation time window");
 	_pertWindowProp.setName("perturbation_time_window");
 	_propertySet.append( &_pertWindowProp );
 
+	_pertIncrementProp.setComment("Time increment between perturbation windows");
 	_pertIncrementProp.setName("perturbation_time_increment");
 	_propertySet.append( &_pertIncrementProp );
 
+	_pertDFProp.setComment("Magnitude of perturbation");
 	_pertDFProp.setName("perturbation_size");
 	_propertySet.append( &_pertDFProp);
 
 
 	// CORRECTIVE SPRING PARAMETERS
+	_tauProp.setComment("Rise time for scaling functions");
 	_tauProp.setName("scaling_rise_time");
 	_propertySet.append( &_tauProp );
 
+	_kLinProp.setComment("Stiffness for linear corrective springs");
 	_kLinProp.setName("corrective_spring_linear_stiffness");
 	_propertySet.append( &_kLinProp );
 
+	_bLinProp.setComment("Damping for linear corrective springs");
 	_bLinProp.setName("corrective_spring_linear_damping");
 	_propertySet.append( &_bLinProp );
 
+	_kTorProp.setComment("Stiffness for torsional corrective springs");
 	_kTorProp.setName("corrective_spring_torsional_stiffness");
 	_propertySet.append( &_kTorProp );
 
+	_bTorProp.setComment("Damping for torsional corrective springs");
 	_bTorProp.setName("corrective_spring_torsional_damping");
 	_propertySet.append( &_bTorProp );
 
 
 	// INPUT FILE NAMES
+	_controlsFileNameProp.setComment("Name of the controls file");
 	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
+	_copFileNameProp.setComment("Name of the center of pressure file");
 	_copFileNameProp.setName("cop_file");
 	_propertySet.append( &_copFileNameProp );
 
+	_qFileNameProp.setComment("Name of the generalized coordinate file");
 	_qFileNameProp.setName("coordinates_file");
 	_propertySet.append( &_qFileNameProp );
 
+	_uFileNameProp.setComment("Name of the generalized speed file");
 	_uFileNameProp.setName("speeds_file");
 	_propertySet.append( &_uFileNameProp );
 
+	_yFileNameProp.setComment("Name of the states file");
 	_yFileNameProp.setName("states_file");
 	_propertySet.append( &_yFileNameProp );
 
 
 	// FOOT CONTACT EVENT TIMES
+	_rHeelStrikeProp.setComment("Time of right heel strike");
 	_rHeelStrikeProp.setName("r_heel_strike");
 	_propertySet.append( &_rHeelStrikeProp );
 
+	_rFootFlatProp.setComment("Time of right foot flat");
 	_rFootFlatProp.setName("r_foot_flat");
 	_propertySet.append( &_rFootFlatProp );
 
+	_rHeelOffProp.setComment("Time of right heel off");
 	_rHeelOffProp.setName("r_heel_off");
 	_propertySet.append( &_rHeelOffProp );
 
+	_rToeOffProp.setComment("Time of right toe off");
 	_rToeOffProp.setName("r_toe_off");
 	_propertySet.append( &_rToeOffProp );
 
+	_lHeelStrikeProp.setComment("Time of left heel strike");
 	_lHeelStrikeProp.setName("l_heel_strike");
 	_propertySet.append( &_lHeelStrikeProp );
 
+	_lFootFlatProp.setComment("Time of left foot flat");
 	_lFootFlatProp.setName("l_foot_flat");
 	_propertySet.append( &_lFootFlatProp );
 
+	_lHeelOffProp.setComment("Time of left heel off");
 	_lHeelOffProp.setName("l_heel_off");
 	_propertySet.append( &_lHeelOffProp );
 
+	_lToeOffProp.setComment("Time of left toe off");
 	_lToeOffProp.setName("l_toe_off");
 	_propertySet.append( &_lToeOffProp );
 
 	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
+	_externalLoadsFileNameProp.setComment("Name of the file containing the external loads applied to the model");
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
+	_externalLoadsModelKinematicsFileNameProp.setComment("Name of the file containing the model kinematics corresponding to the external loads");
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
+	_externalLoadsBody1Prop.setComment("Name of the body to which the first set of external loads should be applied (e.g., the body name for the right foot)");
 	_externalLoadsBody1Prop.setName("external_loads_body1");
 	_propertySet.append( &_externalLoadsBody1Prop );
 
+	_externalLoadsBody2Prop.setComment("Name of the body to which the second set of external loads should be applied (e.g., the body name for the left foot)");
 	_externalLoadsBody2Prop.setName("external_loads_body2");
 	_propertySet.append( &_externalLoadsBody2Prop );
 
+	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment("Low-pass cut-off frequency for filtering the model kinematics corresponding"
+																			  "to the external loads. A negative value results in no filtering."
+																			  " The default value is -1.0, so no filtering.");
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
@@ -457,11 +485,6 @@ void InvestigationPerturbation::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int na = _model->getNumActuators();
-	int nb = _model->getNumBodies();
-	int numBodyKinCols = 6*nb + 3;
-	int indexCOMX = numBodyKinCols - 3;
-	int indexCOMY = numBodyKinCols - 2;
-	int indexCOMZ = numBodyKinCols - 1;
 
 	// GROUND REACTION FORCES
 	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
@@ -470,16 +493,18 @@ void InvestigationPerturbation::run()
 	// CONSTRUCT CORRECTIVE SPRINGS
 	constructCorrectiveSprings();
 
-	// ADD ANALYSES
-	// Body kinematics
-	BodyKinematics *kin = new BodyKinematics(_model);
-	_model->addAnalysis(kin);
-	kin->getPositionStorage()->setWriteSIMMHeader(true);		
-	kin->setOn(true);
+	// Add actuation analysis -- needed in order to evaluate unperturbed forces
 	// Actuation
 	Actuation *actuation = new Actuation(_model);
 	_model->addAnalysis(actuation);
-	actuation->setOn(true);
+
+	Kinematics *kin=0;
+	BodyKinematics *bodyKin=0;
+	AnalysisSet &ans=getAnalysisSet();
+	for(int i=0;i<ans.getSize();i++) {
+		if(dynamic_cast<Kinematics*>(ans.get(i))) kin=dynamic_cast<Kinematics*>(ans.get(i));
+		else if(dynamic_cast<BodyKinematics*>(ans.get(i))) bodyKin=dynamic_cast<BodyKinematics*>(ans.get(i));
+	}
 
 	// SETUP SIMULATION
 	// Manager
@@ -534,48 +559,54 @@ void InvestigationPerturbation::run()
 
 	if(gravity_perturbation) _model->getGravity(original_gravity);
 
-	// RESULT VARIABLES
-	Array<double> PFXBody(0.0,nperturb),PFYBody(0.0,nperturb),PFZBody(0.0,nperturb);
-	Array<double> daXdf(0.0,nperturb),deltaAX(0.0,nperturb);
-	Array<double> daYdf(0.0,nperturb),deltaAY(0.0,nperturb);
-	Array<double> daZdf(0.0,nperturb),deltaAZ(0.0,nperturb);
-	for(int i=0;i<nperturb;i++)	{
-		PFXBody[i] = PFYBody[i] = PFZBody[i] = 0.0;
-		daXdf[i] = daYdf[i] = daZdf[i] = 0.0;
-		deltaAX[i] = deltaAY[i] = deltaAZ[i] = 0.0;
-	}
-
-	// Storage objects for results
-	Storage daXdfStore,deltaAXStore,PFXBodyStore;
-	Storage daYdfStore,deltaAYStore,PFYBodyStore;
-	Storage daZdfStore,deltaAZStore,PFZBodyStore;
 	string columnLabels = "time";
 	ActuatorSet *as = _model->getActuatorSet();
 	for(int i=0; i<as->getSize(); i++)
-	{
 		columnLabels += "\t" + as->get(i)->getName();
-	}
 	if(gravity_perturbation)
 		columnLabels += "\tgravity";
 
-	daXdfStore.setName("daXdf");
-	daXdfStore.setColumnLabels(columnLabels.c_str());
-	deltaAXStore.setName("deltaAX");
-	deltaAXStore.setColumnLabels(columnLabels.c_str());
-	PFXBodyStore.setName("PFXBody");
-	PFXBodyStore.setColumnLabels(columnLabels.c_str());
-	daYdfStore.setName("daYdf");
-	daYdfStore.setColumnLabels(columnLabels.c_str());
-	deltaAYStore.setName("deltaAY");
-	deltaAYStore.setColumnLabels(columnLabels.c_str());
-	PFYBodyStore.setName("PFYBody");
-	PFYBodyStore.setColumnLabels(columnLabels.c_str());
-	daZdfStore.setName("daZdf");
-	daZdfStore.setColumnLabels(columnLabels.c_str());
-	deltaAZStore.setName("deltaAZ");
-	deltaAZStore.setColumnLabels(columnLabels.c_str());
-	PFZBodyStore.setName("PFZBody");
-	PFZBodyStore.setColumnLabels(columnLabels.c_str());
+	// Figure out which columns are being recorded in the Kinematics and BodyKinematics analyses...
+	// but make sure to ignore the first (time) column
+	int ncoords = kin ? kin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
+	int nbodycoords = bodyKin ? bodyKin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
+	int nvalues = ncoords + nbodycoords;
+	Array<string> values_name("",nvalues);
+	cout << "Values to be measured during perturbation:" << endl;
+	for(int i=0;i<ncoords;i++) {
+		values_name[i] = kin->getPositionStorage()->getColumnLabelsArray()[i+1];
+		cout << "[Kinematics] " << values_name[i] << endl;
+	}
+	for(int i=0;i<nbodycoords;i++) {
+		values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabelsArray()[i+1];
+		cout << "[BodyKinematics] " << values_name[ncoords+i] << endl;
+	}
+
+	// The first ncoords values in the values_* arrays refer to generalized coordinates that are being measured; the
+	// remaining nbodycoords values refer to body coordinates that are being measured.
+	Array<double> values_unperturbed(0.0,nvalues);
+	ArrayPtrs<Array<double> > values_perturbed, values_dAdF;
+	values_perturbed.setSize(nvalues);
+	values_dAdF.setSize(nvalues);
+	ArrayPtrs<Storage> values_perturbedStorage, values_dAdFStorage, values_deltaAStorage;
+	values_perturbedStorage.setSize(nvalues);
+	values_dAdFStorage.setSize(nvalues);
+	values_deltaAStorage.setSize(nvalues);
+	for(int i=0; i<nvalues; i++) {
+		values_perturbed.set(i,new Array<double>(0.0,nperturb));
+		values_dAdF.set(i,new Array<double>(0.0,nperturb));
+		values_perturbedStorage.set(i,new Storage);
+		values_dAdFStorage.set(i,new Storage);
+		values_deltaAStorage.set(i,new Storage);
+		values_perturbedStorage[i]->setName(values_name[i]+"_perturbed");
+		values_perturbedStorage[i]->setColumnLabels(columnLabels.c_str());
+		values_dAdFStorage[i]->setName(values_name[i]+"_dAdF");
+		values_dAdFStorage[i]->setColumnLabels(columnLabels.c_str());
+		values_deltaAStorage[i]->setName(values_name[i]+"_deltaA");
+		values_deltaAStorage[i]->setColumnLabels(columnLabels.c_str());
+	}
+
+	Array<double> deltaA(0,nperturb);
 
 	//********************************************************************
 	// Run an unperturbed forward simulation to compute and write out
@@ -602,7 +633,8 @@ void InvestigationPerturbation::run()
 	// From now on we'll only need the last state vectors recorded in these analyses, so we
 	// set their step interval to a large number to avoid them computing and writing their
 	// data at the (many) individual integration steps.
-	kin->setStepInterval(1000000);
+	if(kin) kin->setStepInterval(1000000);
+	if(bodyKin) bodyKin->setStepInterval(1000000);
 	actuation->setStepInterval(1000000);
 
 	//********************************************************************
@@ -621,9 +653,16 @@ void InvestigationPerturbation::run()
 		_model->setInitialStates(&yi[0]);
 
 		// RESET ANALYSES
-		kin->getPositionStorage()->reset();
-		kin->getVelocityStorage()->reset();
-		kin->getAccelerationStorage()->reset();
+		if(kin) {
+			kin->getPositionStorage()->reset();
+			kin->getVelocityStorage()->reset();
+			kin->getAccelerationStorage()->reset();
+		}
+		if(bodyKin) {
+			bodyKin->getPositionStorage()->reset();
+			bodyKin->getVelocityStorage()->reset();
+			bodyKin->getAccelerationStorage()->reset();
+		}
 		actuation->getForceStorage()->reset();
 
 		// INTEGRATE (1)
@@ -641,14 +680,20 @@ void InvestigationPerturbation::run()
 		manager.integrate();
 		perturbation->setRecordUnperturbedForces(false);
 
-		// Get unperturbed kinmatics
-		const Array<double> &rowUnperturbedKin = kin->getPositionStorage()->getLastStateVector()->getData();
-		double PXBody = rowUnperturbedKin[indexCOMX];
-		double PYBody = rowUnperturbedKin[indexCOMY];
-		double PZBody = rowUnperturbedKin[indexCOMZ];
+		// Get unperturbed values (concatenate generalized coordinates and body coordinates)
+		if(kin) {
+			const Array<double> &unperturbedCoordinates = kin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
+			for(int i=0;i<ncoords;i++) values_unperturbed[i] = unperturbedCoordinates[i];
+		}
+		if(bodyKin) {
+			const Array<double> &unperturbedBodyCoordinates = bodyKin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
+			for(int i=0;i<nbodycoords;i++) values_unperturbed[ncoords+i] = unperturbedBodyCoordinates[i];
+		}
 
-		// Get unperturbed forces -- make a copy of the array
-		Array<double> rowUnperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData();
+		// Unperturbed forces
+		Array<double> unperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData(); // at BEGINNING of timestep
+		// include unperturbed gravity value if doing gravity perturbation
+		if(gravity_perturbation) unperturbedForces.append(original_gravity[gravity_axis]);
 
 		// Loop over muscles
 		for (int m=0;m<nperturb;m++)	{
@@ -672,74 +717,60 @@ void InvestigationPerturbation::run()
 			// Integrate
  			manager.integrate();
 
-			// Get perturbed kinematics
-			const Array<double> &lastRowPerturbedKin = kin->getPositionStorage()->getLastStateVector()->getData();
-			PFXBody[m] = lastRowPerturbedKin[indexCOMX];
-			PFYBody[m] = lastRowPerturbedKin[indexCOMY];
-			PFZBody[m] = lastRowPerturbedKin[indexCOMZ];
-
-			// Compute derivatives
-			daXdf[m] = 2*(PFXBody[m]-PXBody)/(_pertDF*_pertWindow*_pertWindow);
-			daYdf[m] = 2*(PFYBody[m]-PYBody)/(_pertDF*_pertWindow*_pertWindow);
-			daZdf[m] = 2*(PFZBody[m]-PZBody)/(_pertDF*_pertWindow*_pertWindow);
-
 			if(m<na) {
-				cout << "muscle:\t"<<m<<"\tforce:\t"<<rowUnperturbedForces[m]<<endl;
-				deltaAX[m] = rowUnperturbedForces[m] *daXdf[m];
-				deltaAY[m] = rowUnperturbedForces[m] *daYdf[m];
-				deltaAZ[m] = rowUnperturbedForces[m] *daZdf[m];
+				cout << "muscle:\t"<<m<<"\tforce:\t"<<unperturbedForces[m]<<endl;
 			} else {
-				cout << "gravity original:\t"<<original_gravity[gravity_axis]<<endl;
-				deltaAX[m] = original_gravity[gravity_axis] *daXdf[m];
-				deltaAY[m] = original_gravity[gravity_axis] *daYdf[m];
-				deltaAZ[m] = original_gravity[gravity_axis] *daZdf[m];
+				cout << "gravity original:\t"<<unperturbedForces[m]<<endl;
 				// undo gravity perturbation
 				_model->setGravity(original_gravity);
 			}
 
-			cout << "PFXBody:\t"<<PFXBody[m]<<"\tPXBody:\t"<<PXBody<<"\tdifference:\t"<<PFXBody[m]-PXBody<<endl;
-			cout << "daXdf:\t"<<daXdf[m]<<"\tdeltaAX:\t"<<deltaAX[m]<<endl;
-			cout << "PFYBody:\t"<<PFYBody[m]<<"\tPYBody:\t"<<PYBody<<"\tdifference:\t"<<PFYBody[m]-PYBody<<endl;
-			cout << "daYdf:\t"<<daYdf[m]<<"\tdeltaAY:\t"<<deltaAY[m]<<endl;
+			// Perturbed generalized coordinate values (concatenate into values_perturbed array)
+			if(kin) {
+				const Array<double> &perturbedCoordinates = kin->getPositionStorage()->getLastStateVector()->getData();
+				for(int i=0;i<ncoords;i++) (*values_perturbed[i])[m] = perturbedCoordinates[i];
+			}
+			if(bodyKin) {
+				const Array<double> &perturbedBodyCoordinates = bodyKin->getPositionStorage()->getLastStateVector()->getData();
+				for(int i=0;i<nbodycoords;i++) (*values_perturbed[ncoords+i])[m] = perturbedBodyCoordinates[i];
+			}
+
+			// COMPUTE DERIVATIVES
+			for(int i=0;i<nvalues;i++) {
+				double perturbed = (*values_perturbed[i])[m], unperturbed = values_unperturbed[i];
+				double dAdF = 2*(perturbed - unperturbed)/(_pertDF*_pertWindow*_pertWindow);
+				(*values_perturbed[i])[m] = perturbed;
+				(*values_dAdF[i])[m] = dAdF;
+
+				cout << values_name[i] << ": perturbed="<<perturbed<<"  unperturbed="<<unperturbed<<"  diff="<<perturbed-unperturbed
+					  <<"  dAdF="<<dAdF<<"  deltaA="<<unperturbedForces[m]*dAdF<<endl;
+			}
 		} //end muscle loop
 
 		// Append to storage objects
-		daXdfStore.append(tiPert,nperturb,&daXdf[0]);
-		deltaAXStore.append(tiPert,nperturb,&deltaAX[0]);
-		PFXBodyStore.append(tiPert,nperturb,&PFXBody[0]);
-		daYdfStore.append(tiPert,nperturb,&daYdf[0]);
-		deltaAYStore.append(tiPert,nperturb,&deltaAY[0]);
-		PFYBodyStore.append(tiPert,nperturb,&PFYBody[0]);
-		daZdfStore.append(tiPert,nperturb,&daZdf[0]);
-		deltaAZStore.append(tiPert,nperturb,&deltaAZ[0]);
-		PFZBodyStore.append(tiPert,nperturb,&PFZBody[0]);
-
+		for(int i=0;i<nvalues;i++) {
+			const Array<double> &perturbed = *values_perturbed[i];
+			const Array<double> &dAdF = *values_dAdF[i];
+			values_perturbedStorage[i]->append(tiPert,nperturb,&perturbed[0]);
+			values_dAdFStorage[i]->append(tiPert,nperturb,&dAdF[0]);
+			for(int m=0;m<nperturb;m++) deltaA[m] = unperturbedForces[m] * dAdF[m];
+			values_deltaAStorage[i]->append(tiPert,nperturb,&deltaA[0]);
+		}
+	
 		// Print results
 		IO::makeDir(getResultsDir());
 		char fileName[Object::NAME_LENGTH];
-		sprintf(fileName,"%s/daXdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		daXdfStore.print(fileName);
-		sprintf(fileName,"%s/deltaAX_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		deltaAXStore.print(fileName);
-		sprintf(fileName,"%s/PFXBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		PFXBodyStore.print(fileName);
-		sprintf(fileName,"%s/daYdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		daYdfStore.print(fileName);
-		sprintf(fileName,"%s/deltaAY_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		deltaAYStore.print(fileName);
-		sprintf(fileName,"%s/PFYBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		PFYBodyStore.print(fileName);
-		sprintf(fileName,"%s/daZdf_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		daZdfStore.print(fileName);
-		sprintf(fileName,"%s/deltaAZ_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		deltaAZStore.print(fileName);
-		sprintf(fileName,"%s/PFZBody_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),_pertWindow,_pertDF);
-		PFZBodyStore.print(fileName);
-
+		for(int i=0;i<nvalues;i++) {
+			sprintf(fileName,"%s/%s_perturbed_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			values_perturbedStorage[i]->print(fileName);
+			sprintf(fileName,"%s/%s_dAdF_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			values_dAdFStorage[i]->print(fileName);
+			sprintf(fileName,"%s/%s_deltaA_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			values_deltaAStorage[i]->print(fileName);
+		}
 	} // end time loop
 	//***************************************************************************
 	IO::chDir(saveWorkingDirectory);
-
 }
 
 
