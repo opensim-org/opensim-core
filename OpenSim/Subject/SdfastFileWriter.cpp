@@ -930,6 +930,10 @@ AbstractCoordinate* SdfastFileWriter::addCoordinateToSimulationModel(DofInfo& aD
 	coord->setName(aDofInfo.name);
 	coord->setJointIndex(aDofInfo.joint);
 	coord->setAxisIndex(aDofInfo.axis);
+	// Not clear to me what differences (if any) we may get between aDofInfo.initialValue and aDofInfo.modelDof->getValue(),
+	// so just in case they ever differ I added an initialValue property to SdfastCoordinate to store the value that 
+	// the initial_value field needs to be set to. 
+	coord->setInitialValue(aDofInfo.initialValue);
 	coord->setDefaultValue(aDofInfo.modelDof->getValue());
 	_simulationEngine->addCoordinate(coord);
 
@@ -1346,7 +1350,8 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
 			}
 			out << "   sdm.q[" << dof->name << "].joint = " << joint->name << ";" << endl;
 			out << "   sdm.q[" << dof->name << "].axis = " << dof->axis << ";" << endl;
-			out << "   sdm.q[" << dof->name << "].initial_value = " << dof->initialValue << ";" << endl;
+			out << "   // initial_value will now be set using setCoordinateInitialValues" << endl;
+			out << "   // sdm.q[" << dof->name << "].initial_value = " << dof->initialValue << ";" << endl;
 			out << "   sdm.q[" << dof->name << "].initial_velocity = 0.0;" << endl;
 			if (!dof->constrained && !dof->fixed)
 			{
@@ -1963,7 +1968,7 @@ void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, co
 
 void SdfastFileWriter::writeSimulationModelFile(const string& aFileName)
 {
-	IO::SetPrecision(8);
+	IO::SetPrecision(12);
 
 	if (!_initialized)
 		initialize();
