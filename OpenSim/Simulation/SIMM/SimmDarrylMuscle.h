@@ -177,6 +177,7 @@ public:
 	virtual double getFlen() { return _flen; }
 
 	double getStress() const;
+	double computeIsometricForce(double activation);
 
 	virtual void peteTest() const;
 

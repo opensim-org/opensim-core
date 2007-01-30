@@ -159,6 +159,7 @@ public:
 	double calcTendonForce(double aNormTendonLength) const;
 
 	double getStress() const;
+	double computeIsometricForce(double activation);
 
 	virtual void peteTest() const;
 
