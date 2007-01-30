@@ -923,6 +923,10 @@ AbstractCoordinate* SdfastFileWriter::addCoordinateToSimulationModel(DofInfo& aD
 			coord->setSdfastType(SdfastCoordinate::dpUnconstrained);
 	}
 
+	if(aDofInfo.modelDof->getCoordinate() && aDofInfo.constrained) {
+		const Function *func = aDofInfo.modelDof->getFunction();
+		if(func) coord->setConstraintFunction(func);
+	}
 	coord->setName(aDofInfo.name);
 	coord->setJointIndex(aDofInfo.joint);
 	coord->setAxisIndex(aDofInfo.axis);
@@ -1150,6 +1154,8 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
    if (!constraintsExist)
       return;
 
+#if 0
+	// NO LONGER NEED TO HARDCODE VALUES INTO sdfor.c FILE BECAUSE VALUES WILL BE SET USING setJointConstraintFunctions
 	out << "/* The following spline-function data points are copied directly from the" << endl;
    out << " * SIMM joints file." << endl << " */" << endl << endl;
 
@@ -1177,6 +1183,7 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
 			}
 		}
    }
+#endif
 
 	for (i = 0; i < _jointOrder.getSize(); i++)
 	{
@@ -1187,7 +1194,6 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
 				out << "static dpSplineFunction " << jointInfo->dofs[j].name << "_func;" << endl;
       }
    }
-
 }
 
 void SdfastFileWriter::writeSdfastQRestraintData(ofstream& out)
@@ -1495,6 +1501,9 @@ void SdfastFileWriter::writeSdfastInitCode(ofstream& out)
 
 void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 {
+#if 0
+	// VALUES WILL BE SET USING setJointConstraintFunctions INSTEAD OF USING THIS FUNCTION
+	
 	out << "/* INIT_JOINT_FUNCTIONS: this routine initializes the constraint functions" << endl;
 	out << " * for the joints which have user-defined constraints.\n */" << endl << endl;
 
@@ -1527,6 +1536,7 @@ void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 		out << "   /* There are no user-defined constraints in this model */" << endl << endl;
 
 	out << "}" << endl << endl << endl;
+#endif
 }
 
 void SdfastFileWriter::writeSdfastWrapObjects(ofstream& out)
