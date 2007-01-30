@@ -1968,7 +1968,7 @@ void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, co
 
 void SdfastFileWriter::writeSimulationModelFile(const string& aFileName)
 {
-	IO::SetPrecision(12);
+	IO::SetPrecision(8);
 
 	if (!_initialized)
 		initialize();
