@@ -1,4 +1,4 @@
-// InvestigationCMCGait.cpp
+// CMCTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson, Eran Guendelman, Chand T. John
@@ -31,7 +31,7 @@
 // INCLUDES
 //=============================================================================
 #include <time.h>
-#include "InvestigationCMCGait.h"
+#include "CMCTool.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/GCVSplineSet.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
@@ -47,7 +47,7 @@
 #include <OpenSim/Analyses/TorqueApplier.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/InvestigationForward.h>
+#include <OpenSim/Analyses/ForwardTool.h>
 #include <OpenSim/Tools/DebugUtilities.h>
 #include "rdCMC.h"
 #include "rdCMC_TaskSet.h"
@@ -65,15 +65,15 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-InvestigationCMCGait::~InvestigationCMCGait()
+CMCTool::~CMCTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-InvestigationCMCGait::InvestigationCMCGait() :
-	Investigation(),
+CMCTool::CMCTool() :
+	SimulationTool(),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -97,7 +97,7 @@ InvestigationCMCGait::InvestigationCMCGait() :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
-	setType("InvestigationCMCGait");
+	setType("CMCTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -106,8 +106,8 @@ InvestigationCMCGait::InvestigationCMCGait() :
  *
  * @param aFileName File name of the XML document.
  */
-InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
-	Investigation(aFileName),
+CMCTool::CMCTool(const string &aFileName) :
+	SimulationTool(aFileName),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -131,7 +131,7 @@ InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
-	setType("InvestigationCMCGait");
+	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
 	if(_model) addAnalysisSetToModel();
@@ -143,10 +143,10 @@ InvestigationCMCGait::InvestigationCMCGait(const string &aFileName) :
  * object.  A CMC investigation can be constructed from one of these DOM
  * elements.
  *
- * @param aElement DOM element for the InvestigationCMCGait object.
+ * @param aElement DOM element for the CMCTool object.
  */
-InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
-	Investigation(aElement),
+CMCTool::CMCTool(DOMElement *aElement) :
+	SimulationTool(aElement),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -170,7 +170,7 @@ InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
-	setType("InvestigationCMCGait");
+	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
 }
@@ -178,41 +178,41 @@ InvestigationCMCGait::InvestigationCMCGait(DOMElement *aElement) :
 /**
  * Copy constructor.
  *
- * Copy constructors for all Investigations do not copy the Object's DOMnode
+ * Copy constructors for all Tools do not copy the Object's DOMnode
  * and XMLDocument.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for an Investigation:
+ * There are three proper ways to generate an XML document for a Tool:
  *
- * 1) Construction based on XML file (@see Investigation(const char *aFileName)).
+ * 1) Construction based on XML file (@see Tool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by Investigation(const XMLDocument *aDocument).
+ * 2) Construction by Tool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document that is held in memory.  In this way the proper connection
  * between an object's node and the corresponding node within the XML
  * document is established.
  * This constructor is a copy constructor of sorts because all essential
- * Investigation member variables should be held within the XML document.
+ * Tool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated Investigation member variable, are preserved.
+ * associated Tool member variable, are preserved.
  *
  * 3) A call to generateDocument().
- * This method generates an XML document for the Investigation from scratch.
+ * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
- * @param aInvestigation Object to be copied.
- * @see Investigation(const XMLDocument *aDocument)
- * @see Investigation(const char *aFileName)
+ * @param aTool Object to be copied.
+ * @see Tool(const XMLDocument *aDocument)
+ * @see Tool(const char *aFileName)
  * @see generateDocument()
  */
-InvestigationCMCGait::
-InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
-	Investigation(aInvestigation),
+CMCTool::
+CMCTool(const CMCTool &aTool) :
+	SimulationTool(aTool),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -236,9 +236,9 @@ InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
 {
-	setType("InvestigationCMCGait");
+	setType("CMCTool");
 	setNull();
-	*this = aInvestigation;
+	*this = aTool;
 }
 
 //_____________________________________________________________________________
@@ -247,10 +247,10 @@ InvestigationCMCGait(const InvestigationCMCGait &aInvestigation) :
  *
  * @return Copy of this object.
  */
-Object* InvestigationCMCGait::
+Object* CMCTool::
 copy() const
 {
-	InvestigationCMCGait *object = new InvestigationCMCGait(*this);
+	CMCTool *object = new CMCTool(*this);
 	return(object);
 }
 //_____________________________________________________________________________
@@ -264,10 +264,10 @@ copy() const
  * @return Copy of this object with properties overriden by any properties
  * specified in the DOMElement.
  */
-Object* InvestigationCMCGait::
+Object* CMCTool::
 copy(DOMElement *aElement) const
 {
-	InvestigationCMCGait *object = new InvestigationCMCGait(aElement);
+	CMCTool *object = new CMCTool(aElement);
 	*object = *this;
 	object->updateFromXMLNode();
 	return(object);
@@ -277,7 +277,7 @@ copy(DOMElement *aElement) const
 /**
  * Set all member variables to their null or default values.
  */
-void InvestigationCMCGait::
+void CMCTool::
 setNull()
 {
 	setupProperties();
@@ -310,7 +310,7 @@ setNull()
  * Give this object's properties their XML names and add them to the property
  * list held in class Object (@see OpenSim::Object).
  */
-void InvestigationCMCGait::setupProperties()
+void CMCTool::setupProperties()
 {
 	string comment;
 
@@ -451,35 +451,35 @@ void InvestigationCMCGait::setupProperties()
  *
  * @return Reference to this object.
  */
-InvestigationCMCGait& InvestigationCMCGait::
-operator=(const InvestigationCMCGait &aInvestigation)
+CMCTool& CMCTool::
+operator=(const CMCTool &aTool)
 {
 	// BASE CLASS
-	Investigation::operator=(aInvestigation);
+	SimulationTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
-	_desiredKinematicsFileName = aInvestigation._desiredKinematicsFileName;
-	_externalLoadsFileName = aInvestigation._externalLoadsFileName;
-	_externalLoadsModelKinematicsFileName = aInvestigation._externalLoadsModelKinematicsFileName;
-	_externalLoadsBody1 = aInvestigation._externalLoadsBody1;
-	_externalLoadsBody2 = aInvestigation._externalLoadsBody2;
-	_taskSetFileName = aInvestigation._taskSetFileName;
-	_constraintsFileName = aInvestigation._constraintsFileName;
-	_rraControlsFileName = aInvestigation._rraControlsFileName;
-	_lowpassCutoffFrequency = aInvestigation._lowpassCutoffFrequency;
-	_lowpassCutoffFrequencyForLoadKinematics = aInvestigation._lowpassCutoffFrequencyForLoadKinematics;
-	_targetDT = aInvestigation._targetDT;
-	_useCurvatureFilter = aInvestigation._useCurvatureFilter;
-	_optimizerDX = aInvestigation._optimizerDX;
-	_convergenceCriterion = aInvestigation._convergenceCriterion;
-	_useFastTarget = aInvestigation._useFastTarget;
-	_useReflexes = aInvestigation._useReflexes;
-	_maxIterations = aInvestigation._maxIterations;
-	_printLevel = aInvestigation._printLevel;
-	_adjustedCOMBody = aInvestigation._adjustedCOMBody;
-	_outputModelFile = aInvestigation._outputModelFile;
-	_computeAverageResiduals = aInvestigation._computeAverageResiduals;
-	_adjustCOMToReduceResiduals = aInvestigation._adjustCOMToReduceResiduals;
+	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
+	_externalLoadsFileName = aTool._externalLoadsFileName;
+	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
+	_externalLoadsBody1 = aTool._externalLoadsBody1;
+	_externalLoadsBody2 = aTool._externalLoadsBody2;
+	_taskSetFileName = aTool._taskSetFileName;
+	_constraintsFileName = aTool._constraintsFileName;
+	_rraControlsFileName = aTool._rraControlsFileName;
+	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
+	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
+	_targetDT = aTool._targetDT;
+	_useCurvatureFilter = aTool._useCurvatureFilter;
+	_optimizerDX = aTool._optimizerDX;
+	_convergenceCriterion = aTool._convergenceCriterion;
+	_useFastTarget = aTool._useFastTarget;
+	_useReflexes = aTool._useReflexes;
+	_maxIterations = aTool._maxIterations;
+	_printLevel = aTool._printLevel;
+	_adjustedCOMBody = aTool._adjustedCOMBody;
+	_outputModelFile = aTool._outputModelFile;
+	_computeAverageResiduals = aTool._computeAverageResiduals;
+	_adjustCOMToReduceResiduals = aTool._adjustCOMToReduceResiduals;
 
 	return(*this);
 }
@@ -496,7 +496,7 @@ operator=(const InvestigationCMCGait &aInvestigation)
 /**
  * Run the investigation.
  */
-void InvestigationCMCGait::run()
+void CMCTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -574,7 +574,7 @@ void InvestigationCMCGait::run()
 	_model->getDynamicsEngine().convertAnglesToQuaternions(qStore);
 
 	// GROUND REACTION FORCES
-	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// ANALYSES
@@ -819,7 +819,7 @@ void InvestigationCMCGait::run()
  * @param rMAve The computed average moment residuals.  The size of rMAve is
  * set to 3.
  */
-void InvestigationCMCGait::
+void CMCTool::
 computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
 {
 	// GET FORCE STORAGE
@@ -863,17 +863,17 @@ computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
  * @param aMAve The average residual moments.  The dimension of aMAve should
  * be 3.
  */
-void InvestigationCMCGait::
+void CMCTool::
 adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve)
 {
 	// CHECK SIZE
 	if(aFAve.getSize()<3) {
-		cout<<"InvestigationCMCGait.adjustedCOMToReduceResiduals: \n";
+		cout<<"CMCTool.adjustedCOMToReduceResiduals: \n";
 		cout<<"ERR- The size of aFAve should be at least 3.\n";
 		return;
 	}
 	if(aMAve.getSize()<3) {
-		cout<<"InvestigationCMCGait.adjustedCOMToReduceResiduals: \n";
+		cout<<"CMCTool.adjustedCOMToReduceResiduals: \n";
 		cout<<"ERR- The size of aMAve should be at least 3.\n";
 		return;
 	}
@@ -887,7 +887,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	double bodyMass = body->getMass();
 	double bodyWeight = fabs(g[1])*bodyMass;
 	if(bodyWeight<rdMath::ZERO) {
-		cout<<"\nInvestigationCMCGait.adjustCOMToReduceResiduals: ERR- ";
+		cout<<"\nCMCTool.adjustCOMToReduceResiduals: ERR- ";
 		cout<<_adjustedCOMBody<<" has no weight.\n";
 		return;
 	}
@@ -901,7 +901,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	if(dx > limit) dx = limit;
 	if(dx < -limit) dx = -limit;
 
-	cout<<"InvestigationCMCGait.adjustCOMToReduceResiduals:\n";
+	cout<<"CMCTool.adjustCOMToReduceResiduals:\n";
 	cout<<_adjustedCOMBody<<" weight = "<<bodyWeight<<"\n";
 	cout<<"dx="<<dx<<", dz="<<dz<<"\n\n";
 
@@ -948,7 +948,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 /**
  * Add Actuation/Kinematics analyses if necessary
  */
-void InvestigationCMCGait::
+void CMCTool::
 addNecessaryAnalyses()
 {
 	int stepInterval = 1;
@@ -983,7 +983,7 @@ addNecessaryAnalyses()
  * needs to be made more general.  And, the control bounds need to
  * be set elsewhere, preferably in a file.
  */
-void InvestigationCMCGait::
+void CMCTool::
 initializeControlSetUsingConstraints(
 	const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *rControlSet)
 {
@@ -1030,7 +1030,7 @@ initializeControlSetUsingConstraints(
  * @param aControlConstraints Constraints based on a previous RRA solution
  * to be used during this run of CMC.
  */
-ControlSet* InvestigationCMCGait::
+ControlSet* CMCTool::
 constructRRAControlSet(ControlSet *aControlConstraints)
 {
 	if(_rraControlsFileName=="") return(NULL);

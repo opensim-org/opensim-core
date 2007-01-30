@@ -1,6 +1,6 @@
-#ifndef __InvestigationForward_h__
-#define __InvestigationForward_h__
-// InvestigationForward.h
+#ifndef __ForwardTool_h__
+#define __ForwardTool_h__
+// ForwardTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <OpenSim/Tools/Object.h>
@@ -8,7 +8,7 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Model/SimulationTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include "Analyses.h"
 #include "suAnalysesDLL.h"
@@ -33,7 +33,7 @@ class XMLDocument;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class SUANALYSES_API InvestigationForward: public Investigation
+class SUANALYSES_API ForwardTool: public SimulationTool
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -68,14 +68,6 @@ private:
 	/** If true, the time steps from the initial states file are used during current integration */
 	OpenSim::PropertyBool _useSpecifiedDtProp;
 	bool &_useSpecifiedDt;
-	/** Name of the body whose center of mass is adjusted. */
-	PropertyStr _adjustedCOMBodyProp;
-	std::string &_adjustedCOMBody;
-	/** Name of the file specifying a change to the center of mass of a body.
-	This adjustment is made to remove dc offset in the residuals. */
-	PropertyStr _adjustedCOMFileNameProp;
-	std::string &_adjustedCOMFileName;
-
 
 //=============================================================================
 // METHODS
@@ -84,11 +76,11 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~InvestigationForward();
-	InvestigationForward();
-	InvestigationForward(const std::string &aFileName);
-	InvestigationForward(DOMElement *aElement);
-	InvestigationForward(const InvestigationForward &aObject);
+	virtual ~ForwardTool();
+	ForwardTool();
+	ForwardTool(const std::string &aFileName);
+	ForwardTool(DOMElement *aElement);
+	ForwardTool(const ForwardTool &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 private:
@@ -101,8 +93,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InvestigationForward&
-		operator=(const InvestigationForward &aInvestigationForward);
+	ForwardTool&
+		operator=(const ForwardTool &aForwardTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -116,7 +108,7 @@ public:
 	virtual void run();
 
 	//--------------------------------------------------------------------------
-	// UTILITY (also used by InvestigationCMCGait)
+	// UTILITY (also used by the CMCTool)
 	//--------------------------------------------------------------------------
 	static void initializeExternalLoads(AbstractModel *aModel, 
 		const std::string &aExternalLoadsFileName,
@@ -124,15 +116,14 @@ public:
 		const std::string &aExternalLoadsBody1,
 		const std::string &aExternalLoadsBody2,
 		double aLowpassCutoffFrequencyForLoadKinematics);
-	static void adjustCOM(AbstractModel *aModel, const std::string &aAdjustedCOMFileName, const std::string &aAdjustedCOMBody);
 
 //=============================================================================
-};	// END of class InvestigationForward
+};	// END of class ForwardTool
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __InvestigationForward_h__
+#endif // __ForwardTool_h__
 
 

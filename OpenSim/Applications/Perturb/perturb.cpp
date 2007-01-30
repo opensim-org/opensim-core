@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/Analyses/InvestigationPerturbation.h>
+#include <OpenSim/Analyses/PerturbationTool.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -45,10 +45,10 @@ int main(int argc,char **argv)
  
 		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
 		} else if((option=="-PrintSetup")||(option=="-PS")) {
-			InvestigationPerturbation *investigation = new InvestigationPerturbation();
-			investigation->setName("default");
+			PerturbationTool *tool = new PerturbationTool();
+			tool->setName("default");
 			Object::setSerializeAllDefaults(true);
-			investigation->print("setup_perturb_default.xml");
+			tool->print("setup_perturb_default.xml");
 			Object::setSerializeAllDefaults(false);
 			return(0);
 
@@ -67,8 +67,8 @@ int main(int argc,char **argv)
 	}
 
 	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	InvestigationPerturbation perturb(setupFileName);
+	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+	PerturbationTool perturb(setupFileName);
 
 	// PRINT MODEL INFORMATION
 	AbstractModel *model = perturb.getModel();
@@ -109,5 +109,5 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"------              --------         --------------\n";
 	aOStream<<"-Help, -H                            Print the command-line options for perturb.exe.\n";
 	aOStream<<"-PrintSetup, -PS                     Print a default setup file for perturb.exe (setup_perturb_default.xml).\n";
-	aOStream<<"-Setup, -S          SetupFileName    Specifies the name of the XML setup file for the perturb investigation.\n";
+	aOStream<<"-Setup, -S          SetupFileName    Specifies the name of the XML setup file for the perturb tool.\n";
 }

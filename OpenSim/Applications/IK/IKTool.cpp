@@ -1,10 +1,10 @@
-// InvestigationIK.cpp
+// IKTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "InvestigationIK.h"
+#include "IKTool.h"
 #include <string>
 #include <iostream>
 #include <OpenSim/Tools/IO.h>	
@@ -26,15 +26,15 @@ using namespace std;
 /**
  * Destructor.
  */
-InvestigationIK::~InvestigationIK()
+IKTool::~IKTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-InvestigationIK::InvestigationIK() :
-	Investigation(),
+IKTool::IKTool() :
+	SimulationTool(),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
@@ -43,7 +43,7 @@ InvestigationIK::InvestigationIK() :
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
-	setType("InvestigationIK");
+	setType("IKTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -55,8 +55,8 @@ InvestigationIK::InvestigationIK() :
  *
  * @param aFileName File name of the document.
  */
-InvestigationIK::InvestigationIK(const string &aFileName, AbstractModel* guiModel) :
-	Investigation(aFileName),
+IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
+	SimulationTool(aFileName),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
@@ -65,7 +65,7 @@ InvestigationIK::InvestigationIK(const string &aFileName, AbstractModel* guiMode
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
-	setType("InvestigationIK");
+	setType("IKTool");
 	setNull();
 	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
@@ -73,7 +73,7 @@ InvestigationIK::InvestigationIK(const string &aFileName, AbstractModel* guiMode
 
 	updateFromXMLNode();
 
-	if (_model) throw( Exception("InvestigationIK did not expect initialized model") );
+	if (_model) throw( Exception("IKTool did not expect initialized model") );
 	if (guiModel){
 		// A valid model is passed in, and is initialized (likely from GUI)
 		// In this scenario, _modelFile is ignored (probably with a warning)
@@ -95,8 +95,8 @@ InvestigationIK::InvestigationIK(const string &aFileName, AbstractModel* guiMode
 /**
  * Construct from a DOMElement.
  */
-InvestigationIK::InvestigationIK(DOMElement *aElement) :
-	Investigation(aElement),
+IKTool::IKTool(DOMElement *aElement) :
+	SimulationTool(aElement),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
@@ -105,7 +105,7 @@ InvestigationIK::InvestigationIK(DOMElement *aElement) :
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
-	setType("InvestigationIK");
+	setType("IKTool");
 	setNull();
 	updateFromXMLNode();
 }
@@ -113,41 +113,41 @@ InvestigationIK::InvestigationIK(DOMElement *aElement) :
 /**
  * Copy constructor.
  *
- * Copy constructors for all Investigation's only copy the non-XML variable
+ * Copy constructors for all Tools only copy the non-XML variable
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for an Investigation:
+ * There are three proper ways to generate an XML document for a Tool:
  *
- * 1) Construction based on XML file (@see Investigation(const char *aFileName)).
+ * 1) Construction based on XML file (@see Tool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by Investigation(const XMLDocument *aDocument).
+ * 2) Construction by Tool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
- * Investigation member variables should be held within the XML document.
+ * Tool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated Investigation member variable, are preserved.
+ * associated Tool member variable, are preserved.
  *
  * 3) A call to generateDocument().
- * This method generates an XML document for the Investigation from scratch.
+ * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
- * @param aInvestigation Object to be copied.
- * @see Investigation(const XMLDocument *aDocument)
- * @see Investigation(const char *aFileName)
+ * @param aTool Object to be copied.
+ * @see Tool(const XMLDocument *aDocument)
+ * @see Tool(const char *aFileName)
  * @see generateDocument()
  */
-InvestigationIK::
-InvestigationIK(const InvestigationIK &aInvestigation) :
-	Investigation(aInvestigation),
+IKTool::
+IKTool(const IKTool &aTool) :
+	SimulationTool(aTool),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
@@ -156,29 +156,29 @@ InvestigationIK(const InvestigationIK &aInvestigation) :
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
-	setType("InvestigationIK");
+	setType("IKTool");
 	setNull();
-	*this = aInvestigation;
+	*this = aTool;
 }
 
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor.
  */
-Object* InvestigationIK::
+Object* IKTool::
 copy() const
 {
-	InvestigationIK *object = new InvestigationIK(*this);
+	IKTool *object = new IKTool(*this);
 	return(object);
 }
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor from DOMElement.
  */
-Object* InvestigationIK::
+Object* IKTool::
 copy(DOMElement *aElement) const
 {
-	InvestigationIK *object = new InvestigationIK(aElement);
+	IKTool *object = new IKTool(aElement);
 	*object = *this;
 	object->updateFromXMLNode();
 	return(object);
@@ -188,7 +188,7 @@ copy(DOMElement *aElement) const
 /**
  * Set all member variables to their null or default values.
  */
-void InvestigationIK::
+void IKTool::
 setNull()
 {
 	setupProperties();
@@ -197,7 +197,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void InvestigationIK::setupProperties()
+void IKTool::setupProperties()
 {
 	string comment;
 
@@ -222,7 +222,7 @@ void InvestigationIK::setupProperties()
 /**
  * Register SimmIKTrial type.
  */
-void InvestigationIK::registerTypes()
+void IKTool::registerTypes()
 {
 	Object::RegisterType(SimmIKTrial());
 }
@@ -235,17 +235,17 @@ void InvestigationIK::registerTypes()
  *
  * @return Reference to this object.
  */
-InvestigationIK& InvestigationIK::
-operator=(const InvestigationIK &aInvestigation)
+IKTool& IKTool::
+operator=(const IKTool &aTool)
 {
 	// BASE CLASS
-	Investigation::operator=(aInvestigation);
+	SimulationTool::operator=(aTool);
 
 	// MEMBER VARIABLES
-	_markerSet = aInvestigation._markerSet;
-	_coordinateSet = aInvestigation._coordinateSet;
-	_coordinatesFromFile = aInvestigation._coordinatesFromFile;
-	_IKTrialSet = aInvestigation._IKTrialSet;
+	_markerSet = aTool._markerSet;
+	_coordinateSet = aTool._coordinateSet;
+	_coordinatesFromFile = aTool._coordinatesFromFile;
+	_IKTrialSet = aTool._IKTrialSet;
 
 	return(*this);
 }
@@ -262,7 +262,7 @@ operator=(const InvestigationIK &aInvestigation)
 /**
  * Run the investigation.
  */
-void InvestigationIK::run()
+void IKTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 	

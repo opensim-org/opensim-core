@@ -32,7 +32,7 @@
 #include <iostream>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Analyses/InvestigationForward.h>
+#include <OpenSim/Analyses/ForwardTool.h>
 #include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
 #include <OpenSim/Actuators/GeneralizedForceAtv.h>
 
@@ -75,10 +75,10 @@ int main(int argc,char **argv)
  
 		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
 		} else if((option=="-PrintSetup")||(option=="-PS")) {
-			InvestigationForward *investigation = new InvestigationForward();
-			investigation->setName("default");
+			ForwardTool *tool = new ForwardTool();
+			tool->setName("default");
 			Object::setSerializeAllDefaults(true);
-			investigation->print("default_forward.xml");
+			tool->print("default_forward.xml");
 			Object::setSerializeAllDefaults(false);
 			return(0);
 
@@ -122,8 +122,8 @@ int main(int argc,char **argv)
 	delete atv;
 
 	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	InvestigationForward forward(setupFileName);
+	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+	ForwardTool forward(setupFileName);
 	forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
@@ -165,7 +165,7 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"------              --------    --------------\n";
 	aOStream<<"-Help, -H                       Print the command-line options for forward.exe.\n";
 	aOStream<<"-PrintSetup, -PS                Print a default setup file for forward.exe (default_forward.xml).\n";
-	aOStream<<"-Setup, -S          FileName    Specify the name of the setup file to use for this forward investigation.\n";
+	aOStream<<"-Setup, -S          FileName    Specify the name of the setup file to use for this forward tool.\n";
 	aOStream<<"-PropertyInfo, -PI              Print help information for properties in setup files.\n";
 
 

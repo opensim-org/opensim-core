@@ -9,7 +9,7 @@
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Analyses/InvestigationForward.h>
+#include <OpenSim/Analyses/ForwardTool.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/PointKinematics.h>
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
 	string setupFileName = "forward.xml";
 	// CONSTRUCT
 	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	InvestigationForward forward(setupFileName);
+	ForwardTool forward(setupFileName);
 	forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION

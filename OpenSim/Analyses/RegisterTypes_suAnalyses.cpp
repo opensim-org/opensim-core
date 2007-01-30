@@ -12,8 +12,8 @@
 #include "BodyKinematics.h"
 #include "ActuatorGeneralizedForces.h"
 
-#include "InvestigationPerturbation.h"
-#include "InvestigationForward.h"
+#include "PerturbationTool.h"
+#include "ForwardTool.h"
 
 
 
@@ -31,8 +31,8 @@ SUANALYSES_API void RegisterTypes_suAnalyses()
 {
 	//cout<<"RegisterTypes_suAnalyses\n";
 
-	Object::RegisterType( InvestigationPerturbation() );
-	Object::RegisterType( InvestigationForward() );
+	Object::RegisterType( PerturbationTool() );
+	Object::RegisterType( ForwardTool() );
 
 	Object::RegisterType( Kinematics() );
 	Object::RegisterType( Actuation() );

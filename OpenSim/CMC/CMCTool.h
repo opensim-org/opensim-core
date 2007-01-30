@@ -1,4 +1,4 @@
-// InvestigationCMCGait.h
+// CMCTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson
@@ -26,8 +26,8 @@
 // This software, originally developed by Realistic Dynamics, Inc., was
 // transferred to Stanford University on November 1, 2006.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#ifndef InvestigationCMCGait_h__
-#define InvestigationCMCGait_h__
+#ifndef CMCTool_h__
+#define CMCTool_h__
 
 #include "rdCMCDLL.h"
 #include <OpenSim/Tools/Object.h>
@@ -36,7 +36,7 @@
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/FunctionSet.h>
-#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Model/SimulationTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
@@ -57,7 +57,7 @@ class XMLDocument;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDCMC_API InvestigationCMCGait: public Investigation
+class RDCMC_API CMCTool: public SimulationTool
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -157,11 +157,11 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~InvestigationCMCGait();
-	InvestigationCMCGait();
-	InvestigationCMCGait(const std::string &aFileName);
-	InvestigationCMCGait(DOMElement *aElement);
-	InvestigationCMCGait(const InvestigationCMCGait &aObject);
+	virtual ~CMCTool();
+	CMCTool();
+	CMCTool(const std::string &aFileName);
+	CMCTool(DOMElement *aElement);
+	CMCTool(const CMCTool &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 private:
@@ -174,8 +174,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InvestigationCMCGait&
-		operator=(const InvestigationCMCGait &aInvestigationCMCGait);
+	CMCTool&
+		operator=(const CMCTool &aCMCTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -205,10 +205,10 @@ public:
 	void addNecessaryAnalyses();
 #endif
 //=============================================================================
-};	// END of class InvestigationCMCGait
+};	// END of class CMCTool
 //=============================================================================
 //=============================================================================
 
 }; // end namespace
 
-#endif  // InvestigationCMCGait_h__
+#endif  // CMCTool_h__

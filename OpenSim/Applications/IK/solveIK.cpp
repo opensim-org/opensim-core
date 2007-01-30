@@ -33,7 +33,7 @@
 #include <OpenSim/Subject/SimmSubject.h>
 #include <OpenSim/Simulation/SIMM/SimmMarker.h>
 #include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include "InvestigationIK.h"
+#include "IKTool.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -78,15 +78,15 @@ int main(int argc,char **argv)
 					break;
 				}
 				else if((option=="-PrintSetup")||(option=="-PS")) {
-					InvestigationIK *investigation = new InvestigationIK();
-					investigation->setName("default");
+					IKTool *tool = new IKTool();
+					tool->setName("default");
 					Object::setSerializeAllDefaults(true);
 
-					investigation->getMarkerSet().append(new SimmMarker());
+					tool->getMarkerSet().append(new SimmMarker());
 					SimmCoordinate* aCoordinate = new SimmCoordinate();
-					investigation->getCoordinateSet().append(aCoordinate);
+					tool->getCoordinateSet().append(aCoordinate);
 
-					investigation->print("setup_ik_default.xml");
+					tool->print("setup_ik_default.xml");
 					Object::setSerializeAllDefaults(false);
 					cout << "Created file setup_ik_default.xml with default setup" << endl;
 					return 0;
@@ -106,11 +106,11 @@ int main(int argc,char **argv)
 		return(-1);
 	}
 
-	InvestigationIK::registerTypes();
+	IKTool::registerTypes();
 
 	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	InvestigationIK ik(setupFileName);
+	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+	IKTool ik(setupFileName);
 	ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION

@@ -1,6 +1,6 @@
-#ifndef __InvestigationPerturbation_h__
-#define __InvestigationPerturbation_h__
-// InvestigationPerturbation.h
+#ifndef __PerturbationTool_h__
+#define __PerturbationTool_h__
+// PerturbationTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <OpenSim/Tools/Object.h>
@@ -9,7 +9,7 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Model/SimulationTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include "Analyses.h"
 #include "suAnalysesDLL.h"
@@ -33,7 +33,7 @@ class XMLDocument;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class SUANALYSES_API InvestigationPerturbation: public Investigation
+class SUANALYSES_API PerturbationTool: public SimulationTool
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -108,15 +108,6 @@ private:
 	PropertyDblArray _bTorProp;
 	Array<double> &_bTor;
 
-	// COM ADJUSTMENT PARAMETERS
-	/** Name of the body whose center of mass is adjusted. */
-	PropertyStr _adjustedCOMBodyProp;
-	std::string &_adjustedCOMBody;
-	/** Name of the file specifying a change to the center of mass of a body.
-	This adjustment is made to remove dc offset in the residuals. */
-	PropertyStr _adjustedCOMFileNameProp;
-	std::string &_adjustedCOMFileName;
-
 	// EXTERNAL LOAD PARAMETERS
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
@@ -146,12 +137,12 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	InvestigationPerturbation();
-	InvestigationPerturbation(const std::string &aFileName);
-	InvestigationPerturbation(DOMElement *aElement);
-	virtual ~InvestigationPerturbation();
+	PerturbationTool();
+	PerturbationTool(const std::string &aFileName);
+	PerturbationTool(DOMElement *aElement);
+	virtual ~PerturbationTool();
 	// Copy constrctor and virtual copy 
-	InvestigationPerturbation(const InvestigationPerturbation &aObject);
+	PerturbationTool(const PerturbationTool &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aElement) const;
 private:
@@ -164,8 +155,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InvestigationPerturbation&
-		operator=(const InvestigationPerturbation &aInvestigationPerturbation);
+	PerturbationTool&
+		operator=(const PerturbationTool &aPerturbationTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -180,12 +171,12 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class InvestigationPerturbation
+};	// END of class PerturbationTool
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __InvestigationPerturbation_h__
+#endif // __PerturbationTool_h__
 
 

@@ -31,7 +31,7 @@
 #include <iostream>
 #include <OpenSim/Tools/Object.h>
 #include "RegisterTypes_rdCMC.h"
-#include "InvestigationCMCGait.h"
+#include "CMCTool.h"
 #include "rdCMC_TaskSet.h"
 #include "rdCMC_Joint.h"
 
@@ -46,7 +46,7 @@ using namespace OpenSim;
 RDCMC_API void RegisterTypes_rdCMC()
 {
 	cout<<"RegisterTypes_rdCMC\n";
-	Object::RegisterType( InvestigationCMCGait() );
+	Object::RegisterType( CMCTool() );
 	Object::RegisterType( rdCMC_TaskSet() );
 	Object::RegisterType( rdCMC_Joint() );
 }

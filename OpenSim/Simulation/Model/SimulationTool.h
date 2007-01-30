@@ -1,6 +1,6 @@
-#ifndef _Investigation_h_
-#define _Investigation_h_
-// Investigation.h
+#ifndef _SimulationTool_h_
+#define _SimulationTool_h_
+// SimulationTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <OpenSim/Tools/Object.h>
@@ -25,7 +25,7 @@ class XMLDocument;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDSIMULATION_API Investigation: public Object
+class RDSIMULATION_API SimulationTool: public Object
 {
 //=============================================================================
 // DATA
@@ -91,11 +91,11 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~Investigation();
-	Investigation();
-	Investigation(const std::string &aFileName);
-	Investigation(DOMElement *aElement);
-	Investigation(const Investigation &aObject);
+	virtual ~SimulationTool();
+	SimulationTool();
+	SimulationTool(const std::string &aFileName);
+	SimulationTool(DOMElement *aElement);
+	SimulationTool(const SimulationTool &aObject);
 	//Object* copy() const;
 	//Object* copy(DOMElement *aElement) const;
 
@@ -108,7 +108,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Investigation& operator=(const Investigation &aInvestigation);
+	SimulationTool& operator=(const SimulationTool &aTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -127,7 +127,7 @@ public:
 	{
 		_resultsDir = aString;
 	};
-	// Investigation time range
+	// SimulationTool time range
 	double getStartTime() const
 	{
 		return _ti;
@@ -159,12 +159,12 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class Investigation
+};	// END of class SimulationTool
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __Investigation_h__
+#endif // __SimulationTool_h__
 
 

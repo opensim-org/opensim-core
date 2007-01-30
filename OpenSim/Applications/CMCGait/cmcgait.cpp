@@ -31,7 +31,7 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/CMC/InvestigationCMCGait.h>
+#include <OpenSim/CMC/CMCTool.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
  
 		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
 		} else if((option=="-PrintSetup")||(option=="-PS")) {
-			InvestigationCMCGait *investigation = new InvestigationCMCGait();
+			CMCTool *investigation = new CMCTool();
 			investigation->setName("default");
 			Object::setSerializeAllDefaults(true);
 			investigation->print("setup_cmc_default.xml");
@@ -84,6 +84,21 @@ int main(int argc,char **argv)
 		} else if((option=="-Setup")||(option=="-S")) {
 			if((i+1)<argc) setupFileName = argv[i+1];
 			break;
+
+		// PRINT PROPERTY INFO
+		} else if((option=="-PropertyInfo")||(option=="-PI")) {
+			if((i+1)>=argc) {
+				Object::PrintPropertyInfo(cout,"");
+
+			} else {
+				char *compoundName = argv[i+1];
+				if(compoundName[0]=='-') {
+					Object::PrintPropertyInfo(cout,"");
+				} else {
+					Object::PrintPropertyInfo(cout,compoundName);
+				}
+			}
+			return(0);
 		}
 	}
 
@@ -96,7 +111,7 @@ int main(int argc,char **argv)
 
 	// CONSTRUCT
 	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	InvestigationCMCGait cmcgait(setupFileName);
+	CMCTool cmcgait(setupFileName);
 
 	// PRINT MODEL INFORMATION
 	AbstractModel *model = cmcgait.getModel();
@@ -141,6 +156,7 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"-Help, -H                            Print the command-line options for cmc.exe.\n";
 	aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
 	aOStream<<"-Setup, -S          SetupFileName    Specifies the name of the XML setup file for the CMC investigation.\n";
+	aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
 	aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
 	aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";
 

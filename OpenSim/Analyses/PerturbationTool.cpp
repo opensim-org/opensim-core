@@ -1,11 +1,11 @@
-// InvestigationPerturbation.cpp
+// PerturbationTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "InvestigationPerturbation.h"
-#include "InvestigationForward.h"
+#include "PerturbationTool.h"
+#include "ForwardTool.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
@@ -38,14 +38,14 @@ using namespace std;
 /**
  * Destructor.
  */
-InvestigationPerturbation::~InvestigationPerturbation()
+PerturbationTool::~PerturbationTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-InvestigationPerturbation::InvestigationPerturbation() :
+PerturbationTool::PerturbationTool() :
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -67,15 +67,13 @@ InvestigationPerturbation::InvestigationPerturbation() :
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
-	setType("InvestigationPerturbation");
+	setType("PerturbationTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -87,8 +85,8 @@ InvestigationPerturbation::InvestigationPerturbation() :
  *
  * @param aFileName File name of the document.
  */
-InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
-	Investigation(aFileName),
+PerturbationTool::PerturbationTool(const string &aFileName):
+	SimulationTool(aFileName),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -110,15 +108,13 @@ InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
-	setType("InvestigationPerturbation");
+	setType("PerturbationTool");
 	setNull();
 	updateFromXMLNode();
 	if (_model) addAnalysisSetToModel();
@@ -127,8 +123,8 @@ InvestigationPerturbation::InvestigationPerturbation(const string &aFileName):
 /**
  * Construct from a DOMElement.
  */
-InvestigationPerturbation::InvestigationPerturbation(DOMElement *aElement):
-	Investigation(aElement),
+PerturbationTool::PerturbationTool(DOMElement *aElement):
+	SimulationTool(aElement),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -150,15 +146,13 @@ InvestigationPerturbation::InvestigationPerturbation(DOMElement *aElement):
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
-	setType("InvestigationPerturbation");
+	setType("PerturbationTool");
 	setNull();
 	updateFromXMLNode();
 }
@@ -166,41 +160,41 @@ InvestigationPerturbation::InvestigationPerturbation(DOMElement *aElement):
 /**
  * Copy constructor.
  *
- * Copy constructors for all Investigation's only copy the non-XML variable
+ * Copy constructors for all Tools only copy the non-XML variable
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for an Investigation:
+ * There are three proper ways to generate an XML document for an Tool:
  *
- * 1) Construction based on XML file (@see Investigation(const char *aFileName)).
+ * 1) Construction based on XML file (@see Tool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by Investigation(const XMLDocument *aDocument).
+ * 2) Construction by Tool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
- * Investigation member variables should be held within the XML document.
+ * Tool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated Investigation member variable, are preserved.
+ * associated Tool member variable, are preserved.
  *
  * 3) A call to generateDocument().
- * This method generates an XML document for the Investigation from scratch.
+ * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
- * @param aInvestigation Object to be copied.
- * @see Investigation(const XMLDocument *aDocument)
- * @see Investigation(const char *aFileName)
+ * @param aTool Object to be copied.
+ * @see Tool(const XMLDocument *aDocument)
+ * @see Tool(const char *aFileName)
  * @see generateDocument()
  */
-InvestigationPerturbation::
-InvestigationPerturbation(const InvestigationPerturbation &aInvestigation):
-	Investigation(aInvestigation),
+PerturbationTool::
+PerturbationTool(const PerturbationTool &aTool):
+	SimulationTool(aTool),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -222,8 +216,6 @@ InvestigationPerturbation(const InvestigationPerturbation &aInvestigation):
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
 	_bTor(_bTorProp.getValueDblArray()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
@@ -231,27 +223,27 @@ InvestigationPerturbation(const InvestigationPerturbation &aInvestigation):
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setNull();
-	*this = aInvestigation;
+	*this = aTool;
 }
 
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor.
  */
-Object* InvestigationPerturbation::
+Object* PerturbationTool::
 copy() const
 {
-	InvestigationPerturbation *object = new InvestigationPerturbation(*this);
+	PerturbationTool *object = new PerturbationTool(*this);
 	return(object);
 }
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor from DOMElement.
  */
-Object* InvestigationPerturbation::
+Object* PerturbationTool::
 copy(DOMElement *aElement) const
 {
-	InvestigationPerturbation *object = new InvestigationPerturbation(aElement);
+	PerturbationTool *object = new PerturbationTool(aElement);
 	*object = *this;
 	object->updateFromXMLNode();
 	return(object);
@@ -260,7 +252,7 @@ copy(DOMElement *aElement) const
 /**
  * Set all member variables to their null or default values.
  */
-void InvestigationPerturbation::
+void PerturbationTool::
 setNull()
 {
 	setupProperties();
@@ -280,8 +272,6 @@ setNull()
 	_bTor.setSize(3);
 	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
 
-	_adjustedCOMBody = "";
-	_adjustedCOMFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
 	_externalLoadsBody1 = "";
@@ -292,7 +282,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void InvestigationPerturbation::setupProperties()
+void PerturbationTool::setupProperties()
 {
 	// PERTURBATION PARAMETERS
 	_pertWindowProp.setComment("Perturbation time window");
@@ -407,15 +397,6 @@ void InvestigationPerturbation::setupProperties()
 																			  " The default value is -1.0, so no filtering.");
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
-
-	_adjustedCOMBodyProp.setComment("Name of the body whose center of mass is adjusted.");
-	_adjustedCOMBodyProp.setName("adjusted_com_body");
-	_propertySet.append( &_adjustedCOMBodyProp );
-
-	_adjustedCOMFileNameProp.setComment("Name of the file specifying a change to the center of mass of a body."
-												   " This adjustment is made to remove dc offset in the residuals.");
-	_adjustedCOMFileNameProp.setName("adjusted_com_file");
-	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 
 
@@ -429,11 +410,11 @@ void InvestigationPerturbation::setupProperties()
  *
  * @return Reference to this object.
  */
-InvestigationPerturbation& InvestigationPerturbation::
-operator=(const InvestigationPerturbation &aInvestigation)
+PerturbationTool& PerturbationTool::
+operator=(const PerturbationTool &aTool)
 {
 	// BASE CLASS
-	Investigation::operator=(aInvestigation);
+	SimulationTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
 
@@ -452,7 +433,7 @@ operator=(const InvestigationPerturbation &aInvestigation)
 /**
  * Run the investigation.
  */
-void InvestigationPerturbation::run()
+void PerturbationTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -465,9 +446,6 @@ void InvestigationPerturbation::run()
 
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
-
-	// ALTER COM ?
-	InvestigationForward::adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
@@ -487,7 +465,7 @@ void InvestigationPerturbation::run()
 	int na = _model->getNumActuators();
 
 	// GROUND REACTION FORCES
-	InvestigationForward::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// CONSTRUCT CORRECTIVE SPRINGS
@@ -778,7 +756,7 @@ void InvestigationPerturbation::run()
 /**
  * Construct the corrective springs.
  */
-void InvestigationPerturbation::
+void PerturbationTool::
 constructCorrectiveSprings()
 {
 	// Qs and Us
@@ -853,7 +831,7 @@ constructCorrectiveSprings()
 		leftCopY = copStore.getColumnIndex("ground_force_py", rightCopY + 2);
 		leftCopZ = copStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
 		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
-			string msg = "InvestigationPerturbation: ERR- One or more of the COP columns ground_force_p{x,y,z} not found in "+_copFileName+".";
+			string msg = "PerturbationTool: ERR- One or more of the COP columns ground_force_p{x,y,z} not found in "+_copFileName+".";
 			throw Exception(msg,__FILE__,__LINE__);
 		}
 	} 
@@ -864,7 +842,7 @@ constructCorrectiveSprings()
 		leftCopY = copStore.getColumnIndex("ground_force_py_l");
 		leftCopZ = copStore.getColumnIndex("ground_force_pz_l");
 		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
-			string msg = "InvestigationPerturbation: ERR- One or more of the COP columns ground_force_p{x,y,z}_{r,l} not found in "+_copFileName+".";
+			string msg = "PerturbationTool: ERR- One or more of the COP columns ground_force_p{x,y,z}_{r,l} not found in "+_copFileName+".";
 			throw Exception(msg,__FILE__,__LINE__);
 		}
 	}
@@ -928,10 +906,10 @@ constructCorrectiveSprings()
  * without interpolation.
  * @param aExtension Extension for written files.
  */
-void InvestigationPerturbation::
+void PerturbationTool::
 printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
-	cout<<"InvestigationPerturbation.printResults: ";
+	cout<<"PerturbationTool.printResults: ";
 	cout<<"Printing results of investigation "<<getName()<<".\n";
 }

@@ -1,11 +1,11 @@
-// Investigation.cpp
+// SimulationTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Investigation.h"
+#include "SimulationTool.h"
 #include "LoadModel.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
@@ -23,14 +23,14 @@ using namespace std;
 /**
  * Destructor.
  */
-Investigation::~Investigation()
+SimulationTool::~SimulationTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Investigation::Investigation():
+SimulationTool::SimulationTool():
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
@@ -47,7 +47,7 @@ Investigation::Investigation():
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
-	setType("Investigation");
+	setType("SimulationTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -59,7 +59,7 @@ Investigation::Investigation():
  *
  * @param aFileName File name of the document.
  */
-Investigation::Investigation(const string &aFileName):
+SimulationTool::SimulationTool(const string &aFileName):
 	Object(aFileName),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
@@ -77,7 +77,7 @@ Investigation::Investigation(const string &aFileName):
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
-	setType("Investigation");
+	setType("SimulationTool");
 	setNull();
 	updateFromXMLNode();
 	// Do the maneuver to change then restore working directory 
@@ -94,7 +94,7 @@ Investigation::Investigation(const string &aFileName):
 /**
  * Construct from a DOMElement.
  */
-Investigation::Investigation(DOMElement *aElement):
+SimulationTool::SimulationTool(DOMElement *aElement):
 	Object(aElement),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
@@ -112,7 +112,7 @@ Investigation::Investigation(DOMElement *aElement):
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
-	setType("Investigation");
+	setType("SimulationTool");
 	setNull();
 	updateFromXMLNode();
 }
@@ -120,40 +120,40 @@ Investigation::Investigation(DOMElement *aElement):
 /**
  * Copy constructor.
  *
- * Copy constructors for all Investigation's only copy the non-XML variable
+ * Copy constructors for all SimulationTools only copy the non-XML variable
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for an Investigation:
+ * There are three proper ways to generate an XML document for a SimulationTool:
  *
- * 1) Construction based on XML file (@see Investigation(const char *aFileName)).
+ * 1) Construction based on XML file (@see SimulationTool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by Investigation(const XMLDocument *aDocument).
+ * 2) Construction by SimulationTool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
- * Investigation member variables should be held within the XML document.
+ * SimulationTool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated Investigation member variable, are preserved.
+ * associated SimulationTool member variable, are preserved.
  *
  * 3) A call to generateDocument().
- * This method generates an XML document for the Investigation from scratch.
+ * This method generates an XML document for the SimulationTool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
- * @param aInvestigation Object to be copied.
- * @see Investigation(const XMLDocument *aDocument)
- * @see Investigation(const char *aFileName)
+ * @param aTool Object to be copied.
+ * @see SimulationTool(const XMLDocument *aDocument)
+ * @see SimulationTool(const char *aFileName)
  * @see generateDocument()
  */
-Investigation::Investigation(const Investigation &aInvestigation):
-	Object(aInvestigation),
+SimulationTool::SimulationTool(const SimulationTool &aTool):
+	Object(aTool),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
@@ -171,14 +171,14 @@ Investigation::Investigation(const Investigation &aInvestigation):
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
 	setNull();
-	*this = aInvestigation;
+	*this = aTool;
 }
 
 //_____________________________________________________________________________
 /**
  * Set all member variables to their null or default values.
  */
-void Investigation::
+void SimulationTool::
 setNull()
 {
 	setupProperties();
@@ -201,7 +201,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void Investigation::setupProperties()
+void SimulationTool::setupProperties()
 {
 	string comment;
 
@@ -291,28 +291,28 @@ void Investigation::setupProperties()
  *
  * @return Reference to this object.
  */
-Investigation& Investigation::
-operator=(const Investigation &aInvestigation)
+SimulationTool& SimulationTool::
+operator=(const SimulationTool &aTool)
 {
 	// BASE CLASS
-	Object::operator=(aInvestigation);
+	Object::operator=(aTool);
 
 	// MEMEBER VARIABLES
-	_model = aInvestigation._model;
+	_model = aTool._model;
 
-	_modelLibrary = aInvestigation._modelLibrary;
-	_modelFile = aInvestigation._modelFile;
-	_actuatorSetFiles = aInvestigation._actuatorSetFiles;
-	_contactForceSetFile = aInvestigation._contactForceSetFile;
-	_resultsDir = aInvestigation._resultsDir;
+	_modelLibrary = aTool._modelLibrary;
+	_modelFile = aTool._modelFile;
+	_actuatorSetFiles = aTool._actuatorSetFiles;
+	_contactForceSetFile = aTool._contactForceSetFile;
+	_resultsDir = aTool._resultsDir;
 
-	_outputPrecision = aInvestigation._outputPrecision;
-	_ti = aInvestigation._ti;
-	_tf = aInvestigation._tf;
-	_maxSteps = aInvestigation._maxSteps;
-	_errorTolerance = aInvestigation._errorTolerance;
-	_fineTolerance = aInvestigation._fineTolerance;
-	_analysisSet = aInvestigation._analysisSet;
+	_outputPrecision = aTool._outputPrecision;
+	_ti = aTool._ti;
+	_tf = aTool._tf;
+	_maxSteps = aTool._maxSteps;
+	_errorTolerance = aTool._errorTolerance;
+	_fineTolerance = aTool._fineTolerance;
+	_analysisSet = aTool._analysisSet;
 
 	return(*this);
 }
@@ -328,7 +328,7 @@ operator=(const Investigation &aInvestigation)
 /**
  * Set the model to be investigated.
  */
-void Investigation::
+void SimulationTool::
 setModel(AbstractModel *aModel)
 {
 	_model = aModel;
@@ -338,7 +338,7 @@ setModel(AbstractModel *aModel)
 /**
  * Get the model to be investigated.
  */
-AbstractModel* Investigation::
+AbstractModel* SimulationTool::
 getModel() const
 {
 	return(_model);
@@ -351,7 +351,7 @@ getModel() const
 /**
  * Set the output precision.
  */
-void Investigation::
+void SimulationTool::
 setOutputPrecision(int aOutputPrecision)
 {
 	_outputPrecision = aOutputPrecision;
@@ -360,7 +360,7 @@ setOutputPrecision(int aOutputPrecision)
 /**
  * Get the output precision.
  */
-int Investigation::
+int SimulationTool::
 getOutputPrecision() const
 {
 	return(_outputPrecision);
@@ -373,7 +373,7 @@ getOutputPrecision() const
 /**
  * Get the analysis set.
  */
-AnalysisSet& Investigation::
+AnalysisSet& SimulationTool::
 getAnalysisSet() const
 {
 	return(_analysisSet);
@@ -387,13 +387,13 @@ getAnalysisSet() const
  * Load and construct a model based on the property settings of
  * this investigation.
  */
-void Investigation::
+void SimulationTool::
 loadModel()
 {
 	// If _modelLibrary is not specified, we do not try to load the model here and assume
 	// the caller/user of this investigation will take care of setting it up.
 	if (_modelLibrary != "") {
-		cout<<"Investigation "<<getName()<<" loading a model:" << endl;
+		cout<<"SimulationTool "<<getName()<<" loading a model:" << endl;
 		cout<<"ModelLibrary = " << _modelLibrary << ", ModelFile = " << _modelFile << endl;
 
 		AbstractModel *model = LoadModel(_modelLibrary, _modelFile);
@@ -418,7 +418,7 @@ loadModel()
 /**
  * Adds Analysis objects from analysis set to model.
  */
-void Investigation::
+void SimulationTool::
 addAnalysisSetToModel()
 {
 	if (!_model) {
@@ -450,7 +450,7 @@ addAnalysisSetToModel()
  * without interpolation.
  * @param aExtension Extension for written files.
  */
-void Investigation::
+void SimulationTool::
 printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {

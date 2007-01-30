@@ -1,13 +1,13 @@
-#ifndef __InvestigationIK_h__
-#define __InvestigationIK_h__
-// InvestigationIK.h
+#ifndef __IKTool_h__
+#define __IKTool_h__
+// IKTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Model/SimulationTool.h>
 
 #ifdef SWIG
 	#ifdef workflow_API
@@ -32,7 +32,7 @@ class SimmIKTrialSet;
  * @author Eran Guendelman
  * @version 1.0
  */
-class workflow_API InvestigationIK: public Investigation
+class workflow_API IKTool: public SimulationTool
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -61,15 +61,15 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~InvestigationIK();
-	InvestigationIK();
-	InvestigationIK(const std::string &aFileName, AbstractModel* guiModel=0);
-	InvestigationIK(DOMElement *aElement);
-	InvestigationIK(const InvestigationIK &aObject);
+	virtual ~IKTool();
+	IKTool();
+	IKTool(const std::string &aFileName, AbstractModel* guiModel=0);
+	IKTool(DOMElement *aElement);
+	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
 	virtual OpenSim::Object* copy(DOMElement *aElement) const;
 
-	/* Register types to be used when reading an InvestigationIK object from xml file. */
+	/* Register types to be used when reading an IKTool object from xml file. */
 	static void registerTypes();
 private:
 	void setNull();
@@ -81,8 +81,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	InvestigationIK&
-		operator=(const InvestigationIK &aInvestigationIK);
+	IKTool&
+		operator=(const IKTool &aIKTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -109,8 +109,8 @@ public:
 	virtual void run();
 
 //=============================================================================
-};	// END of class InvestigationIK
+};	// END of class IKTool
 //=============================================================================
 } // namespace
 
-#endif // __InvestigationIK_h__
+#endif // __IKTool_h__

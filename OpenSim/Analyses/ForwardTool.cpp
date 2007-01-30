@@ -1,10 +1,10 @@
-// InvestigationForward.cpp
+// ForwardTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "InvestigationForward.h"
+#include "ForwardTool.h"
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/GCVSplineSet.h>
 #include <OpenSim/Tools/VectorGCVSplineR1R3.h>
@@ -29,15 +29,15 @@ using namespace std;
 /**
  * Destructor.
  */
-InvestigationForward::~InvestigationForward()
+ForwardTool::~ForwardTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-InvestigationForward::InvestigationForward() :
-	Investigation(),
+ForwardTool::ForwardTool() :
+	SimulationTool(),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -45,11 +45,9 @@ InvestigationForward::InvestigationForward() :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("InvestigationForward");
+	setType("ForwardTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -61,8 +59,8 @@ InvestigationForward::InvestigationForward() :
  *
  * @param aFileName File name of the document.
  */
-InvestigationForward::InvestigationForward(const string &aFileName) :
-	Investigation(aFileName),
+ForwardTool::ForwardTool(const string &aFileName) :
+	SimulationTool(aFileName),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -70,11 +68,9 @@ InvestigationForward::InvestigationForward(const string &aFileName) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("InvestigationForward");
+	setType("ForwardTool");
 	setNull();
 	updateFromXMLNode();
 	if (_model) addAnalysisSetToModel();
@@ -83,8 +79,8 @@ InvestigationForward::InvestigationForward(const string &aFileName) :
 /**
  * Construct from a DOMElement.
  */
-InvestigationForward::InvestigationForward(DOMElement *aElement) :
-	Investigation(aElement),
+ForwardTool::ForwardTool(DOMElement *aElement) :
+	SimulationTool(aElement),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -92,11 +88,9 @@ InvestigationForward::InvestigationForward(DOMElement *aElement) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("InvestigationForward");
+	setType("ForwardTool");
 	setNull();
 	updateFromXMLNode();
 }
@@ -104,41 +98,41 @@ InvestigationForward::InvestigationForward(DOMElement *aElement) :
 /**
  * Copy constructor.
  *
- * Copy constructors for all Investigation's only copy the non-XML variable
+ * Copy constructors for all Tools only copy the non-XML variable
  * members of the object; that is, the object's DOMnode and XMLDocument
  * are not copied but set to NULL.  The reason for this is that for the
  * object and all its derived classes to establish the correct connection
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for an Investigation:
+ * There are three proper ways to generate an XML document for an Tool:
  *
- * 1) Construction based on XML file (@see Investigation(const char *aFileName)).
+ * 1) Construction based on XML file (@see Tool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by Investigation(const XMLDocument *aDocument).
+ * 2) Construction by Tool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
- * Investigation member variables should be held within the XML document.
+ * Tool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated Investigation member variable, are preserved.
+ * associated Tool member variable, are preserved.
  *
  * 3) A call to generateDocument().
- * This method generates an XML document for the Investigation from scratch.
+ * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
- * @param aInvestigation Object to be copied.
- * @see Investigation(const XMLDocument *aDocument)
- * @see Investigation(const char *aFileName)
+ * @param aTool Object to be copied.
+ * @see Tool(const XMLDocument *aDocument)
+ * @see Tool(const char *aFileName)
  * @see generateDocument()
  */
-InvestigationForward::
-InvestigationForward(const InvestigationForward &aInvestigation) :
-	Investigation(aInvestigation),
+ForwardTool::
+ForwardTool(const ForwardTool &aTool) :
+	SimulationTool(aTool),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -146,33 +140,31 @@ InvestigationForward(const InvestigationForward &aInvestigation) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_adjustedCOMFileName(_adjustedCOMFileNameProp.getValueStr())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("InvestigationForward");
+	setType("ForwardTool");
 	setNull();
-	*this = aInvestigation;
+	*this = aTool;
 }
 
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor.
  */
-Object* InvestigationForward::
+Object* ForwardTool::
 copy() const
 {
-	InvestigationForward *object = new InvestigationForward(*this);
+	ForwardTool *object = new ForwardTool(*this);
 	return(object);
 }
 //_____________________________________________________________________________
 /**
  * Virtual copy constructor from DOMElement.
  */
-Object* InvestigationForward::
+Object* ForwardTool::
 copy(DOMElement *aElement) const
 {
-	InvestigationForward *object = new InvestigationForward(aElement);
+	ForwardTool *object = new ForwardTool(aElement);
 	*object = *this;
 	object->updateFromXMLNode();
 	return(object);
@@ -182,7 +174,7 @@ copy(DOMElement *aElement) const
 /**
  * Set all member variables to their null or default values.
  */
-void InvestigationForward::
+void ForwardTool::
 setNull()
 {
 	setupProperties();
@@ -195,14 +187,12 @@ setNull()
 	_externalLoadsBody2 = "";
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 	_useSpecifiedDt = false;
-	_adjustedCOMBody = "";
-	_adjustedCOMFileName = "";
 }
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void InvestigationForward::setupProperties()
+void ForwardTool::setupProperties()
 {
 	string comment;
 
@@ -230,17 +220,6 @@ void InvestigationForward::setupProperties()
 
 	_useSpecifiedDtProp.setName("use_specified_dt");
 	_propertySet.append( &_useSpecifiedDtProp );
-
-	comment = "Name of the body whose center of mass is adjusted.";
-	_adjustedCOMBodyProp.setComment(comment);
-	_adjustedCOMBodyProp.setName("adjusted_com_body");
-	_propertySet.append( &_adjustedCOMBodyProp );
-
-	comment = "Name of the file specifying a change to the center of mass of a body.";
-	comment += " This adjustment is made to remove dc offset in the residuals.";
-	_adjustedCOMFileNameProp.setComment(comment);
-	_adjustedCOMFileNameProp.setName("adjusted_com_file");
-	_propertySet.append( &_adjustedCOMFileNameProp );
 }
 
 
@@ -253,22 +232,20 @@ void InvestigationForward::setupProperties()
  *
  * @return Reference to this object.
  */
-InvestigationForward& InvestigationForward::
-operator=(const InvestigationForward &aInvestigation)
+ForwardTool& ForwardTool::
+operator=(const ForwardTool &aTool)
 {
 	// BASE CLASS
-	Investigation::operator=(aInvestigation);
+	SimulationTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
-	_controlsFileName = aInvestigation._controlsFileName;
-	_initialStatesFileName = aInvestigation._initialStatesFileName;
-	_externalLoadsFileName = aInvestigation._externalLoadsFileName;
-	_externalLoadsModelKinematicsFileName = aInvestigation._externalLoadsModelKinematicsFileName;
-	_externalLoadsBody1Prop = aInvestigation._externalLoadsBody1Prop;
-	_externalLoadsBody2Prop = aInvestigation._externalLoadsBody2Prop;
-	_lowpassCutoffFrequencyForLoadKinematics = aInvestigation._lowpassCutoffFrequencyForLoadKinematics;
-	_adjustedCOMBody = aInvestigation._adjustedCOMBody;
-	_adjustedCOMFileName = aInvestigation._adjustedCOMFileName;
+	_controlsFileName = aTool._controlsFileName;
+	_initialStatesFileName = aTool._initialStatesFileName;
+	_externalLoadsFileName = aTool._externalLoadsFileName;
+	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
+	_externalLoadsBody1Prop = aTool._externalLoadsBody1Prop;
+	_externalLoadsBody2Prop = aTool._externalLoadsBody2Prop;
+	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
 
 	return(*this);
 }
@@ -285,7 +262,7 @@ operator=(const InvestigationForward &aInvestigation)
 /**
  * Run the investigation.
  */
-void InvestigationForward::run()
+void ForwardTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -298,9 +275,6 @@ void InvestigationForward::run()
 
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
-
-	// ALTER COM ?
-	adjustCOM(_model,_adjustedCOMFileName,_adjustedCOMBody);
 
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
@@ -442,7 +416,7 @@ void InvestigationForward::run()
  * Initialize the external loads applied to the model.  Currently, the loads
  * are assumed to be applied to the right and left foot.
  */
-void InvestigationForward::
+void ForwardTool::
 initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileName,
 								const string &aExternalLoadsModelKinematicsFileName,
 								const string &aExternalLoadsBody1,
@@ -498,109 +472,109 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	// when reading the kinetics file's columns from left to right.
 	int rightForceX  = kineticsStore.getColumnIndex("ground_force_vx");
 	if(rightForceX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vx not found in ";
+		string msg = "ForwardTool.run: ERR- Column index for right ground_force_vx not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightForceY  = kineticsStore.getColumnIndex("ground_force_vy");
 	if(rightForceY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vy not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_force_vy not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightForceZ  = kineticsStore.getColumnIndex("ground_force_vz");
 	if(rightForceZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_vz not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_force_vz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceX   = kineticsStore.getColumnIndex("ground_force_vx", rightForceX + 2);
 	if(leftForceX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vx not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_vx not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceY   = kineticsStore.getColumnIndex("ground_force_vy", rightForceY + 2);
 	if(leftForceY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vy not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_vy not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftForceZ   = kineticsStore.getColumnIndex("ground_force_vz", rightForceZ + 2);
 	if(leftForceZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_vz not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_vz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopX    = kineticsStore.getColumnIndex("ground_force_px");
 	if(rightCopX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_px not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_force_px not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopY    = kineticsStore.getColumnIndex("ground_force_py");
 	if(rightCopY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_py not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_force_py not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightCopZ    = kineticsStore.getColumnIndex("ground_force_pz");
 	if(rightCopZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_force_pz not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_force_pz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopX     = kineticsStore.getColumnIndex("ground_force_px", rightCopX + 2);
 	if(leftCopX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_px not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_px not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopY     = kineticsStore.getColumnIndex("ground_force_py", rightCopY + 2);
 	if(leftCopY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_py not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_py not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftCopZ     = kineticsStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
 	if(leftCopZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_force_pz not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_force_pz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueX = kineticsStore.getColumnIndex("ground_torque_x");
 	if(rightTorqueX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_x not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_torque_x not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueY = kineticsStore.getColumnIndex("ground_torque_y");
 	if(rightTorqueY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_y not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_torque_y not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int rightTorqueZ = kineticsStore.getColumnIndex("ground_torque_z");
 	if(rightTorqueZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for right ground_torque_z not found in ";
+		string msg = "FowardTool.run: ERR- Column index for right ground_torque_z not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueX  = kineticsStore.getColumnIndex("ground_torque_x", rightTorqueX + 2);
 	if(leftTorqueX<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_x not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_torque_x not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueY  = kineticsStore.getColumnIndex("ground_torque_y", rightTorqueY + 2);
 	if(leftTorqueY<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_y not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_torque_y not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 	int leftTorqueZ  = kineticsStore.getColumnIndex("ground_torque_z", rightTorqueZ + 2);
 	if(leftTorqueZ<0) {
-		string msg = "InvestigationCMCGait.run: ERR- Column index for left ground_torque_z not found in ";
+		string msg = "FowardTool.run: ERR- Column index for left ground_torque_z not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
@@ -609,7 +583,7 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	// Right
 	AbstractBody *body1 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody1);
 	if(body1<0) {
-		string msg = "InvestigationCMCGait.run: ERR- The body to which the first set of external loads";
+		string msg = "FowardTool.run: ERR- The body to which the first set of external loads";
 		msg+="should be applied (" + aExternalLoadsBody1 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
@@ -617,7 +591,7 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	//int  leftFoot = aModel->getBodyIndex("calcn_l");
 	AbstractBody *body2 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody2);
 	if(body2<0) {
-		string msg = "InvestigationCMCGait.run: ERR- The body to which the second set of external loads";
+		string msg = "FowardTool.run: ERR- The body to which the second set of external loads";
 		msg+="should be applied (" + aExternalLoadsBody2 + ") is not a segment in the model.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
@@ -652,25 +626,4 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	aModel->addDerivCallback(leftForceApp);
 	aModel->addDerivCallback(rightTorqueApp);
 	aModel->addDerivCallback(leftTorqueApp);
-}
-
-//_____________________________________________________________________________
-/**
- * Adjust center of mass of given body using COM stored in given file.
- */
-void InvestigationForward::
-adjustCOM(AbstractModel *aModel, const std::string &aAdjustedCOMFileName, const std::string &aAdjustedCOMBody)
-{
-	if(aAdjustedCOMFileName!="") {
-		FILE *fpCOM = fopen(aAdjustedCOMFileName.c_str(),"r");
-		if(fpCOM!=NULL) {
-			Array<double> com(0.0,3);
-			fscanf(fpCOM,"%lf %lf %lf",&com[0],&com[1],&com[2]);
-			AbstractBody *body = aModel->getDynamicsEngine().getBodySet()->get(aAdjustedCOMBody);
-			cout<<"NOTE- altering center of mass for "<<aAdjustedCOMBody<<endl;
-			cout<<com<<endl<<endl;
-			body->setMassCenter(&com[0]);
-			fclose(fpCOM);
-		}
-	}
 }
