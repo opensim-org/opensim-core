@@ -1434,71 +1434,6 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
    out << "}" << endl << endl << endl;
 }
 
-void SdfastFileWriter::writeSdfastInitCode(ofstream& out)
-{
-	out << "/* INIT_SEGMENTS: this routine should be called before" << endl;
-	out << " * read_muscles() because it does two things that need to" << endl;
-	out << " * be done before you read in the muscles. First, it assigns" << endl;
-	out << " * numbers to the body segments in your model. These body" << endl;
-	out << " * numbers should match the numbers in the \"_info\" file" << endl;
-	out << " * that SD/FAST makes. Thus when you read in the muscle" << endl;
-	out << " * attachment points, the segment name listed for each point" << endl;
-	out << " * is converted into an SD/FAST body segment number." << endl;
-	out << " * Second, this routine records the positions of the mass" << endl;
-	out << " * centers of each body segment. These are the coordinates of" << endl;
-	out << " * the mass centers with respect to the origins of the SIMM" << endl;
-	out << " * bone file. When you read in a muscle attachment point, the" << endl;
-	out << " * mass center coordinates are subtracted from it, so that the" << endl;
-	out << " * muscle point is now w.r.t. the mass center of the body" << endl;
-	out << " * segment, as SD/FAST expects." << endl;
-	out << " * Note that you cannot use the #defined segment numbers as indices" << endl;
-	out << " * into the sdm.body_segment[] array because they start at -1." << endl;
-	out << " */" << endl << endl;
-
-	out << "void init_segments(void)\n{" << endl << endl;
-
-	out << "   int i, j;" << endl;
-	out << "   sdm.body_segment = (dpBodyStruct*)simm_malloc(sdm.num_body_segments*sizeof(dpBodyStruct));" << endl << endl;
-
-	/* Go thru the list of bodies. First write the code to enter the name
-	 * in the SDModel structure. Then call several SD/FAST routines to get the
-	 * mass, inertia, and mass_center coordinates from SD/FAST and store them in
-	 * the SDModel structure.
-	 */
-	for (int i = 0; i < _sdfastBodies.getSize(); i++)
-	{
-		SdfastBodyInfo &body = _sdfastBodies.get(i);
-
-		out << "   mstrcpy(&sdm.body_segment[" << body.name << "+1].name,\"" << body.name << "\");" << endl;
-		if (i == 0)
-		{
-			out << "   sdm.body_segment[" << body.name << "+1].output = dpNo;" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass = 0.0;" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[0] = " << body.massCenter[0] << ";" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[1] = " << body.massCenter[1] << ";" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[2] = " << body.massCenter[2] << ";" << endl;
-			out << "   for (i=0; i<3; i++)" << endl;
-			out << "      for (j=0; j<3; j++)" << endl;
-			out << "         sdm.body_segment[" << body.name << "+1].inertia[i][j] = 0.0;" << endl;
-		}
-		else
-		{
-			out << "   sdm.body_segment[" << body.name << "+1].output = dpYes;" << endl;
-			out << "   sdgetmass(" << body.name << ", &(sdm.body_segment[" << body.name << "+1].mass));" << endl;
-			out << "   sdgetiner(" << body.name << ", sdm.body_segment[" << body.name << "+1].inertia);" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[0] = " << body.massCenter[0] << ";" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[1] = " << body.massCenter[1] << ";" << endl;
-			out << "   sdm.body_segment[" << body.name << "+1].mass_center[2] = " << body.massCenter[2] << ";" << endl;
-		}
-		out << "   sdm.body_segment[" << body.name << "+1].contactable = dpNo;" << endl;
-		out << "" << endl;
-	}
-
-	out <<  "   mstrcpy(&sdm.name, \"" << _model->getName() << "\");" << endl << endl;
-	out <<  "   check_for_sderror(\"INIT_SEGMENTS\");" << endl << endl;
-	out <<  "}" << endl << endl << endl;
-}
-
 void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 {
 #if 0
@@ -1795,8 +1730,6 @@ void SdfastFileWriter::writeModelSourceFile(const string& aFileName, const strin
 	out << "/*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/" << endl << endl << endl;
 
 	writeSdfastQInitCode(out);
-
-	writeSdfastInitCode(out);
 
 	writeSdfastQRestraintFunctions(out);
 
