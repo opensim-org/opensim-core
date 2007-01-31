@@ -1151,7 +1151,11 @@ updateXMLNode(DOMElement *aParent)
 		defaultsParent->removeChild(elmt);
 	// Root element- write valid defaults
 	} else if(aParent==NULL) {
-		if(elmt==NULL) elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
+		bool createdNewElement = false;
+		if(elmt==NULL) {
+			elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
+			createdNewElement = true;
+		}
 		XMLNode::RemoveChildren(elmt);
 		for(int i=0;i<_Types.getSize();i++) {
 			Object *defaultObject = _Types.get(i);
@@ -1160,6 +1164,13 @@ updateXMLNode(DOMElement *aParent)
 				defaultObject->setXMLNode(NULL);
 				defaultObject->updateXMLNode(elmt);
 			}
+		}
+		// If it will end up an empty <defaults/> tag then we just get rid of it
+		if(createdNewElement && !elmt->hasChildNodes()) {
+			_node->removeChild(elmt);
+			// can we delete it?? it seems to be crashing...
+			//delete elmt;
+			elmt = NULL;
 		}
 	}
 
@@ -1183,6 +1194,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetBoolArray(elmt,1,&value);
 			break; }
@@ -1193,6 +1206,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetIntArray(elmt,1,&value);
 			break; }
@@ -1203,6 +1218,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetDblArray(elmt,1,&value);
 			break; }
@@ -1214,17 +1231,31 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetStrArray(elmt,1,&str);
 			break; }
 
 		// Obj
 		case(Property::Obj) : {
-			if (property->getComment()!=""){
-				XMLNode::AppendNewCommentElement(_node, property->getComment());
-			}
 			Object &object = property->getValueObj();
+			elmt = object._node;
+			if((elmt==NULL) && (!property->getUseDefault())) {
+				XMLNode::AppendNewCommentElement(_node, property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+			}
+			if(elmt || !property->getUseDefault())
+				object.updateXMLNode(_node);
+#if 0
+			elmt = XMLNode::GetFirstChildElementByTagName(_node,object.getType());
+			if(!property->getComment().empty()) {
+				if(elmt) XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+				else XMLNode::AppendNewCommentElement(_node, property->getComment());
+			}
 			object.updateXMLNode(_node);
+#endif
 			break; }
 
 		// BoolArray
@@ -1233,6 +1264,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetBoolArray(elmt,value.getSize(),&value[0]);
 			break; }
@@ -1243,6 +1276,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetIntArray(elmt,value.getSize(),&value[0]);
 			break; }
@@ -1253,6 +1288,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetDblArray(elmt,value.getSize(),&value[0]);
 			break; }
@@ -1263,6 +1300,8 @@ updateXMLNode(DOMElement *aParent)
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if((elmt==NULL) && (!property->getUseDefault())) {
 				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			XMLNode::SetStrArray(elmt,value.getSize(),value.get());
 			break; }
@@ -1271,9 +1310,10 @@ updateXMLNode(DOMElement *aParent)
 		case(Property::ObjArray) : {
 			ArrayPtrs<Object> &value = property->getValueObjArray();
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt==NULL) elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			if((elmt==NULL) && (!property->getUseDefault())) { // Is this ever used??
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			if(elmt==NULL) { // I guess we always append the element even if it has default value
+				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			for(int j=0;j<value.getSize();j++) {
 				value.get(j)->updateXMLNode(elmt);

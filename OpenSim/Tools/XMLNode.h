@@ -92,6 +92,8 @@ public:
 							const std::string &aComment="");
 	static void
 		RemoveChildren(DOMNode *aNode);
+	static void
+		UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment);
 
 	//--------------------------------------------------------------------------
 	// GET NODES

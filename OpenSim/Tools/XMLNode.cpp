@@ -109,14 +109,6 @@ AppendNewCommentElement(DOMNode *aParent,const string &aComment)
 		return(NULL);
 	}
 
-	// CREATE text
-	XMLCh *commentText = XMLString::transcode(aComment.c_str());
-	if(commentText==NULL) return(NULL);
-
-	// CREATE NEW NODE
-	DOMComment *child = doc->createComment(commentText);  
-	delete[] commentText;
-
 	// DETERMINE LEVEL OF PARENT
 	int level = GetNumberOfParents(aParent);
 	if(level>TABLIMIT) level=TABLIMIT;
@@ -138,6 +130,17 @@ AppendNewCommentElement(DOMNode *aParent,const string &aComment)
 			if(xmlSpace!=NULL) delete[] xmlSpace;
 		}
 	}
+
+	// CREATE text
+	strcpy(space,"\t");
+	for(i=0;i<level-1;i++) strcat(space,"\t");
+	string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
+	if(commentText==NULL) return(NULL);
+
+	// CREATE NEW NODE
+	DOMComment *child = doc->createComment(commentText);  
+	delete[] commentText;
 
 	// ADD CHILD
 	if(child!=NULL) aParent->appendChild(child);
@@ -271,6 +274,47 @@ RemoveChildren(DOMNode *aNode)
 
 }
 
+void XMLNode::
+UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment)
+{
+	DOMComment *commentNode = 0;
+	for(DOMNode *child=aElement->getPreviousSibling(); child; child=child->getPreviousSibling()) {
+		if(child->getNodeType()==DOMNode::COMMENT_NODE) {
+			commentNode = (DOMComment*)child;
+			break;
+		}
+		else if(child->getNodeType()==DOMNode::ELEMENT_NODE) break;
+	}
+
+	DOMDocument *doc = aElement->getOwnerDocument();
+	if(!doc) return;
+
+	// DETERMINE LEVEL OF PARENT
+	int level = GetNumberOfParents(aElement)-1;
+	if(level>TABLIMIT) level=TABLIMIT;
+	char space[TABLIMIT+1];
+	strcpy(space,"\t");
+	for(int i=0;i<level-1;i++) strcat(space,"\t");
+	string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
+	DOMComment *newCommentNode = doc->createComment(commentText);
+	if(commentText) delete[] commentText;
+
+	strcpy(space,"\n");
+	for(int i=0;i<level;i++) strcat(space,"\t");
+	XMLCh *xmlSpace = XMLString::transcode(space);
+	DOMNode *spaceAfterCommentNode = doc->createTextNode(xmlSpace);
+	if(xmlSpace) delete[] xmlSpace;
+
+	if(commentNode) {
+		aElement->getParentNode()->replaceChild(newCommentNode,commentNode);
+		// Can we delete??
+		//delete commentNode;
+	} else {
+		aElement->getParentNode()->insertBefore(newCommentNode,aElement);
+		aElement->getParentNode()->insertBefore(spaceAfterCommentNode,aElement);
+	}
+}
 
 //=============================================================================
 // GET NODES
