@@ -303,6 +303,7 @@ void AbstractSimmMuscle::updateGeometry()
 	// in the right location, xform to global frame and create connectors
 	// _allGeometry array already has the lastest geometry, should not need
 	// to invalidate unless something changed (e.g. a viaPoint changed state).
+	calculatePath();
 	updateGeometrySize();
 	updateGeometryLocations();
 }
