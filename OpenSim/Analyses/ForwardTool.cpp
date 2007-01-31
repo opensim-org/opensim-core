@@ -196,30 +196,63 @@ void ForwardTool::setupProperties()
 {
 	string comment;
 
-	// INPUT FILE NAMES
+	comment = "XML file containing the controls (e.g., muscle excitations) for the forward simulation.";
+	_controlsFileNameProp.setComment(comment);
 	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
+	comment = "Storage file (.sto) containing the initial states for the forward simulation. "
+				 "This file often contains multiple rows of data, each row being a time-stamped array of states. "
+				 "The first column contains the time.  The rest of the columns contain the states in the order "
+				 "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
+				 "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
+				 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
+				 "being a simulation from an exact set of states.  Instead, the closest earlier set of states is used.";
+	_initialStatesFileNameProp.setComment(comment);
 	_initialStatesFileNameProp.setName("initial_states_file");
 	_propertySet.append( &_initialStatesFileNameProp );
 
+	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
+	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
+	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
+	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
+	comment = "Name of the body to which the first set of external loads "
+				 "should be applied (e.g., the name of the right foot).";
+	_externalLoadsBody1Prop.setComment(comment);
 	_externalLoadsBody1Prop.setName("external_loads_body1");
 	_propertySet.append( &_externalLoadsBody1Prop );
 
+	comment = "Name of the body to which the second set of external loads "
+				 "should be applied (e.g., the name of the left foot).";
+	_externalLoadsBody2Prop.setComment(comment);
 	_externalLoadsBody2Prop.setName("external_loads_body2");
 	_propertySet.append( &_externalLoadsBody2Prop );
 
+	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
+				 "to the external loads. A negative value results in no filtering. "
+				 "The default value is -1.0, so no filtering.";
+	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
+	comment = "Flag (true or false) indicating whether or not the integrator should "
+				 "use a particular time stepping.  If true, the time stepping is extracted "
+				 "from the initial states file.  In this situation, therefore, the initial "
+				 "states file must contain all the time steps in a simulation and be written out "
+				 "to high precision (usually 20 decimal places).  Setting this flag to true can "
+				 "be useful when reproducing a previous forward simulation with as little drift "
+				 "as possible.  If this flag is false, the integrator is left to determine its own "
+				 "time stepping.";
+	_useSpecifiedDtProp.setComment(comment);
 	_useSpecifiedDtProp.setName("use_specified_dt");
 	_propertySet.append( &_useSpecifiedDtProp );
+
 }
 
 

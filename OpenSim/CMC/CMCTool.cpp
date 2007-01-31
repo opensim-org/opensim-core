@@ -314,45 +314,45 @@ void CMCTool::setupProperties()
 {
 	string comment;
 
-	comment = "Name of the file containing the desired kinematic trajectories.";
+	comment = "Motion (.mot) or storage (.sto) file containing the desired kinematic trajectories.";
 	_desiredKinematicsFileNameProp.setComment(comment);
 	_desiredKinematicsFileNameProp.setName("desired_kinematics_file");
 	_propertySet.append( &_desiredKinematicsFileNameProp );
 
-	comment = "Name of the file containing the external loads applied to the model.";
+	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
 	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
-	comment = "Name of the file containing the model kinematics corresponding to the external loads.";
+	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
 	comment = "Name of the body to which the first set of external loads ";
-	comment += "should be applied (e.g., the body name for the right foot).";
+	comment += "should be applied (e.g., the name of the right foot).";
 	_externalLoadsBody1Prop.setComment(comment);
 	_externalLoadsBody1Prop.setName("external_loads_body1");
 	_propertySet.append( &_externalLoadsBody1Prop );
 
 	comment = "Name of the body to which the second set of external loads ";
-	comment += "should be applied (e.g., the body name for the left foot).";
+	comment += "should be applied (e.g., the name of the left foot).";
 	_externalLoadsBody2Prop.setComment(comment);
 	_externalLoadsBody2Prop.setName("external_loads_body2");
 	_propertySet.append( &_externalLoadsBody2Prop );
 
-	comment = "Name of the file containing the tracking tasks.";
+	comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";
 	_taskSetFileNameProp.setComment(comment);
 	_taskSetFileNameProp.setName("task_set_file");
 	_propertySet.append( &_taskSetFileNameProp );
 
-	comment = "Name of the file containing the constraints on the controls.";
+	comment = "File containing the constraints on the controls.";
 	_constraintsFileNameProp.setComment(comment);
 	_constraintsFileNameProp.setName("constraints_file");
 	_propertySet.append( &_constraintsFileNameProp );
 
-	comment = "Name of the file containing the actuator controls output by RRA.";
-	comment += " These are used to place constraints on the residuals.";
+	comment = "File containing the controls output by RRA.";
+	comment += " These can be used to place constraints on the residuals during CMC.";
 	_rraControlsFileNameProp.setComment(comment);
 	_rraControlsFileNameProp.setName("rra_controls_file");
 	_propertySet.append( &_rraControlsFileNameProp );
@@ -370,25 +370,27 @@ void CMCTool::setupProperties()
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
-	comment = "Time window over which the desired actuator forces are achieved.";
+	comment = "Time window over which the desired actuator forces are achieved. "
+		       "Muscles forces cannot change instantaneously, so a finite time window must be allowed. "
+				 "The recommended time window is about 0.010 sec.";
 	_targetDTProp.setComment(comment);
 	_targetDTProp.setName("cmc_time_window");
 	_propertySet.append( &_targetDTProp );
 
-	comment = "Flag indicating whether or not to use the curvature filter.";
+	comment = "Flag (true or false) indicating whether or not to use the curvature filter. "
+				 "Setting this flag to true can reduce oscillations in the computed muscle excitations.";
 	_useCurvatureFilterProp.setComment(comment);
 	_useCurvatureFilterProp.setName("use_curvature_filter");
 	_propertySet.append( &_useCurvatureFilterProp );
 
-	comment = "Flag indicating whether or not to use reflexes.  This is a hook ";
-	comment += "for folks wanting to modify controls based on additonal information.";
+	comment = "Flag (true or false) indicating whether or not to use reflexes.  This is a hook ";
+	comment += "for users wanting to modify controls based on additonal information.";
 	_useReflexesProp.setComment(comment);
 	_useReflexesProp.setName("use_reflexes");
 	_propertySet.append( &_useReflexesProp );
 
-	comment = "Flag indicating whether to use the fast CMC optimization target. ";
-	comment += "The fast target requires the desired accelerations to be met ";
-	comment += "within the tolerance set by the convergence criterion. ";
+	comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";
+	comment += "The fast target requires the desired accelerations to be met. ";
 	comment += "The optimizer fails if the acclerations constraints cannot be ";
 	comment += "met, so the fast target can be less robust.  The regular target ";
 	comment += "does not require the acceleration constraints to be met; it ";
@@ -397,12 +399,14 @@ void CMCTool::setupProperties()
 	_useFastTargetProp.setName("use_fast_optimization_target");
 	_propertySet.append( &_useFastTargetProp );
 
-	comment = "Perturbation size used by the optimizer to compute numerical derivatives.";
+	comment = "Perturbation size used by the optimizer to compute numerical derivatives. "
+				 "A value between 1.0e-4 and 1.0e-8 is usually approprieate.";
 	_optimizerDXProp.setComment(comment);
 	_optimizerDXProp.setName("optimizer_derivative_dx");
 	_propertySet.append( &_optimizerDXProp );
 
-	comment = "Convergence criterion for the optimizer.";
+	comment = "Convergence criterion for the optimizer. The smaller this value, the deeper the convergence. "
+				 "Decreasing this number can improve a solution, but will also likely increase computation time.";
 	_convergenceCriterionProp.setComment(comment);
 	_convergenceCriterionProp.setName("optimizer_convergence_criterion");
 	_propertySet.append( &_convergenceCriterionProp );
@@ -417,25 +421,33 @@ void CMCTool::setupProperties()
 	_printLevelProp.setName("optimizer_print_level");
 	_propertySet.append( &_printLevelProp );
 
-	comment = "Flag indicating whether or not to compute average residuals.";
+	comment = "Flag (true or false) indicating whether or not to compute average residuals. "
+				 "No actions are taken based on this flag other than printing the average residuals, "
+				 "which can be useful for seeing if the solution is good.  Average residuals should be "
+				 "be close to 0.0.  If not, there is likely problem in the experimental data, in the model, "
+				 "or both.";
 	_computeAverageResidualsProp.setComment(comment);
 	_computeAverageResidualsProp.setName("compute_average_residuals");
 	_propertySet.append( &_computeAverageResidualsProp );
 
-	comment = "Flag indicating whether or not to make an adjustment ";
-	comment += "in the center of mass of a body to reduced DC offsets in MX and MZ.";
+	comment = "Flag (true or false) indicating whether or not to make an adjustment "
+				 "in the center of mass of a body to reduced DC offsets in MX and MZ. "
+				 "If true, a new model is writen out that has altered anthropometry.";
 	_adjustCOMToReduceResidualsProp.setComment(comment);
 	_adjustCOMToReduceResidualsProp.setName("adjust_com_to_reduce_residuals");
 	_propertySet.append( &_adjustCOMToReduceResidualsProp );
 
-	comment = "Name of the body whose center of mass is adjusted.";
+	comment = "Name of the body whose center of mass is adjusted. "
+				 "The heaviest segment in the model should normally be chosen. "
+				 "For a gait model, the torso segment is usually the best choice.";
 	_adjustedCOMBodyProp.setComment(comment);
 	_adjustedCOMBodyProp.setName("adjusted_com_body");
 	_propertySet.append( &_adjustedCOMBodyProp );
 
-	comment = "Name of the output model file containing adjustments to anthropometry ";
-	comment += "made to reduce average residuals. This file is written if the property ";
-	comment += "adjust_com_to_reduce_residuals is set to true.";
+	comment = "Name of the output model file (.osim) containing adjustments to anthropometry "
+				 "made to reduce average residuals. This file is written if the property "
+				 "adjust_com_to_reduce_residuals is set to true. If a name is not specified, "
+				 "the model is written out to a file called adjusted_model.osim.";
 	_outputModelFileProp.setComment(comment);
 	_outputModelFileProp.setName("output_model_file");
 	_propertySet.append( &_outputModelFileProp );
@@ -797,8 +809,8 @@ void CMCTool::run()
 			cerr<<"Warning: A name for the output model was not set.\n";
 			cerr<<"Specify a value for the property,"<<_outputModelFileProp.getName();
 			cerr<<", in the setup file.\n";
-			cerr<<"Writing to outputModel.xml ...\n\n";
-			_outputModelFile = "outputModel.xml";
+			cerr<<"Writing to adjusted_model.osim ...\n\n";
+			_outputModelFile = "adjusted_model.osim";
 		}
 		_model->print(_outputModelFile);
 	}

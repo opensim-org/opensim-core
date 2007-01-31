@@ -205,30 +205,29 @@ void SimulationTool::setupProperties()
 {
 	string comment;
 
-	comment = "Name of the model library to load. Do not include the library ";
-	comment += "extension (e.g., .dll or .lib).";
+	comment = "Name of the model library to load. Do not include the library extension (e.g., .dll or .lib).";
 	_modelLibraryProp.setComment(comment);
 	_modelLibraryProp.setName("model_library");
 	_propertySet.append( &_modelLibraryProp );
 
-	comment = "Name of the xml file used to deserialize or construct a model.";
+	comment = "Name of the .osim file used to construct a model.";
 	_modelFileProp.setComment(comment);
 	_modelFileProp.setName("model_file");
 	_propertySet.append( &_modelFileProp );
 
-	comment = "Replace model's actuator set with sets specified in <actuator_set_files>? "
-				 "If false then the actuator set is appended to.";
+	comment = "Replace the model's actuator set with sets specified in <actuator_set_files>? "
+				 "If false, the actuator set is appended to.";
 	_replaceActuatorSetProp.setComment(comment);
 	_replaceActuatorSetProp.setName("replace_actuator_set");
 	_propertySet.append( &_replaceActuatorSetProp );
 
-	comment = "Name of the xml file used to construct an actuator set for the model.";
+	comment = "List of xml files used to construct an actuator set for the model.";
 	_actuatorSetFilesProp.setComment(comment);
 	_actuatorSetFilesProp.setValue(Array<string>(""));
 	_actuatorSetFilesProp.setName("actuator_set_files");
 	_propertySet.append( &_actuatorSetFilesProp );
 
-	comment = "Name of the xml file used to construct a contact force set for the model.";
+	comment = "Name of the xml file used to construct a contact set for the model.";
 	_contactForceSetFileProp.setComment(comment);
 	_contactForceSetFileProp.setName("contact_force_set_file");
 	_propertySet.append( &_contactForceSetFileProp );
@@ -238,22 +237,22 @@ void SimulationTool::setupProperties()
 	_resultsDirProp.setName("results_directory");
 	_propertySet.append( &_resultsDirProp );
 
-	comment = "Output precision.";
+	comment = "Output precision.  It is 8 by default.";
 	_outputPrecisionProp.setComment(comment);
 	_outputPrecisionProp.setName("output_precision");
 	_propertySet.append( &_outputPrecisionProp );
 
-	comment = "Initial time for the investigation.";
+	comment = "Initial time for the simulation.";
 	_tiProp.setComment(comment);
 	_tiProp.setName("initial_time");
 	_propertySet.append( &_tiProp );
 
-	comment = "Final time for the investigation.";
+	comment = "Final time for the simulation.";
 	_tfProp.setComment(comment);
 	_tfProp.setName("final_time");
 	_propertySet.append( &_tfProp );
 
-	comment = "Maximum number of steps for the integrator.";
+	comment = "Maximum number of integrator steps.";
 	_maxStepsProp.setComment(comment);
 	_maxStepsProp.setName("maximum_number_of_integrator_steps");
 	_propertySet.append( &_maxStepsProp );
@@ -263,14 +262,12 @@ void SimulationTool::setupProperties()
 	_maxDTProp.setName("maximum_integrator_step_size");
 	_propertySet.append( &_maxDTProp );
 
-	comment = "Integrator error tolerance. When the error is greater, the ";
-	comment += "integrator step size is decreased.";
+	comment = "Integrator error tolerance. When the error is greater, the integrator step size is decreased.";
 	_errorToleranceProp.setComment(comment);
 	_errorToleranceProp.setName("integrator_error_tolerance");
 	_propertySet.append( &_errorToleranceProp );
 
-	comment = "Integrator fine tolerance. When the error is less, the ";
-	comment += "integrator step size is increased.";
+	comment = "Integrator fine tolerance. When the error is less, the integrator step size is increased.";
 	_fineToleranceProp.setComment(comment);
 	_fineToleranceProp.setName("integrator_fine_tolerance");
 	_propertySet.append( &_fineToleranceProp );
