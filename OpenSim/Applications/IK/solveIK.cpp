@@ -90,9 +90,9 @@ int main(int argc,char **argv)
 				SimmCoordinate* aCoordinate = new SimmCoordinate();
 				tool->getCoordinateSet().append(aCoordinate);
 
-				tool->print("setup_ik_default.xml");
+				tool->print("default_Setup_IK.xml");
 				Object::setSerializeAllDefaults(false);
-				cout << "Created file setup_ik_default.xml with default setup" << endl;
+				cout << "Created file default_Setup_IK.xml with default setup" << endl;
 				return 0;
 
 			// PRINT PROPERTY INFO

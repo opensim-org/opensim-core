@@ -48,8 +48,9 @@ int main(int argc,char **argv)
 			PerturbationTool *tool = new PerturbationTool();
 			tool->setName("default");
 			Object::setSerializeAllDefaults(true);
-			tool->print("setup_perturb_default.xml");
+			tool->print("default_Setup_Perturb.xml");
 			Object::setSerializeAllDefaults(false);
+			cout << "Created file default_Setup_Perturb.xml with default setup" << endl;
 			return(0);
 
 		// IDENTIFY SETUP FILE

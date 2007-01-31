@@ -76,8 +76,9 @@ int main(int argc,char **argv)
 			CMCTool *investigation = new CMCTool();
 			investigation->setName("default");
 			Object::setSerializeAllDefaults(true);
-			investigation->print("setup_cmc_default.xml");
+			investigation->print("default_Setup_CMC.xml");
 			Object::setSerializeAllDefaults(false);
+			cout << "Created file default_Setup_CMC.xml with default setup" << endl;
 			return(0);
 
 		// IDENTIFY SETUP FILE

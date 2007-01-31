@@ -78,8 +78,9 @@ int main(int argc,char **argv)
 			ForwardTool *tool = new ForwardTool();
 			tool->setName("default");
 			Object::setSerializeAllDefaults(true);
-			tool->print("default_forward.xml");
+			tool->print("default_Setup_Forward.xml");
 			Object::setSerializeAllDefaults(false);
+			cout << "Created file default_Setup_Forward.xml with default setup" << endl;
 			return(0);
 
 		// IDENTIFY SETUP FILE

@@ -95,9 +95,9 @@ int main(int argc,char **argv)
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
 					Object::setSerializeAllDefaults(true);
-					subject->print("default_subject.xml");
+					subject->print("default_Setup_Scale.xml");
 					Object::setSerializeAllDefaults(false);
-					cout << "Created file default_subject.xml with default setup" << endl;
+					cout << "Created file default_Setup_Scale.xml with default setup" << endl;
 					return(0);
 
 				// PRINT PROPERTY INFO
