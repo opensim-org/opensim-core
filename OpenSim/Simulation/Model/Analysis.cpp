@@ -195,6 +195,8 @@ setNull()
  */
 void Analysis::setupProperties()
 {
+	_inDegreesProp.setComment("Flag (true or false) indicating whether the "
+		"results are in degrees or not.");
 	_inDegreesProp.setName("in_degrees");
 	_propertySet.append( &_inDegreesProp );
 }

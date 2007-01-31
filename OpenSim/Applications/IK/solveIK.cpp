@@ -54,6 +54,9 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
+	// REGISTER TYPES
+	IKTool::registerTypes();
+
 	// PARSE COMMAND LINE
 	string option = "";
 	string setupFileName;
@@ -72,30 +75,47 @@ int main(int argc,char **argv)
 				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
 					PrintUsage(cout);
 					return(0);
-					// IDENTIFY SETUP FILE
-				} else if((option=="-Setup")||(option=="-S")) {
-					setupFileName = argv[i+1];
-					break;
-				}
-				else if((option=="-PrintSetup")||(option=="-PS")) {
-					IKTool *tool = new IKTool();
-					tool->setName("default");
-					Object::setSerializeAllDefaults(true);
 
-					tool->getMarkerSet().append(new SimmMarker());
-					SimmCoordinate* aCoordinate = new SimmCoordinate();
-					tool->getCoordinateSet().append(aCoordinate);
+			// IDENTIFY SETUP FILE
+			} else if((option=="-Setup")||(option=="-S")) {
+				setupFileName = argv[i+1];
+				break;
 
-					tool->print("setup_ik_default.xml");
-					Object::setSerializeAllDefaults(false);
-					cout << "Created file setup_ik_default.xml with default setup" << endl;
-					return 0;
+			} else if((option=="-PrintSetup")||(option=="-PS")) {
+				IKTool *tool = new IKTool();
+				tool->setName("default");
+				Object::setSerializeAllDefaults(true);
+
+				tool->getMarkerSet().append(new SimmMarker());
+				SimmCoordinate* aCoordinate = new SimmCoordinate();
+				tool->getCoordinateSet().append(aCoordinate);
+
+				tool->print("setup_ik_default.xml");
+				Object::setSerializeAllDefaults(false);
+				cout << "Created file setup_ik_default.xml with default setup" << endl;
+				return 0;
+
+			// PRINT PROPERTY INFO
+			} else if((option=="-PropertyInfo")||(option=="-PI")) {
+				if((i+1)>=argc) {
+					Object::PrintPropertyInfo(cout,"");
+
+				} else {
+					char *compoundName = argv[i+1];
+					if(compoundName[0]=='-') {
+						Object::PrintPropertyInfo(cout,"");
+					} else {
+						Object::PrintPropertyInfo(cout,compoundName);
+					}
 				}
-				else {
-					cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
-					PrintUsage(cout);
-					return(0);
-				}
+				return(0);
+
+			// UNRECOGNIZED
+			} else {
+				cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
+				PrintUsage(cout);
+				return(0);
+			}
 		}
 	}
 
@@ -105,8 +125,6 @@ int main(int argc,char **argv)
 		PrintUsage(cout);
 		return(-1);
 	}
-
-	IKTool::registerTypes();
 
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
@@ -147,7 +165,7 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"------             --------         --------------\n";
 	aOStream<<"-Help, -H                           Print the command-line options for scale.exe.\n";
 	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
-	aOStream<<"-Setup, -S         SetupFile        Specify an xml setupfile that specifies an OpenSim model,\n";
-	aOStream<<"                                    a marker file, and scaling parameters.\n";
+	aOStream<<"-Setup, -S         SetupFile        Specify an xml setup file for solving and inverse kinematics problem.\n";
+	aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
 	

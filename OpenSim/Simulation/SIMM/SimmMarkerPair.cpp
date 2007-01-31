@@ -142,6 +142,7 @@ void SimmMarkerPair::setNull()
  */
 void SimmMarkerPair::setupProperties()
 {
+	_markerNamesProp.setComment("Names of two markers, the distance between which is used to compute a body scale factor.");
 	_markerNamesProp.setName("markers");
 	_propertySet.append(&_markerNamesProp);
 }

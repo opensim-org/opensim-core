@@ -217,56 +217,75 @@ void SimmCoordinate::setNull(void)
  */
 void SimmCoordinate::setupProperties(void)
 {
+	_defaultValueProp.setComment("Default value for a coordinate.");
 	_defaultValueProp.setName("default_value");
 	_defaultValueProp.setValue(0.0);
 	_propertySet.append(&_defaultValueProp);
 
+	_valueProp.setComment("Value of the coordinate.");
 	_valueProp.setName("value");
 	_valueProp.setValue(0.0);
 	_propertySet.append(&_valueProp);
 
+	_toleranceProp.setComment("Tolerance for a coordinate.");
 	_toleranceProp.setName("tolerance");
 	_toleranceProp.setValue(0.0);
 	_propertySet.append(&_toleranceProp);
 
+	_stiffnessProp.setComment("Stiffness of a coordinate.");
 	_stiffnessProp.setName("stiffness");
 	_stiffnessProp.setValue(0.0);
 	_propertySet.append(&_stiffnessProp);
 
+	_weightProp.setComment("Weight of a coordinate. "
+		"For solving inverse kinematics (IK) problems, making this weight higher results in closer "
+		"matching to any target coordinate values, which are usually specified in a file.");
 	_weightProp.setName("weight");
 	_weightProp.setValue(1.0);
 	_propertySet.append(&_weightProp);
 
+	_rangeProp.setComment("Allowd range for a coordinate.");
 	const double defaultRange[] = {-999999.9, 999999.9};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
 	_propertySet.append(&_rangeProp);
 
+	_keysProp.setComment("Computer keyboard keys that can be used to manipulate "
+		"in a graphical application.");
 	_keysProp.setName("keys");
 	_propertySet.append(&_keysProp);
 
+	_clampedProp.setComment("Flag (true or false) indicating whether a coordinate "
+		"is not permitted outside its range.");
 	_clampedProp.setName("clamped");
 	_clampedProp.setValue(true);
 	_propertySet.append(&_clampedProp);
 
+	_lockedProp.setComment("Flag (true or false) indicating whether a coordinate "
+		"is fixed or locked at its current value.");
 	_lockedProp.setName("locked");
 	_lockedProp.setValue(false);
 	_propertySet.append(&_lockedProp);
 
 	ArrayPtrs<Object> func;
-
+	_restraintFunctionProp.setComment("Pointer to a restraint function that applies generalized forces "
+		"at a joint to keep the coordinate from moving outside its range. ");
 	_restraintFunctionProp.setName("restraint_function");
 	_restraintFunctionProp.setValue(func);
 	_propertySet.append(&_restraintFunctionProp);
 
+	_minRestraintFunctionProp.setComment("Minimum restraint function.");
 	_minRestraintFunctionProp.setName("min_restraint_function");
 	_minRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_minRestraintFunctionProp);
 
+	_maxRestraintFunctionProp.setComment("Maximum restraint function.");
 	_maxRestraintFunctionProp.setName("max_restraint_function");
 	_maxRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_maxRestraintFunctionProp);
 
+	_restraintActiveProp.setComment("Flag (true or false) indicating whether "
+		"or not the restraint function is active.");
 	_restraintActiveProp.setName("restraint_active");
 	_restraintActiveProp.setValue(true);
 	_propertySet.append(&_restraintActiveProp);

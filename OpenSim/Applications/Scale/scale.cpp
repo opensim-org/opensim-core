@@ -58,6 +58,11 @@ int main(int argc,char **argv)
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
 
+	// REGISTER TYPES
+	Object::RegisterType(VisibleObject());
+	Object::RegisterType(SimmSubject());
+	SimmSubject::registerTypes();
+
 	// PARSE COMMAND LINE
 	string inName;
 	string option = "";
@@ -95,6 +100,21 @@ int main(int argc,char **argv)
 					cout << "Created file default_subject.xml with default setup" << endl;
 					return(0);
 
+				// PRINT PROPERTY INFO
+				} else if((option=="-PropertyInfo")||(option=="-PI")) {
+					if((i+1)>=argc) {
+						Object::PrintPropertyInfo(cout,"");
+
+					} else {
+						char *compoundName = argv[i+1];
+						if(compoundName[0]=='-') {
+							Object::PrintPropertyInfo(cout,"");
+						} else {
+							Object::PrintPropertyInfo(cout,compoundName);
+						}
+					}
+					return(0);
+
 				// Unrecognized
 				} else {
 					cout << "Unrecognized option " << option << " on command line... Ignored" << endl;
@@ -107,9 +127,6 @@ int main(int argc,char **argv)
 
 	try {
 		// Construct model and read parameters file
-		Object::RegisterType(VisibleObject());
-		Object::RegisterType(SimmSubject());
-		SimmSubject::registerTypes();
 		SimmSubject* subject = new SimmSubject(inName);
 		AbstractModel* model = subject->createModel();
 
@@ -155,4 +172,6 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"-PrintSetup, -PS                Generates a template Setup file to customize scaling\n";
 	aOStream<<"-Setup, -S        SetupFile     Specify an xml setup file that specifies an OpenSim model,\n";
 	aOStream<<"                                a marker file, and scaling parameters.\n";
+	aOStream<<"-PropertyInfo, -PI              Print help information for properties in setup files.\n";
+
 }

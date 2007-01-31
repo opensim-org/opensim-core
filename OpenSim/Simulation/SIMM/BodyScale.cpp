@@ -146,6 +146,9 @@ void BodyScale::setNull()
  */
 void BodyScale::setupProperties()
 {
+	_axisNamesProp.setComment("Axes (X Y Z) along which to scale a body. "
+		"For example, 'X Y Z' scales along all three axes, and 'Y' scales "
+		"just along the Y axis.");
 	_axisNamesProp.setName("axes");
 	_propertySet.append(&_axisNamesProp);
 }

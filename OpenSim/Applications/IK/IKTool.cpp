@@ -201,20 +201,24 @@ void IKTool::setupProperties()
 {
 	string comment;
 
-	_markerSetProp.setComment("Markers to be used by all IK trials");
+	_markerSetProp.setComment("Marker set to be used for solving the IK trials.");
 	_markerSetProp.setName("MarkerSet");
 	_propertySet.append(&_markerSetProp);
 
-	_coordinateSetProp.setComment("Specify how to initialize coodinates for IK.");
+	_coordinateSetProp.setComment("Specifies weights for matching coordinates specified "
+		"in a file (the coordinate_file)");
 	_coordinateSetProp.setName("CoordinateSet");
 	_propertySet.append(&_coordinateSetProp);
 
+	_coordinatesFromFileProp.setComment("List specifying which coordinate values "
+		"should be taken from the coordinate_file.");
 	_coordinatesFromFileProp.setName("coordinates_from_file");
 	Array<string> def("");
 	_coordinatesFromFileProp.setValue(def);
 	_propertySet.append(&_coordinatesFromFileProp);
 
-	_IKTrialSetProp.setComment("Trial parameters, one block per trial");
+	_IKTrialSetProp.setComment("Parameters for solving the IK problem for each trial. "
+		"Each trial should get a seperate SimmIKTril block.");
 	_IKTrialSetProp.setName("SimmIKTrialSet");
 	_propertySet.append(&_IKTrialSetProp);
 }
@@ -224,6 +228,7 @@ void IKTool::setupProperties()
  */
 void IKTool::registerTypes()
 {
+	Object::RegisterType(IKTool());
 	Object::RegisterType(SimmIKTrial());
 }
 //=============================================================================

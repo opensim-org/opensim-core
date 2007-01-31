@@ -177,22 +177,29 @@ void SimmMarker::setNull()
  */
 void SimmMarker::setupProperties()
 {
-	_weightProp.setName("weight");
-	_weightProp.setValue(0.0);
-	_propertySet.append(&_weightProp);
+	_bodyNameProp.setComment("Body segment in the model on which the marker resides.");
+	_bodyNameProp.setName("body");
+	_propertySet.append(&_bodyNameProp);
 
+	_offsetProp.setComment("Location of a marker on the body segment.");
 	const double defaultAttachment[] = {0.0, 0.0, 0.0};
 	_offsetProp.setName("location");
 	_offsetProp.setValue(3, defaultAttachment);
 	_propertySet.append(&_offsetProp);
 
+	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "
+		"is allowed to move in the marker placement step.");
 	_fixedProp.setName("fixed");
 	_fixedProp.setValue(false);
 	_propertySet.append(&_fixedProp);
 
-	_bodyNameProp.setName("body");
-	_propertySet.append(&_bodyNameProp);
+	_weightProp.setComment("Weight given to a marker relative to the other markers "
+		"for solving inverse kinematics problems."); 
+	_weightProp.setName("weight");
+	_weightProp.setValue(0.0);
+	_propertySet.append(&_weightProp);
 
+	_displayerProp.setComment("Used for displaying a marker in the visuals.");
 	_displayerProp.setName("Displayer");
 	_propertySet.append(&_displayerProp);
 }

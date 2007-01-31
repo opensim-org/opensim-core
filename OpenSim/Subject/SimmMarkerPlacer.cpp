@@ -208,53 +208,71 @@ void SimmMarkerPlacer::setNull()
  */
 void SimmMarkerPlacer::setupProperties()
 {
+	_markerFileNameProp.setComment("TRC file (.trc) containing the time history of experimental marker positions "
+		"(usually a static trial).");
 	_markerFileNameProp.setName("marker_file");
 	_propertySet.append(&_markerFileNameProp);
 
-	const double defaultTimeRange[] = {-1.0, -1.0};
-	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setComment("Time range for averaging marker positions.");
-	_timeRangeProp.setValue(2, defaultTimeRange);
-	_propertySet.append(&_timeRangeProp);
-
-	_coordinateFileNameProp.setName("coordinate_file");
-	_coordinateFileNameProp.setComment("Name of file containing the joint angles used to set the initial configuration of the model for the purpose of relocating the non-fixed markers.");
-	_propertySet.append(&_coordinateFileNameProp);
-
+	_markerSetProp.setComment("Marker set used to augment the markers already contained in the model.");
 	_markerSetProp.setName("MarkerSet");
 	_propertySet.append(&_markerSetProp);
 
+	_coordinateFileNameProp.setComment("Name of file containing the joint angles "
+		"used to set the initial configuration of the model for the purpose of placing the markers. "
+		"These coordinate values can also be included in the optimization problem used to place the markers. "
+		"Before the model markers are placed, a single frame of an inverse kinematics (IK) problem is solved. "
+		"The IK problem can be solved simply by matching marker positions, but if the model markers are not "
+		"in the correct locations, the IK solution will not be very good and neither will marker placement. "
+		"Alternatively, coordinate values (specified in this file) can be specified and used to influence the IK solution. "
+		"This is valuable particularly if you have high confidence in the coordinate values. "
+		"For example, you know for the static trial the subject was standing will all joint angles close to zero. "
+		"If the coordinate set (see the CoordinateSet property) contains non-zero weights for coordinates, "
+		"the IK solution will try to match not only the marker positions, but also the coordinates in this file. "
+		"Least-squared error is used to solve the IK problem. ");
+	_coordinateFileNameProp.setName("coordinate_file");
+	_propertySet.append(&_coordinateFileNameProp);
+
+	_coordinateSetProp.setComment("Specifies weights for matching coordinates specified in a file "
+		"(the coordinate_file)");
 	_coordinateSetProp.setName("CoordinateSet");
 	_propertySet.append(&_coordinateSetProp);
 
+	_coordinatesFromFileProp.setComment("List specifying which coordinate values should be taken from the coordinate_file.");
 	_coordinatesFromFileProp.setName("coordinates_from_file");
 	Array<string> def("");
 	_coordinatesFromFileProp.setValue(def);
 	_propertySet.append(&_coordinatesFromFileProp);
 
+	_timeRangeProp.setComment("Time range over which the marker positions are averaged.");
+	const double defaultTimeRange[] = {-1.0, -1.0};
+	_timeRangeProp.setName("time_range");
+	_timeRangeProp.setValue(2, defaultTimeRange);
+	_propertySet.append(&_timeRangeProp);
+
+	_outputJointFileNameProp.setComment("Name of the new SIMM Joint file (.jnt) after scaling and marker placement (optional).");
 	_outputJointFileNameProp.setName("output_joint_file");
-	_outputJointFileNameProp.setComment("Name of the new SIMM Joint file after scaling and marker relocation.");
 	_propertySet.append(&_outputJointFileNameProp);
 
+	_outputMuscleFileNameProp.setComment("Name of the SIMM muscle file (.msl) after scaling and marker placement (optional).");
 	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_outputMuscleFileNameProp.setComment("Name of the SIMM muscle file after scaling and marker relocation.");
 	_propertySet.append(&_outputMuscleFileNameProp);
 
-	_outputModelFileNameProp.setName("output_model_file");
-	_outputModelFileNameProp.setComment("Name of the new OpenSim model file after scaling and maker relocation.");
-	_propertySet.append(&_outputModelFileNameProp);
-
-	_outputMarkerFileNameProp.setName("output_marker_file");
-	_outputMarkerFileNameProp.setComment("Name of the xml file containing the marker set after the non-fixed markers have been moved.");
-	_propertySet.append(&_outputMarkerFileNameProp);
-
+	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) written after marker relocation (optional).");
 	_outputMotionFileNameProp.setName("output_motion_file");
-	_outputMotionFileNameProp.setComment("Name of the motion file written after marker relocation.");
 	_propertySet.append(&_outputMotionFileNameProp);
 
+	_outputModelFileNameProp.setComment("Output OpenSim model file (.osim) after scaling and maker placement.");
+	_outputModelFileNameProp.setName("output_model_file");
+	_propertySet.append(&_outputModelFileNameProp);
+
+	_outputMarkerFileNameProp.setComment("Output marker set containing the new marker locations after markers have been placed.");
+	_outputMarkerFileNameProp.setName("output_marker_file");
+	_propertySet.append(&_outputMarkerFileNameProp);
+
+	_maxMarkerMovementProp.setComment("Maximum amount of movement allowed in marker data when averaging frames of the static trial. "
+		"A negative value means there is not limit.");
 	_maxMarkerMovementProp.setName("max_marker_movement");
 	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
-	_maxMarkerMovementProp.setComment("Maximum amount of movement allowed in marker data when averaging frames of the static trial.");
 	_propertySet.append(&_maxMarkerMovementProp);
 }
 

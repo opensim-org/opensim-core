@@ -157,10 +157,13 @@ void SimmGenericModelMaker::setNull()
  */
 void SimmGenericModelMaker::setupProperties()
 {
+	_fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
 	_fileNameProp.setName("model_file");
-	_fileNameProp.setComment("name of xml file for nominal model"); 
 	_propertySet.append(&_fileNameProp);
 
+	_markerSetProp.setComment("Set of model markers used to scale the model. "
+		"Scaling is done based on distances between model markers compared to "
+		"the same distances between the corresponding experimental markers.");
 	_markerSetProp.setName("MarkerSet");
 	_propertySet.append(&_markerSetProp);
 }

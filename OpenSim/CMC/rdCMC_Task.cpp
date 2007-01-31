@@ -182,52 +182,76 @@ setNull()
 void rdCMC_Task::
 setupProperties()
 {
+	_propOn.setComment("Flag (true or false) indicating whether or not a task is on.");
 	_propOn.setName("on");
 	_propOn.setValue(true);
 	_propertySet.append(&_propOn);
 
+	_propWRTBody.setComment("Body frame with respect to which a tracking objective is specified. "
+		"This property is not used for tracking joint angles.");
 	_propWRTBody.setName("wrt_body");
 	_propWRTBody.setValue(-1);
 	_propertySet.append(&_propWRTBody);
 
+	_propExpressBody.setComment("Specifies the body frame in which the tracking "
+		"objectives are expressed.  This property is not used for tracking joint angles.");
 	_propExpressBody.setName("express_body");
 	_propExpressBody.setValue(-1);
 	_propertySet.append(&_propExpressBody);
 
 	Array<bool> active(false,3);
+	_propActive.setComment("Array of 3 flags (each true or false) specifying whether a "
+		"component of a task is active.  For example, tracking the trajectory of a point "
+		"in space could have three components (x,y,z).  This allows each of those to be "
+		"made active (true) or inactive (false).  A task for tracking a joint coordinate only "
+		"has one component.");
 	_propActive.setName("active");
 	_propActive.setValue(active);
 	_propertySet.append(&_propActive);
 
 	Array<double> weight(1.0,3);
+	_propW.setComment("Weight with which a task is tracked relative to other tasks. "
+		"To track a task more tightly, make the weight larger.");
 	_propW.setName("weight");
 	_propW.setValue(weight);
 	_propertySet.append(&_propW);
 
 	Array<double> kp(1.0,3);
+	_propKP.setComment("Position error feedback gain (stiffness). "
+		"To achieve critical damping of errors, choose kv = 2*sqrt(kp).");
 	_propKP.setName("kp");
 	_propKP.setValue(kp);
 	_propertySet.append(&_propKP);
 
 	Array<double> kv(1.0,3);
+	_propKV.setComment("Velocity error feedback gain (damping). "
+		"To achieve critical damping of errors, choose kv = 2*sqrt(kp).");
 	_propKV.setName("kv");
 	_propKV.setValue(kv);
 	_propertySet.append(&_propKV);
 
 	Array<double> ka(1.0,3);
+	_propKA.setComment("Acceleration feedback gain.  "
+		"This is normally set to 1.0, so no gain.");
 	_propKA.setName("ka");
 	_propKA.setValue(ka);
 	_propertySet.append(&_propKA);
 
 	Array<double> r(0.0,3);
+	_propR0.setComment("Direction vector[3] for component 0 of a task. "
+		"Joint tasks do not use this propery.");
 	_propR0.setName("r0");
 	_propR0.setValue(r);
 	_propertySet.append(&_propR0);
 
+	_propR1.setComment("Direction vector[3] for component 1 of a task. "
+		"Joint tasks do not use this property.");
 	_propR1.setName("r1");
 	_propR1.setValue(r);
 	_propertySet.append(&_propR1);
 
+	_propR2.setComment("Direction vector[3] for component 2 of a task. "
+		"Joint tasks do not use this property.");
 	_propR2.setName("r2");
 	_propR2.setValue(r);
 	_propertySet.append(&_propR2);

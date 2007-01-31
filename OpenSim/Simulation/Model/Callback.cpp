@@ -174,12 +174,16 @@ setNull()
 void Callback::
 setupProperties()
 {
+	_onProp.setComment("Flag (true or false) specifying whether whether on. "
+		"True by default.");
 	_onProp.setName("on");
 	_propertySet.append(&_onProp);
 
+	_startTimeProp.setComment("Start time.");
 	_startTimeProp.setName("start_time");
 	_propertySet.append(&_startTimeProp );
 
+	_endTimeProp.setComment("End time.");
 	_endTimeProp.setName("end_time");
 	_propertySet.append(&_endTimeProp );
 }

@@ -216,31 +216,35 @@ void SimmSubject::setNull()
  */
 void SimmSubject::setupProperties()
 {
+	_massProp.setComment("Mass of the subject in kg.");
 	_massProp.setName("mass");
 	_massProp.setValue(-1.0);
 	_propertySet.append(&_massProp);
 
+	_heightProp.setComment("Height of the subject in mm.");
 	_heightProp.setName("height");
 	_heightProp.setValue(-1.0);
 	_propertySet.append(&_heightProp);
 
+	_ageProp.setComment("Age of the subject in years.");
 	_ageProp.setName("age");
 	_ageProp.setValue(-1.0);
 	_propertySet.append(&_ageProp);
 
+	_notesProp.setComment("Notes for the subject.");
 	_notesProp.setName("notes");
 	_propertySet.append(&_notesProp);
 
-	_genericModelMakerProp.setName("");
-	_genericModelMakerProp.setComment("File name for the nominal model.xml to use is specified here");
+	_genericModelMakerProp.setComment("Specifies the name of the unscaled model (.osim) and the marker set.");
+	_genericModelMakerProp.setName("SimmGenericModelMaker");
 	_propertySet.append(&_genericModelMakerProp);
 
-	_modelScalerProp.setName("");
-	_modelScalerProp.setComment("Parameters to control nominal model scaling go here.");
+	_modelScalerProp.setComment("Specifies parameters for scaling the model.");
+	_modelScalerProp.setName("SimmModelScaler");
 	_propertySet.append(&_modelScalerProp);
 
-	_markerPlacerProp.setName("");
-	_markerPlacerProp.setComment("Marker set to override default markers is specified here");
+	_markerPlacerProp.setComment("Specifies parameters for placing markers on the model once a model is scaled. ");
+	_markerPlacerProp.setName("SimmMarkerPlacer");
 	_propertySet.append(&_markerPlacerProp);
 }
 

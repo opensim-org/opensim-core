@@ -184,35 +184,60 @@ void SimmIKTrial::setNull()
  */
 void SimmIKTrial::setupProperties()
 {
+	_markerFileNameProp.setComment("TRC file (.trc) containing the time history of experimental marker positions.");
 	_markerFileNameProp.setName("marker_file");
 	_propertySet.append(&_markerFileNameProp);
 
+
+	_coordinateFileNameProp.setComment("Name of file containing the joint angles "
+		"used to set the initial configuration of the model for the purpose of placing the markers. "
+		"These coordinate values can also be included in the optimization problem used to place the markers. "
+		"Before the model markers are placed, a single frame of an inverse kinematics (IK) problem is solved. "
+		"The IK problem can be solved simply by matching marker positions, but if the model markers are not "
+		"in the correct locations, the IK solution will not be very good and neither will marker placement. "
+		"Alternatively, coordinate values (specified in this file) can be specified and used to influence the IK solution. "
+		"This is valuable particularly if you have high confidence in the coordinate values. "
+		"For example, you know for the static trial the subject was standing will all joint angles close to zero. "
+		"If the coordinate set (see the CoordinateSet property) contains non-zero weights for coordinates, "
+		"the IK solution will try to match not only the marker positions, but also the coordinates in this file. "
+		"Least-squared error is used to solve the IK problem. ");
 	_coordinateFileNameProp.setName("coordinate_file");
 	_propertySet.append(&_coordinateFileNameProp);
 
+	_analogFileNameProp.setComment("Analog file (.ana) containing emg and reaction force data. "
+		"Not currently used.");
 	_analogFileNameProp.setName("analog_file");
 	_propertySet.append(&_analogFileNameProp);
 
 	const double defaultTimeRange[] = {-1.0, -1.0};
+	_timeRangeProp.setComment("Time range over which the IK problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
+	_kinematicsSmoothingProp.setComment("Smoothing factor for preprocessing the kinematic data. "
+		"Not currently used.");
 	_kinematicsSmoothingProp.setName("kinematics_smoothing");
 	_kinematicsSmoothingProp.setValue(-1.0);
 	_propertySet.append(&_kinematicsSmoothingProp);
 
+	_groundReactionSmoothingProp.setComment("Smoothing factor for preprocessing reaction force data. "
+		"Not currently used.");
 	_groundReactionSmoothingProp.setName("ground_reaction_smoothing");
 	_groundReactionSmoothingProp.setValue(-1.0);
 	_propertySet.append(&_groundReactionSmoothingProp);
 
+	_includeMarkersProp.setComment("Flag (true or false) indicating whether or not to include marker "
+		"positions in the output motion (.mot) file.");
 	_includeMarkersProp.setName("include_markers");
 	_includeMarkersProp.setValue(false);
 	_propertySet.append(&_includeMarkersProp);
 
+	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) to which the results should be written.");
 	_outputMotionFileNameProp.setName("output_motion_file");
 	_propertySet.append(&_outputMotionFileNameProp);
 
+	_notesProp.setComment("Notes for the trial.");
 	_notesProp.setName("notes");
 	_propertySet.append(&_notesProp);
 }

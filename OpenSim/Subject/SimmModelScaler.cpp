@@ -201,53 +201,60 @@ void SimmModelScaler::setNull()
  */
 void SimmModelScaler::setupProperties()
 {
+	_scalingOrderProp.setComment("Specifies the scaling method and order. "
+		"Valid options are 'measurements', 'manualScale', singly or both in any sequence.");
 	_scalingOrderProp.setName("scaling_order");
 	Array<string> sorder("");
-	_scalingOrderProp.setComment("Valid options are 'measurements', 'manualScale', possibly in sequence.");
 	_scalingOrderProp.setValue(sorder);
 	_propertySet.append(&_scalingOrderProp);
 
+	_measurementSetProp.setComment("Specifies the measurements by which body segments are to be scaled.");
 	_measurementSetProp.setName("SimmMeasurementSet");
-	_measurementSetProp.setComment("Each SimmMeasurement consists of a 'MarkerPairSet' and a 'BodyScaleSet'");
 	_propertySet.append(&_measurementSetProp);
 
+	_scaleSetProp.setComment("Scale factors to be used for manual scaling.");
 	_scaleSetProp.setName("ScaleSet");
-	_scaleSetProp.setComment("Scale factors to be used for 'manual' scaling. Used only in 'manual' scaling.");
 	_propertySet.append(&_scaleSetProp);
 
+	_markerFileNameProp.setComment("TRC file (.trc) containing the marker positions used for scaling. "
+		"This is usually a static trial, but doesn't need to be.  The marker positions are averaged "
+		"across a specified time range.  So, if a static trial is not used, a narrow time range should "
+		"be used so that the markers reflect a real experimental position.");
 	_markerFileNameProp.setName("marker_file");
-	_markerFileNameProp.setComment("Name of marker file *.trc for static pose");
 	_propertySet.append(&_markerFileNameProp);
 
+	_timeRangeProp.setComment("Time range over which to average marker positions in the marker file (.trc) for scaling.");
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setComment("Range of time in markers file to use for static pose solution");
 	_timeRangeProp.setValue(2, defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
+	_preserveMassDistProp.setComment("Flag (true or false) indicating whether or not to preserve relative mass between segments.");
 	_preserveMassDistProp.setName("preserve_mass_distribution");
-	_preserveMassDistProp.setComment("Whether to preserve relative mass between segments.");
 	_propertySet.append(&_preserveMassDistProp);
 
+	_outputJointFileNameProp.setComment("Name of SIMM joint file to write when done scaling. "
+		"If not specified, a file will not be written.");
 	_outputJointFileNameProp.setName("output_joint_file");
-	_outputJointFileNameProp.setComment("Name of SIMM joint file to write when done scaling.");
 	_propertySet.append(&_outputJointFileNameProp);
 
+	_outputMuscleFileNameProp.setComment("Name of SIMM muscle file to write when done scaling. "
+		"If not specified, a file will not be written.");
 	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_outputMuscleFileNameProp.setComment("Name of SIMM muscle file to write when done scaling.");
 	_propertySet.append(&_outputMuscleFileNameProp);
 
+	_outputModelFileNameProp.setComment("Name of OpenSim model file (.osim) to write when done scaling.");
 	_outputModelFileNameProp.setName("output_model_file");
-	_outputModelFileNameProp.setComment("Name of OpenSim xml file to write when done scaling.");
 	_propertySet.append(&_outputModelFileNameProp);
 
+	_outputScaleFileNameProp.setComment("Name of file to write containing the scale factors that were applied to the unscaled model (optional).");
 	_outputScaleFileNameProp.setName("output_scale_file");
-	_outputScaleFileNameProp.setComment("Name of scales file to write when done scaling.");
 	_propertySet.append(&_outputScaleFileNameProp);
 
+	_maxMarkerMovementProp.setComment("Maximum movement a marker is allowed to move during a static trial. "
+		"A negative value, which is the default, means there is no limit.");
 	_maxMarkerMovementProp.setName("max_marker_movement");
 	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
-	_maxMarkerMovementProp.setComment("Maximum amount of movement allowed in marker data when averaging frames of the static trial.");
 	_propertySet.append(&_maxMarkerMovementProp);
 }
 

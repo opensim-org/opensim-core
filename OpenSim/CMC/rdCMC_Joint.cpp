@@ -131,10 +131,14 @@ setNull()
 void rdCMC_Joint::
 setupProperties()
 {
+	_propCoordinateName.setComment("Name of the cooridnate to be tracked.");
 	_propCoordinateName.setName("coordinate");
 	_propCoordinateName.setValue("");
 	_propertySet.append(&_propCoordinateName);
 
+	_propLimit.setComment("Error limit on the tracking accuracy for this "
+		"coordinate. If the tracking errors approach this limit, the weighting "
+		"for this coordinate is increased. ");
 	_propLimit.setName("limit");
 	_propLimit.setValue(0);
 	_propertySet.append(&_propLimit);

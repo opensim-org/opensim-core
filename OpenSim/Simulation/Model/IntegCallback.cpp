@@ -155,6 +155,9 @@ setNull()
 void IntegCallback::
 setupProperties()
 {
+	_stepIntervalProp.setComment("Specifies how often to store results during a simulation. "
+		"More specifically, the interval (a positive integer) specifies how many successful "
+		"integration steps should be taken before results are recorded again.");
 	_stepIntervalProp.setName("step_interval");
 	_propertySet.append( &_stepIntervalProp );
 }
