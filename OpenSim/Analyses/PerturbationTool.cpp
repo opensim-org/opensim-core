@@ -284,30 +284,41 @@ setNull()
  */
 void PerturbationTool::setupProperties()
 {
+	string comment;
+
 	// PERTURBATION PARAMETERS
-	_pertWindowProp.setComment("Perturbation time window");
+	comment = "Time over which the model states are integrated following a perturbation. "
+				 "To allow reaction forces to adjust to adjust to the perturbation, the recommended "
+				 "window is from about 0.020 seconds to about 0.040 seconds, although it may differ "
+				 "from model to model.";
+	_pertWindowProp.setComment(comment);
 	_pertWindowProp.setName("perturbation_time_window");
 	_propertySet.append( &_pertWindowProp );
 
-	_pertIncrementProp.setComment("Time increment between perturbation windows");
+	comment = "Time increment between perturbation windows.  This can be smaller than "
+				 "the perturbation time window size (e.g., 0.010 sec).";
+	_pertIncrementProp.setComment(comment);
 	_pertIncrementProp.setName("perturbation_time_increment");
 	_propertySet.append( &_pertIncrementProp );
 
-	_pertDFProp.setComment("Magnitude of perturbation");
+	comment = "Magnitude of perturbation. Perturbation results should be fairly insensitive to "
+				 "the perturbation size.  Values between 0.10N and 10N shoudl be fine.";
+	_pertDFProp.setComment(comment);
 	_pertDFProp.setName("perturbation_size");
 	_propertySet.append( &_pertDFProp);
 
-
 	// CORRECTIVE SPRING PARAMETERS
-	_tauProp.setComment("Rise time for scaling functions");
+	comment = "Rise time for scaling functions.  This parameter determines how fast a corrective "
+				 "spring is scaled into or out of effect around contact events.";
+	_tauProp.setComment(comment);
 	_tauProp.setName("scaling_rise_time");
 	_propertySet.append( &_tauProp );
 
-	_kLinProp.setComment("Stiffness for linear corrective springs");
+	_kLinProp.setComment("Stiffness for translational corrective springs");
 	_kLinProp.setName("corrective_spring_linear_stiffness");
 	_propertySet.append( &_kLinProp );
 
-	_bLinProp.setComment("Damping for linear corrective springs");
+	_bLinProp.setComment("Damping for translational corrective springs");
 	_bLinProp.setName("corrective_spring_linear_damping");
 	_propertySet.append( &_bLinProp );
 
@@ -321,80 +332,100 @@ void PerturbationTool::setupProperties()
 
 
 	// INPUT FILE NAMES
-	_controlsFileNameProp.setComment("Name of the controls file");
+	comment = "XML file containing the controls (e.g., muscle excitations) for the forward simulation.";
+	_controlsFileNameProp.setComment(comment);
 	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
-	_copFileNameProp.setComment("Name of the center of pressure file");
+	_copFileNameProp.setComment("Storage file (.sto) containing the center of pressure.");
 	_copFileNameProp.setName("cop_file");
 	_propertySet.append( &_copFileNameProp );
 
-	_qFileNameProp.setComment("Name of the generalized coordinate file");
+	comment = "Storage file (.sto) containing the generalized coordinates for the model. "
+				 "These coordinates are used in conjuction with the center of pressure data "
+				 "to place the corrective springs at the centers of pressure in the local frames "
+				 "of each foot."; 
+	_qFileNameProp.setComment(comment);
 	_qFileNameProp.setName("coordinates_file");
 	_propertySet.append( &_qFileNameProp );
 
-	_uFileNameProp.setComment("Name of the generalized speed file");
+	comment = "Storage file (.sto) containing the generalized speeds for the model. "
+				 "These speeds are used to set the expected velocities of the centers of pressure "
+				 "so that damping can be applied by the corrective springs if the trajectory "
+				 "of the foot deviates from the expected trajectory."; 
+	_uFileNameProp.setComment(comment);
 	_uFileNameProp.setName("speeds_file");
 	_propertySet.append( &_uFileNameProp );
 
-	_yFileNameProp.setComment("Name of the states file");
+	comment = "Storage file (.sto) containing the model states during the unperturbed simulation. "
+				 "These states are used to set the initial states of the model for each perturbed simulation.";
+	_yFileNameProp.setComment(comment);
 	_yFileNameProp.setName("states_file");
 	_propertySet.append( &_yFileNameProp );
 
 
 	// FOOT CONTACT EVENT TIMES
-	_rHeelStrikeProp.setComment("Time of right heel strike");
+	_rHeelStrikeProp.setComment("Time of right heel strike.");
 	_rHeelStrikeProp.setName("r_heel_strike");
 	_propertySet.append( &_rHeelStrikeProp );
 
-	_rFootFlatProp.setComment("Time of right foot flat");
+	_rFootFlatProp.setComment("Time of right foot flat.");
 	_rFootFlatProp.setName("r_foot_flat");
 	_propertySet.append( &_rFootFlatProp );
 
-	_rHeelOffProp.setComment("Time of right heel off");
+	_rHeelOffProp.setComment("Time of right heel off.");
 	_rHeelOffProp.setName("r_heel_off");
 	_propertySet.append( &_rHeelOffProp );
 
-	_rToeOffProp.setComment("Time of right toe off");
+	_rToeOffProp.setComment("Time of right toe off.");
 	_rToeOffProp.setName("r_toe_off");
 	_propertySet.append( &_rToeOffProp );
 
-	_lHeelStrikeProp.setComment("Time of left heel strike");
+	_lHeelStrikeProp.setComment("Time of left heel strike.");
 	_lHeelStrikeProp.setName("l_heel_strike");
 	_propertySet.append( &_lHeelStrikeProp );
 
-	_lFootFlatProp.setComment("Time of left foot flat");
+	_lFootFlatProp.setComment("Time of left foot flat.");
 	_lFootFlatProp.setName("l_foot_flat");
 	_propertySet.append( &_lFootFlatProp );
 
-	_lHeelOffProp.setComment("Time of left heel off");
+	_lHeelOffProp.setComment("Time of left heel off.");
 	_lHeelOffProp.setName("l_heel_off");
 	_propertySet.append( &_lHeelOffProp );
 
-	_lToeOffProp.setComment("Time of left toe off");
+	_lToeOffProp.setComment("Time of left toe off.");
 	_lToeOffProp.setName("l_toe_off");
 	_propertySet.append( &_lToeOffProp );
 
+
 	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
-	_externalLoadsFileNameProp.setComment("Name of the file containing the external loads applied to the model");
+	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
+	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
 
-	_externalLoadsModelKinematicsFileNameProp.setComment("Name of the file containing the model kinematics corresponding to the external loads");
+	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
+	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
-	_externalLoadsBody1Prop.setComment("Name of the body to which the first set of external loads should be applied (e.g., the body name for the right foot)");
+
+	comment = "Name of the body to which the first set of external loads "
+				 "should be applied (e.g., the name of the right foot).";
+	_externalLoadsBody1Prop.setComment(comment);
 	_externalLoadsBody1Prop.setName("external_loads_body1");
 	_propertySet.append( &_externalLoadsBody1Prop );
 
-	_externalLoadsBody2Prop.setComment("Name of the body to which the second set of external loads should be applied (e.g., the body name for the left foot)");
+	comment = "Name of the body to which the second set of external loads "
+				 "should be applied (e.g., the name of the left foot).";
+	_externalLoadsBody2Prop.setComment(comment);
 	_externalLoadsBody2Prop.setName("external_loads_body2");
 	_propertySet.append( &_externalLoadsBody2Prop );
 
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment("Low-pass cut-off frequency for filtering the model kinematics corresponding"
-																			  "to the external loads. A negative value results in no filtering."
-																			  " The default value is -1.0, so no filtering.");
+	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
+				 "to the external loads. A negative value results in no filtering. "
+				 "The default value is -1.0, so no filtering.";
+	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 }

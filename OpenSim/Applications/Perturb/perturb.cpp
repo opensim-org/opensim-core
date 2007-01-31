@@ -56,6 +56,21 @@ int main(int argc,char **argv)
 		} else if((option=="-Setup")||(option=="-S")) {
 			if((i+1)<argc) setupFileName = argv[i+1];
 			break;
+
+		// PRINT PROPERTY INFO
+		} else if((option=="-PropertyInfo")||(option=="-PI")) {
+			if((i+1)>=argc) {
+				Object::PrintPropertyInfo(cout,"");
+
+			} else {
+				char *compoundName = argv[i+1];
+				if(compoundName[0]=='-') {
+					Object::PrintPropertyInfo(cout,"");
+				} else {
+					Object::PrintPropertyInfo(cout,compoundName);
+				}
+			}
+			return(0);
 		}
 	}
 
@@ -110,4 +125,5 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"-Help, -H                            Print the command-line options for perturb.exe.\n";
 	aOStream<<"-PrintSetup, -PS                     Print a default setup file for perturb.exe (setup_perturb_default.xml).\n";
 	aOStream<<"-Setup, -S          SetupFileName    Specifies the name of the XML setup file for the perturb tool.\n";
+	aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
 }

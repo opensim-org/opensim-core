@@ -1661,9 +1661,9 @@ PrintPropertyInfo(ostream &aOStream,
 				comment = property->getComment();
 				string::size_type size = comment.length();
 				if(size>0) {
-					aOStream<<"\n"<<i+1<<". "<<property->getName()<<":  "<<property->getComment()<<"\n";
+					aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n"<<property->getComment()<<"\n";
 				} else {
-					aOStream<<"\n"<<i+1<<". "<<property->getName()<<":\n";
+					aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n";
 				}
 			}
 		}
@@ -1686,7 +1686,7 @@ PrintPropertyInfo(ostream &aOStream,
 
 	// OUTPUT
 	//aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-	aOStream<<endl<<aClassName<<"."<<aPropertyName<<":  "<<property->getComment()<<"\n";
+	aOStream<<endl<<aClassName<<"."<<aPropertyName<<"\n"<<property->getComment()<<"\n";
 }
 
 
