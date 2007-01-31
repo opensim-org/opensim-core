@@ -29,10 +29,12 @@ INCLUDE_DIRECTORIES(
 FILE(GLOB SOURCE_FILES *.cpp ../IK/InvestigationIK.cpp 
 							 ../IK/SimmIKSolverImpl.cpp 
 							 ../IK/SimmInverseKinematicsTarget.cpp
+							 ../IK/IKTool.cpp
 							 ../../Subject/Simm*.cpp)
 FILE(GLOB INCLUDE_FILES *.h  ../IK/SimmIKSolverImpl.h
 							 ../IK/InvestigationIK.h
 							 ../IK/SimmInverseKinematicsTarget.h
+							 ../IK/IKTool.h
 							 ../../Subject/Simm*.h)
 
 ADD_DEFINITIONS(-DRDSIMULATION_EXPORTS)

@@ -44,10 +44,10 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/AnalysisFactory.h>
-#include <OpenSim/Simulation/Model/Investigation.h>
+#include <OpenSim/Simulation/Model/SimulationTool.h>
 #include <OpenSim/Analyses/suAnalysesDLL.h>
-#include <OpenSim/Analyses/InvestigationForward.h>
-#include <OpenSim/Analyses/InvestigationPerturbation.h>
+#include <OpenSim/Analyses/ForwardTool.h>
+#include <OpenSim/Analyses/PerturbationTool.h>
 
 #include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 
@@ -111,13 +111,13 @@
 #include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
 #include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 
-#include <OpenSim/Applications/IK/InvestigationIK.h>
+#include <OpenSim/Applications/IK/IKTool.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
 #include <OpenSim/SQP/rdSQPDLL.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 
 #include <OpenSim/Cmc/rdCMCDLL.h>
-#include <OpenSim/Cmc/InvestigationCMCGait.h>
+#include <OpenSim/Cmc/CMCTool.h>
 
 using namespace OpenSim;
 %}
@@ -276,10 +276,10 @@ using namespace OpenSim;
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
 %include <OpenSim/Simulation/Model/AnalysisSet.h>
 %include <OpenSim/Simulation/Model/AnalysisFactory.h>
-%include <OpenSim/Simulation/Model/Investigation.h>
+%include <OpenSim/Simulation/Model/SimulationTool.h>
 %include <OpenSim/Analyses/suAnalysesDLL.h>
-%include <OpenSim/Analyses/InvestigationForward.h>
-%include <OpenSim/Analyses/InvestigationPerturbation.h>
+%include <OpenSim/Analyses/ForwardTool.h>
+%include <OpenSim/Analyses/PerturbationTool.h>
 
 %include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 
@@ -355,7 +355,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 
 %include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
-%include <OpenSim/Applications/IK/InvestigationIK.h>
+%include <OpenSim/Applications/IK/IKTool.h>
 %include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
 %template(SetSimmMeasurements) OpenSim::Set<OpenSim::SimmMeasurement>;
 %include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
@@ -363,4 +363,4 @@ using namespace OpenSim;
 %include <OpenSim/SQP/rdSQPDLL.h>
 %include <OpenSim/SQP/rdOptimizationTarget.h>
 %include <OpenSim/Cmc/rdCMCDLL.h>
-%include <OpenSim/Cmc/InvestigationCMCGait.h>
+%include <OpenSim/Cmc/CMCTool.h>
