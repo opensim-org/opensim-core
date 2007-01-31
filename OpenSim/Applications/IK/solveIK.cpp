@@ -129,7 +129,7 @@ int main(int argc,char **argv)
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
 	IKTool ik(setupFileName);
-	ik.print("ik_setup_check.xml");
+	//ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION
 	AbstractModel *model = ik.getModel();

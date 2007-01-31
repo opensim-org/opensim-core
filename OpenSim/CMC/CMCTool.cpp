@@ -556,7 +556,7 @@ void CMCTool::run()
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
 	desiredKinStore.pad(60);
-	desiredKinStore.print("qStore_test.sto");
+	desiredKinStore.print("desiredKinmatics_padded.sto");
 	if(_lowpassCutoffFrequency>=0) {
 		int order = 50;
 		cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
@@ -580,7 +580,7 @@ void CMCTool::run()
 	Storage *uStore = qSet.constructStorage(1);
 	GCVSplineSet uSet(5,uStore);
 	Storage *dudtStore = qSet.constructStorage(2);
-	dudtStore->print("accelerations.sto");
+	dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
 
 	// CONVERT TO QUATERNIONS
 	_model->getDynamicsEngine().convertAnglesToQuaternions(qStore);
