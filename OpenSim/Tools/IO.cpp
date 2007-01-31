@@ -491,3 +491,32 @@ getParentDirectory(const string& fileName)
 
 	return result;
 }
+
+// TODO: account for '\n' inside comments
+string IO::
+formatComment(const string& aComment,const string& leadingWhitespace,int width)
+{
+	string formatted;
+	int count = 0;
+	string::size_type i = 0;
+	for(;;) {
+		string::size_type pos = aComment.find_first_not_of(" \t\n\r", i);
+		if(pos==string::npos) break;
+		string whitespace = aComment.substr(i, pos-i);
+		for(int j=0;j<whitespace.size();j++) if (whitespace[j]=='\t') whitespace[j]=' ';
+		string::size_type pos2 = aComment.find_first_of(" \t\n\r", pos);
+		string word;
+		if(pos2==string::npos) word = aComment.substr(pos);
+		else word = aComment.substr(pos, pos2-pos);
+		i = pos2;
+		if(count+whitespace.size()+word.size()<=width) {
+			formatted += whitespace+word;
+			count += whitespace.size()+word.size();
+		} else {
+			if(!formatted.empty()) formatted += "\n" + leadingWhitespace;
+			formatted += word;
+			count = word.size();
+		}
+	}
+	return formatted;
+}

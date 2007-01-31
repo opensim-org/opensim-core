@@ -41,6 +41,7 @@
 #include "Property.h"
 #include "PropertyInt.h"
 #include "PropertyStr.h"
+#include "IO.h"
 
 
 using namespace OpenSim;
@@ -1658,12 +1659,11 @@ PrintPropertyInfo(ostream &aOStream,
 			if(aPropertyName=="") {
 				aOStream<<i+1<<". "<<property->getName()<<endl;
 			} else {
+				aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n";
 				comment = property->getComment();
-				string::size_type size = comment.length();
-				if(size>0) {
-					aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n"<<property->getComment()<<"\n";
-				} else {
-					aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n";
+				if(!comment.empty()) {
+					string formattedComment = IO::formatComment(comment,"\t",80);
+					aOStream<<"\t"<<formattedComment<<"\n";
 				}
 			}
 		}

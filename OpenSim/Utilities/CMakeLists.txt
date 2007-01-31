@@ -39,4 +39,4 @@ INSTALL_TARGETS(/bin/ storageSubtract)
 INSTALL_TARGETS(/bin/ storageFilter)
 ENDIF(NOT OPENSIM_MINIMAL_BUILD)
 
-SUBDIRS(simmToOpenSim)
+SUBDIRS(simmToOpenSim addComments)

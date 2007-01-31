@@ -222,7 +222,11 @@ AppendNewElementWithComment(DOMNode *aParent,
 	// Add Comment if needed
 	if (aComment!=""){
 		// CREATE text
-		XMLCh *commentText = XMLString::transcode(aComment.c_str());
+		strcpy(space,"\t");
+		for(i=0;i<level-1;i++) strcat(space,"\t");
+		string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+		XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
+		//XMLCh *commentText = XMLString::transcode(aComment.c_str());
 		if(commentText!=NULL){ 
 			// CREATE NEW NODE
 			DOMComment *commentNode = doc->createComment(commentText);  

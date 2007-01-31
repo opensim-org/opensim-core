@@ -110,6 +110,7 @@ public:
 	static int chDir(const std::string &aDirName);
 	static std::string getCwd();
 	static std::string getParentDirectory(const std::string& fileName);
+	static std::string formatComment(const std::string& aComment,const std::string& leadingWhitespace,int width);
 //=============================================================================
 };	// END CLASS IO
 

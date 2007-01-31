@@ -45,7 +45,7 @@ static void Plugin_Attach()
    cout<<"\n-------------------------------------------------------\n";
    cout<<"Library rdCMC...\n";
    cout<<"Computed Muscle Control\n";
-   cout<<"US Patent No. 6,750,866";
+   cout<<"US Patent No. 6,750,866\n";
    RegisterTypes_rdCMC();
    cout<<"-------------------------------------------------------\n\n";
 }
