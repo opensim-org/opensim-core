@@ -1774,6 +1774,7 @@ makeObjectFromFile(const std::string &aFileName)
 		Object* newObject = newInstanceOfType(rootName);
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);
+		newObject->buildTypeNamesTable();
 		newObject->updateFromXMLNode();
 		return (newObject);
 	}

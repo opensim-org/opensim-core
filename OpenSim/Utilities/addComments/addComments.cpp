@@ -27,6 +27,6 @@ int main(int argc,char **argv)
 	string outputFileName = argv[2];
 	Object *obj = Object::makeObjectFromFile(fileName);
 	std::cout << fileName << " -> " << outputFileName << std::endl;
-	IO::SetDigitsPad(-1);
+	IO::SetGFormatForDoubleOutput(true);
 	obj->print(outputFileName);
 }

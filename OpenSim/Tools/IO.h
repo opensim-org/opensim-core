@@ -69,6 +69,8 @@ private:
 	// NUMBER OUTPUT
 	/** Specifies whether number output is in scientific or float format. */
 	static bool _Scientific;
+	/** Specifies whether number output is in %g format or not. */
+	static bool _GFormatForDoubleOutput;
 	/** Specifies number of digits of padding in number output. */ 
 	static int _Pad;
 	/** Specifies the precision of number output. */
@@ -87,6 +89,8 @@ public:
 	// NUMBER OUTPUT FORMAT
 	static void SetScientific(bool aTrueFalse);
 	static bool GetScientific();
+	static void SetGFormatForDoubleOutput(bool aTrueFalse);
+	static bool GetGFormatForDoubleOutput();
 	static void SetDigitsPad(int aPad);
 	static int GetDigitsPad();
 	static void SetPrecision(int aPlaces);

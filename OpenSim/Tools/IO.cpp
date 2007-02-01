@@ -64,6 +64,7 @@ const int IO::STRING_INCREMENT = IO_STRING_INCREMENT;
 
 // STATICS
 bool IO::_Scientific = false;
+bool IO::_GFormatForDoubleOutput = false;
 int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
@@ -151,6 +152,29 @@ bool IO::
 GetScientific()
 {
 	return(_Scientific);
+}
+
+//-----------------------------------------------------------------------------
+// %g formatting for doubles
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set whether or not output of numbers should be printed using %g.
+ */
+void IO::
+SetGFormatForDoubleOutput(bool aTrueFalse)
+{
+	_GFormatForDoubleOutput = aTrueFalse;
+	ConstructDoubleOutputFormat();
+}
+
+//_____________________________________________________________________________
+/**
+ */
+bool IO::
+GetGFormatForDoubleOutput()
+{
+	return(_GFormatForDoubleOutput);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,7 +285,9 @@ GetDoubleOutputFormat()
 void IO::
 ConstructDoubleOutputFormat()
 {
-	if(_Scientific) {
+	if(_GFormatForDoubleOutput) {
+		sprintf(_DoubleFormat,"%%g");
+	} else if(_Scientific) {
 		if(_Pad<0) {
 			sprintf(_DoubleFormat,"%%.%dle",_Precision);
 		} else {
