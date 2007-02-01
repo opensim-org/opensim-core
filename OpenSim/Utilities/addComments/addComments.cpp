@@ -18,6 +18,7 @@ int main(int argc,char **argv)
 	Object::RegisterType(VisibleObject());
 	Object::RegisterType(SimmSubject());
 	SimmSubject::registerTypes();
+	IKTool::registerTypes();
 	Object::RegisterType(IKTool());
 	Object::RegisterType(CMCTool());
 	Object::RegisterType(ForwardTool());

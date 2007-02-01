@@ -731,22 +731,28 @@ updateFromXMLNode()
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
 			elmt = object.getXMLNode();
+			DOMElement *objNode = NULL;
 
 			//-----------Begin inline support---------------------------
 			// Collect inlining attributes
 			bool inLinedObject = true;
 			DOMElement *refNode;
 			XMLDocument *childDocument;
-			if (elmt){
-				char *fileAttrib = XMLNode::GetAttribute(elmt, "file");
-				if (fileAttrib!= NULL && strlen(fileAttrib) > 0){
-					// Change _node to refer to the root of the external file
-					refNode = elmt;
-					childDocument = new XMLDocument(fileAttrib);
-					elmt = childDocument->getDOMDocument()->getDocumentElement();
-					inLinedObject = false;
+			if(!elmt)
+			{
+				DOMElement *elmtForAttribute = XMLNode::GetFirstChildElementByTagName(_node,object.getType());
+				if (elmtForAttribute){
+					char *fileAttrib = XMLNode::GetAttribute(elmtForAttribute, "file");
+					if (fileAttrib!= NULL && strlen(fileAttrib) > 0){
+						//std::cout << "USING FILE '" << fileAttrib << "' FOR TAG " << object.getType() << std::endl;
+						// Change _node to refer to the root of the external file
+						refNode = elmtForAttribute;
+						childDocument = new XMLDocument(fileAttrib);
+						objNode = childDocument->getDOMDocument()->getDocumentElement();
+						inLinedObject = false;
+					}
+					if(fileAttrib!=NULL) delete[] fileAttrib;
 				}
-				if(fileAttrib!=NULL) delete[] fileAttrib;
 			}
 			//-----------End inline support---------------------
 
@@ -756,47 +762,43 @@ updateFromXMLNode()
 
 			// NEED TO CONSTRUCT BASED ON NODE
 			} else {
-
-				// VARIABLES
-				XMLCh *tagName;
-				DOMElement *objNode = NULL;
-				DOMNodeList *list;
-
-				// GET XML NODE
 				string objType = object.getType();
-				tagName = XMLString::transcode(objType.c_str());
-				list = _node->getElementsByTagName(tagName);
-				if(tagName!=NULL) delete[] tagName;
-
-				// CHECK NAME
 				string objName = object.getName();
-				unsigned int listLength = list->getLength();
-				for(unsigned int j=0;j<listLength;j++) {
+				if(!objNode) {
+					// GET XML NODE
+					XMLCh *tagName = XMLString::transcode(objType.c_str());
+					DOMNodeList *list = _node->getElementsByTagName(tagName);
+					if(tagName!=NULL) delete[] tagName;
 
-					// GET ELEMENT
-					elmt = (DOMElement*) list->item(j);
-					if(elmt==NULL) continue;
-					// Make sure this is not the default
-					DOMNode *parent = elmt->getParentNode();
-					string parentName = transcode(parent->getNodeName());
-					// Add check for _type so that only nodes with proper parent are used.
-					// A more robust solution is traversing only immediate children of _node
-					// outside the loop.
-					if (parentName=="defaults" || parentName!=_type) {
-						continue;
-					}
-					// NAME ATTRIBUTE
-					char *elmtName =
-						XMLNode::GetAttribute(elmt,"name");
-					if(Object_DEBUG) cout<<"\nFound element "<<elmtName<<endl;
-					if(objName == elmtName) {
-						objNode = elmt;
+					// CHECK NAME
+					unsigned int listLength = list->getLength();
+					for(unsigned int j=0;j<listLength;j++) {
+
+						// GET ELEMENT
+						elmt = (DOMElement*) list->item(j);
+						if(elmt==NULL) continue;
+						// Make sure this is not the default
+						DOMNode *parent = elmt->getParentNode();
+						string parentName = transcode(parent->getNodeName());
+						// Add check for _type so that only nodes with proper parent are used.
+						// A more robust solution is traversing only immediate children of _node
+						// outside the loop.
+						if (parentName=="defaults" || parentName!=_type) {
+							continue;
+						}
+						// NAME ATTRIBUTE
+						char *elmtName =
+							XMLNode::GetAttribute(elmt,"name");
+						if(Object_DEBUG) cout<<"\nFound element "<<elmtName<<endl;
+						if(objName == elmtName) {
+							objNode = elmt;
+							delete[] elmtName;
+							break;
+						}
+
+						// CLEAN UP
 						delete[] elmtName;
-						break;
 					}
-
-					// CLEAN UP
-					delete[] elmtName;
 				}
 
 				// WAS A NODE NOT FOUND?
@@ -1240,13 +1242,15 @@ updateXMLNode(DOMElement *aParent)
 		// Obj
 		case(Property::Obj) : {
 			Object &object = property->getValueObj();
-			elmt = object._node;
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				XMLNode::AppendNewCommentElement(_node, property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+			elmt = (object._inLined ? object._node : object._refNode);
+			if(!property->getComment().empty()) {
+				if((elmt==NULL) && (!property->getUseDefault())) {
+					XMLNode::AppendNewCommentElement(_node, property->getComment());
+				} else if (elmt) {
+					XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+				}
 			}
-			if(elmt || !property->getUseDefault())
+			//if(!property->getUseDefault())
 				object.updateXMLNode(_node);
 #if 0
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,object.getType());

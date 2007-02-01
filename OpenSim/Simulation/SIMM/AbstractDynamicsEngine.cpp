@@ -382,6 +382,7 @@ int AbstractDynamicsEngine::replaceMarkerSet(MarkerSet& aMarkerSet)
 
 	// First remove all existing markers from the model.
 	_markerSet.clearAndDestroy();
+	_markerSetProp.setUseDefault(false);
 
 	// Now add the markers from aMarkerSet whose body names match bodies in the engine.
 	for (i = 0; i < aMarkerSet.getSize(); i++)
@@ -411,6 +412,7 @@ int AbstractDynamicsEngine::replaceMarkerSet(MarkerSet& aMarkerSet)
  */
 void AbstractDynamicsEngine::updateMarkerSet(MarkerSet& aMarkerSet)
 {
+	_markerSetProp.setUseDefault(false);
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		AbstractMarker* updatingMarker = aMarkerSet.get(i);
