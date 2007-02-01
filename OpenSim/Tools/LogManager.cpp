@@ -51,6 +51,8 @@ sync()
 //=============================================================================
 LogManager::LogManager()
 {
+	// Seems to be causing crashes in the GUI... maybe a multithreading issue.
+#if 0
 	// Change the underlying streambuf for the standard cout/cerr to our custom buffers
 	std::cout.rdbuf(&out);
 	std::cerr.rdbuf(&err);
@@ -60,6 +62,7 @@ LogManager::LogManager()
 	out.setSecondaryOutputStream(new std::ofstream("out.log"));
 	err.setOutputStream(&cerr);
 	err.setSecondaryOutputStream(new std::ofstream("err.log"));
+#endif
 }
 
 LogManager::~LogManager()
