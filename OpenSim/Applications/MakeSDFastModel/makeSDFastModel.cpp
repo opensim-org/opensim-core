@@ -144,7 +144,7 @@ int main(int argc,char **argv)
  */
 void PrintUsage(ostream &aOStream)
 {
-	aOStream<<"\n\nscale.exe:\n\n";
+	aOStream<<"\n\nmakeSDFastModel.exe:\n\n";
 	aOStream<<"Option                    Argument         Action / Notes\n";
 	aOStream<<"------                    --------         --------------\n";
 	aOStream<<"-Help, -H                                  Print the command-line options for mkModel.exe.\n";
