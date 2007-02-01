@@ -125,7 +125,7 @@ int main(int argc,char **argv)
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
 	ForwardTool forward(setupFileName);
-	forward.print("check.xml");
+	//forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
 	AbstractModel *model = forward.getModel();
