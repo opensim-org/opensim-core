@@ -838,7 +838,9 @@ int SimmMotionData::getFrameNumberForTime(double time) const
 	// either i or i-1 if exists is closest
 	if (i==0)
 		return 0;
-	if (fabs(_rows.get(i)[0] - time) > fabs(_rows.get(i-1)[0] - time))
+	else if (i==_rows.getSize())
+		return i-1;
+	else if (fabs(_rows.get(i)[0] - time) > fabs(_rows.get(i-1)[0] - time))
 		return i-1;
 	else
 		return i;
