@@ -30,5 +30,4 @@ for i=1:size(q.data,1)
 end
 
 fclose(fid);
-system(['unix2dos ' fname]);
 return;
