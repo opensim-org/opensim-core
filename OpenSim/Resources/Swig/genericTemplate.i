@@ -143,8 +143,13 @@ using namespace OpenSim;
       equal = ((($javaclassname)obj).swigCPtr == this.swigCPtr);
     return equal;
   }
+  private int cacheId=-1;  // cache the Id to avoid recomputation for hashing purposes
+ 
   public int hashCode() {
-    return( getName().hashCode()+10000 * getType().hashCode());
+     if (cacheId==-1)
+        cacheId=getName().hashCode()+10000 * getType().hashCode();
+     
+    return( cacheId );
   }
 %}
 
