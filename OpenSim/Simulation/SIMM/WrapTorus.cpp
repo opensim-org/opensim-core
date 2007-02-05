@@ -207,11 +207,25 @@ void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 	_outerRadius = aWrapTorus._outerRadius;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the name of the type of wrap object ("torus" in this case)
+ *
+ * @return A string representing the type of wrap object
+ */
 const char* WrapTorus::getWrapTypeName() const
 {
 	return wrapTypeName;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get a string holding the dimensions definition that SIMM would
+ * use to describe this object. This is a rather ugly convenience
+ * function for outputting SIMM joint files.
+ *
+ * @return A string containing the dimensions of the wrap object
+ */
 string WrapTorus::getDimensionsString() const
 {
 	stringstream dimensions;
@@ -240,6 +254,17 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
 //=============================================================================
 // WRAPPING
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Calculate the wrapping of one line segment over the torus.
+ *
+ * @param aPoint1 One end of the line segment
+ * @param aPoint2 The other end of the line segment
+ * @param aMuscleWrap An object holding the parameters for this line/torus pairing
+ * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @param aFlag A flag for indicating errors, etc.
+ * @return The status, as a WrapAction enum
+ */
 int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 								const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
@@ -252,7 +277,7 @@ int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
 		return noWrap;
 
-	/* Now put a cylinder at closestPt and call the cylinder wrap code. */
+	// Now put a cylinder at closestPt and call the cylinder wrap code.
 	WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
 	double cylXaxis[3], cylYaxis[3], cylZaxis[3]; // cylinder axes in torus reference frame
 
@@ -304,29 +329,42 @@ int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	return wrapped;
 }
 
-/* This function finds the closest point on an origin-centered circle on the Z=0 plane
- * to the line between p1 and p2. It uses lmdif_C()
+//_____________________________________________________________________________
+/**
+ * Calculate the closest point on an origin-centered circle on the Z=0 plane
+ * to the line between p1 and p2. This circle represents the inner axis of
+ * the torus.
+ *
+ * @param radius The radius of the circle
+ * @param p1 One end of the line
+ * @param p2 The other end of the line
+ * @param xc The X coordinate of the closest point
+ * @param yc The Y coordinate of the closest point
+ * @param zc The Z coordinate of the closest point
+ * @param wrap_sign If wrap is constrained to a quadrant, the sign of the relevant axis
+ * @param wrap_axis If wrap is constrained to a quadrant, the relevant axis
+ * @return '1' if a closest point was found, '0' if there was an error while trying to constrain the wrap
  */
 int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
 										  double* xc, double* yc, double* zc,
 										  int wrap_sign, int wrap_axis) const
 {
-   int info;                  /* output flag */
-   int num_func_calls;        /* number of calls to func (nfev) */
-   int ldfjac = 1;            /* leading dimension of fjac (nres) */
+   int info;                  // output flag
+   int num_func_calls;        // number of calls to func (nfev)
+   int ldfjac = 1;            // leading dimension of fjac (nres)
    int numResid = 1;
    int numQs = 1;
-   double q[2], resid[2], fjac[2];            /* m X n array */
+   double q[2], resid[2], fjac[2];            // m X n array
    CircleCallback cb;
    bool constrained = (bool) (wrap_sign != 0);
-   /* solution parameters */
+   // solution parameters
    int mode = 1, nprint = 0, max_iter = 500;
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
-   /* work arrays */
+   // work arrays
    int ipvt[2];  
    double diag[2], qtf[2], wa1[2], wa2[2], wa3[2], wa4[2];
-   /* Circle variables */
+   // Circle variables
    double u, mag, nx, ny, nz, x, y, z, a1[3], a2[3], distance1, distance2, betterPt = 0;
 
    cb.p1[0] = p1[0];
@@ -356,14 +394,14 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    y = p1[1] + u * ny;
    z = p1[2] + u * nz;
 
-   /* Store the result from the first pass. */
+   // Store the result from the first pass.
    a1[0] = x;
    a1[1] = y;
    a1[2] = z;
 
    distance1 = sqrt(x*x + y*y + z*z + radius*radius - 2.0 * radius * sqrt(x*x + y*y));
 
-   /* Perform the second pass, switching the order of the two points. */
+   // Perform the second pass, switching the order of the two points.
    cb.p1[0] = p2[0];
    cb.p1[1] = p2[1];
    cb.p1[2] = p2[2];
@@ -391,18 +429,17 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    y = p2[1] + u * ny;
    z = p2[2] + u * nz;
 
-   /* Store the result from the second pass. */
+   // Store the result from the second pass.
    a2[0] = x;
    a2[1] = y;
    a2[2] = z;
 
    distance2 = sqrt(x*x + y*y + z*z + radius*radius - 2.0 * radius * sqrt(x*x + y*y));
 
-   /* Now choose the better result from the two passes. If the circle is not
-    * constrained, then just choose the one with the shortest distance. If the
-    * circle is constrained, then choose the one that is on the correct half of
-    * the circle. If both are on the correct half, choose the closest.
-    */
+   // Now choose the better result from the two passes. If the circle is not
+   // constrained, then just choose the one with the shortest distance. If the
+   // circle is constrained, then choose the one that is on the correct half of
+   // the circle. If both are on the correct half, choose the closest.
    if (constrained)
    {
       if (DSIGN(a1[wrap_axis]) == wrap_sign && DSIGN(a2[wrap_axis]) == wrap_sign)
@@ -422,7 +459,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
       }
       else
       {
-         /* no wrapping should occur */
+         // no wrapping should occur
          return 0;
       }
    }
@@ -434,9 +471,8 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
          betterPt = 1;
    }
 
-   /* a1 and a2 represent the points on the line that are closest to the circle.
-    * What you need to find and return is the corresponding point on the circle.
-    */
+   // a1 and a2 represent the points on the line that are closest to the circle.
+   // What you need to find and return is the corresponding point on the circle.
    if (betterPt == 0)
    {
       mag = (sqrt(a1[0]*a1[0] + a1[1]*a1[1]));
@@ -455,6 +491,18 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    return 1;
 }
 
+//_____________________________________________________________________________
+/**
+ * A utility function used by findClosestPoint. The single residual that it
+ * calculates is the distance between the current point and the circle.
+ *
+ * @param numResid The number of residuals (1)
+ * @param numQs The number of degrees of freedom (1)
+ * @param q Array of values of the degrees of freedom
+ * @param resid Array of residuals to be calculated
+ * @param flag2 A status flag
+ * @param ptr Pointer to data structure containing current point and circle radius
+ */
 void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 											double resid[], int *flag2, void *ptr)
 {

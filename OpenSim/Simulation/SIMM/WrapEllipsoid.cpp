@@ -41,11 +41,11 @@ using namespace std;
 using namespace OpenSim;
 
 static char* wrapTypeName = "ellipsoid";
-#define ELLIPSOID_TOLERANCE_1 1e-4     /* tolerance for pt_to_ellipsoid() special case detection */
+#define ELLIPSOID_TOLERANCE_1 1e-4     // tolerance for pt_to_ellipsoid() special case detection
 #define ELLIPSOID_TINY        0.00000001
-#define MU_BLEND_MIN          0.7073   /* 100% fan (must be greater than cos(45)!) */
-#define MU_BLEND_MAX          0.9      /* 100% Frans */
-#define NUM_FAN_SAMPLES       300      /* IMPORTANT: larger numbers produce less jitter */
+#define MU_BLEND_MIN          0.7073   // 100% fan (must be greater than cos(45)!)
+#define MU_BLEND_MAX          0.9      // 100% Frans
+#define NUM_FAN_SAMPLES       300      // IMPORTANT: larger numbers produce less jitter
 #define NUM_DISPLAY_SAMPLES   30
 #define N_STEPS               16
 #define SV_BOUNDARY_BLEND     0.3
@@ -199,11 +199,25 @@ void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 	_dimensions = aWrapEllipsoid._dimensions;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the name of the type of wrap object ("ellipsoid" in this case)
+ *
+ * @return A string representing the type of wrap object
+ */
 const char* WrapEllipsoid::getWrapTypeName() const
 {
 	return wrapTypeName;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get a string holding the dimensions definition that SIMM would
+ * use to describe this object. This is a rather ugly convenience
+ * function for outputting SIMM joint files.
+ *
+ * @return A string containing the dimensions of the wrap object
+ */
 string WrapEllipsoid::getDimensionsString() const
 {
 	stringstream dimensions;
@@ -232,6 +246,17 @@ WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
 //=============================================================================
 // WRAPPING
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Calculate the wrapping of one line segment over the ellipsoid.
+ *
+ * @param aPoint1 One end of the line segment
+ * @param aPoint2 The other end of the line segment
+ * @param aMuscleWrap An object holding the parameters for this line/ellipsoid pairing
+ * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @param aFlag A flag for indicating errors, etc.
+ * @return The status, as a WrapAction enum
+ */
 int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 									 const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
@@ -286,10 +311,10 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		p2e += SQR((p2[i] - m[i]) / a[i]);
 	}
 
-	/* check if p1 and p2 are inside the ellipsoid */
+	// check if p1 and p2 are inside the ellipsoid
 	if (p1e < -0.0001 || p2e < -0.0001)
 	{
-		/* p1 or p2 is inside the ellipsoid */
+		// p1 or p2 is inside the ellipsoid
 		aFlag = false;
 		aWrapResult.wrap_path_length = 0.0;
 
@@ -309,11 +334,11 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	MAKE_3DVECTOR21(p2, m, p2m);
 	Mtx::Normalize(3, p2m, p2m);
 
-	ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;	/* angle between p1->m and p2->m: -2.0 to 0.0 */
+	ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;	// angle between p1->m and p2->m: -2.0 to 0.0
 
 	if (fabs(ppm) < 0.0001)
 	{
-		/* vector p1m and p2m are colinear */
+		// vector p1m and p2m are colinear
 		aFlag = false;
 		aWrapResult.wrap_path_length = 0.0;
 
@@ -327,7 +352,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		return noWrap;
 	}
 
-	/* check if the line through p1 and p2 intersects the ellipsoid */
+	// check if the line through p1 and p2 intersects the ellipsoid
 	for (i = 0; i < 3;i++)
 	{
 		f1[i] = p1p2[i] / a[i];
@@ -340,7 +365,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	if (disc < 0.0)
 	{
-		/* no intersection */
+		// no intersection
 		aFlag = false;
 		aWrapResult.wrap_path_length = 0.0;
 
@@ -359,7 +384,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0) )
 	{
-		/* no intersection */
+		// no intersection
 		aFlag = false;
 		aWrapResult.wrap_path_length = 0.0;
 
@@ -373,24 +398,23 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		return noWrap;
 	}
 
-	/* r1 & r2: intersection points of p1->p2 with the ellipsoid */
+	// r1 & r2: intersection points of p1->p2 with the ellipsoid
 	for (i = 0; i < 3; i++)
 	{
 		aWrapResult.r1[i] = p2[i] + l1 * p1p2[i];
 		aWrapResult.r2[i] = p2[i] + l2 * p1p2[i];
 	}
 
-	/* ==== COMPUTE WRAPPING PLANE (begin) ==== */
+	// ==== COMPUTE WRAPPING PLANE (begin) ====
 
 	MAKE_3DVECTOR21(aWrapResult.r2, aWrapResult.r1, r1r2);
 
-	/* (1) Frans technique: choose the most parallel coordinate axis, then set
-	* 'sv' to the point along the muscle line that crosses the plane where
-	* that major axis equals zero.  This takes advantage of the special-case
-	* handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
-	* problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
-	* c1 in situations where the "fan" has a sharp discontinuity.
-	*/
+	// (1) Frans technique: choose the most parallel coordinate axis, then set
+	// 'sv' to the point along the muscle line that crosses the plane where
+	// that major axis equals zero.  This takes advantage of the special-case
+	// handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
+	// problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
+	// c1 in situations where the "fan" has a sharp discontinuity.
 	Mtx::Normalize(3, p1p2, mu);
 
 	for (i = 0; i < 3; i++)
@@ -402,10 +426,10 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		for (j = 0; j < 3; j++)
 			t_sv[i][j] = aWrapResult.r1[j] + t[i] * r1r2[j];
 
-		closestPoint(a[0], a[1], a[2], t_sv[i][0], t_sv[i][1], t_sv[i][2], &t_c1[i][0], &t_c1[i][1], &t_c1[i][2], i);
+		findClosestPoint(a[0], a[1], a[2], t_sv[i][0], t_sv[i][1], t_sv[i][2], &t_c1[i][0], &t_c1[i][1], &t_c1[i][2], i);
 	}
 
-	/* pick most parallel major axis */
+	// pick most parallel major axis
 	for (bestMu = 0, i = 1; i < 3; i++)
 		if (mu[i] > mu[bestMu])
 			bestMu = i;
@@ -415,15 +439,14 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	{
 		if (aMuscleWrap.getMethod() == MuscleWrap::hybrid && mu[bestMu] > MU_BLEND_MIN)
 		{
-			/* If Frans' technique produces an sv that is not within the r1->r2
-			* line segment, then that means that sv will be outside the ellipsoid.
-			* This can create an sv->c1 vector that points roughly 180-degrees
-			* opposite to the fan solution's sv->c1 vector.  This creates problems
-			* when interpolating between the Frans and fan solutions because the
-			* interpolated c1 can become colinear to the muscle line during
-			* interpolation.  Therefore we detect Frans-solution sv points near
-			* the ends of r1->r2 here, and fade out the Frans result for them.
-			*/
+			// If Frans' technique produces an sv that is not within the r1->r2
+			// line segment, then that means that sv will be outside the ellipsoid.
+			// This can create an sv->c1 vector that points roughly 180-degrees
+			// opposite to the fan solution's sv->c1 vector.  This creates problems
+			// when interpolating between the Frans and fan solutions because the
+			// interpolated c1 can become colinear to the muscle line during
+			// interpolation.  Therefore we detect Frans-solution sv points near
+			// the ends of r1->r2 here, and fade out the Frans result for them.
 
 			double s = 1.0;
 
@@ -442,9 +465,8 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 		if (aMuscleWrap.getMethod() == MuscleWrap::axial || mu[bestMu] > MU_BLEND_MIN)
 		{
-			/* if the Frans solution produced a strong result, copy it into
-			* sv and c1.
-			*/
+			// if the Frans solution produced a strong result, copy it into
+			// sv and c1.
 			for (i = 0; i < 3; i++)
 			{
 				aWrapResult.c1[i] = t_c1[bestMu][i];
@@ -454,11 +476,10 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 		if (aMuscleWrap.getMethod() == MuscleWrap::hybrid && mu[bestMu] < MU_BLEND_MAX)
 		{
-			/* (2) Fan technique: sample the fan at fixed intervals and average the
-			* fan "blade" vectors together to determine c1.  This only works when
-			* the fan is smoothly continuous.  The sharper the discontinuity, the
-			* more jumpy c1 becomes.
-			*/
+			// (2) Fan technique: sample the fan at fixed intervals and average the
+			// fan "blade" vectors together to determine c1.  This only works when
+			// the fan is smoothly continuous.  The sharper the discontinuity, the
+			// more jumpy c1 becomes.
 			double v_sum[3] = {0,0,0};
 
 			for (i = 0; i < 3; i++)
@@ -471,18 +492,18 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				for (j = 0; j < 3; j++)
 					t_sv[0][j] = aWrapResult.r1[j] + tt * r1r2[j];
 
-				closestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
+				findClosestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
 
 				MAKE_3DVECTOR21(t_c1[0], t_sv[0], v);
 
 				Mtx::Normalize(3, v, v);
 
-				/* add sv->c1 "fan blade" vector to the running total */
+				// add sv->c1 "fan blade" vector to the running total
 				for (j = 0; j < 3; j++)
 					v_sum[j] += v[j];
 
 			}
-			/* use vector sum to determine c1 */
+			// use vector sum to determine c1
 			Mtx::Normalize(3, v_sum, v_sum);
 
 			for (i = 0; i < 3; i++)
@@ -490,7 +511,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 			if (mu[bestMu] <= MU_BLEND_MIN)
 			{
-				closestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+				findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
 
 				for (i = 0; i < 3; i++)
 					aWrapResult.sv[i] = t_sv[2][i];
@@ -503,7 +524,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 				double oneMinusT = 1.0 - tt;
 
-				closestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &t_c1[1][0], &t_c1[1][1], &t_c1[1][2]);
+				findClosestPoint(a[0], a[1], a[2], t_c1[0][0], t_c1[0][1], t_c1[0][2], &t_c1[1][0], &t_c1[1][1], &t_c1[1][2]);
 
 				for (i = 0; i < 3; i++)
 				{
@@ -511,7 +532,7 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 					aWrapResult.sv[i] = tt * aWrapResult.sv[i] + oneMinusT * t_sv[2][i];
 				}
-				closestPoint(a[0], a[1], a[2], t_c1[2][0], t_c1[2][1], t_c1[2][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+				findClosestPoint(a[0], a[1], a[2], t_c1[2][0], t_c1[2][1], t_c1[2][2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
 
 				fanWeight = oneMinusT;
 			}
@@ -522,19 +543,18 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		for (i = 0; i < 3; i++)
 			aWrapResult.sv[i] = aWrapResult.r1[i] + 0.5 * (aWrapResult.r2[i] - aWrapResult.r1[i]);
 
-		closestPoint(a[0], a[1], a[2], aWrapResult.sv[0], aWrapResult.sv[1], aWrapResult.sv[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+		findClosestPoint(a[0], a[1], a[2], aWrapResult.sv[0], aWrapResult.sv[1], aWrapResult.sv[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
 	}
 
-	/* ==== COMPUTE WRAPPING PLANE (end) ==== */
+	// ==== COMPUTE WRAPPING PLANE (end) ====
 
-	/* The old way of initializing r1 used the intersection point
-	* of p1p2 and the ellipsoid. This caused the muscle path to
-	* "jump" to the other side of the ellipsoid as sv[] came near
-	* a plane of the ellipsoid. It jumped to the other side while
-	* c1[] was still on the first side. The new way of initializing
-	* r1 sets it to c1 so that it will stay on c1's side of the
-	* ellipsoid.
-	*/
+	// The old way of initializing r1 used the intersection point
+	// of p1p2 and the ellipsoid. This caused the muscle path to
+	// "jump" to the other side of the ellipsoid as sv[] came near
+	// a plane of the ellipsoid. It jumped to the other side while
+	// c1[] was still on the first side. The new way of initializing
+	// r1 sets it to c1 so that it will stay on c1's side of the
+	// ellipsoid.
 	{
 		bool use_c1_to_find_tangent_pts = true;
 
@@ -546,10 +566,9 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				aWrapResult.r1[i] = aWrapResult.r2[i] = aWrapResult.c1[i];
 	}
 
-	/* if wrapping is constrained to one half of the ellipsoid,
-	* check to see if we need to flip c1 to the active side of
-	* the ellipsoid.
-	*/
+	// if wrapping is constrained to one half of the ellipsoid,
+	// check to see if we need to flip c1 to the active side of
+	// the ellipsoid.
 	if (_wrapSign != 0)
 	{
 		dist = aWrapResult.c1[_wrapAxis] - m[_wrapAxis];
@@ -581,29 +600,27 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				for (i = 0; i < 3; i++)
 					tc1[i] = aWrapResult.c1[i];
 
-				closestPoint(a[0], a[1], a[2], tc1[0], tc1[1], tc1[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
+				findClosestPoint(a[0], a[1], a[2], tc1[0], tc1[1], tc1[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
 			}
 		}
 	}
 
-	/* use p1, p2, and c1 to create parameters for the wrapping
-	* plane.
-	*/
+	// use p1, p2, and c1 to create parameters for the wrapping plane
 	MAKE_3DVECTOR21(p1, aWrapResult.c1, p1c1);
 	Mtx::CrossProduct(p1p2, p1c1, vs);
 	Mtx::Normalize(3, vs, vs);
 
 	vs4 = - Mtx::DotProduct(3, vs, aWrapResult.c1);
 
-	/* find r1 & r2 by starting at c1 moving toward p1 & p2 */
-	calc_r(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
-	calc_r(p2e, aWrapResult.r2, p2, m, a, vs, vs4);
+	// find r1 & r2 by starting at c1 moving toward p1 & p2
+	calcTangentPoint(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
+	calcTangentPoint(p2e, aWrapResult.r2, p2, m, a, vs, vs4);
 
-	/* create a series of line segments connecting r1 & r2 along the
-	* surface of the ellipsoid.
-	*/
+	// create a series of line segments connecting r1 & r2 along the
+	// surface of the ellipsoid.
+
 calc_wrap_path:
-	dell(aWrapResult.r1, aWrapResult.r2, m, a, vs, vs4, far_side_wrap, aWrapResult);
+	CalcDistanceOnEllipsoid(aWrapResult.r1, aWrapResult.r2, m, a, vs, vs4, far_side_wrap, aWrapResult);
 
 	if (_wrapSign != 0 && aWrapResult.wrap_pts.getSize() > 2 && ! far_side_wrap)
 	{
@@ -612,9 +629,8 @@ calc_wrap_path:
 		double *w1 = aWrapResult.wrap_pts.get(0).get();
 		double *w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2).get();
 
-		/* check for wrong-way wrap by testing angle of first and last
-		* wrap path segments:
-		*/
+		// check for wrong-way wrap by testing angle of first and last
+		// wrap path segments:
 		MAKE_3DVECTOR(aWrapResult.r1, p1, r1p1);
 		MAKE_3DVECTOR(aWrapResult.r1, w1, r1w1);
 		MAKE_3DVECTOR(aWrapResult.r2, p2, r2p2);
@@ -627,10 +643,9 @@ calc_wrap_path:
 
 		if (Mtx::DotProduct(3, r1p1, r1w1) > 0.0 || Mtx::DotProduct(3, r2p2, r2w2) > 0.0)
 		{
-			/* NOTE: I added the ability to call dell() a 2nd time in this
-			*  situation to force a far-side wrap instead of aborting the
-			*  wrap.   -- KMS 9/3/99
-			*/
+			// NOTE: I added the ability to call CalcDistanceOnEllipsoid() a 2nd time in this
+			//  situation to force a far-side wrap instead of aborting the
+			//  wrap.   -- KMS 9/3/99
 			far_side_wrap = true;
 
 			goto calc_wrap_path;
@@ -654,25 +669,24 @@ calc_wrap_path:
 	return mandatoryWrap;
 }
 
-/* -------------------------------------------------------------------------
-   calc_r - this routine adjusts a point (r1) such that the point remains in
-     a specified plane (vs, vs4), and creates a TANGENT line segment connecting
-     it to a specified point (p1) outside of the ellipsoid.
-   
-   Input:
-     p1e   ellipsoid parameter for 'p1'?
-     r1    point to be adjusted to satisfy tangency-within-a-plane constraint
-     p1    point outside of ellipsoid
-     m     ellipsoid origin
-     a     ellipsoid axis
-     vs    plane vector
-     vs4   plane coefficient
-   
-   Output:
-     r1    tangent point on ellipsoid surface and in vs plane
----------------------------------------------------------------------------- */
-int WrapEllipsoid::calc_r(double p1e, double r1[], double p1[], double m[],
-								  double a[], double vs[], double vs4) const
+//_____________________________________________________________________________
+/**
+ * Adjust a point (r1) such that the point remains in
+ * a specified plane (vs, vs4), and creates a tangent line segment connecting
+ * it to a specified point (p1) outside of the ellipsoid. All quantities
+ * are normalized.
+ *
+ * @param p1e Ellipsoid parameter for 'p1'?
+ * @param r1 Point to be adjusted to satisfy tangency-within-a-plane constraint
+ * @param p1 Point outside of ellipsoid
+ * @param m Ellipsoid origin
+ * @param a Ellipsoid axis
+ * @param vs Plane vector
+ * @param vs4 Plane coefficient
+ * @return '1' if the point was adjusted, '0' otherwise
+ */
+int WrapEllipsoid::calcTangentPoint(double p1e, double r1[], double p1[], double m[],
+												double a[], double vs[], double vs4) const
 {
 	int i, j, k, nit, nit2, maxit=50, maxit2=1000;
 	double nr1[3], d1, v[4], ee[4], ssqo, ssq, pcos, p1r1[3], p1m[3], dedth[4][4];
@@ -854,25 +868,25 @@ int WrapEllipsoid::calc_r(double p1e, double r1[], double p1[], double m[],
 	}   
 	return 1;
 
-} /* calc_r */
+}
 
-/* -------------------------------------------------------------------------
-   dell - calculate the distance between two points on the surface of an
-     ellipsoid over the surface of the ellipsoid.
-   
-   Input:
-     r1, r2:   the points
-     m:        center of the ellipsoid
-     a:        axes of the ellipsoid
-     vs:       orientation plane
-   
-   Output:
-     afst:     the distance over the surface of the ellipsoid
-     wrap_pts: line segments connecting r1 to r2 along the ellipsoid surface
----------------------------------------------------------------------------- */
-void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[], 
-								 double vs[], double vs4, bool far_side_wrap,
-								 WrapResult& aWrapResult) const
+//_____________________________________________________________________________
+/**
+ * Calculate the distance over the surface between two points on an ellipsoid.
+ * All quantities are normalized.
+ *
+ * @param r1 The first point on the surface
+ * @param r2 The second point on the surface
+ * @param m Center of the ellipsoid
+ * @param a Axes of the ellipsoid
+ * @param vs Orientation plane vector
+ * @param vs4 Orientation plane coefficient
+ * @param far_side_wrap Whether or not the wrapping is the long way around
+ * @param aWrapResult The wrapping results (tangent points, etc.)
+ */
+void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[], double a[], 
+														  double vs[], double vs4, bool far_side_wrap,
+														  WrapResult& aWrapResult) const
 {
 	int i, j, k, l, imax, numWrapSegments;
 	double u[3], ux[3], mu, a0[3], ar1[3], ar2[3], phi, dphi, phi0, len,
@@ -1034,35 +1048,46 @@ void WrapEllipsoid::dell(double r1[], double r2[], double m[], double a[],
 
 		aWrapResult.wrap_path_length += Mtx::Magnitude(3, dv);
 	}
-} /* dell */
+}
 
-/* -------------------------------------------------------------------------
-   pt_to_ellipsoid - this routine is courtesy of Dave Eberly
-      www.magic-software.com
-   
-   Input:   Ellipsoid (x/a)^2+(y/b)^2+(z/c)^2 = 1, point (u,v,w).
-  
-   Output:  Closest point (x,y,z) on ellipsoid to (u,v,w), function returns
-            the distance sqrt((x-u)^2+(y-v)^2+(z-w)^2).
----------------------------------------------------------------------------- */
-double WrapEllipsoid::closestPoint(double a, double b, double c,
-											  double u, double v, double w,
-											  double* x, double* y, double* z,
-											  int specialCaseAxis) const
+//_____________________________________________________________________________
+/**
+ * Calculate the point on an ellipsoid that is closest to a point in 3D space.
+ * This function is courtesy of Dave Eberly, Graphics Gems IV.
+ *
+ * Input:   Ellipsoid (x/a)^2+(y/b)^2+(z/c)^2 = 1, point (u,v,w).
+ *
+ * Output:  Closest point (x,y,z) on ellipsoid to (u,v,w), function returns
+ *          the distance sqrt((x-u)^2+(y-v)^2+(z-w)^2).
+ *
+ * @param a X dimension of the ellipsoid
+ * @param b Y dimension of the ellipsoid
+ * @param c Z dimension of the ellipsoid
+ * @param u X coordinate of the point in space
+ * @param v Y coordinate of the point in space
+ * @param w Z coordinate of the point in space
+ * @param x X coordinate of the closest point
+ * @param y Y coordinate of the closest point
+ * @param z Z coordinate of the closest point
+ * @param specialCaseAxis For dealing with uvw points near a major axis
+ * @return The distance between the ellipsoid and the point in space
+ */
+double WrapEllipsoid::findClosestPoint(double a, double b, double c,
+													double u, double v, double w,
+													double* x, double* y, double* z,
+													int specialCaseAxis) const
 {
-    /* Graphics Gems IV algorithm for computing distance from point to
-     * ellipsoid (x/a)^2 + (y/b)^2 +(z/c)^2 = 1.  The algorithm as stated
-     * is not stable for points near the coordinate planes.  The first part
-     * of this code handles those points separately.
-     */
+    // Graphics Gems IV algorithm for computing distance from point to
+    // ellipsoid (x/a)^2 + (y/b)^2 +(z/c)^2 = 1.  The algorithm as stated
+    // is not stable for points near the coordinate planes.  The first part
+    // of this code handles those points separately.
     int i,j;
     
-    /* handle points near the coordinate planes by reducing the problem
-     * to a 2-dimensional pt-to-ellipse.
-     *
-     * if uvw is close to more than one coordinate plane,  pick the 2d
-     * elliptical cross-section with the narrowest radius.
-     */
+    // handle points near the coordinate planes by reducing the problem
+    // to a 2-dimensional pt-to-ellipse.
+    //
+    // if uvw is close to more than one coordinate plane,  pick the 2d
+    // elliptical cross-section with the narrowest radius.
     if (specialCaseAxis < 0)
     {
 		 double uvw[3], minEllipseRadiiSum = rdMath::PLUS_INFINITY;
@@ -1087,35 +1112,31 @@ double WrapEllipsoid::closestPoint(double a, double b, double c,
            }
        }
     }
-    if (specialCaseAxis == 0) /* use elliptical cross-section in yz plane */
+    if (specialCaseAxis == 0) // use elliptical cross-section in yz plane
     {
        *x = u;
-       //printf(" yz plane ");
        return closestPointToEllipse(b, c, v, w, y, z);
     }
-    if (specialCaseAxis == 1) /* use elliptical cross-section in xz plane */
+    if (specialCaseAxis == 1) // use elliptical cross-section in xz plane
     {
        *y = v;
-       //printf(" xz plane ");
        return closestPointToEllipse(c, a, w, u, z, x);
     }
-    if (specialCaseAxis == 2) /* use elliptical cross-section in xy plane */
+    if (specialCaseAxis == 2) // use elliptical cross-section in xy plane
     {
        *z = w;
-       //printf(" xy plane ");
        return closestPointToEllipse(a, b, u, v, x, y);
     }
 
-    /* if we get to here, then the point is not close to any of the major planes,
-     * so we can solve the general case.
-     */
+    // if we get to here, then the point is not close to any of the major planes,
+    // so we can solve the general case.
     {
         double a2 = a*a, b2 = b*b, c2 = c*c;
         double u2 = u*u, v2 = v*v, w2 = w*w;
         double a2u2 = a2*u2, b2v2 = b2*v2, c2w2 = c2*w2;
         double dx, dy, dz, t, f;
 
-        /* initial guess */
+        // initial guess
         if ( (u/a)*(u/a) + (v/b)*(v/b) + (w/c)*(w/c) < 1.0 )
         {
             t = 0.0;
@@ -1167,23 +1188,31 @@ double WrapEllipsoid::closestPoint(double a, double b, double c,
     return -1.0;
 }
 
-/* -------------------------------------------------------------------------
-   pt_to_ellipse - this routine is courtesy of Dave Eberly
-      www.magic-software.com
-   
-   Input:   Ellipse (x/a)^2+(y/b)^2 = 1, point (u,v).
-  
-   Output:  Closest point (x,y) on ellipse to (u,v), function returns
-            the distance sqrt((x-u)^2+(y-v)^2).
----------------------------------------------------------------------------- */
+//_____________________________________________________________________________
+/**
+ * Calculate the point on an ellipse that is closest to a point in 2D space.
+ * This function is courtesy of Dave Eberly, Graphics Gems IV.
+ *
+ * Input:   Ellipse (x/a)^2+(y/b)^2 = 1, point (u,v).
+ *
+ * Output:  Closest point (x,y) on ellipse to (u,v), function returns
+ *          the distance sqrt((x-u)^2+(y-v)^2).
+ *
+ * @param a X dimension of the ellipse
+ * @param b Y dimension of the ellipse
+ * @param u X coordinate of point on ellipse
+ * @param v Y coordinate of point on ellipse
+ * @param x X coordinate of closest point
+ * @param y Y coordinate of closest point
+ * @return Distance between uv point and ellipse
+ */
 double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 														  double v, double* x, double* y) const
 {
-	/* Graphics Gems IV algorithm for computing distance from point to
-	* ellipse (x/a)^2 + (y/b)^2 = 1.  The algorithm as stated is not stable
-	* for points near the coordinate axes.  The first part of this code
-	* handles those points separately.
-	*/
+	// Graphics Gems IV algorithm for computing distance from point to
+	// ellipse (x/a)^2 + (y/b)^2 = 1.  The algorithm as stated is not stable
+	// for points near the coordinate axes.  The first part of this code
+	// handles those points separately.
 	double a2 = a*a, b2 = b*b;
 	double u2 = u*u, v2 = v*v;
 	double a2u2 = a2*u2, b2v2 = b2*v2;
@@ -1194,7 +1223,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 	bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
 	bool nearYOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,v);
 
-	/* handle points near the coordinate axes */
+	// handle points near the coordinate axes
 	if (nearXOrigin && nearYOrigin)
 	{
 		if (a < b)
@@ -1209,7 +1238,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 		}
 	}
 
-	if (nearXOrigin)  /* u == 0 */
+	if (nearXOrigin)  // u == 0
 	{
 		if ( a >= b || fabs(v) >= b - a2/b )
 		{
@@ -1228,7 +1257,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 		}
 	}
 
-	if (nearYOrigin)  /* v == 0 */
+	if (nearYOrigin)  // v == 0
 	{
 		if ( b >= a || fabs(u) >= a - b2/a )
 		{
@@ -1247,7 +1276,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 		}
 	}
 
-	/* initial guess */
+	// initial guess
 	if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
 	{
 		which = 0;

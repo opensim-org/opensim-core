@@ -43,7 +43,7 @@ static char* wrapTypeName = "cylinder";
 static double p0[] = {0.0, 0.0, -1.0};
 static double dn[] = {0.0, 0.0, 1.0};
 #define MAX_ITERATIONS    100
-#define TANGENCY_THRESHOLD (0.1 * DTOR) /* find tangency to within 1 degree */
+#define TANGENCY_THRESHOLD (0.1 * DTOR) // find tangency to within 1 degree
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -201,11 +201,25 @@ void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
 	_length = aWrapCylinder._length;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the name of the type of wrap object ("cylinder" in this case)
+ *
+ * @return A string representing the type of wrap object
+ */
 const char* WrapCylinder::getWrapTypeName() const
 {
 	return wrapTypeName;
 }
 
+//_____________________________________________________________________________
+/**
+ * Get a string holding the dimensions definition that SIMM would
+ * use to describe this object. This is a rather ugly convenience
+ * function for outputting SIMM joint files.
+ *
+ * @return A string containing the dimensions of the wrap object
+ */
 string WrapCylinder::getDimensionsString() const
 {
 	stringstream dimensions;
@@ -234,6 +248,17 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 //=============================================================================
 // WRAPPING
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Calculate the wrapping of one line segment over the cylinder.
+ *
+ * @param aPoint1 One end of the line segment
+ * @param aPoint2 The other end of the line segment
+ * @param aMuscleWrap An object holding the parameters for this line/cylinder pairing
+ * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @param aFlag A flag for indicating errors, etc.
+ * @return The status, as a WrapAction enum
+ */
 int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 									const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
@@ -661,18 +686,20 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 }
 
-/* -------------------------------------------------------------------------
-_make_spiral_path - this routine calculates wrapping points along a
-spiral path from r1 to r2.
-
-IMPORTANT:  if necessary this routine will slide r1 and r2 axially along
-the cylinder's surface to acheive tangency to within 1 degree at r1
-and r2.
----------------------------------------------------------------------------- */
-
-void WrapCylinder::_make_spiral_path(double aPoint1[3],  /* input: muscle point 1 */
-												 double aPoint2[3],  /* input: muscle point 2 */
-												 bool far_side_wrap, /* input: is it a far side wrap? */
+//_____________________________________________________________________________
+/**
+ * Calculate the wrapping points along a spiral path on the cylinder from aPoint1
+ * to aPoint2. This function may slide aPoint1 and aPoint2 axially along the
+ * cylinder's surface to achieve tangency to within 1 degree at the two points.
+ *
+ * @param aPoint1 One end of the spiral path
+ * @param aPoint2 The other end of the spiral path
+ * @param far_side_wrap Boolean indicating if the wrap is the long way around
+ * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ */
+void WrapCylinder::_make_spiral_path(double aPoint1[3],
+												 double aPoint2[3],
+												 bool far_side_wrap,
 												 WrapResult& aWrapResult) const
 {
 	double r1a[3], r2a[3], uu[3], vv[3], ax[3], x, y, t, axial_vec[3], axial_dist, theta, wrap_pt[3];
@@ -684,7 +711,7 @@ restart_spiral_wrap:
 
 	aWrapResult.wrap_pts.setSize(0);
 
-	/* determine the axial vector: */
+	// determine the axial vector
 
 	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
 	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
@@ -693,7 +720,7 @@ restart_spiral_wrap:
 
 	axial_dist = Mtx::Magnitude(3, axial_vec);
 
-	/* determine the radial angle: */
+	// determine the radial angle
 	MAKE_3DVECTOR(r1a, aWrapResult.r1, uu);
 	MAKE_3DVECTOR(r2a, aWrapResult.r2, vv);
 
@@ -708,16 +735,14 @@ restart_spiral_wrap:
 	if (far_side_wrap)
 		theta = 2.0 * rdMath::PI - theta;
 
-	/* use pythagorus to calculate the length of the spiral path (imaging
-	* a right triangle wrapping around the surface of a cylinder):
-	*/
+	// use pythagorus to calculate the length of the spiral path (imaging
+	// a right triangle wrapping around the surface of a cylinder)
 	x = _radius * theta;
 	y = axial_dist;
 
 	aWrapResult.wrap_path_length = sqrt(x * x + y * y);
 
-	/* build path segments:
-	*/
+	// build path segments
 	Mtx::CrossProduct(uu, vv, ax);
 	Mtx::Normalize(3, ax, ax);
 
@@ -740,9 +765,8 @@ restart_spiral_wrap:
 
 		_calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
 
-		/* adjust r1/r2 tangent points if necessary to acheive tangency with
-		* the spiral path:
-		*/
+		// adjust r1/r2 tangent points if necessary to acheive tangency with
+		// the spiral path:
 		if (i == 1 && iterations < MAX_ITERATIONS)
 		{
 			bool did_adjust_r2 = false;
@@ -765,9 +789,19 @@ restart_spiral_wrap:
 	}
 }
 
-/* -------------------------------------------------------------------------
-_calc_spiral_wrap_point - calculate a point along the spiral wrap path.
----------------------------------------------------------------------------- */
+//_____________________________________________________________________________
+/**
+ * Calculate a newpoint along a spiral wrapping path.
+ *
+ * @param r1a An existing point on the spiral path
+ * @param axial_vec Vector from r1a parallel to cylinder axis
+ * @param m A transform matrix used for the radial component
+ * @param axis Axis of the cylinder
+ * @param sense The direction of the spiral
+ * @param t Parameterized amount of angle for this point
+ * @param theta The total angle of the spiral on the cylinder
+ * @param wrap_pt The new point on the spiral path
+ */
 void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
 														 const double axial_vec[3],
 														 double m[4][4],
@@ -784,7 +818,7 @@ void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
 		for (j = 0; j < 4; j++)
 			n[i][j] = m[i][j];
 
-	rotate_matrix_axis_angle(n, axis, sense * t * theta);
+	rdMath::RotateMatrixAxisAngle(n, axis, sense * t * theta);
 
 	for (i = 0; i < 3; i++)
 	{
@@ -795,16 +829,24 @@ void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
 	}
 }
 
-/* -------------------------------------------------------------------------
-_adjust_tangent_point - detect whether the specified tangent point 'r1'
-needs to be adjusted or not.  If so, slide it in the appropriate
-direction and return true, otherwise return false.
----------------------------------------------------------------------------- */
-bool WrapCylinder::_adjust_tangent_point(
-											  double pt1[3],  /* input: muscle point 1 */
-											  double dn[3],   /* input: direction vector of cyl axis */
-											  double r1[3],   /* input/output: wrap tangent point 1 */
-											  double w1[3]) const   /* input: wrap point 1 */
+//_____________________________________________________________________________
+/**
+ * Determine whether the specified tangent point 'r1'
+ * needs to be adjusted or not (so that the line from
+ * pt1 to r1 is tangent to the cylinder to within 1 degree).
+ * If yes, slide it in the appropriate direction and return
+ * true, otherwise return false.
+ *
+ * @param pt1 One point on the line segment being wrapped
+ * @param dn Direction vector of cylinder axis
+ * @param r1 The tangent point to be adjusted
+ * @param w1 A wrapping point (?)
+ * @return Whether or not the point was adjusted
+ */
+bool WrapCylinder::_adjust_tangent_point(double pt1[3],
+													  double dn[3],
+													  double r1[3],
+													  double w1[3]) const
 {
 	double pr_vec[3], rw_vec[3], alpha, omega, t;
 	int i;

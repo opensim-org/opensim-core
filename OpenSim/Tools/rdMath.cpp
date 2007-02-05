@@ -552,7 +552,7 @@ ConvertAxisAngleTo4x4DirCosMatrix(const double axis[3], double angle, double mat
 	double sl = sin(angle);
 	double omc = 1.0 - cl;
 
-	/* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
+	// the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7
 	mat[0][0] = cl + normAxis[0]*normAxis[0]*omc;
 	mat[1][0] = -normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
 	mat[2][0] = normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
@@ -594,8 +594,104 @@ CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[])
 {
 	double ptemp[3], t;
 
-	/* find the closest point on line */
+	// find the closest point on line
 	GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
 
 	return CalcDistanceSquaredBetweenPoints(point, ptemp);
 }
+
+/* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
+ * @param matrix The 4x4 transform matrix
+ * @param axis The axis about which to rotate
+ * @param angle the amount to rotate, in radians
+ */
+void rdMath::
+RotateMatrixAxisAngle(double matrix[][4], const double axis[3], double angle)
+{
+    double quat[4];
+
+	 ConvertAxisAngleToQuaternion(axis, angle, quat);
+    RotateMatrixQuaternion(matrix, quat);
+}
+
+/* Make a 4x4 transform matrix from a quaternion.
+ * @param matrix The 4x4 transform matrix
+ * @param axis The axis about which to rotate
+ * @param angle the amount to rotate, in radians
+ */
+void rdMath::
+ConvertQuaternionToMatrix(const double quat[4], double matrix[][4])
+{
+	double Nq = quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3];
+	double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
+
+	double xs = quat[0] * s,   ys = quat[1] * s,   zs = quat[2] * s;
+	double wx = quat[3] * xs,  wy = quat[3] * ys,  wz = quat[3] * zs;
+	double xx = quat[0] * xs,  xy = quat[0] * ys,  xz = quat[0] * zs;
+	double yy = quat[1] * ys,  yz = quat[1] * zs,  zz = quat[2] * zs;
+
+	matrix[0][0] = 1.0 - (yy + zz);  matrix[0][1] = xy + wz;          matrix[0][2] = xz - wy;
+	matrix[1][0] = xy - wz;          matrix[1][1] = 1.0 - (xx + zz);  matrix[1][2] = yz + wx;
+	matrix[2][0] = xz + wy;          matrix[2][1] = yz - wx;          matrix[2][2] = 1.0 - (xx + yy);
+
+	matrix[0][3] = matrix[1][3] = matrix[2][3] = matrix[3][0] = matrix[3][1] = matrix[3][2] = 0.0;
+	matrix[3][3] = 1.0;
+}
+
+/* Rotate a 4x4 transform matrix by a quaternion.
+ * @param matrix The 4x4 transform matrix
+ * @param quat The quaternion
+ */
+void rdMath::
+RotateMatrixQuaternion(double matrix[][4], const double quat[4])
+{
+	// append a quaternion rotation to a matrix
+	double n[4][4];
+
+	ConvertQuaternionToMatrix(quat, n);
+
+	Mtx::Multiply(4, 4, 4, (double*)matrix, (double*)n, (double*)matrix);
+}
+
+/* Rotate a 4x4 transform matrix by 'angle' radians about the local X axis.
+ * @param matrix The 4x4 transform matrix
+ * @param angle The amount in radians to rotate
+ */
+void rdMath::
+RotateMatrixXBodyFixed(double matrix[][4], double angle)
+{
+   // append rotation about local x-axis to matrix 'matrix'
+   double quat[4];
+   
+   ConvertAxisAngleToQuaternion(matrix[0], angle, quat);
+   RotateMatrixQuaternion(matrix, quat);
+}
+
+/* Rotate a 4x4 transform matrix by 'angle' radians about the local Y axis.
+ * @param matrix The 4x4 transform matrix
+ * @param angle The amount in radians to rotate
+ */
+void rdMath::
+RotateMatrixYBodyFixed(double matrix[][4], double angle)
+{
+   // append rotation about local y-axis to matrix 'matrix'
+   double quat[4];
+   
+   ConvertAxisAngleToQuaternion(matrix[1], angle, quat);
+   RotateMatrixQuaternion(matrix, quat);
+}
+
+/* Rotate a 4x4 transform matrix by 'angle' radians about the local Z axis.
+ * @param matrix The 4x4 transform matrix
+ * @param angle The amount in radians to rotate
+ */
+void rdMath::
+RotateMatrixZBodyFixed(double matrix[][4], double angle)
+{
+   // append rotation about local z-axis to matrix 'matrix'
+   double quat[4];
+   
+   ConvertAxisAngleToQuaternion(matrix[2], angle, quat);
+   RotateMatrixQuaternion(matrix, quat);
+}
+

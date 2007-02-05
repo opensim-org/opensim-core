@@ -146,12 +146,6 @@ public:
 protected:
 	void setupProperties();
 	void setupQuadrant();
-	void rotate_matrix_axis_angle(double m[][4], const double axis[3], double angle) const;
-	void quat_to_matrix(const double q[4], double m[][4]) const;
-	void rotate_matrix_by_quat(double m[][4], const double q[4]) const;
-	void x_rotate_matrix_bodyfixed(double m[][4], double radians) const;
-	void y_rotate_matrix_bodyfixed(double m[][4], double radians) const;
-	void z_rotate_matrix_bodyfixed(double m[][4], double radians) const;
 
 private:
 	void setNull();

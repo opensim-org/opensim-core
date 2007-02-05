@@ -258,6 +258,16 @@ AbstractWrapObject& AbstractWrapObject::operator=(const AbstractWrapObject& aWra
 //=============================================================================
 // WRAPPING
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Calculate the wrapping of one muscle segment over one wrap object.
+ *
+ * @param aPoint1 The first muscle attachment point
+ * @param aPoint2 The second muscle attachment point
+ * @param aMuscleWrap An object holding the parameters for this muscle/wrap-object pairing
+ * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @return The status, as a WrapAction enum
+ */
 int AbstractWrapObject::wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePoint& aPoint2,
 														const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult) const
 {
@@ -293,78 +303,6 @@ int AbstractWrapObject::wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePo
    }
 
    return return_code;
-}
-
-//=============================================================================
-// UTILITY
-//=============================================================================
-/* Calculates the square of the shortest distance from a point (point)
- * to a line (vl, through pl).
- */
-void AbstractWrapObject::rotate_matrix_axis_angle(double m[][4], const double axis[3], double angle) const
-{
-    double q[4];
-
-	 rdMath::ConvertAxisAngleToQuaternion(axis, angle, q);
-    rotate_matrix_by_quat(m, q);
-}
-
-void AbstractWrapObject::quat_to_matrix(const double q[4], double m[][4]) const
-{
-	/* make a rotation matrix from a quaternion */
-
-	double Nq = q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3];
-	double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
-
-	double xs = q[0] * s,   ys = q[1] * s,   zs = q[2] * s;
-	double wx = q[3] * xs,  wy = q[3] * ys,  wz = q[3] * zs;
-	double xx = q[0] * xs,  xy = q[0] * ys,  xz = q[0] * zs;
-	double yy = q[1] * ys,  yz = q[1] * zs,  zz = q[2] * zs;
-
-	m[0][0] = 1.0 - (yy + zz);  m[0][1] = xy + wz;          m[0][2] = xz - wy;
-	m[1][0] = xy - wz;          m[1][1] = 1.0 - (xx + zz);  m[1][2] = yz + wx;
-	m[2][0] = xz + wy;          m[2][1] = yz - wx;          m[2][2] = 1.0 - (xx + yy);
-
-	m[0][3] = m[1][3] = m[2][3] = m[3][0] = m[3][1] = m[3][2] = 0.0;
-	m[3][3] = 1.0;
-}
-
-void AbstractWrapObject::rotate_matrix_by_quat(double m[][4], const double q[4]) const
-{
-	/* append a quaternion rotation to a matrix */
-
-	double n[4][4];
-
-	quat_to_matrix(q, n);
-
-	Mtx::Multiply(4, 4, 4, (double*)m, (double*)n, (double*)m); // TODO: make sure this gives same result as append_matrix()
-}
-
-void AbstractWrapObject::x_rotate_matrix_bodyfixed(double m[][4], double radians) const
-{
-   /* append rotation about local x-axis to matrix 'm' */
-   double q[4];
-   
-   rdMath::ConvertAxisAngleToQuaternion(m[0], radians, q);
-   rotate_matrix_by_quat(m, q);
-}
-
-void AbstractWrapObject::y_rotate_matrix_bodyfixed(double m[][4], double radians) const
-{
-   /* append rotation about local y-axis to matrix 'm' */
-   double q[4];
-   
-   rdMath::ConvertAxisAngleToQuaternion(m[1], radians, q);
-   rotate_matrix_by_quat(m, q);
-}
-
-void AbstractWrapObject::z_rotate_matrix_bodyfixed(double m[][4], double radians) const
-{
-   /* append rotation about local z-axis to matrix 'm' */
-   double q[4];
-   
-   rdMath::ConvertAxisAngleToQuaternion(m[2], radians, q);
-   rotate_matrix_by_quat(m, q);
 }
 
 //=============================================================================

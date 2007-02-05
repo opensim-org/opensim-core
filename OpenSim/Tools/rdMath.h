@@ -133,6 +133,18 @@ public:
 		CalcDistanceSquaredBetweenPoints(double point1[], double point2[]);
 	static double
 		CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[]);
+	static void
+		RotateMatrixAxisAngle(double matrix[][4], const double axis[3], double angle);
+	static void
+		ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]);
+	static void
+		RotateMatrixQuaternion(double matrix[][4], const double quat[4]);
+	static void
+		RotateMatrixXBodyFixed(double matrix[][4], double angle);
+	static void
+		RotateMatrixYBodyFixed(double matrix[][4], double angle);
+	static void
+		RotateMatrixZBodyFixed(double matrix[][4], double angle);
 
 
 //=============================================================================

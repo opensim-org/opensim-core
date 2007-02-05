@@ -98,12 +98,12 @@ protected:
 
 private:
 	void setNull();
-	int calc_r(double p1e, double r1[], double p1[], double m[],
+	int calcTangentPoint(double p1e, double r1[], double p1[], double m[],
 		double a[], double vs[], double vs4) const;
-	void dell(double r1[], double r2[], double m[], double a[], 
+	void CalcDistanceOnEllipsoid(double r1[], double r2[], double m[], double a[], 
 		double vs[], double vs4, bool far_side_wrap,
 		WrapResult& aWrapResult) const;
-	double closestPoint(double a, double b, double c,
+	double findClosestPoint(double a, double b, double c,
 		double u, double v, double w,
 		double* x, double* y, double* z,
 		int specialCaseAxis = -1) const;
