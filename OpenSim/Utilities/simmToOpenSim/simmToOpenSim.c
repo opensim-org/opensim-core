@@ -125,6 +125,7 @@ int main(int argc, char* argv[])
    write_xml_model(ms, xmlOut, angleUnits);
 
 	printf("Wrote XML file %s\n", xmlOut);
+	exit(0);
 }
 
 void write_xml_gravity(FILE* fp, ModelStruct* ms)
