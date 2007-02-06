@@ -76,7 +76,7 @@ public:
 #endif
 	void copyData(const SimmMarkerPair &aMarkerPair);
 
-	void getMarkerNames(const std::string*& aName1, const std::string*& aName2) const;
+	void getMarkerNames(std::string& aName1, std::string& aName2) const;
 
 	void peteTest() const;
 

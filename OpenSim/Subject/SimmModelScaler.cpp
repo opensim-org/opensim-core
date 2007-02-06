@@ -216,14 +216,14 @@ void SimmModelScaler::setupProperties()
 	_scaleSetProp.setName("ScaleSet");
 	_propertySet.append(&_scaleSetProp);
 
-	_markerFileNameProp.setComment("TRC file (.trc) containing the marker positions used for scaling. "
-		"This is usually a static trial, but doesn't need to be.  The marker positions are averaged "
-		"across a specified time range.  So, if a static trial is not used, a narrow time range should "
-		"be used so that the markers reflect a real experimental position.");
+	_markerFileNameProp.setComment("TRC file (.trc) containing the marker positions used for measurement-based scaling. "
+		"This is usually a static trial, but doesn't need to be.  The marker-pair distances are computed for each "
+		"time step in the TRC file and averaged across the time range.");
 	_markerFileNameProp.setName("marker_file");
 	_propertySet.append(&_markerFileNameProp);
 
-	_timeRangeProp.setComment("Time range over which to average marker positions in the marker file (.trc) for scaling.");
+	_timeRangeProp.setComment("Time range over which to average marker-pair distances in the marker file (.trc) for "
+		"measurement-based scaling.");
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
@@ -335,31 +335,21 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
 			 */
 			if (_scalingOrder[i] == "measurements")
 			{
-				/* Load the static pose marker file, and average all the
-				 * frames in the user-specified time range.
+				/* Load the static pose marker file, and convert units.
 			    */
-				SimmMarkerData staticPose(aPathToSubject + _markerFileName);
-				staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
-				staticPose.convertToUnits(aModel->getLengthUnits());
+				SimmMarkerData markerData(aPathToSubject + _markerFileName);
+				markerData.convertToUnits(aModel->getLengthUnits());
 
 				/* Now take and apply the measurements. */
 				for (int j = 0; j < _measurementSet.getSize(); j++)
 				{
 					if (_measurementSet.get(j)->getApply())
 					{
-						double scaleFactor = 1.0;
-						double modelLength = takeModelMeasurement(*aModel, *_measurementSet.get(j));
-						double staticPoseLength = takeStaticPoseMeasurement(staticPose, *_measurementSet.get(j));
-						if (modelLength != rdMath::NAN && staticPoseLength != rdMath::NAN)
-						{
-							scaleFactor = staticPoseLength / modelLength;
+						double scaleFactor = computeMeasurementScaleFactor(*aModel, markerData, *_measurementSet.get(j));
+						if (scaleFactor != rdMath::NAN) 
 							_measurementSet.get(j)->applyScaleFactor(scaleFactor, theScaleSet);
-							cout << "Measurement " << _measurementSet.get(j)->getName() << ": model = " << modelLength << ", static pose = " << staticPoseLength << endl;
-						}
 						else
-						{
 							cout << "___WARNING___: " << _measurementSet.get(j)->getName() << " measurement not used to scale " << aModel->getName() << endl;
-						}
 					}
 				}
 			}
@@ -428,112 +418,77 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
 
 //_____________________________________________________________________________
 /**
- * Measure a length on a model. The length is defined by the average distance
- * between 1 or more pairs of markers, as stored in a SimmMeasurement.
+ * For measurement based scaling, we average the scale factors across the different marker pairs used.
+ * For each marker pair, the scale factor is computed by dividing the average distance between the pair 
+ * in the experimental marker data by the distance between the pair on the model.
+ */
+double SimmModelScaler::computeMeasurementScaleFactor(const AbstractModel& aModel, const SimmMarkerData& aMarkerData, const SimmMeasurement& aMeasurement) const
+{
+	double scaleFactor = 0;
+	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
+	for(int i=0; i<aMeasurement.getNumMarkerPairs(); i++) {
+		const SimmMarkerPair& pair = aMeasurement.getMarkerPair(i);
+		string name1, name2;
+		pair.getMarkerNames(name1, name2);
+		double modelLength = takeModelMeasurement(aModel, name1, name2, aMeasurement.getName());
+		double experimentalLength = takeExperimentalMarkerMeasurement(aMarkerData, name1, name2, aMeasurement.getName());
+		if(modelLength == rdMath::NAN || experimentalLength == rdMath::NAN) return rdMath::NAN;
+		cout << "\tpair " << i << " (" << name1 << ", " << name2 << "): model = " << modelLength << ", experimental = " << experimentalLength << endl;
+		scaleFactor += experimentalLength / modelLength;
+	}
+	scaleFactor /= aMeasurement.getNumMarkerPairs();
+	cout << "\toverall scale factor = " << scaleFactor << endl;
+	return scaleFactor;
+}
+
+//_____________________________________________________________________________
+/**
+ * Measure the distance between two model markers.
  *
- * @param aModel the model to measure.
- * @param aMeasurement the measurement to take.
  * @return The measured distance.
  */
-double SimmModelScaler::takeModelMeasurement(const AbstractModel& aModel, const SimmMeasurement& aMeasurement) const
+double SimmModelScaler::takeModelMeasurement(const AbstractModel& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
-	double length;
-	const string *name1 = NULL, *name2 = NULL;
-	int i, numPairs;
 	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
+	const AbstractMarker* marker1 = engine.getMarkerSet()->get(aName1);
+	const AbstractMarker* marker2 = engine.getMarkerSet()->get(aName2);
 
-	/* For each pair of markers, calculate the distance between them
-	 * and add it to the running total.
-	 */
-	for (i = 0, length = 0.0, numPairs = 0; i < aMeasurement.getNumMarkerPairs(); i++)
-	{
-		const SimmMarkerPair& pair = aMeasurement.getMarkerPair(i);
-		pair.getMarkerNames(name1, name2);
-		const AbstractMarker* marker1 = engine.getMarkerSet()->get(*name1);
-		const AbstractMarker* marker2 = engine.getMarkerSet()->get(*name2);
-		if (marker1 && marker2)
-		{
-			length += engine.calcDistance(*marker1->getBody(), marker1->getOffset(), *marker2->getBody(), marker2->getOffset());
-			numPairs++;
-		}
-		else
-		{
-			if (!marker1)
-				cout << "___WARNING___: marker " << *name1 << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
-			if (!marker2)
-				cout << "___WARNING___: marker " << *name2 << " in " << aMeasurement.getName() << " measurement not found in " << aModel.getName() << endl;
-		}
-	}
-
-	/* Divide by the number of pairs to get the average length. */
-	if (numPairs == 0)
-	{
-		cout << "___WARNING___: could not calculate " << aMeasurement.getName() << " measurement on " << aModel.getName() << endl;
+	if (marker1 && marker2) {
+		return engine.calcDistance(*marker1->getBody(), marker1->getOffset(), *marker2->getBody(), marker2->getOffset());
+	} else {
+		if (!marker1)
+			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
+		if (!marker2)
+			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
 		return rdMath::NAN;
-	}
-	else
-	{
-		return length / numPairs;
 	}
 }
 
 //_____________________________________________________________________________
 /**
- * Measure a length in a marker set. The length is defined by the average distance
- * between 1 or more pairs of markers, as stored in a SimmMeasurement. This
- * method takes the measurement on the first frame in the SimmMarkerData.
- *
- * @param aPose the marker cloud data to measure (first frame of data is used).
- * @param aMeasurement the measurement to take.
- * @return The measured distance.
+ * Measure the average distance between a marker pair in an experimental marker data.
  */
-double SimmModelScaler::takeStaticPoseMeasurement(const SimmMarkerData& aPose, const SimmMeasurement& aMeasurement) const
+double SimmModelScaler::takeExperimentalMarkerMeasurement(const SimmMarkerData& aMarkerData, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
-	double length;
-	const string *name1 = NULL, *name2 = NULL;
-	int i, numPairs;
-
-	/* For each pair of markers, calculate the distance between them
-	 * and add it to the running total.
-	 */
-	for (i = 0, length = 0.0, numPairs = 0; i < aMeasurement.getNumMarkerPairs(); i++)
-	{
-		int marker1 = -1, marker2 = -1;
-		const SimmMarkerPair& pair = aMeasurement.getMarkerPair(i);
-		pair.getMarkerNames(name1, name2);
-		const Array<string>& staticPoseMarkerNames = aPose.getMarkerNames();
-		for (int j = 0; j < staticPoseMarkerNames.getSize(); j++)
-		{
-			if (staticPoseMarkerNames[j] == *name1)
-				marker1 = j;
-			if (staticPoseMarkerNames[j] == *name2)
-				marker2 = j;
-		}
-		if (marker1 >= 0 && marker2 >= 0)
-		{
-			double* p1 = aPose.getFrame(0)->getMarker(marker1).get();
-			double* p2 = aPose.getFrame(0)->getMarker(marker2).get();
+	const Array<string>& experimentalMarkerNames = aMarkerData.getMarkerNames();
+	int marker1 = experimentalMarkerNames.findIndex(aName1);
+	int marker2 = experimentalMarkerNames.findIndex(aName2);
+	if (marker1 >= 0 && marker2 >= 0) {
+		int startIndex, endIndex;
+		aMarkerData.findFrameRange(_timeRange[0], _timeRange[1], startIndex, endIndex);
+		double length = 0;
+		for(int i=startIndex; i<=endIndex; i++) {
+			double* p1 = aMarkerData.getFrame(i)->getMarker(marker1).get();
+			double* p2 = aMarkerData.getFrame(i)->getMarker(marker2).get();
 			length += sqrt((p2[0]-p1[0])*(p2[0]-p1[0]) + (p2[1]-p1[1])*(p2[1]-p1[1]) + (p2[2]-p1[2])*(p2[2]-p1[2]));
-			numPairs++;
 		}
-		else
-		{
-			if (marker1 < 0)
-				cout << "___WARNING___: marker " << *name1 << " in " << aMeasurement.getName() << " measurement not found in " << aPose.getFileName() << endl;
-			if (marker2 < 0)
-				cout << "___WARNING___: marker " << *name2 << " in " << aMeasurement.getName() << " measurement not found in " << aPose.getFileName() << endl;
-		}
-	}
-
-	/* Divide by the number of pairs to get the average length. */
-	if (numPairs == 0)
-	{
-		cout << "___WARNING___: could not calculate " << aMeasurement.getName() << " measurement on file " << aPose.getFileName() << endl;
+		return length/(endIndex-startIndex+1);
+	} else {
+		if (marker1 < 0)
+			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
+		if (marker2 < 0)
+			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
 		return rdMath::NAN;
-	}
-	else
-	{
-		return length / numPairs;
 	}
 }
 

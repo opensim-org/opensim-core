@@ -246,8 +246,9 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	double takeModelMeasurement(const AbstractModel& aModel, const SimmMeasurement& aMeasurement) const;
-	double takeStaticPoseMeasurement(const SimmMarkerData& aStaticPose, const SimmMeasurement& aMeasurement) const;
+	double computeMeasurementScaleFactor(const AbstractModel& aModel, const SimmMarkerData& aMarkerData, const SimmMeasurement& aMeasurement) const;
+	double takeModelMeasurement(const AbstractModel& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
+	double takeExperimentalMarkerMeasurement(const SimmMarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 //=============================================================================
 };	// END of class SimmModelScaler
 //=============================================================================

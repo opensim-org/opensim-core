@@ -157,10 +157,10 @@ SimmMarkerPair& SimmMarkerPair::operator=(const SimmMarkerPair &aMarkerPair)
 	return(*this);
 }
 
-void SimmMarkerPair::getMarkerNames(const string*& aName1, const string*& aName2) const
+void SimmMarkerPair::getMarkerNames(string& aName1, string& aName2) const
 {
-	aName1 = &_markerNames[0];
-	aName2 = &_markerNames[1];
+	aName1 = _markerNames[0];
+	aName2 = _markerNames[1];
 }
 
 void SimmMarkerPair::peteTest() const
