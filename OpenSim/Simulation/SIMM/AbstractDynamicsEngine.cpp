@@ -302,10 +302,9 @@ bool AbstractDynamicsEngine::scale(const ScaleSet& aScaleSet, double aFinalMass,
 		double mass = getMass();
 		if (mass > 0.0)
 		{
-			double factor = pow(aFinalMass / mass, 1.0 / 3.0);
-			Array<double> scaleFactor(factor, 3);
+			double factor = aFinalMass / mass;
 			for (i = 0; i < _bodySet.getSize(); i++)
-				_bodySet.get(i)->scaleInertialProperties(scaleFactor);
+				_bodySet.get(i)->scaleMass(factor);
 		}
 	}
 

@@ -90,8 +90,9 @@ public:
 	virtual bool setMassCenter(double aVec[3]) = 0;
 	virtual void getInertia(double rInertia[3][3]) const = 0;
 	virtual bool setInertia(const Array<double>& aInertia) = 0;
-	virtual void scale(Array<double>& aScaleFactors, bool aScaleMass = false) = 0;
-	virtual void scaleInertialProperties(Array<double>& aScaleFactors) = 0;
+	virtual void scale(const Array<double>& aScaleFactors, bool aScaleMass = false) = 0;
+	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true) = 0;
+	virtual void scaleMass(double aScaleFactor) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
 	AbstractWrapObject* getWrapObject(const std::string& aName) const;
 	WrapObjectSet* getWrapObjectSet() { return &_wrapObjectSet; }
@@ -101,6 +102,9 @@ public:
 private:
 	void setNull();
 	void setupProperties();
+
+protected:
+	static void scaleInertiaTensor(double aMass, const Array<double> &aScaleFactors, double rInertia[3][3]);
 //=============================================================================
 };	// END of class AbstractBody
 //=============================================================================

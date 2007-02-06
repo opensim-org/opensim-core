@@ -331,7 +331,7 @@ void SimmBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SimmBody::scale(Array<double>& aScaleFactors, bool aScaleMass)
+void SimmBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
@@ -346,8 +346,7 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aScaleMass)
 	// Update scale factors for displayer
 	getDisplayer()->setScaleFactors(aScaleFactors.get());
 
-	if (aScaleMass)
-		scaleInertialProperties(aScaleFactors);
+	scaleInertialProperties(aScaleFactors, aScaleMass);
 
 	//for (i = 0; i < _boneSet.getSize(); i++)
 		//_boneSet.get(i)->scale(aScaleFactors);
@@ -355,120 +354,41 @@ void SimmBody::scale(Array<double>& aScaleFactors, bool aScaleMass)
 
 //_____________________________________________________________________________
 /**
- * Scale the body's mass and inertia.
+ * Scale the body's inertia tensor and optionally the mass (represents a scaling
+ * of the body's geometry).
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SimmBody::scaleInertialProperties(Array<double>& aScaleFactors)
+void SimmBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
 {
-	int i;
+	double inertia[3][3];
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			inertia[i][j] = _inertia[3*i+j];
 
-	/* If the mass is zero, then make the inertia tensor zero as well.
-	 * If the X, Y, Z scale factors are equal, then you can scale the
-	 * inertia tensor exactly by the square of the scale factor, since
-	 * each element in the tensor is proportional to the square of one
-	 * or more dimensional measurements. For determining if the scale
-	 * factors are equal, ignore reflections-- look only at the
-	 * absolute value of the factors.
-	 */
-	if (_mass <= ROUNDOFF_ERROR)
-	{
-		for (i = 0; i < 9; i++)
-			_inertia[i] = 0.0;
-	}
-	else if (EQUAL_WITHIN_ERROR(DABS(aScaleFactors[0]), DABS(aScaleFactors[1])) &&
-		      EQUAL_WITHIN_ERROR(DABS(aScaleFactors[1]), DABS(aScaleFactors[2])))
-	{
-		_mass *= DABS((aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]));
+	// Scales assuming mass stays the same
+	scaleInertiaTensor(_mass, aScaleFactors, inertia);
 
-		for (i = 0; i < 9; i++)
-			_inertia[i] *= (aScaleFactors[0] * aScaleFactors[0]);
-	}
-	else
-	{
-		/* If the scale factors are not equal, then assume that the segment
-		 * is a cylinder and the inertia is calculated about one end of it.
-		 */
-		int axis;
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			_inertia[3*i+j] = inertia[i][j];
 
-		/* 1. Find the smallest diagonal component. This dimension is the axis
-		 *    of the cylinder.
-		 */
-		if (_inertia[0] <= _inertia[4])
-		{
-			if (_inertia[0] <= _inertia[8])
-				axis = 0;
-			else
-				axis = 2;
-		}
-		else if (_inertia[4] <= _inertia[8])
-		{
-			axis = 1;
-		}
-		else
-		{
-			axis = 2;
-		}
+	// Scales mass
+	if(aScaleMass)
+		scaleMass(DABS(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]));
+}
 
-		/* 2. The smallest inertial component is equal to 0.5 * mass * radius * radius,
-		 *    so you can rearrange and solve for the radius.
-		 */
-		int oa;
-		double radius, rad_sqr, length;
-		double term = 2.0 * _inertia[axis * 3 + axis] / _mass;
-		if (term < 0.0)
-			radius = 0.0;
-		else
-			radius = sqrt(term);
-
-		/* 3. Choose either of the other diagonal components and use it to solve for the
-		*    length of the cylinder. This component is equal to:
-		*    0.333 * mass * length * length  +  0.25 * mass * radius * radius
-		*/
-		if (axis == 0)
-			oa = 1;
-		else
-			oa = 0;
-		term = 3.0 * (_inertia[oa * 3 + oa] - 0.25 * _mass * radius * radius) / _mass;
-		if (term < 0.0)
-			length = 0.0;
-		else
-			length = sqrt(term);
-
-		/* 4. Scale the mass, radius, and length, and recalculate the diagonal inertial terms. */
-		_mass *= DABS((aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]));
-		length *= DABS(aScaleFactors[axis]);
-
-		if (axis == 0)
-		{
-			rad_sqr = radius * DABS(aScaleFactors[1]) * radius * DABS(aScaleFactors[2]);
-			_inertia[0] = 0.5 * _mass * rad_sqr;
-			_inertia[4] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-			_inertia[8] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-		}
-		else if (axis == 1)
-		{
-			rad_sqr = radius * DABS(aScaleFactors[0]) * radius * DABS(aScaleFactors[2]);
-			_inertia[0] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-			_inertia[4] = 0.5 * _mass * rad_sqr;
-			_inertia[8] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-		}
-		else
-		{
-			rad_sqr = radius * DABS(aScaleFactors[0]) * radius * DABS(aScaleFactors[1]);
-			_inertia[0] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-			_inertia[4] = _mass * ((length * length / 3.0) + 0.25 * rad_sqr);
-			_inertia[8] = 0.5 * _mass * rad_sqr;
-		}
-
-		/* 5. Scale the cross terms, in case some are non-zero. */
-		_inertia[1] *= DABS((aScaleFactors[0] * aScaleFactors[1]));
-		_inertia[2] *= DABS((aScaleFactors[0] * aScaleFactors[2]));
-		_inertia[3] *= DABS((aScaleFactors[1] * aScaleFactors[0]));
-		_inertia[5] *= DABS((aScaleFactors[1] * aScaleFactors[2]));
-		_inertia[6] *= DABS((aScaleFactors[2] * aScaleFactors[0]));
-		_inertia[7] *= DABS((aScaleFactors[2] * aScaleFactors[1]));
-	}
+//_____________________________________________________________________________
+/**
+ * Scale the body's mass and inertia tensor (represents a scaling of the
+ * body's density).
+ *
+ * @param aScaleFactors XYZ scale factors.
+ */
+void SimmBody::scaleMass(double aScaleFactor)
+{
+	_mass *= aScaleFactor;
+	for (int i=0;i<9;i++) _inertia[i] *= aScaleFactor;
 }
 
 //=============================================================================
