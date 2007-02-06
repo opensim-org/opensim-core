@@ -504,34 +504,37 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
  */
 bool SimmCoordinate::setValue(double aValue)
 {
-	if (_locked)
+	// Check if value in range
+	if (aValue >= _range[0] && aValue <= _range[1])
 	{
-		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
-		return false;
-	}
+		// Check if the value is sufficiently different
+		if (DABS(aValue - _value) > _tolerance)
+		{
+			if (_locked) {
+				cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+				return false;
+			}
 
-	if (DABS(aValue - _value) > _tolerance &&
-		 aValue >= _range[0] && aValue <= _range[1])
-	{
-		_value = aValue;
+			_value = aValue;
 
-		int i;
-		for (i = 0; i < _jointList.getSize(); i++)
-			_jointList[i]->invalidate();
+			int i;
+			for (i = 0; i < _jointList.getSize(); i++)
+				_jointList[i]->invalidate();
 
-		int pListSize = _pathList.getSize();
-		for (i = 0; i < pListSize; i++)
-			_pathList[i]->invalidate();
+			int pListSize = _pathList.getSize();
+			for (i = 0; i < pListSize; i++)
+				_pathList[i]->invalidate();
 
-		// TODO: use Observer mechanism for _jointList, _pathList, and muscles
-		ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
-		for (i = 0; i < act->getSize(); i++) {
-			AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
-			if (sm)
-				sm->invalidatePath();
+			// TODO: use Observer mechanism for _jointList, _pathList, and muscles
+			ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
+			for (i = 0; i < act->getSize(); i++) {
+				AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+				if (sm)
+					sm->invalidatePath();
+			}
 		}
 	}
-	else if (aValue < _range[0] || aValue > _range[1])
+	else
 	{
 		cout << "___WARNING___: Attempting to set coordinate " << getName() << " to a value (" <<
 			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
