@@ -210,7 +210,10 @@ void AbstractSimmMuscle::setup(AbstractModel* aModel)
 	for (i = 0; i < _attachmentSet.getSize(); i++){
 		_attachmentSet.get(i)->setup(aModel, this);
 		// Muscle points depend on the muscle itself
-		getDisplayer()->addDependent(_attachmentSet.get(i)->getDisplayer());
+		// Removing the dependency since muscle points now display as part of the
+		// muscle itself, extracted directly from the set of line segments
+		// representing the muscle path. -Ayman 02/07
+		//getDisplayer()->addDependent(_attachmentSet.get(i)->getDisplayer());
 	}
 
 	_displayer.setOwner(this);

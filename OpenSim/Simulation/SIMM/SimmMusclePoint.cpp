@@ -199,16 +199,22 @@ void SimmMusclePoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
 		throw Exception(errorMessage);
 	}
 
-	_displayer.setOwner(this);
+	// _displayer.setOwner(this);
 	// Muscle points depend on body
-	_body->getDisplayer()->addDependent(&_displayer);
-	_displayer.addGeometry(_defaultGeometry);
-
-	Transform position;
-	position.translate(_attachment.get());
-	getDisplayer()->setTransform(position);
-	double defaultColor[3] = { 1.0, 0.0, 0.0 };
-	_displayer.getVisibleProperties().setColor(defaultColor);
+	// A displayer may not be needed altogether.
+	// - Removing the dependency since muscle points now display as part of the
+	// - muscle itself, extracted directly from the set of line segments
+	// - representing the muscle path. -Ayman 02/07
+	//
+	//
+	//_body->getDisplayer()->addDependent(&_displayer);
+	//_displayer.addGeometry(_defaultGeometry);
+	// 
+	// Transform position;
+	// position.translate(_attachment.get());
+	// getDisplayer()->setTransform(position);
+	// double defaultColor[3] = { 1.0, 0.0, 0.0 };
+	// _displayer.getVisibleProperties().setColor(defaultColor);
 }
 //_____________________________________________________________________________
 /**
