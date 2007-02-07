@@ -4,7 +4,7 @@
 
    Created by NMBLTS (from model Dynamic Mocap Model)
 
-   Time of creation: 12/07/2006 04:10:27 PM
+   Time of creation: 02/07/2007 05:08:19 PM
 
    Description: This file contains the routines needed to perform a forward
       dynamics simulation of an SD/FAST model. The specific routines that it
@@ -23,120 +23,6 @@
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-
-/* The following spline-function data points are copied directly from the
- * SIMM joints file.
- */
-
-static double knee_flexion_r_tx_data[][2] =
-{
-{0.0000000000, -0.0052500000},
-{0.1745329252, -0.0031000000},
-{0.3490658504, -0.0010000000},
-{0.6981317008, 0.0021200000},
-{1.0471975512, 0.0041000000},
-{1.3962634016, 0.0041100000},
-{1.7453292520, 0.0017900000},
-{2.0943951024, -0.0032000000}
-};
-
-static double knee_flexion_r_ty_data[][2] =
-{
-{0.0000000000, -0.3960000000},
-{0.1745329252, -0.3966000000},
-{0.3490658504, -0.3976000000},
-{0.5235987756, -0.3990000000},
-{1.2217304764, -0.4082000000},
-{2.0943951024, -0.4226000000}
-};
-
-static double tib_pat_r_tx_data[][2] =
-{
-{0.0000000000, 0.0496000000},
-{0.1745329252, 0.0484000000},
-{0.3490658504, 0.0469000000},
-{0.6981317008, 0.0430000000},
-{1.0471975512, 0.0381000000},
-{1.3962634016, 0.0324000000},
-{2.0943951024, 0.0173000000}
-};
-
-static double tib_pat_r_ty_data[][2] =
-{
-{0.0049916417, -0.0227000000},
-{0.1745329252, -0.0223000000},
-{0.3490658504, -0.0219000000},
-{0.6981317008, -0.0211000000},
-{1.0471975512, -0.0204000000},
-{1.3962634016, -0.0200000000},
-{1.5707963268, -0.0202000000},
-{2.0943951024, -0.0219000000}
-};
-
-static double tib_pat_r_r1_data[][2] =
-{
-{-0.1745329252, -0.1612684229},
-{-0.0026179939, -0.0425860337},
-{0.3549999699, 0.1062905514},
-{0.9848892969, 0.2419026343},
-{1.9999727899, 0.3080506130},
-{2.0943951024, 0.3080506130}
-};
-
-static double knee_flexion_l_tx_data[][2] =
-{
-{0.0000000000, -0.0052500000},
-{0.1745329252, -0.0031000000},
-{0.3490658504, -0.0010000000},
-{0.6981317008, 0.0021200000},
-{1.0471975512, 0.0041000000},
-{1.3962634016, 0.0041100000},
-{1.7453292520, 0.0017900000},
-{2.0943951024, -0.0032000000}
-};
-
-static double knee_flexion_l_ty_data[][2] =
-{
-{0.0000000000, -0.3960000000},
-{0.1745329252, -0.3966000000},
-{0.3490658504, -0.3976000000},
-{0.5235987756, -0.3990000000},
-{1.2217304764, -0.4082000000},
-{2.0943951024, -0.4226000000}
-};
-
-static double tib_pat_l_tx_data[][2] =
-{
-{0.0000000000, 0.0496000000},
-{0.1745329252, 0.0484000000},
-{0.3490658504, 0.0469000000},
-{0.6981317008, 0.0430000000},
-{1.0471975512, 0.0381000000},
-{1.3962634016, 0.0324000000},
-{2.0943951024, 0.0173000000}
-};
-
-static double tib_pat_l_ty_data[][2] =
-{
-{0.0049916417, -0.0227000000},
-{0.1745329252, -0.0223000000},
-{0.3490658504, -0.0219000000},
-{0.6981317008, -0.0211000000},
-{1.0471975512, -0.0204000000},
-{1.3962634016, -0.0200000000},
-{1.5707963268, -0.0202000000},
-{2.0943951024, -0.0219000000}
-};
-
-static double tib_pat_l_r1_data[][2] =
-{
-{-0.1745329252, -0.1612684229},
-{-0.0026179939, -0.0425860337},
-{0.3549999699, 0.1062905514},
-{0.9848892969, 0.2419026343},
-{1.9999727899, 0.3080506130},
-{2.0943951024, 0.3080506130}
-};
 
 static dpSplineFunction knee_flexion_r_tx_func;
 static dpSplineFunction knee_flexion_r_ty_func;
@@ -654,7 +540,8 @@ void init_qs(void)
    sdm.q[lower_torso_TX].type = dpUnconstrainedQ;
    sdm.q[lower_torso_TX].joint = gnd_pelvis;
    sdm.q[lower_torso_TX].axis = 0;
-   sdm.q[lower_torso_TX].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_TX].initial_value = 0.0000000000;
    sdm.q[lower_torso_TX].initial_velocity = 0.0;
    sdm.q[lower_torso_TX].range_start = -10.0000000000;
    sdm.q[lower_torso_TX].range_end = 10.0000000000;
@@ -673,7 +560,8 @@ void init_qs(void)
    sdm.q[lower_torso_TY].type = dpUnconstrainedQ;
    sdm.q[lower_torso_TY].joint = gnd_pelvis;
    sdm.q[lower_torso_TY].axis = 1;
-   sdm.q[lower_torso_TY].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_TY].initial_value = 0.0000000000;
    sdm.q[lower_torso_TY].initial_velocity = 0.0;
    sdm.q[lower_torso_TY].range_start = -10.0000000000;
    sdm.q[lower_torso_TY].range_end = 10.0000000000;
@@ -692,7 +580,8 @@ void init_qs(void)
    sdm.q[lower_torso_TZ].type = dpUnconstrainedQ;
    sdm.q[lower_torso_TZ].joint = gnd_pelvis;
    sdm.q[lower_torso_TZ].axis = 2;
-   sdm.q[lower_torso_TZ].initial_value = 0.9690000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_TZ].initial_value = 0.9690000000;
    sdm.q[lower_torso_TZ].initial_velocity = 0.0;
    sdm.q[lower_torso_TZ].range_start = -10.0000000000;
    sdm.q[lower_torso_TZ].range_end = 10.0000000000;
@@ -711,7 +600,8 @@ void init_qs(void)
    sdm.q[lower_torso_RX].type = dpUnconstrainedQ;
    sdm.q[lower_torso_RX].joint = gnd_pelvis;
    sdm.q[lower_torso_RX].axis = 3;
-   sdm.q[lower_torso_RX].initial_value = 1.5707963268;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_RX].initial_value = 1.5707963268;
    sdm.q[lower_torso_RX].initial_velocity = 0.0;
    sdm.q[lower_torso_RX].range_start = -4.7123889804;
    sdm.q[lower_torso_RX].range_end = 4.7123889804;
@@ -730,7 +620,8 @@ void init_qs(void)
    sdm.q[lower_torso_RY].type = dpUnconstrainedQ;
    sdm.q[lower_torso_RY].joint = gnd_pelvis;
    sdm.q[lower_torso_RY].axis = 4;
-   sdm.q[lower_torso_RY].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_RY].initial_value = 0.0000000000;
    sdm.q[lower_torso_RY].initial_velocity = 0.0;
    sdm.q[lower_torso_RY].range_start = -4.7123889804;
    sdm.q[lower_torso_RY].range_end = 4.7123889804;
@@ -749,7 +640,8 @@ void init_qs(void)
    sdm.q[lower_torso_RZ].type = dpUnconstrainedQ;
    sdm.q[lower_torso_RZ].joint = gnd_pelvis;
    sdm.q[lower_torso_RZ].axis = 5;
-   sdm.q[lower_torso_RZ].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lower_torso_RZ].initial_value = 0.0000000000;
    sdm.q[lower_torso_RZ].initial_velocity = 0.0;
    sdm.q[lower_torso_RZ].range_start = -4.7123889804;
    sdm.q[lower_torso_RZ].range_end = 4.7123889804;
@@ -768,7 +660,8 @@ void init_qs(void)
    sdm.q[lumbar_pitch].type = dpUnconstrainedQ;
    sdm.q[lumbar_pitch].joint = pelvis_torso;
    sdm.q[lumbar_pitch].axis = 0;
-   sdm.q[lumbar_pitch].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lumbar_pitch].initial_value = 0.0000000000;
    sdm.q[lumbar_pitch].initial_velocity = 0.0;
    sdm.q[lumbar_pitch].range_start = -0.7853981634;
    sdm.q[lumbar_pitch].range_end = 0.7853981634;
@@ -787,7 +680,8 @@ void init_qs(void)
    sdm.q[lumbar_roll].type = dpUnconstrainedQ;
    sdm.q[lumbar_roll].joint = pelvis_torso;
    sdm.q[lumbar_roll].axis = 1;
-   sdm.q[lumbar_roll].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lumbar_roll].initial_value = 0.0000000000;
    sdm.q[lumbar_roll].initial_velocity = 0.0;
    sdm.q[lumbar_roll].range_start = -0.7853981634;
    sdm.q[lumbar_roll].range_end = 0.7853981634;
@@ -806,7 +700,8 @@ void init_qs(void)
    sdm.q[lumbar_yaw].type = dpUnconstrainedQ;
    sdm.q[lumbar_yaw].joint = pelvis_torso;
    sdm.q[lumbar_yaw].axis = 2;
-   sdm.q[lumbar_yaw].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[lumbar_yaw].initial_value = 0.0000000000;
    sdm.q[lumbar_yaw].initial_velocity = 0.0;
    sdm.q[lumbar_yaw].range_start = -1.0471975512;
    sdm.q[lumbar_yaw].range_end = 1.0471975512;
@@ -825,7 +720,8 @@ void init_qs(void)
    sdm.q[neck_pitch].type = dpUnconstrainedQ;
    sdm.q[neck_pitch].joint = torso_neckhead;
    sdm.q[neck_pitch].axis = 0;
-   sdm.q[neck_pitch].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[neck_pitch].initial_value = 0.0000000000;
    sdm.q[neck_pitch].initial_velocity = 0.0;
    sdm.q[neck_pitch].range_start = -0.8726646260;
    sdm.q[neck_pitch].range_end = 1.2566370614;
@@ -844,7 +740,8 @@ void init_qs(void)
    sdm.q[neck_roll].type = dpUnconstrainedQ;
    sdm.q[neck_roll].joint = torso_neckhead;
    sdm.q[neck_roll].axis = 1;
-   sdm.q[neck_roll].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[neck_roll].initial_value = 0.0000000000;
    sdm.q[neck_roll].initial_velocity = 0.0;
    sdm.q[neck_roll].range_start = -0.6981317008;
    sdm.q[neck_roll].range_end = 0.6981317008;
@@ -863,7 +760,8 @@ void init_qs(void)
    sdm.q[neck_yaw].type = dpUnconstrainedQ;
    sdm.q[neck_yaw].joint = torso_neckhead;
    sdm.q[neck_yaw].axis = 2;
-   sdm.q[neck_yaw].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[neck_yaw].initial_value = 0.0000000000;
    sdm.q[neck_yaw].initial_velocity = 0.0;
    sdm.q[neck_yaw].range_start = -1.1519173063;
    sdm.q[neck_yaw].range_end = 1.1519173063;
@@ -882,7 +780,8 @@ void init_qs(void)
    sdm.q[arm_add_r].type = dpUnconstrainedQ;
    sdm.q[arm_add_r].joint = acromial_r;
    sdm.q[arm_add_r].axis = 0;
-   sdm.q[arm_add_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_add_r].initial_value = 0.0000000000;
    sdm.q[arm_add_r].initial_velocity = 0.0;
    sdm.q[arm_add_r].range_start = -2.0943951024;
    sdm.q[arm_add_r].range_end = 1.5707963268;
@@ -901,7 +800,8 @@ void init_qs(void)
    sdm.q[arm_flex_r].type = dpUnconstrainedQ;
    sdm.q[arm_flex_r].joint = acromial_r;
    sdm.q[arm_flex_r].axis = 1;
-   sdm.q[arm_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_flex_r].initial_value = 0.0000000000;
    sdm.q[arm_flex_r].initial_velocity = 0.0;
    sdm.q[arm_flex_r].range_start = -0.7853981634;
    sdm.q[arm_flex_r].range_end = 1.5707963268;
@@ -920,7 +820,8 @@ void init_qs(void)
    sdm.q[arm_rot_r].type = dpUnconstrainedQ;
    sdm.q[arm_rot_r].joint = acromial_r;
    sdm.q[arm_rot_r].axis = 2;
-   sdm.q[arm_rot_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_rot_r].initial_value = 0.0000000000;
    sdm.q[arm_rot_r].initial_velocity = 0.0;
    sdm.q[arm_rot_r].range_start = -0.1745329252;
    sdm.q[arm_rot_r].range_end = 0.1745329252;
@@ -939,7 +840,8 @@ void init_qs(void)
    sdm.q[elbow_flex_r].type = dpUnconstrainedQ;
    sdm.q[elbow_flex_r].joint = elbow_r;
    sdm.q[elbow_flex_r].axis = 0;
-   sdm.q[elbow_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[elbow_flex_r].initial_value = 0.0000000000;
    sdm.q[elbow_flex_r].initial_velocity = 0.0;
    sdm.q[elbow_flex_r].range_start = 0.0000000000;
    sdm.q[elbow_flex_r].range_end = 2.2689280276;
@@ -958,7 +860,8 @@ void init_qs(void)
    sdm.q[pro_sup_r].type = dpUnconstrainedQ;
    sdm.q[pro_sup_r].joint = radioulnar_r;
    sdm.q[pro_sup_r].axis = 0;
-   sdm.q[pro_sup_r].initial_value = 1.0471975512;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[pro_sup_r].initial_value = 1.0471975512;
    sdm.q[pro_sup_r].initial_velocity = 0.0;
    sdm.q[pro_sup_r].range_start = 0.8726646260;
    sdm.q[pro_sup_r].range_end = 1.2217304764;
@@ -977,7 +880,8 @@ void init_qs(void)
    sdm.q[wrist_flex_r].type = dpUnconstrainedQ;
    sdm.q[wrist_flex_r].joint = radius_hand_r;
    sdm.q[wrist_flex_r].axis = 0;
-   sdm.q[wrist_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[wrist_flex_r].initial_value = 0.0000000000;
    sdm.q[wrist_flex_r].initial_velocity = 0.0;
    sdm.q[wrist_flex_r].range_start = -1.2217304764;
    sdm.q[wrist_flex_r].range_end = 1.2217304764;
@@ -996,7 +900,8 @@ void init_qs(void)
    sdm.q[wrist_dev_r].type = dpUnconstrainedQ;
    sdm.q[wrist_dev_r].joint = radius_hand_r;
    sdm.q[wrist_dev_r].axis = 1;
-   sdm.q[wrist_dev_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[wrist_dev_r].initial_value = 0.0000000000;
    sdm.q[wrist_dev_r].initial_velocity = 0.0;
    sdm.q[wrist_dev_r].range_start = -0.4363323130;
    sdm.q[wrist_dev_r].range_end = 0.6108652382;
@@ -1015,7 +920,8 @@ void init_qs(void)
    sdm.q[arm_add_l].type = dpUnconstrainedQ;
    sdm.q[arm_add_l].joint = acromial_l;
    sdm.q[arm_add_l].axis = 0;
-   sdm.q[arm_add_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_add_l].initial_value = 0.0000000000;
    sdm.q[arm_add_l].initial_velocity = 0.0;
    sdm.q[arm_add_l].range_start = -2.0943951024;
    sdm.q[arm_add_l].range_end = 1.5707963268;
@@ -1034,7 +940,8 @@ void init_qs(void)
    sdm.q[arm_flex_l].type = dpUnconstrainedQ;
    sdm.q[arm_flex_l].joint = acromial_l;
    sdm.q[arm_flex_l].axis = 1;
-   sdm.q[arm_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_flex_l].initial_value = 0.0000000000;
    sdm.q[arm_flex_l].initial_velocity = 0.0;
    sdm.q[arm_flex_l].range_start = -0.7853981634;
    sdm.q[arm_flex_l].range_end = 1.5707963268;
@@ -1053,7 +960,8 @@ void init_qs(void)
    sdm.q[arm_rot_l].type = dpUnconstrainedQ;
    sdm.q[arm_rot_l].joint = acromial_l;
    sdm.q[arm_rot_l].axis = 2;
-   sdm.q[arm_rot_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[arm_rot_l].initial_value = 0.0000000000;
    sdm.q[arm_rot_l].initial_velocity = 0.0;
    sdm.q[arm_rot_l].range_start = -0.1745329252;
    sdm.q[arm_rot_l].range_end = 0.1745329252;
@@ -1072,7 +980,8 @@ void init_qs(void)
    sdm.q[elbow_flex_l].type = dpUnconstrainedQ;
    sdm.q[elbow_flex_l].joint = elbow_l;
    sdm.q[elbow_flex_l].axis = 0;
-   sdm.q[elbow_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[elbow_flex_l].initial_value = 0.0000000000;
    sdm.q[elbow_flex_l].initial_velocity = 0.0;
    sdm.q[elbow_flex_l].range_start = 0.0000000000;
    sdm.q[elbow_flex_l].range_end = 2.2689280276;
@@ -1091,7 +1000,8 @@ void init_qs(void)
    sdm.q[pro_sup_l].type = dpUnconstrainedQ;
    sdm.q[pro_sup_l].joint = radioulnar_l;
    sdm.q[pro_sup_l].axis = 0;
-   sdm.q[pro_sup_l].initial_value = 1.0471975512;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[pro_sup_l].initial_value = 1.0471975512;
    sdm.q[pro_sup_l].initial_velocity = 0.0;
    sdm.q[pro_sup_l].range_start = 0.8726646260;
    sdm.q[pro_sup_l].range_end = 1.2217304764;
@@ -1110,7 +1020,8 @@ void init_qs(void)
    sdm.q[wrist_flex_l].type = dpUnconstrainedQ;
    sdm.q[wrist_flex_l].joint = radius_hand_l;
    sdm.q[wrist_flex_l].axis = 0;
-   sdm.q[wrist_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[wrist_flex_l].initial_value = 0.0000000000;
    sdm.q[wrist_flex_l].initial_velocity = 0.0;
    sdm.q[wrist_flex_l].range_start = -1.2217304764;
    sdm.q[wrist_flex_l].range_end = 1.2217304764;
@@ -1129,7 +1040,8 @@ void init_qs(void)
    sdm.q[wrist_dev_l].type = dpUnconstrainedQ;
    sdm.q[wrist_dev_l].joint = radius_hand_l;
    sdm.q[wrist_dev_l].axis = 1;
-   sdm.q[wrist_dev_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[wrist_dev_l].initial_value = 0.0000000000;
    sdm.q[wrist_dev_l].initial_velocity = 0.0;
    sdm.q[wrist_dev_l].range_start = -0.4363323130;
    sdm.q[wrist_dev_l].range_end = 0.6108652382;
@@ -1148,7 +1060,8 @@ void init_qs(void)
    sdm.q[hip_flex_r].type = dpUnconstrainedQ;
    sdm.q[hip_flex_r].joint = hip_r;
    sdm.q[hip_flex_r].axis = 0;
-   sdm.q[hip_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_flex_r].initial_value = 0.0000000000;
    sdm.q[hip_flex_r].initial_velocity = 0.0;
    sdm.q[hip_flex_r].range_start = -0.1919862177;
    sdm.q[hip_flex_r].range_end = 1.6580627894;
@@ -1167,7 +1080,8 @@ void init_qs(void)
    sdm.q[hip_add_r].type = dpUnconstrainedQ;
    sdm.q[hip_add_r].joint = hip_r;
    sdm.q[hip_add_r].axis = 1;
-   sdm.q[hip_add_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_add_r].initial_value = 0.0000000000;
    sdm.q[hip_add_r].initial_velocity = 0.0;
    sdm.q[hip_add_r].range_start = -0.8726646260;
    sdm.q[hip_add_r].range_end = 0.3490658504;
@@ -1186,7 +1100,8 @@ void init_qs(void)
    sdm.q[hip_rot_r].type = dpUnconstrainedQ;
    sdm.q[hip_rot_r].joint = hip_r;
    sdm.q[hip_rot_r].axis = 2;
-   sdm.q[hip_rot_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_rot_r].initial_value = 0.0000000000;
    sdm.q[hip_rot_r].initial_velocity = 0.0;
    sdm.q[hip_rot_r].range_start = -0.6981317008;
    sdm.q[hip_rot_r].range_end = 0.6981317008;
@@ -1205,7 +1120,8 @@ void init_qs(void)
    sdm.q[knee_flexion_r_tx].type = dpConstrainedQ;
    sdm.q[knee_flexion_r_tx].joint = knee_flexion_r;
    sdm.q[knee_flexion_r_tx].axis = 0;
-   sdm.q[knee_flexion_r_tx].initial_value = -0.0052500000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flexion_r_tx].initial_value = -0.0052500000;
    sdm.q[knee_flexion_r_tx].initial_velocity = 0.0;
    sdm.q[knee_flexion_r_tx].range_start = -99999.9;
    sdm.q[knee_flexion_r_tx].range_end = 99999.9;
@@ -1224,7 +1140,8 @@ void init_qs(void)
    sdm.q[knee_flexion_r_ty].type = dpConstrainedQ;
    sdm.q[knee_flexion_r_ty].joint = knee_flexion_r;
    sdm.q[knee_flexion_r_ty].axis = 1;
-   sdm.q[knee_flexion_r_ty].initial_value = -0.3960000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flexion_r_ty].initial_value = -0.3960000000;
    sdm.q[knee_flexion_r_ty].initial_velocity = 0.0;
    sdm.q[knee_flexion_r_ty].range_start = -99999.9;
    sdm.q[knee_flexion_r_ty].range_end = 99999.9;
@@ -1243,10 +1160,11 @@ void init_qs(void)
    sdm.q[knee_flex_r].type = dpUnconstrainedQ;
    sdm.q[knee_flex_r].joint = knee_flexion_r;
    sdm.q[knee_flex_r].axis = 2;
-   sdm.q[knee_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flex_r].initial_value = 0.0000000000;
    sdm.q[knee_flex_r].initial_velocity = 0.0;
    sdm.q[knee_flex_r].range_start = -0.1745329252;
-   sdm.q[knee_flex_r].range_end = 2.0943951024;
+   sdm.q[knee_flex_r].range_end = 2.1118483949;
    sdm.q[knee_flex_r].restraint_func = NULL;
    sdm.q[knee_flex_r].min_restraint_func = &q_restraint_func[46];
    sdm.q[knee_flex_r].max_restraint_func = &q_restraint_func[47];
@@ -1262,7 +1180,8 @@ void init_qs(void)
    sdm.q[tib_pat_r_tx].type = dpConstrainedQ;
    sdm.q[tib_pat_r_tx].joint = tib_pat_r;
    sdm.q[tib_pat_r_tx].axis = 0;
-   sdm.q[tib_pat_r_tx].initial_value = 0.0496000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_r_tx].initial_value = 0.0496000000;
    sdm.q[tib_pat_r_tx].initial_velocity = 0.0;
    sdm.q[tib_pat_r_tx].range_start = -99999.9;
    sdm.q[tib_pat_r_tx].range_end = 99999.9;
@@ -1281,7 +1200,8 @@ void init_qs(void)
    sdm.q[tib_pat_r_ty].type = dpConstrainedQ;
    sdm.q[tib_pat_r_ty].joint = tib_pat_r;
    sdm.q[tib_pat_r_ty].axis = 1;
-   sdm.q[tib_pat_r_ty].initial_value = -0.0227120772;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_r_ty].initial_value = -0.0227120772;
    sdm.q[tib_pat_r_ty].initial_velocity = 0.0;
    sdm.q[tib_pat_r_ty].range_start = -99999.9;
    sdm.q[tib_pat_r_ty].range_end = 99999.9;
@@ -1300,7 +1220,8 @@ void init_qs(void)
    sdm.q[tib_pat_r_r1].type = dpConstrainedQ;
    sdm.q[tib_pat_r_r1].joint = tib_pat_r;
    sdm.q[tib_pat_r_r1].axis = 2;
-   sdm.q[tib_pat_r_r1].initial_value = -0.0410736345;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_r_r1].initial_value = -0.0410736345;
    sdm.q[tib_pat_r_r1].initial_velocity = 0.0;
    sdm.q[tib_pat_r_r1].range_start = -99999.9;
    sdm.q[tib_pat_r_r1].range_end = 99999.9;
@@ -1319,7 +1240,8 @@ void init_qs(void)
    sdm.q[ankle_flex_r].type = dpUnconstrainedQ;
    sdm.q[ankle_flex_r].joint = ankle_r;
    sdm.q[ankle_flex_r].axis = 0;
-   sdm.q[ankle_flex_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[ankle_flex_r].initial_value = 0.0000000000;
    sdm.q[ankle_flex_r].initial_velocity = 0.0;
    sdm.q[ankle_flex_r].range_start = -0.5235987756;
    sdm.q[ankle_flex_r].range_end = 0.5235987756;
@@ -1338,7 +1260,8 @@ void init_qs(void)
    sdm.q[subt_angle_r].type = dpUnconstrainedQ;
    sdm.q[subt_angle_r].joint = subtalar_r;
    sdm.q[subt_angle_r].axis = 0;
-   sdm.q[subt_angle_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[subt_angle_r].initial_value = 0.0000000000;
    sdm.q[subt_angle_r].initial_velocity = 0.0;
    sdm.q[subt_angle_r].range_start = -0.3490658504;
    sdm.q[subt_angle_r].range_end = 0.3490658504;
@@ -1357,7 +1280,8 @@ void init_qs(void)
    sdm.q[toe_angle_r].type = dpUnconstrainedQ;
    sdm.q[toe_angle_r].joint = toes_r;
    sdm.q[toe_angle_r].axis = 0;
-   sdm.q[toe_angle_r].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[toe_angle_r].initial_value = 0.0000000000;
    sdm.q[toe_angle_r].initial_velocity = 0.0;
    sdm.q[toe_angle_r].range_start = -0.5235987756;
    sdm.q[toe_angle_r].range_end = 0.5235987756;
@@ -1376,7 +1300,8 @@ void init_qs(void)
    sdm.q[hip_flex_l].type = dpUnconstrainedQ;
    sdm.q[hip_flex_l].joint = hip_l;
    sdm.q[hip_flex_l].axis = 0;
-   sdm.q[hip_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_flex_l].initial_value = 0.0000000000;
    sdm.q[hip_flex_l].initial_velocity = 0.0;
    sdm.q[hip_flex_l].range_start = -0.1919862177;
    sdm.q[hip_flex_l].range_end = 1.6580627894;
@@ -1395,7 +1320,8 @@ void init_qs(void)
    sdm.q[hip_add_l].type = dpUnconstrainedQ;
    sdm.q[hip_add_l].joint = hip_l;
    sdm.q[hip_add_l].axis = 1;
-   sdm.q[hip_add_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_add_l].initial_value = 0.0000000000;
    sdm.q[hip_add_l].initial_velocity = 0.0;
    sdm.q[hip_add_l].range_start = -0.8726646260;
    sdm.q[hip_add_l].range_end = 0.3490658504;
@@ -1414,7 +1340,8 @@ void init_qs(void)
    sdm.q[hip_rot_l].type = dpUnconstrainedQ;
    sdm.q[hip_rot_l].joint = hip_l;
    sdm.q[hip_rot_l].axis = 2;
-   sdm.q[hip_rot_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[hip_rot_l].initial_value = 0.0000000000;
    sdm.q[hip_rot_l].initial_velocity = 0.0;
    sdm.q[hip_rot_l].range_start = -0.6981317008;
    sdm.q[hip_rot_l].range_end = 0.6981317008;
@@ -1433,7 +1360,8 @@ void init_qs(void)
    sdm.q[knee_flexion_l_tx].type = dpConstrainedQ;
    sdm.q[knee_flexion_l_tx].joint = knee_flexion_l;
    sdm.q[knee_flexion_l_tx].axis = 0;
-   sdm.q[knee_flexion_l_tx].initial_value = -0.0052500000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flexion_l_tx].initial_value = -0.0052500000;
    sdm.q[knee_flexion_l_tx].initial_velocity = 0.0;
    sdm.q[knee_flexion_l_tx].range_start = -99999.9;
    sdm.q[knee_flexion_l_tx].range_end = 99999.9;
@@ -1452,7 +1380,8 @@ void init_qs(void)
    sdm.q[knee_flexion_l_ty].type = dpConstrainedQ;
    sdm.q[knee_flexion_l_ty].joint = knee_flexion_l;
    sdm.q[knee_flexion_l_ty].axis = 1;
-   sdm.q[knee_flexion_l_ty].initial_value = -0.3960000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flexion_l_ty].initial_value = -0.3960000000;
    sdm.q[knee_flexion_l_ty].initial_velocity = 0.0;
    sdm.q[knee_flexion_l_ty].range_start = -99999.9;
    sdm.q[knee_flexion_l_ty].range_end = 99999.9;
@@ -1471,10 +1400,11 @@ void init_qs(void)
    sdm.q[knee_flex_l].type = dpUnconstrainedQ;
    sdm.q[knee_flex_l].joint = knee_flexion_l;
    sdm.q[knee_flex_l].axis = 2;
-   sdm.q[knee_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[knee_flex_l].initial_value = 0.0000000000;
    sdm.q[knee_flex_l].initial_velocity = 0.0;
    sdm.q[knee_flex_l].range_start = -0.1745329252;
-   sdm.q[knee_flex_l].range_end = 2.0943951024;
+   sdm.q[knee_flex_l].range_end = 2.1118483949;
    sdm.q[knee_flex_l].restraint_func = NULL;
    sdm.q[knee_flex_l].min_restraint_func = &q_restraint_func[60];
    sdm.q[knee_flex_l].max_restraint_func = &q_restraint_func[61];
@@ -1490,7 +1420,8 @@ void init_qs(void)
    sdm.q[tib_pat_l_tx].type = dpConstrainedQ;
    sdm.q[tib_pat_l_tx].joint = tib_pat_l;
    sdm.q[tib_pat_l_tx].axis = 0;
-   sdm.q[tib_pat_l_tx].initial_value = 0.0496000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_l_tx].initial_value = 0.0496000000;
    sdm.q[tib_pat_l_tx].initial_velocity = 0.0;
    sdm.q[tib_pat_l_tx].range_start = -99999.9;
    sdm.q[tib_pat_l_tx].range_end = 99999.9;
@@ -1509,7 +1440,8 @@ void init_qs(void)
    sdm.q[tib_pat_l_ty].type = dpConstrainedQ;
    sdm.q[tib_pat_l_ty].joint = tib_pat_l;
    sdm.q[tib_pat_l_ty].axis = 1;
-   sdm.q[tib_pat_l_ty].initial_value = -0.0227120772;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_l_ty].initial_value = -0.0227120772;
    sdm.q[tib_pat_l_ty].initial_velocity = 0.0;
    sdm.q[tib_pat_l_ty].range_start = -99999.9;
    sdm.q[tib_pat_l_ty].range_end = 99999.9;
@@ -1528,7 +1460,8 @@ void init_qs(void)
    sdm.q[tib_pat_l_r1].type = dpConstrainedQ;
    sdm.q[tib_pat_l_r1].joint = tib_pat_l;
    sdm.q[tib_pat_l_r1].axis = 2;
-   sdm.q[tib_pat_l_r1].initial_value = -0.0410736345;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[tib_pat_l_r1].initial_value = -0.0410736345;
    sdm.q[tib_pat_l_r1].initial_velocity = 0.0;
    sdm.q[tib_pat_l_r1].range_start = -99999.9;
    sdm.q[tib_pat_l_r1].range_end = 99999.9;
@@ -1547,7 +1480,8 @@ void init_qs(void)
    sdm.q[ankle_flex_l].type = dpUnconstrainedQ;
    sdm.q[ankle_flex_l].joint = ankle_l;
    sdm.q[ankle_flex_l].axis = 0;
-   sdm.q[ankle_flex_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[ankle_flex_l].initial_value = 0.0000000000;
    sdm.q[ankle_flex_l].initial_velocity = 0.0;
    sdm.q[ankle_flex_l].range_start = -0.5235987756;
    sdm.q[ankle_flex_l].range_end = 0.5235987756;
@@ -1566,7 +1500,8 @@ void init_qs(void)
    sdm.q[subt_angle_l].type = dpUnconstrainedQ;
    sdm.q[subt_angle_l].joint = subtalar_l;
    sdm.q[subt_angle_l].axis = 0;
-   sdm.q[subt_angle_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[subt_angle_l].initial_value = 0.0000000000;
    sdm.q[subt_angle_l].initial_velocity = 0.0;
    sdm.q[subt_angle_l].range_start = -0.3490658504;
    sdm.q[subt_angle_l].range_end = 0.3490658504;
@@ -1585,7 +1520,8 @@ void init_qs(void)
    sdm.q[toe_angle_l].type = dpUnconstrainedQ;
    sdm.q[toe_angle_l].joint = toes_l;
    sdm.q[toe_angle_l].axis = 0;
-   sdm.q[toe_angle_l].initial_value = 0.0000000000;
+   // initial_value will now be set using setCoordinateInitialValues
+   // sdm.q[toe_angle_l].initial_value = 0.0000000000;
    sdm.q[toe_angle_l].initial_velocity = 0.0;
    sdm.q[toe_angle_l].range_start = -0.5235987756;
    sdm.q[toe_angle_l].range_end = 0.5235987756;
@@ -1605,256 +1541,6 @@ void init_qs(void)
          sdm.num_gencoords++;
 
    check_for_sderror("INIT_QS");
-}
-
-
-/* INIT_SEGMENTS: this routine should be called before
- * read_muscles() because it does two things that need to
- * be done before you read in the muscles. First, it assigns
- * numbers to the body segments in your model. These body
- * numbers should match the numbers in the "_info" file
- * that SD/FAST makes. Thus when you read in the muscle
- * attachment points, the segment name listed for each point
- * is converted into an SD/FAST body segment number.
- * Second, this routine records the positions of the mass
- * centers of each body segment. These are the coordinates of
- * the mass centers with respect to the origins of the SIMM
- * bone file. When you read in a muscle attachment point, the
- * mass center coordinates are subtracted from it, so that the
- * muscle point is now w.r.t. the mass center of the body
- * segment, as SD/FAST expects.
- * Note that you cannot use the #defined segment numbers as indices
- * into the sdm.body_segment[] array because they start at -1.
- */
-
-void init_segments(void)
-{
-
-   int i, j;
-   sdm.body_segment = (dpBodyStruct*)simm_malloc(sdm.num_body_segments*sizeof(dpBodyStruct));
-
-   mstrcpy(&sdm.body_segment[ground+1].name,"ground");
-   sdm.body_segment[ground+1].output = dpNo;
-   sdm.body_segment[ground+1].mass = 0.0;
-   sdm.body_segment[ground+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[ground+1].mass_center[1] = 0.0000000000;
-   sdm.body_segment[ground+1].mass_center[2] = 0.0000000000;
-   for (i=0; i<3; i++)
-      for (j=0; j<3; j++)
-         sdm.body_segment[ground+1].inertia[i][j] = 0.0;
-   sdm.body_segment[ground+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[pelvis+1].name,"pelvis");
-   sdm.body_segment[pelvis+1].output = dpYes;
-   sdgetmass(pelvis, &(sdm.body_segment[pelvis+1].mass));
-   sdgetiner(pelvis, sdm.body_segment[pelvis+1].inertia);
-   sdm.body_segment[pelvis+1].mass_center[0] = -0.0893000000;
-   sdm.body_segment[pelvis+1].mass_center[1] = -0.0257960000;
-   sdm.body_segment[pelvis+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[pelvis+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[torso+1].name,"torso");
-   sdm.body_segment[torso+1].output = dpYes;
-   sdgetmass(torso, &(sdm.body_segment[torso+1].mass));
-   sdgetiner(torso, sdm.body_segment[torso+1].inertia);
-   sdm.body_segment[torso+1].mass_center[0] = 0.0145000000;
-   sdm.body_segment[torso+1].mass_center[1] = 0.2564380000;
-   sdm.body_segment[torso+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[torso+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[neckhead+1].name,"neckhead");
-   sdm.body_segment[neckhead+1].output = dpYes;
-   sdgetmass(neckhead, &(sdm.body_segment[neckhead+1].mass));
-   sdgetiner(neckhead, sdm.body_segment[neckhead+1].inertia);
-   sdm.body_segment[neckhead+1].mass_center[0] = 0.0288000000;
-   sdm.body_segment[neckhead+1].mass_center[1] = 0.1615010000;
-   sdm.body_segment[neckhead+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[neckhead+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[humerus_r+1].name,"humerus_r");
-   sdm.body_segment[humerus_r+1].output = dpYes;
-   sdgetmass(humerus_r, &(sdm.body_segment[humerus_r+1].mass));
-   sdgetiner(humerus_r, sdm.body_segment[humerus_r+1].inertia);
-   sdm.body_segment[humerus_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[humerus_r+1].mass_center[1] = -0.1645020000;
-   sdm.body_segment[humerus_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[humerus_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[ulna_r+1].name,"ulna_r");
-   sdm.body_segment[ulna_r+1].output = dpYes;
-   sdgetmass(ulna_r, &(sdm.body_segment[ulna_r+1].mass));
-   sdgetiner(ulna_r, sdm.body_segment[ulna_r+1].inertia);
-   sdm.body_segment[ulna_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[ulna_r+1].mass_center[1] = -0.1205250000;
-   sdm.body_segment[ulna_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[ulna_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[radius_r+1].name,"radius_r");
-   sdm.body_segment[radius_r+1].output = dpYes;
-   sdgetmass(radius_r, &(sdm.body_segment[radius_r+1].mass));
-   sdgetiner(radius_r, sdm.body_segment[radius_r+1].inertia);
-   sdm.body_segment[radius_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[radius_r+1].mass_center[1] = -0.1205250000;
-   sdm.body_segment[radius_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[radius_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[hand_r+1].name,"hand_r");
-   sdm.body_segment[hand_r+1].output = dpYes;
-   sdgetmass(hand_r, &(sdm.body_segment[hand_r+1].mass));
-   sdgetiner(hand_r, sdm.body_segment[hand_r+1].inertia);
-   sdm.body_segment[hand_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[hand_r+1].mass_center[1] = -0.0680950000;
-   sdm.body_segment[hand_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[hand_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[humerus_l+1].name,"humerus_l");
-   sdm.body_segment[humerus_l+1].output = dpYes;
-   sdgetmass(humerus_l, &(sdm.body_segment[humerus_l+1].mass));
-   sdgetiner(humerus_l, sdm.body_segment[humerus_l+1].inertia);
-   sdm.body_segment[humerus_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[humerus_l+1].mass_center[1] = -0.1645020000;
-   sdm.body_segment[humerus_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[humerus_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[ulna_l+1].name,"ulna_l");
-   sdm.body_segment[ulna_l+1].output = dpYes;
-   sdgetmass(ulna_l, &(sdm.body_segment[ulna_l+1].mass));
-   sdgetiner(ulna_l, sdm.body_segment[ulna_l+1].inertia);
-   sdm.body_segment[ulna_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[ulna_l+1].mass_center[1] = -0.1205250000;
-   sdm.body_segment[ulna_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[ulna_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[radius_l+1].name,"radius_l");
-   sdm.body_segment[radius_l+1].output = dpYes;
-   sdgetmass(radius_l, &(sdm.body_segment[radius_l+1].mass));
-   sdgetiner(radius_l, sdm.body_segment[radius_l+1].inertia);
-   sdm.body_segment[radius_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[radius_l+1].mass_center[1] = -0.1205250000;
-   sdm.body_segment[radius_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[radius_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[hand_l+1].name,"hand_l");
-   sdm.body_segment[hand_l+1].output = dpYes;
-   sdgetmass(hand_l, &(sdm.body_segment[hand_l+1].mass));
-   sdgetiner(hand_l, sdm.body_segment[hand_l+1].inertia);
-   sdm.body_segment[hand_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[hand_l+1].mass_center[1] = -0.0680950000;
-   sdm.body_segment[hand_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[hand_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[femur_r+1].name,"femur_r");
-   sdm.body_segment[femur_r+1].output = dpYes;
-   sdgetmass(femur_r, &(sdm.body_segment[femur_r+1].mass));
-   sdgetiner(femur_r, sdm.body_segment[femur_r+1].inertia);
-   sdm.body_segment[femur_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[femur_r+1].mass_center[1] = -0.1621620000;
-   sdm.body_segment[femur_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[femur_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[tibia_r+1].name,"tibia_r");
-   sdm.body_segment[tibia_r+1].output = dpYes;
-   sdgetmass(tibia_r, &(sdm.body_segment[tibia_r+1].mass));
-   sdgetiner(tibia_r, sdm.body_segment[tibia_r+1].inertia);
-   sdm.body_segment[tibia_r+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[tibia_r+1].mass_center[1] = -0.1717130000;
-   sdm.body_segment[tibia_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[tibia_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[patella_r+1].name,"patella_r");
-   sdm.body_segment[patella_r+1].output = dpYes;
-   sdgetmass(patella_r, &(sdm.body_segment[patella_r+1].mass));
-   sdgetiner(patella_r, sdm.body_segment[patella_r+1].inertia);
-   sdm.body_segment[patella_r+1].mass_center[0] = 0.0018000000;
-   sdm.body_segment[patella_r+1].mass_center[1] = 0.0264000000;
-   sdm.body_segment[patella_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[patella_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[talus_r+1].name,"talus_r");
-   sdm.body_segment[talus_r+1].output = dpYes;
-   sdgetmass(talus_r, &(sdm.body_segment[talus_r+1].mass));
-   sdgetiner(talus_r, sdm.body_segment[talus_r+1].inertia);
-   sdm.body_segment[talus_r+1].mass_center[0] = 0.0055000000;
-   sdm.body_segment[talus_r+1].mass_center[1] = 0.0023000000;
-   sdm.body_segment[talus_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[talus_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[foot_r+1].name,"foot_r");
-   sdm.body_segment[foot_r+1].output = dpYes;
-   sdgetmass(foot_r, &(sdm.body_segment[foot_r+1].mass));
-   sdgetiner(foot_r, sdm.body_segment[foot_r+1].inertia);
-   sdm.body_segment[foot_r+1].mass_center[0] = 0.1018650000;
-   sdm.body_segment[foot_r+1].mass_center[1] = 0.0156000000;
-   sdm.body_segment[foot_r+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[foot_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[toes_r+1].name,"toes_r");
-   sdm.body_segment[toes_r+1].output = dpYes;
-   sdgetmass(toes_r, &(sdm.body_segment[toes_r+1].mass));
-   sdgetiner(toes_r, sdm.body_segment[toes_r+1].inertia);
-   sdm.body_segment[toes_r+1].mass_center[0] = 0.0307000000;
-   sdm.body_segment[toes_r+1].mass_center[1] = -0.0026000000;
-   sdm.body_segment[toes_r+1].mass_center[2] = 0.0105000000;
-   sdm.body_segment[toes_r+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[femur_l+1].name,"femur_l");
-   sdm.body_segment[femur_l+1].output = dpYes;
-   sdgetmass(femur_l, &(sdm.body_segment[femur_l+1].mass));
-   sdgetiner(femur_l, sdm.body_segment[femur_l+1].inertia);
-   sdm.body_segment[femur_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[femur_l+1].mass_center[1] = -0.1621620000;
-   sdm.body_segment[femur_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[femur_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[tibia_l+1].name,"tibia_l");
-   sdm.body_segment[tibia_l+1].output = dpYes;
-   sdgetmass(tibia_l, &(sdm.body_segment[tibia_l+1].mass));
-   sdgetiner(tibia_l, sdm.body_segment[tibia_l+1].inertia);
-   sdm.body_segment[tibia_l+1].mass_center[0] = 0.0000000000;
-   sdm.body_segment[tibia_l+1].mass_center[1] = -0.1717130000;
-   sdm.body_segment[tibia_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[tibia_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[patella_l+1].name,"patella_l");
-   sdm.body_segment[patella_l+1].output = dpYes;
-   sdgetmass(patella_l, &(sdm.body_segment[patella_l+1].mass));
-   sdgetiner(patella_l, sdm.body_segment[patella_l+1].inertia);
-   sdm.body_segment[patella_l+1].mass_center[0] = 0.0018000000;
-   sdm.body_segment[patella_l+1].mass_center[1] = 0.0264000000;
-   sdm.body_segment[patella_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[patella_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[talus_l+1].name,"talus_l");
-   sdm.body_segment[talus_l+1].output = dpYes;
-   sdgetmass(talus_l, &(sdm.body_segment[talus_l+1].mass));
-   sdgetiner(talus_l, sdm.body_segment[talus_l+1].inertia);
-   sdm.body_segment[talus_l+1].mass_center[0] = 0.0055000000;
-   sdm.body_segment[talus_l+1].mass_center[1] = 0.0023000000;
-   sdm.body_segment[talus_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[talus_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[foot_l+1].name,"foot_l");
-   sdm.body_segment[foot_l+1].output = dpYes;
-   sdgetmass(foot_l, &(sdm.body_segment[foot_l+1].mass));
-   sdgetiner(foot_l, sdm.body_segment[foot_l+1].inertia);
-   sdm.body_segment[foot_l+1].mass_center[0] = 0.1018650000;
-   sdm.body_segment[foot_l+1].mass_center[1] = 0.0156000000;
-   sdm.body_segment[foot_l+1].mass_center[2] = 0.0000000000;
-   sdm.body_segment[foot_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.body_segment[toes_l+1].name,"toes_l");
-   sdm.body_segment[toes_l+1].output = dpYes;
-   sdgetmass(toes_l, &(sdm.body_segment[toes_l+1].mass));
-   sdgetiner(toes_l, sdm.body_segment[toes_l+1].inertia);
-   sdm.body_segment[toes_l+1].mass_center[0] = 0.0307000000;
-   sdm.body_segment[toes_l+1].mass_center[1] = -0.0026000000;
-   sdm.body_segment[toes_l+1].mass_center[2] = -0.0105000000;
-   sdm.body_segment[toes_l+1].contactable = dpNo;
-
-   mstrcpy(&sdm.name, "Dynamic Mocap Model");
-
-   check_for_sderror("INIT_SEGMENTS");
-
 }
 
 
@@ -2549,122 +2235,11 @@ void init_q_restraint_functions(void)
 }
 
 
-/* INIT_JOINT_FUNCTIONS: this routine initializes the constraint functions
- * for the joints which have user-defined constraints.
- */
-
-void init_joint_functions(void)
-{
-
-   int i, numpts;
-
-   numpts = sizeof(knee_flexion_r_tx_data)/(sizeof(double)*2);
-   (void)malloc_function(&knee_flexion_r_tx_func,numpts);
-   knee_flexion_r_tx_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      knee_flexion_r_tx_func.x[i] = knee_flexion_r_tx_data[i][0];
-      knee_flexion_r_tx_func.y[i] = knee_flexion_r_tx_data[i][1];
-   }
-   calc_spline_coefficients(&knee_flexion_r_tx_func);
-
-   numpts = sizeof(knee_flexion_r_ty_data)/(sizeof(double)*2);
-   (void)malloc_function(&knee_flexion_r_ty_func,numpts);
-   knee_flexion_r_ty_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      knee_flexion_r_ty_func.x[i] = knee_flexion_r_ty_data[i][0];
-      knee_flexion_r_ty_func.y[i] = knee_flexion_r_ty_data[i][1];
-   }
-   calc_spline_coefficients(&knee_flexion_r_ty_func);
-
-   numpts = sizeof(tib_pat_r_tx_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_r_tx_func,numpts);
-   tib_pat_r_tx_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_r_tx_func.x[i] = tib_pat_r_tx_data[i][0];
-      tib_pat_r_tx_func.y[i] = tib_pat_r_tx_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_r_tx_func);
-
-   numpts = sizeof(tib_pat_r_ty_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_r_ty_func,numpts);
-   tib_pat_r_ty_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_r_ty_func.x[i] = tib_pat_r_ty_data[i][0];
-      tib_pat_r_ty_func.y[i] = tib_pat_r_ty_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_r_ty_func);
-
-   numpts = sizeof(tib_pat_r_r1_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_r_r1_func,numpts);
-   tib_pat_r_r1_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_r_r1_func.x[i] = tib_pat_r_r1_data[i][0];
-      tib_pat_r_r1_func.y[i] = tib_pat_r_r1_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_r_r1_func);
-
-   numpts = sizeof(knee_flexion_l_tx_data)/(sizeof(double)*2);
-   (void)malloc_function(&knee_flexion_l_tx_func,numpts);
-   knee_flexion_l_tx_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      knee_flexion_l_tx_func.x[i] = knee_flexion_l_tx_data[i][0];
-      knee_flexion_l_tx_func.y[i] = knee_flexion_l_tx_data[i][1];
-   }
-   calc_spline_coefficients(&knee_flexion_l_tx_func);
-
-   numpts = sizeof(knee_flexion_l_ty_data)/(sizeof(double)*2);
-   (void)malloc_function(&knee_flexion_l_ty_func,numpts);
-   knee_flexion_l_ty_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      knee_flexion_l_ty_func.x[i] = knee_flexion_l_ty_data[i][0];
-      knee_flexion_l_ty_func.y[i] = knee_flexion_l_ty_data[i][1];
-   }
-   calc_spline_coefficients(&knee_flexion_l_ty_func);
-
-   numpts = sizeof(tib_pat_l_tx_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_l_tx_func,numpts);
-   tib_pat_l_tx_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_l_tx_func.x[i] = tib_pat_l_tx_data[i][0];
-      tib_pat_l_tx_func.y[i] = tib_pat_l_tx_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_l_tx_func);
-
-   numpts = sizeof(tib_pat_l_ty_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_l_ty_func,numpts);
-   tib_pat_l_ty_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_l_ty_func.x[i] = tib_pat_l_ty_data[i][0];
-      tib_pat_l_ty_func.y[i] = tib_pat_l_ty_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_l_ty_func);
-
-   numpts = sizeof(tib_pat_l_r1_data)/(sizeof(double)*2);
-   (void)malloc_function(&tib_pat_l_r1_func,numpts);
-   tib_pat_l_r1_func.numpoints = numpts;
-   for (i=0; i<numpts; i++)
-   {
-      tib_pat_l_r1_func.x[i] = tib_pat_l_r1_data[i][0];
-      tib_pat_l_r1_func.y[i] = tib_pat_l_r1_data[i][1];
-   }
-   calc_spline_coefficients(&tib_pat_l_r1_func);
-
-}
-
-
 void init_wrap_objects(void)
 {
 
-   /* There are no wrap objects in this model. */
+   /* Wrap objects are handled by the native OpenSim code, so */
+   /* they are not exported to the Pipeline source code. */
 
   sdm.num_wrap_objects = 0;
   sdm.wrap_object = NULL;
