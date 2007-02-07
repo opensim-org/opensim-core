@@ -372,7 +372,7 @@ void CMCTool::setupProperties()
 
 	comment = "Time window over which the desired actuator forces are achieved. "
 		       "Muscles forces cannot change instantaneously, so a finite time window must be allowed. "
-				 "The recommended time window is about 0.010 sec.";
+				 "The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec.";
 	_targetDTProp.setComment(comment);
 	_targetDTProp.setName("cmc_time_window");
 	_propertySet.append( &_targetDTProp );

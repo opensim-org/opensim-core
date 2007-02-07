@@ -188,7 +188,7 @@ void SimmMarker::setupProperties()
 	_propertySet.append(&_offsetProp);
 
 	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "
-		"is allowed to move in the marker placement step.");
+		"should be kept fixed in the marker placement step.  i.e. If false, the marker is allowed to move.");
 	_fixedProp.setName("fixed");
 	_fixedProp.setValue(false);
 	_propertySet.append(&_fixedProp);
