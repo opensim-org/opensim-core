@@ -283,21 +283,25 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoor
 				// the coordinates_from_file section. You need to do this because coordinates
 				// not in that list must have their data removed from the input coordinate
 				// file.
-				int i;
 				const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
 
-				for (i = 0; i < coordinateSet->getSize(); i++)
+				// Keep track of which coordinates_from_file entries were found in the coordinate set.
+				// We'll print an error if any coordinates listed are not in the coordinate set.
+				Array<bool> coordinateExists(false, aCoordinatesFromFile.getSize());
+
+				for (int i = 0; i < coordinateSet->getSize(); i++)
 				{
 					AbstractCoordinate* modelCoord = coordinateSet->get(i);
 					int index = aCoordinatesFromFile.findIndex(modelCoord->getName());
 					if (index >= 0) 
 					{
+						coordinateExists[index] = true;
 						double value = coordinateValues->getValue(modelCoord->getName(), 0);
 						if (value == rdMath::NAN)
 						{
 							// If the value is not found in the file, it is an error.
 							string errorMessage = "Coordinate " + modelCoord->getName() +
-								" was listed in coordinates_from_file section of SimmIKSolver, but no value found in " + _coordinateFileName;
+								" was listed in coordinates_from_file section of IKTool, but no value found in " + _coordinateFileName;
 							throw Exception(errorMessage);
 						}
 						else
@@ -317,6 +321,12 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoor
 						// so delete its data from the input coordinate file, if it exists.
 						coordinateValues->deleteColumn(modelCoord->getName());
 					}
+				}
+
+				for(int i=0; i<aCoordinatesFromFile.getSize(); i++) {
+					if(!coordinateExists[i])
+						throw Exception("Coordinate " + aCoordinatesFromFile[i] + 
+							" was listed in coordinates_from_file section of IKTool, but does not exist in the model");
 				}
 			}
 		}
