@@ -231,7 +231,7 @@ setupProperties()
 	_propertySet.append(&_propKV);
 
 	Array<double> ka(1.0,3);
-	_propKA.setComment("Acceleration feedback gain.  "
+	_propKA.setComment("Feedforward acceleration gain.  "
 		"This is normally set to 1.0, so no gain.");
 	_propKA.setName("ka");
 	_propKA.setValue(ka);

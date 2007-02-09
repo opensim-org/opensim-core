@@ -131,7 +131,7 @@ setNull()
 void rdCMC_Joint::
 setupProperties()
 {
-	_propCoordinateName.setComment("Name of the cooridnate to be tracked.");
+	_propCoordinateName.setComment("Name of the coordinate to be tracked.");
 	_propCoordinateName.setName("coordinate");
 	_propCoordinateName.setValue("");
 	_propertySet.append(&_propCoordinateName);
