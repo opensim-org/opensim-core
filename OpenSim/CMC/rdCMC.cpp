@@ -769,11 +769,9 @@ computeControls(double &rDT,double aT,const double *aY,
 
 	// SET BOUNDS ON CONTROLS
 	int N = _predictor->getNX();
-	Control *x,*xConstraint;
-	string xName;
 	Array<double> xmin(0.0,N),xmax(1.0,N);
 	for(i=0;i<N;i++) {
-		x = _controlSet->get(i);
+		Control *x = _controlSet->get(i);
 		xmin[i] = x->getControlValueMin(tiReal);
 		xmax[i] = x->getControlValueMax(tiReal);
 		// For controls whose constraints are constant min/max values we'll just specify
