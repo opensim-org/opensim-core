@@ -663,8 +663,11 @@ updateFromXMLNode()
 		}
 
 
+#if 0
+		// don't try to catch exceptions here...
 		//----------- TRY BLOCK FOR PROPERTIES ------------
 		try {
+#endif
 
 		// VALUE
 		switch(type) {
@@ -741,18 +744,7 @@ updateFromXMLNode()
 			if(!elmt)
 			{
 				DOMElement *elmtForAttribute = XMLNode::GetFirstChildElementByTagName(_node,object.getType());
-				if (elmtForAttribute){
-					char *fileAttrib = XMLNode::GetAttribute(elmtForAttribute, "file");
-					if (fileAttrib!= NULL && strlen(fileAttrib) > 0){
-						//std::cout << "USING FILE '" << fileAttrib << "' FOR TAG " << object.getType() << std::endl;
-						// Change _node to refer to the root of the external file
-						refNode = elmtForAttribute;
-						childDocument = new XMLDocument(fileAttrib);
-						objNode = childDocument->getDOMDocument()->getDocumentElement();
-						inLinedObject = false;
-					}
-					if(fileAttrib!=NULL) delete[] fileAttrib;
-				}
+				inLinedObject = !parseFileAttribute(elmtForAttribute, refNode, childDocument, objNode);
 			}
 			//-----------End inline support---------------------
 
@@ -922,21 +914,10 @@ updateFromXMLNode()
 			// VARIABLES
 			Object *defaultObject,*object;
 			{
-				// If top element has a "file attribute", the document needs to be opened
-				// and elmt must be switched to the root of that document
-				char *fileAttrib = XMLNode::GetAttribute(elmt, "file");
-				bool inLinedObject = true;
 				DOMElement *refNode;
 				XMLDocument *childDocument;
-				if ((fileAttrib!=NULL) && (strlen(fileAttrib)>0)){
-					// Change _node to refer to the root of the external file
-					refNode = elmt;
-					childDocument = new XMLDocument(fileAttrib);
-					elmt = childDocument->getDOMDocument()->getDocumentElement();
-					inLinedObject = false;
-				}
+				bool inLinedObject = !parseFileAttribute(elmt, refNode, childDocument, elmt);
 			}
-
 
 			// LOOP THROUGH SUPPORTED OBJECT TYPES
 			DOMNodeList *list = elmt->getChildNodes();
@@ -959,19 +940,9 @@ updateFromXMLNode()
 					// However we need to do that on the finalized object as copying
 					// does not keep track of XML related issues
 					//-----------Begin inline support---------------------------
-					// Collect inlining attributes
-					char *fileAttrib = XMLNode::GetAttribute(objElmt, "file");
-					bool inLinedObject = true;
 					DOMElement *refNode;
 					XMLDocument *childDocument;
-					if ((fileAttrib!=NULL) && (strlen(fileAttrib)>0)){
-						// Change _node to refer to the root of the external file
-						refNode = objElmt;
-						childDocument = new XMLDocument(fileAttrib);
-						objElmt = childDocument->getDOMDocument()->getDocumentElement();
-						inLinedObject = false;
-					}
-					if(fileAttrib!=NULL) delete[] fileAttrib;
+					bool inLinedObject = !parseFileAttribute(objElmt, refNode, childDocument, objElmt);
 					//-----------End inline support---------------------
 					// CHECK THAT THE ELEMENT IS AN IMMEDIATE CHILD
 					DOMNode *parent = objElmt->getParentNode();
@@ -1015,11 +986,13 @@ updateFromXMLNode()
 			break; }
 		}
 
+#if 0
 		//-----------------------------------------------------
 		} catch(Exception x) {
 			if(Object_DEBUG) x.print(cout);
 		}
 		//----------- END TRY BLOCK FOR PROPERTIES ------------
+#endif
 	}
 }
 
@@ -1584,6 +1557,29 @@ getOffLineFileName() const
 	if(getDocument()!= NULL)
 		return getDocument()->getFileName();
 	return NULL;
+}
+
+/** 
+ * Parameters aRefNode, aChildDocument, aChildDocumentElement, only set if return value is true
+ */
+bool Object::
+parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aChildDocument, DOMElement *&aChildDocumentElement)
+{
+	if(!aElement) return false;
+	char *fileAttrib = XMLNode::GetAttribute(aElement, "file");
+	bool parsedFileAttribute = false;
+	if (fileAttrib!= NULL && strlen(fileAttrib) > 0) {
+		if(!ifstream(fileAttrib))
+			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + string(fileAttrib) + 
+								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
+		// Change _node to refer to the root of the external file
+		aRefNode = aElement;
+		aChildDocument = new XMLDocument(fileAttrib);
+		aChildDocumentElement = aChildDocument->getDOMDocument()->getDocumentElement();
+		parsedFileAttribute = true;
+	}
+	if(fileAttrib) delete[] fileAttrib;
+	return parsedFileAttribute;
 }
 
 //=============================================================================

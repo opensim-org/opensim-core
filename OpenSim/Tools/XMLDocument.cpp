@@ -39,8 +39,11 @@
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/sax/SAXException.hpp>
 #include <xercesc/dom/DOMException.hpp>
+#include <xercesc/sax/ErrorHandler.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
 #include "rdTools.h"
 #include "XMLDocument.h"
+#include "Exception.h"
 
 
 
@@ -206,18 +209,24 @@ XMLDocument::XMLDocument(const string &aFileName)
 
 	// CREATE PARSER
 	_parser = new XercesDOMParser();
+	_parser->setErrorHandler(new HandlerBase());
 
 	// PARSE DOCUMENT
 	try {
 
 		_parser->parse(aFileName.c_str());
 
+	} catch (SAXException &x) {
+		string msg =  "XMLDocument.XMLDocument: ERROR- SAX exception while attempting to parse " + aFileName;
+		char *str = XMLString::transcode(x.getMessage());
+		if(str) {
+			msg += "\nSAXException message = " + string(str);
+			delete[] str;
+		}
+		throw Exception(msg,__FILE__,__LINE__);
 	} catch(...) {
-		printf("XMLDocument.XMLDocument: ERROR- exception while ");
-		printf("attempting to parse %s.\n",aFileName.c_str());
-		return;
+		throw Exception("XMLDocument.XMLDocument: ERROR- exception while attempting to parse "+aFileName,__FILE__,__LINE__);
 	}
-
 
 /*
 	// SAX EXCEPTION

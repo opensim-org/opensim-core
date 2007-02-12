@@ -529,13 +529,13 @@ formatComment(const string& aComment,const string& leadingWhitespace,int width)
 		string::size_type pos = aComment.find_first_not_of(" \t\n\r", i);
 		if(pos==string::npos) break;
 		string whitespace = aComment.substr(i, pos-i);
-		for(int j=0;j<whitespace.size();j++) if (whitespace[j]=='\t') whitespace[j]=' ';
+		for(string::size_type j=0;j<whitespace.size();j++) if (whitespace[j]=='\t') whitespace[j]=' ';
 		string::size_type pos2 = aComment.find_first_of(" \t\n\r", pos);
 		string word;
 		if(pos2==string::npos) word = aComment.substr(pos);
 		else word = aComment.substr(pos, pos2-pos);
 		i = pos2;
-		if(count+whitespace.size()+word.size()<=width) {
+		if(count+whitespace.size()+word.size()<=(string::size_type)width) {
 			formatted += whitespace+word;
 			count += whitespace.size()+word.size();
 		} else {
@@ -545,4 +545,17 @@ formatComment(const string& aComment,const string& leadingWhitespace,int width)
 		}
 	}
 	return formatted;
+}
+
+string IO::
+replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo)
+{
+	string result = aStr;
+	for(string::size_type i = string::npos;;) {
+		i = result.rfind(aFrom, i);
+		if(i==string::npos) break;
+		result.replace(i, aFrom.size(), aTo);
+		if(i==0) break; else i--;
+	}
+	return result;
 }

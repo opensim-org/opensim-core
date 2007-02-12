@@ -35,8 +35,10 @@
 // INCLUDES
 #include <iostream>
 #include <string>
+#include <cassert>
 #include "rdTools.h"
 #include "Exception.h"
+#include "IO.h"
 
 
 
@@ -57,6 +59,8 @@ using namespace std;
 Exception::
 Exception(const string &aMsg,const string &aFile,int aLine)
 {
+// make it assert false when debugging...
+//	assert(false);
 	setNull();
 
 	setMessage(aMsg);
@@ -125,10 +129,12 @@ void Exception::
 print(ostream &aOut)
 {
 	// HEADER
-	aOut << "\nException:\n  ";
+	aOut << "\nException:\n";
 
 	// MESSAGE
-	aOut << _msg << '\n';
+	// Account for the _msg being multiple lines -- we want to prepend two spaces before each new line
+	string formattedMsg = IO::replaceSubstring(_msg, "\n", "\n  ");
+	aOut << "  " << formattedMsg << endl;
 
 	// FILE
 	if(_file.size()>0) {

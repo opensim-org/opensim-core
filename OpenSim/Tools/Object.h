@@ -262,6 +262,7 @@ protected:
 private:
 	void generateXMLDocument();
 	void generateDocument();
+	bool parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aChildDocument, DOMElement *&aChildDocumentElement);
 	static std::string transcode(const XMLCh *aCh);
 	static std::string transcodeAndTrim(const XMLCh *aCh);
 

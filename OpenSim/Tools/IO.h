@@ -115,6 +115,9 @@ public:
 	static std::string getCwd();
 	static std::string getParentDirectory(const std::string& fileName);
 	static std::string formatComment(const std::string& aComment,const std::string& leadingWhitespace,int width);
+
+	// String utilities
+	static std::string replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo);
 //=============================================================================
 };	// END CLASS IO
 
