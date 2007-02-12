@@ -235,11 +235,16 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 		fprintf(fp, "\t\t\t</SimmMusclePointSet>\n");
 
 		/* Simple (double) parameters. */
-		fprintf(fp, "\t\t\t<max_isometric_force>%.12lf</max_isometric_force>\n", *m->max_isometric_force);
-		fprintf(fp, "\t\t\t<optimal_fiber_length>%.12lf</optimal_fiber_length>\n", *m->optimal_fiber_length);
-		fprintf(fp, "\t\t\t<tendon_slack_length>%.12lf</tendon_slack_length>\n", *m->resting_tendon_length);
-		fprintf(fp, "\t\t\t<pennation_angle>%.12lf</pennation_angle>\n", *m->pennation_angle * conversion);
-		fprintf(fp, "\t\t\t<max_contraction_velocity>%.12lf</max_contraction_velocity>\n", *m->max_contraction_vel);
+		if (m->max_isometric_force)
+			fprintf(fp, "\t\t\t<max_isometric_force>%.12lf</max_isometric_force>\n", *m->max_isometric_force);
+		if (m->optimal_fiber_length)
+			fprintf(fp, "\t\t\t<optimal_fiber_length>%.12lf</optimal_fiber_length>\n", *m->optimal_fiber_length);
+		if (m->resting_tendon_length)
+			fprintf(fp, "\t\t\t<tendon_slack_length>%.12lf</tendon_slack_length>\n", *m->resting_tendon_length);
+		if (m->pennation_angle)
+			fprintf(fp, "\t\t\t<pennation_angle>%.12lf</pennation_angle>\n", *m->pennation_angle * conversion);
+		if (m->max_contraction_vel)
+			fprintf(fp, "\t\t\t<max_contraction_velocity>%.12lf</max_contraction_velocity>\n", *m->max_contraction_vel);
 
 		/* muscle model. */
 		if (m->muscle_model_index)	// Conservative fix in case muscle model is not specified. Ayman 1/07
@@ -249,10 +254,13 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 		for (j = 0; j < m->num_dynamic_params; j++)
 		{
 			// map dynamic parameter "timescale" to "time_scale" property name
-			if(!strcmp(m->dynamic_param_names[j],"timescale"))
-				fprintf(fp, "\t\t\t<time_scale>%.12lf</time_scale>\n", *m->dynamic_params[j]);
-			else
-				fprintf(fp, "\t\t\t<%s>%.12lf</%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
+			if (m->dynamic_params[j])
+			{
+				if(!strcmp(m->dynamic_param_names[j],"timescale"))
+					fprintf(fp, "\t\t\t<time_scale>%.12lf</time_scale>\n", *m->dynamic_params[j]);
+				else
+					fprintf(fp, "\t\t\t<%s>%.12lf</%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
+			}
 		}
 
 		if (m->numWrapStructs > 0)
@@ -275,60 +283,72 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 		}
 
 		/* Tendon force-length curve. */
-		fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
-		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-		fprintf(fp, "\t\t\t\t\t<x>");
-		for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->tendon_force_len_curve->x[j]);
-		fprintf(fp, "</x>\n");
-		fprintf(fp, "\t\t\t\t\t<y>");
-		for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->tendon_force_len_curve->y[j]);
-		fprintf(fp, "</y>\n");
-		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-		fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
+		if (m->tendon_force_len_curve)
+		{
+			fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
+			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+			fprintf(fp, "\t\t\t\t\t<x>");
+			for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->tendon_force_len_curve->x[j]);
+			fprintf(fp, "</x>\n");
+			fprintf(fp, "\t\t\t\t\t<y>");
+			for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->tendon_force_len_curve->y[j]);
+			fprintf(fp, "</y>\n");
+			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+			fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
+		}
 
 		/* Active force-length curve. */
-		fprintf(fp, "\t\t\t<active_force_length_curve>\n");
-		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-		fprintf(fp, "\t\t\t\t\t<x>");
-		for (j = 0; j < m->active_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->active_force_len_curve->x[j]);
-		fprintf(fp, "</x>\n");
-		fprintf(fp, "\t\t\t\t\t<y>");
-		for (j = 0; j < m->active_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->active_force_len_curve->y[j]);
-		fprintf(fp, "</y>\n");
-		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-		fprintf(fp, "\t\t\t</active_force_length_curve>\n");
+		if (m->active_force_len_curve)
+		{
+			fprintf(fp, "\t\t\t<active_force_length_curve>\n");
+			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+			fprintf(fp, "\t\t\t\t\t<x>");
+			for (j = 0; j < m->active_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->active_force_len_curve->x[j]);
+			fprintf(fp, "</x>\n");
+			fprintf(fp, "\t\t\t\t\t<y>");
+			for (j = 0; j < m->active_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->active_force_len_curve->y[j]);
+			fprintf(fp, "</y>\n");
+			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+			fprintf(fp, "\t\t\t</active_force_length_curve>\n");
+		}
 
 		/* Passive force-length curve. */
-		fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
-		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-		fprintf(fp, "\t\t\t\t\t<x>");
-		for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->passive_force_len_curve->x[j]);
-		fprintf(fp, "</x>\n");
-		fprintf(fp, "\t\t\t\t\t<y>");
-		for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->passive_force_len_curve->y[j]);
-		fprintf(fp, "</y>\n");
-		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-		fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
+		if (m->passive_force_len_curve)
+		{
+			fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
+			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+			fprintf(fp, "\t\t\t\t\t<x>");
+			for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->passive_force_len_curve->x[j]);
+			fprintf(fp, "</x>\n");
+			fprintf(fp, "\t\t\t\t\t<y>");
+			for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->passive_force_len_curve->y[j]);
+			fprintf(fp, "</y>\n");
+			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+			fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
+		}
 
 		/* Force-velocity curve. */
-		fprintf(fp, "\t\t\t<force_velocity_curve>\n");
-		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-		fprintf(fp, "\t\t\t\t\t<x>");
-		for (j = 0; j < m->force_vel_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->force_vel_curve->x[j]);
-		fprintf(fp, "</x>\n");
-		fprintf(fp, "\t\t\t\t\t<y>");
-		for (j = 0; j < m->force_vel_curve->numpoints; j++)
-			fprintf(fp, "%.12lf ", m->force_vel_curve->y[j]);
-		fprintf(fp, "</y>\n");
-		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-		fprintf(fp, "\t\t\t</force_velocity_curve>\n");
+		if (m->force_vel_curve)
+		{
+			fprintf(fp, "\t\t\t<force_velocity_curve>\n");
+			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+			fprintf(fp, "\t\t\t\t\t<x>");
+			for (j = 0; j < m->force_vel_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->force_vel_curve->x[j]);
+			fprintf(fp, "</x>\n");
+			fprintf(fp, "\t\t\t\t\t<y>");
+			for (j = 0; j < m->force_vel_curve->numpoints; j++)
+				fprintf(fp, "%.12lf ", m->force_vel_curve->y[j]);
+			fprintf(fp, "</y>\n");
+			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+			fprintf(fp, "\t\t\t</force_velocity_curve>\n");
+		}
 
 		/* Groups. */
 		if (m->numgroups > 0)
