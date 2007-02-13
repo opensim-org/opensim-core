@@ -201,8 +201,8 @@ setupProperties()
 	_propKp.setValue(100);
 	_propertySet.append( &_propKp );
 
-	_propKp.setName("kv");
-	_propKp.setValue(20);
+	_propKv.setName("kv");
+	_propKv.setValue(20);
 	_propertySet.append( &_propKv );
 }
 //_____________________________________________________________________________
