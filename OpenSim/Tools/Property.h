@@ -229,6 +229,29 @@ public:
 	void setUseDefault(bool aTrueFalse);
 	bool getUseDefault() const;
 
+	// Templates for get & set
+	template<class T> T &getValue();
+	template<class T> const T &getValue() const;
+	template<> bool &getValue() { return getValueBool(); }
+	template<> const bool &getValue() const { return getValueBool(); }
+	template<> int &getValue() { return getValueInt(); }
+	template<> const int &getValue() const { return getValueInt(); }
+	template<> double &getValue() { return getValueDbl(); }
+	template<> const double &getValue() const { return getValueDbl(); }
+	template<> std::string &getValue() { return getValueStr(); }
+	template<> const std::string &getValue() const { return getValueStr(); }
+
+	template<class T> Array<T> &getValueArray();
+	template<class T> const Array<T> &getValueArray() const;
+	template<> Array<bool> &getValueArray() { return getValueBoolArray(); }
+	template<> const Array<bool> &getValueArray() const { return getValueBoolArray(); }
+	template<> Array<int> &getValueArray() { return getValueIntArray(); }
+	template<> const Array<int> &getValueArray() const { return getValueIntArray(); }
+	template<> Array<double> &getValueArray() { return getValueDblArray(); }
+	template<> const Array<double> &getValueArray() const { return getValueDblArray(); }
+	template<> Array<std::string> &getValueArray() { return getValueStrArray(); }
+	template<> const Array<std::string> &getValueArray() const { return getValueStrArray(); }
+
 //=============================================================================
 };	// END of class Property
 

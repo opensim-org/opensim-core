@@ -38,6 +38,7 @@
 #include "XMLNode.h"
 #include "IO.h"
 #include "Object.h"
+#include <cassert>
 
 
 
@@ -437,7 +438,7 @@ GetTextNode(const DOMNode *aNode)
  * itself is interpretted.  However, if the specified node is any other type
  * of node (for example, an element node (DOMElement)), the data is
  * interpretted from the specified node's last child that is a text
- * node.  If the specified node has no such child, false is returned.
+ * node.  If the specified node has no such child, an exception is thrown.
  *
  * @return Value.  If an error is encountered a false is returned.
  * @throws Exception if it was not possible to get a value.
@@ -446,21 +447,21 @@ bool XMLNode::
 GetBool(const DOMNode *aNode)
 {
 	if(aNode==NULL) {
-		string msg = "XMLNode.getBool: XML node is NULL.";
+		string msg = "XMLNode.GetBool: XML node is NULL.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
 	if(textNode==NULL) {
-		string msg = "XMLNode.getBool: XML node has no text node.";
+		string msg = "XMLNode.GetBool: XML node has no text node.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
 	// GET VALUE
 	char *str = XMLString::transcode(textNode->getNodeValue());
 	if(str==NULL) {
-		string msg = "XMLNode.getBool: XML text node is NULL.";
+		string msg = "XMLNode.GetBool: XML text node is NULL.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
@@ -486,7 +487,7 @@ GetBool(const DOMNode *aNode)
  * itself is interpretted.  However, if the specified node is any other type
  * of node (for example, an element node (DOMElement)), the data is
  * interpretted from the specified node's last child that is a text
- * node.  If the specified node has no such child, 0 is returned.
+ * node.  If the specified node has no such child, an exception is thrown.
  *
  * @return Value.  If an error is encountered a 0 is returned.
  * @throws Exception if it was not possible to get a value.
@@ -495,12 +496,16 @@ int XMLNode::
 GetInt(const DOMNode *aNode)
 {
 	if(aNode==NULL) {
-		string msg = "XMLNode.getInt: XML node is NULL.";
+		string msg = "XMLNode.GetInt: XML node is NULL.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
+	if(textNode==NULL) {
+		string msg = "XMLNode.GetInt: XML node has no text node.";
+		throw( Exception(msg,__FILE__,__LINE__) );
+	}
 
 	// GET VALUE
 	char *str = XMLString::transcode(textNode->getNodeValue());
@@ -532,7 +537,7 @@ GetInt(const DOMNode *aNode)
  * itself is interpretted.  However, if the specified node is any other type
  * of node (for example, an element node (DOMElement)), the data is
  * interpretted from the specified node's last child that is a text
- * node.  If the specified node has no such child, 0 is returned.
+ * node.  If the specified node has no such child, an exception is thrown.
  *
  * @return Value.  If an error is encountered 0.0 is returned.
  * @throws Exception if it was not possible to get a value.
@@ -541,12 +546,16 @@ double XMLNode::
 GetDbl(const DOMNode *aNode)
 {
 	if(aNode==NULL) {
-		string msg = "XMLNode.getDbl: XML node is NULL.";
+		string msg = "XMLNode.GetDbl: XML node is NULL.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
+	if(textNode==NULL) {
+		string msg = "XMLNode.GetDbl: XML node has no text node.";
+		throw( Exception(msg,__FILE__,__LINE__) );
+	}
 
 	// GET VALUE
 	char *str = XMLString::transcode(textNode->getNodeValue());
@@ -558,7 +567,7 @@ GetDbl(const DOMNode *aNode)
 	// ERROR CHECK
 	if(status!=1)  {
 		string name = XMLString::transcode(aNode->getNodeName());
-		string msg = "XMLNode.getDbl: ERROR- failed to interpret value of ";
+		string msg = "XMLNode.GetDbl: ERROR- failed to interpret value of ";
 		msg += name;
 		msg += " as a double.";
 		if(str!=NULL) { delete[] str; }
@@ -572,7 +581,8 @@ GetDbl(const DOMNode *aNode)
 }
 //_____________________________________________________________________________
 /**
- * Interpret the value of this node as string (char *).
+ * Interpret the value of this node as string.  Whitespace is trimmed before string
+ * is returned.
  *
  * If the specified node is a text node (DOMText) then it
  * itself is interpretted.  However, if the specified node is any other type
@@ -587,22 +597,27 @@ GetDbl(const DOMNode *aNode)
  * @return Value.  If an error is encountered NULL is returned.
  * @throws Exception if it was not possible to get a value.
  */
-char* XMLNode::
+string XMLNode::
 GetStr(const DOMNode *aNode)
 {
 	if(aNode==NULL) {
-		string msg = "XMLNode.getStr: XML node is NULL.";
+		string msg = "XMLNode.GetStr: XML node is NULL.";
 		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
-	if(textNode==NULL) return(NULL);
+	if(textNode==NULL) {
+		string msg = "XMLNode.GetStr: XML node has no text node.";
+		throw( Exception(msg,__FILE__,__LINE__) );
+	}
 
 	// GET VALUE
-	char *str = XMLString::transcode(textNode->getNodeValue());
-
-	return(str);
+	char *buffer = XMLString::transcode(textNode->getNodeValue());
+	XMLString::trim(buffer);
+	string str(buffer);
+	delete[] buffer;
+	return str;
 }
 
 
@@ -1045,74 +1060,7 @@ GetDblArray(const DOMNode *aNode,double *&rData)
  * @param aData Data array.
  */
 void XMLNode::
-SetStrArray(DOMNode *aNode,int aN,char **aData)
-{
-	if(aNode==NULL) {
-		return;
-	}
-
-	// GET THE TEXT NODE
-	DOMText *textNode = GetTextNode(aNode);
-
-	// CREATE AN EMPTY AND A SPACE XML STRING
-	XMLCh *empty = XMLString::transcode("");
-	XMLCh *space = XMLString::transcode(" ");
-
-	// MAKE A NODE IF NECESSARY
-	if(textNode==NULL) {
-		DOMDocument *doc = aNode->getOwnerDocument();
-		textNode = doc->createTextNode(empty);
-		aNode->appendChild(textNode);
-	}
-
-	// CHECK CharacterData NODE
-	if(textNode==NULL) {
-		printf("XMLNode.SetStrArray: ERROR- unable to find or create ");
-		printf("text node.\n");
-		if(empty!=NULL) delete[] empty;
-		if(space!=NULL) delete[] space;
-		return;
-	}
-
-	// CLEAR THE NODE
-	textNode->setData(empty);
-
-	// SET DATA
-	int i;
-	XMLCh *data;
-	for(i=0;i<aN;i++) {
-		if(aData[i]==NULL) continue;
-		textNode->appendData(space);
-		data = XMLString::transcode(aData[i]);
-		if(data==NULL) continue;
-		textNode->appendData(data);
-		delete[] data;
-	}
-
-	// ADD A SPACE ON END
-	textNode->appendData(space);
-
-	// CLEANUP
-	if(empty!=NULL) delete[] empty;
-	if(space!=NULL) delete[] space;
-}
-//_____________________________________________________________________________
-/**
- * Set the text of a node to represent an array of strings.
- *
- * If the specified node is a text node (DOMText) then
- * it itself is modified.  However, if the specified node is any other type
- * of node (for example, an element node (DOMElement)), the data is set
- * on the specified node's last child that is a text node.
- * If the specified node has no such child, a new text node
- * is created and added to the specified node as a child.
- *
- * @param aNode Node on which to set the text data.
- * @param aN Size of the specified data array.
- * @param aData Data array.
- */
-void XMLNode::
-SetStrArray(DOMNode *aNode,int aN,string *aData)
+SetStrArray(DOMNode *aNode,int aN,const string *aData)
 {
 	if(aNode==NULL) {
 		return;
@@ -1161,63 +1109,6 @@ SetStrArray(DOMNode *aNode,int aN,string *aData)
 	// CLEANUP
 	if(empty!=NULL) delete[] empty;
 	if(space!=NULL) delete[] space;
-}
-//_____________________________________________________________________________
-/**
- * Interpret the value of this node as an array of strings.
- *
- * If the specified node is a text node (DOMText) then it
- * itself is interpretted.  However, if the specified node is any other type
- * of node (for example, an element node (DOMElement)), the data is
- * interpretted from the specified node's last child that is a text
- * node.  If the specified node has no such child, rData is set to NULL
- * and 0 is returned.
- *
- * The caller is responsible for deleting the individual strings in
- * the array as well as the array.
- *
- * @param aNode Node from which to obtain the data.
- * @param rData Reference to an array of character pointers.  If there
- * is no data, rData is set to NULL.
- * @return Length of the array.
- */
-int XMLNode::
-GetStrArray(const DOMNode *aNode,char **&rData)
-{
-	if(aNode==NULL) {
-		rData = NULL;
-		return(0);
-	}
-
-	// GET THE TEXT NODE
-	DOMText *textNode = GetTextNode(aNode);
-
-	// TOKENIZE THE STRING
-	XMLStringTokenizer tokenizer(textNode->getNodeValue());
-
-	// COUNT
-	int count = tokenizer.countTokens();
-	if(count<=0) {
-		rData = NULL;
-		return(0);
-	}
-
-	// ALLOCATE SPACE
-	rData = new char*[count];
-
-	// LOOP OVER TOKENS
-	XMLCh *tok;
-	int n;
-	for(n=0;tokenizer.hasMoreTokens();n++) {
-
-		// NEXT TOKEN
-		tok = tokenizer.nextToken();
-
-		// CONVERT TO STRING
-		rData[n] = XMLString::transcode(tok);
-	}
-
-	return(n);
 }
 //_____________________________________________________________________________
 /**
@@ -1315,10 +1206,10 @@ SetAttribute(DOMNode *aNode,const string &aName,const string &aValue)
  *
  * @param aNode Element node whose attribute is to be retrieved.
  * @param aName Name of the attribute.
- * @return Value of the attribute.  The caller is responsible for deleting
- * the returned character string.
+ * @return Value of the attribute.  Note that xerces returns the empty string if an attribute does
+ * not have a specified or default value.
  */
-char* XMLNode::
+string XMLNode::
 GetAttribute(DOMNode *aNode,const string &aName)
 {
 	if(aNode==NULL) return("");
@@ -1334,10 +1225,13 @@ GetAttribute(DOMNode *aNode,const string &aName)
 	const XMLCh *value = element->getAttribute(name);
 
 	// CONVERT THE ATTRIBUTE INTO A STRING
-	char *str = XMLString::transcode(value);
+	char *buffer = XMLString::transcode(value);
+	assert(buffer);
+	string str = buffer;
 
 	// CLEANUP
-	if(name!=NULL) delete[] name;
+	delete[] buffer;
+	delete[] name;
 
 	return(str);
 }

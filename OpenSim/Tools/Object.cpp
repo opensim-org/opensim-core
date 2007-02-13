@@ -68,21 +68,6 @@ static vector<std::string> recognizedTypes;
 const string Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
 static const bool Object_DEBUG = false;
 
-void stripExtraWhiteSpace(std::string &aBuffer)
-{
-	int front = aBuffer.find_first_not_of(" \t\r\n");
-	if(front==-1) {
-		aBuffer = "";
-	} else if (front > 0) {
-		aBuffer.erase(0, front);
-	}
-
-	std::size_t back = aBuffer.find_last_not_of(" \t\r\n");
-	if (back < aBuffer.size() - 1)
-		aBuffer.erase(back + 1);
-}
-
-
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -623,6 +608,60 @@ isValidDefaultType(const Object *aObject) const
 	return(true);
 }
 
+template<class T> void UpdateFromXMLNodeSimpleProperty(Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	aProperty->setUseDefault(true);
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	// Did code transformation to avoid trying to parse elmt
+	// if it's known to be NULL to avoid exception throwing overhead.
+	// -Ayman 8/06
+	if(elmt) {
+		T value = XMLNode::template GetValue<T>(elmt);
+		aProperty->setValue(value);
+		aProperty->setUseDefault(false);
+	}
+}
+
+template<class T> void UpdateFromXMLNodeArrayProperty(Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	aProperty->setUseDefault(true);
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	// Did code transformation to avoid trying to parse elmt
+	// if it's known to be NULL to avoid exception throwing overhead.
+	// -Ayman 8/06
+	if(elmt) {
+		T *value=NULL;
+		int n = XMLNode::template GetValueArray<T>(elmt,value);
+		aProperty->setValue(n,value);
+		aProperty->setUseDefault(false);
+		if(n>0) delete[] value;
+	}
+}
+
+template<class T> void UpdateXMLNodeSimpleProperty(const Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	const T &value = aProperty->getValue<T>();
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	if(!elmt && !aProperty->getUseDefault()) {
+		elmt = XMLNode::AppendNewElementWithComment(aNode, aName, "", aProperty->getComment());
+	} else if (elmt && !aProperty->getComment().empty()) {
+		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
+	}
+	XMLNode::SetValueArray<T>(elmt,1,&value);
+}
+
+template<class T> void UpdateXMLNodeArrayProperty(const Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	const Array<T> &value = aProperty->getValueArray<T>();
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	if(!elmt && !aProperty->getUseDefault()) {
+		elmt = XMLNode::AppendNewElementWithComment(aNode, aName, "", aProperty->getComment());
+	} else if (elmt && !aProperty->getComment().empty()) {
+		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
+	}
+	XMLNode::SetValueArray<T>(elmt,value.getSize(),value.get());
+}
+
 //-----------------------------------------------------------------------------
 // UPDATE OBJECT
 //-----------------------------------------------------------------------------
@@ -638,17 +677,13 @@ updateFromXMLNode()
 	if(_node==NULL) return;
 	if(_type=="Object") return;
 
-	// NAME 
-	char *str = XMLNode::GetAttribute(_node,"name");
-	string name = str;
-	setName(name);
-	if(str!=NULL) delete[] str;
+	// NAME
+	setName(XMLNode::GetAttribute(_node,"name"));
 
 	// UPDATE DEFAULT OBJECTS
 	updateDefaultObjectsFromXMLNode();
 
 	// LOOP THROUGH PROPERTIES
-	DOMElement *elmt;
 	for(int i=0;i<_propertySet.getSize();i++) {
 
 		Property *property = _propertySet.get(i);
@@ -662,78 +697,47 @@ updateFromXMLNode()
 			cout << "Object.updateFromXMLNode: updating property " << name << endl;
 		}
 
-
-#if 0
-		// don't try to catch exceptions here...
-		//----------- TRY BLOCK FOR PROPERTIES ------------
-		try {
-#endif
-
 		// VALUE
 		switch(type) {
 
 		// Bool
-		case(Property::Bool) : {
-			property->setUseDefault(true);
-			bool value;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				value = XMLNode::GetBool(elmt);
-				property->setValue(value);
-				property->setUseDefault(false);
-			}
-			break; }
-
+		case(Property::Bool) : 
+			UpdateFromXMLNodeSimpleProperty<bool>(property, _node, name);
+			break;
 		// Int
-		case(Property::Int) : {
-			property->setUseDefault(true);
-			int value;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				value = XMLNode::GetInt(elmt);
-				property->setValue(value);
-				property->setUseDefault(false);
-			}
-			break; }
-
-		// Dbl
-		case(Property::Dbl) : {
-			property->setUseDefault(true);
-			double value;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			// The following if statement prevents an exception from being thrown
-			// in GetDbl.  It is also computationally much faster.
-			if(elmt!=NULL) {
-				value = XMLNode::GetDbl(elmt);
-				property->setValue(value);
-				property->setUseDefault(false);
-			}
-			break; }
-
+		case(Property::Int) :
+			UpdateFromXMLNodeSimpleProperty<int>(property, _node, name);
+			break;
+		// Double
+		case(Property::Dbl) :
+			UpdateFromXMLNodeSimpleProperty<double>(property, _node, name);
+			break;
 		// Str
-		case(Property::Str) : {
-			property->setUseDefault(true);
-			// Did code transformation to avoid trying to parse elmt
-			// if it's known to be NULL to avoid exception throwing overhead.
-			// -Ayman 8/06
-			char *value=0;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if (elmt != 0)
-				value = XMLNode::GetStr(elmt);
-			if(value!=0) {
-				string valueStr = value;
-				stripExtraWhiteSpace(valueStr);
-				property->setValue(valueStr);
-				property->setUseDefault(false);
-				delete[] value;
-			}
-			break; }
+		case(Property::Str) : 
+			UpdateFromXMLNodeSimpleProperty<string>(property, _node, name);
+			break;
+		// BoolArray
+		case(Property::BoolArray) : 
+			UpdateFromXMLNodeArrayProperty<bool>(property,_node,name);
+			break;
+		// IntArray
+		case(Property::IntArray) :
+			UpdateFromXMLNodeArrayProperty<int>(property,_node,name);
+			break;
+		// DblArray
+		case(Property::DblArray) :
+			UpdateFromXMLNodeArrayProperty<double>(property,_node,name);
+			break;
+		// StrArray
+		case(Property::StrArray) :
+			UpdateFromXMLNodeArrayProperty<string>(property,_node,name);
+			break;
 
 		// Obj
 		case(Property::Obj) : {
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
-			elmt = object.getXMLNode();
+			DOMElement *elmt = object.getXMLNode();
 			DOMElement *objNode = NULL;
 
 			//-----------Begin inline support---------------------------
@@ -779,17 +783,12 @@ updateFromXMLNode()
 							continue;
 						}
 						// NAME ATTRIBUTE
-						char *elmtName =
-							XMLNode::GetAttribute(elmt,"name");
+						string elmtName = XMLNode::GetAttribute(elmt,"name");
 						if(Object_DEBUG) cout<<"\nFound element "<<elmtName<<endl;
 						if(objName == elmtName) {
 							objNode = elmt;
-							delete[] elmtName;
 							break;
 						}
-
-						// CLEAN UP
-						delete[] elmtName;
 					}
 				}
 
@@ -829,74 +828,12 @@ updateFromXMLNode()
 			}
 			break; }
 
-		// BoolArray
-		case(Property::BoolArray) : {
-			property->setUseDefault(true);
-			int n=0;
-			bool *value=NULL;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				property->setUseDefault(false);
-				n = XMLNode::GetBoolArray(elmt,value);
-				property->setValue(n,value);
-				if(n>0) delete[] value;
-			}
-			break; }
-
-		// IntArray
-		case(Property::IntArray) : {
-			property->setUseDefault(true);
-			int n=0;
-			int *value=NULL;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				property->setUseDefault(false);
-				n = XMLNode::GetIntArray(elmt,value);
-				// Moved setting and cleanup inside the if block so that values set by constructor are kept 
-				// if property is not specified in the xml file
-				property->setValue(n,value);
-				if(n>0) delete[] value;
-			}
-			break; }
-
-		// DblArray
-		case(Property::DblArray) : {
-			property->setUseDefault(true);	// Indicate not read from file
-			int n=0;
-			double *value=NULL;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				property->setUseDefault(false);
-				n = XMLNode::GetDblArray(elmt,value);
-				// Moved setting and cleanup inside the if block so that values set by constructor are kept 
-				// if property is not specified in the xml file
-				property->setValue(n,value);
-				if(n>0) delete[] value;
-			}
-			break; }
-
-		// StrArray
-		case(Property::StrArray) : {
-			property->setUseDefault(true);
-			int n=0;
-			string *value=NULL;
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt!=NULL) {
-				property->setUseDefault(false);
-				n = XMLNode::GetStrArray(elmt,value);
-				// Moved setting and cleanup inside the if block so that values set by constructor are kept 
-				// if property is not specified in the xml file
-				property->setValue(n,value);
-				if(n>0) delete[] value;
-			}
-			break; }
-
 		// ObjArray
 		case(Property::ObjArray) : {
 			property->setUseDefault(true);
 
 			// GET ENCLOSING ELEMENT
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
+			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if(elmt==NULL) {
 				if (Object_DEBUG) {
 					cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
@@ -980,19 +917,10 @@ updateFromXMLNode()
 			break; }
 
 		// NOT RECOGNIZED
-		default : {
+		default :
 			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
-
-			break; }
+			break;
 		}
-
-#if 0
-		//-----------------------------------------------------
-		} catch(Exception x) {
-			if(Object_DEBUG) x.print(cout);
-		}
-		//----------- END TRY BLOCK FOR PROPERTIES ------------
-#endif
 	}
 }
 
@@ -1001,7 +929,7 @@ updateFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Update the registerred default objects based on an object's XML node.
+ * Update the registered default objects based on an object's XML node.
  *
  * This method looks for an element with a tag name "defaults" and reads
  * the objects in that element and registers them using the method
@@ -1014,25 +942,21 @@ updateDefaultObjectsFromXMLNode()
 	if(_document==NULL) return;
 	if(_node!=_document->getDOMDocument()->getDocumentElement()) return;
 
-	// VARIABLES
-	DOMElement *defaultsElmt,*elmt;
-	Object *defaultObject,*object;
-
 	// GET DEFAULTS ELEMENT
-	defaultsElmt = XMLNode::GetFirstChildElementByTagName(_node,"defaults");
+	DOMElement *defaultsElmt = XMLNode::GetFirstChildElementByTagName(_node,"defaults");
 	if(defaultsElmt==NULL) return;
 
 	// LOOP THROUGH SUPPORTED OBJECT TYPES
 	for(int i=0;i<_Types.getSize();i++) {
 
 		// GET DEFAULT OBJECT
-		defaultObject = _Types.get(i);
+		Object *defaultObject = _Types.get(i);
 		if(defaultObject==NULL) continue;
 		if(!isValidDefaultType(defaultObject)) continue; // unused
 
 		// GET ELEMENT
 		const string &type = defaultObject->getType();
-		elmt = XMLNode::GetFirstChildElementByTagName(defaultsElmt,type);
+		DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(defaultsElmt,type);
 		if(elmt==NULL) continue;
 
 		// CHECK THAT THE ELEMENT IS AN IMMEDIATE CHILD
@@ -1050,7 +974,7 @@ updateDefaultObjectsFromXMLNode()
 		}
 
 		// CONSTRUCT AND REGISTER DEFAULT OBJECT
-		object = defaultObject->copy(elmt);
+		Object *object = defaultObject->copy(elmt);
 		if(object!=NULL) {
 			object->setName(DEFAULT_NAME);
 			RegisterType(*object);
@@ -1164,53 +1088,37 @@ updateXMLNode(DOMElement *aParent)
 		switch(type) {
 
 		// Bool
-		case(Property::Bool) : {
-			bool &value = property->getValueBool();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetBoolArray(elmt,1,&value);
-			break; }
-
+		case(Property::Bool) :
+			UpdateXMLNodeSimpleProperty<bool>(property, _node, name);
+			break;
 		// Int
-		case(Property::Int) : {
-			int &value = property->getValueInt();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetIntArray(elmt,1,&value);
-			break; }
-
+		case(Property::Int) :
+			UpdateXMLNodeSimpleProperty<int>(property, _node, name);
+			break;
 		// Dbl
-		case(Property::Dbl) : {
-			double &value = property->getValueDbl();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetDblArray(elmt,1,&value);
-			break; }
-
+		case(Property::Dbl) :
+			UpdateXMLNodeSimpleProperty<double>(property, _node, name);
+			break;
 		// Str
-		case(Property::Str) : {
-			string &value = property->getValueStr();
-			char *str = (char *)value.c_str();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetStrArray(elmt,1,&str);
-			break; }
+		case(Property::Str) :
+			UpdateXMLNodeSimpleProperty<string>(property, _node, name);
+			break;
+		// BoolArray
+		case(Property::BoolArray) :
+			UpdateXMLNodeArrayProperty<bool>(property,_node,name);
+			break;
+		// IntArray
+		case(Property::IntArray) :
+			UpdateXMLNodeArrayProperty<int>(property,_node,name);
+			break;
+		// DblArray
+		case(Property::DblArray) :
+			UpdateXMLNodeArrayProperty<double>(property,_node,name);
+			break;
+		// StrArray
+		case(Property::StrArray) :
+			UpdateXMLNodeArrayProperty<string>(property,_node,name);
+			break;
 
 		// Obj
 		case(Property::Obj) : {
@@ -1235,54 +1143,6 @@ updateXMLNode(DOMElement *aParent)
 #endif
 			break; }
 
-		// BoolArray
-		case(Property::BoolArray) : {
-			Array<bool> &value = property->getValueBoolArray();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetBoolArray(elmt,value.getSize(),&value[0]);
-			break; }
-
-		// IntArray
-		case(Property::IntArray) : {
-			Array<int> &value = property->getValueIntArray();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetIntArray(elmt,value.getSize(),&value[0]);
-			break; }
-
-		// DblArray
-		case(Property::DblArray) : {
-			Array<double> &value = property->getValueDblArray();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetDblArray(elmt,value.getSize(),&value[0]);
-			break; }
-
-		// StrArray
-		case(Property::StrArray) : {
-			Array<string> &value = property->getValueStrArray();
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if((elmt==NULL) && (!property->getUseDefault())) {
-				elmt= XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			XMLNode::SetStrArray(elmt,value.getSize(),value.get());
-			break; }
-
 		// ObjArray
 		case(Property::ObjArray) : {
 			ArrayPtrs<Object> &value = property->getValueObjArray();
@@ -1298,11 +1158,9 @@ updateXMLNode(DOMElement *aParent)
 			break; }
 
 		// NOT RECOGNIZED
-		default : {
-			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<
-				endl;
-
-			break; }
+		default :
+			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+			break;
 		}
 	}
 }
@@ -1566,11 +1424,11 @@ bool Object::
 parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aChildDocument, DOMElement *&aChildDocumentElement)
 {
 	if(!aElement) return false;
-	char *fileAttrib = XMLNode::GetAttribute(aElement, "file");
+	string fileAttrib = XMLNode::GetAttribute(aElement, "file");
 	bool parsedFileAttribute = false;
-	if (fileAttrib!= NULL && strlen(fileAttrib) > 0) {
-		if(!ifstream(fileAttrib))
-			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + string(fileAttrib) + 
+	if(!fileAttrib.empty()) {
+		if(!ifstream(fileAttrib.c_str()))
+			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + fileAttrib + 
 								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
 		// Change _node to refer to the root of the external file
 		aRefNode = aElement;
@@ -1578,7 +1436,6 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aC
 		aChildDocumentElement = aChildDocument->getDOMDocument()->getDocumentElement();
 		parsedFileAttribute = true;
 	}
-	if(fileAttrib) delete[] fileAttrib;
 	return parsedFileAttribute;
 }
 

@@ -559,3 +559,17 @@ replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::s
 	}
 	return result;
 }
+
+void IO::
+TrimLeadingWhitespace(std::string &rStr)
+{
+	string::size_type front = rStr.find_first_not_of(" \t\r\n");
+	rStr.erase(0, front);
+}
+
+void IO::
+TrimTrailingWhitespace(std::string &rStr)
+{
+	string::size_type back = rStr.find_last_not_of(" \t\r\n");
+	if(back < rStr.size()-1) rStr.erase(back+1);
+}

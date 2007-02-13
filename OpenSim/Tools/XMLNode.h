@@ -37,6 +37,7 @@
 // INCLUDES
 #include <iostream>	// Ayman: Remove .h extension per .NET 2003
 #include <xercesc/dom/DOM.hpp>
+#include <string>
 #include "rdTools.h"
 XERCES_CPP_NAMESPACE_USE
 
@@ -115,8 +116,15 @@ public:
 		GetInt(const DOMNode *aNode);
 	static double
 		GetDbl(const DOMNode *aNode);
-	static char*
+	static std::string
 		GetStr(const DOMNode *aNode);
+
+	// TEMPLATED VERSIONS
+	template<class T> static T GetValue(const DOMNode *aNode);
+	template<> static bool GetValue(const DOMNode *aNode) { return GetBool(aNode); }
+	template<> static int GetValue(const DOMNode *aNode) { return GetInt(aNode); }
+	template<> static double GetValue(const DOMNode *aNode) { return GetDbl(aNode); }
+	template<> static std::string GetValue(const DOMNode *aNode) { return GetStr(aNode); }
 
 	//--------------------------------------------------------------------------
 	// FUNDAMENTAL ARRAY TYPES
@@ -138,13 +146,21 @@ public:
 		GetDblArray(const DOMNode *aNode,double *&rData);
 	// STRING ARRAY
 	static void
-		SetStrArray(DOMNode *aNode,int aN,char **aData);
-	static void
-		SetStrArray(DOMNode *aNode,int aN,std::string *aData);
-	static int
-		GetStrArray(const DOMNode *aNode,char** &rData);
+		SetStrArray(DOMNode *aNode,int aN,const std::string *aData);
 	static int
 		GetStrArray(const DOMNode *aNode,std::string* &rData);
+
+	// TEMPLATED VERSIONS
+	template<class T> static void SetValueArray(DOMNode *aNode,int aN,const T *rData);
+	template<> static void SetValueArray(DOMNode *aNode,int aN,const bool *rData) { return SetBoolArray(aNode, aN, rData); }
+	template<> static void SetValueArray(DOMNode *aNode,int aN,const int *rData) { return SetIntArray(aNode, aN, rData); }
+	template<> static void SetValueArray(DOMNode *aNode,int aN,const double *rData) { return SetDblArray(aNode, aN, rData); }
+	template<> static void SetValueArray(DOMNode *aNode,int aN,const std::string *rData) { return SetStrArray(aNode, aN, rData); }
+	template<class T> static int GetValueArray(const DOMNode *aNode,T *&rData);
+	template<> static int GetValueArray(const DOMNode *aNode,bool *&rData) { return GetBoolArray(aNode, rData); }
+	template<> static int GetValueArray(const DOMNode *aNode,int *&rData) { return GetIntArray(aNode, rData); }
+	template<> static int GetValueArray(const DOMNode *aNode,double *&rData) { return GetDblArray(aNode, rData); }
+	template<> static int GetValueArray(const DOMNode *aNode,std::string *&rData) { return GetStrArray(aNode, rData); }
 
 	//--------------------------------------------------------------------------
 	// ELEMENT ATTRIBUTES
@@ -152,7 +168,7 @@ public:
 	static void
 		SetAttribute(DOMNode *aNode,const std::string &aName,
 		const std::string &aValue);
-	static char*
+	static std::string
 		GetAttribute(DOMNode *aNode,const std::string &aName);
 
 

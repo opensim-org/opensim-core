@@ -118,6 +118,9 @@ public:
 
 	// String utilities
 	static std::string replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo);
+	static void TrimLeadingWhitespace(std::string &rStr);
+	static void TrimTrailingWhitespace(std::string &rStr);
+	static void TrimWhitespace(std::string &rStr) { TrimLeadingWhitespace(rStr); TrimTrailingWhitespace(rStr); }
 //=============================================================================
 };	// END CLASS IO
 
