@@ -53,7 +53,6 @@ using namespace std;
 // STATICS
 //=============================================================================
 ArrayPtrs<Object> Object::_Types;
-Array<XMLCh *> Object::_typeNames(0);
 
 stringsToObjects Object::_mapTypesToDefaultObjects;
 defaultsReadFromFile	Object::_defaultsReadFromFile;
@@ -61,8 +60,6 @@ bool Object::_serializeAllDefaults=false;
 
 #include <vector>
 #include <algorithm>  // Include algorithms
-
-static vector<std::string> recognizedTypes;
 
 //============================================================================
 // CONSTANTS
@@ -135,11 +132,6 @@ Object::Object(const string &aFileName)
 	// GET DOCUMENT ELEMENT
 	_node = doc->getDocumentElement();
 
-	// Build array of type names to avoid calling xmlTranscode repeatedly with 
-	// The side effect of allocating and releasing buffers. 
-	// This should've been done right after registration however this seems to crash
-	// (probably because XML initialization is not done until we try to read an object from a file).
-	buildTypeNamesTable();
 	// UPDATE OBJECT
 	updateFromXMLNode();
 	//}
@@ -271,27 +263,6 @@ copy(DOMElement *aElement) const
 	object->updateFromXMLNode();
 
 	return(object);
-}
-
-//_____________________________________________________________________________
-/**
- * Build table of Type names to avoid allocating and deallocating
- * memory for XML tags repeatedly.
- */
-void Object::
-buildTypeNamesTable()
-{
-	// Fill up the _typeNames array for quick indexing
-	if (_typeNames.getSize() != _Types.getSize()){
-		for(int i=0;i<_Types.getSize();i++) {
-			Object *object = _Types.get(i);
-			string objType = object->getType();
-			XMLCh *tagName = XMLString::transcode(objType.c_str());
-			_typeNames.append(tagName);
-			recognizedTypes.push_back(objType);
-		}
-		sort(recognizedTypes.begin(), recognizedTypes.end());
-	}
 }
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -869,61 +840,40 @@ updateFromXMLNode()
 				// to process element nodes
 				if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
 				DOMElement *objElmt = (DOMElement*) list->item(j);
+				string objectType = transcodeAndTrim(objElmt->getTagName());
 
-				const XMLCh *objType = objElmt->getTagName();
-				string objectType = transcodeAndTrim(objType);
+				// Get default object corresponding to this tag (or if it's not a recognized object, go to the next child)
+				stringsToObjects::iterator find_iter = _mapTypesToDefaultObjects.find(objectType);
+				if(find_iter == _mapTypesToDefaultObjects.end()) continue;
+				else defaultObject = find_iter->second;
 
-				if ( find(recognizedTypes.begin(), recognizedTypes.end(), objectType)== recognizedTypes.end()){
-					continue;
+				// If object is from non-inlined, detect it and set attributes
+				// However we need to do that on the finalized object as copying
+				// does not keep track of XML related issues
+				DOMElement *refNode;
+				XMLDocument *childDocument;
+				bool inLinedObject = !parseFileAttribute(objElmt, refNode, childDocument, objElmt);
+				
+				property->setUseDefault(false);
+
+				// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
+				// Used to call a special copy method that took DOMElement* but 
+				// that ended up causing XML to be parsed twice.  Got rid of that
+				// copy method! - Eran, Feb/07
+				object = defaultObject->copy();
+				object->setXMLNode(objElmt);
+				object->updateFromXMLNode();
+
+				// Set inlining attributes on final object
+				if (!inLinedObject){
+					object->_inLined = inLinedObject;
+					object->_refNode = refNode;
+					object->_document = childDocument;
 				}
-				defaultObject = _mapTypesToDefaultObjects[objectType];
 
-					// If object is from non-inlined, detect it and set attributes
-					// However we need to do that on the finalized object as copying
-					// does not keep track of XML related issues
-					//-----------Begin inline support---------------------------
-					DOMElement *refNode;
-					XMLDocument *childDocument;
-					bool inLinedObject = !parseFileAttribute(objElmt, refNode, childDocument, objElmt);
-					//-----------End inline support---------------------
-					// CHECK THAT THE ELEMENT IS AN IMMEDIATE CHILD
-					DOMNode *parent = objElmt->getParentNode();
-					if( (parent!=elmt) && (parent!=NULL) && (_node!=NULL) &&
-						(parent->getOwnerDocument()==_node->getOwnerDocument()) ) {
-						if(Object_DEBUG) {
-							string elmtName = transcode(objElmt->getNodeName());
-							string parentName = transcode(parent->getNodeName());
-							string nodeName = transcode(elmt->getNodeName());
-							cout<<"Object.updateFromXMLNode: "<<elmtName;
-							cout<<" is a child of "<<parentName<<", not of ";
-							cout<<nodeName<<endl;
-						}
-						continue;
-					}
-					
-					property->setUseDefault(false);
-
-					// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
-					// Used to call a special copy method that took DOMElement* but 
-					// that ended up causing XML to be parsed twice.  Got rid of that
-					// copy method! - Eran, Feb/07
-					//object = defaultObject->copy(objElmt);
-					object = defaultObject->copy();
-					object->setXMLNode(objElmt);
-					object->updateFromXMLNode();
-
-					// Set inlining attributes on final object
-					if (!inLinedObject){
-						object->_inLined = inLinedObject;
-						object->_refNode = refNode;
-						object->_document = childDocument;
-					}
-
-					// ADD
-					if(object!=NULL) {
-						objArray.append(object);
-					}
-				}
+				// ADD
+				objArray.append(object);
+			}
 				
 			break; }
 
@@ -970,34 +920,16 @@ updateDefaultObjectsFromXMLNode()
 		DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(defaultsElmt,type);
 		if(elmt==NULL) continue;
 
-		// CHECK THAT THE ELEMENT IS AN IMMEDIATE CHILD
-		DOMNode *parent = elmt->getParentNode();
-		if(parent != defaultsElmt) {
-			if(Object_DEBUG) {
-				string elmtName = transcode(elmt->getNodeName());
-				string parentName = transcode(parent->getNodeName());
-				string nodeName = transcode(_node->getNodeName());
-				cout<<"Object.updateFromXMLNode: "<<elmtName;
-				cout<<" is a child of "<<parentName<<", not of ";
-				cout<<nodeName<<endl;
-			}
-			continue;
-		}
-
 		// CONSTRUCT AND REGISTER DEFAULT OBJECT
 		// Used to call a special copy method that took DOMElement* but 
 		// that ended up causing XML to be parsed twice.  Got rid of that
 		// copy method! - Eran, Feb/07
-		//Object *object = defaultObject->copy(elmt);
 		Object *object = defaultObject->copy();
 		object->setXMLNode(elmt);
 		object->updateFromXMLNode();
-
-		if(object!=NULL) {
-			object->setName(DEFAULT_NAME);
-			RegisterType(*object);
-			delete object;
-		}
+		object->setName(DEFAULT_NAME);
+		RegisterType(*object);
+		delete object;
 	}
 }
 
@@ -1650,7 +1582,6 @@ makeObjectFromFile(const std::string &aFileName)
 		Object* newObject = newInstanceOfType(rootName);
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);
-		newObject->buildTypeNamesTable();
 		newObject->updateFromXMLNode();
 		return (newObject);
 	}

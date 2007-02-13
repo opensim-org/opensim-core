@@ -112,7 +112,6 @@ private:
 	instead of an array. */
 	static ArrayPtrs<Object> _Types;
 
-	static Array<XMLCh *> _typeNames;
 	/** 
 	 * A Hash map that maps an std::string& to the corresponding default object.
 	 */
@@ -182,7 +181,6 @@ private:
 	void setNull();
 	void setupProperties();
 	void init();
-	void buildTypeNamesTable();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
