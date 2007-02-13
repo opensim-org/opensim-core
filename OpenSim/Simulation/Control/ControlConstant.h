@@ -70,11 +70,9 @@ protected:
 //=============================================================================
 public:
 	ControlConstant(double aX=0.0,const char *aName="UNKOWN");
-	ControlConstant(DOMElement *aElement);
 	ControlConstant(const ControlConstant &aControl);
 	virtual ~ControlConstant();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void copyData(const ControlConstant &aControl);

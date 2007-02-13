@@ -33,7 +33,6 @@
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include "AbstractActuator.h"
@@ -102,11 +101,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractSimmMuscle();
-	AbstractSimmMuscle(DOMElement *aElement);
 	AbstractSimmMuscle(const AbstractSimmMuscle &aMuscle);
 	virtual ~AbstractSimmMuscle();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 	virtual void setup(AbstractModel *aModel);
 
 	AbstractSimmMuscle& operator=(const AbstractSimmMuscle &aMuscle);

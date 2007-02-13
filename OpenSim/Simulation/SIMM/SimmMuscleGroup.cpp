@@ -48,17 +48,6 @@ SimmMuscleGroup::SimmMuscleGroup() :
 	setNull();
 
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmMuscleGroup::SimmMuscleGroup(DOMElement *aElement) :
-   Object(aElement),
-	_muscles(NULL)
-{
-	setNull();
-	//updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -91,29 +80,6 @@ SimmMuscleGroup::SimmMuscleGroup(const SimmMuscleGroup &aGroup) :
 Object* SimmMuscleGroup::copy() const
 {
 	SimmMuscleGroup *grp = new SimmMuscleGroup(*this);
-	return(grp);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMuscleGroup and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMuscleGroup::SimmMuscleGroup(DOMElement*) in order to establish the
- * relationship of the SimmMuscleGroup object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMuscleGroup object. Finally, the data members of the
- * copy are updated using SimmMuscleGroup::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMuscleGroup.
- */
-Object* SimmMuscleGroup::copy(DOMElement *aElement) const
-{
-	SimmMuscleGroup *grp = new SimmMuscleGroup(aElement);
-	*grp = *this;
-	//grp->updateFromXMLNode();
 	return(grp);
 }
 

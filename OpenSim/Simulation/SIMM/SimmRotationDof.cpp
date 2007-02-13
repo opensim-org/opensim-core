@@ -50,19 +50,6 @@ SimmRotationDof::SimmRotationDof() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmRotationDof::SimmRotationDof(DOMElement *aElement) :
-   AbstractDof(aElement),
-   _axis(_axisProp.getValueDblArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmRotationDof::~SimmRotationDof()
@@ -94,29 +81,6 @@ SimmRotationDof::SimmRotationDof(const SimmRotationDof &aDof) :
 Object* SimmRotationDof::copy() const
 {
 	SimmRotationDof *dof = new SimmRotationDof(*this);
-	return(dof);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmRotationDof and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmRotationDof::SimmRotationDof(DOMElement*) in order to establish the
- * relationship of the SimmRotationDof object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmRotationDof object. Finally, the data members of the copy are
- * updated using updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmRotationDof.
- */
-Object* SimmRotationDof::copy(DOMElement *aElement) const
-{
-	SimmRotationDof *dof = new SimmRotationDof(aElement);
-	*dof = *this;
-	dof->updateFromXMLNode();
 	return(dof);
 }
 

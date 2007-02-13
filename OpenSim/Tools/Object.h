@@ -46,9 +46,13 @@
 #include "Event.h"
 #include "rdTools.h"
 #include "PropertySet.h"
-#include "XMLNode.h"
-#include "XMLDocument.h"
 
+// Only the necessary Xerces includes/defines
+#include <xercesc/util/XercesDefs.hpp>
+XERCES_CPP_NAMESPACE_BEGIN
+class DOMElement;
+XERCES_CPP_NAMESPACE_END
+XERCES_CPP_NAMESPACE_USE
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -94,6 +98,7 @@ namespace OpenSim {
 	Ideally VisibleObject would be broken into interfaces
 	so that the behavior only (not the serialization) is used here.*/
 class VisibleObject;
+class XMLDocument;
 
 class RDTOOLS_API Object  
 {
@@ -253,15 +258,14 @@ public:
 	// Inline support
 	void setInlined(const bool aInLined, const char *aFileName=NULL);
 	bool getInlined() const;
-	const char *getOffLineFileName() const;
 	void clearXMLNodes();
 	XMLDocument* getDocument() const;
+	std::string getDocumentFileName() const;
 	DOMElement* getXMLNode() const;
 protected:
 	void setXMLNode(DOMElement *aNode);
 private:
 	void generateXMLDocument();
-	void generateDocument();
 	bool parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aChildDocument, DOMElement *&aChildDocumentElement);
 	static std::string transcode(const XMLCh *aCh);
 	static std::string transcodeAndTrim(const XMLCh *aCh);

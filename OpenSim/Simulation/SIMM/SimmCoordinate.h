@@ -38,7 +38,6 @@
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Function.h>
 #include "AbstractCoordinate.h"
 
@@ -115,11 +114,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmCoordinate();
-	SimmCoordinate(DOMElement *aElement);
 	SimmCoordinate(const SimmCoordinate &aCoordinate);
 	virtual ~SimmCoordinate();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmCoordinate& operator=(const SimmCoordinate &aCoordinate);

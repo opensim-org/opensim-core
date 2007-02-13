@@ -46,18 +46,6 @@ BodyScale::BodyScale() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-BodyScale::BodyScale(DOMElement *aElement) :
-   Object(aElement),
-	_axisNames(_axisNamesProp.getValueStrArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -92,29 +80,6 @@ BodyScale::BodyScale(const BodyScale &aBodyScale) :
 Object* BodyScale::copy() const
 {
 	BodyScale *bodyScale = new BodyScale(*this);
-	return(bodyScale);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this BodyScale and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * BodyScale::BodyScale(DOMElement*) in order to establish the
- * relationship of the BodyScale object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this BodyScale object. Finally, the data members of the copy are
- * updated using BodyScale::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this BodyScale.
- */
-Object* BodyScale::copy(DOMElement *aElement) const
-{
-	BodyScale *bodyScale = new BodyScale(aElement);
-	*bodyScale = *this;
-	bodyScale->updateFromXMLNode();
 	return(bodyScale);
 }
 

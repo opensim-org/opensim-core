@@ -90,19 +90,6 @@ VectorGCVSplineR1R3(int aDegree,int aN,const double *aX,double *aY0,double *aY1,
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element.  NOT FUNCTIONAL
- *
- * @param aElement XML element.
- */
-VectorGCVSplineR1R3::
-VectorGCVSplineR1R3(DOMElement *aElement) :
-	VectorFunction(aElement), _value(0.0)
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  * All data members of the specified spline are copied.
  *
@@ -162,36 +149,6 @@ Object* VectorGCVSplineR1R3::
 copy() const
 {
 	VectorGCVSplineR1R3 *func = new VectorGCVSplineR1R3(*this);
-	return(func);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this object and modify the copy so that it is consistent
- * with a specified XML element node.   NOT FUNCTIONAL
- *
- * The copy is constructed by first using
- * VectorGCVSplineR1R3::VectorGCVSplineR1R3(DOMElement*) in order to establish the
- * XML node.  Then, the assignment operator is used to set all
- * data members of the copy to the values of this object.  Finally, the
- * data members of the copy are updated using VectorGCVSplineR1R3::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this object modified by the specified
- * XML element.
- */
-Object* VectorGCVSplineR1R3::
-copy(DOMElement *aElement) const
-{
-	// CONSTRUCT FUNCTION BASED ON XML ELEMENT
-	VectorGCVSplineR1R3 *func = new VectorGCVSplineR1R3(aElement);
-
-	// ASSIGN DATA ACCORDING TO THIS ACTUATOR
-	*func = *this;
-
-	// UPDATE DATA CCORDING TO THE XML ELEMENT
-	func->updateFromXMLNode();
-
 	return(func);
 }
 

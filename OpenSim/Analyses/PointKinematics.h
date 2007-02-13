@@ -75,11 +75,9 @@ protected:
 public:
 	PointKinematics(AbstractModel *aModel=0);
 	PointKinematics(const std::string &aFileName);
-	PointKinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	PointKinematics(const PointKinematics &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~PointKinematics();
 private:
 	void setNull();

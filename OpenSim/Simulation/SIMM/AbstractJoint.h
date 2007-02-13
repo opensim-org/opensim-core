@@ -32,7 +32,6 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
 
 namespace OpenSim {
@@ -69,11 +68,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractJoint();
-	AbstractJoint(DOMElement *aElement);
 	AbstractJoint(const AbstractJoint &aJoint);
 	virtual ~AbstractJoint();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 
 #ifndef SWIG
 	AbstractJoint& operator=(const AbstractJoint &aJoint);

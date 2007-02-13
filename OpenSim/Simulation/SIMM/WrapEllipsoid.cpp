@@ -67,19 +67,6 @@ WrapEllipsoid::WrapEllipsoid() :
 
 //_____________________________________________________________________________
 /**
-* Constructor from an XML node
-*/
-WrapEllipsoid::WrapEllipsoid(DOMElement* aElement) :
-   AbstractWrapObject(aElement),
-   _dimensions(_dimensionsProp.getValueDblArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
 * Destructor.
 */
 WrapEllipsoid::~WrapEllipsoid()
@@ -111,29 +98,6 @@ WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid) :
 Object* WrapEllipsoid::copy() const
 {
 	WrapEllipsoid *wrapEllipsoid = new WrapEllipsoid(*this);
-	return(wrapEllipsoid);
-}
-
-//_____________________________________________________________________________
-/**
-* Copy this WrapEllipsoid and modify the copy so that it is consistent
-* with a specified XML element node.
-*
-* The copy is constructed by first using
-* WrapEllipsoid::WrapEllipsoid(DOMElement*) in order to establish the
-* relationship of the WrapEllipsoid object with the XML node. Then, the
-* assignment operator is used to set all data members of the copy to the
-* values of this WrapEllipsoid object. Finally, the data members of the copy are
-* updated using WrapEllipsoid::updateFromXMLNode().
-*
-* @param aElement XML element. 
-* @return Pointer to a copy of this WrapEllipsoid.
-*/
-Object* WrapEllipsoid::copy(DOMElement *aElement) const
-{
-	WrapEllipsoid *wrapEllipsoid = new WrapEllipsoid(aElement);
-	*wrapEllipsoid = *this;
-	wrapEllipsoid->updateFromXMLNode();
 	return(wrapEllipsoid);
 }
 

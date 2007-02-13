@@ -30,7 +30,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/Set.h>
@@ -70,12 +69,10 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractBody();
-	AbstractBody(DOMElement *aElement);
 	AbstractBody(const AbstractBody &aBody);
 	virtual ~AbstractBody();
 
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 #ifndef SWIG
 	AbstractBody& operator=(const AbstractBody &aBody);
 #endif

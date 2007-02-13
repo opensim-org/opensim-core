@@ -111,24 +111,6 @@ Callback::Callback(const std::string &aFileName):
 }
 //_____________________________________________________________________________
 /**
-* Construct an Callback from DOMElement.
-*
-* The object is constructed from the root element of the XML document.
-* The type of object is the tag name of the XML root element.
-*
-* @param aFileName File name of the document.
-*/
-Callback::Callback(DOMElement *aElement):
-	Object(aElement),
-	_on(_onProp.getValueBool()),
-	_startTime(_startTimeProp.getValueDbl()),
-	_endTime(_endTimeProp.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Virtual copy constructor.
  */
 Object* Callback::
@@ -137,18 +119,6 @@ copy() const
 	return(new Callback(*this));
 }
 
-//_____________________________________________________________________________
-/**
- * Create and return a copy 
- */
-Object* Callback::
-copy(DOMElement *aElement) const
-{
-	Callback *c = new Callback(aElement);
-	*c = *this;
-	c->updateFromXMLNode();
-	return(c);
-}
 //=============================================================================
 // CONSTRUCTION AND DESTRUCTION
 //=============================================================================

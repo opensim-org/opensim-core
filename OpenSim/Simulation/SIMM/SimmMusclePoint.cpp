@@ -56,21 +56,6 @@ SimmMusclePoint::SimmMusclePoint() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmMusclePoint::SimmMusclePoint(DOMElement *aElement) :
-   Object(aElement),
-   _attachment(_attachmentProp.getValueDblArray()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -108,29 +93,6 @@ SimmMusclePoint::SimmMusclePoint(const SimmMusclePoint &aPoint) :
 Object* SimmMusclePoint::copy() const
 {
 	SimmMusclePoint *pt = new SimmMusclePoint(*this);
-	return(pt);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMusclePoint and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMusclePoint::SimmMusclePoint(DOMElement*) in order to establish the
- * relationship of the SimmMusclePoint object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMusclePoint object. Finally, the data members of the
- * copy are updated using SimmMusclePoint::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMusclePoint.
- */
-Object* SimmMusclePoint::copy(DOMElement *aElement) const
-{
-	SimmMusclePoint *pt = new SimmMusclePoint(aElement);
-	*pt = *this;
-	pt->updateFromXMLNode();
 	return(pt);
 }
 

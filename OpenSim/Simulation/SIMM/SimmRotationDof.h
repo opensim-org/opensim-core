@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include "AbstractDof.h"
 
 namespace OpenSim {
@@ -63,11 +62,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmRotationDof();
-	SimmRotationDof(DOMElement *aElement);
 	SimmRotationDof(const SimmRotationDof &aDof);
 	virtual ~SimmRotationDof();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmRotationDof& operator=(const SimmRotationDof &aDof);

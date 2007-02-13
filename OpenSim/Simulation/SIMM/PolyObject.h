@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #ifdef BUILD_GUI
 	#include <vtkXMLPolyDataReader.h>
@@ -77,11 +76,9 @@ protected:
 public:
 	PolyObject();
 	PolyObject(const std::string &aFileName);
-	PolyObject(DOMElement *aElement);
 	PolyObject(const PolyObject &aPoly);
 	virtual ~PolyObject();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 	PolyObject& operator=(const PolyObject &aPoly);
    void copyData(const PolyObject &aPoly);

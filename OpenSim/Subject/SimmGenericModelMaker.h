@@ -34,7 +34,6 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
 
 #ifdef SWIG
@@ -80,11 +79,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmGenericModelMaker();
-	SimmGenericModelMaker(DOMElement *aElement);
 	SimmGenericModelMaker(const SimmGenericModelMaker &aGenericModelMaker);
 	virtual ~SimmGenericModelMaker();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmGenericModelMaker& operator=(const SimmGenericModelMaker &aGenericModelMaker);

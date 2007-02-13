@@ -35,7 +35,6 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/Geometry.h>
 #include "AbstractMarker.h"
@@ -95,11 +94,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMarker();
-	SimmMarker(DOMElement *aElement);
 	SimmMarker(const SimmMarker &aMarker);
 	virtual ~SimmMarker();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMarker& operator=(const SimmMarker &aMarker);

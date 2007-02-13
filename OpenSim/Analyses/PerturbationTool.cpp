@@ -121,43 +121,6 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOMElement.
- */
-PerturbationTool::PerturbationTool(DOMElement *aElement):
-	SimulationTool(aElement),
-	_pertWindow(_pertWindowProp.getValueDbl()),
-	_pertIncrement(_pertIncrementProp.getValueDbl()),
-	_pertDF(_pertDFProp.getValueDbl()),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_copFileName(_copFileNameProp.getValueStr()),
-	_qFileName(_qFileNameProp.getValueStr()),
-	_uFileName(_uFileNameProp.getValueStr()),
-	_yFileName(_yFileNameProp.getValueStr()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
-{
-	setType("PerturbationTool");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Tools only copy the non-XML variable
@@ -182,7 +145,7 @@ PerturbationTool::PerturbationTool(DOMElement *aElement):
  * within the XML document, such as comments that may not have any
  * associated Tool member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -190,7 +153,7 @@ PerturbationTool::PerturbationTool(DOMElement *aElement):
  * @param aTool Object to be copied.
  * @see Tool(const XMLDocument *aDocument)
  * @see Tool(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 PerturbationTool::
 PerturbationTool(const PerturbationTool &aTool):
@@ -234,18 +197,6 @@ Object* PerturbationTool::
 copy() const
 {
 	PerturbationTool *object = new PerturbationTool(*this);
-	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor from DOMElement.
- */
-Object* PerturbationTool::
-copy(DOMElement *aElement) const
-{
-	PerturbationTool *object = new PerturbationTool(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 //_____________________________________________________________________________
@@ -481,7 +432,7 @@ void PerturbationTool::run()
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
 	// INPUT

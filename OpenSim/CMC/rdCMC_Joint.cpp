@@ -78,21 +78,6 @@ rdCMC_Joint::rdCMC_Joint(const string &aCoordinateName) :
 
 //_____________________________________________________________________________
 /**
- * Construct a track joint object for a specified model from an XML element.
- *
- * @param aElement XML element.
- */
-rdCMC_Joint::rdCMC_Joint(DOMElement *aElement) :
-	rdCMC_Task(aElement),
-	_coordinateName(_propCoordinateName.getValueStr()),
-	_limit(_propLimit.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aTask Joint task to be copied.
@@ -167,34 +152,6 @@ Object* rdCMC_Joint::
 copy() const
 {
 	rdCMC_Joint *object = new rdCMC_Joint(*this);
-	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Copy this track object and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the Force object with the
- * XML node.  Then, the assignment operator is used to set all data members
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* rdCMC_Joint::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	rdCMC_Joint *object = new rdCMC_Joint(aElement);
-
-	// ASSIGNMENT OPERATOR
-	*object = *this;
-
-	// UPDATE BASED ON NODE
-	object->updateFromXMLNode();
-
 	return(object);
 }
 //_____________________________________________________________________________

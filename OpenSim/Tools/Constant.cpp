@@ -69,21 +69,6 @@ Constant::Constant(int aN,const double *aX,const double *aY,	const string &aName
 
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element.
- *
- * @param aElement XML element.
- */
-Constant::Constant(DOMElement *aElement) :
-	Function(aElement),
-	_value(_valueProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  * All data members of the specified Constant are copied.
  *
@@ -108,35 +93,6 @@ Object* Constant::copy() const
 {
 	Constant *aConstant = new Constant(*this);
 	return(aConstant);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this object and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * Constant::Constant(DOMElement*) in order to establish the
- * XML node. Then, the assignment operator is used to set all
- * data members of the copy to the values of this object. Finally, the
- * data members of the copy are updated using Constant::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this object modified by the specified
- * XML element.
- */
-Object* Constant::copy(DOMElement *aElement) const
-{
-	// CONSTRUCT FUNCTION BASED ON XML ELEMENT
-	Constant *func = new Constant(aElement);
-
-	// ASSIGN DATA ACCORDING TO THIS Constant
-	*func = *this;
-
-	// UPDATE DATA CCORDING TO THE XML ELEMENT
-	func->updateFromXMLNode();
-
-	return(func);
 }
 
 //=============================================================================

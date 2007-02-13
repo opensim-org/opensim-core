@@ -55,21 +55,6 @@ MuscleWrap::MuscleWrap() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-MuscleWrap::MuscleWrap(DOMElement* aElement) :
-	Object(aElement),
-	_wrapObjectName(_wrapObjectNameProp.getValueStr()),
-	_methodName(_methodNameProp.getValueStr()),
-   _range(_rangeProp.getValueIntArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 MuscleWrap::~MuscleWrap()
@@ -103,29 +88,6 @@ MuscleWrap::MuscleWrap(const MuscleWrap& aMuscleWrap) :
 Object* MuscleWrap::copy() const
 {
 	MuscleWrap *muscWrap = new MuscleWrap(*this);
-	return(muscWrap);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this MuscleWrap and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * MuscleWrap::MuscleWrap(DOMElement*) in order to establish the
- * relationship of the MuscleWrap object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this MuscleWrap object. Finally, the data members of the copy are
- * updated using MuscleWrap::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this MuscleWrap.
- */
-Object* MuscleWrap::copy(DOMElement *aElement) const
-{
-	MuscleWrap *muscWrap = new MuscleWrap(aElement);
-	*muscWrap = *this;
-	muscWrap->updateFromXMLNode();
 	return(muscWrap);
 }
 

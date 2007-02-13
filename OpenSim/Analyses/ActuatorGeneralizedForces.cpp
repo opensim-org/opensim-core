@@ -104,19 +104,6 @@ _actuatorNames(_propActuatorNames.getValueStrArray())
 	setName("ActuatorGeneralizedForces");
 }
 
-ActuatorGeneralizedForces::
-ActuatorGeneralizedForces(DOMElement *aElement) :
-Analysis(aElement),
-_actuatorList(NULL),
-_actuatorNames(_propActuatorNames.getValueStrArray())
-{
-	setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-}
-
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -140,15 +127,6 @@ copy() const
 {
 
 	ActuatorGeneralizedForces *object = new ActuatorGeneralizedForces(*this);
-	return(object);
-}
-
-Object* ActuatorGeneralizedForces::
-copy(DOMElement *aElement) const
-{
-	ActuatorGeneralizedForces *object = new ActuatorGeneralizedForces(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 

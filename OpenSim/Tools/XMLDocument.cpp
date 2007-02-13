@@ -161,9 +161,6 @@ XMLDocument::~XMLDocument()
 		delete _document; _document=NULL;
 	}
 
-	if(_fileName!=NULL){
-		delete[] _fileName;	_fileName=NULL;
-	}
 	// TERMINATE
 	XMLPlatformUtils::Terminate();
 }
@@ -189,8 +186,6 @@ XMLDocument::XMLDocument()
 	DOMImplementation *implementation =
 		DOMImplementation::getImplementation();
 	_document = implementation->createDocument();
-
-	_fileName = NULL;
 }
 
 //_____________________________________________________________________________
@@ -262,10 +257,7 @@ XMLDocument::XMLDocument(const string &aFileName)
 
 	// DOCUMENT
 	_document = _parser->getDocument();
-
-	_fileName = new char[aFileName.length()+1];
-
-	strcpy(_fileName, aFileName.c_str());
+	_fileName = aFileName;
 }
 
 //_____________________________________________________________________________
@@ -285,11 +277,7 @@ XMLDocument::XMLDocument(const XMLDocument &aDocument)
 	DOMDocument *doc = aDocument.getDOMDocument();
 	if(doc!=NULL) _document = (DOMDocument*)doc->cloneNode(true);
 
-	if (_fileName!= NULL){
-		delete[] _fileName; _fileName=NULL;
-	}
-	_fileName = new char[strlen(aDocument.getFileName())+1];
-	strcpy(_fileName, aDocument.getFileName());
+	_fileName = aDocument.getFileName();
 }
 
 
@@ -332,16 +320,12 @@ getDOMDocument() const
 }
 
 void XMLDocument::
-setFileName(const char *aFileName)
+setFileName(const string &aFileName)
 {
-	if(_fileName!= NULL){
-		delete[] _fileName;
-	}
-	_fileName = new char[strlen(aFileName)+1];
-	strcpy(_fileName, aFileName);
+	_fileName = aFileName;
 }
 
-const char *XMLDocument::
+const string &XMLDocument::
 getFileName() const
 {
 	return _fileName;

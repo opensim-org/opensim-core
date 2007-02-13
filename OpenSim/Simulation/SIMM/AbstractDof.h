@@ -34,7 +34,6 @@
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Function.h>
 #include <OpenSim/Tools/Constant.h>
 
@@ -83,11 +82,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractDof();
-	AbstractDof(DOMElement *aElement);
 	AbstractDof(const AbstractDof &aDof);
 	virtual ~AbstractDof();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 
 #ifndef SWIG
 	AbstractDof& operator=(const AbstractDof &aDof);

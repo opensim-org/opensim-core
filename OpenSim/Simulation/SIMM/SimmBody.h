@@ -37,7 +37,6 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include "AbstractBody.h"
 #include "BoneSet.h"
 
@@ -81,11 +80,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmBody();
-	SimmBody(DOMElement *aElement);
 	SimmBody(const SimmBody &aBody);
 	virtual ~SimmBody();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmBody& operator=(const SimmBody &aBody);

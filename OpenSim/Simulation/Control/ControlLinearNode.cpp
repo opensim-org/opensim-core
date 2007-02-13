@@ -70,20 +70,6 @@ ControlLinearNode(double aT,double aValue) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a control node from an XML Element.
- *
- * @param aElement XML element.
- */
-ControlLinearNode::ControlLinearNode(DOMElement *aElement) :
-	Object(aElement),
-	_t(_propT.getValueDbl()),
-	_value(_propValue.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aControl Control to copy.
@@ -109,33 +95,6 @@ copy() const
 {
 	ControlLinearNode *object = new ControlLinearNode(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Copy this control and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the control with the
- * XML node.  Then, the assignment operator is used to set all member variables
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* ControlLinearNode::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	ControlLinearNode *node = (ControlLinearNode *)this->copy();
-
-	node->setXMLNode(aElement);
-
-	// UPDATE BASED ON NODE
-	node->updateFromXMLNode();
-
-	return(node);
 }
 
 ControlLinearNode::~ControlLinearNode()

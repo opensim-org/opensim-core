@@ -57,11 +57,9 @@ protected:
 public:
 	Actuation(AbstractModel *aModel=0);
 	Actuation(const std::string &aFileName);
-	Actuation(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	Actuation(const Actuation &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~Actuation();
 private:
 	void setNull();

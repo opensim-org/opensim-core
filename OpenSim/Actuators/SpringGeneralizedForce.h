@@ -56,11 +56,9 @@ protected:
 //=============================================================================
 public:
 	SpringGeneralizedForce(std::string aQName="");
-	SpringGeneralizedForce(DOMElement *aElement);
 	SpringGeneralizedForce(const SpringGeneralizedForce &aActuator);
 	virtual ~SpringGeneralizedForce();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

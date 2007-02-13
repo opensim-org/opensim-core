@@ -161,27 +161,6 @@ GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element.
- *
- * @param aElement XML element.
- */
-GCVSpline::
-GCVSpline(DOMElement *aElement) :
-	Function(aElement),
-	_halfOrder(_propHalfOrder.getValueInt()),
-	_errorVariance(_propErrorVariance.getValueDbl()),
-	_x(_propX.getValueDblArray()),
-	_weights(_propWeights.getValueDblArray()),
-	_coefficients(_propCoefficients.getValueDblArray()),
-	_wk(_propWk.getValueDblArray()),
-	_workEval(0.0),
-	_y(0.0)
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  * All data members of the specified spline are copied.
  *
@@ -212,35 +191,6 @@ copy() const
 {
 	GCVSpline *spline = new GCVSpline(*this);
 	return(spline);
-}
-//_____________________________________________________________________________
-/**
- * Copy this object and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * GCVSpline::GCVSpline(DOMElement*) in order to establish the
- * XML node.  Then, the assignment operator is used to set all
- * data members of the copy to the values of this object.  Finally, the
- * data members of the copy are updated using GCVSpline::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this object modified by the specified
- * XML element.
- */
-Object* GCVSpline::
-copy(DOMElement *aElement) const
-{
-	// CONSTRUCT FUNCTION BASED ON XML ELEMENT
-	GCVSpline *func = new GCVSpline(aElement);
-
-	// ASSIGN DATA ACCORDING TO THIS ACTUATOR
-	*func = *this;
-
-	// UPDATE DATA CCORDING TO THE XML ELEMENT
-	func->updateFromXMLNode();
-
-	return(func);
 }
 
 

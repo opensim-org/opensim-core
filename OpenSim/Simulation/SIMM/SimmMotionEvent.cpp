@@ -50,20 +50,6 @@ SimmMotionEvent::SimmMotionEvent() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmMotionEvent::SimmMotionEvent(DOMElement *aElement) :
-   Object(aElement),
-	_time(_timeProp.getValueDbl()),
-	_color(_colorProp.getValueDblArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmMotionEvent::~SimmMotionEvent()
@@ -96,29 +82,6 @@ SimmMotionEvent::SimmMotionEvent(const SimmMotionEvent &aEvent) :
 Object* SimmMotionEvent::copy() const
 {
 	SimmMotionEvent *event = new SimmMotionEvent(*this);
-	return(event);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMotionEvent and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMotionEvent::SimmMotionEvent(DOMElement*) in order to establish the
- * relationship of the SimmGenericModelMaker object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMotionEvent object. Finally, the data members of the copy are
- * updated using SimmMotionEvent::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMotionEvent.
- */
-Object* SimmMotionEvent::copy(DOMElement *aElement) const
-{
-	SimmMotionEvent *event = new SimmMotionEvent(aElement);
-	*event = *this;
-	event->updateFromXMLNode();
 	return(event);
 }
 

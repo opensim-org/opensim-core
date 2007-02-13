@@ -76,11 +76,9 @@ public:
 	//--------------------------------------------------------------------------
 	ExampleVectorFunctionUncoupledNxN();
 	ExampleVectorFunctionUncoupledNxN(int aN);
-	ExampleVectorFunctionUncoupledNxN(DOMElement *aElement);
 	ExampleVectorFunctionUncoupledNxN(const ExampleVectorFunctionUncoupledNxN &aFunction);
 	virtual ~ExampleVectorFunctionUncoupledNxN();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setEqual(const ExampleVectorFunctionUncoupledNxN &aVectorFunction);

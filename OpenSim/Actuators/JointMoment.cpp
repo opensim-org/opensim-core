@@ -52,20 +52,6 @@ JointMoment(string aQName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct the actuator from an XML Element.
- *
- * @param aElement XML element.
- */
-JointMoment::
-JointMoment(DOMElement *aElement) :
-	GeneralizedForceAtv(aElement),
-	_optimalNegForce(_propOptimalNegForce.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aActuator Actuator to be copied.
@@ -89,34 +75,6 @@ Object* JointMoment::
 copy() const
 {
 	AbstractActuator *act = new JointMoment(*this);
-	return(act);
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the Force object with the
- * XML node.  Then, the assignment operator is used to set all data members
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* JointMoment::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	JointMoment *act = new JointMoment(aElement);
-
-	// ASSIGNMENT OPERATOR
-	*act = *this;
-
-	// UPDATE BASED ON NODE
-	act->updateFromXMLNode();
-
 	return(act);
 }
 

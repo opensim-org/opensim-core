@@ -98,18 +98,6 @@ _inDegrees(_inDegreesProp.getValueBool())
 }
 //_____________________________________________________________________________
 /**
- * Construct an object from an DOMElement.
- */
-Analysis::Analysis(DOMElement *aElement):
-IntegCallback(aElement),
-_inDegrees(_inDegreesProp.getValueBool())
-{
-	setType("Analysis");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Analysis's only copy the non-XML variable
@@ -134,7 +122,7 @@ _inDegrees(_inDegreesProp.getValueBool())
  * within the XML document, such as comments that may not have any
  * associated Analysis member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Analysis from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -142,7 +130,7 @@ _inDegrees(_inDegreesProp.getValueBool())
  * @param aAnalysis Object to be copied.
  * @see Analysis(const XMLDocument *aDocument)
  * @see Analysis(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 Analysis::Analysis(const Analysis &aAnalysis):
 IntegCallback(aAnalysis),
@@ -162,19 +150,6 @@ copy() const
 {
 
 	Analysis *object = new Analysis(*this);
-	return(object);
-}
-
-//_____________________________________________________________________________
-/**
- * virtual copy constructor from DOMElement
- */
-Object* Analysis::
-copy(DOMElement *aElement) const
-{
-	Analysis *object = new Analysis(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 

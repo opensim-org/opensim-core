@@ -123,22 +123,6 @@ _materialName(_propMaterialName.getValueStr())
 }
 //_____________________________________________________________________________
 /**
- * Construct an object from an DOMElement.
- */
-VisibleProperties::VisibleProperties(DOMElement *aElement):
-Object(aElement),
-_displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
-_showNormals(_propShowNormals.getValueBool()),
-_showAxes(_propShowAxes.getValueBool()),
-_materialName(_propMaterialName.getValueStr())
-{
-	// NULL STATES
-	setNull();
-
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all VisibleProperties's only copy the non-XML variable
@@ -163,7 +147,7 @@ _materialName(_propMaterialName.getValueStr())
  * within the XML document, such as comments that may not have any
  * associated VisibleProperties member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the VisibleProperties from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -171,7 +155,7 @@ _materialName(_propMaterialName.getValueStr())
  * @param aObject Object to be copied.
  * @see VisibleProperties(const XMLDocument *aDocument)
  * @see VisibleProperties(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 VisibleProperties::VisibleProperties(const VisibleProperties &aObject):
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
@@ -193,18 +177,6 @@ copy() const
 {
 
 	VisibleProperties *object = new VisibleProperties(*this);
-	return(object);
-}
-/**
- * virtual copy constructor from DOMElement
- */
-
-Object* VisibleProperties::
-copy(DOMElement *aElement) const
-{
-	VisibleProperties *object = new VisibleProperties(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 

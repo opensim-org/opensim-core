@@ -57,21 +57,6 @@ SimmMuscleViaPoint::SimmMuscleViaPoint() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmMuscleViaPoint::SimmMuscleViaPoint(DOMElement *aElement) :
-   SimmMusclePoint(aElement),
-   _range(_rangeProp.getValueDblArray()),
-	_coordinateName(_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmMuscleViaPoint::~SimmMuscleViaPoint()
@@ -105,29 +90,6 @@ SimmMuscleViaPoint::SimmMuscleViaPoint(const SimmMuscleViaPoint &aPoint) :
 Object* SimmMuscleViaPoint::copy() const
 {
 	SimmMuscleViaPoint *pt = new SimmMuscleViaPoint(*this);
-	return(pt);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMuscleViaPoint and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMuscleViaPoint::SimmMuscleViaPoint(DOMElement*) in order to establish the
- * relationship of the SimmMuscleViaPoint object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMuscleViaPoint object. Finally, the data members of the copy are
- * updated using SimmMuscleViaPoint::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMuscleViaPoint.
- */
-Object* SimmMuscleViaPoint::copy(DOMElement *aElement) const
-{
-	SimmMuscleViaPoint *pt = new SimmMuscleViaPoint(aElement);
-	*pt = *this;
-	pt->updateFromXMLNode();
 	return(pt);
 }
 

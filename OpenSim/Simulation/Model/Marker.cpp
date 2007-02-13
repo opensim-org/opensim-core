@@ -46,21 +46,6 @@ _markerWeight(_propMarkerWeight.getValueDbl())
 }
 //_____________________________________________________________________________
 /**
- * Construct an Marker from DOMElement.
- *
- * @param aElement to use for construction
- */
-Marker::Marker(DOMElement *aElement) :
-VisibleObject(aElement),
-_markerLocation(_propMarkerLocation.getValueDblArray()),
-_referenceSegmentName(_propReferenceSegmentName.getValueStr()),
-_markerWeight(_propMarkerWeight.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Construct and return a copy of this object.
  *
  * The object is allocated using the new operator, so the caller is
@@ -73,21 +58,6 @@ copy() const
 {
 	Object *object = new Marker(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct Marker from.
- */
-
-Object* Marker::
-copy(DOMElement *aElement) const
-{
-	Marker *m = new Marker(aElement);
-	*m = *this;
-	m->updateFromXMLNode();
-	return(m);
 }
 //=============================================================================
 // OPERATORS

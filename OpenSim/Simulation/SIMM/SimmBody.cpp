@@ -55,23 +55,6 @@ SimmBody::SimmBody() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmBody::SimmBody(DOMElement *aElement) :
-   AbstractBody(aElement),
-   _mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
-   _inertia(_inertiaProp.getValueDblArray()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmBody::~SimmBody()
@@ -107,29 +90,6 @@ SimmBody::SimmBody(const SimmBody &aBody) :
 Object* SimmBody::copy() const
 {
 	SimmBody *body = new SimmBody(*this);
-	return(body);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmBody and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmBody::SimmBody(DOMElement*) in order to establish the
- * relationship of the SimmBody object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmBody object. Finally, the data members of the copy are
- * updated using SimmBody::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmBody.
- */
-Object* SimmBody::copy(DOMElement *aElement) const
-{
-	SimmBody *body = new SimmBody(aElement);
-	*body = *this;
-	body->updateFromXMLNode();
 	return(body);
 }
 

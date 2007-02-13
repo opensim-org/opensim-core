@@ -18,7 +18,6 @@
 
 namespace OpenSim {
 
-class XMLDocument;
 class MarkerSet;
 class CoordinateSet;
 class SimmIKTrialSet;
@@ -64,10 +63,8 @@ public:
 	virtual ~IKTool();
 	IKTool();
 	IKTool(const std::string &aFileName, AbstractModel* guiModel=0);
-	IKTool(DOMElement *aElement);
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
-	virtual OpenSim::Object* copy(DOMElement *aElement) const;
 
 	/* Register types to be used when reading an IKTool object from xml file. */
 	static void registerTypes();

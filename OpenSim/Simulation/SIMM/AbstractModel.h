@@ -29,7 +29,6 @@
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
@@ -146,11 +145,9 @@ public:
 		throw(OpenSim::Exception)
 #endif
 	;
-	AbstractModel(DOMElement *aElement);
 	AbstractModel(const AbstractModel& aModel);
 	virtual ~AbstractModel();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	void copyData(const AbstractModel &aModel);
 	void setupProperties();
 	//static void registerTypes();

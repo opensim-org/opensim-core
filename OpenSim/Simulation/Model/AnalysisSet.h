@@ -71,11 +71,9 @@ protected:
 public:
 	AnalysisSet(AbstractModel *aModel=0);
 	AnalysisSet(const std::string &aFileName);
-	AnalysisSet(DOMElement *aElement);
 	AnalysisSet(const AnalysisSet &aSet);
 	virtual ~AnalysisSet();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 public:

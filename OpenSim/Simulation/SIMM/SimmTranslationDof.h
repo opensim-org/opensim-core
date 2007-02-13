@@ -32,7 +32,6 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include "AbstractDof.h"
 
 namespace OpenSim {
@@ -74,11 +73,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmTranslationDof();
-	SimmTranslationDof(DOMElement *aElement);
 	SimmTranslationDof(const SimmTranslationDof &aDof);
 	virtual ~SimmTranslationDof();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual void updateFromXMLNode();
 
 #ifndef SWIG

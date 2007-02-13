@@ -50,22 +50,6 @@ SimmMeasurement::SimmMeasurement() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmMeasurement::SimmMeasurement(DOMElement *aElement) :
-   Object(aElement),
-	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
-	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
-	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
-	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
-	_apply(_applyProp.getValueBool())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -103,28 +87,6 @@ SimmMeasurement::SimmMeasurement(const SimmMeasurement &aMeasurement) :
 Object* SimmMeasurement::copy() const
 {
 	SimmMeasurement *measurement = new SimmMeasurement(*this);
-	return(measurement);
-}
-//_____________________________________________________________________________
-/**
- * Copy this SimmMeasurement and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMeasurement::SimmMeasurement(DOMElement*) in order to establish the
- * relationship of the SimmMeasurement object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMeasurement object. Finally, the data members of the
- * copy are updated using SimmMeasurement::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMeasurement.
- */
-Object* SimmMeasurement::copy(DOMElement *aElement) const
-{
-	SimmMeasurement *measurement = new SimmMeasurement(aElement);
-	*measurement = *this;
-	measurement->updateFromXMLNode();
 	return(measurement);
 }
 

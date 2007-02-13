@@ -59,25 +59,6 @@ SimmMarker::SimmMarker() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmMarker::SimmMarker(DOMElement *aElement) :
-   AbstractMarker(aElement),
-   _offset(_offsetProp.getValueDblArray()),
-   _weight(_weightProp.getValueDbl()),
-	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-	_displayer.setOwner(this);
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmMarker::~SimmMarker()
@@ -115,29 +96,6 @@ SimmMarker::SimmMarker(const SimmMarker &aMarker) :
 Object* SimmMarker::copy() const
 {
 	SimmMarker *marker = new SimmMarker(*this);
-	return(marker);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMarker and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMarker::SimmMarker(DOMElement*) in order to establish the
- * relationship of the SimmMarker object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMarker object. Finally, the data members of the copy are
- * updated using SimmMarker::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMarker.
- */
-Object* SimmMarker::copy(DOMElement *aElement) const
-{
-	SimmMarker *marker = new SimmMarker(aElement);
-	*marker = *this;
-	marker->updateFromXMLNode();
 	return(marker);
 }
 

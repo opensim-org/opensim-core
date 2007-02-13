@@ -55,11 +55,9 @@ protected:
 public:
 	Kinematics(AbstractModel *aModel=0);
 	Kinematics(const std::string &aFileName);
-	Kinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	Kinematics(const Kinematics &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~Kinematics();
 private:
 	void setNull();

@@ -58,11 +58,9 @@ protected:
 public:
 	BodyKinematics(AbstractModel *aModel=0, bool aInDegrees=true);
 	BodyKinematics(const std::string &aFileName);
-	BodyKinematics(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	BodyKinematics(const BodyKinematics &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~BodyKinematics();
 	//--------------------------------------------------------------------------
 	// OPERATORS

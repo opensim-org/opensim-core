@@ -155,11 +155,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	rdCMC_Task();
-	rdCMC_Task(DOMElement *aElement);
 	rdCMC_Task(const rdCMC_Task &aTaskObject);
 	virtual ~rdCMC_Task();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 private:
 	void setNull();
 	void setupProperties();

@@ -46,21 +46,6 @@ _inDegrees(_propInDegrees.getValueBool())
 }
 //_____________________________________________________________________________
 /**
- * Construct an GenCoord from DOMElement.
- *
- * @param aElement to use for construction
- */
-GenCoord::GenCoord(DOMElement *aElement) :
-Object(aElement),
-_propGencoordRange(PropertyObj("Range", Range())),
-_range((Range &)_propGencoordRange.getValueObj()),
-_inDegrees(_propInDegrees.getValueBool())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Construct and return a copy of this object.
  *
  * The object is allocated using the new operator, so the caller is
@@ -73,21 +58,6 @@ copy() const
 {
 	Object *object = new GenCoord(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct GenCoord from.
- */
-
-Object* GenCoord::
-copy(DOMElement *aElement) const
-{
-	GenCoord *m = new GenCoord(aElement);
-	*m = *this;
-	m->updateFromXMLNode();
-	return(m);
 }
 //=============================================================================
 // OPERATORS

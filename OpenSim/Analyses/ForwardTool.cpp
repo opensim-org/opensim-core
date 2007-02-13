@@ -77,25 +77,6 @@ ForwardTool::ForwardTool(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOMElement.
- */
-ForwardTool::ForwardTool(DOMElement *aElement) :
-	SimulationTool(aElement),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
-{
-	setType("ForwardTool");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Tools only copy the non-XML variable
@@ -120,7 +101,7 @@ ForwardTool::ForwardTool(DOMElement *aElement) :
  * within the XML document, such as comments that may not have any
  * associated Tool member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -128,7 +109,7 @@ ForwardTool::ForwardTool(DOMElement *aElement) :
  * @param aTool Object to be copied.
  * @see Tool(const XMLDocument *aDocument)
  * @see Tool(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
@@ -155,18 +136,6 @@ Object* ForwardTool::
 copy() const
 {
 	ForwardTool *object = new ForwardTool(*this);
-	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor from DOMElement.
- */
-Object* ForwardTool::
-copy(DOMElement *aElement) const
-{
-	ForwardTool *object = new ForwardTool(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 
@@ -312,7 +281,7 @@ void ForwardTool::run()
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocument()->getFileName());
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
 	// INPUT

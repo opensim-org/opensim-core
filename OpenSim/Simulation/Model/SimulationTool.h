@@ -14,7 +14,6 @@
 namespace OpenSim { 
 
 class AbstractModel;
-class XMLDocument;
 
 
 //=============================================================================
@@ -94,10 +93,8 @@ public:
 	virtual ~SimulationTool();
 	SimulationTool();
 	SimulationTool(const std::string &aFileName);
-	SimulationTool(DOMElement *aElement);
 	SimulationTool(const SimulationTool &aObject);
 	//Object* copy() const;
-	//Object* copy(DOMElement *aElement) const;
 
 private:
 	void setNull();

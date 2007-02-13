@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/Exception.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDbl.h>

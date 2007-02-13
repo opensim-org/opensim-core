@@ -118,11 +118,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	Force(const std::string &aBodyAName="",const std::string &aBodyBName="");
-	Force(DOMElement *aElement);
 	Force(const Force &aForce);
 	virtual ~Force();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

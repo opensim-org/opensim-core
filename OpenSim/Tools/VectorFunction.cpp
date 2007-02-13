@@ -77,21 +77,6 @@ VectorFunction::VectorFunction(int aNX, int aNY) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element. THIS CONSTRUCTOR IS NOT YET WORKING
- * NEED TO ADD HOW TO DEFINE _nX AND _nY FROM aElement
- *
- * @param aElement XML element.
- */
-VectorFunction::VectorFunction(DOMElement *aElement) :
-	Object(aElement),
-	_minX(rdMath::MINUS_INFINITY),
-	_maxX(rdMath::PLUS_INFINITY)
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aVectorFunction Function to copy.

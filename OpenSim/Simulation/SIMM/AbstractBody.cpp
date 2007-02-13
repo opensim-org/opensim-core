@@ -53,20 +53,6 @@ AbstractBody::AbstractBody() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractBody::AbstractBody(DOMElement *aElement) :
-	Object(aElement),
-	_wrapObjectSetProp(PropertyObj("", WrapObjectSet())),
-	_wrapObjectSet((WrapObjectSet&)_wrapObjectSetProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractBody::~AbstractBody()

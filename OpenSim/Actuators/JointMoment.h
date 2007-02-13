@@ -77,11 +77,9 @@ protected:
 //=============================================================================
 public:
 	JointMoment(std::string aQName="");
-	JointMoment(DOMElement *aElement);
 	JointMoment(const JointMoment &aActuator);
 	virtual ~JointMoment();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

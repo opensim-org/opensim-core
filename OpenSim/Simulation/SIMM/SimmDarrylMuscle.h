@@ -31,7 +31,6 @@
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Tools/Function.h>
 #include "AbstractSimmMuscle.h"
@@ -136,11 +135,9 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmDarrylMuscle();
-	SimmDarrylMuscle(DOMElement *aElement);
 	SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle);
 	virtual ~SimmDarrylMuscle();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);
    void copyData(const SimmDarrylMuscle &aMuscle);

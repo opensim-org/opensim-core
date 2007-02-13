@@ -64,23 +64,6 @@ SimmJoint::SimmJoint() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmJoint::SimmJoint(DOMElement *aElement) :
-   AbstractJoint(aElement),
-	_bodies(_bodiesProp.getValueStrArray()),
-	_dofSetProp(PropertyObj("", DofSet())),
-	_dofSet((DofSet&)_dofSetProp.getValueObj()),
-	_childBody(NULL),
-	_parentBody(NULL)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmJoint::~SimmJoint()
@@ -116,28 +99,6 @@ SimmJoint::SimmJoint(const SimmJoint &aJoint) :
 Object* SimmJoint::copy() const
 {
 	SimmJoint *joint = new SimmJoint(*this);
-	return(joint);
-}
-//_____________________________________________________________________________
-/**
- * Copy this SimmJoint and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmJoint::SimmJoint(DOMElement*) in order to establish the
- * relationship of the SimmJoint object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmJoint object. Finally, the data members of the copy are
- * updated using SimmJoint::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmJoint.
- */
-Object* SimmJoint::copy(DOMElement *aElement) const
-{
-	SimmJoint *joint = new SimmJoint(aElement);
-	*joint = *this;
-	joint->updateFromXMLNode();
 	return(joint);
 }
 

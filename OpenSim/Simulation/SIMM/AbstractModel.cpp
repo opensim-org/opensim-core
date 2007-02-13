@@ -99,25 +99,6 @@ AbstractModel::AbstractModel(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractModel::AbstractModel(DOMElement *aElement) :
-   Object(aElement),
-	_fileName("Unassigned"),
-	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
-	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
-	_actuatorSetProp(PropertyObj("", ActuatorSet())),
-	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
-	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aModel AbstractModel to be copied.
@@ -168,28 +149,6 @@ AbstractModel::~AbstractModel()
 Object* AbstractModel::copy() const
 {
 	AbstractModel *model = new AbstractModel(*this);
-	return(model);
-}
-//_____________________________________________________________________________
-/**
- * Copy this AbstractModel and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * AbstractModel::AbstractModel(DOMElement*) in order to establish the
- * relationship of the AbstractModel object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this AbstractModel object. Finally, the data members of the copy are
- * updated using AbstractModel::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this AbstractModel.
- */
-Object* AbstractModel::copy(DOMElement *aElement) const
-{
-	AbstractModel *model = new AbstractModel(aElement);
-	*model = *this;
-	model->updateFromXMLNode();
 	return(model);
 }
 

@@ -30,7 +30,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
@@ -72,11 +71,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	WrapEllipsoid();
-	WrapEllipsoid(DOMElement* aElement);
 	WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
 	virtual ~WrapEllipsoid();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement* aElement) const;
 #ifndef SWIG
 	WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
 #endif

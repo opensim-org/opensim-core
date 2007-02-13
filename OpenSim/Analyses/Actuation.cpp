@@ -95,24 +95,6 @@ Analysis(aFileName)
 	// STORAGE
 	allocateStorage();
 }
-//_____________________________________________________________________________
-/**
- * Construct an object from an DOMElement.
- */
-Actuation::Actuation(DOMElement *aElement):
-Analysis(aElement)
-{
-	setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-
-	// STORAGE
-	allocateStorage();
-}
 
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -138,18 +120,7 @@ Object* Actuation::copy() const
 	return(object);
 
 }
-//_____________________________________________________________________________
-/**
- * Instantiate from DOMElement
- *
- */
-Object* Actuation::copy(DOMElement *aElement) const
-{
-	Actuation *object = new Actuation(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
-	return(object);
-}
+
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================

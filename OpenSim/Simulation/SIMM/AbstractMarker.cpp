@@ -48,17 +48,6 @@ AbstractMarker::AbstractMarker() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractMarker::AbstractMarker(DOMElement *aElement) :
-	Object(aElement)
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractMarker::~AbstractMarker()

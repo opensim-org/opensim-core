@@ -39,9 +39,6 @@
 #include "PropertyDblArray.h"
 namespace OpenSim { 
 
-class XMLNode;
-class XMLDocument;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -86,11 +83,9 @@ protected:
 public:
 	Material();
 	Material(const std::string &aFileName);
-	Material(DOMElement *aNode);
 	Material(const Material &aMaterial);
 	virtual ~Material();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 protected:
@@ -122,14 +117,6 @@ public:
 
 	static const std::string& GetDefaultMaterialName();
 	static const Material &GetDefaultMaterial();
-	//--------------------------------------------------------------------------
-	// XML
-	//--------------------------------------------------------------------------
-public:
-	DOMElement* getNode() const;
-
-private:
-	void generateDocument();
 
 //=============================================================================
 };	// END of class Material

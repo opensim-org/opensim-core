@@ -97,11 +97,9 @@ protected:
 public:
 	SimmKinematicsEngine();
 	SimmKinematicsEngine(const std::string &aFileName);
-	SimmKinematicsEngine(DOMElement *aElement);
 	virtual ~SimmKinematicsEngine();
 	SimmKinematicsEngine(const SimmKinematicsEngine& aEngine);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 #ifndef SWIG
 	SimmKinematicsEngine& operator=(const SimmKinematicsEngine &aEngine);
 #endif

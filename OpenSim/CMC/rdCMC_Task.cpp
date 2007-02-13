@@ -88,31 +88,6 @@ rdCMC_Task::rdCMC_Task() :
 }
 //_____________________________________________________________________________
 /**
- * Construct a track object from an XML Element.
- *
- * @param aModel Model for which tracking is being conducted.
- * @param aElement XML element.
- */
-rdCMC_Task::
-rdCMC_Task(DOMElement *aElement) :
-	Object(aElement),
-	_on(_propOn.getValueBool()),
-	_wrtBody(_propWRTBody.getValueInt()),
-	_expressBody(_propExpressBody.getValueInt()),
-	_active(_propActive.getValueBoolArray()),
-	_w(_propW.getValueDblArray()),
-	_kp(_propKP.getValueDblArray()),
-	_kv(_propKV.getValueDblArray()),
-	_ka(_propKA.getValueDblArray()),
-	_r0(_propR0.getValueDblArray()),
-	_r1(_propR1.getValueDblArray()),
-	_r2(_propR2.getValueDblArray())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aTask Task object to be copied.

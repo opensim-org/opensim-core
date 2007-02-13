@@ -95,30 +95,6 @@ Torque::Torque(const string &aBodyAName,const string &aBodyBName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct an actuator from file.
- *
- * @param aFileName Name of the file.
- */
-Torque::Torque(DOMElement *aElement) :
-	AbstractActuator(aElement),
-	_bodyAName(_propBodyAName.getValueStr()),
-	_uA(_propUnitVectorA.getValueDblArray()),
-	_bodyBName(_propBodyBName.getValueStr()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_bA(NULL),
-	_bB(NULL)
-{
-	setNull();
-	updateFromXMLNode();
-
-	// MEMBER DATA
-	if (_model) {
-		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
-		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
-	}
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.
@@ -145,30 +121,6 @@ Object* Torque::
 copy() const
 {
 	Torque *act = new Torque(*this);
-	return(act);
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * Torque::Torque(DOMElement*,int,int) in order to establish the
- * relationship of the Torque object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this Torque object.  Finally, the data members of the copy are
- * updated using Torque::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* Torque::
-copy(DOMElement *aElement) const
-{
-	Torque *act = new Torque(aElement);
-	*act = *this;
-	act->updateFromXMLNode();
-
 	return(act);
 }
 

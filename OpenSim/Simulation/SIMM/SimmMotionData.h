@@ -90,10 +90,8 @@ public:
 	SimmMotionData(const std::string& aFileName);
 	SimmMotionData(Storage& aData);
 	SimmMotionData(const SimmMotionData &aData);
-	SimmMotionData(DOMElement *aElement);
 	virtual ~SimmMotionData();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 #ifndef SWIG
 	SimmMotionData& operator=(const SimmMotionData &aData);
 #endif

@@ -109,27 +109,6 @@ GeneralizedForces(const std::string &aFileName)
 	allocateStorage();
 	*/
 }
-//_____________________________________________________________________________
-/**
- * Construct an object from an DOMElement.
- */
-GeneralizedForces::GeneralizedForces(DOMElement *aElement):
-Analysis(aElement)
-{
-	//setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
-	// STORAGE
-	allocateStorage();
-	*/
-}
 
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -154,18 +133,6 @@ Object* GeneralizedForces::copy() const
 	GeneralizedForces *object = new GeneralizedForces(*this);
 	return(object);
 
-}
-//_____________________________________________________________________________
-/**
- * Instantiate from DOMElement
- *
- */
-Object* GeneralizedForces::copy(DOMElement *aElement) const
-{
-	GeneralizedForces *object = new GeneralizedForces(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
-	return(object);
 }
 
 //_____________________________________________________________________________

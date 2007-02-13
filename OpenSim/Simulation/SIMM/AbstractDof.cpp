@@ -54,21 +54,6 @@ AbstractDof::AbstractDof(void) :
 
 //_____________________________________________________________________________
 /**
- * Construct a AbstractDof from an XML Element.
- */
-AbstractDof::AbstractDof(DOMElement *aElement) :
-	Object(aElement),
-	_functions((ArrayPtrs<Function>&)_functionsProp.getValueObjArray()),
-	_coordinateName((std::string&)_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aDof AbstractDof to be copied.

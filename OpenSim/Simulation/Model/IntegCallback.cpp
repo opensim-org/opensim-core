@@ -99,19 +99,6 @@ Callback(aFileName),
 }
 //_____________________________________________________________________________
 /**
- * Constructor from an xml element
- *
- */
-IntegCallback::IntegCallback(DOMElement *aElement):
-	Callback(aElement),
-	_stepInterval(_stepIntervalProp.getValueInt())
-{
-	setNull();
-
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Constructor from a clone
  *
  */
@@ -119,18 +106,6 @@ Object* IntegCallback::copy() const
 {
 	return(new IntegCallback(*this));
 }
-//_____________________________________________________________________________
-/**
- * Virtual Constructor from an xml element
- *
- */
-Object* IntegCallback::copy(DOMElement *aElement) const
-{
-	IntegCallback *c = new IntegCallback(aElement);
-	*c = *this;
-	c->updateFromXMLNode();
-	return(c);
-} 
 
 //=============================================================================
 // CONSTRUCTION

@@ -118,7 +118,6 @@ protected:
 //=============================================================================
 public:
 	Control(const char *aName="UNKOWN");
-	Control(DOMElement *aElement);
 	Control(const Control &aControl);
 	virtual ~Control();
 private:

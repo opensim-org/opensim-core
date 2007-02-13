@@ -22,9 +22,6 @@
 
 namespace OpenSim { 
 
-class XMLDocument;
-
-
 //=============================================================================
 //=============================================================================
 /**
@@ -139,12 +136,10 @@ private:
 public:
 	PerturbationTool();
 	PerturbationTool(const std::string &aFileName);
-	PerturbationTool(DOMElement *aElement);
 	virtual ~PerturbationTool();
 	// Copy constrctor and virtual copy 
 	PerturbationTool(const PerturbationTool &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

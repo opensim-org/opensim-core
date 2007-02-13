@@ -70,32 +70,6 @@ SimmMarkerPlacer::SimmMarkerPlacer() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmMarkerPlacer::SimmMarkerPlacer(DOMElement *aElement) :
-   Object(aElement),
-   _markerFileName(_markerFileNameProp.getValueStr()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
-   _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
-	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmMarkerPlacer::~SimmMarkerPlacer()
@@ -140,29 +114,6 @@ SimmMarkerPlacer::SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacer) :
 Object* SimmMarkerPlacer::copy() const
 {
 	SimmMarkerPlacer *markerPlacementParams = new SimmMarkerPlacer(*this);
-	return(markerPlacementParams);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMarkerPlacer and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMarkerPlacer::SimmMarkerPlacer(DOMElement*) in order to establish the
- * relationship of the SimmMarkerPlacer object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMarkerPlacer object. Finally, the data members of the
- * copy are updated using SimmMarkerPlacer::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMarkerPlacer.
- */
-Object* SimmMarkerPlacer::copy(DOMElement *aElement) const
-{
-	SimmMarkerPlacer *markerPlacementParams = new SimmMarkerPlacer(aElement);
-	*markerPlacementParams = *this;
-	markerPlacementParams->updateFromXMLNode();
 	return(markerPlacementParams);
 }
 

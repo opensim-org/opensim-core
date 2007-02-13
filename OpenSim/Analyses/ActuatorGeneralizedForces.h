@@ -54,11 +54,9 @@ protected:
 public:
 	ActuatorGeneralizedForces(AbstractModel *aModel=0);
 	ActuatorGeneralizedForces(const std::string &aFileName);
-	ActuatorGeneralizedForces(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	ActuatorGeneralizedForces(const ActuatorGeneralizedForces &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~ActuatorGeneralizedForces();
 private:
 	void setNull();

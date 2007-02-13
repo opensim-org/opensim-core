@@ -68,31 +68,6 @@ SimmModelScaler::SimmModelScaler() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmModelScaler::SimmModelScaler(DOMElement *aElement) :
-   Object(aElement),
-	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
-	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
-	_scaleSetProp(PropertyObj("", ScaleSet())),
-	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
-	_markerFileName(_markerFileNameProp.getValueStr()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
-	_preserveMassDist(_preserveMassDistProp.getValueBool()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
-	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmModelScaler::~SimmModelScaler()
@@ -136,29 +111,6 @@ SimmModelScaler::SimmModelScaler(const SimmModelScaler &aModelScaler) :
 Object* SimmModelScaler::copy() const
 {
 	SimmModelScaler *scalingParams = new SimmModelScaler(*this);
-	return(scalingParams);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmModelScaler and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmModelScaler::SimmModelScaler(DOMElement*) in order to establish the
- * relationship of the SimmModelScaler object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmModelScaler object. Finally, the data members of the
- * copy are updated using SimmModelScaler::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmModelScaler.
- */
-Object* SimmModelScaler::copy(DOMElement *aElement) const
-{
-	SimmModelScaler *scalingParams = new SimmModelScaler(aElement);
-	*scalingParams = *this;
-	scalingParams->updateFromXMLNode();
 	return(scalingParams);
 }
 

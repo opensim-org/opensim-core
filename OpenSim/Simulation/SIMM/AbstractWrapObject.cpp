@@ -60,22 +60,6 @@ AbstractWrapObject::AbstractWrapObject() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractWrapObject::AbstractWrapObject(DOMElement* aElement) :
-	Object(aElement),
-   _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblArray()),
-	_active(_activeProp.getValueBool()),
-	_quadrantName(_quadrantNameProp.getValueStr())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractWrapObject::~AbstractWrapObject()

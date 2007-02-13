@@ -35,7 +35,6 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include "SimmMusclePoint.h"
 
 namespace OpenSim {
@@ -79,11 +78,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMuscleViaPoint();
-	SimmMuscleViaPoint(DOMElement *aElement);
 	SimmMuscleViaPoint(const SimmMuscleViaPoint &aPoint);
 	virtual ~SimmMuscleViaPoint();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMuscleViaPoint& operator=(const SimmMuscleViaPoint &aPoint);

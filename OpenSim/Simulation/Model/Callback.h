@@ -85,10 +85,8 @@ public:
 	Callback(AbstractModel *aModel=NULL);
 	Callback(const Callback &aCallback);
 	Callback(const std::string &aFileName);
-	Callback(DOMElement *aElement);
 	virtual ~Callback();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

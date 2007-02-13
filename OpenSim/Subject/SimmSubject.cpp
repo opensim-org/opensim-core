@@ -93,28 +93,6 @@ SimmSubject::SimmSubject(const string &aFileName) :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmSubject::SimmSubject(DOMElement *aElement) :
-   Object(aElement),
-	_mass(_massProp.getValueDbl()),
-	_height(_heightProp.getValueDbl()),
-	_age(_ageProp.getValueDbl()),
-	_notes(_notesProp.getValueStr()),
-   _genericModelMakerProp(PropertyObj("", SimmGenericModelMaker())),
-	_genericModelMaker((SimmGenericModelMaker&)_genericModelMakerProp.getValueObj()),
-   _modelScalerProp(PropertyObj("", SimmModelScaler())),
-	_modelScaler((SimmModelScaler&)_modelScalerProp.getValueObj()),
-   _markerPlacerProp(PropertyObj("", SimmMarkerPlacer())),
-	_markerPlacer((SimmMarkerPlacer&)_markerPlacerProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmSubject::~SimmSubject()
@@ -155,29 +133,6 @@ SimmSubject::SimmSubject(const SimmSubject &aSubject) :
 Object* SimmSubject::copy() const
 {
 	SimmSubject *subject = new SimmSubject(*this);
-	return(subject);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmSubject and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmSubject::SimmSubject(DOMElement*) in order to establish the
- * relationship of the SimmSubject object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmSubject object. Finally, the data members of the
- * copy are updated using SimmSubject::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmSubject.
- */
-Object* SimmSubject::copy(DOMElement *aElement) const
-{
-	SimmSubject *subject = new SimmSubject(aElement);
-	*subject = *this;
-	subject->updateFromXMLNode();
 	return(subject);
 }
 

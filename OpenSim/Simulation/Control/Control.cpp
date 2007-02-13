@@ -72,23 +72,6 @@ Control::Control(const char *aName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a control from an XML Element.
- *
- * @param aElement XML element.
- */
-Control::Control(DOMElement *aElement) :
-	Object(aElement),
-	_isModelControl( _propIsModelControl.getValueBool() ),
-	_extrapolate( _propExtrapolate.getValueBool() ),
-	_defaultMin( _propDefaultMin.getValueDbl() ),
-	_defaultMax( _propDefaultMax.getValueDbl() ),
-	_filterOn( _propFilterOn.getValueBool() )
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aControl Control to copy.

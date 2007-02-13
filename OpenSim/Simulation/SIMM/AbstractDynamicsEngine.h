@@ -123,10 +123,8 @@ protected:
 public:
 	AbstractDynamicsEngine();
 	AbstractDynamicsEngine(const std::string &aFileName);
-	AbstractDynamicsEngine(DOMElement *aElement);
 	virtual ~AbstractDynamicsEngine();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 	virtual void setup(AbstractModel* aModel);
 
 protected:

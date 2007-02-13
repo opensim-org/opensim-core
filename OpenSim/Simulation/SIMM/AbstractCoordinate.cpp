@@ -48,18 +48,6 @@ AbstractCoordinate::AbstractCoordinate() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractCoordinate::AbstractCoordinate(DOMElement *aElement) :
-   Object(aElement),
-	_dynamicsEngine(NULL)
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractCoordinate::~AbstractCoordinate()

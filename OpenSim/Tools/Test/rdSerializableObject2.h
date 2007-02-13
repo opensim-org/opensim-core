@@ -61,10 +61,8 @@ class rdSerializableObject2 : public Object
 public:
 	rdSerializableObject2();
 	rdSerializableObject2(const std::string &aFileName);
-	rdSerializableObject2(DOMElement *aElement);
 	rdSerializableObject2(const rdSerializableObject2 &aNode);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupSerializedMembers();

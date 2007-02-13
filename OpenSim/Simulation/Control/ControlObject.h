@@ -132,11 +132,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ControlObject();
-	ControlObject(DOMElement *aElement);
 	ControlObject(const ControlObject &aTrackObject);
 	virtual ~ControlObject();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 private:
 	void setNull();
 	void copyData(const ControlObject &aTrackObject);

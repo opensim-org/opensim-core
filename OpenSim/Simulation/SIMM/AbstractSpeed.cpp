@@ -48,17 +48,6 @@ AbstractSpeed::AbstractSpeed() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractSpeed::AbstractSpeed(DOMElement *aElement) :
-	Object(aElement)
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractSpeed::~AbstractSpeed()

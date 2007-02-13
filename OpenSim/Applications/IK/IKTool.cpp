@@ -93,24 +93,6 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOMElement.
- */
-IKTool::IKTool(DOMElement *aElement) :
-	SimulationTool(aElement),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
-	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
-	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
-{
-	setType("IKTool");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Tools only copy the non-XML variable
@@ -135,7 +117,7 @@ IKTool::IKTool(DOMElement *aElement) :
  * within the XML document, such as comments that may not have any
  * associated Tool member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -143,7 +125,7 @@ IKTool::IKTool(DOMElement *aElement) :
  * @param aTool Object to be copied.
  * @see Tool(const XMLDocument *aDocument)
  * @see Tool(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 IKTool::
 IKTool(const IKTool &aTool) :
@@ -169,18 +151,6 @@ Object* IKTool::
 copy() const
 {
 	IKTool *object = new IKTool(*this);
-	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor from DOMElement.
- */
-Object* IKTool::
-copy(DOMElement *aElement) const
-{
-	IKTool *object = new IKTool(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 
@@ -273,9 +243,8 @@ void IKTool::run()
 	
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
-	string aFileName = string(getDocument()->getFileName());
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
 	/* Update the markers. */

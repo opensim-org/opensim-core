@@ -65,11 +65,9 @@ public:
 	Constant();
 	Constant(int aN,const double *aTimes,const double *aValues,
 		const std::string &aName="");
-	Constant(DOMElement *aElement);
 	Constant(const Constant &aSpline);
 	virtual ~Constant();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 private:
 	void setNull();

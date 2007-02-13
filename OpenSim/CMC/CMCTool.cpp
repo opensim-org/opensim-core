@@ -138,44 +138,6 @@ CMCTool::CMCTool(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOMElement.  DOM is an acronym for 'Document Object Model'.
- * Once an XML file is read into memory, its content is contained in a DOM
- * object.  A CMC investigation can be constructed from one of these DOM
- * elements.
- *
- * @param aElement DOM element for the CMCTool object.
- */
-CMCTool::CMCTool(DOMElement *aElement) :
-	SimulationTool(aElement),
-	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_taskSetFileName(_taskSetFileNameProp.getValueStr()),
-	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
-	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
-	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_targetDT(_targetDTProp.getValueDbl()),
-	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
-	_maxIterations(_maxIterationsProp.getValueInt()),
-	_printLevel(_printLevelProp.getValueInt()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr()),
-	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
-	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
-{
-	setType("CMCTool");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Tools do not copy the Object's DOMnode
@@ -200,7 +162,7 @@ CMCTool::CMCTool(DOMElement *aElement) :
  * within the XML document, such as comments that may not have any
  * associated Tool member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Tool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -208,7 +170,7 @@ CMCTool::CMCTool(DOMElement *aElement) :
  * @param aTool Object to be copied.
  * @see Tool(const XMLDocument *aDocument)
  * @see Tool(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 CMCTool::
 CMCTool(const CMCTool &aTool) :
@@ -251,25 +213,6 @@ Object* CMCTool::
 copy() const
 {
 	CMCTool *object = new CMCTool(*this);
-	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor from DOMElement.  This is the method that is
- * used to construct objects from an XML file.  This constructor creates
- * a copy of the object in all respects except that property values that
- * are specified in the DOMElement are used to over-write the values in
- * this object.
- *
- * @return Copy of this object with properties overriden by any properties
- * specified in the DOMElement.
- */
-Object* CMCTool::
-copy(DOMElement *aElement) const
-{
-	CMCTool *object = new CMCTool(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 
@@ -528,9 +471,8 @@ void CMCTool::run()
 	// OUTPUT DIRECTORY
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
-	string aFileName = string(getDocument()->getFileName());
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
 	// ASSIGN NUMBERS OF THINGS

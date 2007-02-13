@@ -29,7 +29,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 
 namespace OpenSim {
@@ -64,11 +63,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractSpeed();
-	AbstractSpeed(DOMElement *aElement);
 	AbstractSpeed(const AbstractSpeed &aSpeed);
 	virtual ~AbstractSpeed();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 
 	AbstractSpeed& operator=(const AbstractSpeed &aSpeed);
    void copyData(const AbstractSpeed &aSpeed);

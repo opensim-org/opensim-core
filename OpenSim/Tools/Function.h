@@ -97,11 +97,9 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	Function();
-	Function(DOMElement *aElement);
 	Function(const Function &aFunction);
 	virtual ~Function();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 private:
 	void setNull();
 	void setupProperties();

@@ -95,19 +95,6 @@ SimmKinematicsEngine::SimmKinematicsEngine(const string &aFileName) :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmKinematicsEngine::SimmKinematicsEngine(DOMElement *aElement) :
-	AbstractDynamicsEngine(aElement),
-	_path(0)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 
@@ -138,30 +125,6 @@ SimmKinematicsEngine::SimmKinematicsEngine(const SimmKinematicsEngine& aEngine) 
 Object* SimmKinematicsEngine::copy() const
 {
 	SimmKinematicsEngine *object = new SimmKinematicsEngine(*this);
-
-	return object;
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmKinematicsEngine and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmKinematicsEngine::SimmKinematicsEngine(DOMElement*) in order to establish
- * the relationship of the SimmKinematicsEngine object with the XML node. Then,
- * the assignment operator is used to set all data members of the copy to the
- * values of this SimmKinematicsEngine object. Finally, the data members of the
- * copy are updated using SimmKinematicsEngine::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmKinematicsEngine.
- */
-Object* SimmKinematicsEngine::copy(DOMElement *aElement) const
-{
-	SimmKinematicsEngine *object = new SimmKinematicsEngine(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 
 	return object;
 }

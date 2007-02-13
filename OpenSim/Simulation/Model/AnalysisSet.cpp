@@ -82,19 +82,6 @@ AnalysisSet::AnalysisSet(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOM element.
- *
- * @param aElement DOM element
- */
-AnalysisSet::AnalysisSet(DOMElement *aElement) :
-	Set<Analysis>(aElement)
-{
-	setType("AnalysisSet");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aSet Analysis set to be copied.
@@ -114,22 +101,6 @@ Object* AnalysisSet::
 copy() const
 {
 	AnalysisSet *set = new AnalysisSet(*this);
-	return(set);
-}
-//_____________________________________________________________________________
-/**
- * Copy this analysis set and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* AnalysisSet::
-copy(DOMElement *aElement) const
-{
-	AnalysisSet *set = new AnalysisSet(aElement);
-	*set = *this;
-	set->updateFromXMLNode();
 	return(set);
 }
 

@@ -71,33 +71,6 @@ SimmCoordinate::SimmCoordinate() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmCoordinate::SimmCoordinate(DOMElement *aElement) :
-   AbstractCoordinate(aElement),
-	_defaultValue(_defaultValueProp.getValueDbl()),
-   _value(_valueProp.getValueDbl()),
-   _tolerance(_toleranceProp.getValueDbl()),
-   _stiffness(_stiffnessProp.getValueDbl()),
-   _weight(_weightProp.getValueDbl()),
-	_range(_rangeProp.getValueDblArray()),
-	_keys(_keysProp.getValueStrArray()),
-	_clamped(_clampedProp.getValueBool()),
-	_locked(_lockedProp.getValueBool()),
-	_restraintFunction((ArrayPtrs<Function>&)_restraintFunctionProp.getValueObjArray()),
-	_minRestraintFunction((ArrayPtrs<Function>&)_minRestraintFunctionProp.getValueObjArray()),
-	_maxRestraintFunction((ArrayPtrs<Function>&)_maxRestraintFunctionProp.getValueObjArray()),
-	_restraintActive(_restraintActiveProp.getValueBool()),
-	_jointList(0),
-	_pathList(0),
-	_motionType(AbstractDof::Rotational)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -147,29 +120,6 @@ SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
 Object* SimmCoordinate::copy() const
 {
 	SimmCoordinate *gc = new SimmCoordinate(*this);
-	return(gc);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmCoordinate and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmCoordinate::SimmCoordinate(DOMElement) in order to establish the
- * relationship of the SimmCoordinate object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmCoordinate object. Finally, the data members of the
- * copy are updated using SimmCoordinate::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmCoordinate.
- */
-Object* SimmCoordinate::copy(DOMElement *aElement) const
-{
-	SimmCoordinate *gc = new SimmCoordinate(aElement);
-	*gc = *this;
-	gc->updateFromXMLNode();
 	return(gc);
 }
 

@@ -72,24 +72,6 @@ Function::Function() :
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element.
- *
- * @param aElement XML element.
- */
-Function::Function(DOMElement *aElement) :
-	Object(aElement),
-	_minX(_propMinX.getValueDbl()),
-	_maxX(_propMaxX.getValueDbl()),
-	_minY(_propMinY.getValueDbl()),
-	_maxY(_propMaxY.getValueDbl()),
-	_minZ(_propMinZ.getValueDbl()),
-	_maxZ(_propMaxZ.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aFunction Function to copy.

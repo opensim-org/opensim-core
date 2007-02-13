@@ -111,24 +111,6 @@ _dependents(0)
 }
 //_____________________________________________________________________________
 /**
- * Construct an object from an DOMElement.
- */
-VisibleObject::VisibleObject(DOMElement *aElement):
-Object(aElement),
-_geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_allGeometry(0),
-_propVisibleProp(PropertyObj("", VisibleProperties())),
-_visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
-_dependents(0)
-{
-	// NULL STATES
-	setNull();
-
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all VisibleObject's only copy the non-XML variable
@@ -153,7 +135,7 @@ _dependents(0)
  * within the XML document, such as comments that may not have any
  * associated VisibleObject member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the VisibleObject from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -161,7 +143,7 @@ _dependents(0)
  * @param aObject Object to be copied.
  * @see VisibleObject(const XMLDocument *aDocument)
  * @see VisibleObject(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 VisibleObject::VisibleObject(const VisibleObject &aObject):
 Object(aObject),
@@ -207,18 +189,6 @@ copy() const
 {
 
 	VisibleObject *object = new VisibleObject(*this);
-	return(object);
-}
-/**
- * virtual copy constructor from DOMElement
- */
-
-Object* VisibleObject::
-copy(DOMElement *aElement) const
-{
-	VisibleObject *object = new VisibleObject(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
 	return(object);
 }
 //_____________________________________________________________________________

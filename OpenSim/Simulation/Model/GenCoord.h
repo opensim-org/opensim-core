@@ -79,9 +79,7 @@ public:
 	//--------------------------------------------------------------------------
 	GenCoord();
 	GenCoord(const GenCoord &aGencoord);
-	GenCoord(DOMElement *aElement);
 	virtual ~GenCoord(void);
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------

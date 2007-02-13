@@ -32,7 +32,6 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/XMLDocument.h>
 
 namespace OpenSim {
 
@@ -68,10 +67,8 @@ protected:
 public:
 	SimmMuscleGroup();
 	SimmMuscleGroup(const SimmMuscleGroup &aGroup);
-	SimmMuscleGroup(DOMElement *aElement);
 	virtual ~SimmMuscleGroup();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMuscleGroup& operator=(const SimmMuscleGroup &aGroup);

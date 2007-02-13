@@ -70,9 +70,7 @@ public:
 	//--------------------------------------------------------------------------
 	Range();
 	Range(const Range &aRange);
-	Range(DOMElement *aElement);
 	virtual ~Range(void);
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------

@@ -82,11 +82,9 @@ public:
 	IntegCallback(AbstractModel *aModel=0);
 	// Support for Object behavior
 	IntegCallback(const std::string &aFileName);
-	IntegCallback(DOMElement *aElement);
 	IntegCallback(const IntegCallback &aIntegCallback);
 	virtual ~IntegCallback();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

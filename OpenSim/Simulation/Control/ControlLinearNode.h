@@ -86,10 +86,8 @@ protected:
 //=============================================================================
 public:
 	ControlLinearNode(double aT=0.0,double aValue=0.0);
-	ControlLinearNode(DOMElement *aElement);
 	ControlLinearNode(const ControlLinearNode &aNode);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~ControlLinearNode();
 private:
 	void setNull();

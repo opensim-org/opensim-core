@@ -46,8 +46,6 @@
 
 namespace OpenSim { 
 
-class XMLNode;
-class XMLDocument;
 class AbstractDynamicsEngine;
 
 class Geometry;
@@ -102,11 +100,9 @@ protected:
 public:
 	VisibleObject();
 	VisibleObject(const std::string &aFileName);
-	VisibleObject(DOMElement *aNode);
 	VisibleObject(const VisibleObject &aVisibleObject);
 	virtual ~VisibleObject();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual void setup(AbstractDynamicsEngine *aEngine) { }
 
 private:
@@ -214,10 +210,6 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	void setupProperties();
-	
-private:
-	void generateDocument();
-
 
 //=============================================================================
 };	// END of class VisibleObject

@@ -108,20 +108,6 @@ Set(const std::string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOM element.
- *
- * @param aElement DOM element.
- */
-Set(DOMElement *aElement) :
-	Object(aElement),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray())
-{
-	setType("Set");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aSet Set to be copied.

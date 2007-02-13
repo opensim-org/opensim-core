@@ -85,11 +85,9 @@ public:
 	NatCubicSpline();
 	NatCubicSpline(int aN,const double *aTimes,const double *aValues,
 		const std::string &aName="");
-	NatCubicSpline(DOMElement *aElement);
 	NatCubicSpline(const NatCubicSpline &aSpline);
 	virtual ~NatCubicSpline();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 private:
 	void setNull();

@@ -55,11 +55,9 @@ protected:
 //=============================================================================
 public:
 	GeneralizedForceAtv(std::string aQName="");
-	GeneralizedForceAtv(DOMElement *aElement);
 	GeneralizedForceAtv(const GeneralizedForceAtv &aActuator);
 	virtual ~GeneralizedForceAtv();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

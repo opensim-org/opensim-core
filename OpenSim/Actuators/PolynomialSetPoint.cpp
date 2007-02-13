@@ -79,22 +79,6 @@ PolynomialSetPoint::PolynomialSetPoint(string aBodyA,string aBodyB) :
 }
 //_____________________________________________________________________________
 /**
- * Construct an actuator from an XML element.
- *
- * @param aElement XML element.
- */
-PolynomialSetPoint::PolynomialSetPoint(DOMElement *aElement) :
-	SetPoint(aElement),
-	_kNP(_propKNP.getValueDbl()),
-	_kNV(_propKNV.getValueDbl()),
-	_powNP(_propPowerNP.getValueDbl()),
-	_powNV(_propPowerNV.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aContact Contact to be copied.
@@ -129,29 +113,6 @@ Object* PolynomialSetPoint::
 copy() const
 {
 	AbstractActuator *act = new PolynomialSetPoint(*this);
-	return(act);
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * Force::Force(DOMElement*,int,int) in order to establish the
- * relationship of the Force object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this Force object.  Finally, the data members of the copy are
- * updated using Force::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* PolynomialSetPoint::
-copy(DOMElement *aElement) const
-{
-	PolynomialSetPoint *act = new PolynomialSetPoint(aElement);
-	*act = *this;
-	act->updateFromXMLNode();
 	return(act);
 }
 

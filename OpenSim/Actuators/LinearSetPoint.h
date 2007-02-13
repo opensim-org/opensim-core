@@ -74,11 +74,9 @@ class RDACTUATORS_API LinearSetPoint : public SetPoint
 	//--------------------------------------------------------------------------
 public:
 	LinearSetPoint(std::string aBodyA="",std::string aBodyB="");
-	LinearSetPoint(DOMElement *aElement);
 	LinearSetPoint(const LinearSetPoint &aContact);
 	virtual ~LinearSetPoint();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

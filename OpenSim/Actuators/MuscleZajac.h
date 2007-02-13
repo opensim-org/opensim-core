@@ -131,12 +131,9 @@ protected:
 //=============================================================================
 public:
 	MuscleZajac(int aQID=-1,int aNX=1,int aNY=2,int aNYP=0);
-	MuscleZajac(DOMElement *aElement,
-		int aNX=1,int aNY=2,int aNYP=0);
 	MuscleZajac(const MuscleZajac &aActuator);
 	virtual ~MuscleZajac();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupSerializedMembers();

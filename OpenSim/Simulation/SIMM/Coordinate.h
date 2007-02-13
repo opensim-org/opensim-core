@@ -52,9 +52,6 @@ public:
 	Coordinate(const std::string &aFileName) :
 		Object(aFileName)
 		{}
-	Coordinate::Coordinate(DOMElement *aElement) :
-		Object(aElement)
-		{}
 #ifndef SWIG
 	Coordinate& Coordinate::operator=(const Coordinate &aKE)
 	{

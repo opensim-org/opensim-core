@@ -51,21 +51,6 @@ SimmTranslationDof::SimmTranslationDof()
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmTranslationDof::SimmTranslationDof(DOMElement *aElement) :
-   AbstractDof(aElement)
-{
-	setNull();
-
-	_axis[0] = _axis[1] = _axis[2] = 0.0;
-	_axisIndex = xTranslation;
-
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmTranslationDof::~SimmTranslationDof()
@@ -95,28 +80,6 @@ SimmTranslationDof::SimmTranslationDof(const SimmTranslationDof &aDof) :
 Object* SimmTranslationDof::copy() const
 {
 	SimmTranslationDof *dof = new SimmTranslationDof(*this);
-	return(dof);
-}
-//_____________________________________________________________________________
-/**
- * Copy this SimmTranslationDof and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmTranslationDof::SimmTranslationDof(DOMElement*) in order to establish the
- * relationship of the SimmTranslationDof object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmTranslationDof object. Finally, the data members of the
- * copy are updated using SimmTranslationDof::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmTranslationDof.
- */
-Object* SimmTranslationDof::copy(DOMElement *aElement) const
-{
-	SimmTranslationDof *dof = new SimmTranslationDof(aElement);
-	*dof = *this;
-	dof->updateFromXMLNode();
 	return(dof);
 }
 

@@ -47,21 +47,6 @@ SpringGeneralizedForce(string aQName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct the actuator from an XML Element.
- *
- * @param aElement XML element.
- */
-SpringGeneralizedForce::
-SpringGeneralizedForce(DOMElement *aElement):
-	GeneralizedForce(aElement),
-	_restLength(_propRestLength.getValueDbl()),
-	_viscosity(_propViscosity.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aActuator Actuator to be copied.
@@ -91,35 +76,6 @@ copy() const
 {
 	SpringGeneralizedForce *force = new SpringGeneralizedForce(*this);
 	return force;
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * rdG::Force(DOMElement*,int,int) in order to establish the
- * relationship of the Force object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this Force object.  Finally, the data members of the copy are
- * updated using Force::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* SpringGeneralizedForce::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	SpringGeneralizedForce *act = new SpringGeneralizedForce(aElement);
-
-	// ASSIGNMENT OPERATOR
-	*act = *this;
-
-	// UPDATE BASED ON NODE
-	act->updateFromXMLNode();
-
-	return(act);
 }
 
 

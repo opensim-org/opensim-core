@@ -76,23 +76,6 @@ SetPoint::SetPoint(string aBodyA,string aBodyB) :
 }
 //_____________________________________________________________________________
 /**
- * Construct an actuator from an XML node.
- * SetPoint has three pseudo-states, which are the coordinates of contact
- * PointA.  Derived classes should be aware of this.
- *
- * @param aElement XML node representing this setpoint object.
- */
-SetPoint::SetPoint(DOMElement *aElement) :
-	ContactForce(aElement),
-	_ktp(_propKTP.getValueDbl()),
-	_ktv(_propKTV.getValueDbl()),
-	_mu(_propMU.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.

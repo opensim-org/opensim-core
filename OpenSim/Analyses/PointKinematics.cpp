@@ -118,31 +118,6 @@ _pointName(_pointNameProp.getValueStr())
 	allocateStorage();
 	*/
 }
-//_____________________________________________________________________________
-/**
- * Construct an object from an DOMElement.
- */
-PointKinematics::PointKinematics(DOMElement *aElement):
-Analysis(aElement),
-_body(NULL),
-_bodyName(_bodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblArray()),
-_pointName(_pointNameProp.getValueStr())
-{
-	setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
-	// STORAGE
-	allocateStorage();
-	*/
-}
 
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -171,18 +146,6 @@ Object* PointKinematics::copy() const
 	PointKinematics *object = new PointKinematics(*this);
 	return(object);
 
-}
-//_____________________________________________________________________________
-/**
- * Instantiate from DOMElement
- *
- */
-Object* PointKinematics::copy(DOMElement *aElement) const
-{
-	PointKinematics *object = new PointKinematics(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
-	return(object);
 }
 //_____________________________________________________________________________
 /**

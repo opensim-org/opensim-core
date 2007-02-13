@@ -82,19 +82,6 @@ rdSerializableObject(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a control node from an XML Element.
- *
- * @param aElement XML element.
- */
-rdSerializableObject::rdSerializableObject(DOMElement *aElement) :
-	Object(aElement)
-{
-	setNull();
-	setupSerializedMembers();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aControl Control to copy.
@@ -119,34 +106,6 @@ copy() const
 {
 	rdSerializableObject *object = new rdSerializableObject(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Copy this control and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the control with the
- * XML node.  Then, the assignment operator is used to set all member variables
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* rdSerializableObject::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	rdSerializableObject *node = new rdSerializableObject(aElement);
-
-	// ASSIGNMENT OPERATOR
-	*node = *this;
-
-	// UPDATE BASED ON NODE
-	node->updateFromXMLNode();
-
-	return(node);
 }
 
 

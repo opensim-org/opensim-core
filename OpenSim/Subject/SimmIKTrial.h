@@ -36,7 +36,6 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 
 namespace OpenSim {
@@ -107,11 +106,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmIKTrial();
-	SimmIKTrial(DOMElement *aElement);
 	SimmIKTrial(const SimmIKTrial &aIKTrialParams);
 	virtual ~SimmIKTrial();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmIKTrial& operator=(const SimmIKTrial &aIKTrialParams);

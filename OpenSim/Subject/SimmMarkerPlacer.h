@@ -36,7 +36,6 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Simulation/SIMM/CoordinateSet.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
@@ -121,11 +120,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMarkerPlacer();
-	SimmMarkerPlacer(DOMElement *aElement);
 	SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacementParams);
 	virtual ~SimmMarkerPlacer();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMarkerPlacer& operator=(const SimmMarkerPlacer &aMarkerPlacementParams);

@@ -8,7 +8,6 @@
 #include <OpenSim/Tools/Signal.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/Line.h>
 #include <OpenSim/Tools/Plane.h>

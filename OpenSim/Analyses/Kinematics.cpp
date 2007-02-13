@@ -100,27 +100,6 @@ Kinematics::Kinematics(const std::string &aFileName):
 	// STORAGE
 	allocateStorage();
 }
-//_____________________________________________________________________________
-/**
- * Construct an object from an DOMElement.
- */
-Kinematics::Kinematics(DOMElement *aElement):
-	Analysis(aElement),
-	_coordinates(_coordinatesProp.getValueStrArray())
-{
-	setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	updateCoordinatesToRecord();
-	constructColumnLabels();
-
-	// STORAGE
-	allocateStorage();
-}
 
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -146,18 +125,6 @@ Object* Kinematics::copy() const
 	Kinematics *object = new Kinematics(*this);
 	return(object);
 
-}
-//_____________________________________________________________________________
-/**
- * Instantiate from DOMElement
- *
- */
-Object* Kinematics::copy(DOMElement *aElement) const
-{
-	Kinematics *object = new Kinematics(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
-	return(object);
 }
 //_____________________________________________________________________________
 /**

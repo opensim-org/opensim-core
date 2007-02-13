@@ -78,10 +78,8 @@ public:
 	//--------------------------------------------------------------------------
 	Scale();
 	Scale(const Scale &aMarker);
-	Scale(DOMElement *aElement);
 	Scale( const std::string& scaleFileName);
 	virtual ~Scale(void);
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------

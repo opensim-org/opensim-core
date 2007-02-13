@@ -33,7 +33,6 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/XMLDocument.h>
 
 namespace OpenSim {
 
@@ -66,11 +65,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMotionEvent();
-	SimmMotionEvent(DOMElement *aElement);
 	SimmMotionEvent(const SimmMotionEvent &aEvent);
 	virtual ~SimmMotionEvent();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	SimmMotionEvent& operator=(const SimmMotionEvent &aEvent);
 
 	void copyData(const SimmMotionEvent &aEvent);

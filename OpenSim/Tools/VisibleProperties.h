@@ -99,12 +99,10 @@ public:
 	VisibleProperties();
 	VisibleProperties(const std::string &aFileName);
 	VisibleProperties(const XMLDocument *aDocument);
-	VisibleProperties(DOMElement *aNode);
 	VisibleProperties(const VisibleProperties &aVisibleProperties);
 	virtual ~VisibleProperties();
 
 	Object* copy() const;
-	Object* copy(DOMElement *aElement) const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -147,7 +145,6 @@ private:
 	// XML
 	//--------------------------------------------------------------------------
 	void setupProperties();
-	void generateDocument();
 
 //=============================================================================
 };	// END of class VisibleProperties

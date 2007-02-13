@@ -88,11 +88,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	GeneralizedForce(std::string aQName="");
-	GeneralizedForce(DOMElement *aElement);
 	GeneralizedForce(const GeneralizedForce &aGenForce);
 	virtual ~GeneralizedForce();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	void copyData(const GeneralizedForce &aGenForce);
 private:
 	void setNull();

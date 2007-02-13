@@ -63,20 +63,6 @@ _length(_lengthProp.getValueDbl())
 
 //_____________________________________________________________________________
 /**
-* Constructor from an XML node
-*/
-WrapCylinder::WrapCylinder(DOMElement* aElement) :
-AbstractWrapObject(aElement),
-_radius(_radiusProp.getValueDbl()),
-_length(_lengthProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
 * Destructor.
 */
 WrapCylinder::~WrapCylinder()
@@ -109,29 +95,6 @@ _length(_lengthProp.getValueDbl())
 Object* WrapCylinder::copy() const
 {
 	WrapCylinder *wrapCylinder = new WrapCylinder(*this);
-	return(wrapCylinder);
-}
-
-//_____________________________________________________________________________
-/**
-* Copy this WrapCylinder and modify the copy so that it is consistent
-* with a specified XML element node.
-*
-* The copy is constructed by first using
-* WrapCylinder::WrapCylinder(DOMElement*) in order to establish the
-* relationship of the WrapCylinder object with the XML node. Then, the
-* assignment operator is used to set all data members of the copy to the
-* values of this WrapCylinder object. Finally, the data members of the copy are
-* updated using WrapCylinder::updateFromXMLNode().
-*
-* @param aElement XML element. 
-* @return Pointer to a copy of this WrapCylinder.
-*/
-Object* WrapCylinder::copy(DOMElement *aElement) const
-{
-	WrapCylinder *wrapCylinder = new WrapCylinder(aElement);
-	*wrapCylinder = *this;
-	wrapCylinder->updateFromXMLNode();
 	return(wrapCylinder);
 }
 

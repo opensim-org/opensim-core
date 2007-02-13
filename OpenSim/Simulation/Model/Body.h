@@ -82,10 +82,8 @@ public:
 	Body(double aM=1.0,double *aI=NULL);
 	Body(const Body &aBody);
 	Body(const std::string &aFileName);
-	Body(DOMElement *aElement);
 	virtual ~Body();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

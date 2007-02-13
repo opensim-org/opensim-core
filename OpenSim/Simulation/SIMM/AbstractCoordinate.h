@@ -29,7 +29,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Set.h>
 #include <OpenSim/Simulation/SIMM/AbstractDof.h>
 
@@ -64,11 +63,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractCoordinate();
-	AbstractCoordinate(DOMElement *aElement);
 	AbstractCoordinate(const AbstractCoordinate &aCoordinate);
 	virtual ~AbstractCoordinate();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 
 #ifndef SWIG
 	AbstractCoordinate& operator=(const AbstractCoordinate &aCoordinate);

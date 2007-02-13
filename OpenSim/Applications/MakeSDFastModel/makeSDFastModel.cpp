@@ -28,7 +28,6 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/VisibleProperties.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>

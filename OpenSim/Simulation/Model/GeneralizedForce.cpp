@@ -90,28 +90,6 @@ GeneralizedForce::GeneralizedForce(string aQName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct the actuator from an XML element.
- *
- * @param aElement XML element.
- */
-GeneralizedForce::
-GeneralizedForce(DOMElement *aElement):
-	AbstractActuator(aElement),
-	_qName(_propQName.getValueStr()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_q(NULL),
-	_u(NULL)
-{
-	setNull();
-	updateFromXMLNode();
-
-	if (_model) {
-		_q = _model->getDynamicsEngine().getCoordinateSet()->get(_qName);
-		_u = _model->getDynamicsEngine().getSpeedSet()->get(AbstractSpeed::getSpeedName(_qName));
-	}
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.
@@ -138,29 +116,6 @@ copy() const
 {
 	GeneralizedForce *force = new GeneralizedForce(*this);
 	return force;
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * GeneralizedForce::GeneralizedForce(DOMElement*,int,int) in order to establish the
- * relationship of the GeneralizedForce object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this GeneralizedForce object.  Finally, the data members of the copy are
- * updated using GeneralizedForce::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* GeneralizedForce::
-copy(DOMElement *aElement) const
-{
-	GeneralizedForce *act = new GeneralizedForce(aElement);
-	*act = *this;
-	act->updateFromXMLNode();
-	return(act);
 }
 
 

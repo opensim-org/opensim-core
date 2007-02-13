@@ -103,11 +103,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	Torque(const std::string &aBodyAName="",const std::string &aBodyBName="");
-	Torque(DOMElement *aElement);
 	Torque(const Torque &aTorque);
 	virtual ~Torque();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

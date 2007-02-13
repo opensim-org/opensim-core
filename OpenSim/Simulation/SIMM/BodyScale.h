@@ -33,7 +33,6 @@
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/Array.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/XMLDocument.h>
 
 namespace OpenSim {
 
@@ -64,11 +63,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	BodyScale();
-	BodyScale(DOMElement *aElement);
 	BodyScale(const BodyScale &aBodyScale);
 	virtual ~BodyScale();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 	BodyScale& operator=(const BodyScale &aBodyScale);
 	void copyData(const BodyScale &aBodyScale);

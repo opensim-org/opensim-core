@@ -48,18 +48,6 @@ SimmMarkerPair::SimmMarkerPair() :
 {
 	setNull();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmMarkerPair::SimmMarkerPair(DOMElement *aElement) :
-   Object(aElement),
-	_markerNames(_markerNamesProp.getValueStrArray())
-{
-	setNull();
-
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -92,28 +80,6 @@ SimmMarkerPair::SimmMarkerPair(const SimmMarkerPair &aMarkerPair) :
 Object* SimmMarkerPair::copy() const
 {
 	SimmMarkerPair *markerPair = new SimmMarkerPair(*this);
-	return(markerPair);
-}
-//_____________________________________________________________________________
-/**
- * Copy this SimmMarkerPair and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMarkerPair::SimmMarkerPair(DOMElement*) in order to establish the
- * relationship of the SimmMarkerPair object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMarkerPair object. Finally, the data members of the copy are
- * updated using SimmMarkerPair::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMarkerPair.
- */
-Object* SimmMarkerPair::copy(DOMElement *aElement) const
-{
-	SimmMarkerPair *markerPair = new SimmMarkerPair(aElement);
-	*markerPair = *this;
-	markerPair->updateFromXMLNode();
 	return(markerPair);
 }
 

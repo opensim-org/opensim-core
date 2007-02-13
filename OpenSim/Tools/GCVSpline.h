@@ -138,11 +138,9 @@ public:
 	GCVSpline();
 	GCVSpline(int aDegree,int aN,const double *aTimes,const double *aValues,
 		const std::string &aName="",double aErrorVariance=0.0);
-	GCVSpline(DOMElement *aElement);
 	GCVSpline(const GCVSpline &aSpline);
 	virtual ~GCVSpline();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

@@ -12,7 +12,6 @@
 #include <OpenSim/Tools/PropertySet.h>
 #include <OpenSim/Tools/Exception.h>
 #include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 #include "rdSerializableObject.h"
 #include "rdSerializableObject2.h"

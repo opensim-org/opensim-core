@@ -53,21 +53,6 @@ SimmGenericModelMaker::SimmGenericModelMaker() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmGenericModelMaker::SimmGenericModelMaker(DOMElement *aElement) :
-   Object(aElement),
-   _fileName(_fileNameProp.getValueStr()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmGenericModelMaker::~SimmGenericModelMaker()
@@ -101,29 +86,6 @@ SimmGenericModelMaker::SimmGenericModelMaker(const SimmGenericModelMaker &aGener
 Object* SimmGenericModelMaker::copy() const
 {
 	SimmGenericModelMaker *genericModelMaker = new SimmGenericModelMaker(*this);
-	return(genericModelMaker);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmGenericModelMaker and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmGenericModelMaker::SimmGenericModelMaker(DOMElement*) in order to establish the
- * relationship of the SimmGenericModelMaker object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmGenericModelMaker object. Finally, the data members of the copy are
- * updated using SimmGenericModelMaker::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmGenericModelMaker.
- */
-Object* SimmGenericModelMaker::copy(DOMElement *aElement) const
-{
-	SimmGenericModelMaker *genericModelMaker = new SimmGenericModelMaker(aElement);
-	*genericModelMaker = *this;
-	genericModelMaker->updateFromXMLNode();
 	return(genericModelMaker);
 }
 

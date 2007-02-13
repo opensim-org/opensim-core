@@ -130,7 +130,6 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ContactForce(std::string aBodyA="",std::string aBodyB="");
-	ContactForce(DOMElement *aElement);
 	ContactForce(const ContactForce &aForce);
 	virtual ~ContactForce();
 private:

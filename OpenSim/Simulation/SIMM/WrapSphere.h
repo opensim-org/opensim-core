@@ -30,7 +30,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/PropertyDbl.h>
@@ -71,11 +70,9 @@ class RDSIMULATION_API WrapSphere : public AbstractWrapObject
 	//--------------------------------------------------------------------------
 public:
 	WrapSphere();
-	WrapSphere(DOMElement* aElement);
 	WrapSphere(const WrapSphere& aWrapSphere);
 	virtual ~WrapSphere();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement* aElement) const;
 #ifndef SWIG
 	WrapSphere& operator=(const WrapSphere& aWrapSphere);
 #endif

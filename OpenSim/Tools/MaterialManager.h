@@ -39,9 +39,6 @@
 
 namespace OpenSim { 
 
-class XMLNode;
-class XMLDocument;
-
 //=============================================================================
 /**
  * A class for representing the list of Materials in a model
@@ -69,13 +66,11 @@ protected:
 public:
 	MaterialManager();
 	MaterialManager(const std::string &aFileName);
-	MaterialManager(DOMElement *aElement);
 	MaterialManager(const MaterialManager &aMaterial);
 	virtual ~MaterialManager();
 
 	// Other operators to support Object API
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 protected:

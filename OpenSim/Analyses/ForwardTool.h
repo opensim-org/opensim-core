@@ -22,9 +22,6 @@
 
 namespace OpenSim { 
 
-class XMLDocument;
-
-
 //=============================================================================
 //=============================================================================
 /**
@@ -79,10 +76,8 @@ public:
 	virtual ~ForwardTool();
 	ForwardTool();
 	ForwardTool(const std::string &aFileName);
-	ForwardTool(DOMElement *aElement);
 	ForwardTool(const ForwardTool &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

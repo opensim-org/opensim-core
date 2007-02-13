@@ -92,32 +92,6 @@ SimulationTool::SimulationTool(const string &aFileName):
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOMElement.
- */
-SimulationTool::SimulationTool(DOMElement *aElement):
-	Object(aElement),
-	_modelLibrary(_modelLibraryProp.getValueStr()),
-	_modelFile(_modelFileProp.getValueStr()),
-	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
-	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
-	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
-	_resultsDir(_resultsDirProp.getValueStr()),
-	_outputPrecision(_outputPrecisionProp.getValueInt()),
-	_ti(_tiProp.getValueDbl()),
-	_tf(_tfProp.getValueDbl()),
-	_maxSteps(_maxStepsProp.getValueInt()),
-	_maxDT(_maxDTProp.getValueDbl()),
-	_errorTolerance(_errorToleranceProp.getValueDbl()),
-	_fineTolerance(_fineToleranceProp.getValueDbl()),
-	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
-	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
-{
-	setType("SimulationTool");
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all SimulationTools only copy the non-XML variable
@@ -142,7 +116,7 @@ SimulationTool::SimulationTool(DOMElement *aElement):
  * within the XML document, such as comments that may not have any
  * associated SimulationTool member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the SimulationTool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -150,7 +124,7 @@ SimulationTool::SimulationTool(DOMElement *aElement):
  * @param aTool Object to be copied.
  * @see SimulationTool(const XMLDocument *aDocument)
  * @see SimulationTool(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 SimulationTool::SimulationTool(const SimulationTool &aTool):
 	Object(aTool),

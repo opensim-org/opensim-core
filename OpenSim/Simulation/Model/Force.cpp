@@ -98,32 +98,6 @@ Force::Force(const string &aBodyAName,const string &aBodyBName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct from a DOM element.
- *
- * @param aFileName Name of the file.
- */
-Force::Force(DOMElement *aElement) :
-	AbstractActuator(aElement),
-	_bodyAName(_propBodyAName.getValueStr()),
-	_pA(_propPointA.getValueDblArray()),
-	_uA(_propUnitVectorA.getValueDblArray()),
-	_bodyBName(_propBodyBName.getValueStr()),
-	_pB(_propPointB.getValueDblArray()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_bA(NULL),
-	_bB(NULL)
-{
-	setNull();
-	updateFromXMLNode();
-
-	// MEMBER DATA
-	if (_model) {
-		_bA = _model->getDynamicsEngine().getBodySet()->get(_bodyAName);
-		_bB = _model->getDynamicsEngine().getBodySet()->get(_bodyBName);
-	}
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.
@@ -152,30 +126,6 @@ Object* Force::
 copy() const
 {
 	Force *act = new Force(*this);
-	return(act);
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * Force::Force(DOMElement*,int,int) in order to establish the
- * relationship of the Force object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this Force object.  Finally, the data members of the copy are
- * updated using Force::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* Force::
-copy(DOMElement *aElement) const
-{
-	Force *act = new Force(aElement);
-	*act = *this;
-	act->updateFromXMLNode();
-
 	return(act);
 }
 

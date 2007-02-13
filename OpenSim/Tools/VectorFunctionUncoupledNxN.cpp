@@ -75,20 +75,6 @@ VectorFunctionUncoupledNxN(int aN) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element. THIS CONSTRUCTOR IS NOT YET WORKING
- * NEED TO ADD HOW TO DEFINE _nX AND _nY FROM aElement
- *
- * @param aElement XML element.
- */
-VectorFunctionUncoupledNxN::
-VectorFunctionUncoupledNxN(DOMElement *aElement) :
-	VectorFunction(aElement)
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aVectorFunction Function to copy.

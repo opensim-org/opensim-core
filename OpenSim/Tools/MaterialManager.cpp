@@ -74,18 +74,6 @@ Object(aFileName)
 }
 //_____________________________________________________________________________
 /**
- * Constructor from an xml element
- *
- */
-MaterialManager::MaterialManager(DOMElement *aElement):
-Object(aElement)
-{
-	setNull();
-
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor
  *
  */
@@ -108,21 +96,6 @@ Object *MaterialManager::
 copy() const
 {
 	return(new MaterialManager(*this));
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct MaterialManager from.
- */
-
-Object* MaterialManager::
-copy(DOMElement *aElement) const
-{
-	MaterialManager *m = new MaterialManager(aElement);
-	*m = *this;
-	m->updateFromXMLNode();
-	return(m);
 }
 //_____________________________________________________________________________
 /**

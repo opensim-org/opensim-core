@@ -79,7 +79,6 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SetPoint(std::string aBodyA="",std::string aBodyB="");
-	SetPoint(DOMElement *aElement);
 	SetPoint(const SetPoint &aContact);
 	virtual ~SetPoint();
 private:

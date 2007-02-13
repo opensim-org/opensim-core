@@ -66,32 +66,6 @@ AbstractActuator::AbstractActuator() :
 {
 	setNull();
 }
-
-//_____________________________________________________________________________
-/**
- * Construct an actuator from an XML Element.
- *
- * @param aNX Number of controls.
- * @param aNY Number of states.
- * @param aNYP Number of pseudo-states.
- * @param aElement XML element.
- */
-AbstractActuator::AbstractActuator(DOMElement *aElement) :
-	Object(aElement),
-	_model(NULL),
-	_appliesForce(true),
-	_force(0.0),
-	_speed(0.0),
-	_x(NULL),
-	_y(NULL),
-	_yp(NULL),
-	_controlSuffixes(""),
-	_stateSuffixes(""),
-	_pseudoStateSuffixes("")
-{
-	setNull();
-	updateFromXMLNode();
-}
 //_____________________________________________________________________________
 /**
  * Copy constructor.

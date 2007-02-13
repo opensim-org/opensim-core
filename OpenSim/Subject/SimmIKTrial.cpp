@@ -65,26 +65,6 @@ SimmIKTrial::SimmIKTrial() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-SimmIKTrial::SimmIKTrial(DOMElement *aElement) :
-   Object(aElement),
-   _markerFileName(_markerFileNameProp.getValueStr()),
-   _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-   _analogFileName(_analogFileNameProp.getValueStr()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
-   _kinematicsSmoothing(_kinematicsSmoothingProp.getValueDbl()),
-   _groundReactionSmoothing(_groundReactionSmoothingProp.getValueDbl()),
-   _includeMarkers(_includeMarkersProp.getValueBool()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_notes(_notesProp.getValueStr())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**
@@ -126,28 +106,6 @@ SimmIKTrial::SimmIKTrial(const SimmIKTrial &aIKTrialParams) :
 Object* SimmIKTrial::copy() const
 {
 	SimmIKTrial *IKTrialParams = new SimmIKTrial(*this);
-	return(IKTrialParams);
-}
-//_____________________________________________________________________________
-/**
- * Copy this SimmIKTrial and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmIKTrial::SimmIKTrial(DOMElement*) in order to establish the
- * relationship of the SimmIKTrial object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmIKTrial object. Finally, the data members of the
- * copy are updated using SimmIKTrial::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmIKTrial.
- */
-Object* SimmIKTrial::copy(DOMElement *aElement) const
-{
-	SimmIKTrial *IKTrialParams = new SimmIKTrial(aElement);
-	*IKTrialParams = *this;
-	IKTrialParams->updateFromXMLNode();
 	return(IKTrialParams);
 }
 

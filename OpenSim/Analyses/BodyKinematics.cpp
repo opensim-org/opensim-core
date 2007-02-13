@@ -99,30 +99,6 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 	allocateStorage();
 	*/
 }
-//_____________________________________________________________________________
-/**
- * Construct an object from an DOMElement.
- */
-BodyKinematics::BodyKinematics(DOMElement *aElement):
-	Analysis(aElement),
-	_bodies(_bodiesProp.getValueStrArray()),
-	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
-{
-	setNull();
-
-	// Serialize from XML
-	updateFromXMLNode();
-
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	updateBodiesToRecord();
-	constructColumnLabels();
-
-	// STORAGE
-	allocateStorage();
-	*/
-}
 
 // Copy constrctor and virtual copy 
 //_____________________________________________________________________________
@@ -149,18 +125,6 @@ Object* BodyKinematics::copy() const
 	BodyKinematics *object = new BodyKinematics(*this);
 	return(object);
 
-}
-//_____________________________________________________________________________
-/**
- * Instantiate from DOMElement
- *
- */
-Object* BodyKinematics::copy(DOMElement *aElement) const
-{
-	BodyKinematics *object = new BodyKinematics(aElement);
-	*object = *this;
-	object->updateFromXMLNode();
-	return(object);
 }
 //=============================================================================
 // OPERATORS

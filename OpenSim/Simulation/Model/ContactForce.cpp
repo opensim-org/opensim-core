@@ -80,20 +80,6 @@ ContactForce::ContactForce(string aBodyA,string aBodyB) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a contact force object based on an XML node.
- *
- * @param aElement XML node based on which to construct this object.
- */
-ContactForce::ContactForce(DOMElement *aElement) :
-	Force(aElement),
-	_nA(_propNormalA.getValueDblArray()),
-	_nB(_propNormalB.getValueDblArray())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.

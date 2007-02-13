@@ -48,7 +48,6 @@
 
 namespace OpenSim {
 
-class XMLDocument;
 //=============================================================================
 //=============================================================================
 /**
@@ -160,10 +159,8 @@ public:
 	virtual ~CMCTool();
 	CMCTool();
 	CMCTool(const std::string &aFileName);
-	CMCTool(DOMElement *aElement);
 	CMCTool(const CMCTool &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

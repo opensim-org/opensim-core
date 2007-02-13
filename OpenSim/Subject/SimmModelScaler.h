@@ -38,7 +38,6 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
 
@@ -118,11 +117,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmModelScaler();
-	SimmModelScaler(DOMElement *aElement);
 	SimmModelScaler(const SimmModelScaler &aModelScaler);
 	virtual ~SimmModelScaler();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmModelScaler& operator=(const SimmModelScaler &aModelScaler);

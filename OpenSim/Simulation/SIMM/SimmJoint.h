@@ -35,7 +35,6 @@
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include "AbstractJoint.h"
 #include "AbstractCoordinate.h"
@@ -81,11 +80,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmJoint();
-	SimmJoint(DOMElement *aElement);
 	SimmJoint(const SimmJoint &aJoint);
 	virtual ~SimmJoint();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
    virtual void setup(AbstractDynamicsEngine* aEngine);
 

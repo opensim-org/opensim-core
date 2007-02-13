@@ -101,22 +101,6 @@ _specularColor(_propSpecularColor.getValueDblArray())
 }
 //_____________________________________________________________________________
 /**
- * Construct an object from an DOMElement.
- */
-Material::Material(DOMElement *aElement):
-Object(aElement),
-_translucency(_propTranslucency.getValueDbl()),
-_ambientColor(_propAmbientColor.getValueDblArray()),
-_diffuseColor(_propDiffuseColor.getValueDblArray()),
-_specularColor(_propSpecularColor.getValueDblArray())
-{
-	// NULL STATES
-	setNull();
-
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Material's only copy the non-XML variable
@@ -141,15 +125,15 @@ _specularColor(_propSpecularColor.getValueDblArray())
  * within the XML document, such as comments that may not have any
  * associated Material member variable, are preserved.
  *
- * 3) A call to generateDocument().
- * This method generates an XML document for the Material from scratch.
+ * 3) A call to generateXMLDocument().
+ * This method generates an XML document for the VisibleObject from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
  * @param aObject Object to be copied.
  * @see Material(const XMLDocument *aDocument)
  * @see Material(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 Material::Material(const Material &aObject):
 Object(aObject),
@@ -172,19 +156,6 @@ Object* Material::
 copy() const
 {
 	return(new Material(*this));
-}
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor from XMLNode
- */
-Object* Material::
-copy(DOMElement *aElement) const
-{
-	Material *m= new Material(aElement);
-	*m= *this;
-	m->updateFromXMLNode();
-	return(m);
-
 }
 
 //=============================================================================
@@ -355,21 +326,6 @@ const double* Material::
 getSpecularColor() const
 {
 	return &(_specularColor[0]);
-}
-
-//-----------------------------------------------------------------------------
-// NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the node set for this object.
- *
- * @return Node set for this object.
- */
-DOMElement* Material::
-getNode() const
-{
-	return(_node);
 }
 
 

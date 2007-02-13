@@ -67,31 +67,6 @@ SimmZajacHill::SimmZajacHill() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmZajacHill::SimmZajacHill(DOMElement *aElement) :
-   AbstractSimmMuscle(aElement),
-	_timeScale(_timeScaleProp.getValueDbl()),
-	_activation1(_activation1Prop.getValueDbl()),
-	_activation2(_activation2Prop.getValueDbl()),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
-	_damping(_dampingProp.getValueDbl()),
-	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
-	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
-	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
-	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmZajacHill::~SimmZajacHill()
@@ -136,29 +111,6 @@ Object* SimmZajacHill::copy() const
 {
 	SimmZajacHill *musc = new SimmZajacHill(*this);
 	return(musc);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmZajacHill and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmZajacHill::SimmZajacHill(DOMElement*) in order to establish the
- * relationship of the SimmZajacHill object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmZajacHill object. Finally, the data members of the copy are
- * updated using SimmZajacHill::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmZajacHill.
- */
-Object* SimmZajacHill::copy(DOMElement *aElement) const
-{
-	SimmZajacHill *pt = new SimmZajacHill(aElement);
-	*pt = *this;
-	pt->updateFromXMLNode();
-	return(pt);
 }
 
 //=============================================================================

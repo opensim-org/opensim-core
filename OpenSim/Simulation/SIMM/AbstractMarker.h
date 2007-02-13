@@ -30,7 +30,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 
 namespace OpenSim {
@@ -63,11 +62,9 @@ class RDSIMULATION_API AbstractMarker : public Object
 	//--------------------------------------------------------------------------
 public:
 	AbstractMarker();
-	AbstractMarker(DOMElement *aElement);
 	AbstractMarker(const AbstractMarker &aMarker);
 	virtual ~AbstractMarker();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 #ifndef SWIG
 	AbstractMarker& operator=(const AbstractMarker &aMarker);
 #endif

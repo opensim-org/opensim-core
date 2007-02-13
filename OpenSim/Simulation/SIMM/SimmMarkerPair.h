@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/XMLDocument.h>
 
 //=============================================================================
 //=============================================================================
@@ -65,11 +64,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMarkerPair();
-	SimmMarkerPair(DOMElement *aElement);
 	SimmMarkerPair(const SimmMarkerPair &aMarkerPair);
 	virtual ~SimmMarkerPair();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMarkerPair& operator=(const SimmMarkerPair &aMarkerPair);

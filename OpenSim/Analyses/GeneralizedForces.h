@@ -54,11 +54,9 @@ protected:
 public:
 	GeneralizedForces(AbstractModel *aModel=0);
 	GeneralizedForces(const std::string &aFileName);
-	GeneralizedForces(DOMElement *aElement);
 	// Copy constrctor and virtual copy 
 	GeneralizedForces(const GeneralizedForces &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual ~GeneralizedForces();
 	//--------------------------------------------------------------------------
 	// OPERATORS

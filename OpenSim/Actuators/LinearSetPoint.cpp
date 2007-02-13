@@ -74,20 +74,6 @@ LinearSetPoint::LinearSetPoint(string aBodyA, string aBodyB) :
 }
 //_____________________________________________________________________________
 /**
- * Construct an actuator from an XML element.
- *
- * @param aElement XML element.
- */
-LinearSetPoint::LinearSetPoint(DOMElement *aElement) :
-	SetPoint(aElement),
-	_knp(_propKNP.getValueDbl()),
-	_knv(_propKNV.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aForce Force to be copied.
@@ -116,29 +102,6 @@ Object* LinearSetPoint::
 copy() const
 {
 	AbstractActuator *act = new LinearSetPoint(*this);
-	return(act);
-}
-//_____________________________________________________________________________
-/**
- * Copy this actuator and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * Force::Force(DOMElement*,int,int) in order to establish the
- * relationship of the Force object with the XML node.  Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this Force object.  Finally, the data members of the copy are
- * updated using Force::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* LinearSetPoint::
-copy(DOMElement *aElement) const
-{
-	LinearSetPoint *act = new LinearSetPoint(aElement);
-	*act = *this;
-	act->updateFromXMLNode();
 	return(act);
 }
 

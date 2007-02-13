@@ -105,29 +105,6 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName) :
 	setupProperties();
 	updateFromXMLNode();
 }
-
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-AbstractDynamicsEngine::AbstractDynamicsEngine(DOMElement *aElement) :
-	Object(aElement),
-   _gravity(_gravityProp.getValueDblArray()),
-	_bodySetProp(PropertyObj("", BodySet())),
-	_bodySet((BodySet&)_bodySetProp.getValueObj()),
-	_jointSetProp(PropertyObj("", JointSet())),
-	_jointSet((JointSet&)_jointSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_speedSetProp(PropertyObj("", SpeedSet())),
-	_speedSet((SpeedSet&)_speedSetProp.getValueObj()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 //_____________________________________________________________________________
 /**
  * Copy constructor.

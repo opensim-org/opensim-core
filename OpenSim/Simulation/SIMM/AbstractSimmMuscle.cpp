@@ -68,27 +68,6 @@ AbstractSimmMuscle::AbstractSimmMuscle() :
 	setNull();
 	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Constructor from an XML node
- */
-AbstractSimmMuscle::AbstractSimmMuscle(DOMElement *aElement) :
-   AbstractActuator(aElement),
-	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
-	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
- 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL),
-	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
-	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
-   _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
-	_currentPath(NULL)
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
 
 //_____________________________________________________________________________
 /**

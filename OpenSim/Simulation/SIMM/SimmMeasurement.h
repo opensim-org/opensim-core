@@ -34,7 +34,6 @@
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Scale.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include "SimmMarkerPairSet.h"
@@ -82,11 +81,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmMeasurement();
-	SimmMeasurement(DOMElement *aElement);
 	SimmMeasurement(const SimmMeasurement &aMeasurement);
 	virtual ~SimmMeasurement();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmMeasurement& operator=(const SimmMeasurement &aMeasurement);

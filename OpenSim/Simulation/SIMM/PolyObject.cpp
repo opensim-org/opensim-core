@@ -83,24 +83,6 @@ PolyObject::PolyObject(const string &aFileName):
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-PolyObject::PolyObject(DOMElement *aElement) :
-   VisibleObject(aElement),
-	_geometryFileNames(_propGeometryFileNames.getValueStrArray())
-#ifdef BUILD_GUI
-	,
-	_vtkBones(0),
-	_vtkReaders(0)
-#endif
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 PolyObject::~PolyObject()
@@ -141,29 +123,6 @@ PolyObject::PolyObject(const PolyObject &aPoly) :
 Object* PolyObject::copy() const
 {
 	PolyObject *poly = new PolyObject(*this);
-	return(poly);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this PolyObject and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * PolyObject::PolyObject(DOMElement*) in order to establish the
- * relationship of the PolyObject object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this PolyObject object. Finally, the data members of the copy are
- * updated using PolyObject::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this PolyObject.
- */
-Object* PolyObject::copy(DOMElement *aElement) const
-{
-	PolyObject *poly = new PolyObject(aElement);
-	*poly = *this;
-	poly->updateFromXMLNode();
 	return(poly);
 }
 

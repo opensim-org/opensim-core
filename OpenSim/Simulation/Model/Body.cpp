@@ -101,23 +101,6 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
 
 //_____________________________________________________________________________
 /**
- * Construct a Body from an XML Element.
- *
- * @param aElement XML element.
- */
-Body::Body(DOMElement *aElement) :
-PolyObject(aElement),
-_M(_propM.getValueDbl()),
-_I(_propI.getValueDblArray()),
-_centerOfMass(_propCenterOfMass.getValueDblArray())
-{
-	setNull();
-
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 Body::~Body()
@@ -135,21 +118,6 @@ Object *Body::
 copy() const
 {
 	return(new Body(*this));
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct body from.
- */
-
-Object* Body::
-copy(DOMElement *aElement) const
-{
-	Body *b = new Body(aElement);
-	*b = *this;
-	b->updateFromXMLNode();
-	return(b);
 }
 
 //_____________________________________________________________________________

@@ -76,7 +76,7 @@ private:
 	/** XML document. */
 	DOMDocument *_document;
 	/** Name of the XML Document */
-	char *_fileName;
+	std::string _fileName;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -96,8 +96,8 @@ public:
 	// SET AND GET
 	//--------------------------------------------------------------------------
 	DOMDocument* getDOMDocument() const;
-	void setFileName(const char *aFileName);
-	const char *getFileName() const;
+	void setFileName(const std::string &aFileName);
+	const std::string &getFileName() const;
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

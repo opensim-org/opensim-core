@@ -58,19 +58,6 @@ WrapSphere::WrapSphere() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-WrapSphere::WrapSphere(DOMElement* aElement) :
-	AbstractWrapObject(aElement),
-   _radius(_radiusProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 WrapSphere::~WrapSphere()
@@ -102,29 +89,6 @@ WrapSphere::WrapSphere(const WrapSphere& aWrapSphere) :
 Object* WrapSphere::copy() const
 {
 	WrapSphere *wrapSPhere = new WrapSphere(*this);
-	return(wrapSPhere);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this WrapSphere and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * WrapSphere::WrapSphere(DOMElement*) in order to establish the
- * relationship of the WrapSphere object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this WrapSphere object. Finally, the data members of the copy are
- * updated using WrapSphere::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this WrapSphere.
- */
-Object* WrapSphere::copy(DOMElement *aElement) const
-{
-	WrapSphere *wrapSPhere = new WrapSphere(aElement);
-	*wrapSPhere = *this;
-	wrapSPhere->updateFromXMLNode();
 	return(wrapSPhere);
 }
 

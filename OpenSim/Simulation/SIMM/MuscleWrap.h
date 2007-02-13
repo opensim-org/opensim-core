@@ -30,7 +30,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyIntArray.h>
@@ -92,11 +91,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	MuscleWrap();
-	MuscleWrap(DOMElement* aElement);
 	MuscleWrap(const MuscleWrap& aMuscleWrap);
 	virtual ~MuscleWrap();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement* aElement) const;
 #ifndef SWIG
 	MuscleWrap& operator=(const MuscleWrap& aMuscleWrap);
 #endif

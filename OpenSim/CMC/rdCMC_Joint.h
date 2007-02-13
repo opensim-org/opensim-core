@@ -76,11 +76,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	rdCMC_Joint(const std::string &aCoordinateName = "");
-	rdCMC_Joint(DOMElement *aElement);
 	rdCMC_Joint(const rdCMC_Joint &aTask);
 	virtual ~rdCMC_Joint();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

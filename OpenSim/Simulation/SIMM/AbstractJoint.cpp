@@ -50,19 +50,6 @@ AbstractJoint::AbstractJoint() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-AbstractJoint::AbstractJoint(DOMElement *aElement) :
-	Object(aElement),
-	_dynamicsEngine(NULL),
-	_transformsValid(false)
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 AbstractJoint::~AbstractJoint()

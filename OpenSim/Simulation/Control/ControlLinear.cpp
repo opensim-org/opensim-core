@@ -87,24 +87,6 @@ ControlLinear() :
 }
 //_____________________________________________________________________________
 /**
- * Construct a control from an XML Element.
- *
- * @param aElement XML element.
- */
-ControlLinear::ControlLinear(DOMElement *aElement) :
-	Control(aElement),
-	_useSteps(_propUseSteps.getValueBool()),
-	_xNodes((ArrayPtrs<ControlLinearNode>&)_propXNodes.getValueObjArray()),
-	_minNodes((ArrayPtrs<ControlLinearNode>&)_propMinNodes.getValueObjArray()),
-	_maxNodes((ArrayPtrs<ControlLinearNode>&)_propMaxNodes.getValueObjArray()),
-	_kp(_propKp.getValueDbl()),
-	_kv(_propKv.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aControl Control to copy.
@@ -129,34 +111,6 @@ Object* ControlLinear::
 copy() const
 {
 	return(new ControlLinear(*this));
-}
-//_____________________________________________________________________________
-/**
- * Copy this control and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the control with the
- * XML node.  Then, the assignment operator is used to set all member variables
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this actuator.
- */
-Object* ControlLinear::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	ControlLinear *control = (ControlLinear *)this->copy();
-
-	// ASSIGNMENT OPERATOR
-	control->setXMLNode(aElement);
-
-	// UPDATE BASED ON NODE
-	control->updateFromXMLNode();
-
-	return(control);
 }
 
 

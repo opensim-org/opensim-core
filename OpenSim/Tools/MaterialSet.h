@@ -41,9 +41,6 @@
 
 namespace OpenSim { 
 
-class XMLNode;
-class XMLDocument;
-
 
 #ifndef SWIG
 //template class RDTOOLS_API Set<Material>;

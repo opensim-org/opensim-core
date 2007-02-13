@@ -84,11 +84,9 @@ public:
 	//--------------------------------------------------------------------------
 	VectorFunction();
 	VectorFunction(int aNX, int aNY);
-	VectorFunction(DOMElement *aElement);
 	VectorFunction(const VectorFunction &aVectorFunction);
 	virtual ~VectorFunction();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 private:
 	void setNull();
 	void setEqual(const VectorFunction &aVectorFunction);

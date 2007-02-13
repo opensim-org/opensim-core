@@ -99,11 +99,9 @@ protected:
 //=============================================================================
 public:
 	ControlLinear();
-	ControlLinear(DOMElement *aElement);
 	ControlLinear(const ControlLinear &aControl);
 	virtual ~ControlLinear();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 protected:
 	virtual void setupProperties();
 	

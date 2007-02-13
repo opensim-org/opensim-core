@@ -45,7 +45,6 @@
 namespace OpenSim { 
 
 class AbstractModel;
-class XMLDocument;
 
 
 //=============================================================================
@@ -88,11 +87,9 @@ private:
 public:
 	Analysis(AbstractModel *aModel=0);
 	Analysis(const std::string &aFileName);
-	Analysis(DOMElement *aElement);
 	virtual ~Analysis();
 	Analysis(const Analysis &aObject);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

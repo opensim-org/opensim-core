@@ -104,11 +104,9 @@ public:
 	VectorGCVSplineR1R3(int aDegree,int aN,const double *aTimes,double *aY0Values,
 		double *aY1Values,double *aY2Values,const char *aName=NULL,
 		double aErrorVariance=0.0);
-	VectorGCVSplineR1R3(DOMElement *aElement);
 	VectorGCVSplineR1R3(const VectorGCVSplineR1R3 &aVectorSpline);
 	virtual ~VectorGCVSplineR1R3();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setEqual(const VectorGCVSplineR1R3 &aSpline);

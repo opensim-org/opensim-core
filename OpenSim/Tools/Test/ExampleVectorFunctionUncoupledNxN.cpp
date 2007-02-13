@@ -73,20 +73,6 @@ ExampleVectorFunctionUncoupledNxN(int aN) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a function from an XML Element. THIS CONSTRUCTOR IS NOT YET WORKING
- * NEED TO ADD HOW TO DEFINE _nX AND _nY FROM aElement
- *
- * @param aElement XML element.
- */
-ExampleVectorFunctionUncoupledNxN::
-ExampleVectorFunctionUncoupledNxN(DOMElement *aElement) :
-	VectorFunctionUncoupledNxN(aElement)
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aVectorFunction Function to copy.
@@ -111,37 +97,6 @@ copy() const
 {
 	ExampleVectorFunctionUncoupledNxN *func =
 		new ExampleVectorFunctionUncoupledNxN(*this);
-	return(func);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this object and modify the copy so that it is consistent
- * with a specified XML element node.   NOT FUNCTIONAL
- *
- * The copy is constructed by first using
- * rd1to3VectorGCVSpline::rd1to3VectorGCVSpline(DOMElement*) in order to establish the
- * XML node.  Then, the assignment operator is used to set all
- * data members of the copy to the values of this object.  Finally, the
- * data members of the copy are updated using rd1to3VectorGCVSpline::updateObject().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this object modified by the specified
- * XML element.
- */
-Object* ExampleVectorFunctionUncoupledNxN::
-copy(DOMElement *aElement) const
-{
-	// CONSTRUCT FUNCTION BASED ON XML ELEMENT
-	ExampleVectorFunctionUncoupledNxN *func =
-		new ExampleVectorFunctionUncoupledNxN(aElement);
-
-	// ASSIGN DATA ACCORDING TO THIS ACTUATOR
-	*func = *this;
-
-	// UPDATE DATA CCORDING TO THE XML ELEMENT
-	func->updateFromXMLNode();
-
 	return(func);
 }
 

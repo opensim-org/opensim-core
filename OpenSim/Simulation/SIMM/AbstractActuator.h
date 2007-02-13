@@ -91,11 +91,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractActuator();
-	AbstractActuator(DOMElement *aElement);
 	AbstractActuator(const AbstractActuator &aActuator);
 	virtual ~AbstractActuator();
 	virtual Object* copy() const = 0;
-	virtual Object* copy(DOMElement *aElement) const = 0;
 private:
 	void setNull();
 

@@ -63,20 +63,6 @@ WrapTorus::WrapTorus() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-WrapTorus::WrapTorus(DOMElement* aElement) :
-	AbstractWrapObject(aElement),
-   _innerRadius(_innerRadiusProp.getValueDbl()),
-   _outerRadius(_outerRadiusProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 WrapTorus::~WrapTorus()
@@ -109,29 +95,6 @@ WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
 Object* WrapTorus::copy() const
 {
 	WrapTorus *wrapTorus = new WrapTorus(*this);
-	return(wrapTorus);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this WrapTorus and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * WrapTorus::WrapTorus(DOMElement*) in order to establish the
- * relationship of the WrapTorus object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this WrapTorus object. Finally, the data members of the copy are
- * updated using WrapTorus::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this WrapTorus.
- */
-Object* WrapTorus::copy(DOMElement *aElement) const
-{
-	WrapTorus *wrapTorus = new WrapTorus(aElement);
-	*wrapTorus = *this;
-	wrapTorus->updateFromXMLNode();
 	return(wrapTorus);
 }
 

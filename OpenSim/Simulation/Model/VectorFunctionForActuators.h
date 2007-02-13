@@ -87,11 +87,9 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	VectorFunctionForActuators(ModelIntegrand *aIntegrand);
-	VectorFunctionForActuators(DOMElement *aElement);
 	VectorFunctionForActuators(const VectorFunctionForActuators &aFunction);
 	virtual ~VectorFunctionForActuators();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setEqual(const VectorFunctionForActuators &aVectorFunction);

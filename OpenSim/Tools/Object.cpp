@@ -37,6 +37,8 @@
 //============================================================================
 #include <fstream>
 #include "Object.h"
+#include "XMLNode.h"
+#include "XMLDocument.h"
 #include "Exception.h"
 #include "Property.h"
 #include "PropertyInt.h"
@@ -177,6 +179,7 @@ Object::Object(const XMLDocument *aDocument)
  */
 Object::Object(DOMElement *aElement)
 {
+	throw Exception("");
 	setNull();
 
 	// NODE
@@ -209,7 +212,7 @@ Object::Object(DOMElement *aElement)
  * within the XML document, such as comments that may not have any
  * associated Object member variable, are preserved.
  *
- * 3) A call to generateDocument().
+ * 3) A call to generateXMLDocument().
  * This method generates an XML document for the Object from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
@@ -217,7 +220,7 @@ Object::Object(DOMElement *aElement)
  * @param aObject Object to be copied.
  * @see Object(const XMLDocument *aDocument)
  * @see Object(const char *aFileName)
- * @see generateDocument()
+ * @see generateXMLDocument()
  */
 Object::Object(const Object &aObject)
 {
@@ -505,8 +508,7 @@ getDescription() const
  * assuming that the type has implemented the following methods:
  *	1)	copy constructor
  *	2)	virtual Object* copy() const,
- *	3)	virtual Object* copy(DOMElement*) const,
- *	4)	<class>& operator=() (where the class name is substituted for <class>),
+ *	3)	<class>& operator=() (where the class name is substituted for <class>),
  *
  * ---- Initialization by Default Object ----
  * When objects are deserialized, they are constructed based on the registered
@@ -608,6 +610,9 @@ isValidDefaultType(const Object *aObject) const
 	return(true);
 }
 
+//-----------------------------------------------------------------------------
+// UTILITY FUNCTIONS
+//-----------------------------------------------------------------------------
 template<class T> void UpdateFromXMLNodeSimpleProperty(Property *aProperty, DOMElement *aNode, const string &aName)
 {
 	aProperty->setUseDefault(true);
@@ -899,7 +904,13 @@ updateFromXMLNode()
 					property->setUseDefault(false);
 
 					// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
-					object = defaultObject->copy(objElmt);
+					// Used to call a special copy method that took DOMElement* but 
+					// that ended up causing XML to be parsed twice.  Got rid of that
+					// copy method! - Eran, Feb/07
+					//object = defaultObject->copy(objElmt);
+					object = defaultObject->copy();
+					object->setXMLNode(objElmt);
+					object->updateFromXMLNode();
 
 					// Set inlining attributes on final object
 					if (!inLinedObject){
@@ -974,7 +985,14 @@ updateDefaultObjectsFromXMLNode()
 		}
 
 		// CONSTRUCT AND REGISTER DEFAULT OBJECT
-		Object *object = defaultObject->copy(elmt);
+		// Used to call a special copy method that took DOMElement* but 
+		// that ended up causing XML to be parsed twice.  Got rid of that
+		// copy method! - Eran, Feb/07
+		//Object *object = defaultObject->copy(elmt);
+		Object *object = defaultObject->copy();
+		object->setXMLNode(elmt);
+		object->updateFromXMLNode();
+
 		if(object!=NULL) {
 			object->setName(DEFAULT_NAME);
 			RegisterType(*object);
@@ -1012,9 +1030,9 @@ updateXMLNode(DOMElement *aParent)
 	// We can possibly check when setInlined() is invoked if we need to do it or not
 	if (!getInlined() && aParent){
 		// Create a new document and write object to it
-		const char *offLineFileName = getDocument()->getFileName();
+		string offLineFileName = getDocumentFileName();
 		// The problem is that generateChildXMLDocument makes a root which allows print
-		// to do its job but root is duplicated. If we don't create the node then generateDocument
+		// to do its job but root is duplicated. If we don't create the node then generateXMLDocument
 		// is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
 		_inLined=true;
 		print(offLineFileName);
@@ -1041,9 +1059,8 @@ updateXMLNode(DOMElement *aParent)
 	XMLNode::SetAttribute(_node,"name",getName());
 
 	// DEFAULT OBJECTS
-	DOMElement *elmt;
 	string defaultsTag = "defaults";
-	elmt = XMLNode::GetFirstChildElementByTagName(_node,defaultsTag);
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,defaultsTag);
 	// Not root element- remove defaults
 	if((aParent!=NULL) && (elmt!=NULL)) {
 		DOMNode *defaultsParent = elmt->getParentNode();
@@ -1267,6 +1284,17 @@ getDocument() const
 {
 	return(_document);
 }
+//_____________________________________________________________________________
+/**
+ * Get the document's filename
+ *
+ * @return Document's filename for this object.
+ */
+string Object::
+getDocumentFileName() const
+{
+	return _document->getFileName();
+}
 
 
 //-----------------------------------------------------------------------------
@@ -1280,7 +1308,7 @@ void Object::
 generateXMLDocument()
 {
 	if(_node!=NULL) {
-		printf("Object.generateDocument: ERROR- request to generate new ");
+		printf("Object.generateXMLDocument: ERROR- request to generate new ");
 		printf("document, but a document already exists.\n\n");
 		return;
 	}
@@ -1406,15 +1434,6 @@ bool Object::
 getInlined() const
 {
 	return _inLined;
-}
-/** 
- * If an object is not inlined, management of Offline file name to readFrom/writeTo */
-const char *Object::
-getOffLineFileName() const
-{
-	if(getDocument()!= NULL)
-		return getDocument()->getFileName();
-	return NULL;
 }
 
 /** 

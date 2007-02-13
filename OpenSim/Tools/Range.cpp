@@ -43,20 +43,6 @@ _max(_propMax.getValueDbl())
 }
 //_____________________________________________________________________________
 /**
- * Construct an Range from DOMElement.
- *
- * @param aElement to use for construction
- */
-Range::Range(DOMElement *aElement) :
-Object(aElement),
-_min(_propMin.getValueDbl()),
-_max(_propMax.getValueDbl())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Construct and return a copy of this object.
  *
  * The object is allocated using the new operator, so the caller is
@@ -69,21 +55,6 @@ copy() const
 {
 	Object *object = new Range(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct Range from.
- */
-
-Object* Range::
-copy(DOMElement *aElement) const
-{
-	Range *m = new Range(aElement);
-	*m = *this;
-	m->updateFromXMLNode();
-	return(m);
 }
 //=============================================================================
 // OPERATORS

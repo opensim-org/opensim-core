@@ -84,9 +84,7 @@ public:
 	//--------------------------------------------------------------------------
 	Marker();
 	Marker(const Marker &aMarker);
-	Marker(DOMElement *aElement);
 	virtual ~Marker(void);
-	virtual Object* copy(DOMElement *aElement) const;
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------

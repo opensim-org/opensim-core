@@ -69,33 +69,6 @@ SimmDarrylMuscle::SimmDarrylMuscle() :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmDarrylMuscle::SimmDarrylMuscle(DOMElement *aElement) :
-   AbstractSimmMuscle(aElement),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
-	_deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
-	_vmax(_vmaxProp.getValueDbl()),
-	_vmax0(_vmax0Prop.getValueDbl()),
-	_fmaxTendonStrain(_fmaxTendonStrainProp.getValueDbl()),
-	_fmaxMuscleStrain(_fmaxMuscleStrainProp.getValueDbl()),
-	_kShapeActive(_kShapeActiveProp.getValueDbl()),
-	_kShapePassive(_kShapePassiveProp.getValueDbl()),
-	_damping(_dampingProp.getValueDbl()),
-	_af(_afProp.getValueDbl()),
-	_flen(_flenProp.getValueDbl())
-{
-	setNull();
-	setupProperties();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmDarrylMuscle::~SimmDarrylMuscle()
@@ -142,29 +115,6 @@ Object* SimmDarrylMuscle::copy() const
 {
 	SimmDarrylMuscle *musc = new SimmDarrylMuscle(*this);
 	return(musc);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmDarrylMuscle and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmDarrylMuscle::SimmDarrylMuscle(DOMElement*) in order to establish the
- * relationship of the SimmDarrylMuscle object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmDarrylMuscle object. Finally, the data members of the copy are
- * updated using SimmDarrylMuscle::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmDarrylMuscle.
- */
-Object* SimmDarrylMuscle::copy(DOMElement *aElement) const
-{
-	SimmDarrylMuscle *pt = new SimmDarrylMuscle(aElement);
-	*pt = *this;
-	pt->updateFromXMLNode();
-	return(pt);
 }
 
 //=============================================================================

@@ -71,20 +71,6 @@ ControlConstant::ControlConstant(double aX,const char *aName) :
 }
 //_____________________________________________________________________________
 /**
- * Construct a control from an XML Element.
- *
- * @param aElement XML element.
- */
-ControlConstant::ControlConstant(DOMElement *aElement) :
-	Control(aElement),
-	_x(_propX.getValueDbl())
-{
-	setNull();
-	setIsModelControl(false);
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * @param aControl Control to copy.
@@ -104,34 +90,6 @@ Object* ControlConstant::
 copy() const
 {
 	return(new ControlConstant(*this));
-}
-//_____________________________________________________________________________
-/**
- * Copy this object and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using the contructor for the DOMElement
- * in order to establish the relationship of the control with the
- * XML node.  Then, the assignment operator is used to set all member variables
- * of the copy to the values of this object.  Finally, the data members of
- * the copy are updated from the DOMElment using updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this object.
- */
-Object* ControlConstant::
-copy(DOMElement *aElement) const
-{
-	// ESTABLISH RELATIONSHIP WITH XML NODE
-	ControlConstant *control = new ControlConstant(aElement);
-
-	// ASSIGNMENT OPERATOR
-	*control = *this;
-
-	// UPDATE BASED ON NODE
-	control->updateFromXMLNode();
-
-	return(control);
 }
 
 

@@ -89,11 +89,9 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	PolynomialSetPoint(std::string aBodyA="",std::string aBodyB="");
-	PolynomialSetPoint(DOMElement *aElement);
 	PolynomialSetPoint(const PolynomialSetPoint &aContact);
 	virtual ~PolynomialSetPoint();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 private:
 	void setNull();
 	void setupProperties();

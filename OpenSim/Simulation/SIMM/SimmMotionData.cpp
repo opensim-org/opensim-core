@@ -174,26 +174,6 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 
 //_____________________________________________________________________________
 /**
- * Constructor from an XML node
- */
-SimmMotionData::SimmMotionData(DOMElement *aElement) :
-   Object(aElement),
-	_numRows(0),
-	_numColumns(0),
-	_rows(NULL),
-	_wrap(false),
-	_calcDerivatives(false),
-	_enforceLoops(false),
-	_enforceConstraints(false),
-	_showCursor(false),
-	_slidingTimeScale(false)
-{
-	setNull();
-	updateFromXMLNode();
-}
-
-//_____________________________________________________________________________
-/**
  * Destructor.
  */
 SimmMotionData::~SimmMotionData()
@@ -232,29 +212,6 @@ SimmMotionData::SimmMotionData(const SimmMotionData &aData) :
 Object* SimmMotionData::copy() const
 {
 	SimmMotionData *data = new SimmMotionData(*this);
-	return(data);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this SimmMotionData and modify the copy so that it is consistent
- * with a specified XML element node.
- *
- * The copy is constructed by first using
- * SimmMotionData::SimmMotionData(DOMElement*) in order to establish the
- * relationship of the SimmMotionData object with the XML node. Then, the
- * assignment operator is used to set all data members of the copy to the
- * values of this SimmMotionData object. Finally, the data members of the copy are
- * updated using SimmMotionData::updateFromXMLNode().
- *
- * @param aElement XML element. 
- * @return Pointer to a copy of this SimmMotionData.
- */
-Object* SimmMotionData::copy(DOMElement *aElement) const
-{
-	SimmMotionData *data = new SimmMotionData(aElement);
-	*data = *this;
-	data->updateFromXMLNode();
 	return(data);
 }
 

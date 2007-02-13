@@ -35,7 +35,6 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/XMLDocument.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Subject/SimmGenericModelMaker.h>
@@ -97,11 +96,9 @@ protected:
 public:
 	SimmSubject();
 	SimmSubject(const std::string &aFileName);
-	SimmSubject(DOMElement *aElement);
 	SimmSubject(const SimmSubject &aSubject);
 	virtual ~SimmSubject();
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aElement) const;
 
 #ifndef SWIG
 	SimmSubject& operator=(const SimmSubject &aSubject);

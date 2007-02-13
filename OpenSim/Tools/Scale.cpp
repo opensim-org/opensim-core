@@ -45,21 +45,6 @@ _apply(_propApply.getValueBool())
 }
 //_____________________________________________________________________________
 /**
- * Construct an Scale from DOMElement.
- *
- * @param aElement to use for construction
- */
-Scale::Scale(DOMElement *aElement) :
-Object(aElement),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
-_segmentName(_propSegmentName.getValueStr()),
-_apply(_propApply.getValueBool())
-{
-	setNull();
-	updateFromXMLNode();
-}
-//_____________________________________________________________________________
-/**
  * Constructor of a scaleSet from a file.
  */
 Scale::Scale(const string& scaleFileName):
@@ -85,21 +70,6 @@ copy() const
 {
 	Object *object = new Scale(*this);
 	return(object);
-}
-//_____________________________________________________________________________
-/**
- * Create object from DOMElement.
- *
- * @param aElement XMLnode to construct Scale from.
- */
-
-Object* Scale::
-copy(DOMElement *aElement) const
-{
-	Scale *m = new Scale(aElement);
-	*m = *this;
-	m->updateFromXMLNode();
-	return(m);
 }
 //=============================================================================
 // OPERATORS
