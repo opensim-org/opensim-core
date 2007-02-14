@@ -4,7 +4,7 @@ if nargin < 1
 	trialname = 'ss_walking1';
 end
 
-[sInfo, tInfo] = ref_trialInfoDelaware2;
+[sInfo, tInfo] = ref_trialInfoDelaware2(trialname);
 
 trial = tInfo.(trialname);
 

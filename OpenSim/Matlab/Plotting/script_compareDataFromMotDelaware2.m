@@ -12,7 +12,7 @@ global GLOBAL_individualprintmenus GLOBAL_figHandles;
 GLOBAL_figHandles = [];
 GLOBAL_individualprintmenus = individualprintmenus;
 
-[sInfo, tInfo] = ref_trialInfoDelaware2; % customize for subject
+[sInfo, tInfo] = ref_trialInfoDelaware2(trialname); % customize for subject
 ref_dataFormat = ref_dataFormatDelaware;
 
 % Directory containing <subject>_<trialname>EmgEnv.mot
