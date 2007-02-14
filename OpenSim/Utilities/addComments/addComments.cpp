@@ -27,7 +27,11 @@ int main(int argc,char **argv)
 	string fileName = argv[1];
 	string outputFileName = argv[2];
 	Object *obj = Object::makeObjectFromFile(fileName);
-	std::cout << fileName << " -> " << outputFileName << std::endl;
-	IO::SetGFormatForDoubleOutput(true);
-	obj->print(outputFileName);
+	std::cout << fileName << " -> " << outputFileName;
+	if(!obj) std::cout << "FAILED" << std::endl;
+	else {
+		std::cout << std::endl;
+		IO::SetGFormatForDoubleOutput(true);
+		obj->print(outputFileName);
+	}
 }
