@@ -38,6 +38,7 @@
 #include "XMLNode.h"
 #include "IO.h"
 #include "Object.h"
+#include "XMLParsingException.h"
 #include <cassert>
 
 
@@ -360,11 +361,9 @@ GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName,const 
 			if(aCheckForMultiple) {
 				if(!gotOne) { gotOne = true; elmt = e; continue; }
 				else {
-					DOMDocument *doc = aNode->getOwnerDocument();
-					std::string msg = "XML ERROR: Multiple instances of tag '"+aTagName + "'";
+					std::string msg = "Multiple instances of tag '"+aTagName + "'";
 					if(aName) msg += " with name attribute '"+*aName+"'";
-					msg += " in:\n" + NodeContextString(e);
-					throw Exception(msg,__FILE__,__LINE__);
+					throw XMLParsingException(msg,e,__FILE__,__LINE__);
 				}
 			} else {
 				elmt = e;
