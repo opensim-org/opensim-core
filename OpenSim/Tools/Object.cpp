@@ -40,6 +40,7 @@
 #include "XMLNode.h"
 #include "XMLDocument.h"
 #include "Exception.h"
+#include "XMLParsingException.h"
 #include "Property.h"
 #include "PropertyObj.h"
 #include "IO.h"
@@ -773,8 +774,9 @@ updateFromXMLNode()
 			}
 			break; }
 
-		// ObjArray
-		case(Property::ObjArray) : {
+		// ObjArray AND ObjPtr (handled very similarly)
+		case(Property::ObjArray) : 
+		case(Property::ObjPtr) : {
 			property->setUseDefault(true);
 
 			// GET ENCLOSING ELEMENT
@@ -787,11 +789,12 @@ updateFromXMLNode()
 				break;
 			}
 
-			// CLEAR EXISTING OBJECT ARRAY
-			// Eran: Moved after elmt check above so that values set by constructor are kept if
-			// property is not specified in the xml file
-			ArrayPtrs<Object> &objArray = property->getValueObjArray();
-			objArray.setSize(0);
+			if(type==Property::ObjArray) {
+				// CLEAR EXISTING OBJECT ARRAY
+				// Eran: Moved after elmt check above so that values set by constructor are kept if
+				// property is not specified in the xml file
+				property->getValueObjArray().setSize(0);
+			}
 
 			// Call parseFileAttribute to take care of the case where a file attribute points to
 			// an external XML file.  Essentially this will make elmt point to the top level
@@ -805,6 +808,7 @@ updateFromXMLNode()
 			// LOOP THROUGH CHILD NODES
 			DOMNodeList *list = elmt->getChildNodes();
 			unsigned int listLength = list->getLength();
+			int objectsFound = 0;
 			for(unsigned int j=0;j<listLength;j++) {
 				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
 				// to process element nodes
@@ -815,9 +819,19 @@ updateFromXMLNode()
 				// Initialize to default object of corresponding type (returns 0 if type not recognized)
 				Object *object = newInstanceOfType(objectType);
 				if(!object) continue;
+				objectsFound++;
 
+				if(type==Property::ObjPtr) {
+					if(objectsFound > 1)
+						throw XMLParsingException("Found multiple objects under "+name+" tag, but expected only one.",objElmt,__FILE__,__LINE__);
+					else if(!property->isValidObject(object))
+						throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
+					else
+						property->setValue(object);
+				} else {
+					property->getValueObjArray().append(object);
+				}
 				InitializeObjectFromXMLNode(property, objElmt, object);
-				objArray.append(object);
 			}
 				
 			break; }
@@ -1037,15 +1051,27 @@ updateXMLNode(DOMElement *aParent)
 #endif
 			break; }
 
-		// ObjArray
-		case(Property::ObjArray) : {
-			ArrayPtrs<Object> &value = property->getValueObjArray();
+		// ObjPtr
+		case(Property::ObjPtr) : {
 			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if(elmt==NULL) { // I guess we always append the element even if it has default value
 				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
+			Object *object = property->getValueObjPtr();
+			if(object) object->updateXMLNode(elmt);
+			break; }
+
+		// ObjArray
+		case(Property::ObjArray) : {
+			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
+			if(elmt==NULL) { // I guess we always append the element even if it has default value
+				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+			}
+			ArrayPtrs<Object> &value = property->getValueObjArray();
 			for(int j=0;j<value.getSize();j++) {
 				value.get(j)->updateXMLNode(elmt);
 			}
@@ -1225,6 +1251,12 @@ clearXMLNodes()
 		case(Property::Obj) : {
 			Object &object = property->getValueObj();
 			object.clearXMLNodes();
+			break; }
+
+		// ObjPtr
+		case(Property::ObjPtr) : {
+			Object *object = property->getValueObjPtr();
+			object->clearXMLNodes();
 			break; }
 
 		// ObjArray
@@ -1514,6 +1546,10 @@ makeObjectFromFile(const std::string &aFileName)
 		newObject->setXMLNode(elt);
 		newObject->updateFromXMLNode();
 		return (newObject);
+	}
+	catch(Exception &x) {
+		x.print(cout);
+		return 0;
 	}
 	catch(...){	// Document couldn't be opened, or something went really bad
 		return 0;

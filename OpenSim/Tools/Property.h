@@ -68,6 +68,7 @@ class Object;
  * \tdouble\n
  * \tstring\n
  * \tObject\n
+ * \tObject pointer\n
  * \tarray of bools\n
  * \tarray of ints\n
  * \tarray of floats\n
@@ -85,6 +86,9 @@ class Object;
 #pragma warning( disable : 4290 )	// VC++ non-ANSI Exception handling
 #endif
 
+#define Property_PROPERTY_TYPE_MISMATCH() \
+	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeAsString()+".",__FILE__,__LINE__);
+
 class RDTOOLS_API Property  
 {
 
@@ -95,7 +99,7 @@ public:
 	/** Enumeration of recognized types. */
 	enum PropertyType
 	{
-		None=0,Bool, Int, Flt, Dbl, Str, Obj,
+		None=0,Bool, Int, Flt, Dbl, Str, Obj, ObjPtr,
 		BoolArray, IntArray, FltArray, DblArray, StrArray, ObjArray
 	};
 
@@ -160,71 +164,78 @@ public:
 	// VALUE
 	// Textual representation
 	virtual const std::string &toString()=0;
+
+	// These methods have been given default implementations, rather than being made pure virtual
+	// so that all classes derived from Property will not have to implement each method.
 	// Bool
-	virtual void setValue(bool aValue);
-	virtual bool& getValueBool();
+	virtual void setValue(bool aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual bool& getValueBool() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const bool& getValueBool() const;
+	virtual const bool& getValueBool() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Int
-	virtual void setValue(int aValue);
-	virtual int& getValueInt();
+	virtual void setValue(int aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual int& getValueInt() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const int& getValueInt() const;
+	virtual const int& getValueInt() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Dbl
-	virtual void setValue(double aValue);
-	virtual double& getValueDbl();
+	virtual void setValue(double aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual double& getValueDbl() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const double& getValueDbl() const;
+	virtual const double& getValueDbl() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Str
-	virtual void setValue(const std::string &aValue);
-	virtual std::string& getValueStr();
+	virtual void setValue(const std::string &aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual std::string& getValueStr() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const std::string& getValueStr() const;
+	virtual const std::string& getValueStr() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Obj
 	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
 	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
-	virtual Object& getValueObj();
+	virtual Object& getValueObj() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const Object& getValueObj() const;
+	virtual const Object& getValueObj() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	// ObjPtr
+	virtual bool isValidObject(const Object *aValue) const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(Object *aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Object* getValueObjPtr() { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Bool Array
-	virtual void setValue(int aSize,const bool aArray[]);
-	virtual void setValue(const Array<bool> &aArray);
-	virtual Array<bool>& getValueBoolArray();
+	virtual void setValue(int aSize,const bool aArray[]) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(const Array<bool> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Array<bool>& getValueBoolArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const Array<bool>& getValueBoolArray() const;
+	virtual const Array<bool>& getValueBoolArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Int Array
-	virtual void setValue(int aSize,const int aArray[]);
-	virtual void setValue(const Array<int> &aArray);
-	virtual Array<int>& getValueIntArray();
+	virtual void setValue(int aSize,const int aArray[]) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(const Array<int> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Array<int>& getValueIntArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const Array<int>& getValueIntArray() const;
+	virtual const Array<int>& getValueIntArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Dbl Array
-	virtual void setValue(int aSize,const double aArray[]);
-	virtual void setValue(const Array<double> &aArray);
-	virtual Array<double>& getValueDblArray();
+	virtual void setValue(int aSize,const double aArray[]) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(const Array<double> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Array<double>& getValueDblArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const Array<double>& getValueDblArray() const;
+	virtual const Array<double>& getValueDblArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Str Array
-	virtual void setValue(int aSize,const std::string aArray[]);
-	virtual void setValue(const Array<std::string> &aArray);
-	virtual Array<std::string>& getValueStrArray();
+	virtual void setValue(int aSize,const std::string aArray[]) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(const Array<std::string> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Array<std::string>& getValueStrArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const Array<std::string>& getValueStrArray() const;
+	virtual const Array<std::string>& getValueStrArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// Obj Array
-	virtual void setValue(int aSize,Object **aArray);
-	virtual void setValue(const ArrayPtrs<Object> &aArray);
-	virtual ArrayPtrs<Object>& getValueObjArray();
+	virtual void setValue(int aSize,Object **aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void setValue(const ArrayPtrs<Object> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual ArrayPtrs<Object>& getValueObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const ArrayPtrs<Object>& getValueObjArray() const;
+	virtual const ArrayPtrs<Object>& getValueObjArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	// USE DEFAULT
 	void setUseDefault(bool aTrueFalse);
