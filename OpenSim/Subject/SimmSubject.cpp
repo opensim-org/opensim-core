@@ -339,6 +339,8 @@ AbstractModel* SimmSubject::createModel()
 		}
 		else
 			return model;
+	} else {
+		cout << "SimmSubject.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
 	}
 	return 0;
 }

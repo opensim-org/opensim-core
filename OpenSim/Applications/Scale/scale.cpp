@@ -129,6 +129,8 @@ int main(int argc,char **argv)
 		SimmSubject* subject = new SimmSubject(inName);
 		AbstractModel* model = subject->createModel();
 
+		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+
 		if (!subject->isDefaultModelScaler())
 		{
 			SimmModelScaler& scaler = subject->getModelScaler();
