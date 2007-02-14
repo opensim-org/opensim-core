@@ -62,6 +62,9 @@ private:
 	/** Value. */
 	Object *_value;
 
+	/** Whether to only consider XML elements with matching name attribute. */
+	bool _matchName;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -93,6 +96,9 @@ public:
 	virtual const Object& getValueObj() const;
 	// VALUE as String
 	virtual const std::string &toString();
+	// MATCH NAME
+	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
+	bool getMatchName() const { return _matchName; }
 
 //=============================================================================
 };	// END of class PropertyObj

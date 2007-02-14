@@ -66,6 +66,7 @@ PropertyObj(const string &aName,const Object &aValue) :
 	setName(aName);
 	_value = aValue.copy();
 	_value->setName(aName);
+	_matchName = false;
 }
 //_____________________________________________________________________________
 /**
@@ -76,6 +77,7 @@ PropertyObj() :
 	Property(Property::Obj,"Object")
 {
 	_value = 0;
+	_matchName = false;
 }
 //_____________________________________________________________________________
 /**
@@ -87,6 +89,7 @@ PropertyObj::PropertyObj(const PropertyObj &aProperty) :
 	Property(aProperty)
 {
 	_value = aProperty.getValueObj().copy();
+	_matchName = aProperty._matchName;
 }
 //_____________________________________________________________________________
 /**

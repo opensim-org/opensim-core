@@ -41,8 +41,7 @@
 #include "XMLDocument.h"
 #include "Exception.h"
 #include "Property.h"
-#include "PropertyInt.h"
-#include "PropertyStr.h"
+#include "PropertyObj.h"
 #include "IO.h"
 
 
@@ -749,15 +748,23 @@ updateFromXMLNode()
 
 			// NEED TO CONSTRUCT BASED ON NODE
 			} else {
-				// Find the first element with correct tag & name attribute
-				string objName = object.getName();
-				elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType(), &objName);
+				PropertyObj *propObj = (PropertyObj*)property;
+				if(propObj->getMatchName()) {
+					// Find the first element with correct tag & name attribute
+					string objName = object.getName();
+					elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType(), &objName);
+				} else {
+					// Find the first element with correct tag (name not important)
+					elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType());
+				}
 
 				// WAS A NODE NOT FOUND?
 				if(!elmt) {
 					if (Object_DEBUG) {
 						cout<<"Object.updateFromXMLNode: ERROR- could not find node ";
-						cout<<object.getName()<<" of type "<<object.getType()<<"."<<endl;
+						cout<<"of type "<<object.getType();
+						if(propObj->getMatchName()) cout<<" with name "+object.getName();
+						cout<<"."<<endl;
 					}
 					break;
 				}
