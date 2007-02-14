@@ -546,32 +546,6 @@ getValueStr() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the value of this property.
- *
- * This method does nothing; it is just a place holder for
- * PropertyObj::setValue(), which is the only intended
- * meaningful implementation of this method.
- *
- * This method has been implemented in Property, rather than made pure
- * virtual, so that all classes derived from Property will not have to
- * implement this method.
- *
- * @param aValue Value to which this property is to be assigned.
- * @see PropertyObj
- */
-void Property::
-setValue(const Object &aValue)
-{
-	string msg;
-	msg = "Property.setValue(const Object&): Property type mismatch. ";
-	msg += "This property is of type ";
-	msg += getTypeAsString();
-	msg += ".";
-
-	throw Exception(msg,__FILE__,__LINE__);
-}
-//_____________________________________________________________________________
-/**
  * Get a reference to the value of this property.  Note that the returned
  * reference can be used to change the value of this property.
  *

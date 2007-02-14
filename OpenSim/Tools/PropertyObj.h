@@ -91,7 +91,8 @@ public:
 	// TYPE
 	virtual const char* getTypeAsString() const;
 	// VALUE
-	virtual void setValue(const Object &aValue);
+	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
+	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
 	virtual Object& getValueObj();
 	virtual const Object& getValueObj() const;
 	// VALUE as String

@@ -185,7 +185,8 @@ public:
 	virtual const std::string& getValueStr() const;
 #endif
 	// Obj
-	virtual void setValue(const Object &aValue);
+	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
+	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
 	virtual Object& getValueObj();
 #ifndef SWIG
 	virtual const Object& getValueObj() const;

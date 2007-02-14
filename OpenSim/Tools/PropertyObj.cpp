@@ -152,18 +152,6 @@ getTypeAsString() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the value of this property.
- *
- * @param aValue Value to which this property is assigned.
- */
-void PropertyObj::
-setValue(const Object &aValue)
-{
-	if(_value!=NULL) { delete _value;  _value=NULL; }
-	_value = aValue.copy();
-}
-//_____________________________________________________________________________
-/**
  * Get a reference to the value of this property.  Note that the returned
  * reference can be used to change the value of this property.
  *
