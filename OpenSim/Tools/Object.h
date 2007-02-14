@@ -266,8 +266,6 @@ private:
 	void generateXMLDocument();
 	static bool parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName = true);
 	static void InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Object *aObject);
-	static std::string transcode(const XMLCh *aCh);
-	static std::string transcodeAndTrim(const XMLCh *aCh);
 
 	//--------------------------------------------------------------------------
 	// IO

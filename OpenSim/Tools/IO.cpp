@@ -510,10 +510,28 @@ getParentDirectory(const string& fileName)
 		dirSep = fileName.rfind('\\'); // DOS dir separator
 	
 	if (dirSep != string::npos) // if '_fileName' contains path information...
-	{
-		string dirPath(fileName, 0, dirSep+1);	// include trailing slashes
-		result=dirPath;
-	}
+		result = fileName.substr(0,dirSep+1); // include trailing slashes
+
+	return result;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get filename part of a passed in URI
+ * 
+*/
+string IO::
+GetFileNameFromURI(const string& aURI)
+{
+	string	result="";
+
+	string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
+	
+	if (dirSep == string::npos)
+		dirSep = aURI.rfind('\\'); // DOS dir separator
+	
+	if (dirSep != string::npos) // if aURI contains path information...
+		result = aURI.substr(dirSep+1);
 
 	return result;
 }
@@ -522,29 +540,36 @@ getParentDirectory(const string& fileName)
 string IO::
 formatText(const string& aComment,const string& leadingWhitespace,int width)
 {
-	string formatted;
-	int count = 0;
-	string::size_type i = 0;
-	for(;;) {
-		string::size_type pos = aComment.find_first_not_of(" \t\n\r", i);
-		if(pos==string::npos) break;
-		string whitespace = aComment.substr(i, pos-i);
-		for(string::size_type j=0;j<whitespace.size();j++) if (whitespace[j]=='\t') whitespace[j]=' ';
-		string::size_type pos2 = aComment.find_first_of(" \t\n\r", pos);
-		string word;
-		if(pos2==string::npos) word = aComment.substr(pos);
-		else word = aComment.substr(pos, pos2-pos);
-		i = pos2;
-		if(count+whitespace.size()+word.size()<=(string::size_type)width) {
-			formatted += whitespace+word;
-			count += whitespace.size()+word.size();
-		} else {
-			if(!formatted.empty()) formatted += "\n" + leadingWhitespace;
-			formatted += word;
-			count = word.size();
-		}
-	}
-	return formatted;
+    string formatted;
+    int count = 0;
+    string::size_type i = 0;
+    for(;;) {
+        string::size_type pos = aComment.find_first_not_of(" \t\n", i);
+        if(pos==string::npos) break;
+        string whitespace = aComment.substr(i, pos-i);
+        int newlineCount = 0;
+        for(string::size_type j=0;j<whitespace.size();j++) {
+            if (whitespace[j]=='\t') whitespace[j]=' ';
+            else if (whitespace[j]=='\n') newlineCount++;
+        }
+        string::size_type pos2 = aComment.find_first_of(" \t\n", pos);
+        string word;
+        if(pos2==string::npos) word = aComment.substr(pos);
+        else word = aComment.substr(pos, pos2-pos);
+        i = pos2;
+        if(!newlineCount && count+whitespace.size()+word.size()<=(string::size_type)width) {
+            formatted += whitespace+word;
+            count += whitespace.size()+word.size();
+        } else {
+            if(!formatted.empty()) {
+                if(newlineCount) for(int j=0;j<newlineCount-1;j++) formatted += "\n";
+                formatted += "\n" + leadingWhitespace;
+            }
+            formatted += word;
+            count = word.size();
+        }
+    }
+    return formatted;
 }
 
 string IO::

@@ -803,7 +803,7 @@ updateFromXMLNode()
 				// to process element nodes
 				if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
 				DOMElement *objElmt = (DOMElement*) list->item(j);
-				string objectType = transcodeAndTrim(objElmt->getTagName());
+				string objectType = XMLNode::TranscodeAndTrim(objElmt->getTagName());
 
 				// Initialize to default object of corresponding type (returns 0 if type not recognized)
 				Object *object = newInstanceOfType(objectType);
@@ -1318,15 +1318,15 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rC
 	if(!fileAttrib.empty()) {
 		if(!ifstream(fileAttrib.c_str()))
 			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + fileAttrib + 
-								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
+								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
 		// Change _node to refer to the root of the external file
 		rRefNode = aElement;
 		rChildDocument = new XMLDocument(fileAttrib);
 		rChildDocumentElement = rChildDocument->getDOMDocument()->getDocumentElement();
 		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
 			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
-								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + 
-								 "> has non-matching tag <" + transcodeAndTrim(rChildDocumentElement->getTagName()) + ">", __FILE__, __LINE__);
+								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + 
+								 "> has non-matching tag <" + XMLNode::TranscodeAndTrim(rChildDocumentElement->getTagName()) + ">", __FILE__, __LINE__);
 		parsedFileAttribute = true;
 	}
 	return parsedFileAttribute;
@@ -1483,25 +1483,6 @@ PrintPropertyInfo(ostream &aOStream,
 //=============================================================================
 // Utilities, factory methods
 //=============================================================================
-string Object::
-transcode(const XMLCh *aCh)
-{
-	char *buffer = XMLString::transcode(aCh);
-	string str(buffer);
-	delete[] buffer;
-	return str;
-}
-
-string Object::
-transcodeAndTrim(const XMLCh *aCh)
-{
-	char *buffer = XMLString::transcode(aCh);
-	XMLString::trim(buffer);
-	string str(buffer);
-	delete[] buffer;
-	return str;
-}
-
 /**
  * makeObjectFromFile creates an OpenSim object based on the type of the object at the root
  * node of the XML file passed in. This is useful since the constructor of Object doesn't have the
@@ -1520,7 +1501,7 @@ makeObjectFromFile(const std::string &aFileName)
 	try{
 		XMLDocument *doc = new XMLDocument(aFileName);
 		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
-		string rootName = transcode(elt->getNodeName());
+		string rootName = XMLNode::Transcode(elt->getNodeName());
 		Object* newObject = newInstanceOfType(rootName);
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);

@@ -80,6 +80,10 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	static int GetNumberOfParents(const DOMNode *node);
+	static std::string ToString(const DOMNode *aNode);
+	static std::string NodeContextString(const DOMNode *aNode);
+	static std::string Transcode(const XMLCh *aCh);
+	static std::string TranscodeAndTrim(const XMLCh *aCh);
 
 	//--------------------------------------------------------------------------
 	// ADD AND REMOVE NODES
@@ -101,7 +105,7 @@ public:
 	//--------------------------------------------------------------------------
 	static DOMElement*
 		GetFirstChildElementByTagName(const DOMNode *aNode,
-		const std::string &aTagName,const std::string *aName=0);
+		const std::string &aTagName,const std::string *aName=0,bool aCheckForMultiple=true);
 	static DOMCharacterData*
 		GetCDataSectionNode(const DOMNode *aNode);
 	static DOMText*

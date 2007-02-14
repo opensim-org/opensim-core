@@ -114,6 +114,7 @@ public:
 	static int chDir(const std::string &aDirName);
 	static std::string getCwd();
 	static std::string getParentDirectory(const std::string& fileName);
+	static std::string GetFileNameFromURI(const std::string& aURI);
 	static std::string formatText(const std::string& aComment,const std::string& leadingWhitespace,int width);
 
 	// String utilities

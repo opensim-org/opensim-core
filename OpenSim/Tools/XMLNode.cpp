@@ -332,7 +332,7 @@ UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::str
  * returned if no such element exists.
  */
 DOMElement* XMLNode::
-GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName,const string *aName)
+GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName,const string *aName,bool aCheckForMultiple)
 {
 	if(aNode==NULL) return(NULL);
 
@@ -348,15 +348,28 @@ GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName,const 
 
 	// LOOP THROUGH CHILDREN
 	DOMElement *elmt = NULL;
+	bool gotOne = false;
 	for(DOMNode *child=aNode->getFirstChild(); child!=NULL;
 										child=child->getNextSibling()) {
 
 		if(child->getNodeType()!=DOMNode::ELEMENT_NODE) continue;
 		DOMElement *e = (DOMElement*)child;
 		if(XMLString::compareString(tagName,e->getTagName())==0 && 
-			(!aName || XMLString::compareString(name,e->getAttribute(nameAttrib))==0)) {
-			elmt = e;
-			break;
+			(!aName || XMLString::compareString(name,e->getAttribute(nameAttrib))==0)) 
+		{
+			if(aCheckForMultiple) {
+				if(!gotOne) { gotOne = true; elmt = e; continue; }
+				else {
+					DOMDocument *doc = aNode->getOwnerDocument();
+					std::string msg = "XML ERROR: Multiple instances of tag '"+aTagName + "'";
+					if(aName) msg += " with name attribute '"+*aName+"'";
+					msg += " in:\n" + NodeContextString(e);
+					throw Exception(msg,__FILE__,__LINE__);
+				}
+			} else {
+				elmt = e;
+				break;
+			}
 		}
 	}
 
@@ -1241,3 +1254,62 @@ GetAttribute(DOMNode *aNode,const string &aName)
 
 	return(str);
 }
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+string XMLNode::
+ToString(const DOMNode *aNode)
+{
+	static const XMLCh *nameAttribute = XMLString::transcode("name");
+	string str;
+	if(aNode->getNodeType()==DOMNode::ELEMENT_NODE) {
+		DOMElement *e=(DOMElement*)aNode;
+		str = "<" + Transcode(e->getNodeName());
+		string name = Transcode(e->getAttribute(nameAttribute));
+		if(!name.empty()) str += " name=\"" + name + "\"";
+		str += ">";
+	} else {
+		str += Transcode(aNode->getNodeName());
+	}
+	return str;
+}
+
+string XMLNode::
+NodeContextString(const DOMNode *aNode)
+{
+	string str;
+	const DOMNode *node = aNode;
+	DOMDocument *doc = node->getOwnerDocument();
+	int level = GetNumberOfParents(aNode);
+	string spaces;
+	for(int i=0;i<level;i++) spaces+=(i==0)?"+ ":"  ";
+	while(node != doc) {
+		if(!str.empty()) str = spaces + ToString(node) + "\n" + str;
+		else str += spaces + ToString(node);
+		node = node->getParentNode();
+		spaces = spaces.substr(0,spaces.length()-2);
+	}
+	str = "file '" + IO::GetFileNameFromURI(Transcode(aNode->getOwnerDocument()->getDocumentURI())) + "'\n" + str;
+	return str;
+}
+
+string XMLNode::
+Transcode(const XMLCh *aCh)
+{
+	char *buffer = XMLString::transcode(aCh);
+	string str(buffer);
+	delete[] buffer;
+	return str;
+}
+
+string XMLNode::
+TranscodeAndTrim(const XMLCh *aCh)
+{
+	char *buffer = XMLString::transcode(aCh);
+	XMLString::trim(buffer);
+	string str(buffer);
+	delete[] buffer;
+	return str;
+}
+
