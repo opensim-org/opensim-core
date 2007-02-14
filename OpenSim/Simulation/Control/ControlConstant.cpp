@@ -33,7 +33,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/Property.h>
 #include <OpenSim/Tools/PropertyDbl.h>
 #include "ControlConstant.h"

@@ -29,7 +29,6 @@
 #include <iostream>
 #include "ActuatorSet.h"
 #include "AbstractModel.h"
-#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/rdMath.h>
 

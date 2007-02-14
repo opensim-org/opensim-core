@@ -35,7 +35,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/Object.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include "ControlSet.h"

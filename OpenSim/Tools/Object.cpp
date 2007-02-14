@@ -1452,7 +1452,7 @@ PrintPropertyInfo(ostream &aOStream,
 				aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n";
 				comment = property->getComment();
 				if(!comment.empty()) {
-					string formattedComment = IO::formatComment(comment,"\t",80);
+					string formattedComment = IO::formatText(comment,"\t",80);
 					aOStream<<"\t"<<formattedComment<<"\n";
 				}
 			}

@@ -73,7 +73,9 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 
 	updateFromXMLNode();
 
-	if (_model) throw( Exception("IKTool did not expect initialized model") );
+	if (_model) 
+		throw( Exception("IKTool did not expect initialized model ("+_modelLibraryProp.getName()+
+							  " property should not be set)",__FILE__,__LINE__) );
 	if (guiModel){
 		// A valid model is passed in, and is initialized (likely from GUI)
 		// In this scenario, _modelFile is ignored (probably with a warning)
@@ -81,10 +83,15 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 		addAnalysisSetToModel();
 	}
 	else {
-		if (_modelFile == "") throw( Exception("Model file not specified for inverse kinematics investigation") );
+		if (_modelFile == "") 
+			throw( Exception("Model file not specified for inverse kinematics investigation",__FILE__,__LINE__) );
 		setModel(new AbstractModel(_modelFile));
 		// Cast to SimmModel so we can call functions that don't exist in base Model class
 		if (_model) {
+			if(!_model->hasDynamicsEngine()) 
+				throw( Exception("No dynamics engine found for model.  Make sure the OpenSim model specified in the "+
+									  _modelFileProp.getName()+" property (currently '"+_modelFile+"') is the model containing the "+
+									  "SimmKinematicsEngine (and not the SD/Fast-based model generated using makeSDFastModel)",__FILE__,__LINE__) );
 			_model->setup();
 			addAnalysisSetToModel();
 		}

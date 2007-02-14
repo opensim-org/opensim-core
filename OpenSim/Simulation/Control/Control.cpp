@@ -36,7 +36,6 @@
 #include <OpenSim/Tools/PropertyBool.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/IO.h>
 #include "Control.h"
 
 

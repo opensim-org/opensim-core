@@ -520,7 +520,7 @@ getParentDirectory(const string& fileName)
 
 // TODO: account for '\n' inside comments
 string IO::
-formatComment(const string& aComment,const string& leadingWhitespace,int width)
+formatText(const string& aComment,const string& leadingWhitespace,int width)
 {
 	string formatted;
 	int count = 0;

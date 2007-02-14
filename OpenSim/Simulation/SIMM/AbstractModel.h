@@ -210,6 +210,7 @@ public:
 	//--------------------------------------------------------------------------
 	// DYNAMICS ENGINE
 	//--------------------------------------------------------------------------
+	bool hasDynamicsEngine() const;
 	virtual AbstractDynamicsEngine& getDynamicsEngine() const;
 	virtual void setDynamicsEngine(AbstractDynamicsEngine &aEngine);
 

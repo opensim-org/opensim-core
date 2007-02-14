@@ -133,7 +133,7 @@ print(ostream &aOut)
 
 	// MESSAGE
 	// Account for the _msg being multiple lines -- we want to prepend two spaces before each new line
-	string formattedMsg = IO::replaceSubstring(_msg, "\n", "\n  ");
+	string formattedMsg = IO::formatText(_msg, "  ", 75);
 	aOut << "  " << formattedMsg << endl;
 
 	// FILE

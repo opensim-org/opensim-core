@@ -35,7 +35,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 #include <OpenSim/Tools/PropertyInt.h>

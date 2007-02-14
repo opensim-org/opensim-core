@@ -504,6 +504,14 @@ int AbstractModel::getNumAnalyses() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Returns true if model has a dynamics engine
+ */
+bool AbstractModel::hasDynamicsEngine() const
+{
+	return _dynamicsEngine.getSize() > 0;
+}
+//_____________________________________________________________________________
+/**
  * Get the model's dynamics engine
  *
  * @return Reference to the abstract dynamics engine

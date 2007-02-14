@@ -32,7 +32,6 @@
 // INCLUDES
 //=============================================================================
 #include <string>
-#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/PropertyObjArray.h>
 #include "rdCMC_TaskSet.h"
 

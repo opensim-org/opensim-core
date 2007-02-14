@@ -135,7 +135,7 @@ AppendNewCommentElement(DOMNode *aParent,const string &aComment)
 	// CREATE text
 	strcpy(space,"\t");
 	for(i=0;i<level-1;i++) strcat(space,"\t");
-	string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+	string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
 	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
 	if(commentText==NULL) return(NULL);
 
@@ -228,7 +228,7 @@ AppendNewElementWithComment(DOMNode *aParent,
 		// CREATE text
 		strcpy(space,"\t");
 		for(i=0;i<level-1;i++) strcat(space,"\t");
-		string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+		string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
 		XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
 		//XMLCh *commentText = XMLString::transcode(aComment.c_str());
 		if(commentText!=NULL){ 
@@ -296,7 +296,7 @@ UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::str
 	char space[TABLIMIT+1];
 	strcpy(space,"\t");
 	for(int i=0;i<level-1;i++) strcat(space,"\t");
-	string formattedComment = IO::formatComment(aComment,string(space)+"    ",70);
+	string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
 	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
 	DOMComment *newCommentNode = doc->createComment(commentText);
 	if(commentText) delete[] commentText;
