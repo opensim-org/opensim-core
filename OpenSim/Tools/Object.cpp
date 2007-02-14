@@ -614,6 +614,33 @@ template<class T> void UpdateFromXMLNodeArrayProperty(Property *aProperty, DOMEl
 	}
 }
 
+void Object::
+InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Object *aObject)
+{
+	// If object is from non-inlined, detect it and set attributes
+	// However we need to do that on the finalized object as copying
+	// does not keep track of XML related issues
+	DOMElement *refNode;
+	XMLDocument *childDocument;
+	bool inLinedObject = !parseFileAttribute(rObjectElement, refNode, childDocument, rObjectElement);
+
+	aProperty->setUseDefault(false);
+
+	// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
+	// Used to call a special copy method that took DOMElement* but 
+	// that ended up causing XML to be parsed twice.  Got rid of that
+	// copy method! - Eran, Feb/07
+	aObject->setXMLNode(rObjectElement);
+	aObject->updateFromXMLNode();
+
+	// Set inlining attributes on final object
+	if (!inLinedObject){
+		aObject->_inLined = inLinedObject;
+		aObject->_refNode = refNode;
+		aObject->_document = childDocument;
+	}
+}
+
 template<class T> void UpdateXMLNodeSimpleProperty(const Property *aProperty, DOMElement *aNode, const string &aName)
 {
 	const T &value = aProperty->getValue<T>();
@@ -714,63 +741,28 @@ updateFromXMLNode()
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
 			DOMElement *elmt = object.getXMLNode();
-			DOMElement *objNode = NULL;
-
-			//-----------Begin inline support---------------------------
-			// Collect inlining attributes
-			bool inLinedObject = true;
-			DOMElement *refNode;
-			XMLDocument *childDocument;
-			if(!elmt)
-			{
-				DOMElement *elmtForAttribute = XMLNode::GetFirstChildElementByTagName(_node,object.getType());
-				inLinedObject = !parseFileAttribute(elmtForAttribute, refNode, childDocument, objNode);
-			}
-			//-----------End inline support---------------------
 
 			// OBJECT ALREAD HAS AN ASSOCIATED XML NODE
-			if(elmt!=NULL) {
+			if(elmt) {
 				object.updateFromXMLNode();
+				property->setUseDefault(false);
 
 			// NEED TO CONSTRUCT BASED ON NODE
 			} else {
-				string objType = object.getType();
+				// Find the first element with correct tag & name attribute
 				string objName = object.getName();
-				if(!objNode) objNode = XMLNode::GetFirstChildElementByTagName(_node, objType, &objName);
+				elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType(), &objName);
 
 				// WAS A NODE NOT FOUND?
-				if(objNode==NULL) {
+				if(!elmt) {
 					if (Object_DEBUG) {
 						cout<<"Object.updateFromXMLNode: ERROR- could not find node ";
-						cout<<objName<<" of type "<<objType<<"."<<endl;
+						cout<<object.getName()<<" of type "<<object.getType()<<"."<<endl;
 					}
 					break;
 				}
 
-				property->setUseDefault(false);
-				// CONSTRUCT TEMPORARY OBJECT BASED ON NODE
-				//Object *objTmp = object.copy(objNode);
-				object.setXMLNode(objNode);
-				//set default values
-				object.updateFromXMLNode();
-
-				// USE EQUALITY OPERATOR
-				//object = (*objTmp);
-
-
-				// Set inlining attributes on final object
-				if (!inLinedObject){
-					object._inLined = inLinedObject;
-					object._refNode = refNode;
-					object._document = childDocument;
-				}
-
-				// SET THE XML NODE
-				//object.setXMLNode(objTmp->getXMLNode());
-
-				// CLEAN UP
-				//delete objTmp;
-
+				InitializeObjectFromXMLNode(property, elmt, &object);
 			}
 			break; }
 
@@ -794,15 +786,16 @@ updateFromXMLNode()
 			ArrayPtrs<Object> &objArray = property->getValueObjArray();
 			objArray.setSize(0);
 
-			// VARIABLES
-			Object *defaultObject,*object;
+			// Call parseFileAttribute to take care of the case where a file attribute points to
+			// an external XML file.  Essentially this will make elmt point to the top level
+			// element of the other file
 			{
 				DOMElement *refNode;
 				XMLDocument *childDocument;
-				bool inLinedObject = !parseFileAttribute(elmt, refNode, childDocument, elmt);
+				parseFileAttribute(elmt, refNode, childDocument, elmt);
 			}
 
-			// LOOP THROUGH SUPPORTED OBJECT TYPES
+			// LOOP THROUGH CHILD NODES
 			DOMNodeList *list = elmt->getChildNodes();
 			unsigned int listLength = list->getLength();
 			for(unsigned int j=0;j<listLength;j++) {
@@ -812,36 +805,11 @@ updateFromXMLNode()
 				DOMElement *objElmt = (DOMElement*) list->item(j);
 				string objectType = transcodeAndTrim(objElmt->getTagName());
 
-				// Get default object corresponding to this tag (or if it's not a recognized object, go to the next child)
-				stringsToObjects::iterator find_iter = _mapTypesToDefaultObjects.find(objectType);
-				if(find_iter == _mapTypesToDefaultObjects.end()) continue;
-				else defaultObject = find_iter->second;
+				// Initialize to default object of corresponding type (returns 0 if type not recognized)
+				Object *object = newInstanceOfType(objectType);
+				if(!object) continue;
 
-				// If object is from non-inlined, detect it and set attributes
-				// However we need to do that on the finalized object as copying
-				// does not keep track of XML related issues
-				DOMElement *refNode;
-				XMLDocument *childDocument;
-				bool inLinedObject = !parseFileAttribute(objElmt, refNode, childDocument, objElmt);
-				
-				property->setUseDefault(false);
-
-				// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
-				// Used to call a special copy method that took DOMElement* but 
-				// that ended up causing XML to be parsed twice.  Got rid of that
-				// copy method! - Eran, Feb/07
-				object = defaultObject->copy();
-				object->setXMLNode(objElmt);
-				object->updateFromXMLNode();
-
-				// Set inlining attributes on final object
-				if (!inLinedObject){
-					object->_inLined = inLinedObject;
-					object->_refNode = refNode;
-					object->_document = childDocument;
-				}
-
-				// ADD
+				InitializeObjectFromXMLNode(property, objElmt, object);
 				objArray.append(object);
 			}
 				
@@ -1342,7 +1310,7 @@ getInlined() const
  * Parameters aRefNode, aChildDocument, aChildDocumentElement, only set if return value is true
  */
 bool Object::
-parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aChildDocument, DOMElement *&aChildDocumentElement)
+parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName)
 {
 	if(!aElement) return false;
 	string fileAttrib = XMLNode::GetAttribute(aElement, "file");
@@ -1352,9 +1320,13 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&aRefNode, XMLDocument *&aC
 			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + fileAttrib + 
 								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
 		// Change _node to refer to the root of the external file
-		aRefNode = aElement;
-		aChildDocument = new XMLDocument(fileAttrib);
-		aChildDocumentElement = aChildDocument->getDOMDocument()->getDocumentElement();
+		rRefNode = aElement;
+		rChildDocument = new XMLDocument(fileAttrib);
+		rChildDocumentElement = rChildDocument->getDOMDocument()->getDocumentElement();
+		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
+			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
+								 "' named in file attribute of XML tag <" + transcodeAndTrim(aElement->getTagName()) + 
+								 "> has non-matching tag <" + transcodeAndTrim(rChildDocumentElement->getTagName()) + ">", __FILE__, __LINE__);
 		parsedFileAttribute = true;
 	}
 	return parsedFileAttribute;
