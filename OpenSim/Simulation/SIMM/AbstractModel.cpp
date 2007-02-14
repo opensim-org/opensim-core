@@ -60,7 +60,7 @@ AbstractModel::AbstractModel() :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
+	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
@@ -78,7 +78,7 @@ AbstractModel::AbstractModel(const string &aFileName) :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
+	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
@@ -108,7 +108,7 @@ AbstractModel::AbstractModel(const AbstractModel &aModel) :
    Object(aModel),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine((ArrayPtrs<AbstractDynamicsEngine>&)_dynamicsEngineProp.getValueObjArray()),
+	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
 	_actuatorSetProp(PropertyObj("", ActuatorSet())),
 	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
 	_contactSetProp(PropertyObj("", ContactForceSet())),
@@ -169,7 +169,7 @@ void AbstractModel::copyData(const AbstractModel &aModel)
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
-	_dynamicsEngine = aModel._dynamicsEngine;
+	_dynamicsEngine = aModel._dynamicsEngine ? (AbstractDynamicsEngine*)aModel._dynamicsEngine->copy() : 0;
 	_actuatorSet = aModel._actuatorSet;
 	_muscleGroups = aModel._muscleGroups;
 	_contactSet = aModel._contactSet;
@@ -208,8 +208,6 @@ void AbstractModel::setupProperties()
 	_propertySet.append(&_contactSetProp);
 
 	_dynamicsEngineProp.setName("DynamicsEngine");
-	ArrayPtrs<Object> des;
-	_dynamicsEngineProp.setValue(des);
 	_propertySet.append(&_dynamicsEngineProp);
 
 	_actuatorSetProp.setName("ActuatorSet");
@@ -287,8 +285,7 @@ void AbstractModel::setup()
 	for (i = 0; i < _muscleGroups.getSize(); i++)
 		_muscleGroups[i]->setup(this);
 
-	for (i = 0; i < _dynamicsEngine.getSize(); i++)
-		_dynamicsEngine.get(i)->setup(this);
+	if(_dynamicsEngine) _dynamicsEngine->setup(this);
 
 	_actuatorSet.setup(this);
 
@@ -311,7 +308,7 @@ void AbstractModel::setup()
 	/* The following code should be replaced by a more robust
 	 * check for problems while creating the model.
 	 */
-	if (_dynamicsEngine.getSize() > 0 && _dynamicsEngine[0]->getNumBodies() > 0)
+	if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0)
 	{
 		_builtOK = true;
 	}
@@ -508,7 +505,7 @@ int AbstractModel::getNumAnalyses() const
  */
 bool AbstractModel::hasDynamicsEngine() const
 {
-	return _dynamicsEngine.getSize() > 0;
+	return _dynamicsEngine != 0;
 }
 //_____________________________________________________________________________
 /**
@@ -518,9 +515,9 @@ bool AbstractModel::hasDynamicsEngine() const
  */
 AbstractDynamicsEngine& AbstractModel::getDynamicsEngine() const
 {
-	assert(_dynamicsEngine.getSize() > 0);
+	assert(hasDynamicsEngine());
 
-	return *(_dynamicsEngine[0]);
+	return *_dynamicsEngine;
 }
 //_____________________________________________________________________________
 /**
@@ -530,10 +527,8 @@ AbstractDynamicsEngine& AbstractModel::getDynamicsEngine() const
  */
 void AbstractModel::setDynamicsEngine(AbstractDynamicsEngine& aEngine)
 {
-	if (_dynamicsEngine.getSize() > 0)
-		_dynamicsEngine.remove(0);
-
-	_dynamicsEngine.insert(0, &aEngine);
+	// TODO: make a copy() ?
+	_dynamicsEngine = &aEngine;
 }
 
 

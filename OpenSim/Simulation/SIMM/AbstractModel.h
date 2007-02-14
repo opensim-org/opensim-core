@@ -31,7 +31,7 @@
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObjPtr.h>
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
@@ -92,8 +92,8 @@ private:
 	SimmUnits _forceUnits;
 
 	/** Dynamics Engine. */
-	PropertyObjArray _dynamicsEngineProp;
-	ArrayPtrs<AbstractDynamicsEngine> &_dynamicsEngine;
+	PropertyObjPtr<AbstractDynamicsEngine> _dynamicsEngineProp;
+	AbstractDynamicsEngine *&_dynamicsEngine;
 
 	// SETS OF THINGS
 	/** Actuators. */
