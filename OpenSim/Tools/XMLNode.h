@@ -101,7 +101,7 @@ public:
 	//--------------------------------------------------------------------------
 	static DOMElement*
 		GetFirstChildElementByTagName(const DOMNode *aNode,
-		const std::string &aTagName);
+		const std::string &aTagName,const std::string *aName=0);
 	static DOMCharacterData*
 		GetCDataSectionNode(const DOMNode *aNode);
 	static DOMText*

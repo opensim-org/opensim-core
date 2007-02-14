@@ -323,15 +323,16 @@ UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::str
 //_____________________________________________________________________________
 /**
  * Get the first child of this node that is an element and has the specified
- * tag name.
+ * tag name (and, if aName is non-NULL, has the specified name attribute value).
  *
  * @param aNode Node that is to be search for the child element.
  * @param aTagName Tag name of the desired child element.
+ * @param aName If non-NULL, specifies the name attribute value of the desired child element.
  * @return First child element node with a tag name aTagName.  NULL is
  * returned if no such element exists.
  */
 DOMElement* XMLNode::
-GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName)
+GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName,const string *aName)
 {
 	if(aNode==NULL) return(NULL);
 
@@ -339,16 +340,21 @@ GetFirstChildElementByTagName(const DOMNode *aNode,const string &aTagName)
 	XMLCh *tagName = XMLString::transcode(aTagName.c_str());
 	if(tagName==NULL) return(NULL);
 
+	XMLCh *nameAttrib = NULL, *name = NULL;
+	if(aName) {
+		nameAttrib = XMLString::transcode("name");
+		name = XMLString::transcode(aName->c_str());
+	}
+
 	// LOOP THROUGH CHILDREN
 	DOMElement *elmt = NULL;
-	DOMElement *e = NULL;
-	DOMNode *child;
-	for(child=aNode->getFirstChild(); child!=NULL;
+	for(DOMNode *child=aNode->getFirstChild(); child!=NULL;
 										child=child->getNextSibling()) {
 
 		if(child->getNodeType()!=DOMNode::ELEMENT_NODE) continue;
-		e = (DOMElement*)child;
-		if(XMLString::compareString(tagName,e->getTagName())==0) {
+		DOMElement *e = (DOMElement*)child;
+		if(XMLString::compareString(tagName,e->getTagName())==0 && 
+			(!aName || XMLString::compareString(name,e->getAttribute(nameAttrib))==0)) {
 			elmt = e;
 			break;
 		}
