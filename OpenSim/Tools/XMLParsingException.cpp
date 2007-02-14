@@ -51,8 +51,12 @@ using namespace std;
  */
 XMLParsingException::
 XMLParsingException(const std::string &aMsg,const DOMNode *aNode,const std::string &aFile,int aLine)
-	:Exception(aMsg,aFile,aLine),_node(aNode)
+	:Exception(aMsg,aFile,aLine)
 {
+	// NOTE: used to actually store the DOMNode as a member in this exception class
+	// but it seems that it is not safe to manipulate the node once an exception is
+	// thrown because its internal data becomes out of date.
+	if(aNode) _xmlContextString = XMLNode::NodeContextString(aNode);
 }
 
 //=============================================================================
@@ -78,10 +82,8 @@ print(ostream &aOut)
 	string formattedMsg = IO::formatText(_msg, "  ", 75);
 	aOut << "  " << formattedMsg << endl;
 
-	if(_node) {
-		string xmlContext = XMLNode::NodeContextString(_node);
-		aOut << "  In:\n  " << IO::formatText(xmlContext, "  ", 75) << endl;
-	}
+	if(!_xmlContextString.empty())
+		aOut << "  In:\n    " << IO::formatText(_xmlContextString, "    ", 75) << endl << endl;
 
 	if(_file.size()>0) aOut << "  file= " << _file << '\n';
 	if(_line>=0) aOut << "  line= " << _line << '\n';

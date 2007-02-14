@@ -64,8 +64,8 @@ class RDTOOLS_API XMLParsingException : public Exception {
 // DATA
 //=============================================================================
 protected:
-	/** Offending XML Node. */
-	const DOMNode *_node;
+	/** Textual description of where in the XML file the error occured. */
+	std::string _xmlContextString;
 
 //=============================================================================
 // METHODS

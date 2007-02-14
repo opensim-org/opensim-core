@@ -86,7 +86,7 @@ public:
 	const char* getMessage();
 
 	// PRINT
-	void print(std::ostream &aOut);
+	virtual void print(std::ostream &aOut);
 
 //=============================================================================
 };	// END CLASS Exception
