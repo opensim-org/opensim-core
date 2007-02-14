@@ -658,16 +658,16 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 	// BEFORE FIRST
 	double value;
 	if(i<0) {
-		if(getExtrapolate()) {
-			value = extrapolateBefore(aT);
+		if(!_useSteps && getExtrapolate()) {
+			value = extrapolateBefore(aNodes, aT);
 		} else {
 			value = aNodes[0]->getValue();
 		}
 
 	// AFTER LAST
 	} else if(i>=(size-1)) {
-		if(getExtrapolate()) {
-			value = extrapolateAfter(aT);
+		if(!_useSteps && getExtrapolate()) {
+			value = extrapolateAfter(aNodes, aT);
 		} else {
 			value = aNodes.getLast()->getValue();
 		}
