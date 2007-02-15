@@ -146,7 +146,7 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"\n\nmakeSDFastModel.exe:\n\n";
 	aOStream<<"Option                    Argument         Action / Notes\n";
 	aOStream<<"------                    --------         --------------\n";
-	aOStream<<"-Help, -H                                  Print the command-line options for mkModel.exe.\n";
+	aOStream<<"-Help, -H                                  Print the command-line options for makeSDFastModel.exe.\n";
 	aOStream<<"-InputModel, -IM          ModelFile        Input SimmKinematicsEngine model file (XML format).\n";
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";
