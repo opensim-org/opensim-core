@@ -68,6 +68,7 @@ bool IO::_GFormatForDoubleOutput = false;
 int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
+bool IO::_PrintOfflineDocuments = true;
 
 
 //=============================================================================
@@ -302,7 +303,29 @@ ConstructDoubleOutputFormat()
 	}
 }
 
-
+//=============================================================================
+// Object printing
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * If Object::print is called and an xml node has a file attribute pointing
+ * to an external file, then the _PrintOfflineDocuments determines whether
+ * that file's contents will be printed to that file or not.
+ * It's "offline" because it represents non-inlined xml code.
+ */
+void IO::
+SetPrintOfflineDocuments(bool aTrueFalse)
+{
+	_PrintOfflineDocuments = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ */
+bool IO::
+GetPrintOfflineDocuments()
+{
+	return _PrintOfflineDocuments;
+}
 //=============================================================================
 // READ
 //=============================================================================

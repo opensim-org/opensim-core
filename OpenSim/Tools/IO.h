@@ -77,6 +77,8 @@ private:
 	static int _Precision;
 	/** The output format string. */
 	static char _DoubleFormat[256];
+	/** Whether offline documents should also be printed when Object::print is called. */
+	static bool _PrintOfflineDocuments;
 
 
 //=============================================================================
@@ -101,6 +103,9 @@ private:
 	static void ConstructDoubleOutputFormat();
 
 public:
+	// Object printing
+	static void SetPrintOfflineDocuments(bool aTrueFalse);
+	static bool GetPrintOfflineDocuments();
 	// READ
 	static std::string ReadToTokenLine(std::istream &aIS,const std::string &aToken);
 	static std::string ReadLine(std::istream &aIS);

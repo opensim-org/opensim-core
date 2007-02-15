@@ -32,6 +32,7 @@ int main(int argc,char **argv)
 	else {
 		std::cout << std::endl;
 		IO::SetGFormatForDoubleOutput(true);
+		IO::SetPrintOfflineDocuments(false);
 		obj->print(outputFileName);
 	}
 }

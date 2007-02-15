@@ -922,12 +922,14 @@ updateXMLNode(DOMElement *aParent)
 	if (!getInlined() && aParent){
 		// Create a new document and write object to it
 		string offLineFileName = getDocumentFileName();
-		// The problem is that generateChildXMLDocument makes a root which allows print
-		// to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-		// is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-		_inLined=true;
-		print(offLineFileName);
-		_inLined=false;
+		if(IO::GetPrintOfflineDocuments()) {
+			// The problem is that generateChildXMLDocument makes a root which allows print
+			// to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+			// is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+			_inLined=true;
+			print(offLineFileName);
+			_inLined=false;
+		}
 		
 		if (!_refNode){
 			_refNode = XMLNode::AppendNewElementWithComment(aParent, getType(),getName());
