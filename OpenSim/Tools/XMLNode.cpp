@@ -55,6 +55,21 @@ const int XMLNode::TABLIMIT = 128;
 //=============================================================================
 // UTILTITY
 //=============================================================================
+
+string WhitespaceString(int tabs,bool newline)
+{
+	char space[256];
+	if(newline) {
+		space[0]='\n';
+		for(int i=1;i<tabs+1;i++) space[i]='\t';
+		space[tabs+1]=0;
+	} else {
+		for(int i=0;i<tabs;i++) space[i]='\t';
+		space[tabs]=0;
+	}
+	return string(space);
+}
+
 //_____________________________________________________________________________
 /**
  * Get the number of paraents a node has.  The owner document is included
@@ -82,83 +97,6 @@ GetNumberOfParents(const DOMNode *aNode)
 //=============================================================================
 // ADD AND REMOVE
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Create a new Comment and add it as a child to a specified parent node.
- *
- * @param aParent Node to which to add the child element.
- * @param aComment to be associated with the element.
- * @return Child element.  NULL is returned on an error.
- */
-DOMNode* XMLNode::
-AppendNewCommentElement(DOMNode *aParent,const string &aComment)
-{
-	if(aParent==NULL) return(NULL);
-
-	// GET DOCUMENT
-	DOMDocument *doc;
-	bool parentIsDoc = (aParent->getNodeType()==DOMNode::DOCUMENT_NODE);
-	if(parentIsDoc) {
-		doc = (DOMDocument*)aParent;
-	} else {
-		doc = aParent->getOwnerDocument();
-	}
-	if(doc==NULL) return(NULL);
-
-	// DON'T ALLOW MORE THAN ONE ROOT
-	if(parentIsDoc && (doc->getDocumentElement()!=NULL)) {
-		printf("XMLNode.AddNewElement: ERROR- document already has root.\n");
-		return(NULL);
-	}
-
-	// DETERMINE LEVEL OF PARENT
-	int level = GetNumberOfParents(aParent);
-	if(level>TABLIMIT) level=TABLIMIT;
-
-	// LEADING SPACE
-	int i;
-	char space[TABLIMIT+1];
-	XMLCh *xmlSpace = NULL;
-	if(!parentIsDoc) {
-		if(aParent->hasChildNodes()) {
-			xmlSpace = XMLString::transcode("\t");
-			aParent->appendChild(doc->createTextNode(xmlSpace)); // can we append here?
-			if(xmlSpace!=NULL) delete[] xmlSpace;
-		} else {
-			strcpy(space,"\n");
-			for(i=0;i<level;i++) strcat(space,"\t");
-			xmlSpace = XMLString::transcode(space);
-			aParent->appendChild(doc->createTextNode(xmlSpace));
-			if(xmlSpace!=NULL) delete[] xmlSpace;
-		}
-	}
-
-	// CREATE text
-	strcpy(space,"\t");
-	for(i=0;i<level-1;i++) strcat(space,"\t");
-	string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
-	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
-	if(commentText==NULL) return(NULL);
-
-	// CREATE NEW NODE
-	DOMComment *child = doc->createComment(commentText);  
-	delete[] commentText;
-
-	// ADD CHILD
-	if(child!=NULL) aParent->appendChild(child);
-
-	// TRAILING SPACE
-	if(!parentIsDoc) {
-		strcpy(space,"\n");
-		for(i=0;i<level-1;i++) strcat(space,"\t");
-		xmlSpace = XMLString::transcode(space);
-		aParent->appendChild(doc->createTextNode(xmlSpace));
-		if(xmlSpace!=NULL) delete[] xmlSpace;
-	}
-
-	return(child);
-}
-
 //_____________________________________________________________________________
 /**
  * Create a new element and add it as a child to a specified parent node with comment.
@@ -194,12 +132,8 @@ AppendNewElementWithComment(DOMNode *aParent,
 		return(NULL);
 	}
 
-	// CREATE NAME
-	XMLCh *tag = XMLString::transcode(aTag.c_str());
-	if(tag==NULL) return(NULL);
-
 	// CREATE NEW NODE
-	DOMElement *child = doc->createElement(tag);  delete[] tag;
+	DOMElement *child = CreateDOMElement(doc,aTag);	
 	if(!aName.empty()) SetAttribute(child,"name",aName);
 
 	// DETERMINE LEVEL OF PARENT
@@ -207,54 +141,27 @@ AppendNewElementWithComment(DOMNode *aParent,
 	if(level>TABLIMIT) level=TABLIMIT;
 
 	// LEADING SPACE
-	int i;
-	char space[TABLIMIT+1];
-	XMLCh *xmlSpace = NULL;
 	if(!parentIsDoc) {
-		if(aParent->hasChildNodes()) {
-			xmlSpace = XMLString::transcode("\t");
-			aParent->appendChild(doc->createTextNode(xmlSpace));
-			if(xmlSpace!=NULL) delete[] xmlSpace;
-		} else {
-			strcpy(space,"\n");
-			for(i=0;i<level;i++) strcat(space,"\t");
-			xmlSpace = XMLString::transcode(space);
-			aParent->appendChild(doc->createTextNode(xmlSpace));
-			if(xmlSpace!=NULL) delete[] xmlSpace;
-		}
+		// If it already has children, we rely on the whitespace already there (just need to add a single tab)
+		string space = aParent->hasChildNodes() ? WhitespaceString(1,false) : WhitespaceString(level,true);
+		aParent->appendChild(CreateDOMText(doc,space));
 	}
 
 	// Add Comment if needed
-	if (aComment!=""){
-		// CREATE text
-		strcpy(space,"\t");
-		for(i=0;i<level-1;i++) strcat(space,"\t");
-		string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
-		XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
-		//XMLCh *commentText = XMLString::transcode(aComment.c_str());
-		if(commentText!=NULL){ 
-			// CREATE NEW NODE
-			DOMComment *commentNode = doc->createComment(commentText);  
-			aParent->appendChild(commentNode);
-		}
-		delete[] commentText;
+	if (!aComment.empty()){
+		// CREATE comment
+		string space = WhitespaceString(level,false);
+		string formattedComment = IO::formatText(aComment,space+"    ",70);
+		aParent->appendChild(CreateDOMComment(doc,formattedComment));
 		// Add newline
-		strcpy(space,"\n");
-		for(i=0;i<level;i++) strcat(space,"\t");
-		xmlSpace = XMLString::transcode(space);
-		aParent->appendChild(doc->createTextNode(xmlSpace));
-		if(xmlSpace!=NULL) delete[] xmlSpace;
+		aParent->appendChild(CreateDOMText(doc,WhitespaceString(level,true)));
 	}
+
 	// ADD CHILD
 	if(child!=NULL) aParent->appendChild(child);
+
 	// TRAILING SPACE
-	if(!parentIsDoc) {
-		strcpy(space,"\n");
-		for(i=0;i<level-1;i++) strcat(space,"\t");
-		xmlSpace = XMLString::transcode(space);
-		aParent->appendChild(doc->createTextNode(xmlSpace));
-		if(xmlSpace!=NULL) delete[] xmlSpace;
-	}
+	if(!parentIsDoc) aParent->appendChild(CreateDOMText(doc,WhitespaceString(level-1,true)));
 
 	return(child);
 }
@@ -279,6 +186,7 @@ RemoveChildren(DOMNode *aNode)
 void XMLNode::
 UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment)
 {
+	// Look for a preceding comment node, or give up if reach the previous element
 	DOMComment *commentNode = 0;
 	for(DOMNode *child=aElement->getPreviousSibling(); child; child=child->getPreviousSibling()) {
 		if(child->getNodeType()==DOMNode::COMMENT_NODE) {
@@ -294,28 +202,45 @@ UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::str
 	// DETERMINE LEVEL OF PARENT
 	int level = GetNumberOfParents(aElement)-1;
 	if(level>TABLIMIT) level=TABLIMIT;
-	char space[TABLIMIT+1];
-	strcpy(space,"\t");
-	for(int i=0;i<level-1;i++) strcat(space,"\t");
-	string formattedComment = IO::formatText(aComment,string(space)+"    ",70);
-	XMLCh *commentText = XMLString::transcode(formattedComment.c_str());
-	DOMComment *newCommentNode = doc->createComment(commentText);
-	if(commentText) delete[] commentText;
 
-	strcpy(space,"\n");
-	for(int i=0;i<level;i++) strcat(space,"\t");
-	XMLCh *xmlSpace = XMLString::transcode(space);
-	DOMNode *spaceAfterCommentNode = doc->createTextNode(xmlSpace);
-	if(xmlSpace) delete[] xmlSpace;
+	string space = WhitespaceString(level,false);
+	string formattedComment = IO::formatText(aComment,space+"    ",70);
+	DOMComment *newCommentNode = CreateDOMComment(doc, formattedComment);
 
 	if(commentNode) {
 		aElement->getParentNode()->replaceChild(newCommentNode,commentNode);
-		// Can we delete??
-		//delete commentNode;
 	} else {
 		aElement->getParentNode()->insertBefore(newCommentNode,aElement);
+		DOMNode *spaceAfterCommentNode = CreateDOMText(doc, WhitespaceString(level,true));
 		aElement->getParentNode()->insertBefore(spaceAfterCommentNode,aElement);
 	}
+}
+
+DOMText* XMLNode::
+CreateDOMText(DOMDocument *aDocument, const string &aText)
+{
+	XMLCh *xmlText = XMLString::transcode(aText.c_str());
+	DOMText *node = aDocument->createTextNode(xmlText);
+	delete[] xmlText;
+	return node;
+}
+
+DOMComment* XMLNode::
+CreateDOMComment(DOMDocument *aDocument, const string &aComment)
+{
+	XMLCh *xmlComment = XMLString::transcode(aComment.c_str());
+	DOMComment *node = aDocument->createComment(xmlComment);
+	delete[] xmlComment;
+	return node;
+}
+
+DOMElement* XMLNode::
+CreateDOMElement(DOMDocument *aDocument, const string &aTag)
+{
+	XMLCh *xmlTag = XMLString::transcode(aTag.c_str());
+	DOMElement *node = aDocument->createElement(xmlTag);
+	delete[] xmlTag;
+	return node;
 }
 
 //=============================================================================

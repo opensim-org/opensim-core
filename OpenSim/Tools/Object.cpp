@@ -952,36 +952,7 @@ updateXMLNode(DOMElement *aParent)
 	XMLNode::SetAttribute(_node,"name",getName());
 
 	// DEFAULT OBJECTS
-	string defaultsTag = "defaults";
-	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,defaultsTag);
-	// Not root element- remove defaults
-	if((aParent!=NULL) && (elmt!=NULL)) {
-		DOMNode *defaultsParent = elmt->getParentNode();
-		defaultsParent->removeChild(elmt);
-	// Root element- write valid defaults
-	} else if(aParent==NULL) {
-		bool createdNewElement = false;
-		if(elmt==NULL) {
-			elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
-			createdNewElement = true;
-		}
-		XMLNode::RemoveChildren(elmt);
-		for(int i=0;i<_Types.getSize();i++) {
-			Object *defaultObject = _Types.get(i);
-			if( isValidDefaultType(defaultObject) && 
-				(Object::getSerializeAllDefaults() || _defaultsReadFromFile[defaultObject->getType()])) {
-				defaultObject->setXMLNode(NULL);
-				defaultObject->updateXMLNode(elmt);
-			}
-		}
-		// If it will end up an empty <defaults/> tag then we just get rid of it
-		if(createdNewElement && !elmt->hasChildNodes()) {
-			_node->removeChild(elmt);
-			// can we delete it?? it seems to be crashing...
-			//delete elmt;
-			elmt = NULL;
-		}
-	}
+	updateDefaultObjectsXMLNode(aParent);
 
 	// LOOP THROUGH PROPERTIES
 	for(int i=0;i<_propertySet.getSize();i++) {
@@ -1032,50 +1003,50 @@ updateXMLNode(DOMElement *aParent)
 
 		// Obj
 		case(Property::Obj) : {
+			PropertyObj *propObj = (PropertyObj*)property;
 			Object &object = property->getValueObj();
-			elmt = (object._inLined ? object._node : object._refNode);
-			if(!property->getComment().empty()) {
-				if((elmt==NULL) && (!property->getUseDefault())) {
-					XMLNode::AppendNewCommentElement(_node, property->getComment());
-				} else if (elmt) {
-					XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-				}
+			DOMElement *elmt = 0;
+			if(propObj->getMatchName()) {
+				// Find the first element with correct tag & name attribute
+				string objName = object.getName();
+				elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType(), &objName);
+			} else {
+				// Find the first element with correct tag (name not important)
+				elmt = XMLNode::GetFirstChildElementByTagName(_node, object.getType());
 			}
-			//if(!property->getUseDefault())
+
+			if(!elmt && !property->getUseDefault()) {
+				elmt = XMLNode::AppendNewElementWithComment(_node, object.getType(), object.getName(), property->getComment());
+			} else if (elmt && !property->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+			}
+
+			if(elmt) {
+				// If it's not inlined, hopefully calling updateXMLNode will be enough...
+				// (it probably won't touch the referring element, only the offline document)
+				if(object.getInlined()) object.setXMLNode(elmt);
 				object.updateXMLNode(_node);
-#if 0
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,object.getType());
-			if(!property->getComment().empty()) {
-				if(elmt) XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-				else XMLNode::AppendNewCommentElement(_node, property->getComment());
 			}
-			object.updateXMLNode(_node);
-#endif
 			break; }
 
-		// ObjPtr
+		// ObjArray AND ObjPtr (handled very similarly)
+		case(Property::ObjArray) :
 		case(Property::ObjPtr) : {
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt==NULL) { // I guess we always append the element even if it has default value
+			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
+			if(!elmt && !property->getUseDefault()) {
 				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
-			Object *object = property->getValueObjPtr();
-			if(object) object->updateXMLNode(elmt);
-			break; }
-
-		// ObjArray
-		case(Property::ObjArray) : {
-			elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			if(elmt==NULL) { // I guess we always append the element even if it has default value
-				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-			ArrayPtrs<Object> &value = property->getValueObjArray();
-			for(int j=0;j<value.getSize();j++) {
-				value.get(j)->updateXMLNode(elmt);
+			if(elmt) {
+				if(type==Property::ObjArray) {
+					ArrayPtrs<Object> &value = property->getValueObjArray();
+					for(int j=0;j<value.getSize();j++)
+						value.get(j)->updateXMLNode(elmt);
+				} else {
+					Object *object = property->getValueObjPtr();
+					if(object) object->updateXMLNode(elmt);
+				}
 			}
 			break; }
 
@@ -1083,6 +1054,44 @@ updateXMLNode(DOMElement *aParent)
 		default :
 			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
 			break;
+		}
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Update the XML node for defaults object.
+ */
+void Object::
+updateDefaultObjectsXMLNode(DOMElement *aParent)
+{
+	string defaultsTag = "defaults";
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,defaultsTag);
+	// Not root element- remove defaults
+	if((aParent!=NULL) && (elmt!=NULL)) {
+		_node->removeChild(elmt);
+	// Root element- write valid defaults
+	} else if(aParent==NULL) {
+		bool createdNewElement = false;
+		if(elmt==NULL) {
+			elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
+			createdNewElement = true;
+		}
+		XMLNode::RemoveChildren(elmt);
+		for(int i=0;i<_Types.getSize();i++) {
+			Object *defaultObject = _Types.get(i);
+			if( isValidDefaultType(defaultObject) && 
+				(Object::getSerializeAllDefaults() || _defaultsReadFromFile[defaultObject->getType()])) {
+				defaultObject->setXMLNode(NULL);
+				defaultObject->updateXMLNode(elmt);
+			}
+		}
+		// If it will end up an empty <defaults/> tag then we just get rid of it
+		if(createdNewElement && !elmt->hasChildNodes()) {
+			DOMNode *leadingWhitespace = elmt->getPreviousSibling();
+			DOMNode *trailingWhitespace = elmt->getNextSibling();
+			if(leadingWhitespace->getNodeType() == DOMNode::TEXT_NODE) _node->removeChild(leadingWhitespace);
+			_node->removeChild(elmt); // trying to delete elmt after this call doesn't work, so I guess we're not responsible for deleting it
+			if(trailingWhitespace->getNodeType() == DOMNode::TEXT_NODE) _node->removeChild(trailingWhitespace);
 		}
 	}
 }

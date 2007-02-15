@@ -253,6 +253,7 @@ public:
 	virtual void updateFromXMLNode();
 	virtual void updateDefaultObjectsFromXMLNode();
 	virtual void updateXMLNode(DOMElement *aParent);
+	virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
 	virtual void generateXMLNode(DOMElement *aParent);
 	// Inline support
 	void setInlined(const bool aInLined, const char *aFileName=NULL);

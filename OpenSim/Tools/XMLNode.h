@@ -88,8 +88,6 @@ public:
 	//--------------------------------------------------------------------------
 	// ADD AND REMOVE NODES
 	//--------------------------------------------------------------------------
-	static DOMNode* 
-		AppendNewCommentElement(DOMNode *aParent,const std::string &aComment);
 	static DOMElement* 
 		AppendNewElementWithComment(DOMNode *aParent,
 							const std::string &aTag,
@@ -99,6 +97,12 @@ public:
 		RemoveChildren(DOMNode *aNode);
 	static void
 		UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment);
+	static DOMText*
+		CreateDOMText(DOMDocument *aDocument, const std::string &aText);
+	static DOMComment*
+		CreateDOMComment(DOMDocument *aDocument, const std::string &aComment);
+	static DOMElement*
+		CreateDOMElement(DOMDocument *aDocument, const std::string &aTag);
 
 	//--------------------------------------------------------------------------
 	// GET NODES
