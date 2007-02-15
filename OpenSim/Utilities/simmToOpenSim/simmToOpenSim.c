@@ -19,12 +19,13 @@
 #include "wefunctions.h"
 
 ModelStruct* sMotionModel = NULL;
+char* markerSetOut = NULL;
 
 void write_xml_model(ModelStruct* ms, char filename[], int angleUnits);
 
 static void printUsage(char programName[])
 {
-	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-a degrees | radians]\n", programName);
+	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-ms markerset_out] [-a degrees | radians]\n", programName);
 }
 
 int main(int argc, char* argv[])
@@ -59,6 +60,11 @@ int main(int argc, char* argv[])
 			else if (STRINGS_ARE_EQUAL(argv[i], "-x") || STRINGS_ARE_EQUAL(argv[i], "-X"))
 			{
 				xmlOut = argv[i+1];
+				i++; 
+			}
+			else if (STRINGS_ARE_EQUAL(argv[i], "-ms") || STRINGS_ARE_EQUAL(argv[i], "-MS"))
+			{
+				markerSetOut = argv[i+1];
 				i++; 
 			}
 			else if (STRINGS_ARE_EQUAL(argv[i], "-a") || STRINGS_ARE_EQUAL(argv[i], "-A"))
@@ -119,12 +125,13 @@ int main(int argc, char* argv[])
 	{
 		SBoolean foo;
 		read_muscle_file(ms, ms->musclefilename, &foo);
-		printf("Read muscle file %s\n", ms->musclefilename);
+		// read_muscle_file already prints this message...
+		//printf("Read muscle file %s\n", ms->musclefilename);
 	}
 
    write_xml_model(ms, xmlOut, angleUnits);
 
-	printf("Wrote XML file %s\n", xmlOut);
+	printf("Wrote OpenSim model file %s\n", xmlOut);
 	exit(0);
 }
 
@@ -381,26 +388,40 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 void write_xml_markers(FILE* fp, ModelStruct* ms)
 {
 	int i, j;
+	char tabs[5];
 
-	fprintf(fp, "\t\t\t<MarkerSet>\n");
-	fprintf(fp, "\t\t\t<objects>\n");
+	if(markerSetOut) {
+		fp = fopen(markerSetOut, "w");
+		fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		strcpy(tabs, "");
+	} else {
+		strcpy(tabs, "\t\t\t");
+	}
+
+	fprintf(fp, "%s<MarkerSet>\n", tabs);
+	fprintf(fp, "%s\t<objects>\n", tabs);
 
 	for (i = 0; i < ms->numsegments; i++)
 	{
 		SegmentStruct* ss = &ms->segment[i];
 		for (j = 0; j < ms->segment[i].numMarkers; j++)
 		{
-			fprintf(fp, "\t\t\t\t<SimmMarker name=\"%s\">\n", ss->marker[j].name);
-			fprintf(fp, "\t\t\t\t\t<body>%s</body>\n", ss->name);
-			fprintf(fp, "\t\t\t\t\t<location>%.12lf %.12lf %.12lf</location>\n", ss->marker[j].offset[0], ss->marker[j].offset[1], ss->marker[j].offset[2]);
-			fprintf(fp, "\t\t\t\t\t<weight>%.12lf</weight>\n", ss->marker[j].weight);
-			fprintf(fp, "\t\t\t\t\t<fixed>%s</fixed>\n", (ss->marker[j].fixed == yes) ? ("true") : ("false"));
-			fprintf(fp, "\t\t\t\t</SimmMarker>\n");
+			fprintf(fp, "%s\t\t<SimmMarker name=\"%s\">\n", tabs, ss->marker[j].name);
+			fprintf(fp, "%s\t\t\t<body>%s</body>\n", tabs, ss->name);
+			fprintf(fp, "%s\t\t\t<location>%.12lf %.12lf %.12lf</location>\n", tabs, ss->marker[j].offset[0], ss->marker[j].offset[1], ss->marker[j].offset[2]);
+			fprintf(fp, "%s\t\t\t<weight>%.12lf</weight>\n", tabs, ss->marker[j].weight);
+			fprintf(fp, "%s\t\t\t<fixed>%s</fixed>\n", tabs, (ss->marker[j].fixed == yes) ? ("true") : ("false"));
+			fprintf(fp, "%s\t\t</SimmMarker>\n", tabs);
 		}
 	}
 
-	fprintf(fp, "\t\t\t</objects>\n");
-	fprintf(fp, "\t\t\t</MarkerSet>\n");
+	fprintf(fp, "%s\t</objects>\n", tabs);
+	fprintf(fp, "%s</MarkerSet>\n", tabs);
+
+	if(markerSetOut) {
+		fclose(fp);
+		printf("Wrote MarkerSet file %s\n", markerSetOut);
+	}
 }
 
 
