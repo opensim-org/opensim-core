@@ -462,6 +462,7 @@ void PerturbationTool::run()
 	BodyKinematics *bodyKin=0;
 	AnalysisSet &ans=getAnalysisSet();
 	for(int i=0;i<ans.getSize();i++) {
+		if(!ans.get(i)->getOn()) continue;
 		if(dynamic_cast<Kinematics*>(ans.get(i))) kin=dynamic_cast<Kinematics*>(ans.get(i));
 		else if(dynamic_cast<BodyKinematics*>(ans.get(i))) bodyKin=dynamic_cast<BodyKinematics*>(ans.get(i));
 	}
@@ -531,6 +532,9 @@ void PerturbationTool::run()
 	int ncoords = kin ? kin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
 	int nbodycoords = bodyKin ? bodyKin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
 	int nvalues = ncoords + nbodycoords;
+	if(nvalues==0) 
+		throw Exception("PerturbationTool.run: ERROR- No (active) analyses found -- no perturbation to compute.",__FILE__,__LINE__);
+
 	Array<string> values_name("",nvalues);
 	cout << "Values to be measured during perturbation:" << endl;
 	for(int i=0;i<ncoords;i++) {
