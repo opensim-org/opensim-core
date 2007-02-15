@@ -1033,19 +1033,31 @@ updateXMLNode(DOMElement *aParent)
 		case(Property::ObjArray) :
 		case(Property::ObjPtr) : {
 			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
+			bool createdNewParent = false;
 			if(!elmt && !property->getUseDefault()) {
 				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+				createdNewParent = true;
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
 			if(elmt) {
+				// If we created a new elmt (createdNewParent is true) then we must make sure
+				// the child objects have their XML nodes reset (in case they have a stale
+				// node hanging around).  This will happen e.g. for the default objects, since 
+				// updateDefaultObjectsXMLNode calls setXMLNode(NULL) only on the top-level objects but not
+				// the descendent objects, so the descendents have stale children...
 				if(type==Property::ObjArray) {
 					ArrayPtrs<Object> &value = property->getValueObjArray();
-					for(int j=0;j<value.getSize();j++)
+					for(int j=0;j<value.getSize();j++) {
+						if(createdNewParent) value.get(j)->setXMLNode(NULL); // object might have a stale child node
 						value.get(j)->updateXMLNode(elmt);
+					}
 				} else {
 					Object *object = property->getValueObjPtr();
-					if(object) object->updateXMLNode(elmt);
+					if(object) {
+						if(createdNewParent) object->setXMLNode(NULL); // object might have a stale child node
+						object->updateXMLNode(elmt);
+					}
 				}
 			}
 			break; }
@@ -1076,6 +1088,13 @@ updateDefaultObjectsXMLNode(DOMElement *aParent)
 			elmt = XMLNode::AppendNewElementWithComment(_node,defaultsTag);
 			createdNewElement = true;
 		}
+		
+		// TODO: we should probably remove all *descendents* of elmt rather than just its immediate children,
+		// but to be safe we would then need to go through the defaultObjects and recursively setXMLNode(NULL) for all
+		// objects contained within the defaultObjects (e.g. within PropertyObj/ObjPtr/ObjArray)
+		// For now rather than doing this, we take care of this in updateXMLNode (specific to ObjPtr and ObjArray) by
+		// resetting the child object's XML nodes if a new parent node is created...  this may be a potential memory leak (since
+		// we're not properly removing/deleting the children. - Eran.
 		XMLNode::RemoveChildren(elmt);
 		for(int i=0;i<_Types.getSize();i++) {
 			Object *defaultObject = _Types.get(i);
