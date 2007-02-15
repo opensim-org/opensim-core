@@ -165,36 +165,23 @@ void write_xml_muscle_groups(FILE* fp, ModelStruct* ms)
 	fprintf(fp, "\t</MuscleGroups>\n");
 }
 
+#define NEED_TO_WRITE_MUSCLE_VALUE(field) \
+	m->field && (writingDefault || m->field != ms->default_muscle.field)
 
-void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
+void write_xml_muscle(FILE* fp, ModelStruct* ms, MuscleStruct* m, const char* muscleClassName, int angleUnits, int writingDefault)
 {
-	int i, j;
 	double conversion;
-	char muscleClassName[64];
+	int j;
 
 	if (angleUnits == RADIANS)
 		conversion = DEG_TO_RAD;
 	else
 		conversion = 1.0;
 
-	fprintf(fp, "\t<ActuatorSet>\n");
-	fprintf(fp, "\t<objects>\n");
-	for (i = 0; i < ms->nummuscles; i++)
-	{
-		MuscleStruct* m = &ms->muscle[i];
+	fprintf(fp, "\t\t<%s name=\"%s\">\n", muscleClassName, m->name);
 
-		// For now, model = 9 and model = NULL map to SimmDarrylMuscle.
-		// All other values map to SimmZajacHill. Eventually, each model
-		// index should map to a distinct muscle class in OpenSim,
-		// especially model = 7, which is a ligament model.
-		if (m->muscle_model_index == NULL || *m->muscle_model_index == 9)
-			strcpy(muscleClassName, "SimmDarrylMuscle");
-		else
-			strcpy(muscleClassName, "SimmZajacHill");
-
-		fprintf(fp, "\t\t<%s name=\"%s\">\n", muscleClassName, m->name);
-
-		/* Attachment points. */
+	/* Attachment points. */
+	if(m->num_orig_points) {
 		fprintf(fp, "\t\t\t<SimmMusclePointSet>\n");
 		fprintf(fp, "\t\t\t<objects>\n");
 		for (j = 0; j < *m->num_orig_points; j++)
@@ -233,133 +220,158 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 		}
 		fprintf(fp, "\t\t\t</objects>\n");
 		fprintf(fp, "\t\t\t</SimmMusclePointSet>\n");
+	}
 
-		/* Simple (double) parameters. */
-		if (m->max_isometric_force)
-			fprintf(fp, "\t\t\t<max_isometric_force>%.12lf</max_isometric_force>\n", *m->max_isometric_force);
-		if (m->optimal_fiber_length)
-			fprintf(fp, "\t\t\t<optimal_fiber_length>%.12lf</optimal_fiber_length>\n", *m->optimal_fiber_length);
-		if (m->resting_tendon_length)
-			fprintf(fp, "\t\t\t<tendon_slack_length>%.12lf</tendon_slack_length>\n", *m->resting_tendon_length);
-		if (m->pennation_angle)
-			fprintf(fp, "\t\t\t<pennation_angle>%.12lf</pennation_angle>\n", *m->pennation_angle * conversion);
-		if (m->max_contraction_vel)
-			fprintf(fp, "\t\t\t<max_contraction_velocity>%.12lf</max_contraction_velocity>\n", *m->max_contraction_vel);
+	/* Simple (double) parameters. */
+	if (NEED_TO_WRITE_MUSCLE_VALUE(max_isometric_force))
+		fprintf(fp, "\t\t\t<max_isometric_force>%.12lf</max_isometric_force>\n", *m->max_isometric_force);
+	if (NEED_TO_WRITE_MUSCLE_VALUE(optimal_fiber_length))
+		fprintf(fp, "\t\t\t<optimal_fiber_length>%.12lf</optimal_fiber_length>\n", *m->optimal_fiber_length);
+	if (NEED_TO_WRITE_MUSCLE_VALUE(resting_tendon_length))
+		fprintf(fp, "\t\t\t<tendon_slack_length>%.12lf</tendon_slack_length>\n", *m->resting_tendon_length);
+	if (NEED_TO_WRITE_MUSCLE_VALUE(pennation_angle))
+		fprintf(fp, "\t\t\t<pennation_angle>%.12lf</pennation_angle>\n", *m->pennation_angle * conversion);
+	if (NEED_TO_WRITE_MUSCLE_VALUE(max_contraction_vel))
+		fprintf(fp, "\t\t\t<max_contraction_velocity>%.12lf</max_contraction_velocity>\n", *m->max_contraction_vel);
 
-		/* muscle model. */
-		if (m->muscle_model_index)	// Conservative fix in case muscle model is not specified. Ayman 1/07
-			fprintf(fp, "\t\t\t<muscle_model>%d</muscle_model>\n", *m->muscle_model_index);
+	/* muscle model. */
+	if (m->muscle_model_index)	// Conservative fix in case muscle model is not specified. Ayman 1/07
+		fprintf(fp, "\t\t\t<muscle_model>%d</muscle_model>\n", *m->muscle_model_index);
 
-		/* Dynamic parameters. */
-		for (j = 0; j < m->num_dynamic_params; j++)
+	/* Dynamic parameters. */
+	for (j = 0; j < m->num_dynamic_params; j++)
+	{
+		// map dynamic parameter "timescale" to "time_scale" property name
+		if (NEED_TO_WRITE_MUSCLE_VALUE(dynamic_params[j]))
 		{
-			// map dynamic parameter "timescale" to "time_scale" property name
-			if (m->dynamic_params[j])
-			{
-				if(!strcmp(m->dynamic_param_names[j],"timescale"))
-					fprintf(fp, "\t\t\t<time_scale>%.12lf</time_scale>\n", *m->dynamic_params[j]);
-				else
-					fprintf(fp, "\t\t\t<%s>%.12lf</%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
-			}
+			if(!strcmp(m->dynamic_param_names[j],"timescale"))
+				fprintf(fp, "\t\t\t<time_scale>%.12lf</time_scale>\n", *m->dynamic_params[j]);
+			else
+				fprintf(fp, "\t\t\t<%s>%.12lf</%s>\n", m->dynamic_param_names[j], *m->dynamic_params[j], m->dynamic_param_names[j]);
 		}
+	}
 
-		if (m->numWrapStructs > 0)
+	if (m->numWrapStructs > 0)
+	{
+		fprintf(fp, "\t\t\t<MuscleWrapSet>\n");
+		fprintf(fp, "\t\t\t<objects>\n");
+		for (j = 0; j < m->numWrapStructs; j++)
 		{
-			fprintf(fp, "\t\t\t<MuscleWrapSet>\n");
-			fprintf(fp, "\t\t\t<objects>\n");
-			for (j = 0; j < m->numWrapStructs; j++)
-			{
-				WrapObject* wo = &ms->wrapobj[m->wrapStruct[j]->wrap_object];
-				fprintf(fp, "\t\t\t\t<MuscleWrap>\n");
-				fprintf(fp, "\t\t\t\t\t<wrap_object> %s </wrap_object>\n", wo->name);
-				if (wo->wrap_type == wrap_ellipsoid)
-					fprintf(fp, "\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
-				if (m->wrapStruct[j]->startPoint > 0 || m->wrapStruct[j]->endPoint > 0)
-					fprintf(fp,"\t\t\t\t\t<range> %d %d </range>\n", m->wrapStruct[j]->startPoint, m->wrapStruct[j]->endPoint);
-				fprintf(fp, "\t\t\t\t</MuscleWrap>\n");
-			}
-			fprintf(fp, "\t\t\t</objects>\n");
-			fprintf(fp, "\t\t\t</MuscleWrapSet>\n");
+			WrapObject* wo = &ms->wrapobj[m->wrapStruct[j]->wrap_object];
+			fprintf(fp, "\t\t\t\t<MuscleWrap>\n");
+			fprintf(fp, "\t\t\t\t\t<wrap_object> %s </wrap_object>\n", wo->name);
+			if (wo->wrap_type == wrap_ellipsoid)
+				fprintf(fp, "\t\t\t\t\t<method> %s </method>\n", get_wrap_algorithm_name(m->wrapStruct[j]->wrap_algorithm));
+			if (m->wrapStruct[j]->startPoint > 0 || m->wrapStruct[j]->endPoint > 0)
+				fprintf(fp,"\t\t\t\t\t<range> %d %d </range>\n", m->wrapStruct[j]->startPoint, m->wrapStruct[j]->endPoint);
+			fprintf(fp, "\t\t\t\t</MuscleWrap>\n");
 		}
+		fprintf(fp, "\t\t\t</objects>\n");
+		fprintf(fp, "\t\t\t</MuscleWrapSet>\n");
+	}
 
-		/* Tendon force-length curve. */
-		if (m->tendon_force_len_curve)
-		{
-			fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
-			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-			fprintf(fp, "\t\t\t\t\t<x>");
-			for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->tendon_force_len_curve->x[j]);
-			fprintf(fp, "</x>\n");
-			fprintf(fp, "\t\t\t\t\t<y>");
-			for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->tendon_force_len_curve->y[j]);
-			fprintf(fp, "</y>\n");
-			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-			fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
-		}
+	/* Tendon force-length curve -- only write if non-default value. */
+	if (NEED_TO_WRITE_MUSCLE_VALUE(tendon_force_len_curve))
+	{
+		fprintf(fp, "\t\t\t<tendon_force_length_curve>\n");
+		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+		fprintf(fp, "\t\t\t\t\t<x>");
+		for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->tendon_force_len_curve->x[j]);
+		fprintf(fp, "</x>\n");
+		fprintf(fp, "\t\t\t\t\t<y>");
+		for (j = 0; j < m->tendon_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->tendon_force_len_curve->y[j]);
+		fprintf(fp, "</y>\n");
+		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+		fprintf(fp, "\t\t\t</tendon_force_length_curve>\n");
+	}
 
-		/* Active force-length curve. */
-		if (m->active_force_len_curve)
-		{
-			fprintf(fp, "\t\t\t<active_force_length_curve>\n");
-			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-			fprintf(fp, "\t\t\t\t\t<x>");
-			for (j = 0; j < m->active_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->active_force_len_curve->x[j]);
-			fprintf(fp, "</x>\n");
-			fprintf(fp, "\t\t\t\t\t<y>");
-			for (j = 0; j < m->active_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->active_force_len_curve->y[j]);
-			fprintf(fp, "</y>\n");
-			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-			fprintf(fp, "\t\t\t</active_force_length_curve>\n");
-		}
+	/* Active force-length curve -- only write if non-default value. */
+	if (NEED_TO_WRITE_MUSCLE_VALUE(active_force_len_curve))
+	{
+		fprintf(fp, "\t\t\t<active_force_length_curve>\n");
+		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+		fprintf(fp, "\t\t\t\t\t<x>");
+		for (j = 0; j < m->active_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->active_force_len_curve->x[j]);
+		fprintf(fp, "</x>\n");
+		fprintf(fp, "\t\t\t\t\t<y>");
+		for (j = 0; j < m->active_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->active_force_len_curve->y[j]);
+		fprintf(fp, "</y>\n");
+		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+		fprintf(fp, "\t\t\t</active_force_length_curve>\n");
+	}
 
-		/* Passive force-length curve. */
-		if (m->passive_force_len_curve)
-		{
-			fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
-			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-			fprintf(fp, "\t\t\t\t\t<x>");
-			for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->passive_force_len_curve->x[j]);
-			fprintf(fp, "</x>\n");
-			fprintf(fp, "\t\t\t\t\t<y>");
-			for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->passive_force_len_curve->y[j]);
-			fprintf(fp, "</y>\n");
-			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-			fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
-		}
+	/* Passive force-length curve -- only write if non-default. */
+	if (NEED_TO_WRITE_MUSCLE_VALUE(passive_force_len_curve))
+	{
+		fprintf(fp, "\t\t\t<passive_force_length_curve>\n");
+		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+		fprintf(fp, "\t\t\t\t\t<x>");
+		for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->passive_force_len_curve->x[j]);
+		fprintf(fp, "</x>\n");
+		fprintf(fp, "\t\t\t\t\t<y>");
+		for (j = 0; j < m->passive_force_len_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->passive_force_len_curve->y[j]);
+		fprintf(fp, "</y>\n");
+		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+		fprintf(fp, "\t\t\t</passive_force_length_curve>\n");
+	}
 
-		/* Force-velocity curve. */
-		if (m->force_vel_curve)
-		{
-			fprintf(fp, "\t\t\t<force_velocity_curve>\n");
-			fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
-			fprintf(fp, "\t\t\t\t\t<x>");
-			for (j = 0; j < m->force_vel_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->force_vel_curve->x[j]);
-			fprintf(fp, "</x>\n");
-			fprintf(fp, "\t\t\t\t\t<y>");
-			for (j = 0; j < m->force_vel_curve->numpoints; j++)
-				fprintf(fp, "%.12lf ", m->force_vel_curve->y[j]);
-			fprintf(fp, "</y>\n");
-			fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
-			fprintf(fp, "\t\t\t</force_velocity_curve>\n");
-		}
+	/* Force-velocity curve -- only write if non-default. */
+	if (NEED_TO_WRITE_MUSCLE_VALUE(force_vel_curve))
+	{
+		fprintf(fp, "\t\t\t<force_velocity_curve>\n");
+		fprintf(fp, "\t\t\t\t<natCubicSpline>\n");
+		fprintf(fp, "\t\t\t\t\t<x>");
+		for (j = 0; j < m->force_vel_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->force_vel_curve->x[j]);
+		fprintf(fp, "</x>\n");
+		fprintf(fp, "\t\t\t\t\t<y>");
+		for (j = 0; j < m->force_vel_curve->numpoints; j++)
+			fprintf(fp, "%.12lf ", m->force_vel_curve->y[j]);
+		fprintf(fp, "</y>\n");
+		fprintf(fp, "\t\t\t\t</natCubicSpline>\n");
+		fprintf(fp, "\t\t\t</force_velocity_curve>\n");
+	}
 
-		/* Groups. */
-		if (m->numgroups > 0)
-		{
-			fprintf(fp, "\t\t\t<groups>");
-			for (j = 0; j < m->numgroups; j++)
-				fprintf(fp, "%s ", ms->muscgroup[m->group[j]].name);
-			fprintf(fp, "</groups>\n");
-		}
+	/* Groups. */
+	if (m->numgroups > 0)
+	{
+		fprintf(fp, "\t\t\t<groups>");
+		for (j = 0; j < m->numgroups; j++)
+			fprintf(fp, "%s ", ms->muscgroup[m->group[j]].name);
+		fprintf(fp, "</groups>\n");
+	}
 
-		fprintf(fp, "\t\t</%s>\n", muscleClassName);
+	fprintf(fp, "\t\t</%s>\n", muscleClassName);
+
+}
+
+void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
+{
+	int i;
+	char muscleClassName[64];
+
+	fprintf(fp, "\t<ActuatorSet>\n");
+	fprintf(fp, "\t<objects>\n");
+	for (i = 0; i < ms->nummuscles; i++)
+	{
+		MuscleStruct* m = &ms->muscle[i];
+
+		// For now, model = 9 and model = NULL map to SimmDarrylMuscle.
+		// All other values map to SimmZajacHill. Eventually, each model
+		// index should map to a distinct muscle class in OpenSim,
+		// especially model = 7, which is a ligament model.
+		if (m->muscle_model_index == NULL || *m->muscle_model_index == 9)
+			strcpy(muscleClassName, "SimmDarrylMuscle");
+		else
+			strcpy(muscleClassName, "SimmZajacHill");
+
+		write_xml_muscle(fp, ms, m, muscleClassName, angleUnits, 0);
 	}
 	fprintf(fp, "\t</objects>\n");
 	fprintf(fp, "\t</ActuatorSet>\n");
@@ -837,6 +849,15 @@ void write_xml_units(FILE* fp, ModelStruct* ms)
       fprintf(fp, "\t<length_units>%s</length_units>\n", ms->lengthUnits);
 }
 
+void write_xml_defaults(FILE* fp, ModelStruct* ms, int angleUnits)
+{
+	fprintf(fp, "\t<defaults>\n");
+	// We need to write a default muscle for all supported types of muscles (since
+	// the default mechanism works by matching class names)
+	write_xml_muscle(fp, ms, &ms->default_muscle, "SimmZajacHill", angleUnits, 1);
+	write_xml_muscle(fp, ms, &ms->default_muscle, "SimmDarrylMuscle", angleUnits, 1);
+	fprintf(fp, "\t</defaults>\n");
+}
 
 void write_xml_model(ModelStruct* ms, char filename[], int angleUnits)
 {
@@ -845,6 +866,7 @@ void write_xml_model(ModelStruct* ms, char filename[], int angleUnits)
 	fp = fopen(filename, "w");
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	fprintf(fp, "<AbstractModel name=\"%s\">\n", ms->name);
+	write_xml_defaults(fp, ms, angleUnits);
 	if (angleUnits == DEGREES)
 		fprintf(fp, "\t<angle_units> degrees </angle_units>\n");
 	else
