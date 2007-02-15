@@ -28,7 +28,6 @@
 // INCLUDE
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/ScaleSet.h>

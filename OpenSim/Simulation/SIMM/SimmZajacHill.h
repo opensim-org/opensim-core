@@ -31,7 +31,7 @@
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObjPtr.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ArrayPtrs.h>
 #include <OpenSim/Tools/ScaleSet.h>
@@ -84,17 +84,17 @@ protected:
 	PropertyDbl _dampingProp;
 	double &_damping;
 
-	PropertyObjArray _tendonForceLengthCurveProp;
-	ArrayPtrs<Function> &_tendonForceLengthCurve;
+	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
+	Function *&_tendonForceLengthCurve;
 
-	PropertyObjArray _activeForceLengthCurveProp;
-	ArrayPtrs<Function> &_activeForceLengthCurve;
+	PropertyObjPtr<Function> _activeForceLengthCurveProp;
+	Function *&_activeForceLengthCurve;
 
-	PropertyObjArray _passiveForceLengthCurveProp;
-	ArrayPtrs<Function> &_passiveForceLengthCurve;
+	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
+	Function *&_passiveForceLengthCurve;
 
-	PropertyObjArray _forceVelocityCurveProp;
-	ArrayPtrs<Function> &_forceVelocityCurve;
+	PropertyObjPtr<Function> _forceVelocityCurveProp;
+	Function *&_forceVelocityCurve;
 
 	// Muscle controls
 	double _excitation;

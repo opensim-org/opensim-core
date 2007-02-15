@@ -169,7 +169,7 @@ void AbstractModel::copyData(const AbstractModel &aModel)
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
-	_dynamicsEngine = aModel._dynamicsEngine ? (AbstractDynamicsEngine*)aModel._dynamicsEngine->copy() : 0;
+	_dynamicsEngine = (AbstractDynamicsEngine*)Object::SafeCopy(aModel._dynamicsEngine);
 	_actuatorSet = aModel._actuatorSet;
 	_muscleGroups = aModel._muscleGroups;
 	_contactSet = aModel._contactSet;

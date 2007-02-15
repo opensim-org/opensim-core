@@ -163,9 +163,9 @@ void SimmRotationDof::getAxis(double rAxis[3]) const
 double SimmRotationDof::getValue()
 {
 	if (_coordinate)
-		return _functions[0]->evaluate(0, _coordinate->getValue(), 0.0, 0.0);
+		return _function->evaluate(0, _coordinate->getValue(), 0.0, 0.0);
 	else
-		return _functions[0]->evaluate(0, 0.0, 0.0, 0.0);
+		return _function->evaluate(0, 0.0, 0.0, 0.0);
 }
 
 void SimmRotationDof::peteTest()
@@ -173,6 +173,5 @@ void SimmRotationDof::peteTest()
 	cout << "RotationDof: " << getName() << endl;
 	cout << "   value: " << getValue() << endl;
 	cout << "   coordinate: " << _coordinateName << endl;
-	if (_functions.getSize() > 0)
-		cout << "   function: " << *(_functions[0]) << endl;
+	if (_function) cout << "   function: " << *_function << endl;
 }

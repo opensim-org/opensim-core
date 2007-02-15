@@ -31,7 +31,6 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Transform.h>

@@ -175,6 +175,7 @@ public:
 	Object(const Object &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aNode) const;
+	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
 //	static Object* ConstructObject(DOMElement *aNode);
 	virtual VisibleObject *getDisplayer() { return 0; };
 private:

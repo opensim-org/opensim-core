@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/PropertyInt.h>
 #include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
 #include <OpenSim/Tools/ScaleSet.h>
 #include <OpenSim/Tools/VisibleObject.h>
 #include "AbstractActuator.h"

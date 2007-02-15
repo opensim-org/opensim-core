@@ -31,7 +31,7 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObjPtr.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Function.h>
@@ -66,8 +66,8 @@ public:
 	};
 
 protected:
-	PropertyObjArray _functionsProp;
-	ArrayPtrs<Function> &_functions;
+	PropertyObjPtr<Function> _functionProp;
+	Function *&_function;
 
 	PropertyStr _coordinateNameProp;
 	std::string& _coordinateName;

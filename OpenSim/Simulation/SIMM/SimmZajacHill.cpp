@@ -56,10 +56,10 @@ SimmZajacHill::SimmZajacHill() :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_damping(_dampingProp.getValueDbl()),
-	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
-	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
-	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
-	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray())
+	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
+	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
+	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -90,10 +90,10 @@ SimmZajacHill::SimmZajacHill(const SimmZajacHill &aMuscle) :
 	_pennationAngle(_pennationAngleProp.getValueDbl()),
 	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_damping(_dampingProp.getValueDbl()),
-	_tendonForceLengthCurve((ArrayPtrs<Function>&)_tendonForceLengthCurveProp.getValueObjArray()),
-	_activeForceLengthCurve((ArrayPtrs<Function>&)_activeForceLengthCurveProp.getValueObjArray()),
-	_passiveForceLengthCurve((ArrayPtrs<Function>&)_passiveForceLengthCurveProp.getValueObjArray()),
-	_forceVelocityCurve((ArrayPtrs<Function>&)_forceVelocityCurveProp.getValueObjArray())
+	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
+	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
+	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -133,10 +133,10 @@ void SimmZajacHill::copyData(const SimmZajacHill &aMuscle)
 	_pennationAngle = aMuscle._pennationAngle;
 	_maxContractionVelocity = aMuscle._maxContractionVelocity;
 	_damping = aMuscle._damping;
-	_tendonForceLengthCurve = aMuscle._tendonForceLengthCurve;
-	_activeForceLengthCurve = aMuscle._activeForceLengthCurve;
-	_passiveForceLengthCurve = aMuscle._passiveForceLengthCurve;
-	_forceVelocityCurve = aMuscle._forceVelocityCurve;
+	_tendonForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._tendonForceLengthCurve);
+	_activeForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._activeForceLengthCurve);
+	_passiveForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._passiveForceLengthCurve);
+	_forceVelocityCurve = (Function*)Object::SafeCopy(aMuscle._forceVelocityCurve);
 }
 
 //_____________________________________________________________________________
@@ -195,22 +195,16 @@ void SimmZajacHill::setupProperties()
 	_dampingProp.setValue(0.0);
 	_propertySet.append(&_dampingProp);
 
-	ArrayPtrs<Object> func;
-
 	_tendonForceLengthCurveProp.setName("tendon_force_length_curve");
-	_tendonForceLengthCurveProp.setValue(func);
 	_propertySet.append(&_tendonForceLengthCurveProp);
 
 	_activeForceLengthCurveProp.setName("active_force_length_curve");
-	_activeForceLengthCurveProp.setValue(func);
 	_propertySet.append(&_activeForceLengthCurveProp);
 
 	_passiveForceLengthCurveProp.setName("passive_force_length_curve");
-	_passiveForceLengthCurveProp.setValue(func);
 	_propertySet.append(&_passiveForceLengthCurveProp);
 
 	_forceVelocityCurveProp.setName("force_velocity_curve");
-	_forceVelocityCurveProp.setValue(func);
 	_propertySet.append(&_forceVelocityCurveProp);
 }
 
@@ -407,10 +401,7 @@ void SimmZajacHill::computeActuation()
  */
 Function* SimmZajacHill::getActiveForceLengthCurve() const
 {
-	if (_activeForceLengthCurve.getSize() > 0)
-		return _activeForceLengthCurve.get(0);
-
-	return NULL;
+	return _activeForceLengthCurve;
 }
 
 //_____________________________________________________________________________
@@ -421,10 +412,7 @@ Function* SimmZajacHill::getActiveForceLengthCurve() const
  */
 Function* SimmZajacHill::getPassiveForceLengthCurve() const
 {
-	if (_passiveForceLengthCurve.getSize() > 0)
-		return _passiveForceLengthCurve.get(0);
-
-	return NULL;
+	return _passiveForceLengthCurve;
 }
 
 //_____________________________________________________________________________
@@ -435,10 +423,7 @@ Function* SimmZajacHill::getPassiveForceLengthCurve() const
  */
 Function* SimmZajacHill::getTendonForceLengthCurve() const
 {
-	if (_tendonForceLengthCurve.getSize() > 0)
-		return _tendonForceLengthCurve.get(0);
-
-	return NULL;
+	return _tendonForceLengthCurve;
 }
 
 //_____________________________________________________________________________
@@ -449,10 +434,7 @@ Function* SimmZajacHill::getTendonForceLengthCurve() const
  */
 Function* SimmZajacHill::getForceVelocityCurve() const
 {
-	if (_forceVelocityCurve.getSize() > 0)
-		return _forceVelocityCurve.get(0);
-
-	return NULL;
+	return _forceVelocityCurve;
 }
 
 //_____________________________________________________________________________
@@ -741,13 +723,9 @@ void SimmZajacHill::peteTest() const
 	cout << "   pennationAngle: " << _pennationAngle << endl;
 	cout << "   maxContractionVelocity: " << _maxContractionVelocity << endl;
 	cout << "   damping: " << _damping << endl;
-	if (_tendonForceLengthCurve.getSize() > 0)
-		cout << "   tendonForceLengthCurve: " << *(_tendonForceLengthCurve[0]) << endl;
-	if (_activeForceLengthCurve.getSize() > 0)
-		cout << "   activeForceLengthCurve: " << *(_activeForceLengthCurve[0]) << endl;
-	if (_passiveForceLengthCurve.getSize() > 0)
-		cout << "   passiveForceLengthCurve: " << *(_passiveForceLengthCurve[0]) << endl;
-	if (_forceVelocityCurve.getSize() > 0)
-		cout << "   forceVelocityCurve: " << *(_forceVelocityCurve[0]) << endl;
+	if (_tendonForceLengthCurve) cout << "   tendonForceLengthCurve: " << *_tendonForceLengthCurve << endl;
+	if (_activeForceLengthCurve) cout << "   activeForceLengthCurve: " << *_activeForceLengthCurve << endl;
+	if (_passiveForceLengthCurve) cout << "   passiveForceLengthCurve: " << *_passiveForceLengthCurve << endl;
+	if (_forceVelocityCurve) cout << "   forceVelocityCurve: " << *_forceVelocityCurve << endl;
 	cout << "   current length: " << _length << endl;
 }

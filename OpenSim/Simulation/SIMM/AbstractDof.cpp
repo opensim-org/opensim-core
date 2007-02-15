@@ -44,7 +44,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 AbstractDof::AbstractDof(void) :
-	_functions((ArrayPtrs<Function>&)_functionsProp.getValueObjArray()),
+	_function(_functionProp.getValueObjPtrRef()),
 	_coordinateName((std::string&)_coordinateNameProp.getValueStr()),
 	_coordinate(NULL)
 {
@@ -60,7 +60,7 @@ AbstractDof::AbstractDof(void) :
  */
 AbstractDof::AbstractDof(const AbstractDof &aDof) :
    Object(aDof),
-	_functions((ArrayPtrs<Function>&)_functionsProp.getValueObjArray()),
+	_function(_functionProp.getValueObjPtrRef()),
 	_coordinateName((std::string&)_coordinateNameProp.getValueStr()),
 	_coordinate(NULL)
 {
@@ -88,7 +88,7 @@ AbstractDof::~AbstractDof(void)
  */
 void AbstractDof::copyData(const AbstractDof &aDof)
 {
-	_functions = aDof._functions;
+	_function = (Function*)Object::SafeCopy(aDof._function);
 	_coordinateName = aDof._coordinateName;
 	_coordinate = aDof._coordinate;
 }
@@ -108,10 +108,8 @@ void AbstractDof::setNull(void)
  */
 void AbstractDof::setupProperties(void)
 {
-	_functionsProp.setName("Value");
-	ArrayPtrs<Object> func;
-	_functionsProp.setValue(func);
-	_propertySet.append(&_functionsProp);
+	_functionProp.setName("Value");
+	_propertySet.append(&_functionProp);
 
 	_coordinateNameProp.setName("coordinate");
 	_propertySet.append(&_coordinateNameProp);
@@ -173,10 +171,7 @@ AbstractDof& AbstractDof::operator=(const AbstractDof &aDof)
  */
 Function* AbstractDof::getFunction() const
 {
-	if (_functions.getSize() < 0)
-		return NULL;
-
-	return _functions[0];
+	return _function;
 }
 
 void AbstractDof::peteTest(void)

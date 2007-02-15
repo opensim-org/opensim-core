@@ -36,7 +36,7 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Tools/PropertyObjPtr.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/Function.h>
 #include "AbstractCoordinate.h"
@@ -89,14 +89,14 @@ protected:
 	PropertyBool _lockedProp;
 	bool &_locked;
 
-	PropertyObjArray _restraintFunctionProp;
-	ArrayPtrs<Function> &_restraintFunction;
+	PropertyObjPtr<Function> _restraintFunctionProp;
+	Function *&_restraintFunction;
 
-	PropertyObjArray _minRestraintFunctionProp;
-	ArrayPtrs<Function> &_minRestraintFunction;
+	PropertyObjPtr<Function> _minRestraintFunctionProp;
+	Function *&_minRestraintFunction;
 
-	PropertyObjArray _maxRestraintFunctionProp;
-	ArrayPtrs<Function> &_maxRestraintFunction;
+	PropertyObjPtr<Function> _maxRestraintFunctionProp;
+	Function *&_maxRestraintFunction;
 
 	PropertyBool _restraintActiveProp;
 	bool &_restraintActive;

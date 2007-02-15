@@ -60,9 +60,9 @@ SimmCoordinate::SimmCoordinate() :
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
 	_locked(_lockedProp.getValueBool()),
-	_restraintFunction((ArrayPtrs<Function>&)_restraintFunctionProp.getValueObjArray()),
-	_minRestraintFunction((ArrayPtrs<Function>&)_minRestraintFunctionProp.getValueObjArray()),
-	_maxRestraintFunction((ArrayPtrs<Function>&)_maxRestraintFunctionProp.getValueObjArray()),
+	_restraintFunction(_restraintFunctionProp.getValueObjPtrRef()),
+	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
+	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
@@ -97,9 +97,9 @@ SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
 	_locked(_lockedProp.getValueBool()),
-	_restraintFunction((ArrayPtrs<Function>&)_restraintFunctionProp.getValueObjArray()),
-	_minRestraintFunction((ArrayPtrs<Function>&)_minRestraintFunctionProp.getValueObjArray()),
-	_maxRestraintFunction((ArrayPtrs<Function>&)_maxRestraintFunctionProp.getValueObjArray()),
+	_restraintFunction(_restraintFunctionProp.getValueObjPtrRef()),
+	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
+	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
@@ -143,9 +143,9 @@ void SimmCoordinate::copyData(const SimmCoordinate &aCoordinate)
 	_keys = aCoordinate._keys;
 	_clamped = aCoordinate._clamped;
 	_locked = aCoordinate._locked;
-	_restraintFunction = aCoordinate._restraintFunction;
-	_minRestraintFunction = aCoordinate._minRestraintFunction;
-	_maxRestraintFunction = aCoordinate._maxRestraintFunction;
+	_restraintFunction = (Function*)Object::SafeCopy(aCoordinate._restraintFunction);
+	_minRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._minRestraintFunction);
+	_maxRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._maxRestraintFunction);
 	_restraintActive = aCoordinate._restraintActive;
 	_jointList = aCoordinate._jointList;
 	_pathList = aCoordinate._pathList;
@@ -217,21 +217,17 @@ void SimmCoordinate::setupProperties(void)
 	_lockedProp.setValue(false);
 	_propertySet.append(&_lockedProp);
 
-	ArrayPtrs<Object> func;
 	_restraintFunctionProp.setComment("Pointer to a restraint function that applies generalized forces "
 		"at a joint to keep the coordinate from moving outside its range. ");
 	_restraintFunctionProp.setName("restraint_function");
-	_restraintFunctionProp.setValue(func);
 	_propertySet.append(&_restraintFunctionProp);
 
 	_minRestraintFunctionProp.setComment("Minimum restraint function.");
 	_minRestraintFunctionProp.setName("min_restraint_function");
-	_minRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_minRestraintFunctionProp);
 
 	_maxRestraintFunctionProp.setComment("Maximum restraint function.");
 	_maxRestraintFunctionProp.setName("max_restraint_function");
-	_maxRestraintFunctionProp.setValue(func);
 	_propertySet.append(&_maxRestraintFunctionProp);
 
 	_restraintActiveProp.setComment("Flag (true or false) indicating whether "
@@ -641,10 +637,7 @@ void SimmCoordinate::getKeys(string rKeys[]) const
  */
 Function* SimmCoordinate::getRestraintFunction() const
 {
-	if (_restraintFunction.getSize() < 1)
-		return NULL;
-
-	return _restraintFunction[0];
+	return _restraintFunction;
 }
 
 //_____________________________________________________________________________
@@ -656,10 +649,7 @@ Function* SimmCoordinate::getRestraintFunction() const
  */
 Function* SimmCoordinate::getMinRestraintFunction(void) const
 {
-	if (_minRestraintFunction.getSize() < 1)
-		return NULL;
-
-	return _minRestraintFunction[0];
+	return _minRestraintFunction;
 }
 
 //_____________________________________________________________________________
@@ -671,10 +661,7 @@ Function* SimmCoordinate::getMinRestraintFunction(void) const
  */
 Function* SimmCoordinate::getMaxRestraintFunction(void) const
 {
-	if (_maxRestraintFunction.getSize() < 1)
-		return NULL;
-
-	return _maxRestraintFunction[0];
+	return _maxRestraintFunction;
 }
 
 void SimmCoordinate::peteTest(void) const
@@ -689,12 +676,9 @@ void SimmCoordinate::peteTest(void) const
 	cout << "   keys: " << _keys << endl;
 	cout << "   clamped: " << ((_clamped) ? ("true") : ("false")) << endl;
 	cout << "   locked: " << ((_locked) ? ("true") : ("false")) << endl;
-	if (_restraintFunction.getSize() > 0)
-		cout << "   restraintFunction: " << *(_restraintFunction[0]) << endl;
-	if (_minRestraintFunction.getSize() > 0)
-		cout << "   minRestraintFunction: " << *(_minRestraintFunction[0]) << endl;
-	if (_maxRestraintFunction.getSize() > 0)
-		cout << "   maxRestraintFunction: " << *(_maxRestraintFunction[0]) << endl;
+	if (_restraintFunction) cout << "   restraintFunction: " << *_restraintFunction << endl;
+	if (_minRestraintFunction) cout << "   minRestraintFunction: " << *_minRestraintFunction << endl;
+	if (_maxRestraintFunction) cout << "   maxRestraintFunction: " << *_maxRestraintFunction << endl;
 	cout << "   restraintActive: " << ((_restraintActive) ? ("true") : ("false")) << endl;
 }
 
