@@ -33,7 +33,7 @@ time_max = min(time_max, q.data(end,1));
 
 disp(sprintf('Processing %s', frcFile'));
 q = read_motionFile(frcFile);
-notI = find_columns_by_label(q.labels, 'time|FX|FY|FZ|MX|MY|MZ|_reserve$');
+notI = find_columns_by_label(q.labels, 'time$');
 I = setdiff(1:length(q.labels), notI);
 newlabels = strcat(q.labels(I),'_frc');
 output.labels = {output.labels{:} newlabels{:}};

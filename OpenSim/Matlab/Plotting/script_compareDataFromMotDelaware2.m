@@ -54,6 +54,8 @@ figHandleArray = 20:28;
 compare_muscleExcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 30:38;
 compare_muscleFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
+figHandleArray = 40:43;
+compare_actuatorFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 clear fnames fnameMeasured;
 
 if ~GLOBAL_individualprintmenus
