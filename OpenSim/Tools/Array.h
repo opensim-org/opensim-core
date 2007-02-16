@@ -754,6 +754,20 @@ int findIndex(const T &aValue) const
 }
 //_____________________________________________________________________________
 /**
+ * Linear search in reverse for an element matching a given value.
+ *
+ * @param aValue Value to which the array elements are compared.
+ * @return Index of the array element matching aValue. If there is more than
+ * one such elements with the same value the index of the last of these elements
+ * is returned.  If no match is found, -1 is returned.
+ */
+int rfindIndex(const T &aValue) const
+{
+	for(int i=_size-1;i>=0;i--) if(_array[i]==aValue) return i;
+	return -1;
+}
+//_____________________________________________________________________________
+/**
  * Search for the largest value in the array that is less than or
  * equal to a specified value.  If there is more than one element with this
  * largest value, the index of the first of these elements can optionally be
