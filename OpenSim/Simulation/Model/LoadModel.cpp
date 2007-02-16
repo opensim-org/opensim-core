@@ -72,7 +72,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 	string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
 	string actualLibFileName(fixedLibFileName+libraryExtension);
 	string debugSuffix="_d";
-	char *locationOf_D=strstr(fixedLibFileName.c_str(), debugSuffix.c_str());
+	const char *locationOf_D = strstr(fixedLibFileName.c_str(), debugSuffix.c_str());
 	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
 
 	PORTABLE_HINSTANCE libraryHandle = NULL;
