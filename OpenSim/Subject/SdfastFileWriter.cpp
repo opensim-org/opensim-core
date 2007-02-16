@@ -1850,20 +1850,48 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
    {
 		AbstractBody* leafBody = _model->getDynamicsEngine().getLeafBody(&aJoint);
 
-		if (leafBody && leafBody->getMass() < TINY_NUMBER
-			// && leafBody->getNumWrapObjects() == 0  TODO
-			)
+		// If the body has a non-negligible mass or has wrap objects attached
+		// to it, it is needed for dynamics.
+		if (leafBody &&
+			 leafBody->getMass() < 0.05 && //TINY_NUMBER &&
+			 (!leafBody->getWrapObjectSet() || leafBody->getWrapObjectSet()->getSize() < 1))
 		{
-			aInfo.type = dpSkippable;
-			// Figure out if the leaf body is the parent or child body in this
-			// joint, and set it to skippable.
-			if (aJoint.getParentBody() == leafBody)
-				_modelBodies[aInfo.parentBodyIndex].skippable = true;
-			else if (aJoint.getChildBody() == leafBody)
-				_modelBodies[aInfo.childBodyIndex].skippable = true;
-			return;
+			// Go through all the muscles to see if any have attachments points on the body.
+			// If some do, then the body is needed for dynamics.
+			bool bodyUsedByMuscle = false;
+			const ActuatorSet* act = _model->getActuatorSet();
+			for (i = 0; i < act->getSize(); i++)
+			{
+				AbstractSimmMuscle* muscle = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+				if (muscle)
+				{
+					int j;
+					const SimmMusclePointSet& attachments = muscle->getAttachmentSet();
+					for (j = 0; j < attachments.getSize(); j++)
+					{
+						if (attachments.get(j)->getBody() == leafBody)
+						{
+							bodyUsedByMuscle = true;
+							i = act->getSize();
+							break;
+						}
+					}
+				}
+			}
+
+			if (bodyUsedByMuscle == false)
+			{
+				aInfo.type = dpSkippable;
+				// Figure out if the leaf body is the parent or child body in this
+				// joint, and set it to skippable.
+				if (aJoint.getParentBody() == leafBody)
+					_modelBodies[aInfo.parentBodyIndex].skippable = true;
+				else if (aJoint.getChildBody() == leafBody)
+					_modelBodies[aInfo.childBodyIndex].skippable = true;
+				return;
+			}
 		}
-   }
+	}
 
    if (numFunctionRotations == 0 && numFunctionTranslations == 0)
 	{
@@ -3012,8 +3040,15 @@ void SdfastFileWriter::initialize()
 	if (!isValidSdfastModel())
 		goto error;
 
+#if 0 // As of 2/16/07, checkDynamicParameters only checks body masses
+	   // and inertias. Because there are valid SD/FAST models with zero-mass
+	   // bodies, the call to checkDynamicParameters has been commented out.
+	   // Someday if we want to print warnings for zero-mass bodies, or
+	   // check for other conditions, this function could be updated and
+	   // put back in the code.
 	if (!checkDynamicParameters())
 		goto error;
+#endif
 
 	/* Copy the input model, and replace its dynamics engine
 	 * with a new SdfastEngine. The components of this engine
