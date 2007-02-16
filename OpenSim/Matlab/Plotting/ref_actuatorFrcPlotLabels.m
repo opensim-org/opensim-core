@@ -84,27 +84,27 @@ clear qPlotLabel;
 clear subplotTitle subplotAxisLabel subplotRange subplotTick;
 
 
-% Figure 2: Right reserve actuators.
+% Figure 2: Hip reserve actuators.
 qPlotLabel{1}  = {'ground_force_vy'};
 qPlotLabel{2}  = {'ground_force_vy'};
 qPlotLabel{3}  = {};
 qPlotLabel{4}  = {};
-qPlotLabel{5}  = {'hip_flexion_r_reserve_frc'};
-qPlotLabel{6}  = {'hip_adduction_r_reserve_frc'};
-qPlotLabel{7}  = {'knee_angle_r_reserve_frc'};
-qPlotLabel{8}  = {'hip_rotation_r_reserve_frc'};
-qPlotLabel{9}  = {'ankle_angle_r_reserve_frc'};
-qPlotLabel{10} = {};
+qPlotLabel{5}  = {'hip_flexion_l_reserve_frc'};
+qPlotLabel{6}  = {'hip_flexion_r_reserve_frc'};
+qPlotLabel{7}  = {'hip_adduction_l_reserve_frc'};
+qPlotLabel{8}  = {'hip_adduction_r_reserve_frc'};
+qPlotLabel{9}  = {'hip_rotation_l_reserve_frc'};
+qPlotLabel{10} = {'hip_rotation_r_reserve_frc'};
 subplotTitle{1}  = {'Left'};
 subplotTitle{2}  = {'Right'};
 subplotTitle{3}  = {};
 subplotTitle{4}  = {};
-subplotTitle{5}  = {'R.Hip.Flex.Reserve'};
-subplotTitle{6}  = {'R.Hip.Adduct.Reserve'};
-subplotTitle{7}  = {'R.Knee.Flex.Reserve'};
-subplotTitle{8}  = {'R.Hip.Rot.Reserve'};
-subplotTitle{9}  = {'R.Ankle.Flex.Reserve'};
-subplotTitle{10} = {};
+subplotTitle{5}  = {'L.Hip.Flex.Reserve'};
+subplotTitle{6}  = {'R.Hip.Flex.Reserve'};
+subplotTitle{7}  = {'L.Hip.Adduct.Reserve'};
+subplotTitle{8}  = {'R.Hip.Adduct.Reserve'};
+subplotTitle{9}  = {'L.Hip.Rot.Reserve'};
+subplotTitle{10} = {'R.Hip.Rot.Reserve'};
 subplotAxisLabel{1}  = 'vertical GRF (N)';
 subplotAxisLabel{2}  = {};
 subplotAxisLabel{3}  = {};
@@ -144,26 +144,26 @@ clear qPlotLabel;
 clear subplotTitle subplotAxisLabel subplotRange subplotTick;
 
 
-% Figure 3: Left reserve actuators.
+% Figure 3: Knee and ankle reserve actuators.
 qPlotLabel{1}  = {'ground_force_vy'};
 qPlotLabel{2}  = {'ground_force_vy'};
 qPlotLabel{3}  = {};
 qPlotLabel{4}  = {};
-qPlotLabel{5}  = {'hip_flexion_l_reserve_frc'};
-qPlotLabel{6}  = {'hip_adduction_l_reserve_frc'};
-qPlotLabel{7}  = {'knee_angle_l_reserve_frc'};
-qPlotLabel{8}  = {'hip_rotation_l_reserve_frc'};
-qPlotLabel{9}  = {'ankle_angle_l_reserve_frc'};
+qPlotLabel{5}  = {'knee_angle_l_reserve_frc'};
+qPlotLabel{6}  = {'knee_angle_r_reserve_frc'};
+qPlotLabel{7}  = {'ankle_angle_l_reserve_frc'};
+qPlotLabel{8}  = {'ankle_angle_r_reserve_frc'};
+qPlotLabel{9}  = {};
 qPlotLabel{10} = {};
 subplotTitle{1}  = {'Left'};
 subplotTitle{2}  = {'Right'};
 subplotTitle{3}  = {};
 subplotTitle{4}  = {};
-subplotTitle{5}  = {'L.Hip.Flex.Reserve'};
-subplotTitle{6}  = {'L.Hip.Adduct.Reserve'};
-subplotTitle{7}  = {'L.Knee.Flex.Reserve'};
-subplotTitle{8}  = {'L.Hip.Rot.Reserve'};
-subplotTitle{9}  = {'L.Ankle.Flex.Reserve'};
+subplotTitle{5}  = {'L.Knee.Flex.Reserve'};
+subplotTitle{6}  = {'R.Knee.Flex.Reserve'};
+subplotTitle{7}  = {'L.Ankle.Flex.Reserve'};
+subplotTitle{8}  = {'R.Ankle.Flex.Reserve'};
+subplotTitle{9}  = {};
 subplotTitle{10} = {};
 subplotAxisLabel{1}  = 'vertical GRF (N)';
 subplotAxisLabel{2}  = {};
