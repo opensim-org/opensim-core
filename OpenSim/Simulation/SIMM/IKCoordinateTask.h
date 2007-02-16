@@ -4,6 +4,7 @@
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include "IKTask.h"
 #include <OpenSim/Tools/PropertyBool.h>
+#include <OpenSim/Tools/PropertyDbl.h>
 
 namespace OpenSim {
 
@@ -20,6 +21,9 @@ protected:
 	PropertyBool _fromFileProp;
 	bool &_fromFile;
 
+	PropertyDbl _valueProp;
+	double &_value;
+
 public:
 	IKCoordinateTask();
 	IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask);
@@ -30,7 +34,8 @@ public:
 #endif
 
 	bool getFromFile() { return _fromFile; }
-	void setFromFile(bool aFromFile) { _fromFile = aFromFile; }
+	bool getValueUseDefault() const { return _valueProp.getUseDefault(); }
+	double getValue() const { return _value; }
 
 private:
 	void setupProperties();

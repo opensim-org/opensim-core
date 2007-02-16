@@ -24,6 +24,9 @@
 #include <OpenSim/Simulation/SIMM/BoneSet.h>
 #include <OpenSim/Simulation/SIMM/CoordinateSet.h>
 #include <OpenSim/Simulation/SIMM/DofSet.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
+#include <OpenSim/Simulation/SIMM/IKCoordinateTask.h>
+#include <OpenSim/Simulation/SIMM/IKMarkerTask.h>
 #include <OpenSim/Simulation/SIMM/JointSet.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include <OpenSim/Simulation/SIMM/MuscleWrap.h>
@@ -91,6 +94,9 @@ RDSIMULATION_API void RegisterTypes_rdSimulation()
 	Object::RegisterType( ContactForceSet() );
 	Object::RegisterType( CoordinateSet() );
 	Object::RegisterType( DofSet() );
+	Object::RegisterType( IKTaskSet() );
+	Object::RegisterType( IKCoordinateTask() );
+	Object::RegisterType( IKMarkerTask() );
 	Object::RegisterType( JointSet() );
 	Object::RegisterType( MarkerSet() );
 	Object::RegisterType( MuscleWrap() );

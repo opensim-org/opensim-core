@@ -30,7 +30,6 @@ public:
 #endif
 
 	double getWeight() { return _weight; }
-	void setValue(double aWeight) { _weight = aWeight; }
 
 private:
 	void setupProperties();
