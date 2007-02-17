@@ -89,9 +89,6 @@ public:
 	virtual double getTolerance() const = 0;
 	virtual bool setTolerance(double aTolerance) = 0;
 	virtual bool getToleranceUseDefault() const = 0;
-	virtual double getWeight() const = 0;
-	virtual bool setWeight(double aWeight) = 0;
-	virtual bool getWeightUseDefault() const = 0;
 	virtual double getStiffness() const = 0;
 	virtual bool setStiffness(double aStiffness) = 0;
 	virtual bool getStiffnessUseDefault() const = 0;

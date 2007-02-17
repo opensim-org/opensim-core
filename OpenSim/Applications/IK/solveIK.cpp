@@ -85,11 +85,6 @@ int main(int argc,char **argv)
 				IKTool *tool = new IKTool();
 				tool->setName("default");
 				Object::setSerializeAllDefaults(true);
-
-				tool->getMarkerSet().append(new SimmMarker());
-				SimmCoordinate* aCoordinate = new SimmCoordinate();
-				tool->getCoordinateSet().append(aCoordinate);
-
 				tool->print("default_Setup_IK.xml");
 				Object::setSerializeAllDefaults(false);
 				cout << "Created file default_Setup_IK.xml with default setup" << endl;

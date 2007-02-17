@@ -34,10 +34,7 @@
 #include <OpenSim/Tools/PropertyDblArray.h>
 #include <OpenSim/Tools/PropertyObj.h>
 #include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 
@@ -72,21 +69,13 @@ protected:
 	PropertyDblArray _timeRangeProp;
 	Array<double> &_timeRange;
 
+	// tasks used to specify IK weights
+	PropertyObj _ikTaskSetProp;
+	IKTaskSet &_ikTaskSet;
+
 	// name of SIMM motion file that contains [optional] coordinates for the static pose
 	PropertyStr _coordinateFileNameProp;
 	std::string &_coordinateFileName;
-
-	// coordinate set for updating coordinates in scaled model
-	PropertyObj _coordinateSetProp;
-	CoordinateSet &_coordinateSet;
-
-	// names of coordinates whose values should be read from a file for IK of static pose
-	PropertyStrArray _coordinatesFromFileProp;
-	Array<std::string>& _coordinatesFromFile;
-
-	// marker set for updating markers in scaled model
-	PropertyObj _markerSetProp;
-	MarkerSet &_markerSet;
 
 	// name of SIMM joint file to write when done placing markers
 	PropertyStr _outputJointFileNameProp;
@@ -131,14 +120,6 @@ public:
 
 	bool processModel(AbstractModel* aModel, const std::string& aPathToSubject="");
 
-	MarkerSet &getMarkerSet() const
-	{
-		return _markerSet;
-	}
-	void setMarkerSet(const MarkerSet &aMarkerSet)
-	{
-		_markerSet = aMarkerSet;
-	}
 	/**
 	 * get/set StaticPoseFilename
 	 */
@@ -169,10 +150,6 @@ public:
 		return _coordinateFileName;
    }
     
-   CoordinateSet &getCoordinateSet()
-   {
-       return _coordinateSet;
-   }
 	/**
 	 * get/set MaxMarkerMovement
 	 */

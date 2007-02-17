@@ -74,9 +74,6 @@ protected:
 	PropertyDbl _stiffnessProp;
 	double &_stiffness;
 
-	PropertyDbl _weightProp;
-	double &_weight;
-
 	PropertyDblArray _rangeProp;
 	Array<double>& _range;
 
@@ -139,9 +136,6 @@ public:
 	virtual double getTolerance() const { return _tolerance; }
 	virtual bool setTolerance(double aTolerance);
 	virtual bool getToleranceUseDefault() const { return _toleranceProp.getUseDefault(); }
-	virtual double getWeight() const { return _weight; }
-	virtual bool setWeight(double aWeight);
-	virtual bool getWeightUseDefault() const { return _weightProp.getUseDefault(); }
 	virtual double getStiffness() const { return _stiffness; }
 	virtual bool setStiffness(double aStiffness);
 	virtual bool getStiffnessUseDefault() const { return _stiffnessProp.getUseDefault(); }

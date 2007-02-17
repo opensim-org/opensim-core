@@ -43,6 +43,7 @@ namespace OpenSim {
 class AbstractModel;
 class CoordinateSet;
 class SimmMarkerData;
+class IKTaskSet;
 
 //=============================================================================
 //=============================================================================
@@ -126,8 +127,8 @@ public:
 	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
 	void findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const;
 
-	bool processTrial(AbstractModel& aModel, CoordinateSet& aCoordinateSet, Array<std::string>& aCoordinatesFromFile);
-	bool processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoordinateSet, Array<std::string>& aCoordinatesFromFile, SimmMarkerData& aMarkerData, Storage& aOutputStorage);
+	bool processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet);
+	bool processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, SimmMarkerData& aMarkerData, Storage& aOutputStorage);
 
 	/*===== Set and Get ===============*/
 	std::string getMarkerDataFilename() const

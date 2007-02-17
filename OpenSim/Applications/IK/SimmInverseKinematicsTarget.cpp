@@ -1,6 +1,6 @@
 // SimmInverseKinematicsTarget.cpp
-// Authors: Ayman Habib, Peter Loan
-/* Copyright (c) 2005, Stanford University, Ayman Habib, and Peter Loan.
+// Authors: Ayman Habib, Peter Loan, Eran Guendelman
+/* Copyright (c) 2005, Stanford University, Ayman Habib, Peter Loan, and Eran Guendelman.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -25,9 +25,12 @@
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
+#include <OpenSim/Simulation/SIMM/IKCoordinateTask.h>
+#include <OpenSim/Simulation/SIMM/IKMarkerTask.h>
 #include "SimmInverseKinematicsTarget.h"
 
 using namespace std;
@@ -48,22 +51,17 @@ static bool debug = false; // used for debugging
 */
 static bool calcDerivs = true; 
 
-SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(AbstractModel &aModel, Storage& aExperimentalDataStorage):
+SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage):
 _model(aModel),
+_ikTaskSet(aIKTaskSet),
 _experimentalDataStorage(aExperimentalDataStorage),
-_markers(NULL),
-_unconstrainedQs(),
-_prescribedQs()
+_markers(NULL)
 {
-	// Mark these arrays as not owned so that we don't free the model's Qs 
-	_unconstrainedQs.setMemoryOwner(false);
-	_prescribedQs.setMemoryOwner(false);
-
 	buildMarkerMap(aExperimentalDataStorage.getColumnLabelsArray());
 	buildCoordinateMap(aExperimentalDataStorage.getColumnLabelsArray());
 
-	/** Number of controls. */
-	setNumControls(_numUnconstrainedQs);
+	/** Number of controls -- also allocates _dx. */
+	setNumControls(_unprescribedQs.getSize());
 	/** Number of performance criteria. */
 	_np=1;
 	/** Number of nonlinear inequality constraints. */
@@ -75,10 +73,8 @@ _prescribedQs()
 	_neqn=0;
 	/** Number of equality constraints. */
 	_neq=0;
-	/** Perturbation size for computing numerical derivatives. */
-	_dx=new double[_numUnconstrainedQs];
 
-	for (int i = 0; i < _numUnconstrainedQs; i++)
+	for (int i = 0; i < _nx; i++)
 		_dx[i] = _perturbation;
 }
 
@@ -89,11 +85,10 @@ _prescribedQs()
 SimmInverseKinematicsTarget::
 ~SimmInverseKinematicsTarget(void)
 {
-	for (int i = 0; i < _markers.getSize(); i++)
-		delete _markers[i];
-
-	delete [] _unconstrainedQsIndices;
-	delete [] _prescribedQsIndices;
+	for(int i=0; i<_markers.getSize(); i++) delete _markers[i];
+	for(int i=0; i<_prescribedQs.getSize(); i++) delete _prescribedQs[i];
+	for(int i=0; i<_unprescribedQs.getSize(); i++) delete _unprescribedQs[i];
+	// don't delete contents of _unprescribedWeightedQs since those are a subset of _unprescribedQs
 }
 
 //=============================================================================
@@ -106,96 +101,69 @@ SimmInverseKinematicsTarget::
  */
 int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 {
-	int i;
-	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
 	// Assemble model in new configuration
-	// x contains values only for independent/unconstrained states
-	for (i = 0; i < _numUnconstrainedQs; i++)
+	// x contains values only for unprescribed coordinates
+	for (int i = 0; i < _nx; i++)
 	{
-		_unconstrainedQs.get(i)->setValue(x[i]);
+		_unprescribedQs[i]->coord->setValue(x[i]);
 		if (debug)
-			cout << _unconstrainedQs.get(i)->getName() << " = " << _unconstrainedQs.get(i)->getValue() << endl;
+			cout << _unprescribedQs[i]->coord->getName() << " = " << _unprescribedQs[i]->coord->getValue() << endl;
 	}
 
-	double time;
-
-	_experimentalDataStorage.getTime(_indexToSolve, time);
-	StateVector *dataRow = _experimentalDataStorage.getStateVector(_indexToSolve);
-
 	// Tally the square of the errors from markers
-	double err, weight, totalErrorSquared = 0.0;
+	double totalErrorSquared = 0.0;
 	double maxMarkerError = 0.0, maxCoordinateError = 0.0;
 	int worstMarker = -1, worstCoordinate = -1;
 
+	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
+
 	// We keep track of worst marker for debugging/tuning purposes
-	for (i = 0; i < _markers.getSize(); i++)
+	for (int i = 0; i < _markers.getSize(); i++)
 	{
+		if(!_markers[i]->validExperimentalPosition) continue;
 		double markerError = 0.0;
+		double globalPos[3];
 
-		// get the location of the marker in the experimental data
-		int dataColumnNumber = _markers[i]->experimentalColumn;
-		dataRow->getDataValue(dataColumnNumber, _markers[i]->experimentalPosition[0]);
-		dataRow->getDataValue(dataColumnNumber + 1, _markers[i]->experimentalPosition[1]);
-		dataRow->getDataValue(dataColumnNumber + 2, _markers[i]->experimentalPosition[2]);
+		// Get marker offset in local frame
+		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
 
-		/* If the marker is missing from this frame, its coordinates will
-		 * all be NAN. In that case, do not compute an error for the marker.
-		 */
-		if (NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[0], rdMath::NAN) &&
-			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[1], rdMath::NAN) &&
-			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[2], rdMath::NAN))
+		// transform local marker to world frame
+		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+
+		double err = 0.0;
+		for (int j = 0; j < 3; j++)
 		{
-			double globalPos[3];
-
-			// Get marker offset in local frame
-			_markers[i]->marker->getOffset(_markers[i]->computedPosition);
-
-			// transform local marker to world frame
-			de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
-
-			err = 0.0;
-			for (int j = 0; j < 3; j++)
-			{
-				err = _markers[i]->experimentalPosition[j] - globalPos[j];
-				markerError += (err * err);
-			}
-			if (markerError > maxMarkerError)
-			{
-				maxMarkerError = markerError;
-				worstMarker = i;
-			}
-			weight = _markers[i]->marker->getWeight();
-			if (debug)
-			{
-				cout << _markers[i]->marker->getName() << " w = " << weight << " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2] <<
-					" comp + " << globalPos[0] << " " << globalPos[1] << " " << globalPos[2] << endl;
-			}
-			totalErrorSquared += (markerError * weight);
+			err = _markers[i]->experimentalPosition[j] - globalPos[j];
+			markerError += (err * err);
 		}
+		if (markerError > maxMarkerError)
+		{
+			maxMarkerError = markerError;
+			worstMarker = i;
+		}
+		totalErrorSquared += (markerError * _markers[i]->weight);
+
+		if (debug)
+			cout << _markers[i]->marker->getName() << " w = " << _markers[i]->weight 
+				  << " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2]
+				  << " comp + " << globalPos[0] << " " << globalPos[1] << " " << globalPos[2] << endl;
 	}
 
-	for (i = 0; i < _numUnconstrainedQs; i++)
+	for (int i = 0; i < _unprescribedWeightedQs.getSize(); i++)
 	{
-		if (_unconstrainedQsIndices[i] >= 0)
+		double experimentalValue = _unprescribedWeightedQs[i]->experimentalValue;
+		double computedValue = _unprescribedWeightedQs[i]->coord->getValue();
+		double err = experimentalValue - computedValue;
+		double coordinateError = (err * err);
+		if (coordinateError > maxCoordinateError)
 		{
-			double coordinateError = 0.0;
-			double experimentalValue;
-			dataRow->getDataValue(_unconstrainedQsIndices[i], experimentalValue);
-			double computedValue = _unconstrainedQs.get(i)->getValue();
-			err = experimentalValue - computedValue;
-			coordinateError += (err * err);
-			if (coordinateError > maxCoordinateError)
-			{
-				maxCoordinateError = coordinateError;
-				worstCoordinate = i;
-			}
-			weight = _unconstrainedQs.get(i)->getWeight();
-			if (debug)
-			{
-				cout << _unconstrainedQs.get(i)->getName() << " w = " << weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
-			}
-			totalErrorSquared += (coordinateError * weight);
+			maxCoordinateError = coordinateError;
+			worstCoordinate = i;
 		}
+		totalErrorSquared += (coordinateError * _unprescribedWeightedQs[i]->weight);
+
+		if (debug)
+			cout << _unprescribedWeightedQs[i]->coord->getName() << " w = " << _unprescribedWeightedQs[i]->weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
 	}
 
 	if (!calcDerivs && debug)
@@ -204,7 +172,7 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 		if (worstMarker >= 0)
 			cout << "Largest Marker Err Squared = " << maxMarkerError << " at marker " << _markers[worstMarker]->marker->getName() << endl;
 		if (worstCoordinate >= 0)
-			cout << "Largest Coordinate Err Squared = " << maxCoordinateError << " at coordinate " << _unconstrainedQs[worstCoordinate]->getName() << endl;
+			cout << "Largest Coordinate Err Squared = " << maxCoordinateError << " at coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << endl;
 	}
 
 	*p = totalErrorSquared;
@@ -240,96 +208,84 @@ int SimmInverseKinematicsTarget::computeConstraintGradient(double *x,int i,doubl
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * setIndexToSolve specifies the row of the Storage instance _experimentalDataStorage
- * that the optimizer is trying to solve. It has the side effect of returning in qGuess 
- * the readings for the columns corresponding to optimization controls
+ * prepareToSolve specifies the row of the Storage instance _experimentalDataStorage
+ * that the optimizer is trying to solve.
+ *
+ * It also sets the values of the prescribed coordinates and returns the
+ * initial guess for the unprescribed coordinates.
  */
-void SimmInverseKinematicsTarget::setIndexToSolve(int aIndex, double* qGuess)
+void SimmInverseKinematicsTarget::prepareToSolve(int aIndex, double* qGuess)
 {
-	_indexToSolve = aIndex;
-
+	double time;
+	_experimentalDataStorage.getTime(aIndex,time);
 	StateVector *dataRow = _experimentalDataStorage.getStateVector(aIndex);
 
-	for (int i = 0; i < _numUnconstrainedQs; i++)
+	//--------------------------------------------------------------------
+	// PRESCRIBED COORDINATES
+	//--------------------------------------------------------------------
+	// Set prescribed coordinates to their file value or to the constant experimental value
+	for(int i=0; i<_prescribedQs.getSize(); i++)
 	{
-		int dataColumnNumber = _unconstrainedQsIndices[i];
-
-		/* If there are values for this coordinate in the experimental data,
-		 * copy the appropriate one to qGuess. If not, use the coordinate's
-		 * current value as its initial guess.
-		 */
-		if (dataColumnNumber >= 0)
-			dataRow->getDataValue(dataColumnNumber, qGuess[i]);
+		double value;
+		coordinateInfo *info = _prescribedQs[i];
+		// Either get value from file or use the constantExperimentalValue
+		if(_prescribedQs[i]->experimentalColumn >= 0)
+			dataRow->getDataValue(info->experimentalColumn, value);
 		else
-			qGuess[i] = _unconstrainedQs.get(i)->getValue();
+			value = info->constantExperimentalValue;
+
+		AbstractCoordinate *coord = info->coord;
+		bool lockedState = coord->getLocked(); // presumebly this should return true since it's a prescribed Q!
+		coord->setLocked(false);
+		coord->setValue(value);
+		coord->setLocked(lockedState);
 	}
-}
 
-//_____________________________________________________________________________
-/**
- * setPrescribedCoordinates sets the values of the prescribed coordinates
- * according to their values in the _experimentalDataStorage.
- */
-void SimmInverseKinematicsTarget::setPrescribedCoordinates(int aIndex)
-{
-	double value;
-	StateVector *dataRow = _experimentalDataStorage.getStateVector(aIndex);
-
-	for (int i = 0; i < _numPrescribedQs; i++)
+	//--------------------------------------------------------------------
+	// UNPRESCRIBED COORDINATES
+	//--------------------------------------------------------------------
+	// Get initial guess and set the target experimental value for unprescribed coordinates
+	for(int i=0; i<_unprescribedQs.getSize(); i++)
 	{
-		if (_prescribedQsIndices[i] >= 0)
-		{
-			dataRow->getDataValue(_prescribedQsIndices[i], value);
-			bool lockedState = _prescribedQs.get(i)->getLocked();
-			_prescribedQs.get(i)->setLocked(false);
-			_prescribedQs.get(i)->setValue(value);
-			_prescribedQs.get(i)->setLocked(lockedState);
+		coordinateInfo *info = _unprescribedQs[i];
+
+		// Set the initial guess
+		if(info->experimentalColumn >= 0) {
+			// Use the value from file as the initial guess
+			dataRow->getDataValue(info->experimentalColumn, qGuess[i]);
+		} else {
+			// Use its current value as its initial guess
+			qGuess[i] = info->coord->getValue();
 		}
+
+		// If this unprescribed coordinate has a nonzero weight, we need an experimental target value for it.
+		// Get it either from file or based on the constantExperimentalValue
+		if(info->weight)
+			info->experimentalValue = (info->experimentalColumn >= 0) ? qGuess[i] : info->constantExperimentalValue;
 	}
-}
 
-//_____________________________________________________________________________
-/**
- * getComputedMarkerLocations returns current commputed (model) marker locations for debugging and display purposes
- */
-void SimmInverseKinematicsTarget::getComputedMarkerLocations(Array<double> &aMarkerLocations) const
-{
-	aMarkerLocations.setSize(0);
+	//--------------------------------------------------------------------
+	// MARKERS
+	//--------------------------------------------------------------------
+	// Get the experimental marker positions for all markers that will be solved (i.e. have non-zero weight)
+	for(int i=0; i<_markers.getSize(); i++) {
+		// get the location of the marker in the experimental data
+		int dataColumnNumber = _markers[i]->experimentalColumn;
 
-	for (int i = 0; i < _markers.getSize(); i++)
-	{
-		aMarkerLocations.append(_markers[i]->computedPosition[0]);
-		aMarkerLocations.append(_markers[i]->computedPosition[1]);
-		aMarkerLocations.append(_markers[i]->computedPosition[2]);
+		dataRow->getDataValue(dataColumnNumber, _markers[i]->experimentalPosition[0]);
+		dataRow->getDataValue(dataColumnNumber + 1, _markers[i]->experimentalPosition[1]);
+		dataRow->getDataValue(dataColumnNumber + 2, _markers[i]->experimentalPosition[2]);
+
+		/* If the marker is missing from this frame, its coordinates will
+		 * all be NAN. In that case, do not compute an error for the marker.
+		 * THIS IS COMPLETELY WRONG!! WHAT IF A MARKER POSITION IS SUPPOSED TO BE (0,0,0)??
+		 * IT WOULD BE TRIGGERED AS INVALID!
+		 */
+		_markers[i]->validExperimentalPosition =
+		   (NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[0], rdMath::NAN) &&
+			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[1], rdMath::NAN) &&
+			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[2], rdMath::NAN));
 	}
-}
-
-//_____________________________________________________________________________
-/**
- * getExperimentalMarkerLocations returns current experimental marker locations for debugging and display purposes
- */
-void SimmInverseKinematicsTarget::getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const
-{
-	aMarkerLocations.setSize(0);
-
-	for (int i = 0; i < _markers.getSize(); i++)
-	{
-		aMarkerLocations.append(_markers[i]->experimentalPosition[0]);
-		aMarkerLocations.append(_markers[i]->experimentalPosition[1]);
-		aMarkerLocations.append(_markers[i]->experimentalPosition[2]);
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * getComputedMarkerLocations returns current marker locations for debugging and display purposes
- */
-void SimmInverseKinematicsTarget::getPrescribedQValues(Array<double>& aQValues) const
-{
-	aQValues.setSize(0);
-
-	for (int i = 0; i < _prescribedQs.getSize(); i++)
-		aQValues.append(_prescribedQs.get(i)->getValue());
 }
 
 //_____________________________________________________________________________
@@ -344,33 +300,31 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 
 	MarkerSet* markerSet = _model.getDynamicsEngine().getMarkerSet();
 
-	int i;
-	for (i = 0; i < aNameArray.getSize(); i++)
-	{
-		// Marker names should show up in the experimental data three times, with
-		// the suffixes _tx, _ty, and _tz. You only want to look for the marker
-		// once in the model, so deal with only the _tx name. Also, you have to
-		// strip off the _tx suffix before comparing it to the names of the
-		// markers in the model.
-		string mName = aNameArray[i];
-		if (mName.length() > 3 && (mName.rfind("_tx") == mName.length() - 3))
-		{
-			mName.erase(mName.end() - 3, mName.end());
+	for(int i=0; i<_ikTaskSet.getSize(); i++) {
+		IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask*>(_ikTaskSet.get(i));
 
-			AbstractMarker* modelMarker = markerSet->get(mName);
-			if (modelMarker)
-			{
-				markerToSolve* newMarker = new markerToSolve;
-				newMarker->marker = modelMarker;
-				newMarker->body = modelMarker->getBody();
-				newMarker->experimentalColumn = i - 1;		// make it i-1 to account for time column
-				_markers.append(newMarker);
-			}
-			else
-			{
-				cout << "___WARNING___: marker " << mName << " not found in model. It will not be used for IK." << endl;
-			}
-		}
+		if(!markerTask) continue; // not a marker task
+
+		string markerName=markerTask->getName();
+		AbstractMarker *modelMarker = markerSet->get(markerName);
+		if(!modelMarker)
+			throw Exception("SimmInverseKinematicsTarget.buildMarkerMap: ERROR- marker '"+markerName+
+								 "' named in IKMarkerTask not found in model",__FILE__,__LINE__);
+
+		if(markerTask->getWeight() == 0) continue; // we don't care about marker tasks with zero weight
+
+		// Marker will have a _tx (and _ty, _tz) suffix in the storage file
+		int j=aNameArray.findIndex(markerName+"_tx");
+		if(j<0) 
+			throw Exception("SimmInverseKinematicsTarget.buildMarkerMap: ERROR- experimental data for marker '"+markerName+
+								 "' not found in trc file",__FILE__,__LINE__);
+
+		markerToSolve *newMarker = new markerToSolve;
+		newMarker->marker = modelMarker;
+		newMarker->body = modelMarker->getBody();
+		newMarker->experimentalColumn = j - 1;		// make it j-1 to account for time column
+		newMarker->weight = markerTask->getWeight();
+		_markers.append(newMarker);
 	}
 }
 
@@ -384,84 +338,154 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
  */
 void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameArray)
 {
-	int i, j;
+	CoordinateSet* coordinateSet = _model.getDynamicsEngine().getCoordinateSet();
 
-	// The unconstrained Qs are the unlocked coordinates in the kinematics engine.
-	_model.getDynamicsEngine().getUnlockedCoordinates(_unconstrainedQs);
-	_numUnconstrainedQs = _unconstrainedQs.getSize();
+	// Initialize info structures for all coordinates
+	Array<coordinateInfo*> allCoordinates;
+	for(int i=0; i<coordinateSet->getSize(); i++) {
+		AbstractCoordinate *coord = coordinateSet->get(i);
 
-	_unconstrainedQsIndices = new int[_numUnconstrainedQs];
+		coordinateInfo *info = new coordinateInfo;
+		info->coord = coord;
+		info->prescribed = coord->getLocked();
 
-	for (i = 0; i < _numUnconstrainedQs; i++)
-	{
-		_unconstrainedQsIndices[i] = -1;
+		// Initialize as if it has no task
+		info->experimentalColumn = -1;
+		// initialize the constant experimental value (used if from_file is false) to the current value of the SimmCoordinate
+		// (comes from <value> in the SimmCoordinate, or <default_value> if that's not defined).  If the IKCoordinateTask
+		// specifies its own value, constantExperimentalValue will be overwritten with that value below.
+		info->constantExperimentalValue = coord->getValue();
+		info->weight = 0;
 
-		for (j = 0; j < aNameArray.getSize(); j++)
-		{
-			if (_unconstrainedQs.get(i)->getName() == aNameArray[j])
-			{
-				_unconstrainedQsIndices[i] = j-1;		// Account for time column
-				break;
-			}
-		}
+		allCoordinates.append(info);
 	}
 
-#if 0
-	cout << "Unconstrained Qs:" << endl;
-	for (i = 0; i < _unconstrainedQs.getSize(); i++)
-		cout << _unconstrainedQs.get(i)->getName() << " index = " << _unconstrainedQsIndices[i] << endl;
-#endif
+	// Update info structures based on user-specified IKCoordinateTasks
+	for(int i=0; i<_ikTaskSet.getSize(); i++) {
+		IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask*>(_ikTaskSet.get(i));
 
-	_numPrescribedQs = 0;
-	_prescribedQsIndices = new int[_model.getDynamicsEngine().getNumCoordinates()];
-	_prescribedQs.setMemoryOwner(false);
+		if(!coordTask) continue; // not a coordinate task
 
-	const CoordinateSet* coordinateSet = _model.getDynamicsEngine().getCoordinateSet();
+		string coordName = coordTask->getName();
+		int coordIndex = coordinateSet->getIndex(coordName);
+		if(coordIndex<0)
+			throw Exception("SimmInverseKinematicsTarget.buildCoordinateMap: ERROR- coordinate '"+coordName+
+								 "' named in IKCoordinateTask not found in model",__FILE__,__LINE__);
 
-	for (i = 0; i < coordinateSet->getSize(); i++)
-	{
-		AbstractCoordinate* coord = coordinateSet->get(i);
-		if (coord->getLocked())
-		{
-			for (j = 0; j < aNameArray.getSize(); j++)
-			{
-				if (coord->getName() == aNameArray[j])
-				{
-					_prescribedQsIndices[_numPrescribedQs++] = j-1;		// Account for time column
-					_prescribedQs.append(coord);
-					break;
-				}
-			}
+		coordinateInfo *info = allCoordinates[coordIndex];
+
+		// Potential issue here if marker has same name as coordinate...  We'll search in reverse
+		// because coordinates should appear after markers in the storage.
+		// NOTE: If we're not getting the experimental value from file, we'll use constantExperimentalValue
+		if(coordTask->getFromFile()) {
+			int j = aNameArray.rfindIndex(coordName);
+			if(j < 0)
+				throw Exception("SimmInverseKinematicsTarget.buildCoordinateMap: ERROR- coordinate task '"+coordName+
+									 "' specifies from_file but no column found for this coordinate in coordinates file",__FILE__,__LINE__);
+			info->experimentalColumn = j - 1; // account for time column
+		} else if(!coordTask->getValueUseDefault()) {
+			info->constantExperimentalValue = coordTask->getValue();
 		}
+
+		info->weight = coordTask->getWeight();
 	}
 
-#if 0
-	cout << "Prescribed Qs:" << endl;
-	for (i = 0; i < _prescribedQs.getSize(); i++)
-		cout << _prescribedQs.get(i)->getName() << " index = " << _prescribedQsIndices[i] << endl;
-#endif
+	// Now we filter the coordinate infos into the three sets (not a partitioning since the second set is a subset of the first)
+	_unprescribedQs.setSize(0);
+	_unprescribedWeightedQs.setSize(0);
+	_prescribedQs.setSize(0);
+
+	for(int i=0; i<allCoordinates.getSize(); i++) {
+		if(allCoordinates[i]->prescribed) _prescribedQs.append(allCoordinates[i]);
+		else {
+			_unprescribedQs.append(allCoordinates[i]);
+			if(allCoordinates[i]->weight) _unprescribedWeightedQs.append(allCoordinates[i]);
+		}
+	}
+}
+//_____________________________________________________________________________
+/**
+ */
+void SimmInverseKinematicsTarget::printTasks() const
+{
+	if(_markers.getSize())
+		cout << "Marker Tasks:" << endl;
+	for(int i=0; i<_markers.getSize(); i++) {
+		cout << "\t" << _markers[i]->marker->getName() << ": weight " << _markers[i]->weight;
+		cout << " from file (columns " << _markers[i]->experimentalColumn << "-" << _markers[i]->experimentalColumn+2 << ")" << endl;
+	}
+
+	if(_unprescribedWeightedQs.getSize())
+		cout << "Unprescribed Coordinate Tasks (with nonzero weight):" << endl;
+	for(int i=0; i<_unprescribedWeightedQs.getSize(); i++) {
+		cout << "\t" << _unprescribedWeightedQs[i]->coord->getName() << ": weight " << _unprescribedWeightedQs[i]->weight;
+		if(_unprescribedWeightedQs[i]->experimentalColumn >= 0)
+			cout << " from file (column " << _unprescribedWeightedQs[i]->experimentalColumn << ")" << endl;
+		else
+			cout << " constant target value of " << _unprescribedWeightedQs[i]->constantExperimentalValue << endl;
+	}
+
+	if(_prescribedQs.getSize())
+		cout << "Prescribed Coordinate Tasks:" << endl;
+	for(int i=0; i<_prescribedQs.getSize(); i++) {
+		std::cout << "\t" << _prescribedQs[i]->coord->getName() << ": ";
+		if(_prescribedQs[i]->experimentalColumn >= 0)
+			cout << "from file (column " << _prescribedQs[i]->experimentalColumn << ")" << endl;
+		else
+			cout << "constant target value of " << _prescribedQs[i]->constantExperimentalValue << endl;
+	}
 }
 
-void SimmInverseKinematicsTarget::getUnconstrainedCoordinateNames(Array<const string*>& aNameArray)
+//_____________________________________________________________________________
+/**
+ * getComputedMarkerLocations returns current commputed (model) marker locations for debugging and display purposes
+ */
+void SimmInverseKinematicsTarget::getComputedMarkerLocations(Array<double> &aMarkerLocations) const
 {
-	aNameArray.setSize(0);
-
-	for (int i = 0; i < _numUnconstrainedQs; i++)
-		aNameArray.append(&_unconstrainedQs.get(i)->getName());
+	aMarkerLocations.setSize(0);
+	for (int i = 0; i < _markers.getSize(); i++) 
+		aMarkerLocations.append(3, _markers[i]->computedPosition);
 }
 
-void SimmInverseKinematicsTarget::getPrescribedCoordinateNames(Array<const string*>& aNameArray)
+//_____________________________________________________________________________
+/**
+ * getExperimentalMarkerLocations returns current experimental marker locations for debugging and display purposes
+ */
+void SimmInverseKinematicsTarget::getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const
 {
-	aNameArray.setSize(0);
-
-	for (int i = 0; i < _numPrescribedQs; i++)
-		aNameArray.append(&_prescribedQs.get(i)->getName());
+	aMarkerLocations.setSize(0);
+	for (int i = 0; i < _markers.getSize(); i++) 
+		aMarkerLocations.append(3, _markers[i]->experimentalPosition);
 }
 
-void SimmInverseKinematicsTarget::getOutputMarkerNames(Array<const string*>& aNameArray)
+//_____________________________________________________________________________
+/**
+ * getComputedMarkerLocations returns current marker locations for debugging and display purposes
+ */
+void SimmInverseKinematicsTarget::getPrescribedCoordinateValues(Array<double>& aQValues) const
 {
-	aNameArray.setSize(0);
+	aQValues.setSize(_prescribedQs.getSize());
+	for (int i = 0; i < _prescribedQs.getSize(); i++)
+		aQValues[i] = _prescribedQs.get(i)->coord->getValue();
+}
 
+void SimmInverseKinematicsTarget::getUnprescribedCoordinateNames(Array<string>& aNameArray)
+{
+	aNameArray.setSize(_unprescribedQs.getSize());
+	for (int i = 0; i < _unprescribedQs.getSize(); i++)
+		aNameArray[i] = _unprescribedQs.get(i)->coord->getName();
+}
+
+void SimmInverseKinematicsTarget::getPrescribedCoordinateNames(Array<string>& aNameArray)
+{
+	aNameArray.setSize(_prescribedQs.getSize());
+	for (int i = 0; i < _prescribedQs.getSize(); i++)
+		aNameArray[i] = _prescribedQs.get(i)->coord->getName();
+}
+
+void SimmInverseKinematicsTarget::getOutputMarkerNames(Array<string>& aNameArray)
+{
+	aNameArray.setSize(_markers.getSize());
 	for (int i = 0; i < _markers.getSize(); i++)
-		aNameArray.append(&_markers[i]->marker->getName());
+		aNameArray[i] = _markers[i]->marker->getName();
 }

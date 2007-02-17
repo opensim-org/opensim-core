@@ -68,7 +68,6 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITIES
 	//--------------------------------------------------------------------------
-	bool usesWeights() const;
 	void getMarkerNames(Array<std::string>& aMarkerNamesArray);
 	void scale(const ScaleSet& aScaleSet);
 	/** Add a prefix to marker names for all markers in the set**/

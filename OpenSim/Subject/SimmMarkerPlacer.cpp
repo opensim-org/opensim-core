@@ -29,11 +29,9 @@
 #include "SimmIKTrial.h"
 #include "SimmFileWriter.h"
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 #include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
 //=============================================================================
 // STATICS
@@ -52,11 +50,8 @@ SimmMarkerPlacer::SimmMarkerPlacer() :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
+	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -87,11 +82,8 @@ SimmMarkerPlacer::SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacer) :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
+	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -131,9 +123,7 @@ void SimmMarkerPlacer::copyData(const SimmMarkerPlacer &aMarkerPlacer)
 	_markerFileName = aMarkerPlacer._markerFileName;
 	_timeRange = aMarkerPlacer._timeRange;
 	_coordinateFileName = aMarkerPlacer._coordinateFileName;
-	_coordinateSet = aMarkerPlacer._coordinateSet;
-	_coordinatesFromFile = aMarkerPlacer._coordinatesFromFile;
-	_markerSet = aMarkerPlacer._markerSet;
+	_ikTaskSet = aMarkerPlacer._ikTaskSet;
 	_outputJointFileName = aMarkerPlacer._outputJointFileName;
 	_outputMuscleFileName = aMarkerPlacer._outputMuscleFileName;
 	_outputModelFileName = aMarkerPlacer._outputModelFileName;
@@ -159,14 +149,14 @@ void SimmMarkerPlacer::setNull()
  */
 void SimmMarkerPlacer::setupProperties()
 {
+	_ikTaskSetProp.setComment("Task set used to specify weights used in the IK computation of the static pose.");
+	_ikTaskSetProp.setName("IKTaskSet");
+	_propertySet.append(&_ikTaskSetProp);
+
 	_markerFileNameProp.setComment("TRC file (.trc) containing the time history of experimental marker positions "
 		"(usually a static trial).");
 	_markerFileNameProp.setName("marker_file");
 	_propertySet.append(&_markerFileNameProp);
-
-	_markerSetProp.setComment("Marker set used to augment the markers already contained in the model.");
-	_markerSetProp.setName("MarkerSet");
-	_propertySet.append(&_markerSetProp);
 
 	_coordinateFileNameProp.setComment("Name of file containing the joint angles "
 		"used to set the initial configuration of the model for the purpose of placing the markers. "
@@ -182,17 +172,6 @@ void SimmMarkerPlacer::setupProperties()
 		"Least-squared error is used to solve the IK problem. ");
 	_coordinateFileNameProp.setName("coordinate_file");
 	_propertySet.append(&_coordinateFileNameProp);
-
-	_coordinateSetProp.setComment("Specifies weights for matching coordinates specified in a file "
-		"(the coordinate_file)");
-	_coordinateSetProp.setName("CoordinateSet");
-	_propertySet.append(&_coordinateSetProp);
-
-	_coordinatesFromFileProp.setComment("List specifying which coordinate values should be taken from the coordinate_file.");
-	_coordinatesFromFileProp.setName("coordinates_from_file");
-	Array<string> def("");
-	_coordinatesFromFileProp.setValue(def);
-	_propertySet.append(&_coordinatesFromFileProp);
 
 	_timeRangeProp.setComment("Time range over which the marker positions are averaged.");
 	const double defaultTimeRange[] = {-1.0, -1.0};
@@ -266,9 +245,6 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 {
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
-	/* Update the model with the markers specified in the params section. */
-	aModel->getDynamicsEngine().updateMarkerSet(_markerSet);
-
 	/* Load the static pose marker file, and average all the
 	 * frames in the user-specified time range.
 	 */
@@ -289,7 +265,7 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
 	ikTrial.setIncludeMarkers(true);
-	if(!ikTrial.processTrialCommon(*aModel,_coordinateSet,_coordinatesFromFile,staticPose,outputStorage)) 
+	if(!ikTrial.processTrialCommon(*aModel,_ikTaskSet,staticPose,outputStorage)) 
 		return false;
 
 	/* Now move the non-fixed markers on the model so that they are coincident
@@ -385,16 +361,10 @@ void SimmMarkerPlacer::moveModelMarkersToPose(AbstractModel& aModel, SimmMarkerD
 
 void SimmMarkerPlacer::peteTest() const
 {
-	int i;
-
 	cout << "   MarkerPlacementParams: " << getName() << endl;
 	cout << "      markerFileName: " << _markerFileName << endl;
 	cout << "      timeRange: " << _timeRange << endl;
 	cout << "      coordinateFileName: " << _coordinateFileName << endl;
-	for (i = 0; i < _coordinateSet.getSize(); i++)
-		_coordinateSet.get(i)->peteTest();
-	for (i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->peteTest();
 	cout << "      outputJointFile: " << _outputJointFileName << endl;
 	cout << "      outputMuscleFile: " << _outputMuscleFileName << endl;
 	cout << "      outputModelFile: " << _outputModelFileName << endl;

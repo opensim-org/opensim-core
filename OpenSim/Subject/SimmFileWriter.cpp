@@ -338,7 +338,9 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
 			// Write out log(_weight) + 1 as marker weight instead of _weight,
 			// so that we won't have markers with radius 1000 if _weight=1000.
 			// If _weight <= 1, outputWeight will be set to 1.
-			double outputWeight = (marker->getWeight() > 1.0) ? log(marker->getWeight()) + 1.0 : 1.0;
+			//double outputWeight = (marker->getWeight() > 1.0) ? log(marker->getWeight()) + 1.0 : 1.0;
+			// TODO: Got rid of weight property from markers for now...
+			double outputWeight = 1;
 
 			aStream << "marker " << marker->getName() << "\t" << marker->getOffset()[0] << " " <<
 				marker->getOffset()[1] << " " << marker->getOffset()[2] << " " << outputWeight;

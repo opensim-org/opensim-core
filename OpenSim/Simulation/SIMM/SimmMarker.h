@@ -64,9 +64,6 @@ protected:
 	PropertyDblArray _offsetProp;
 	Array<double> &_offset;
 
-	PropertyDbl _weightProp;
-	double &_weight;
-
 	PropertyBool _fixedProp;
 	bool &_fixed;
 
@@ -112,9 +109,6 @@ public:
 	virtual bool getFixed() const { return _fixed; }
 	virtual bool setFixed(bool aFixed);
 	virtual bool getFixedUseDefault() const { return _fixedProp.getUseDefault(); }
-	virtual double getWeight() const { return _weight; }
-	virtual bool setWeight(double aWeight);
-	virtual bool getWeightUseDefault() const { return _weightProp.getUseDefault(); }
 	virtual const std::string* getBodyName() const;
 	virtual bool setBodyName(const std::string& aName);
 	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }

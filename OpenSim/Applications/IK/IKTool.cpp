@@ -10,6 +10,7 @@
 #include <OpenSim/Tools/IO.h>	
 #include <OpenSim/Simulation/SIMM/CoordinateSet.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
 #include <OpenSim/Subject/SimmIKTrialSet.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include "SimmIKSolverImpl.h"
@@ -35,11 +36,8 @@ IKTool::~IKTool()
  */
 IKTool::IKTool() :
 	SimulationTool(),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
+	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
@@ -57,11 +55,8 @@ IKTool::IKTool() :
  */
 IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 	SimulationTool(aFileName),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
+	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
@@ -137,11 +132,8 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 IKTool::
 IKTool(const IKTool &aTool) :
 	SimulationTool(aTool),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_coordinatesFromFile(_coordinatesFromFileProp.getValueStrArray()),
+	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
+	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
 	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
 {
@@ -176,23 +168,9 @@ setNull()
  */
 void IKTool::setupProperties()
 {
-	string comment;
-
-	_markerSetProp.setComment("Marker set to be used for solving the IK trials.");
-	_markerSetProp.setName("MarkerSet");
-	_propertySet.append(&_markerSetProp);
-
-	_coordinateSetProp.setComment("Specifies weights for matching coordinates specified "
-		"in a file (the coordinate_file)");
-	_coordinateSetProp.setName("CoordinateSet");
-	_propertySet.append(&_coordinateSetProp);
-
-	_coordinatesFromFileProp.setComment("List specifying which coordinate values "
-		"should be taken from the coordinate_file.");
-	_coordinatesFromFileProp.setName("coordinates_from_file");
-	Array<string> def("");
-	_coordinatesFromFileProp.setValue(def);
-	_propertySet.append(&_coordinatesFromFileProp);
+	_ikTaskSetProp.setComment("Task set used to specify IK weights.");
+	_ikTaskSetProp.setName("IKTaskSet");
+	_propertySet.append(&_ikTaskSetProp);
 
 	_IKTrialSetProp.setComment("Parameters for solving the IK problem for each trial. "
 		"Each trial should get a seperate SimmIKTril block.");
@@ -224,9 +202,7 @@ operator=(const IKTool &aTool)
 	SimulationTool::operator=(aTool);
 
 	// MEMBER VARIABLES
-	_markerSet = aTool._markerSet;
-	_coordinateSet = aTool._coordinateSet;
-	_coordinatesFromFile = aTool._coordinatesFromFile;
+	_ikTaskSet = aTool._ikTaskSet;
 	_IKTrialSet = aTool._IKTrialSet;
 
 	return(*this);
@@ -247,20 +223,17 @@ operator=(const IKTool &aTool)
 void IKTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
-	
+
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
 	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	/* Update the markers. */
-	_model->getDynamicsEngine().updateMarkerSet(_markerSet);
-
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
-		if (_IKTrialSet.get(i)->processTrial(*_model, _coordinateSet, _coordinatesFromFile))
+		if (_IKTrialSet.get(i)->processTrial(*_model, _ikTaskSet))
 			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
 		else
 			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;

@@ -35,6 +35,7 @@
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 #include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
 #include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
 #include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
 #include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
 
@@ -210,10 +211,8 @@ SimmIKTrial& SimmIKTrial::operator=(const SimmIKTrial &aIKTrialParams)
 	return(*this);
 }
 
-bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoordinateSet, Array<std::string>& aCoordinatesFromFile, SimmMarkerData& aMarkerData, Storage& aOutputStorage)
+bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, SimmMarkerData& aMarkerData, Storage& aOutputStorage)
 {
-	SimmMotionData* coordinateValues = NULL;
-
 	// During the IK trial, *all* coordinates that have values specified
 	// in the input coordinate file will use those values for the
 	// trial (these values can be used either as starting values
@@ -224,77 +223,15 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoor
 	// if the user specified valueFromFile=true in the subject file.
 	try
 	{
-		// Update the model with the coordinates specified
-		// by the user in the params section.
-		aModel.getDynamicsEngine().updateCoordinateSet(aCoordinateSet);
-
-		// Now set the values of the coordinates listed in the
-		// coordinates_from_file section of the SimmIKSolver parameters.
-		if (_coordinateFileName != "" && aCoordinatesFromFile.getSize() > 0)
-		{
-			coordinateValues = new SimmMotionData(_coordinateFileName);
-			coordinateValues->convertDegreesToRadians(aModel);
-
-			if (coordinateValues->getNumColumns() > 0)
-			{
-				// Loop through every coordinate in the model, not just the ones in
-				// the coordinates_from_file section. You need to do this because coordinates
-				// not in that list must have their data removed from the input coordinate
-				// file.
-				const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
-
-				// Keep track of which coordinates_from_file entries were found in the coordinate set.
-				// We'll print an error if any coordinates listed are not in the coordinate set.
-				Array<bool> coordinateExists(false, aCoordinatesFromFile.getSize());
-
-				for (int i = 0; i < coordinateSet->getSize(); i++)
-				{
-					AbstractCoordinate* modelCoord = coordinateSet->get(i);
-					int index = aCoordinatesFromFile.findIndex(modelCoord->getName());
-					if (index >= 0) 
-					{
-						coordinateExists[index] = true;
-						double value = coordinateValues->getValue(modelCoord->getName(), 0);
-						if (value == rdMath::NAN)
-						{
-							// If the value is not found in the file, it is an error.
-							string errorMessage = "Coordinate " + modelCoord->getName() +
-								" was listed in coordinates_from_file section of IKTool, but no value found in " + _coordinateFileName;
-							throw Exception(errorMessage);
-						}
-						else
-						{
-							// If the value is found in the file, set the coordinate in the
-							// model to this value, regardless of its 'locked' state.
-							bool lockedState = modelCoord->getLocked();
-							modelCoord->setLocked(false);
-							modelCoord->setValue(value);
-							modelCoord->setLocked(lockedState);
-							cout << "Values for coordinate " << modelCoord->getName() << " will be read from " <<	_coordinateFileName << endl;
-						}
-					}
-					else
-					{
-						// The coordinate is not in the coordinates_from_file list,
-						// so delete its data from the input coordinate file, if it exists.
-						coordinateValues->deleteColumn(modelCoord->getName());
-					}
-				}
-
-				for(int i=0; i<aCoordinatesFromFile.getSize(); i++) {
-					if(!coordinateExists[i])
-						throw Exception("Coordinate " + aCoordinatesFromFile[i] + 
-							" was listed in coordinates_from_file section of IKTool, but does not exist in the model");
-				}
-			}
-		}
-
 		/* Convert marker data to an Storage object. */
 		Storage inputStorage;
 		aMarkerData.makeRdStorage(inputStorage);
 
-		if (coordinateValues)
+		if (_coordinateFileName != "")
 		{
+			SimmMotionData coordinateValues(_coordinateFileName);
+			coordinateValues.convertDegreesToRadians(aModel);
+
 			// Adjust the user-defined start and end times to make sure they are in the
 			// range of the marker data. This must be done so that you only look in the
 			// coordinate data for rows that will actually be solved.
@@ -306,13 +243,14 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoor
 			// Add the coordinate data to the marker data. There must be a row of
 			// corresponding coordinate data for every row of marker data that will
 			// be solved, or it is a fatal error.
-			coordinateValues->addToRdStorage(inputStorage, startTime, endTime);
+			coordinateValues.addToRdStorage(inputStorage, startTime, endTime);
 		}
 
 		inputStorage.print("markers_coords_ik.sto");
 
 		// Create target
-		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(aModel, inputStorage);
+		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(aModel, aIKTaskSet, inputStorage);
+		target->printTasks();
 		// Create solver
 		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
 		// Solve
@@ -324,15 +262,13 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, CoordinateSet& aCoor
 	catch (Exception &x)
 	{
 		x.print(cout);
-		delete coordinateValues;
 		return false;
 	}
 
-	delete coordinateValues;
 	return true;
 }
 
-bool SimmIKTrial::processTrial(AbstractModel& aModel, CoordinateSet& aCoordinateSet, Array<std::string>& aCoordinatesFromFile)
+bool SimmIKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
 {
 	cout << endl << "Processing IK trial: " << getName() << endl;
 
@@ -341,7 +277,7 @@ bool SimmIKTrial::processTrial(AbstractModel& aModel, CoordinateSet& aCoordinate
 	markerData.convertToUnits(aModel.getLengthUnits());
 
 	Storage outputStorage;
-	if(!processTrialCommon(aModel,aCoordinateSet,aCoordinatesFromFile,markerData,outputStorage))
+	if(!processTrialCommon(aModel,aIKTaskSet,markerData,outputStorage))
 		return false;
 
 	if (!_outputMotionFileNameProp.getUseDefault())

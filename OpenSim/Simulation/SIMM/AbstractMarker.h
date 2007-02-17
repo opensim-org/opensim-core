@@ -77,9 +77,6 @@ public:
 	virtual bool getFixed() const = 0;
 	virtual bool setFixed(bool aFixed) = 0;
 	virtual bool getFixedUseDefault() const = 0;
-	virtual double getWeight() const = 0;
-	virtual bool setWeight(double aWeight) = 0;
-	virtual bool getWeightUseDefault() const = 0;
 	virtual const std::string* getBodyName() const = 0;
 	virtual bool setBodyName(const std::string& aName) = 0;
 	virtual bool getBodyNameUseDefault() const = 0;

@@ -46,7 +46,6 @@ Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
  */
 SimmMarker::SimmMarker() :
    _offset(_offsetProp.getValueDblArray()),
-   _weight(_weightProp.getValueDbl()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -74,7 +73,6 @@ SimmMarker::~SimmMarker()
 SimmMarker::SimmMarker(const SimmMarker &aMarker) :
    AbstractMarker(aMarker),
    _offset(_offsetProp.getValueDblArray()),
-   _weight(_weightProp.getValueDbl()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -111,7 +109,6 @@ Object* SimmMarker::copy() const
 void SimmMarker::copyData(const SimmMarker &aMarker)
 {
 	_offset = aMarker._offset;
-	_weight = aMarker._weight;
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
 	_displayer = aMarker._displayer;
@@ -150,12 +147,6 @@ void SimmMarker::setupProperties()
 	_fixedProp.setName("fixed");
 	_fixedProp.setValue(false);
 	_propertySet.append(&_fixedProp);
-
-	_weightProp.setComment("Weight given to a marker relative to the other markers "
-		"for solving inverse kinematics problems."); 
-	_weightProp.setName("weight");
-	_weightProp.setValue(0.0);
-	_propertySet.append(&_weightProp);
 
 	_displayerProp.setComment("Used for displaying a marker in the visuals.");
 	_displayerProp.setName("Displayer");
@@ -268,12 +259,6 @@ void SimmMarker::updateFromMarker(const AbstractMarker &aMarker)
 		_fixedProp.setUseDefault(false);
 	}
 
-	if (!aMarker.getWeightUseDefault())
-	{
-		_weight = aMarker.getWeight();
-		_weightProp.setUseDefault(false);
-	}
-
 	if (!aMarker.getBodyNameUseDefault())
 	{	
 		_bodyName = *aMarker.getBodyName();
@@ -343,24 +328,6 @@ bool SimmMarker::setFixed(bool aFixed)
 {
 	_fixed = aFixed;
 	return true;
-}
-
-//_____________________________________________________________________________
-/**
- * Set the marker's weight.
- *
- * @param aWeight weight to set to.
- * @return Whether or not the weight was set.
- */
-bool SimmMarker::setWeight(double aWeight)
-{
-	if (aWeight >= 0.0)
-	{
-		_weight = aWeight;
-		return true;
-	}
-
-	return false;
 }
 
 //_____________________________________________________________________________
@@ -448,6 +415,5 @@ void SimmMarker::peteTest() const
 {
 	cout << "   Marker: " << getName() << endl;
 	cout << "      location: " << _offset << endl;
-	cout << "      weight: " << _weight << endl;
 	cout << "      fixed: " << ((_fixed) ? ("true") : ("false")) << endl;
 }

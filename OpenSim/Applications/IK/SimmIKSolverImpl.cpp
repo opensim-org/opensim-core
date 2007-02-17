@@ -48,30 +48,24 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 	optimizer->setConvergenceCriterion(1.0E-4);	// Error in markers of .01
 	optimizer->setMaxIterations(1000);
 
-	/* Get names for unconstrained Qs (ones that will be solved). */
-	Array<const string*> unconstrainedCoordinateNames(NULL);
-   _ikTarget.getUnconstrainedCoordinateNames(unconstrainedCoordinateNames);
+	/* Get names for unprescribed Qs (ones that will be solved). */
+	Array<string> unprescribedCoordinateNames;
+   _ikTarget.getUnprescribedCoordinateNames(unprescribedCoordinateNames);
 
 	/* Get names for prescribed Qs (specified in input file). */
-	Array<const string*> prescribedCoordinateNames(NULL);
+	Array<string> prescribedCoordinateNames;
    _ikTarget.getPrescribedCoordinateNames(prescribedCoordinateNames);
 
 	/* Get names for markers used for solving. */
-	Array<const string*> markerNames(NULL);
+	Array<string> markerNames;
 	_ikTarget.getOutputMarkerNames(markerNames);
 
 	string resultsHeader = "time\t";
-	for (i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
-	{
-		resultsHeader += *(unconstrainedCoordinateNames[i]);
-		resultsHeader += "\t";
-	}
+	for (i = 0; i < unprescribedCoordinateNames.getSize(); i++)
+		resultsHeader += unprescribedCoordinateNames[i] + "\t";
 
 	for (i = 0; i < prescribedCoordinateNames.getSize(); i++)
-	{
-		resultsHeader += *(prescribedCoordinateNames[i]);
-		resultsHeader += "\t";
-	}
+		resultsHeader += prescribedCoordinateNames[i] + "\t";
 
 	string markerComponentNames[] = {"_px", "_py", "_pz"};
 	// Include markers for visual verification in SIMM
@@ -81,9 +75,7 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 		{
 			for (int j = 0; j < 3; j++)
 			{
-				resultsHeader += *(markerNames[i]);
-				resultsHeader += markerComponentNames[j];
-				resultsHeader += "\t";
+				resultsHeader += markerNames[i] + markerComponentNames[j] + "\t";
 			}
 		}
 	}
@@ -95,24 +87,22 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 	collectUserData(inputColumnNames, resultsHeader, userHeaders, userDataColumnIndices);
 	resultsHeader += userHeaders;
 
-
-
 	outputData.setColumnLabels(resultsHeader.c_str());
 
-	// Set the lower and upper bounds on the unconstrained Q array
+	// Set the lower and upper bounds on the unprescribed Q array
 	// TODO: shouldn't have to search for coordinates by name
 	AbstractDynamicsEngine &eng = _ikTarget.getModel().getDynamicsEngine();
-	for (int i = 0; i < unconstrainedCoordinateNames.getSize(); i++)
+	for (int i = 0; i < unprescribedCoordinateNames.getSize(); i++)
 	{
-		AbstractCoordinate* coord = eng.getCoordinateSet()->get(*(unconstrainedCoordinateNames[i]));
+		AbstractCoordinate* coord = eng.getCoordinateSet()->get(unprescribedCoordinateNames[i]);
 		optimizer->setLowerBound(i, coord->getRangeMin());
 		optimizer->setUpperBound(i, coord->getRangeMax());
 	}
 
 	// Main loop to set initial conditions and solve snapshots
 	// At every step we use experimental data as a starting guess 
-	Array<double> unconstrainedQGuess(0.0, unconstrainedCoordinateNames.getSize());	// Initial guess and work array
-	Array<double> unconstrainedQSol(0.0, unconstrainedCoordinateNames.getSize());	// Solution array
+	Array<double> unprescribedQGuess(0.0, unprescribedCoordinateNames.getSize());	// Initial guess and work array
+	Array<double> unprescribedQSol(0.0, unprescribedCoordinateNames.getSize());	// Solution array
 	Array<double> experimentalMarkerLocations(0.0, markerNames.getSize() * 3);
 
 	int startFrame = 0, endFrame = 1;
@@ -133,31 +123,19 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 		// Get time associated with index
 		double timeT = inputData.getStateVector(index)->getTime();
 
-		/* This sets the values of the prescribed coordinates, which
-		 * are coordinates that are:
-		 *   (a) specified in the input data, and
-		 *   (b) locked at that specified value.
-		 * These coordinates are not variables in the IK solving.
-		 * If a coordinate is specified in the file but not
-		 * locked, it is an unconstrained coordinate and is a
-		 * variable in the IK solving.
-		 */
-		_ikTarget.setPrescribedCoordinates(index);
-
-		// This sets the guess of unconstrained generalized coordinates 
-		// and marker data from recordedDataStorage
-		_ikTarget.setIndexToSolve(index, &unconstrainedQGuess[0]);
+		// Set value for prescribed coordinates and get initial guess for unprescribed coordinates
+		_ikTarget.prepareToSolve(index, &unprescribedQGuess[0]);
 
 		// Invoke optimization mechanism to solve for Qs
-		int optimizerReturn = optimizer->computeOptimalControls(&unconstrainedQGuess[0], &unconstrainedQSol[0]);
+		int optimizerReturn = optimizer->computeOptimalControls(&unprescribedQGuess[0], &unprescribedQSol[0]);
 
-		/* Output variables include unconstrained (solved) Qs... */
-		Array<double> qsAndMarkersArray = unconstrainedQSol;
+		/* Output variables include unprescribed (solved) Qs... */
+		Array<double> qsAndMarkersArray = unprescribedQSol;
 
 		/* ... then prescribed Qs... */
-		Array<double> prescribedQValues(0.0);
-		_ikTarget.getPrescribedQValues(prescribedQValues);
-		qsAndMarkersArray.append(prescribedQValues);
+		Array<double> prescribedCoordinateValues(0.0);
+		_ikTarget.getPrescribedCoordinateValues(prescribedCoordinateValues);
+		qsAndMarkersArray.append(prescribedCoordinateValues);
 
 		/* ... then, optionally, computed marker locations. */
 		if (aIKOptions.getIncludeMarkers())

@@ -1,8 +1,8 @@
 #ifndef __SimmInverseKinematicsTarget_h__
 #define __SimmInverseKinematicsTarget_h__
 // SimmInverseKinematicsTarget.h
-// Authors: Ayman Habib, Peter Loan
-/* Copyright (c) 2005, Stanford University, Ayman Habib, and Peter Loan.
+// Authors: Ayman Habib, Peter Loan, Eran Guendelman
+/* Copyright (c) 2005, Stanford University, Ayman Habib, Peter Loan, and Eran Guendelman.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -34,6 +34,7 @@
 namespace OpenSim {
 
 class Storage;
+class IKTaskSet;
 
 #ifdef SWIG
 	#ifdef workflow_API
@@ -60,10 +61,11 @@ class workflow_API SimmInverseKinematicsTarget : public rdOptimizationTarget
 private:
 	AbstractModel& _model;
 
+	// Task set contains weights and other properties affecting performance criterion
+	IKTaskSet& _ikTaskSet;
+
 	// Amount of perturbation used for derivative computation this should be an array
 	static const double _perturbation;
-
-	int _indexToSolve;
 
 	// internal datastructure used to map data columns to states
 	Storage&	_experimentalDataStorage;
@@ -73,20 +75,35 @@ private:
 	{
 		const AbstractMarker* marker;
 		const AbstractBody* body;
-		int experimentalColumn;
+		int experimentalColumn; // always >= 0
+		double weight; // always nonzero
+		// set each frame before optimization
+		bool validExperimentalPosition;
 		double experimentalPosition[3];
+		// set each frame during optimization
 		double computedPosition[3];
 	} markerToSolve;
-	Array<markerToSolve*> _markers;
 
 	// Coordinate Map information
-	int _numUnconstrainedQs; // number of unconstrained (unlocked) coordinates in model
-	CoordinateSet _unconstrainedQs; // array of unconstrained coordinates in model
-	int* _unconstrainedQsIndices; // map from unconstrained coordinates into experimental data
+	typedef struct
+	{
+		AbstractCoordinate* coord;
+		bool prescribed; // if prescribed, we don't solve for it
+		int experimentalColumn; // if task was from _file then this will be >=0
+		double constantExperimentalValue; // if task was not from_file then this fixed value will be set
+		double weight; // only matters for unprescribed coordinates
+		// set each frame before optimization (for _unprescribedWeightedQs only)
+		double experimentalValue;
+	} coordinateInfo;
 
-	int _numPrescribedQs; // number of coordinates that are locked AND that are specified in _experimentalDataStorage
-	CoordinateSet _prescribedQs; // array of locked+specified coordinates in model
-	int* _prescribedQsIndices; // map from locked+specified coordinates into experimental data
+	// Only markers with nonzero weights are stored in this array
+	Array<markerToSolve*> _markers;
+	// The coordinates that are unprescribed (i.e. the ones computed by IK)
+	Array<coordinateInfo*> _unprescribedQs;
+	// Unprescribed coordinates with nonzero weight (the ones that appear in the performance criterion)
+	Array<coordinateInfo*> _unprescribedWeightedQs;
+	// The coordinates that are prescribed
+	Array<coordinateInfo*> _prescribedQs;
 
 //==============================================================================
 // METHODS
@@ -99,21 +116,24 @@ public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
 	//---------------------------------------------------------------------------
-	SimmInverseKinematicsTarget(AbstractModel &aModel, Storage& aExperimentalDataStorage);
+	SimmInverseKinematicsTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
 
 	virtual ~SimmInverseKinematicsTarget(void);
 
 	//---------------------------------------------------------------------------
+	// UTILITIES
+	//---------------------------------------------------------------------------
+	void prepareToSolve(int aIndex, double* qGuess);
+	void printTasks() const;
+	//---------------------------------------------------------------------------
 	// SET AND GET
 	//---------------------------------------------------------------------------
-	void setIndexToSolve(int aIndex, double* qGuess);
-	void setPrescribedCoordinates(int aIndex);
 	void getComputedMarkerLocations(Array<double> &aMarkerLocations) const;
 	void getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const;
-	void getPrescribedQValues(Array<double>& aQValues) const;
-	void getUnconstrainedCoordinateNames(Array<const std::string*>& aNameArray);
-	void getPrescribedCoordinateNames(Array<const std::string*>& aNameArray);
-	void getOutputMarkerNames(Array<const std::string*>& aNameArray);
+	void getPrescribedCoordinateValues(Array<double>& aQValues) const;
+	void getUnprescribedCoordinateNames(Array<std::string>& aNameArray);
+	void getPrescribedCoordinateNames(Array<std::string>& aNameArray);
+	void getOutputMarkerNames(Array<std::string>& aNameArray);
 	AbstractModel& getModel() { return _model; };
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS

@@ -55,7 +55,6 @@ SimmCoordinate::SimmCoordinate() :
    _value(_valueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
    _stiffness(_stiffnessProp.getValueDbl()),
-   _weight(_weightProp.getValueDbl()),
 	_range(_rangeProp.getValueDblArray()),
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
@@ -92,7 +91,6 @@ SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
    _value(_valueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
    _stiffness(_stiffnessProp.getValueDbl()),
-   _weight(_weightProp.getValueDbl()),
 	_range(_rangeProp.getValueDblArray()),
 	_keys(_keysProp.getValueStrArray()),
 	_clamped(_clampedProp.getValueBool()),
@@ -138,7 +136,6 @@ void SimmCoordinate::copyData(const SimmCoordinate &aCoordinate)
 	_value = aCoordinate.getValue();
 	_tolerance = aCoordinate.getTolerance();
 	_stiffness = aCoordinate._stiffness;
-	_weight = aCoordinate._weight;
 	_range = aCoordinate._range;
 	_keys = aCoordinate._keys;
 	_clamped = aCoordinate._clamped;
@@ -186,13 +183,6 @@ void SimmCoordinate::setupProperties(void)
 	_stiffnessProp.setName("stiffness");
 	_stiffnessProp.setValue(0.0);
 	_propertySet.append(&_stiffnessProp);
-
-	_weightProp.setComment("Weight of a coordinate. "
-		"For solving inverse kinematics (IK) problems, making this weight higher results in closer "
-		"matching to any target coordinate values, which are usually specified in a file.");
-	_weightProp.setName("weight");
-	_weightProp.setValue(1.0);
-	_propertySet.append(&_weightProp);
 
 	_rangeProp.setComment("Allowd range for a coordinate.");
 	const double defaultRange[] = {-999999.9, 999999.9};
@@ -392,12 +382,6 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
 		_toleranceProp.setUseDefault(false);
 	}
 
-	if (!aCoordinate.getWeightUseDefault())
-	{
-		setWeight(aCoordinate.getWeight());
-		_weightProp.setUseDefault(false);
-	}
-
 	if (!aCoordinate.getStiffnessUseDefault())
 	{
 		setStiffness(aCoordinate.getStiffness());
@@ -583,24 +567,6 @@ bool SimmCoordinate::setTolerance(double aTolerance)
 
 //_____________________________________________________________________________
 /**
- * Set the weight.
- *
- * @param aWeight weight to change to.
- * @return Whether or not the weight was changed.
- */
-bool SimmCoordinate::setWeight(double aWeight)
-{
-	if (aWeight >= 0.0)
-	{
-		_weight = aWeight;
-		return true;
-	}
-
-	return false;
-}
-
-//_____________________________________________________________________________
-/**
  * Set the stiffness.
  *
  * @param aStiffness stiffness to change to.
@@ -671,7 +637,6 @@ void SimmCoordinate::peteTest(void) const
 	cout << "   value: " << _value << endl;
 	cout << "   tolerance: " << _tolerance << endl;
 	cout << "   stiffness: " << _stiffness << endl;
-	cout << "   weight: " << _weight << endl;
 	cout << "   range: " << _range << endl;
 	cout << "   keys: " << _keys << endl;
 	cout << "   clamped: " << ((_clamped) ? ("true") : ("false")) << endl;

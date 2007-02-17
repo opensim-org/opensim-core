@@ -104,27 +104,6 @@ MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Check if the marker set uses weights 
- */
-bool MarkerSet::usesWeights() const
-{
-	bool weighted = false;
-
-	for (int i = 0; i < getSize(); i++)
-	{
-		AbstractMarker* nextMarker = get(i);
-		if (nextMarker->getWeight()!= 1.0)
-		{
-			weighted = true;
-			break;
-		}
-	}
-
-	return weighted;
-}
-
-//_____________________________________________________________________________
-/**
  * Get names of markers in the marker set
  */
 void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
