@@ -631,14 +631,14 @@ InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Ob
 	// that ended up causing XML to be parsed twice.  Got rid of that
 	// copy method! - Eran, Feb/07
 	aObject->setXMLNode(rObjectElement);
-	aObject->updateFromXMLNode();
-
 	// Set inlining attributes on final object
 	if (!inLinedObject){
 		aObject->_inLined = inLinedObject;
 		aObject->_refNode = refNode;
 		aObject->_document = childDocument;
 	}
+
+	aObject->updateFromXMLNode();
 }
 
 template<class T> void UpdateXMLNodeSimpleProperty(const Property *aProperty, DOMElement *aNode, const string &aName)
