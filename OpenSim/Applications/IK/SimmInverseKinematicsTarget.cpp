@@ -76,6 +76,8 @@ _markers(NULL)
 
 	for (int i = 0; i < _nx; i++)
 		_dx[i] = _perturbation;
+
+	_printPerformanceValues = false;
 }
 
 //_____________________________________________________________________________
@@ -112,7 +114,7 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 
 	// Tally the square of the errors from markers
 	double totalErrorSquared = 0.0;
-	double maxMarkerError = 0.0, maxCoordinateError = 0.0;
+	double maxMarkerError = 0.0, maxCoordinateError = 0.0; // these are the max weighted errors
 	int worstMarker = -1, worstCoordinate = -1;
 
 	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
@@ -136,12 +138,13 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 			err = _markers[i]->experimentalPosition[j] - globalPos[j];
 			markerError += (err * err);
 		}
+		markerError *= _markers[i]->weight;
 		if (markerError > maxMarkerError)
 		{
 			maxMarkerError = markerError;
 			worstMarker = i;
 		}
-		totalErrorSquared += (markerError * _markers[i]->weight);
+		totalErrorSquared += markerError;
 
 		if (debug)
 			cout << _markers[i]->marker->getName() << " w = " << _markers[i]->weight 
@@ -154,25 +157,26 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 		double experimentalValue = _unprescribedWeightedQs[i]->experimentalValue;
 		double computedValue = _unprescribedWeightedQs[i]->coord->getValue();
 		double err = experimentalValue - computedValue;
-		double coordinateError = (err * err);
+		double coordinateError = _unprescribedWeightedQs[i]->weight * err * err;
 		if (coordinateError > maxCoordinateError)
 		{
 			maxCoordinateError = coordinateError;
 			worstCoordinate = i;
 		}
-		totalErrorSquared += (coordinateError * _unprescribedWeightedQs[i]->weight);
+		totalErrorSquared += coordinateError;
 
 		if (debug)
 			cout << _unprescribedWeightedQs[i]->coord->getName() << " w = " << _unprescribedWeightedQs[i]->weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
 	}
 
-	if (!calcDerivs && debug)
+	if (_printPerformanceValues || (!calcDerivs && debug))
 	{
-		cout << "Total Error Squared = " << totalErrorSquared << endl;
+		cout << "total error = " << totalErrorSquared;
 		if (worstMarker >= 0)
-			cout << "Largest Marker Err Squared = " << maxMarkerError << " at marker " << _markers[worstMarker]->marker->getName() << endl;
+			cout << ", worst marker " << _markers[worstMarker]->marker->getName() << " (" << maxMarkerError << ")";
 		if (worstCoordinate >= 0)
-			cout << "Largest Coordinate Err Squared = " << maxCoordinateError << " at coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << endl;
+			cout << ", worst coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << " (" << maxCoordinateError << ")";
+		cout << endl;
 	}
 
 	*p = totalErrorSquared;
@@ -434,6 +438,18 @@ void SimmInverseKinematicsTarget::printTasks() const
 		else
 			cout << "constant target value of " << _prescribedQs[i]->constantExperimentalValue << endl;
 	}
+}
+//_____________________________________________________________________________
+/**
+ */
+void SimmInverseKinematicsTarget::printPerformance()
+{
+	_printPerformanceValues = true;
+	double *qs=new double[_nx];
+	for(int i=0;i<_nx;i++) qs[i]=_unprescribedQs[i]->coord->getValue();
+	double p;
+	computePerformance(qs,&p);
+	_printPerformanceValues=false;
 }
 
 //_____________________________________________________________________________

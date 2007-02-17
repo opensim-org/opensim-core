@@ -106,7 +106,6 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 	Array<double> experimentalMarkerLocations(0.0, markerNames.getSize() * 3);
 
 	int startFrame = 0, endFrame = 1;
-	double currentTime;
 
 	/* Get the indices of the starting frame and the ending frame,
 	 * based on the user-defined start/end times stored in
@@ -144,8 +143,11 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
 			qsAndMarkersArray.append(experimentalMarkerLocations);
 		}
 
+		double currentTime;
 		inputData.getTime(index, currentTime);
-		cout << "Solved frame " << index + 1 << " at time " << currentTime << ", Optimizer returned = " << optimizerReturn << endl;
+		cout << "Frame " << index + 1 << " (t=" << currentTime << "):\t";
+		if(optimizerReturn != 0) cout << " Optimizer returned = " << optimizerReturn << endl;
+		else _ikTarget.printPerformance();
 
 		// INTEGRATION CALLBACKS
 		// TODO: pass callback a reasonable "dt" value

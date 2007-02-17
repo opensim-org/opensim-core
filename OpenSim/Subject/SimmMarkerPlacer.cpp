@@ -264,7 +264,7 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 	if(_coordinateFileName != "") ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
-	ikTrial.setIncludeMarkers(true);
+//	ikTrial.setIncludeMarkers(true);
 	if(!ikTrial.processTrialCommon(*aModel,_ikTaskSet,staticPose,outputStorage)) 
 		return false;
 

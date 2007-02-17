@@ -70,6 +70,9 @@ private:
 	// internal datastructure used to map data columns to states
 	Storage&	_experimentalDataStorage;
 
+	// internal flag used for printing weighted errors at end of optimization
+	bool _printPerformanceValues;
+
 	// Marker Map information
 	typedef struct
 	{
@@ -125,6 +128,7 @@ public:
 	//---------------------------------------------------------------------------
 	void prepareToSolve(int aIndex, double* qGuess);
 	void printTasks() const;
+	void printPerformance();
 	//---------------------------------------------------------------------------
 	// SET AND GET
 	//---------------------------------------------------------------------------
