@@ -5,6 +5,7 @@
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/IO.h>
 #include <OpenSim/Tools/XMLDocument.h>
+#include <OpenSim/Tools/XMLNode.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
@@ -105,7 +106,7 @@ ExtractControl(DOMElement *aElmt)
 
 
 	// NAME ATTRIBUTE
-	char *elmtName = XMLNode::GetAttribute(aElmt,"name");
+	string elmtName = XMLNode::GetAttribute(aElmt,"name");
 	cout<<"\nFound control node "<<elmtName<<endl;
 
 
@@ -155,9 +156,6 @@ ExtractControl(DOMElement *aElmt)
 	// CHECK
 	cout<<"Control "<<control->getName()<<" has "<<control->getNumParameters()<<" nodes."
 		<<endl;
-
-	// CLEAN UP
-	delete[] elmtName;
 
 
 	return(control);
