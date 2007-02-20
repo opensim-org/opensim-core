@@ -596,6 +596,18 @@ formatText(const string& aComment,const string& leadingWhitespace,int width)
 }
 
 string IO::
+GetSuffix(const std::string &aStr, int aLen)
+{
+	return aStr.substr(max(aStr.size()-aLen,0));
+}
+
+void IO::
+RemoveSuffix(std::string &rStr, int aLen)
+{
+	rStr.erase(max(rStr.size()-aLen,0));
+}
+
+string IO::
 replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo)
 {
 	string result = aStr;

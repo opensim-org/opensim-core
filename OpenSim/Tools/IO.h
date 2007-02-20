@@ -123,6 +123,8 @@ public:
 	static std::string formatText(const std::string& aComment,const std::string& leadingWhitespace,int width);
 
 	// String utilities
+	static std::string GetSuffix(const std::string &aStr, int aLen);
+	static void RemoveSuffix(std::string &rStr, int aLen);
 	static std::string replaceSubstring(const std::string &aStr, const std::string &aFrom, const std::string &aTo);
 	static void TrimLeadingWhitespace(std::string &rStr);
 	static void TrimTrailingWhitespace(std::string &rStr);

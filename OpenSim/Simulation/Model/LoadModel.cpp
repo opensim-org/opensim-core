@@ -70,70 +70,53 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 	libraryExtension=".so";
 #endif
 	string fixedLibFileName = IO::FixSlashesInFilePath(lpLibFileName);
-	string actualLibFileName(fixedLibFileName+libraryExtension);
-	string debugSuffix="_d";
-	const char *locationOf_D = strstr(fixedLibFileName.c_str(), debugSuffix.c_str());
-	bool hasDebugSuffix = (locationOf_D!= 0) && (strcmp(locationOf_D, debugSuffix.c_str())==0);
+	string actualLibFileName = fixedLibFileName + libraryExtension;
+	static const string debugSuffix="_d";
+	bool hasDebugSuffix = (IO::GetSuffix(fixedLibFileName,debugSuffix.size())==debugSuffix);
 
 	PORTABLE_HINSTANCE libraryHandle = NULL;
+
+	// If we're in debug mode and a release library is specified, or we're in release
+	// mode and a debug library is specified, we'll first try loading the debug library,
+	// and then try loading the release library.
+	bool tryDebugThenRelease = false;
 #ifdef _DEBUG
-	// NO _D SUFFIX
-	// if library name has no trailing _D try to append it and load
-	// find locaion of _D in lpLibFileName and make sure it's trailing
-	if (!hasDebugSuffix) {
-		// Append _D to lpLibFileName;
-		cout << "WARNING: SUSPECT LOADING RELEASE LIB INTO DEBUG Simulation library." << endl;
-		cout << "Trying to load a debug version ..." << endl;
-		actualLibFileName = fixedLibFileName+debugSuffix+libraryExtension;
-		// if that fails we'll try the one with no _D 
-		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
-			cout << "Loading of Debug library " << actualLibFileName << " Failed. Trying " << fixedLibFileName << endl;
-			LoadLibraryError();
-			// library with _D loading failed, try non _D version
-			actualLibFileName = fixedLibFileName+libraryExtension;
-			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
-				cout << "Loaded library " << actualLibFileName << endl;
-			}
-			else {
-				cout << "Failed to load either debug or release library " << actualLibFileName << endl;
-				LoadLibraryError();
-			}
-		}
-		else
-			cout << "Loaded library " << actualLibFileName << endl;
-
-	// HAS _D SUFFIX
-	} else {
-		libraryHandle = LoadLibrary(actualLibFileName.c_str());
+	if(!hasDebugSuffix) {
+		cout << "Will try loading debug library first" << endl;
+		tryDebugThenRelease = true;
 	}
-
 #else
-	// HAS _D SUFFIX
-	// Here we're in release mode, highly unlikely to have a trailing _D intentionally!
-	if (hasDebugSuffix){
-
-		// try stripping the trailing _D first 
-		cout << "WARNING: SUSPECT LOADING DEBUG LIB INTO RELEASE rdSimulation";
-		cout << "Trying ";
-		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))==0){
-			*locationOf_D = '\0';	// Strip trailing _D and retry (can we do that with const!)
-			if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))!=0){
-				cout << "Loaded library " << actualLibFileName << endl;
-			}
-			else {
-				cout << "Failed to load either debug or release library " << actualLibFileName << endl;
-				LoadLibraryError();
-			}
-
-		}
-		else
-			cout << "Loaded library " << actualLibFileName << endl;
-
-	// NO _D SUFFIX
-	} else {
-		libraryHandle = LoadLibrary(actualLibFileName.c_str());
+	if(hasDebugSuffix) {
+		cout << "WARNING: Trying to load a debug library into release rdSimulation" << endl;
+		tryDebugThenRelease = true;
 	}
 #endif
+
+	if(tryDebugThenRelease) {
+		if(hasDebugSuffix) IO::RemoveSuffix(fixedLibFileName,debugSuffix.size());
+		string debugLibFileName = fixedLibFileName + debugSuffix + libraryExtension;
+		string releaseLibFileName = fixedLibFileName + libraryExtension;
+		if ((libraryHandle = LoadLibrary(debugLibFileName.c_str()))) {
+			cout << "Loaded library " << debugLibFileName << endl;
+		} else {
+			LoadLibraryError();
+			cout << "Loading of debug library " << debugLibFileName << " Failed. Trying " << releaseLibFileName << endl;
+			if ((libraryHandle = LoadLibrary(releaseLibFileName.c_str()))) {
+				cout << "Loaded library " << releaseLibFileName << endl;
+			} else {
+				LoadLibraryError();
+				cout << "Failed to load either debug or release library " << releaseLibFileName << endl;
+			}
+		}
+	} else {
+		if ((libraryHandle = LoadLibrary(actualLibFileName.c_str()))) {
+			cout << "Loaded library " << actualLibFileName << endl;
+		} else {
+			LoadLibraryError();
+			cout << "Failed to load library " << actualLibFileName << endl;
+		}
+	}
+
 	return libraryHandle;
 }
 
