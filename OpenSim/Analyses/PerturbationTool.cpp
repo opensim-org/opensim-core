@@ -725,11 +725,11 @@ void PerturbationTool::run()
 		IO::makeDir(getResultsDir());
 		char fileName[Object::NAME_LENGTH];
 		for(int i=0;i<nvalues;i++) {
-			sprintf(fileName,"%s/%s_perturbed_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			sprintf(fileName,"%s/%s_%s_perturbed_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
 			values_perturbedStorage[i]->print(fileName);
-			sprintf(fileName,"%s/%s_dAdF_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			sprintf(fileName,"%s/%s_%s_dAdF_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
 			values_dAdFStorage[i]->print(fileName);
-			sprintf(fileName,"%s/%s_deltaA_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
+			sprintf(fileName,"%s/%s_%s_deltaA_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
 			values_deltaAStorage[i]->print(fileName);
 		}
 	} // end time loop
