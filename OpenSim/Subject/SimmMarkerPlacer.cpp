@@ -303,7 +303,8 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 	{
 		SimmMotionData motionData(outputStorage);
 		motionData.convertRadiansToDegrees(*aModel);
-		motionData.writeSIMMMotionFile(aPathToSubject + _outputMotionFileName, aModel->getName());
+		motionData.writeSIMMMotionFile(aPathToSubject + _outputMotionFileName, 
+			"static pose", "File generated from solving marker data for model "+aModel->getName());
 	}
 
 	return true;

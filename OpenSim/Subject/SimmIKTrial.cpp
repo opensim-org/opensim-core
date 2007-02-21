@@ -277,6 +277,7 @@ bool SimmIKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
 	markerData.convertToUnits(aModel.getLengthUnits());
 
 	Storage outputStorage;
+	outputStorage.setName(getName());
 	if(!processTrialCommon(aModel,aIKTaskSet,markerData,outputStorage))
 		return false;
 

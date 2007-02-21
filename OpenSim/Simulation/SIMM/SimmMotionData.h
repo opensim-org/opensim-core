@@ -112,7 +112,7 @@ public:
 	void convertDegreesToRadians(AbstractModel& aModel);
 	void convertRadiansToDegrees(AbstractModel& aModel);
 	int getFrameNumberForTime(double time) const;
-	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aComment) const;
+	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aName, const std::string& aComment) const;
 	const Array<std::string>& getColumnNames()const
 	{
 		return _columnNames;

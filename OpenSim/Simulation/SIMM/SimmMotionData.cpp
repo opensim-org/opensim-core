@@ -543,7 +543,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
  * @param aFileName the name of the file to create
  * @param aComment "notes" text to add the file as a comment
  */
-void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& aComment) const
+void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& aName, const string& aComment) const
 {
 	int i;
 	ofstream out;
@@ -558,9 +558,8 @@ void SimmMotionData::writeSIMMMotionFile(const string& aFileName, const string& 
       return;
    }
 
-	out << "#File generated from solving marker data for model " << aComment << endl;
-
-	out << "name solved_motion" << endl; // TODO: come up with a better name than this
+	out << "#" << aComment << endl;
+	out << "name " << aName << endl;
 	out << "datacolumns " << _numColumns << endl;
 	out << "datarows " << _numRows << endl;
 	out << "range " << _rangeMin << " " << _rangeMax << endl;
