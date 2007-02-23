@@ -1,6 +1,8 @@
 /*Directors %module(directors="1") opensimModel */
 %module opensimModel
 %{
+#include <xercesc/util/XercesVersion.hpp>
+#include <xercesc/util/XercesDefs.hpp>
 #include <OpenSim/Tools/rdToolsDLL.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
 #include <OpenSim/Tools/Exception.h>
@@ -104,6 +106,8 @@
 
 #include <OpenSim/Subject/simmSubject.h>
 #include <OpenSim/Subject/SimmFileWriter.h>
+#include <OpenSim/Simulation/SIMM/IKTask.h>
+#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
 #include <OpenSim/Simulation/SIMM/SimmMotionData.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 
@@ -356,6 +360,9 @@ using namespace OpenSim;
 
 %include <OpenSim/Subject/simmSubject.h>
 %include <OpenSim/Subject/SimmFileWriter.h>
+%include <OpenSim/Simulation/SIMM/IKTask.h>
+%template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
+%include <OpenSim/Simulation/SIMM/IKTaskSet.h>
 %include <OpenSim/Simulation/SIMM/SimmMotionData.h>
 %include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
 
