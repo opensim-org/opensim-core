@@ -49,11 +49,17 @@
 
 // Only the necessary Xerces includes/defines
 #include <xercesc/util/XercesDefs.hpp>
+#ifndef SWIG
 XERCES_CPP_NAMESPACE_BEGIN
 class DOMElement;
 XERCES_CPP_NAMESPACE_END
 XERCES_CPP_NAMESPACE_USE
-
+#else
+class DOMElement;	// should be in proper namespace if we care
+					// namespace has XERCES version encoded in it
+					// but we never use DOMStuff from Java anyway.
+					// Swig barfs on the above syntax otherwise. -Ayman 2/07
+#endif
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
 
