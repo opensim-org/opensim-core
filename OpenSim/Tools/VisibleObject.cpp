@@ -318,6 +318,7 @@ getVisibleProperties()
 void VisibleObject::
 setScaleFactors(const double aScaleFactors[3])
 {
+	_propScaleFactors.setUseDefault(false);
 	for(int i=0; i < 3; i++)
 		_scaleFactors[i]=(aScaleFactors[i]);
 }
