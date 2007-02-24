@@ -134,7 +134,7 @@ int main(int argc,char **argv)
 		if (!subject->isDefaultModelScaler())
 		{
 			SimmModelScaler& scaler = subject->getModelScaler();
-			scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
+			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getMass())) return 1;
 		}
 		else
 		{
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
 		if (!subject->isDefaultMarkerPlacer())
 		{
 			SimmMarkerPlacer& placer = subject->getMarkerPlacer();
-			placer.processModel(model, subject->getPathToSubject());
+			if(!placer.processModel(model, subject->getPathToSubject())) return 1;
 		}
 		else
 		{

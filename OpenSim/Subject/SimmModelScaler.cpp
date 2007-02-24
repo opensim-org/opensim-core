@@ -327,7 +327,7 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
 			}
 			else
 			{
-				// TODO: print error
+				throw Exception("SimmModelScaler: ERR- Unrecognized string '"+_scalingOrder[i]+"' in "+_scalingOrderProp.getName()+" property (expecting 'measurements' or 'manualScale').",__FILE__,__LINE__);
 			}
 		}
 
