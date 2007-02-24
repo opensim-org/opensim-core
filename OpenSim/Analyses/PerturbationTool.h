@@ -62,6 +62,14 @@ private:
 	PropertyStr _yFileNameProp;
 	std::string &_yFileName;
 
+	// FOOT BODY NAMES (WHERE SPRINGS WILL BE APPLIED)
+	/** Right foot. */
+	PropertyStr _rightFootNameProp;
+	std::string &_rightFootName;
+	/** Left foot. */
+	PropertyStr _leftFootNameProp;
+	std::string &_leftFootName;
+
 	// FOOT CONTACT EVENT TIMES
 	/** Time of right heel strike. */
 	PropertyDbl _rHeelStrikeProp;

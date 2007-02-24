@@ -54,6 +54,8 @@ PerturbationTool::PerturbationTool() :
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
+	_rightFootName(_rightFootNameProp.getValueStr()),
+	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -95,6 +97,8 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
+	_rightFootName(_rightFootNameProp.getValueStr()),
+	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -166,6 +170,8 @@ PerturbationTool(const PerturbationTool &aTool):
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
+	_rightFootName(_rightFootNameProp.getValueStr()),
+	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -223,6 +229,9 @@ setNull()
 	_bTor.setSize(3);
 	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
 
+	_rightFootName = "calcn_r";
+	_leftFootName = "calcn_l";
+
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
 	_externalLoadsBody1 = "";
@@ -265,11 +274,11 @@ void PerturbationTool::setupProperties()
 	_tauProp.setName("scaling_rise_time");
 	_propertySet.append( &_tauProp );
 
-	_kLinProp.setComment("Stiffness for translational corrective springs");
+	_kLinProp.setComment("Stiffness for linear (translational) corrective springs");
 	_kLinProp.setName("corrective_spring_linear_stiffness");
 	_propertySet.append( &_kLinProp );
 
-	_bLinProp.setComment("Damping for translational corrective springs");
+	_bLinProp.setComment("Damping for linear (translational) corrective springs");
 	_bLinProp.setName("corrective_spring_linear_damping");
 	_propertySet.append( &_bLinProp );
 
@@ -314,40 +323,47 @@ void PerturbationTool::setupProperties()
 	_yFileNameProp.setName("states_file");
 	_propertySet.append( &_yFileNameProp );
 
+	// FEET NAMES
+	_rightFootNameProp.setComment("Name of the right foot body (to which the right-side corrective springs will be applied).");
+	_rightFootNameProp.setName("right_foot_body");
+	_propertySet.append( &_rightFootNameProp );
+
+	_leftFootNameProp.setComment("Name of the left foot body (to which the left-side corrective springs will be applied).");
+	_leftFootNameProp.setName("left_foot_body");
+	_propertySet.append( &_leftFootNameProp );
 
 	// FOOT CONTACT EVENT TIMES
-	_rHeelStrikeProp.setComment("Time of right heel strike.");
+	_rHeelStrikeProp.setComment("Time of right heel strike.  The linear corrective spring will increase its influence at this time.");
 	_rHeelStrikeProp.setName("r_heel_strike");
 	_propertySet.append( &_rHeelStrikeProp );
 
-	_rFootFlatProp.setComment("Time of right foot flat.");
+	_rFootFlatProp.setComment("Time of right foot flat.  The torsional corrective spring will increase its influence at this time.");
 	_rFootFlatProp.setName("r_foot_flat");
 	_propertySet.append( &_rFootFlatProp );
 
-	_rHeelOffProp.setComment("Time of right heel off.");
+	_rHeelOffProp.setComment("Time of right heel off.  The torsional corrective spring will decrease its influence at this time.");
 	_rHeelOffProp.setName("r_heel_off");
 	_propertySet.append( &_rHeelOffProp );
 
-	_rToeOffProp.setComment("Time of right toe off.");
+	_rToeOffProp.setComment("Time of right toe off.  The linear corrective spring will decrease its influence at this time.");
 	_rToeOffProp.setName("r_toe_off");
 	_propertySet.append( &_rToeOffProp );
 
-	_lHeelStrikeProp.setComment("Time of left heel strike.");
+	_lHeelStrikeProp.setComment("Time of left heel strike.  The linear corrective spring will increase its influence at this time");
 	_lHeelStrikeProp.setName("l_heel_strike");
 	_propertySet.append( &_lHeelStrikeProp );
 
-	_lFootFlatProp.setComment("Time of left foot flat.");
+	_lFootFlatProp.setComment("Time of left foot flat.  The torsional corrective spring will increase its influence at this time");
 	_lFootFlatProp.setName("l_foot_flat");
 	_propertySet.append( &_lFootFlatProp );
 
-	_lHeelOffProp.setComment("Time of left heel off.");
+	_lHeelOffProp.setComment("Time of left heel off.  The torsional corrective spring will decrease its influence at this time");
 	_lHeelOffProp.setName("l_heel_off");
 	_propertySet.append( &_lHeelOffProp );
 
-	_lToeOffProp.setComment("Time of left toe off.");
+	_lToeOffProp.setComment("Time of left toe off.  The linear corrective spring will decrease its influence at this time");
 	_lToeOffProp.setName("l_toe_off");
 	_propertySet.append( &_lToeOffProp );
-
 
 	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
 	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
@@ -359,7 +375,6 @@ void PerturbationTool::setupProperties()
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
 
 	comment = "Name of the body to which the first set of external loads "
 				 "should be applied (e.g., the name of the right foot).";
@@ -833,13 +848,18 @@ constructCorrectiveSprings()
 		}
 	}
 
+	AbstractBody *rightFootBody = _model->getDynamicsEngine().getBodySet()->get(_rightFootName);
+	if(!rightFootBody) throw Exception("PerturbationTool: ERR- Could not find right foot body '"+_rightFootName+"'",__FILE__,__LINE__);
+	AbstractBody *leftFootBody = _model->getDynamicsEngine().getBodySet()->get(_leftFootName);
+	if(!leftFootBody) throw Exception("PerturbationTool: ERR- Could not find left foot body '"+_leftFootName+"'",__FILE__,__LINE__);
+
 	// LINEAR
 	// right
 	copStore.getDataColumn(rightCopX,x);
 	copStore.getDataColumn(rightCopY,y);
 	copStore.getDataColumn(rightCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
+	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_rightFootName));
 	rLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
@@ -852,7 +872,7 @@ constructCorrectiveSprings()
 	copStore.getDataColumn(leftCopY,y);
 	copStore.getDataColumn(leftCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
+	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_leftFootName));
 	lLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
@@ -863,14 +883,14 @@ constructCorrectiveSprings()
 
 	// TORSIONAL
 	// right
-	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_r"));
+	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_rightFootName));
 	rTrq->computeTargetFunctions(&qStore,&uStore);
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
 	rTrq->setScaleFunction(rScaleTorsionalSpline);
 	_model->addDerivCallback(rTrq);
 	// left
-	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get("calcn_l"));
+	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_leftFootName));
 	lTrq->computeTargetFunctions(&qStore,&uStore);
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);
