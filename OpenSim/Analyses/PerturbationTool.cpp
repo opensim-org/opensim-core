@@ -859,7 +859,7 @@ constructCorrectiveSprings()
 	copStore.getDataColumn(rightCopY,y);
 	copStore.getDataColumn(rightCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *rLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_rightFootName));
+	LinearSpring *rLin = new LinearSpring(_model,rightFootBody);
 	rLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
@@ -872,7 +872,7 @@ constructCorrectiveSprings()
 	copStore.getDataColumn(leftCopY,y);
 	copStore.getDataColumn(leftCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
-	LinearSpring *lLin = new LinearSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_leftFootName));
+	LinearSpring *lLin = new LinearSpring(_model,leftFootBody);
 	lLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
@@ -883,14 +883,14 @@ constructCorrectiveSprings()
 
 	// TORSIONAL
 	// right
-	TorsionalSpring *rTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_rightFootName));
+	TorsionalSpring *rTrq = new TorsionalSpring(_model,rightFootBody);
 	rTrq->computeTargetFunctions(&qStore,&uStore);
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
 	rTrq->setScaleFunction(rScaleTorsionalSpline);
 	_model->addDerivCallback(rTrq);
 	// left
-	TorsionalSpring *lTrq = new TorsionalSpring(_model,_model->getDynamicsEngine().getBodySet()->get(_leftFootName));
+	TorsionalSpring *lTrq = new TorsionalSpring(_model,leftFootBody);
 	lTrq->computeTargetFunctions(&qStore,&uStore);
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);
