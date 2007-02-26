@@ -540,13 +540,13 @@ getParentDirectory(const string& fileName)
 
 //_____________________________________________________________________________
 /**
- * Get filename part of a passed in URI
+ * Get filename part of a passed in URI (also works if a dos/unix path is passed in)
  * 
 */
 string IO::
 GetFileNameFromURI(const string& aURI)
 {
-	string	result="";
+	string	result=aURI;
 
 	string::size_type dirSep = aURI.rfind('/'); // Unix/Mac dir separator
 	

@@ -30,6 +30,8 @@
 // INCLUDE
 #include <string>
 #include <iostream>
+#include <OpenSim/version.h>
+#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/SIMM/BodySet.h>
 #include <OpenSim/Analyses/ForwardTool.h>
@@ -40,7 +42,7 @@
 using namespace OpenSim;
 using namespace std;
 
-static void PrintUsage(ostream &aOStream);
+static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //_____________________________________________________________________________
 /**
@@ -60,7 +62,7 @@ int main(int argc,char **argv)
 	string option = "";
 	string setupFileName = "";
 	if(argc<2) {
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 	for(i=1;i<argc;i++) {
@@ -70,7 +72,7 @@ int main(int argc,char **argv)
 		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 		(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
 
-			PrintUsage(cout);
+			PrintUsage(argv[0], cout);
 			return(0);
  
 		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
@@ -110,7 +112,7 @@ int main(int argc,char **argv)
 	// ERROR CHECK
 	if(setupFileName=="") {
 		cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 
@@ -159,15 +161,16 @@ int main(int argc,char **argv)
 /**
  * Print the usage for this application
  */
-void PrintUsage(ostream &aOStream)
+void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	aOStream<<"\nforward.exe:\n\n";
-	aOStream<<"Option              Argument    Action / Notes\n";
-	aOStream<<"------              --------    --------------\n";
-	aOStream<<"-Help, -H                       Print the command-line options for forward.exe.\n";
-	aOStream<<"-PrintSetup, -PS                Print a default setup file for forward.exe (default_forward.xml).\n";
-	aOStream<<"-Setup, -S          FileName    Specify the name of the setup file to use for this forward tool.\n";
-	aOStream<<"-PropertyInfo, -PI              Print help information for properties in setup files.\n";
+	string progName=IO::GetFileNameFromURI(aProgName);
+	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
+	aOStream<<"Option              Argument         Action / Notes\n";
+	aOStream<<"------              --------         --------------\n";
+	aOStream<<"-Help, -H                            Print the command-line options for forward.exe.\n";
+	aOStream<<"-PrintSetup, -PS                     Print a default setup file for forward.exe (default_forward.xml).\n";
+	aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file to use for this forward tool.\n";
+	aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
 
 
 	//aOStream<<"\nThe input to the -PropertyInfo option is the name of the class to which a property\n";

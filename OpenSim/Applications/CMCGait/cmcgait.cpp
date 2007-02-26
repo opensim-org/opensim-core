@@ -30,13 +30,15 @@
 // INCLUDE
 #include <string>
 #include <iostream>
+#include <OpenSim/version.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/CMC/CMCTool.h>
+#include <OpenSim/Tools/IO.h>
 
 using namespace std;
 using namespace OpenSim;
 
-static void PrintUsage(ostream &aOStream);
+static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 
 //_____________________________________________________________________________
@@ -56,7 +58,7 @@ int main(int argc,char **argv)
 	string option = "";
 	string setupFileName = "";
 	if(argc<2) {
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 	// Load libraries first
@@ -68,7 +70,7 @@ int main(int argc,char **argv)
 		// PRINT THE USAGE OPTIONS
 		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 		(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-			PrintUsage(cout);
+			PrintUsage(argv[0], cout);
 			return(0);
  
 		// PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
@@ -106,7 +108,7 @@ int main(int argc,char **argv)
 	// ERROR CHECK
 	if(setupFileName=="") {
 		cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 
@@ -148,15 +150,15 @@ int main(int argc,char **argv)
 /**
  * Print the usage for this application
  */
-void PrintUsage(ostream &aOStream)
+void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	aOStream<<"\n\ncmcgait.exe:\n\n";
-	aOStream<<"At least one of the following command-line options must be specified.\n\n";
+	string progName=IO::GetFileNameFromURI(aProgName);
+	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
 	aOStream<<"Option              Argument         Action / Notes\n";
 	aOStream<<"------              --------         --------------\n";
-	aOStream<<"-Help, -H                            Print the command-line options for cmc.exe.\n";
+	aOStream<<"-Help, -H                            Print the command-line options for "<<progName<<".\n";
 	aOStream<<"-PrintSetup, -PS                     Print a default setup file for cmc.exe (setup_cmc_default.xml).\n";
-	aOStream<<"-Setup, -S          SetupFileName    Specifies the name of the XML setup file for the CMC investigation.\n";
+	aOStream<<"-Setup, -S          SetupFileName    Specify the name of the XML setup file for the CMC investigation.\n";
 	aOStream<<"-PropertyInfo, -PI                   Print help information for properties in setup files.\n";
 	aOStream<<"-Library, -L        LibraryName      Specifiy a library to load. Do not include the extension (e.g., .lib or .dll).\n";
 	aOStream<<"                                     To load more than one library, repeat the -Library command-line option.\n\n";

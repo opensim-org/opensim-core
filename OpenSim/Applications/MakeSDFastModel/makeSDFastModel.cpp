@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include <string>
+#include <OpenSim/version.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
@@ -38,7 +39,7 @@ using namespace std;
 using namespace OpenSim;
 
 
-static void PrintUsage(ostream &aOStream);
+static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //______________________________________________________________________________
 /**
@@ -62,7 +63,7 @@ int main(int argc,char **argv)
 
 	if (argc < 3)
 	{
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		exit(-1);
 	}
 	else {		// Don't know maybe user needs help or have special needs
@@ -73,7 +74,7 @@ int main(int argc,char **argv)
 			// PRINT THE USAGE OPTIONS
 			if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-					PrintUsage(cout);
+					PrintUsage(argv[0], cout);
 					return(0);
 					// IDENTIFY SETUP FILE
 				}
@@ -97,7 +98,7 @@ int main(int argc,char **argv)
 				}
 				else {
 					cout << "Unrecognized option " << option << " on command line... Ignored" << endl;
-					PrintUsage(cout);
+					PrintUsage(argv[0], cout);
 					return(0);
 				}
 		}
@@ -141,12 +142,13 @@ int main(int argc,char **argv)
 /**
  * Print the usage for this application
  */
-void PrintUsage(ostream &aOStream)
+void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	aOStream<<"\n\nmakeSDFastModel.exe:\n\n";
+	string progName=IO::GetFileNameFromURI(aProgName);
+	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
 	aOStream<<"Option                    Argument         Action / Notes\n";
 	aOStream<<"------                    --------         --------------\n";
-	aOStream<<"-Help, -H                                  Print the command-line options for makeSDFastModel.exe.\n";
+	aOStream<<"-Help, -H                                  Print the command-line options for "<<progName<<".\n";
 	aOStream<<"-InputModel, -IM          ModelFile        Input SimmKinematicsEngine model file (XML format).\n";
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";

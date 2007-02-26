@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include <string>
+#include <OpenSim/version.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/IO.h>
@@ -43,7 +44,7 @@
 using namespace std;
 using namespace OpenSim;
 
-static void PrintUsage(ostream &aOStream);
+static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //______________________________________________________________________________
 /**
@@ -66,7 +67,7 @@ int main(int argc,char **argv)
 	string inName;
 	string option = "";
 	if (argc < 2) {
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		exit(-1);
 	} else {
 		int i;
@@ -76,13 +77,13 @@ int main(int argc,char **argv)
 			// PRINT THE USAGE OPTIONS
 			if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-					PrintUsage(cout);
+					PrintUsage(argv[0], cout);
 					return(0);
 
 				// Identify the setup file
 				} else if((option=="-S")||(option=="-Setup")) {
 					if (argv[i+1]==0){
-						PrintUsage(cout);
+						PrintUsage(argv[0], cout);
 						return(0);
 					}
 					inName = argv[i+1];
@@ -117,7 +118,7 @@ int main(int argc,char **argv)
 				// Unrecognized
 				} else {
 					cout << "Unrecognized option " << option << " on command line... Ignored" << endl;
-					PrintUsage(cout);
+					PrintUsage(argv[0], cout);
 					return(0);
 				}
 		}
@@ -164,15 +165,15 @@ int main(int argc,char **argv)
 /**
 * Print the usage for this application
 */
-void PrintUsage(ostream &aOStream)
+void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	aOStream<<"\n\nscale.exe:\n\n";
-	aOStream<<"Option            Argument      Action / Notes\n";
-	aOStream<<"------            --------      --------------\n";
-	aOStream<<"-Help, -H                       Print the command-line options for scale.exe.\n";
-	aOStream<<"-PrintSetup, -PS                Generates a template Setup file to customize scaling\n";
-	aOStream<<"-Setup, -S        SetupFile     Specify an xml setup file that specifies an OpenSim model,\n";
-	aOStream<<"                                a marker file, and scaling parameters.\n";
-	aOStream<<"-PropertyInfo, -PI              Print help information for properties in setup files.\n";
+	string progName=IO::GetFileNameFromURI(aProgName);
+	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
+	aOStream<<"Option            Argument          Action / Notes\n";
+	aOStream<<"------            --------          --------------\n";
+	aOStream<<"-Help, -H                           Print the command-line options for "<<progName<<".\n";
+	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize scaling\n";
+	aOStream<<"-Setup, -S        SetupFileName     Specify an xml setup file for scaling a generic model.\n";
+	aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 
 }

@@ -25,9 +25,11 @@
 
 // INCLUDES
 #include <string>
+#include <OpenSim/version.h>
 #include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/ScaleSet.h>
+#include <OpenSim/Tools/IO.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
 #include <OpenSim/Simulation/SIMM/MarkerSet.h>
 #include <OpenSim/Subject/SimmSubject.h>
@@ -38,7 +40,7 @@
 using namespace std;
 using namespace OpenSim;
 
-static void PrintUsage(ostream &aOStream);
+static void PrintUsage(const char *aProgName, ostream &aOStream);
 //______________________________________________________________________________
 /**
  * Test program to read SIMM model elements from an XML file.
@@ -62,7 +64,7 @@ int main(int argc,char **argv)
 	string setupFileName;
 	if (argc < 2)
 	{
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		exit(-1);
 	}
 	else {		// Don't know maybe user needs help or have special needs
@@ -73,7 +75,7 @@ int main(int argc,char **argv)
 			// PRINT THE USAGE OPTIONS
 			if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
 				(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-					PrintUsage(cout);
+					PrintUsage(argv[0], cout);
 					return(0);
 
 			// IDENTIFY SETUP FILE
@@ -108,7 +110,7 @@ int main(int argc,char **argv)
 			// UNRECOGNIZED
 			} else {
 				cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
-				PrintUsage(cout);
+				PrintUsage(argv[0], cout);
 				return(0);
 			}
 		}
@@ -117,7 +119,7 @@ int main(int argc,char **argv)
 	// ERROR CHECK
 	if(setupFileName=="") {
 		cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
-		PrintUsage(cout);
+		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 
@@ -153,14 +155,15 @@ int main(int argc,char **argv)
 /**
  * Print the usage for this application
  */
-void PrintUsage(ostream &aOStream)
+void PrintUsage(const char *aProgName, ostream &aOStream)
 {
-	aOStream<<"\n\nik.exe:\n\n";
+	string progName=IO::GetFileNameFromURI(aProgName);
+	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
 	aOStream<<"Option             Argument         Action / Notes\n";
 	aOStream<<"------             --------         --------------\n";
-	aOStream<<"-Help, -H                           Print the command-line options for scale.exe.\n";
+	aOStream<<"-Help, -H                           Print the command-line options for "<<progName<<".\n";
 	aOStream<<"-PrintSetup, -PS                    Generates a template Setup file to customize the scaling\n";
-	aOStream<<"-Setup, -S         SetupFile        Specify an xml setup file for solving and inverse kinematics problem.\n";
+	aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
 	aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
 	
