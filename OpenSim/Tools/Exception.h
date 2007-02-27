@@ -77,6 +77,7 @@ protected:
 public:
 	// CONSTRUCTORS
 	Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
+	virtual ~Exception() {}
 private:
 	void setNull();
 
