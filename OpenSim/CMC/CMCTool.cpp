@@ -92,10 +92,10 @@ CMCTool::CMCTool() :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
-	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
+	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr())
 {
 	setType("CMCTool");
 	setNull();
@@ -126,10 +126,10 @@ CMCTool::CMCTool(const string &aFileName) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
-	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
+	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr())
 {
 	setType("CMCTool");
 	setNull();
@@ -193,10 +193,10 @@ CMCTool(const CMCTool &aTool) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
-	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool())
+	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
+	_outputModelFile(_outputModelFileProp.getValueStr())
 {
 	setType("CMCTool");
 	setNull();
