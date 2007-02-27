@@ -2,6 +2,9 @@ PROJECT (OpenSim)
 
 SET(OPENSIM_MINIMAL_BUILD ON CACHE BOOL "Minimal build (only build essential libraries and excutables)")
 
+# Uncomment to make the linux Makefiles print the compile/link commands they are executing
+#SET(CMAKE_VERBOSE_MAKEFILE ON)
+
 IF(NOT WIN32)
 # Turn on all warnings in linux
 SET(CMAKE_CXX_FLAGS -Wall)
