@@ -49,9 +49,9 @@ using namespace OpenSim;
 SimmMarkerPlacer::SimmMarkerPlacer() :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
-   _coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
+	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -81,9 +81,9 @@ SimmMarkerPlacer::SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacer) :
    Object(aMarkerPlacer),
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
-   _coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
+	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
@@ -122,8 +122,8 @@ void SimmMarkerPlacer::copyData(const SimmMarkerPlacer &aMarkerPlacer)
 {
 	_markerFileName = aMarkerPlacer._markerFileName;
 	_timeRange = aMarkerPlacer._timeRange;
-	_coordinateFileName = aMarkerPlacer._coordinateFileName;
 	_ikTaskSet = aMarkerPlacer._ikTaskSet;
+	_coordinateFileName = aMarkerPlacer._coordinateFileName;
 	_outputJointFileName = aMarkerPlacer._outputJointFileName;
 	_outputMuscleFileName = aMarkerPlacer._outputMuscleFileName;
 	_outputModelFileName = aMarkerPlacer._outputModelFileName;
