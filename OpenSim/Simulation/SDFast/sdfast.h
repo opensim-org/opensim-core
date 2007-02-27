@@ -7,7 +7,11 @@
 
 #ifdef __linux__
 #ifndef STDCALL
+#ifdef __amd64__
+#define STDCALL
+#else
 #define STDCALL __attribute__((stdcall))
+#endif
 #endif
 #else
 #define STDCALL __stdcall
