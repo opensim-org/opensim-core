@@ -244,28 +244,31 @@ public:
 	// Templates for get & set
 	template<class T> T &getValue();
 	template<class T> const T &getValue() const;
-	template<> bool &getValue() { return getValueBool(); }
-	template<> const bool &getValue() const { return getValueBool(); }
-	template<> int &getValue() { return getValueInt(); }
-	template<> const int &getValue() const { return getValueInt(); }
-	template<> double &getValue() { return getValueDbl(); }
-	template<> const double &getValue() const { return getValueDbl(); }
-	template<> std::string &getValue() { return getValueStr(); }
-	template<> const std::string &getValue() const { return getValueStr(); }
-
 	template<class T> Array<T> &getValueArray();
 	template<class T> const Array<T> &getValueArray() const;
-	template<> Array<bool> &getValueArray() { return getValueBoolArray(); }
-	template<> const Array<bool> &getValueArray() const { return getValueBoolArray(); }
-	template<> Array<int> &getValueArray() { return getValueIntArray(); }
-	template<> const Array<int> &getValueArray() const { return getValueIntArray(); }
-	template<> Array<double> &getValueArray() { return getValueDblArray(); }
-	template<> const Array<double> &getValueArray() const { return getValueDblArray(); }
-	template<> Array<std::string> &getValueArray() { return getValueStrArray(); }
-	template<> const Array<std::string> &getValueArray() const { return getValueStrArray(); }
 
 //=============================================================================
 };	// END of class Property
+
+// Specializations of template get/set
+// Must be inline! (Trying to put function bodies in cpp fails with an internal compiler error in VC7.1)
+template<> inline bool &Property::getValue() { return getValueBool(); }
+template<> inline const bool &Property::getValue() const { return getValueBool(); }
+template<> inline int &Property::getValue() { return getValueInt(); }
+template<> inline const int &Property::getValue() const { return getValueInt(); }
+template<> inline double &Property::getValue() { return getValueDbl(); }
+template<> inline const double &Property::getValue() const { return getValueDbl(); }
+template<> inline std::string &Property::getValue() { return getValueStr(); }
+template<> inline const std::string &Property::getValue() const { return getValueStr(); }
+
+template<> inline Array<bool> &Property::getValueArray() { return getValueBoolArray(); }
+template<> inline const Array<bool> &Property::getValueArray() const { return getValueBoolArray(); }
+template<> inline Array<int> &Property::getValueArray() { return getValueIntArray(); }
+template<> inline const Array<int> &Property::getValueArray() const { return getValueIntArray(); }
+template<> inline Array<double> &Property::getValueArray() { return getValueDblArray(); }
+template<> inline const Array<double> &Property::getValueArray() const { return getValueDblArray(); }
+template<> inline Array<std::string> &Property::getValueArray() { return getValueStrArray(); }
+template<> inline const Array<std::string> &Property::getValueArray() const { return getValueStrArray(); }
 
 }; //namespace
 //=============================================================================

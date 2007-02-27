@@ -127,13 +127,6 @@ public:
 	static std::string
 		GetStr(const DOMNode *aNode);
 
-	// TEMPLATED VERSIONS
-	template<class T> static T GetValue(const DOMNode *aNode);
-	template<> static bool GetValue(const DOMNode *aNode) { return GetBool(aNode); }
-	template<> static int GetValue(const DOMNode *aNode) { return GetInt(aNode); }
-	template<> static double GetValue(const DOMNode *aNode) { return GetDbl(aNode); }
-	template<> static std::string GetValue(const DOMNode *aNode) { return GetStr(aNode); }
-
 	//--------------------------------------------------------------------------
 	// FUNDAMENTAL ARRAY TYPES
 	//--------------------------------------------------------------------------
@@ -158,17 +151,12 @@ public:
 	static int
 		GetStrArray(const DOMNode *aNode,std::string* &rData);
 
+	//--------------------------------------------------------------------------
 	// TEMPLATED VERSIONS
+	//--------------------------------------------------------------------------
+	template<class T> static T GetValue(const DOMNode *aNode);
 	template<class T> static void SetValueArray(DOMNode *aNode,int aN,const T *rData);
-	template<> static void SetValueArray(DOMNode *aNode,int aN,const bool *rData) { return SetBoolArray(aNode, aN, rData); }
-	template<> static void SetValueArray(DOMNode *aNode,int aN,const int *rData) { return SetIntArray(aNode, aN, rData); }
-	template<> static void SetValueArray(DOMNode *aNode,int aN,const double *rData) { return SetDblArray(aNode, aN, rData); }
-	template<> static void SetValueArray(DOMNode *aNode,int aN,const std::string *rData) { return SetStrArray(aNode, aN, rData); }
 	template<class T> static int GetValueArray(const DOMNode *aNode,T *&rData);
-	template<> static int GetValueArray(const DOMNode *aNode,bool *&rData) { return GetBoolArray(aNode, rData); }
-	template<> static int GetValueArray(const DOMNode *aNode,int *&rData) { return GetIntArray(aNode, rData); }
-	template<> static int GetValueArray(const DOMNode *aNode,double *&rData) { return GetDblArray(aNode, rData); }
-	template<> static int GetValueArray(const DOMNode *aNode,std::string *&rData) { return GetStrArray(aNode, rData); }
 
 	//--------------------------------------------------------------------------
 	// ELEMENT ATTRIBUTES
@@ -182,6 +170,21 @@ public:
 
 //=============================================================================
 };	// END CLASS XMLNode
+
+// Template specializations
+// Must be inline! (Trying to put function bodies in cpp fails with an internal compiler error in VC7.1)
+template<> static inline bool XMLNode::GetValue(const DOMNode *aNode) { return GetBool(aNode); }
+template<> static inline int XMLNode::GetValue(const DOMNode *aNode) { return GetInt(aNode); }
+template<> static inline double XMLNode::GetValue(const DOMNode *aNode) { return GetDbl(aNode); }
+template<> static inline std::string XMLNode::GetValue(const DOMNode *aNode) { return GetStr(aNode); }
+template<> static inline void XMLNode::SetValueArray(DOMNode *aNode,int aN,const bool *rData) { return SetBoolArray(aNode, aN, rData); }
+template<> static inline void XMLNode::SetValueArray(DOMNode *aNode,int aN,const int *rData) { return SetIntArray(aNode, aN, rData); }
+template<> static inline void XMLNode::SetValueArray(DOMNode *aNode,int aN,const double *rData) { return SetDblArray(aNode, aN, rData); }
+template<> static inline void XMLNode::SetValueArray(DOMNode *aNode,int aN,const std::string *rData) { return SetStrArray(aNode, aN, rData); }
+template<> static inline int XMLNode::GetValueArray(const DOMNode *aNode,bool *&rData) { return GetBoolArray(aNode, rData); }
+template<> static inline int XMLNode::GetValueArray(const DOMNode *aNode,int *&rData) { return GetIntArray(aNode, rData); }
+template<> static inline int XMLNode::GetValueArray(const DOMNode *aNode,double *&rData) { return GetDblArray(aNode, rData); }
+template<> static inline int XMLNode::GetValueArray(const DOMNode *aNode,std::string *&rData) { return GetStrArray(aNode, rData); }
 
 }; //namespace
 //=============================================================================
