@@ -50,6 +50,8 @@ PerturbationTool::PerturbationTool() :
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
+	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
+	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
@@ -99,6 +101,8 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
+	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
+	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
@@ -178,6 +182,8 @@ PerturbationTool(const PerturbationTool &aTool):
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
+	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
+	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
@@ -232,6 +238,10 @@ void PerturbationTool::
 setNull()
 {
 	setupProperties();
+
+	_actuatorsToPerturb.setSize(1);
+	_actuatorsToPerturb[0] = "all";
+	_perturbGravity = true;
 
 	// FOOT CONTACT EVENTS
 	_rHeelStrike = _rFootFlat =_rHeelOff = _rToeOff = 0.0;
@@ -288,6 +298,15 @@ void PerturbationTool::setupProperties()
 	_pertDFProp.setComment(comment);
 	_pertDFProp.setName("perturbation_size");
 	_propertySet.append( &_pertDFProp);
+
+	_actuatorsToPerturbProp.setComment("List of actuator names to be perturbed (for which induced acceleration will be computed).  "
+												  "Use 'all' to perturb all actuators.");
+	_actuatorsToPerturbProp.setName("perturbed_actuators");
+	_propertySet.append( &_actuatorsToPerturbProp );
+
+	_perturbGravityProp.setComment("Whether or not to compute induced accelerations due to gravity perturbation.");
+	_perturbGravityProp.setName("perturb_gravity");
+	_propertySet.append( &_perturbGravityProp );
 
 	// CORRECTIVE SPRING PARAMETERS
 	comment = "Rise time for scaling functions.  This parameter determines how fast a corrective "
@@ -502,6 +521,26 @@ void PerturbationTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
+	// Gather actuators to perturb
+	ActuatorSet *as = _model->getActuatorSet();
+	ArrayPtrs<AbstractActuator> actuators;
+	actuators.setMemoryOwner(false);
+	actuators.setSize(_actuatorsToPerturb.getSize());
+	for(int i=0; i<_actuatorsToPerturb.getSize(); i++) {
+		if(_actuatorsToPerturb[i] == "all") {
+			actuators.setSize(as->getSize());
+			for(int j=0;j<as->getSize();j++) actuators.set(j,as->get(j));
+			break;
+		}
+		int index = as->getIndex(_actuatorsToPerturb[i]);
+		if(index<0) throw Exception("PerturbationTool: ERR- Could not find actuator '"+_actuatorsToPerturb[i]+
+										    "' (listed in "+_actuatorsToPerturbProp.getName()+") in model's actuator set.",__FILE__,__LINE__);
+		actuators.set(i,as->get(index));
+	}
+
+	if(_actuatorsToPerturb.getSize() == 0 && !_perturbGravity)
+		throw Exception("PerturbationTool: ERR- Nothing to perturb (no actuators selected and gravity perturbation disabled).",__FILE__,__LINE__);
+
 	// GROUND REACTION FORCES
 	ForceApplier *rightGRFApp, *leftGRFApp;
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
@@ -517,9 +556,6 @@ void PerturbationTool::run()
 	cout<<"Found "<<controlSet->getSize()<<" controls.\n\n";
 	// States
 	Storage *yStore = new Storage(_yFileName);
-
-	// ASSIGN NUMBERS OF THINGS
-	int na = _model->getNumActuators();
 
 	// Add actuation analysis -- needed in order to evaluate unperturbed forces
 	// Actuation
@@ -581,18 +617,16 @@ void PerturbationTool::run()
 		new ActuatorPerturbationIndependent(_model);
 	_model->addDerivCallback(perturbation);
 
-	bool gravity_perturbation = true;
 	int gravity_axis = 1;
 	double original_gravity[3];
-	int nperturb = na + (gravity_perturbation ? 1 : 0);
+	int nperturb = actuators.getSize() + (_perturbGravity ? 1 : 0);
 
-	if(gravity_perturbation) _model->getGravity(original_gravity);
+	if(_perturbGravity) _model->getGravity(original_gravity);
 
 	string columnLabels = "time";
-	ActuatorSet *as = _model->getActuatorSet();
-	for(int i=0; i<as->getSize(); i++)
-		columnLabels += "\t" + as->get(i)->getName();
-	if(gravity_perturbation)
+	for(int i=0; i<actuators.getSize(); i++)
+		columnLabels += "\t" + actuators.get(i)->getName();
+	if(_perturbGravity)
 		columnLabels += "\tgravity";
 
 	// Figure out which columns are being recorded in the Kinematics and BodyKinematics analyses...
@@ -604,14 +638,36 @@ void PerturbationTool::run()
 		throw Exception("PerturbationTool.run: ERROR- No (active) analyses found -- no perturbation to compute.",__FILE__,__LINE__);
 
 	Array<string> values_name("",nvalues);
-	cout << "Values to be measured during perturbation:" << endl;
-	for(int i=0;i<ncoords;i++) {
+	for(int i=0;i<ncoords;i++)
 		values_name[i] = kin->getPositionStorage()->getColumnLabelsArray()[i+1];
-		cout << "[Kinematics] " << values_name[i] << endl;
-	}
-	for(int i=0;i<nbodycoords;i++) {
+	for(int i=0;i<nbodycoords;i++)
 		values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabelsArray()[i+1];
-		cout << "[BodyKinematics] " << values_name[ncoords+i] << endl;
+
+	cout << "PERTURBED DATA:" << endl;
+	if(actuators.getSize()) {
+		cout << "Actuators:";
+		for(int i=0; i<actuators.getSize(); i++) cout << (i>0?", ":"") << actuators.get(i)->getName();
+		cout << endl;
+	}
+	if(_perturbGravity) cout << "Gravity perturbation on" << endl;
+	cout << endl;
+
+	cout << "MEASURED INDUCED ACCELERATIONS:" << endl;
+	if(ncoords) {
+		cout << "Kinematics: ";
+		for(int i=0;i<ncoords;i++) {
+			values_name[i] = kin->getPositionStorage()->getColumnLabelsArray()[i+1];
+			cout << (i>0?", ":"") << values_name[i];
+		}
+		cout << endl;
+	}
+	if(nbodycoords) {
+		cout << "BodyKinematics: ";
+		for(int i=0;i<nbodycoords;i++) {
+			values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabelsArray()[i+1];
+			cout << (i>0?", ":"") << values_name[ncoords+i];
+		}
+		cout << endl;
 	}
 
 	// The first ncoords values in the values_* arrays refer to generalized coordinates that are being measured; the
@@ -725,14 +781,14 @@ void PerturbationTool::run()
 		// Unperturbed forces
 		Array<double> unperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData(); // at BEGINNING of timestep
 		// include unperturbed gravity value if doing gravity perturbation
-		if(gravity_perturbation) unperturbedForces.append(original_gravity[gravity_axis]);
+		if(_perturbGravity) unperturbedForces.append(original_gravity[gravity_axis]);
 
 		// Loop over muscles
 		for (int m=0;m<nperturb;m++)	{
 			_model->getDerivCallbackSet()->resetCallbacks();
 			perturbation->reset(); 
-			if(m<na) {
-				AbstractActuator *act = as->get(m);
+			if(m<actuators.getSize()) {
+				AbstractActuator *act = actuators.get(m);
 				// Set up pertubation callback
 				cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 				perturbation->setActuator(act); 
@@ -749,8 +805,8 @@ void PerturbationTool::run()
 			// Integrate
  			manager.integrate();
 
-			if(m<na) {
-				cout << "muscle:\t"<<m<<"\tforce:\t"<<unperturbedForces[m]<<endl;
+			if(m<actuators.getSize()) {
+				cout << "actuator:\t"<<m<<"\tforce:\t"<<unperturbedForces[m]<<endl;
 			} else {
 				cout << "gravity original:\t"<<unperturbedForces[m]<<endl;
 				// undo gravity perturbation

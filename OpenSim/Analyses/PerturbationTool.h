@@ -48,6 +48,12 @@ private:
 	/** Magnitude of perturbation. */
 	PropertyDbl _pertDFProp;
 	double &_pertDF;
+	/** Actuators to perturb. */
+	PropertyStrArray _actuatorsToPerturbProp;
+	Array<std::string> &_actuatorsToPerturb;
+	/** Whether or not to perturb gravity. */
+	PropertyBool _perturbGravityProp;
+	bool &_perturbGravity;
 	/** Name of the controls file. */
 	PropertyStr _controlsFileNameProp;
 	std::string &_controlsFileName;
