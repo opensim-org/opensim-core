@@ -22,6 +22,9 @@
 
 namespace OpenSim { 
 
+class ForceApplier;
+class TorqueApplier;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -110,7 +113,11 @@ public:
 		const std::string &aExternalLoadsModelKinematicsFileName,
 		const std::string &aExternalLoadsBody1,
 		const std::string &aExternalLoadsBody2,
-		double aLowpassCutoffFrequencyForLoadKinematics);
+		double aLowpassCutoffFrequencyForLoadKinematics,
+		ForceApplier **rRightForceApp=0,
+		ForceApplier **rLeftForceApp=0,
+		TorqueApplier **rRightTorqueApp=0,
+		TorqueApplier **rLeftTorqueApp=0);
 
 //=============================================================================
 };	// END of class ForwardTool

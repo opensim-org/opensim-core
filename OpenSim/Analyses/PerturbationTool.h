@@ -22,6 +22,8 @@
 
 namespace OpenSim { 
 
+class ForceApplier;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -100,6 +102,19 @@ private:
 	/** Rise time for scaling functions. */
 	PropertyDbl _tauProp;
 	double &_tau;
+	PropertyDbl _tauRightStartProp;
+	double &_tauRightStart;
+	PropertyDbl _tauRightEndProp;
+	double &_tauRightEnd;
+	PropertyDbl _tauLeftStartProp;
+	double &_tauLeftStart;
+	PropertyDbl _tauLeftEndProp;
+	double &_tauLeftEnd;
+	/** Spring transition weight. */
+	PropertyDbl _springTransitionStartWeightProp;
+	double &_springTransitionStartWeight;
+	PropertyDbl _springTransitionEndWeightProp;
+	double &_springTransitionEndWeight;
 	/** Stiffness for linear corrective springs. */
 	PropertyDblArray _kLinProp;
 	Array<double> &_kLin;
@@ -151,7 +166,7 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void constructCorrectiveSprings();
+	void constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

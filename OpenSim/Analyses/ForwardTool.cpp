@@ -423,7 +423,11 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 								const string &aExternalLoadsModelKinematicsFileName,
 								const string &aExternalLoadsBody1,
 								const string &aExternalLoadsBody2,
-								double aLowpassCutoffFrequencyForLoadKinematics)
+								double aLowpassCutoffFrequencyForLoadKinematics,
+								ForceApplier **rRightForceApp,
+								ForceApplier **rLeftForceApp,
+								TorqueApplier **rRightTorqueApp,
+								TorqueApplier **rLeftTorqueApp)
 {
 	if(aExternalLoadsFileName=="") {
 		cout<<"\n\nWARNING- a file name for external loads was not specified.";
@@ -628,4 +632,9 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 	aModel->addDerivCallback(leftForceApp);
 	aModel->addDerivCallback(rightTorqueApp);
 	aModel->addDerivCallback(leftTorqueApp);
+
+	if(rRightForceApp) *rRightForceApp=rightForceApp;
+	if(rLeftForceApp) *rLeftForceApp=leftForceApp;
+	if(rRightTorqueApp) *rRightTorqueApp=rightTorqueApp;
+	if(rLeftTorqueApp) *rLeftTorqueApp=leftTorqueApp;
 }

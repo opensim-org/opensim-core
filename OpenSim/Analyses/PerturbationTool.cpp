@@ -24,6 +24,7 @@
 #include <OpenSim/Analyses/LinearSpring.h>
 #include <OpenSim/Analyses/TorsionalSpring.h>
 #include <OpenSim/Analyses/ActuatorPerturbationIndependent.h>
+#include <OpenSim/Analyses/ForceApplier.h>
 
 
 
@@ -65,6 +66,12 @@ PerturbationTool::PerturbationTool() :
 	_lHeelOff(_lHeelOffProp.getValueDbl()),
 	_lToeOff(_lToeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
+	_tauRightStart(_tauRightStartProp.getValueDbl()),
+	_tauRightEnd(_tauRightEndProp.getValueDbl()),
+	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
+	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
+	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -108,6 +115,12 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	_lHeelOff(_lHeelOffProp.getValueDbl()),
 	_lToeOff(_lToeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
+	_tauRightStart(_tauRightStartProp.getValueDbl()),
+	_tauRightEnd(_tauRightEndProp.getValueDbl()),
+	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
+	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
+	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -181,6 +194,12 @@ PerturbationTool(const PerturbationTool &aTool):
 	_lHeelOff(_lHeelOffProp.getValueDbl()),
 	_lToeOff(_lToeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
+	_tauRightStart(_tauRightStartProp.getValueDbl()),
+	_tauRightEnd(_tauRightEndProp.getValueDbl()),
+	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
+	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
+	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -220,6 +239,9 @@ setNull()
 
 	// CORRECTIVE SPRING PARAMETERS
 	_tau = 0.001;
+	_tauRightStart = _tauRightEnd = _tauLeftStart = _tauLeftEnd = _tau;
+	_springTransitionStartWeight = 0.05;
+	_springTransitionEndWeight = 0.25;
 	_kLin.setSize(3);
 	_kLin[0] = _kLin[1] = _kLin[2] = 5000000.0;
 	_bLin.setSize(3);
@@ -273,6 +295,36 @@ void PerturbationTool::setupProperties()
 	_tauProp.setComment(comment);
 	_tauProp.setName("scaling_rise_time");
 	_propertySet.append( &_tauProp );
+
+	comment = "Override scaling_rise_time for right foot flat (transition in).";
+	_tauRightStartProp.setComment(comment);
+	_tauRightStartProp.setName("scaling_rise_time_right_start");
+	_propertySet.append( &_tauRightStartProp );
+
+	comment = "Override scaling_rise_time for right heel off (transition out).";
+	_tauRightEndProp.setComment(comment);
+	_tauRightEndProp.setName("scaling_rise_time_right_end");
+	_propertySet.append( &_tauRightEndProp );
+
+	comment = "Override scaling_rise_time for left foot flat (transition in).";
+	_tauLeftStartProp.setComment(comment);
+	_tauLeftStartProp.setName("scaling_rise_time_left_start");
+	_propertySet.append( &_tauLeftStartProp );
+
+	comment = "Override scaling_rise_time for left heel off (transition out).";
+	_tauLeftEndProp.setComment(comment);
+	_tauLeftEndProp.setName("scaling_rise_time_left_end");
+	_propertySet.append( &_tauLeftEndProp );
+
+	comment = "Percent of body weight at which linear springs start to transition in.";
+	_springTransitionStartWeightProp.setComment(comment);
+	_springTransitionStartWeightProp.setName("spring_transition_start_weight");
+	_propertySet.append( &_springTransitionStartWeightProp );
+
+	comment = "Percent of body weight past which linear springs are fully activated.";
+	_springTransitionEndWeightProp.setComment(comment);
+	_springTransitionEndWeightProp.setName("spring_transition_end_weight");
+	_propertySet.append( &_springTransitionEndWeightProp );
 
 	_kLinProp.setComment("Stiffness for linear (translational) corrective springs");
 	_kLinProp.setName("corrective_spring_linear_stiffness");
@@ -450,6 +502,14 @@ void PerturbationTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
+	// GROUND REACTION FORCES
+	ForceApplier *rightGRFApp, *leftGRFApp;
+	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&rightGRFApp,&leftGRFApp);
+
+	// CONSTRUCT CORRECTIVE SPRINGS
+	constructCorrectiveSprings(rightGRFApp,leftGRFApp);
+
 	// INPUT
 	// Controls
 	cout<<endl<<endl<<"Loading controls from file "<<_controlsFileName<<".\n";
@@ -460,13 +520,6 @@ void PerturbationTool::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int na = _model->getNumActuators();
-
-	// GROUND REACTION FORCES
-	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
-
-	// CONSTRUCT CORRECTIVE SPRINGS
-	constructCorrectiveSprings();
 
 	// Add actuation analysis -- needed in order to evaluate unperturbed forces
 	// Actuation
@@ -758,7 +811,7 @@ void PerturbationTool::run()
  * Construct the corrective springs.
  */
 void PerturbationTool::
-constructCorrectiveSprings()
+constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp)
 {
 	// Qs and Us
 	cout<<"\n\nLoading generalized coordinates and speeds from files "
@@ -772,31 +825,51 @@ constructCorrectiveSprings()
 	_model->getDynamicsEngine().convertDegreesToRadians(&uStore);
 
 	// SCALING FUNCTIONS FOR SPRINGS
-	double tScale,dtScale=0.001;
+	double dtScale=0.001;
 	double tiScale = qStore.getFirstTime();
 	double tfScale = qStore.getLastTime();
-	double value1,value2;
 	Array<double> timeScale(0.0);
 	Array<double> rLinearScale(0.0),rTorsionalScale(0.0);
 	Array<double> lLinearScale(0.0),lTorsionalScale(0.0);
-	for(tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
+
+	double tauRStart = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
+	double tauREnd = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
+	double tauLStart = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
+	double tauLEnd = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
+
+	cout << "Spring parameters:" << endl;
+	cout << "\tSpring transition weights: " << _springTransitionStartWeight << " " << _springTransitionEndWeight << endl;
+	cout << "\tTau values: right_start = " << tauRStart << ", right_end = " << tauREnd << ", left_start = " << tauLStart << ", left_end = " << tauLEnd << endl;
+
+	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
 		// time
 		timeScale.append(tScale);
+		double value1,value2;
+#if 0
 		// rLinear
 		value1 = rdMath::SigmaUp(_tau,_rHeelStrike,tScale);
 		value2 = rdMath::SigmaDn(_tau,_rToeOff,tScale);
 		rLinearScale.append(value1+value2-1.0);
-		// rTorsional
-		value1 = rdMath::SigmaUp(_tau,_rFootFlat,tScale);
-		value2 = rdMath::SigmaDn(_tau,_rHeelOff,tScale);
-		rTorsionalScale.append(value1+value2-1.0);
 		// lLinear
 		value1 = rdMath::SigmaUp(_tau,_lHeelStrike,tScale);
 		value2 = rdMath::SigmaDn(_tau,_lToeOff,tScale);
 		lLinearScale.append(value1+value2-1.0);
+#else
+		double r_grf[3], l_grf[3];
+		aRightGRFApp->getForceFunction()->evaluate(&tScale,r_grf);
+		aLeftGRFApp->getForceFunction()->evaluate(&tScale,l_grf);
+		double r_grf_y_norm = rdMath::Clamp(r_grf[1]/(r_grf[1]+l_grf[1]),0.,1.);
+		double l_grf_y_norm = 1-r_grf_y_norm;
+		rLinearScale.append(rdMath::Step(r_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
+		lLinearScale.append(rdMath::Step(l_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
+#endif
+		// rTorsional
+		value1 = rdMath::SigmaUp(tauRStart,_rFootFlat,tScale);
+		value2 = rdMath::SigmaDn(tauREnd,_rHeelOff,tScale);
+		rTorsionalScale.append(value1+value2-1.0);
 		// lTorsional
-		value1 = rdMath::SigmaUp(_tau,_lFootFlat,tScale);
-		value2 = rdMath::SigmaDn(_tau,_lHeelOff,tScale);
+		value1 = rdMath::SigmaUp(tauLStart,_lFootFlat,tScale);
+		value2 = rdMath::SigmaDn(tauLEnd,_lHeelOff,tScale);
 		lTorsionalScale.append(value1+value2-1.0);
 	}
 	// Create Splines
@@ -896,6 +969,24 @@ constructCorrectiveSprings()
 	lTrq->setBValue(&_bTor[0]);
 	lTrq->setScaleFunction(lScaleTorsionalSpline);
 	_model->addDerivCallback(lTrq);
+
+
+	string labels = "time\tr_scale_linear\tl_scale_linear\tr_scale_torsional\tl_scale_torsional\tr_stance\tl_stance\tr_footflat\tl_footflat";
+	Storage debugStorage;
+	debugStorage.setColumnLabels(labels.c_str());
+	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
+		double values[8] = {rScaleTranslationalSpline->evaluate(0,tScale), 
+								  lScaleTranslationalSpline->evaluate(0,tScale),
+								  rScaleTorsionalSpline->evaluate(0,tScale),
+								  lScaleTorsionalSpline->evaluate(0,tScale),
+								  (_rHeelStrike<=tScale && tScale<=_rToeOff)?1:0,
+								  (_lHeelStrike<=tScale && tScale<=_lToeOff)?1:0,
+								  (_rFootFlat<=tScale && tScale<=_rHeelOff)?1:0,
+								  (_lFootFlat<=tScale && tScale<=_lHeelOff)?1:0};
+		debugStorage.append(tScale,8,values);
+	}
+	debugStorage.print("spring_scales.sto");
+	cout << "Wrote out spring_scales.sto for debugging spring scaling" << endl;
 }
 
 
