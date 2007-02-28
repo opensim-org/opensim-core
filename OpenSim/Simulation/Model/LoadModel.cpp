@@ -16,7 +16,20 @@
 #define PORTABLE_HMODULE void *
 #define PORTABLE_HINSTANCE void *
 #define WINAPI
-#define LoadLibrary(name) dlopen(name, RTLD_LAZY)
+// LoadLibrary used to be a macro for dlopen but we want to transparently support
+// adding the "lib" prefix to library names when loading them, so made it a function
+static void *LoadLibrary(const char *name) {
+	void *lib = dlopen(name, RTLD_LAZY);
+	if(!lib) {
+		std::string libName = OpenSim::IO::GetFileNameFromURI(name);
+		if(libName.size()<3 || libName.substr(0,3)!="lib") { // if it doesn't already have lib prefix
+			libName = OpenSim::IO::getParentDirectory(name) + "lib" + libName;
+			std::cout << "Loading " << name << " failed, trying " << libName << " (for linux compatibility)" << std::endl;
+			lib = dlopen(libName.c_str(), RTLD_LAZY); 
+		}
+	}
+	return lib;
+}
 #define GetProcAddress(handle, proc) dlsym(handle, proc)
 #define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
 #else
