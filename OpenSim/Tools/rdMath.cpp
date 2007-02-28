@@ -151,6 +151,26 @@ SigmaDn(double tau,double to,double t)
 	return(1.0 -  1.0 / (1.0 + exp(-(t-to)/tau)) );
 }
 
+//=============================================================================
+// CUBIC STEP FUNCTION
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * A smooth step-down function using cubic polynomial.
+ * x=0 for t<t0, x=1 for t>t1, and x=smooth step in between t0 and t1.
+ *
+ * @param t    Parameter at which to evaluate step function
+ * @param t0   Parameter value at which step starts (result=0 to the left)
+ * @param t1   Parameter value at which step ends (result=1 to the right)
+ */
+double rdMath::
+Step(double t, double t0, double t1)
+{
+	double tn=(t-t0)/(t1-t0);
+	if(tn<0) return 0;
+	else if(tn>1) return 1;
+	else return pow(tn,2)*(3-2*tn);
+}
 
 //=============================================================================
 // FITTING EQUATIONS

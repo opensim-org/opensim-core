@@ -79,6 +79,13 @@ public:
 public:
 
 	//--------------------------------------------------------------------------
+	// MIN / MAX
+	//--------------------------------------------------------------------------
+	template<class T> static inline T Min(T a,T b) { return a <= b ? a : b; }
+	template<class T> static inline T Max(T a,T b) { return a >= b ? a : b; }
+	template<class T> static inline T Clamp(T x,T xmin,T xmax) { return x<xmin ? xmin : (x>xmax ? xmax : x); }
+
+	//--------------------------------------------------------------------------
 	// ARITHMATIC
 	//--------------------------------------------------------------------------
 	static double CopySign(double aMag,double aSign);
@@ -90,6 +97,11 @@ public:
 	//--------------------------------------------------------------------------
 	static double SigmaUp(double tau,double to,double t);
 	static double SigmaDn(double tau,double to,double t);
+
+	//--------------------------------------------------------------------------
+	// CUBIC STEP FUNCTION
+	//--------------------------------------------------------------------------
+	static double Step(double t, double t0, double t1);
 
 	//--------------------------------------------------------------------------
 	// CURVE FITTING
