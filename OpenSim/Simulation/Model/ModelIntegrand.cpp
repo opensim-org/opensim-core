@@ -466,7 +466,7 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 	// STORE STARTING CONTROLS
 	if(_controlStore!=NULL) {
 		// ONLY IF NO CONTROLS WERE PREVIOUSLY STORED
-		if(_controlStore->getLastStateVector()==NULL) {
+		if(_controlStore->getSize()==0) {
 			_controlStore->store(step,tReal,nx,&_x[0]);
 		}
 	}
@@ -474,7 +474,7 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 	// STORE STARTING STATES
 	if(_stateStore!=NULL) {
 		// ONLY IF NO STATES WERE PREVIOUSLY STORED
-		if(_stateStore->getLastStateVector()==NULL) {
+		if(_stateStore->getSize()==0) {
 			_stateStore->store(step,tReal,ny,y);
 		}
 	}
@@ -482,7 +482,7 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 	// STORE STARTING PSEUDOSTATES
 	if(_pseudoStore!=NULL) {
 		// ONLY IF NO STATES WERE PREVIOUSLY STORED
-		if(_pseudoStore->getLastStateVector()==NULL) {
+		if(_pseudoStore->getSize()==0) {
 			_model->getPseudoStates(&_yp[0]);
 			_pseudoStore->store(step,tReal,nyp,&_yp[0]);
 		}
