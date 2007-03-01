@@ -328,6 +328,7 @@ void   simm_event_handler(void);
 void   make_ambient_color(GLfloat old_color[], GLfloat new_color[]);
 void   make_and_queue_simm_event(unsigned int event_code, void* struct_ptr,
 				 int field1, int field2);
+int    makeDir(const char aDirName[]);
 void   make_gencoord_help_text(int mod);
 #endif
 void   make_ground_conversion(ModelStruct* ms, int seg);

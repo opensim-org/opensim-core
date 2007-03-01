@@ -45,6 +45,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <ctype.h>
+#include <direct.h>
 
 #define _POSIX_ 1
 
@@ -2674,4 +2675,13 @@ RTConnection is_model_realtime(ModelStruct* ms)
    {
       return ms->realtimeState;
    }
+}
+
+int makeDir(const char aDirName[])
+{
+#ifdef __linux__
+	return mkdir(aDirName,S_IRWXU);
+#else
+	return _mkdir(aDirName);
+#endif
 }

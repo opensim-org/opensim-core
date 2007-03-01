@@ -13,6 +13,7 @@
 *******************************************************************************/
 
 #include <float.h>
+#include <errno.h>
 
 #include "universal.h"
 #include "main.h"
@@ -21,20 +22,21 @@
 ModelStruct* sMotionModel = NULL;
 char* markerSetOut = NULL;
 
-void write_xml_model(ModelStruct* ms, char filename[], int angleUnits);
+void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[], int angleUnits);
+int makeDir(const char aDirName[]);
 
 static void printUsage(char programName[])
 {
-	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-ms markerset_out] [-a degrees | radians]\n", programName);
+	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-ms markerset_out] [-g geometry_directory] [-a degrees | radians]\n", programName);
 }
 
 int main(int argc, char* argv[])
 {
    ModelStruct* ms;
-	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL;
+	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL, *geometryDirectory = NULL;
 	int angleUnits = RADIANS;
 
-	printf("SimmToXML, version 0.7.8 (Jan. 5, 2007)\n");
+	printf("SimmToXML, version 0.8.0 (March 1, 2007)\n");
 
    if (argc < 5)
    {
@@ -65,6 +67,11 @@ int main(int argc, char* argv[])
 			else if (STRINGS_ARE_EQUAL(argv[i], "-ms") || STRINGS_ARE_EQUAL(argv[i], "-MS"))
 			{
 				markerSetOut = argv[i+1];
+				i++; 
+			}
+			else if (STRINGS_ARE_EQUAL(argv[i], "-g") || STRINGS_ARE_EQUAL(argv[i], "-G"))
+			{
+				geometryDirectory = argv[i+1];
 				i++; 
 			}
 			else if (STRINGS_ARE_EQUAL(argv[i], "-a") || STRINGS_ARE_EQUAL(argv[i], "-A"))
@@ -129,7 +136,7 @@ int main(int argc, char* argv[])
 		//printf("Read muscle file %s\n", ms->musclefilename);
 	}
 
-   write_xml_model(ms, xmlOut, angleUnits);
+   write_xml_model(ms, xmlOut, geometryDirectory, angleUnits);
 
 	printf("Wrote OpenSim model file %s\n", xmlOut);
 	exit(0);
@@ -425,12 +432,17 @@ void write_xml_markers(FILE* fp, ModelStruct* ms)
 }
 
 
-void write_vtk_bone(PolyhedronStruct* bone, char filename[])
+void write_vtk_bone(PolyhedronStruct* bone, char geometryDirectory[], char filename[])
 {
 	int i, j, count;
+	char path[4096];
 	FILE* fp;
 
-	fp = fopen(filename, "w");
+	build_full_path(geometryDirectory, filename, path);
+	fp = fopen(path, "w");
+	if (fp == NULL)
+		return;
+
 	fprintf(fp, "<?xml version=\"1.0\"?>\n");
 	fprintf(fp, "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\" compressor=\"vtkZLibDataCompressor\">\n");
 	fprintf(fp, "\t<PolyData>\n");
@@ -572,9 +584,10 @@ void write_xml_wrap_object(FILE* fp, WrapObject* wo, int angleUnits)
 	}
 }
 
-void write_xml_bodies(FILE* fp, ModelStruct* ms, int angleUnits)
+void write_xml_bodies(FILE* fp, ModelStruct* ms, char geometryDirectory[], int angleUnits)
 {
 	int i, j;
+	SBoolean madeDir = no;
 
 	fprintf(fp, "\t\t\t<BodySet>\n");
 	fprintf(fp, "\t\t\t<objects>\n");
@@ -597,7 +610,27 @@ void write_xml_bodies(FILE* fp, ModelStruct* ms, int angleUnits)
 			{
 				change_filename_suffix(ss->bone[j].name, vtpFileName, "vtp");
 				fprintf(fp, "%s ", vtpFileName);
-				write_vtk_bone(&ss->bone[j], vtpFileName);
+				// Only write the bone file if the PolyhedronStruct is not empty
+				if (ss->bone[j].num_vertices > 0 && ss->bone[j].num_polygons > 0)
+				{
+					// The first time you write a bone file, check to see if the
+					// output directory needs to be created.
+					if (madeDir == no)
+					{
+						if (geometryDirectory)
+						{
+							if (makeDir(geometryDirectory) != 0 && errno != EEXIST)
+							{
+								printf("Warning: Unable to create geometry directory %s.\n", geometryDirectory);
+								printf("         VTK geometry files will not be output for this model.\n");
+							}
+						}
+						// Whether or not you successfully created the geometry directory,
+						// you don't want to try to create it again.
+						madeDir = yes;
+					}
+					write_vtk_bone(&ss->bone[j], geometryDirectory, vtpFileName);
+				}
 			}
 			fprintf(fp, "</geometry_files>\n");
 			fprintf(fp, "\t\t\t\t\t</VisibleObject>\n");
@@ -848,13 +881,13 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 }
 
 
-void write_xml_ke(FILE* fp, ModelStruct* ms, int angleUnits)
+void write_xml_ke(FILE* fp, ModelStruct* ms, char geometryDirectory[], int angleUnits)
 {
 	fprintf(fp, "\t<DynamicsEngine>\n");
 	fprintf(fp, "\t\t<SimmKinematicsEngine>\n");
 	write_xml_gravity(fp, ms);
 	write_xml_markers(fp, ms);
-	write_xml_bodies(fp, ms, angleUnits);
+	write_xml_bodies(fp, ms, geometryDirectory, angleUnits);
 	write_xml_coordinates(fp, ms, angleUnits);
 	write_xml_joints(fp, ms, angleUnits);
 	fprintf(fp, "\t\t</SimmKinematicsEngine>\n");
@@ -880,7 +913,7 @@ void write_xml_defaults(FILE* fp, ModelStruct* ms, int angleUnits)
 	fprintf(fp, "\t</defaults>\n");
 }
 
-void write_xml_model(ModelStruct* ms, char filename[], int angleUnits)
+void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[], int angleUnits)
 {
 	FILE* fp;
 
@@ -894,7 +927,7 @@ void write_xml_model(ModelStruct* ms, char filename[], int angleUnits)
 		fprintf(fp, "\t<angle_units> radians </angle_units>\n");
 	write_xml_units(fp, ms);
 	write_xml_muscles(fp, ms, angleUnits);
-	write_xml_ke(fp, ms, angleUnits);
+	write_xml_ke(fp, ms, geometryDirectory, angleUnits);
 	fprintf(fp, "</AbstractModel>\n");
 	fclose(fp);
 }
