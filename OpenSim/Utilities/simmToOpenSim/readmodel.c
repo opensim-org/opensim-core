@@ -1206,12 +1206,19 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
       {
          int num = fscanf(*fp,"%lg", &wo->height);
 
-         if (num == 1 && wo->height <= 0.0)
+         if (num == 1) 
          {
-            error(none, "Value must be greater than zero.");
-            num = -1;
+				if (wo->height <= 0.0)
+				{
+					error(none, "Value must be greater than zero.");
+					num = -1;
+				}
+				else	// Good cylinder height
+				{
+					wo->radius.xyz[1]=wo->height;
+				}
          }
-
+			
          if (num != 1)
          {
             (void)sprintf(errorbuffer, "Error reading cylinder height for wrap object %s",
