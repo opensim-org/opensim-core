@@ -794,9 +794,9 @@ computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
 	int iMX = forceStore->getColumnIndex("MX");
 	int iMY = forceStore->getColumnIndex("MY");
 	int iMZ = forceStore->getColumnIndex("MZ");
-	cout<<"Residual Indices:\n";
-	cout<<"iFX="<<iFX<<" iFY="<<iFY<<" iFZ="<<iFZ<<endl;
-	cout<<"iMX="<<iMX<<" iMY="<<iMY<<" iMZ="<<iMZ<<endl;
+	//cout<<"Residual Indices:\n";
+	//cout<<"iFX="<<iFX<<" iFY="<<iFY<<" iFZ="<<iFZ<<endl;
+	//cout<<"iMX="<<iMX<<" iMY="<<iMY<<" iMZ="<<iMZ<<endl;
 
 	// GET AVE FORCES
 	if(iFX>=0) rFAve[0] = ave[iFX];
