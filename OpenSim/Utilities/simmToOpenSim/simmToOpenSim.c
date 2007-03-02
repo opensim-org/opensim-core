@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL, *geometryDirectory = NULL;
 	int angleUnits = RADIANS;
 
-	printf("SimmToXML, version 0.8.0 (March 1, 2007)\n");
+	printf("simmToOpenSim, version 0.8.0 (March 1, 2007)\n");
 
    if (argc < 5)
    {
