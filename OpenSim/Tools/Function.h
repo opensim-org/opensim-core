@@ -100,6 +100,9 @@ public:
 	Function(const Function &aFunction);
 	virtual ~Function();
 	virtual Object* copy() const = 0;
+
+	static Function* safeDownCast(Object* aObject) { return dynamic_cast<Function*>(aObject); }
+
 private:
 	void setNull();
 	void setupProperties();
