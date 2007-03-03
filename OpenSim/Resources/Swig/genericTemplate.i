@@ -97,6 +97,10 @@
 #include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
 #include <OpenSim/Simulation/SIMM/SimmUnits.h>
 
+#include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
+#include <OpenSim/Simulation/SIMM/SimmDarrylMuscle.h>
+#include <OpenSim/Simulation/SIMM/SimmZajacHill.h>
+
 #include <OpenSim/Applications/Workflow/workflowDLL.h>
 #include <OpenSim/Subject/SimmGenericModelMaker.h>
 #include <OpenSim/Subject/SimmModelScaler.h>
@@ -344,6 +348,10 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
 %template(SetSimmMusclePoint) OpenSim::Set<OpenSim::SimmMusclePoint>;
 %include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
+
+%include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
+%include <OpenSim/Simulation/SIMM/SimmDarrylMuscle.h>
+%include <OpenSim/Simulation/SIMM/SimmZajacHill.h>
 
 %include <OpenSim/Simulation/SIMM/SimmPoint.h>
 %include <OpenSim/Simulation/SIMM/SimmRotationDof.h>

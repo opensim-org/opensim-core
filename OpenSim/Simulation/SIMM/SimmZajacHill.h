@@ -38,6 +38,13 @@
 #include <OpenSim/Tools/Function.h>
 #include "AbstractSimmMuscle.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class RDSIMULATION_API SimmMuscleGroup;
@@ -125,7 +132,9 @@ public:
 	virtual ~SimmZajacHill();
 	virtual Object* copy() const;
 
+#ifndef SWIG
 	SimmZajacHill& operator=(const SimmZajacHill &aMuscle);
+#endif
    void copyData(const SimmZajacHill &aMuscle);
 
 	virtual void computeStateDerivatives(double rDYDT[]);

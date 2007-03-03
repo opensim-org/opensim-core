@@ -38,6 +38,13 @@
 #include "SimmMusclePointSet.h"
 #include "MuscleWrapSet.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class SimmMuscleGroup;
@@ -105,7 +112,11 @@ public:
 	virtual Object* copy() const = 0;
 	virtual void setup(AbstractModel *aModel);
 
+	static AbstractSimmMuscle* safeDownCast(Object* aObject) { return dynamic_cast<AbstractSimmMuscle*>(aObject); }
+
+#ifndef SWIG
 	AbstractSimmMuscle& operator=(const AbstractSimmMuscle &aMuscle);
+#endif
    void copyData(const AbstractSimmMuscle &aMuscle);
 	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
 	int getMuscleModelIndex() const { return _muscleModelIndex; }
