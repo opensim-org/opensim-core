@@ -99,7 +99,7 @@ public:
 	void setAttachment(double aAttachment[3]);
 	const AbstractBody* getBody() const { return _body; }
 	void setBody(AbstractBody& aBody);
-	std::string& getBodyName() const { return _bodyName; }
+	const std::string& getBodyName() const { return _bodyName; }
 	void scale(Array<double>& aScaleFactors);
 
 	virtual bool isActive() const { return true; }
