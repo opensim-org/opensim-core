@@ -15,6 +15,18 @@ if strcmp(trialname,'ss_walking1')
     tInfo.ss_walking1 = trial;
 end
 
+% slow_walking1
+if strcmp(trialname,'slow_walking1')
+    trial.trial = 'slow_walking1';
+    trial.speed = 1.02;
+    ictoInput = compute_ictoMatrixInput('delaware2_slow_walking1_newgrfprocessing.mot');
+    trial.contactRanges = ictoInput.contactRanges;
+    [trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(trial.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
+    trial.ancFile = 'slow_walking_751.anc';
+    trial.c3dFile = 'slow_walking_751_smoothed.c3d';
+    tInfo.slow_walking1 = trial;
+end
+
 % very_slow_walking1
 if strcmp(trialname,'very_slow_walking1')
     trial.trial = 'very_slow_walking1';
@@ -39,6 +51,6 @@ if strcmp(trialname,'fast_walking1')
     tInfo.fast_walking1 = trial;
 end
 
-if ~strcmp(trialname,'ss_walking1') && ~strcmp(trialname,'very_slow_walking1') && ~strcmp(trialname,'fast_walking1')
+if ~strcmp(trialname,'ss_walking1') && ~strcmp(trialname,'very_slow_walking1') && ~strcmp(trialname,'fast_walking1') && ~strcmp(trialname,'slow_walking1')
     sprintf('trialname %s not found',trialname);
 end
