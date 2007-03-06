@@ -91,6 +91,8 @@ public:
 	void
 		computePointAndTargetFunctions(Storage *aQStore,Storage *aUStore,
 		VectorFunction &aPGlobal);
+	void
+		computeTargetFunctions(Storage *aQStoreForTarget,Storage *aUStoreForTarget);
 
 	//--------------------------------------------------------------------------
 	// CALLBACKS

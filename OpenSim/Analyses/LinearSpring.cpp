@@ -295,10 +295,14 @@ computePointAndTargetFunctions(
 	Storage *aQStore,Storage *aUStore,VectorFunction &aPGlobal)
 {
 	computePointFunction(aQStore, aUStore, aPGlobal);
+	computeTargetFunctions(aQStore, aUStore);
+}
 
+void LinearSpring::
+computeTargetFunctions(Storage *aQStoreForTarget,Storage *aUStoreForTarget)
+{
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int size = aQStore->getSize();
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
 	Array<double> pGlobal(0.0,3),pLocal(0.0,3);
@@ -306,12 +310,12 @@ computePointAndTargetFunctions(
 	Storage pStore,pGlobalStore,vGlobalStore;
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
-	size = aQStore->getSize();
+	int size = aQStoreForTarget->getSize();
 	for(int i=0;i<size;i++) {
 		// Set the model state
-		aQStore->getTime(i,*(&t[0]));
-		aQStore->getData(i,nq,&q[0]);
-		aUStore->getData(i,nu,&u[0]);
+		aQStoreForTarget->getTime(i,*(&t[0]));
+		aQStoreForTarget->getData(i,nq,&q[0]);
+		aUStoreForTarget->getData(i,nu,&u[0]);
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity
