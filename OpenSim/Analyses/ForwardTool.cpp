@@ -463,10 +463,8 @@ initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileN
 		cout<<"\n\nNote- not filtering the external loads model kinematics.\n\n";
 	}
 	// Spline
-	cout<<"\nConstruction function set for tracking...\n\n";
 	GCVSplineSet qSet(5,qStore);
 	Storage *uStore = qSet.constructStorage(1);
-
 
 	// LOAD COP, FORCE, AND TORQUE
 	Storage kineticsStore(aExternalLoadsFileName);

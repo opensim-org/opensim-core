@@ -151,7 +151,7 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 	double *times=NULL,*data=NULL;
 	GCVSpline *spline;
 	name = strtok(names,"\t");
-	printf("GCVSplineSet.construct:  contructing splines...\n");
+	//printf("GCVSplineSet.construct:  contructing splines...\n");
 	for(i=0;nData>0;i++) {
 
 		// GET TIMES AND DATA
@@ -160,8 +160,8 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 
 		// CHECK
 		if(nTime!=nData) {
-			printf("\nGCVSplineSet.construct: ERR- number of times (%d)",nTime);
-			printf(" and number of data (%d) don't agree.\n",nData);
+			std::cout << "\nGCVSplineSet.construct: ERR- number of times (" << nTime << ")"
+				  << " and number of data (" << nData << ") don't agree.\n";
 			break;
 		}
 		if(nData==0) break;
@@ -175,13 +175,13 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 		}
 
 		// CONSTRUCT SPLINE
-		printf("%s\t",name);
+		//printf("%s\t",name);
 		spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
 
 		// ADD SPLINE
 		append(spline);
 	}
-	printf("\n%d splines constructed.\n\n",i);
+	//printf("\n%d splines constructed.\n\n",i);
 
 	// MIN AND MAX TIME
 	setMinX(aStore->getFirstTime());

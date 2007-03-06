@@ -517,7 +517,7 @@ void CMCTool::run()
 	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
 
 	// Spline
-	cout<<"\nConstruction function set for tracking...\n\n";
+	cout<<"\nConstructing function set for tracking...\n\n";
 	GCVSplineSet qSet(5,qStore);
 	Storage *uStore = qSet.constructStorage(1);
 	GCVSplineSet uSet(5,uStore);

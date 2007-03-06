@@ -565,8 +565,8 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	Array<double> qu(0.0,nq+nu);
 	int qSize = qStore->getSize();
 	int uSize = uStore->getSize();
-	cout<<"qSize = "<<qSize<<endl<<endl;
-	cout<<"uSize = "<<uSize<<endl<<endl;
+	//cout<<"qSize = "<<qSize<<endl<<endl;
+	//cout<<"uSize = "<<uSize<<endl<<endl;
 	rQComplete = new Storage();
 	rUComplete = new Storage();
 	for(i=0;i<size;i++) {
