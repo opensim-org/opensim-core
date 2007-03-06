@@ -57,9 +57,6 @@ private:
 	/** Name of the controls file. */
 	PropertyStr _controlsFileNameProp;
 	std::string &_controlsFileName;
-	/** Name of the center of pressure file. */
-	PropertyStr _copFileNameProp;
-	std::string &_copFileName;
 	/** Name of the generalized coordinate file. */
 	PropertyStr _qFileNameProp;
 	std::string &_qFileName;
@@ -69,14 +66,6 @@ private:
 	/** Name of the states file. */
 	PropertyStr _yFileNameProp;
 	std::string &_yFileName;
-
-	// FOOT BODY NAMES (WHERE SPRINGS WILL BE APPLIED)
-	/** Right foot. */
-	PropertyStr _rightFootNameProp;
-	std::string &_rightFootName;
-	/** Left foot. */
-	PropertyStr _leftFootNameProp;
-	std::string &_leftFootName;
 
 	// FOOT CONTACT EVENT TIMES
 	/** Time of right heel strike. */

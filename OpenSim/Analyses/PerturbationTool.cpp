@@ -53,12 +53,9 @@ PerturbationTool::PerturbationTool() :
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
 	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
-	_rightFootName(_rightFootNameProp.getValueStr()),
-	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -104,12 +101,9 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
 	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
-	_rightFootName(_rightFootNameProp.getValueStr()),
-	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -185,12 +179,9 @@ PerturbationTool(const PerturbationTool &aTool):
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
 	_perturbGravity(_perturbGravityProp.getValueBool()),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_copFileName(_copFileNameProp.getValueStr()),
 	_qFileName(_qFileNameProp.getValueStr()),
 	_uFileName(_uFileNameProp.getValueStr()),
 	_yFileName(_yFileNameProp.getValueStr()),
-	_rightFootName(_rightFootNameProp.getValueStr()),
-	_leftFootName(_leftFootNameProp.getValueStr()),
 	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
 	_rFootFlat(_rFootFlatProp.getValueDbl()),
 	_rHeelOff(_rHeelOffProp.getValueDbl()),
@@ -260,9 +251,6 @@ setNull()
 	_kTor[0] = _kTor[1] = _kTor[2] = 100000.0;
 	_bTor.setSize(3);
 	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
-
-	_rightFootName = "calcn_r";
-	_leftFootName = "calcn_l";
 
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
@@ -368,10 +356,6 @@ void PerturbationTool::setupProperties()
 	_controlsFileNameProp.setName("controls_file");
 	_propertySet.append( &_controlsFileNameProp );
 
-	_copFileNameProp.setComment("Storage file (.sto) containing the center of pressure.");
-	_copFileNameProp.setName("cop_file");
-	_propertySet.append( &_copFileNameProp );
-
 	comment = "Storage file (.sto) containing the generalized coordinates for the model. "
 				 "These coordinates are used in conjuction with the center of pressure data "
 				 "to place the corrective springs at the centers of pressure in the local frames "
@@ -393,15 +377,6 @@ void PerturbationTool::setupProperties()
 	_yFileNameProp.setComment(comment);
 	_yFileNameProp.setName("states_file");
 	_propertySet.append( &_yFileNameProp );
-
-	// FEET NAMES
-	_rightFootNameProp.setComment("Name of the right foot body (to which the right-side corrective springs will be applied).");
-	_rightFootNameProp.setName("right_foot_body");
-	_propertySet.append( &_rightFootNameProp );
-
-	_leftFootNameProp.setComment("Name of the left foot body (to which the left-side corrective springs will be applied).");
-	_leftFootNameProp.setName("left_foot_body");
-	_propertySet.append( &_leftFootNameProp );
 
 	// FOOT CONTACT EVENT TIMES
 	_rHeelStrikeProp.setComment("Time of right heel strike.  The linear corrective spring will increase its influence at this time.");
@@ -911,16 +886,8 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 		// time
 		timeScale.append(tScale);
 		double value1,value2;
-#if 0
-		// rLinear
-		value1 = rdMath::SigmaUp(_tau,_rHeelStrike,tScale);
-		value2 = rdMath::SigmaDn(_tau,_rToeOff,tScale);
-		rLinearScale.append(value1+value2-1.0);
-		// lLinear
-		value1 = rdMath::SigmaUp(_tau,_lHeelStrike,tScale);
-		value2 = rdMath::SigmaDn(_tau,_lToeOff,tScale);
-		lLinearScale.append(value1+value2-1.0);
-#else
+
+		// Use vertical GRF to transition linear springs
 		double r_grf[3], l_grf[3];
 		aRightGRFApp->getForceFunction()->evaluate(&tScale,r_grf);
 		aLeftGRFApp->getForceFunction()->evaluate(&tScale,l_grf);
@@ -928,7 +895,8 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 		double l_grf_y_norm = 1-r_grf_y_norm;
 		rLinearScale.append(rdMath::Step(r_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
 		lLinearScale.append(rdMath::Step(l_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
-#endif
+
+		// Use different tau's to transition torsional springs
 		// rTorsional
 		value1 = rdMath::SigmaUp(tauRStart,_rFootFlat,tScale);
 		value2 = rdMath::SigmaDn(tauREnd,_rHeelOff,tScale);
@@ -948,56 +916,18 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	GCVSpline *lScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lTorsionalScale[0]);
 	lScaleTorsionalSpline->setName("Left_Torsional");
 
-	// Center of pressure
-	cout<<"\n\nLoading center of pressure data from file "<<_copFileName<<".\n";
-	Storage copStore(_copFileName);
+	// TODO: this assumes that external loads body 1 is right foot, and external loads body 2 is left foot
+	if(_externalLoadsBody1.size() && _externalLoadsBody1[_externalLoadsBody1.size()-1]=='l' || 
+		_externalLoadsBody2.size() && _externalLoadsBody2[_externalLoadsBody2.size()-1]=='r')
+		throw Exception("PerturbationTool: ERR- External loads body 1 should be right foot and external loads body 2 should be left foot",__FILE__,__LINE__);
 
-	// CONSTRUCT SPRINGS
-	VectorGCVSplineR1R3 *cop;
-	int size = copStore.getSize();
-	double *t=0,*x=0,*y=0,*z=0;
-	copStore.getTimeColumn(t);
-
-	// Look for center of pressure columns in the storage file.  We handle two types of column labels: ground_force_p{x,y,z}_{r,l} (i.e. explicitly
-	// suffixing with right and left sides, and ground_force_p{x,y,z} which doesn't explicitly give side and instead we assume the first occurence
-	// is the right side and the second occurence is the left side.
-	int rightCopX, rightCopY, rightCopZ, leftCopX, leftCopY, leftCopZ;
-	rightCopX = copStore.getColumnIndex("ground_force_px_r");
-	if(rightCopX<0) {
-		rightCopX = copStore.getColumnIndex("ground_force_px");
-		rightCopY = copStore.getColumnIndex("ground_force_py");
-		rightCopZ = copStore.getColumnIndex("ground_force_pz");
-		leftCopX = copStore.getColumnIndex("ground_force_px", rightCopX + 2);
-		leftCopY = copStore.getColumnIndex("ground_force_py", rightCopY + 2);
-		leftCopZ = copStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
-		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
-			string msg = "PerturbationTool: ERR- One or more of the COP columns ground_force_p{x,y,z} not found in "+_copFileName+".";
-			throw Exception(msg,__FILE__,__LINE__);
-		}
-	} 
-	else {
-		rightCopY = copStore.getColumnIndex("ground_force_py_r");
-		rightCopZ = copStore.getColumnIndex("ground_force_pz_r");
-		leftCopX = copStore.getColumnIndex("ground_force_px_l");
-		leftCopY = copStore.getColumnIndex("ground_force_py_l");
-		leftCopZ = copStore.getColumnIndex("ground_force_pz_l");
-		if(rightCopX<0 || rightCopY<0 || rightCopZ<0 || leftCopX<0 || leftCopY<0 || leftCopZ<0) {
-			string msg = "PerturbationTool: ERR- One or more of the COP columns ground_force_p{x,y,z}_{r,l} not found in "+_copFileName+".";
-			throw Exception(msg,__FILE__,__LINE__);
-		}
-	}
-
-	AbstractBody *rightFootBody = _model->getDynamicsEngine().getBodySet()->get(_rightFootName);
-	if(!rightFootBody) throw Exception("PerturbationTool: ERR- Could not find right foot body '"+_rightFootName+"'",__FILE__,__LINE__);
-	AbstractBody *leftFootBody = _model->getDynamicsEngine().getBodySet()->get(_leftFootName);
-	if(!leftFootBody) throw Exception("PerturbationTool: ERR- Could not find left foot body '"+_leftFootName+"'",__FILE__,__LINE__);
+	AbstractBody *rightFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
+	if(!rightFootBody) throw Exception("PerturbationTool: ERR- Could not find right foot body '"+_externalLoadsBody1+"'",__FILE__,__LINE__);
+	AbstractBody *leftFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+	if(!leftFootBody) throw Exception("PerturbationTool: ERR- Could not find left foot body '"+_externalLoadsBody2+"'",__FILE__,__LINE__);
 
 	// LINEAR
 	// right
-	copStore.getDataColumn(rightCopX,x);
-	copStore.getDataColumn(rightCopY,y);
-	copStore.getDataColumn(rightCopZ,z);
-	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *rLin = new LinearSpring(_model,rightFootBody);
 	// Use the same foot-frame COP positions as the GRF force applier
 	rLin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
@@ -1006,13 +936,7 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	rLin->setBValue(&_bLin[0]);
 	rLin->setScaleFunction(rScaleTranslationalSpline);
 	_model->addDerivCallback(rLin);
-	delete cop;
-
 	// left linear
-	copStore.getDataColumn(leftCopX,x);
-	copStore.getDataColumn(leftCopY,y);
-	copStore.getDataColumn(leftCopZ,z);
-	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *lLin = new LinearSpring(_model,leftFootBody);
 	// Use the same foot-frame COP positions as the GRF force applier
 	lLin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
@@ -1021,8 +945,6 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	lLin->setBValue(&_bLin[0]);
 	lLin->setScaleFunction(lScaleTranslationalSpline);
 	_model->addDerivCallback(lLin);
-	delete cop;
-	delete[] t; delete[] x; delete[] y; delete[] z;
 
 	// TORSIONAL
 	// right
