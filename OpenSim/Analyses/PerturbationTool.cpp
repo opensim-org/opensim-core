@@ -294,7 +294,7 @@ void PerturbationTool::setupProperties()
 	_propertySet.append( &_pertIncrementProp );
 
 	comment = "Magnitude of perturbation. Perturbation results should be fairly insensitive to "
-				 "the perturbation size.  Values between 0.10N and 10N shoudl be fine.";
+				 "the perturbation size.  Values between 0.10N and 10N should be fine.";
 	_pertDFProp.setComment(comment);
 	_pertDFProp.setName("perturbation_size");
 	_propertySet.append( &_pertDFProp);
@@ -539,7 +539,8 @@ void PerturbationTool::run()
 	}
 
 	if(_actuatorsToPerturb.getSize() == 0 && !_perturbGravity)
-		throw Exception("PerturbationTool: ERR- Nothing to perturb (no actuators selected and gravity perturbation disabled).",__FILE__,__LINE__);
+		//throw Exception("PerturbationTool: ERR- Nothing to perturb (no actuators selected and gravity perturbation disabled).",__FILE__,__LINE__);
+		cout << "PerturbationTool: WARNING- Nothing will be perturbed (no actuators to perturb and gravity perturbation is off)" << endl;
 
 	// GROUND REACTION FORCES
 	ForceApplier *rightGRFApp, *leftGRFApp;
@@ -694,29 +695,13 @@ void PerturbationTool::run()
 		values_deltaAStorage[i]->setColumnLabels(columnLabels.c_str());
 	}
 
-	Array<double> deltaA(0,nperturb);
+	Storage unperturbedAccelStorage;
+	unperturbedAccelStorage.setName("unperturbedAccel");
+	columnLabels = "time";
+	for(int i=0;i<nvalues;i++) columnLabels += "\t" + values_name[i];
+	unperturbedAccelStorage.setColumnLabels(columnLabels.c_str());
 
-	//********************************************************************
-	// Run an unperturbed forward simulation to compute and write out
-	// unperturbed data
-	//********************************************************************
-#if 0
-	{
-		int index = yStore->findIndex(_ti);
-		double tiPert;
-		yStore->getTime(index,tiPert);
-		double tfPert = _tf;
-		manager.setInitialTime(tiPert);
-		manager.setFinalTime(tfPert);
-		const Array<double> &yi = yStore->getStateVector(index)->getData();
-		_model->setInitialStates(&yi[0]);
-		perturbation->setOn(false);
-		cout<<"\nFull unperturbed integration from "<<tiPert<<" to "<<tfPert<<endl;
-		manager.integrate();
-		IO::makeDir(getResultsDir());
-		_model->getAnalysisSet()->printResults(getName()+"_unpert",getResultsDir());
-	}
-#endif
+	Array<double> deltaA(0,nperturb);
 
 	// From now on we'll only need the last state vectors recorded in these analyses, so we
 	// set their step interval to a large number to avoid them computing and writing their
@@ -724,6 +709,8 @@ void PerturbationTool::run()
 	if(kin) kin->setStepInterval(1000000);
 	if(bodyKin) bodyKin->setStepInterval(1000000);
 	actuation->setStepInterval(1000000);
+
+	IO::makeDir(getResultsDir());
 
 	//********************************************************************
 	// LOOP
@@ -759,6 +746,31 @@ void PerturbationTool::run()
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert<<endl;
 		manager.integrate();
 		
+		// record unperturbed accelerations:
+		Array<double> unperturbedAccel(0.0, nvalues);
+		if(kin) {
+			const Array<double> &posStart = kin->getPositionStorage()->getStateVector(0)->getData();
+			const Array<double> &velStart = kin->getVelocityStorage()->getStateVector(0)->getData();
+			const Array<double> &posEnd = kin->getPositionStorage()->getLastStateVector()->getData();
+			double dt=kin->getPositionStorage()->getLastTime() - kin->getPositionStorage()->getFirstTime();
+			if(dt>1e-8) for(int i=0;i<ncoords;i++) unperturbedAccel[i] = 2*(posEnd[i]-posStart[i]-dt*velStart[i])/(dt*dt);
+		}
+		if(bodyKin) {
+			const Array<double> &posStart = bodyKin->getPositionStorage()->getStateVector(0)->getData();
+			const Array<double> &velStart = bodyKin->getVelocityStorage()->getStateVector(0)->getData();
+			const Array<double> &posEnd = bodyKin->getPositionStorage()->getLastStateVector()->getData();
+			double dt=bodyKin->getPositionStorage()->getLastTime() - bodyKin->getPositionStorage()->getFirstTime();
+			if(dt>1e-8) for(int i=0;i<nbodycoords;i++) unperturbedAccel[ncoords+i] = 2*(posEnd[i]-posStart[i]-dt*velStart[i])/(dt*dt);
+		}
+		unperturbedAccelStorage.append(tiPert, nvalues, &unperturbedAccel[0]);
+		char fileName[Object::NAME_LENGTH];
+		sprintf(fileName,"%s/%s_unperturbedAccel_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),_pertWindow,_pertDF);
+		unperturbedAccelStorage.print(fileName);
+
+		// If we are not perturbing any actuators/gravity, we must only be computing unperturbed accelerations...
+		// so can skip rest of this loop body.
+		if(nperturb==0) continue;
+
 		// INTEGRATE (2) - Record unperturbed muscle forces
 		integ->setUseSpecifiedDT(true);
 		perturbation->setOn(true);
@@ -783,7 +795,7 @@ void PerturbationTool::run()
 		// include unperturbed gravity value if doing gravity perturbation
 		if(_perturbGravity) unperturbedForces.append(original_gravity[gravity_axis]);
 
-		// Loop over muscles
+		// Loop over actuators/gravity to be perturbed
 		for (int m=0;m<nperturb;m++)	{
 			_model->getDerivCallbackSet()->resetCallbacks();
 			perturbation->reset(); 
@@ -846,8 +858,6 @@ void PerturbationTool::run()
 		}
 	
 		// Print results
-		IO::makeDir(getResultsDir());
-		char fileName[Object::NAME_LENGTH];
 		for(int i=0;i<nvalues;i++) {
 			sprintf(fileName,"%s/%s_%s_perturbed_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
 			values_perturbedStorage[i]->print(fileName);
@@ -989,7 +999,9 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	copStore.getDataColumn(rightCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *rLin = new LinearSpring(_model,rightFootBody);
-	rLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
+	// Use the same foot-frame COP positions as the GRF force applier
+	rLin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
+	rLin->computeTargetFunctions(&qStore,&uStore);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
 	rLin->setScaleFunction(rScaleTranslationalSpline);
@@ -1002,7 +1014,9 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	copStore.getDataColumn(leftCopZ,z);
 	cop = new VectorGCVSplineR1R3(5,size,t,x,y,z);
 	LinearSpring *lLin = new LinearSpring(_model,leftFootBody);
-	lLin->computePointAndTargetFunctions(&qStore,&uStore,*cop);
+	// Use the same foot-frame COP positions as the GRF force applier
+	lLin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
+	lLin->computeTargetFunctions(&qStore,&uStore);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
 	lLin->setScaleFunction(lScaleTranslationalSpline);
