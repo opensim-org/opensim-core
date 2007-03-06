@@ -524,9 +524,6 @@ void CMCTool::run()
 	Storage *dudtStore = qSet.constructStorage(2);
 	dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
 
-	// CONVERT TO QUATERNIONS
-	_model->getDynamicsEngine().convertAnglesToQuaternions(qStore);
-
 	// GROUND REACTION FORCES
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
