@@ -40,6 +40,7 @@
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
+#include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -49,6 +50,7 @@
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/ForwardTool.h>
 #include <OpenSim/Tools/DebugUtilities.h>
+#include <OpenSim/SQP/rdFSQP.h>
 #include "rdCMC.h"
 #include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"

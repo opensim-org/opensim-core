@@ -31,11 +31,13 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "rdCMC.h"
-#include "rdActuatorForceTarget.h"
 #include <iostream>
 #include <OpenSim/Tools/Exception.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/SQP/rdFSQP.h> 
+#include "rdCMC.h"
+#include "rdActuatorForceTarget.h"
+#include "rdCMC_TaskSet.h"
 
 using namespace std;
 using namespace OpenSim;

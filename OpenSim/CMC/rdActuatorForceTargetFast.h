@@ -34,13 +34,11 @@
 // INCLUDES
 //==============================================================================
 #include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
-#include "rdCMC.h"
 
 namespace OpenSim {
+
+class rdCMC;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

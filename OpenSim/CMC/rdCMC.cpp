@@ -42,10 +42,15 @@
 #include <OpenSim/Tools/RootSolver.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
+#include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/SQP/rdSQP.h>
+#include <OpenSim/SQP/rdFSQP.h>
 #include "rdCMC.h"
 #include "rdCMC_Joint.h"
+#include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"
 
 

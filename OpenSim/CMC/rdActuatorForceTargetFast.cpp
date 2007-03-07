@@ -34,7 +34,10 @@
 #include <iostream>
 #include <OpenSim/Tools/Exception.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/SQP/rdFSQP.h>
 #include "rdActuatorForceTargetFast.h"
+#include "rdCMC_TaskSet.h"
+#include "rdCMC.h"
 
 using namespace std;
 using namespace OpenSim;

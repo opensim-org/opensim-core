@@ -30,9 +30,7 @@
 #define rdActuatorForceTarget_h__
 
 #include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Tools/Array.h>
-#include <OpenSim/SQP/rdFSQP.h> 
 class OpenSim::rdCMC;
 
 namespace OpenSim {

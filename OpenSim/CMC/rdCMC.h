@@ -34,13 +34,8 @@
 //============================================================================
 #include "rdCMCDLL.h"
 #include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/SQP/rdSQP.h>
-#include <OpenSim/SQP/rdOptimizationTarget.h>
 #include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/SQP/rdFSQP.h>
-#include "rdCMC_TaskSet.h"
 
 #ifdef SWIG
 	#ifdef RDCMC_API
@@ -50,6 +45,11 @@
 #endif
 
 namespace OpenSim {
+
+class rdOptimizationTarget;
+class rdFSQP;
+class VectorFunctionForActuators;
+class rdCMC_TaskSet;
 
 //=============================================================================
 //=============================================================================
