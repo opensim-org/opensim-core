@@ -42,6 +42,7 @@
 #else
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #ifdef RDSIMULATION_EXPORTS
 #define RDSIMULATION_API __declspec(dllexport)

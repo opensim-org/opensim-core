@@ -38,6 +38,7 @@
 #else
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #ifdef RDCMC_EXPORTS
 #define RDCMC_API __declspec(dllexport)

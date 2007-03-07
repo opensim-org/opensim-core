@@ -41,6 +41,7 @@
 #else
 
 	#define WIN32_LEAN_AND_MEAN
+	#define NOMINMAX	
 	#include <windows.h>
 	#ifdef workflow_EXPORTS
 		#define workflow_API __declspec(dllexport)

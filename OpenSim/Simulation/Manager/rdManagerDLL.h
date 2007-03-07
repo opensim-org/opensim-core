@@ -42,6 +42,7 @@
 #else
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #ifdef RDMANAGER_EXPORTS
 #define RDMANAGER_API __declspec(dllexport)

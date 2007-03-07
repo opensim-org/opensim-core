@@ -42,6 +42,7 @@
 #else
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #ifdef RDSQP_EXPORTS
 #define RDSQP_API __declspec(dllexport)
