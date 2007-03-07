@@ -582,8 +582,9 @@ void AbstractSimmMuscle::applyWrapObjects()
                /* As long as the two points are not auto wrap points on the
                 * same wrap object, check them for wrapping.
                 */
-					if (_currentPath.get(pt1)->getWrapObject() == NULL &&
-						_currentPath.get(pt2)->getWrapObject() == NULL)
+					if (_currentPath.get(pt1)->getWrapObject() == NULL ||
+						 _currentPath.get(pt2)->getWrapObject() == NULL ||
+						 (_currentPath.get(pt1)->getWrapObject() != _currentPath.get(pt2)->getWrapObject()))
                {
                   WrapResult wr;
 
