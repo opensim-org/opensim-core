@@ -96,6 +96,11 @@ AbstractModel::AbstractModel(const string &aFileName) :
 	IO::chDir(saveWorkingDirectory);
 
 	_fileName = aFileName;
+	// Throw exception if something wrong happened and we don't have a dynamics engine.
+	// likely due to pickng wrong file that has no valid OpenSim model
+	if (!hasDynamicsEngine()){
+		throw Exception("No dynamics engine in model's XML file "+aFileName+". Model will not be created");
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -285,7 +290,8 @@ void AbstractModel::setup()
 	for (i = 0; i < _muscleGroups.getSize(); i++)
 		_muscleGroups[i]->setup(this);
 
-	if(_dynamicsEngine) _dynamicsEngine->setup(this);
+	if(_dynamicsEngine) 
+		_dynamicsEngine->setup(this);
 
 	_actuatorSet.setup(this);
 
