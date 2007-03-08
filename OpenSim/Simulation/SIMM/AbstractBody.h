@@ -92,7 +92,7 @@ public:
 	virtual void scaleMass(double aScaleFactor) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
 	AbstractWrapObject* getWrapObject(const std::string& aName) const;
-	WrapObjectSet* getWrapObjectSet() { return &_wrapObjectSet; }
+	WrapObjectSet& getWrapObjectSet() { return _wrapObjectSet; }
 
 	virtual void peteTest(void) const { }
 

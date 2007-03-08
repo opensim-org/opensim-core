@@ -371,10 +371,10 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
 void SimmFileWriter::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) const
 {
 	int i;
-	WrapObjectSet* wrapObjects = aBody.getWrapObjectSet();
+	WrapObjectSet& wrapObjects = aBody.getWrapObjectSet();
 
-	for (i = 0; i < wrapObjects->getSize(); i++) {
-		AbstractWrapObject* wo = wrapObjects->get(i);
+	for (i = 0; i < wrapObjects.getSize(); i++) {
+		AbstractWrapObject* wo = wrapObjects.get(i);
 		aStream << "beginwrapobject " << wo->getName() << endl;
 		aStream << "wraptype " << wo->getWrapTypeName() << endl;
 		aStream << "segment " << aBody.getName() << endl;
