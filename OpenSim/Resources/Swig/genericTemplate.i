@@ -68,6 +68,12 @@
 	/* This group of headers added by KMS 3/22/06 */
 #include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 
+#include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
+#include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
+#include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
+#include <OpenSim/Simulation/SIMM/MuscleWrap.h>
+#include <OpenSim/Simulation/SIMM/MuscleWrapSet.h>
+
 #include <OpenSim/Simulation/SIMM/AbstractBody.h>
 #include <OpenSim/Simulation/SIMM/SimmBody.h>
 #include <OpenSim/Simulation/SIMM/BodySet.h>
@@ -315,6 +321,14 @@ using namespace OpenSim;
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Tools/ScaleSet.h>
 
+%include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
+%include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
+%template(SetWrapObject) OpenSim::Set<OpenSim::AbstractWrapObject>;
+%include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
+%include <OpenSim/Simulation/SIMM/MuscleWrap.h>
+%template(SetMuscleWrap) OpenSim::Set<OpenSim::MuscleWrap>;
+%include <OpenSim/Simulation/SIMM/MuscleWrapSet.h>
+
 	/* This group of headers added by KMS 3/22/06 */
 %include <OpenSim/Simulation/SIMM/AbstractBody.h>
 %include <OpenSim/Simulation/SIMM/SimmBody.h>
@@ -338,7 +352,6 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 %include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
 
-
 %include <OpenSim/Simulation/SIMM/AbstractMarker.h>
 %include <OpenSim/Simulation/SIMM/SimmMarker.h>
 
@@ -347,6 +360,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
 %include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
 %template(SetSimmMusclePoint) OpenSim::Set<OpenSim::SimmMusclePoint>;
+%template(ArraySimmMusclePoint) OpenSim::Array<OpenSim::SimmMusclePoint*>;
 %include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
 
 %include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>

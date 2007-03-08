@@ -36,6 +36,13 @@
 #include "SimmMuscleWrapPoint.h"
 #include "WrapResult.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class AbstractWrapObject;
@@ -107,6 +114,7 @@ public:
 	AbstractWrapObject* getWrapObject() const { return _wrapObject; }
 	SimmMuscleWrapPoint& getWrapPoint(int aIndex);
 	WrapMethod getMethod() const { return _method; }
+	const std::string& getMethodName() const { return _methodName; }
 
 	const WrapResult& getPreviousWrap() const { return _previousWrap; }
 	void setPreviousWrap(const WrapResult& aWrapResult);

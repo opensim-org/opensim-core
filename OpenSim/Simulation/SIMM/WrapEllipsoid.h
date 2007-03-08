@@ -36,6 +36,13 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include "AbstractWrapObject.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class VisibleObject;
@@ -80,6 +87,8 @@ public:
    void copyData(const WrapEllipsoid& aWrapEllipsoid);
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
+
+	static WrapEllipsoid* safeDownCast(Object* aObject) { return dynamic_cast<WrapEllipsoid*>(aObject); }
 
 	virtual void scale(Array<double>& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);

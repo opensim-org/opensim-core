@@ -38,6 +38,13 @@
 #include <OpenSim/Tools/PropertyStr.h>
 #include <OpenSim/Tools/Storage.h>
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class AbstractBody;

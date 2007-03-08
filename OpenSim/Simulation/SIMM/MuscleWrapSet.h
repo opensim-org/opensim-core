@@ -29,6 +29,13 @@
 #include <OpenSim/Tools/Set.h>
 #include "MuscleWrap.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 //=============================================================================

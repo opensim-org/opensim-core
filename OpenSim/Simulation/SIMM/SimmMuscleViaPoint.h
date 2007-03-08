@@ -37,6 +37,13 @@
 #include <OpenSim/Tools/Storage.h>
 #include "SimmMusclePoint.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class AbstractCoordinate;
@@ -86,6 +93,8 @@ public:
 	SimmMuscleViaPoint& operator=(const SimmMuscleViaPoint &aPoint);
 #endif
    void copyData(const SimmMuscleViaPoint &aPoint);
+
+	static SimmMuscleViaPoint* safeDownCast(Object* aObject) { return dynamic_cast<SimmMuscleViaPoint*>(aObject); }
 
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }

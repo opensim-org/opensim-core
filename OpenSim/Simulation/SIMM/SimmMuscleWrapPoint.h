@@ -35,6 +35,13 @@
 #include "SimmPoint.h"
 #include "SimmMusclePoint.h"
 
+#ifdef SWIG
+	#ifdef RDSIMULATION_API
+		#undef RDSIMULATION_API
+		#define RDSIMULATION_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 class AbstractCoordinate;
