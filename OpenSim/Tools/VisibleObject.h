@@ -198,7 +198,7 @@ public:
 	};
 	const Geometry* getDefaultGeometry()
 	{
-		return AnalyticGeometry::createSphere(0.1);
+		return AnalyticSphere::createSphere(0.1);
 	}
 	// updateGeometry is the method used to update geometry that can change (e.g. muscles
 	// changing geometry during motion.

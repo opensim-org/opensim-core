@@ -141,12 +141,16 @@ void WrapCylinder::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 	AbstractWrapObject::setup(aEngine, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
-
 	if (_radius < 0.0)
 	{
 		string errorMessage = "Error: radius for WrapCylinder " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
+	std::cout << "WrapCylinder::setup (" << _radius <<", " << _length<< ")\n";
+	AnalyticCylinder* cyl = new AnalyticCylinder(_radius, _length);
+	setGeometryQuadrants(cyl);
+	_displayer.addGeometry(cyl);
+
 }
 
 //_____________________________________________________________________________

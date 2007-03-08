@@ -96,7 +96,6 @@ public:
 	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
-	virtual VisibleObject* getDisplayer() { return NULL; }
 	virtual void peteTest() const;
 
 protected:

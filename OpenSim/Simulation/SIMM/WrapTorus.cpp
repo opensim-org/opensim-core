@@ -153,6 +153,9 @@ void WrapTorus::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 		string errorMessage = "Error: outer_radius for WrapTorus " + getName() + " is less than or equal to inner_radius.";
 		throw Exception(errorMessage);
 	}
+	AnalyticTorus* torus = new AnalyticTorus(_innerRadius, (_outerRadius-_innerRadius));
+	setGeometryQuadrants(torus);
+	_displayer.addGeometry(torus);
 }
 
 //_____________________________________________________________________________

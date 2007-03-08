@@ -94,6 +94,11 @@ protected:
 
 	PropertyStr _quadrantNameProp;
 	std::string& _quadrantName;
+
+	// Support for Display
+	PropertyObj _displayerProp;
+	VisibleObject &_displayer;
+
 	WrapQuadrant _quadrant;
 	int _wrapAxis;
 	int _wrapSign;
@@ -137,13 +142,16 @@ public:
 	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 
-	virtual VisibleObject* getDisplayer() { return NULL; }
+	// Visible Object Support
+	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	virtual void updateGeometry() {};
+
 	virtual void peteTest() const;
 
 protected:
 	void setupProperties();
 	void setupQuadrant();
-
+	void setGeometryQuadrants(AnalyticGeometry *aGeometry) const;
 private:
 	void setNull();
 //=============================================================================

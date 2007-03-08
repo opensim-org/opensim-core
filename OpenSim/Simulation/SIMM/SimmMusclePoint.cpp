@@ -38,7 +38,7 @@
 using namespace std;
 using namespace OpenSim;
 
-Geometry *SimmMusclePoint::_defaultGeometry= AnalyticGeometry::createSphere(0.005);
+Geometry *SimmMusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR

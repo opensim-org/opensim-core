@@ -36,7 +36,7 @@
 using namespace std;
 using namespace OpenSim;
 
-Geometry *SimmMarker::_defaultGeometry = AnalyticGeometry::createSphere(0.01);
+Geometry *SimmMarker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================

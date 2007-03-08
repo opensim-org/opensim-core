@@ -174,8 +174,6 @@ public:
 	virtual void simplify(const PropertySet &aProperties);
 	virtual void filter(double aT);
 
-	OpenSim_DERIVED(ControlLinear, Control)
-
 private:
 	void setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aX);
 	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);

@@ -116,9 +116,6 @@ public:
 	virtual double getControlValueMax(double aT=0.0);
 	virtual void setControlValueMax(double aT,double aX);
 
-
-	OpenSim_DERIVED(ControlConstant, Control)
-
 //=============================================================================
 };	// END of class ControlConstant
 

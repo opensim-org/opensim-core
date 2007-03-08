@@ -137,6 +137,10 @@ void WrapSphere::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 		string errorMessage = "Error: radius for wrapSphere " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
+
+	AnalyticSphere* sphere = new AnalyticSphere(_radius);
+	setGeometryQuadrants(sphere);
+	_displayer.addGeometry(sphere);
 }
 
 //_____________________________________________________________________________

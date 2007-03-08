@@ -31,6 +31,7 @@
 #include "SimmMusclePoint.h"
 #include "WrapResult.h"
 #include "SimmMacros.h"
+#include <OpenSim/Tools/VisibleObject.h>
 #include <OpenSim/Tools/rdMath.h>
 #include <OpenSim/Tools/Mtx.h>
 
@@ -52,7 +53,10 @@ AbstractWrapObject::AbstractWrapObject() :
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblArray()),
 	_active(_activeProp.getValueBool()),
-	_quadrantName(_quadrantNameProp.getValueStr())
+	_quadrantName(_quadrantNameProp.getValueStr()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
+
 {
 	setNull();
 	setupProperties();
@@ -77,7 +81,9 @@ AbstractWrapObject::AbstractWrapObject(const AbstractWrapObject& aWrapObject) :
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
    _translation(_translationProp.getValueDblArray()),
 	_active(_activeProp.getValueBool()),
-	_quadrantName(_quadrantNameProp.getValueStr())
+	_quadrantName(_quadrantNameProp.getValueStr()),
+	_displayerProp(PropertyObj("", VisibleObject())),
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -121,6 +127,10 @@ void AbstractWrapObject::setupProperties()
 	_quadrantNameProp.setName("quadrant");
 	_quadrantNameProp.setValue("Unassigned");
 	_propertySet.append(&_quadrantNameProp);
+
+	_displayerProp.setName("display");
+	_propertySet.append(&_displayerProp);
+
 }
 
 //_____________________________________________________________________________
@@ -146,8 +156,32 @@ void AbstractWrapObject::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aB
 
 	/* Invert the forward transform and store the inverse. */
 	Mtx::Invert(4, _pose.getMatrix(), _inversePose.getMatrix());
-}
 
+	// Object is visible (has displayer) and depends on body it's attached to.
+	_body->getDisplayer()->addDependent(getDisplayer());
+	_displayer.setTransform( _pose);
+	_displayer.setOwner(this);
+}
+//_____________________________________________________________________________
+/**
+ * set quadrants for the geometric object representing the wrap object
+ * This has to be done after geometry object creation so it's not 
+ * part of AbstractWrapObject::setup
+ */
+void AbstractWrapObject::setGeometryQuadrants(AnalyticGeometry *aGeometry) const
+{
+	// The following code should be moved to the base class AbstractWrapObject
+	bool	quads[] = {true, true, true, true, true, true};
+
+	if (_quadrant != WrapQuadrant::allQuadrants){
+		// Turn off half wrap object
+		if (_wrapSign==1)
+			quads[2*_wrapAxis]=false;
+		else
+			quads[2*_wrapAxis+1]=false;
+	}
+	aGeometry->setQuadrants(quads);
+}
 //_____________________________________________________________________________
 /**
  * Copy data members from one AbstractWrapObject to another.
@@ -161,6 +195,7 @@ void AbstractWrapObject::copyData(const AbstractWrapObject& aWrapObject)
 	_active = aWrapObject._active;
 	_quadrantName = aWrapObject._quadrantName;
 	_quadrant = aWrapObject._quadrant;
+	_displayer = aWrapObject._displayer;
 }
 
 //_____________________________________________________________________________

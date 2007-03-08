@@ -69,6 +69,9 @@
 #include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
 
 #include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
+#include <OpenSim/Simulation/SIMM/WrapSphere.h>
+#include <OpenSim/Simulation/SIMM/WrapCylinder.h>
+#include <OpenSim/Simulation/SIMM/WrapTorus.h>
 #include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
 #include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
 #include <OpenSim/Simulation/SIMM/MuscleWrap.h>
@@ -244,6 +247,30 @@ using namespace OpenSim;
     }
 };
 
+%extend OpenSim::AnalyticSphere {
+    static AnalyticSphere *dynamic_cast(Geometry *geometry) {
+        return dynamic_cast<AnalyticSphere *>(geometry);
+    }
+};
+
+%extend OpenSim::AnalyticCylinder {
+    static AnalyticCylinder *dynamic_cast(Geometry *geometry) {
+        return dynamic_cast<AnalyticCylinder *>(geometry);
+    }
+};
+
+%extend OpenSim::AnalyticEllipsoid {
+    static AnalyticEllipsoid *dynamic_cast(Geometry *geometry) {
+        return dynamic_cast<AnalyticEllipsoid *>(geometry);
+    }
+};
+
+%extend OpenSim::AnalyticTorus {
+    static AnalyticTorus *dynamic_cast(Geometry *geometry) {
+        return dynamic_cast<AnalyticTorus *>(geometry);
+    }
+};
+
 /* rest of header files to be wrapped */
 %include <OpenSim/Tools/rdToolsDLL.h>
 %include <OpenSim/Simulation/rdSimulationDLL.h>
@@ -322,6 +349,9 @@ using namespace OpenSim;
 %include <OpenSim/Tools/ScaleSet.h>
 
 %include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
+%include <OpenSim/Simulation/SIMM/WrapSphere.h>
+%include <OpenSim/Simulation/SIMM/WrapCylinder.h>
+%include <OpenSim/Simulation/SIMM/WrapTorus.h>
 %include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::AbstractWrapObject>;
 %include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
@@ -329,7 +359,6 @@ using namespace OpenSim;
 %template(SetMuscleWrap) OpenSim::Set<OpenSim::MuscleWrap>;
 %include <OpenSim/Simulation/SIMM/MuscleWrapSet.h>
 
-	/* This group of headers added by KMS 3/22/06 */
 %include <OpenSim/Simulation/SIMM/AbstractBody.h>
 %include <OpenSim/Simulation/SIMM/SimmBody.h>
 %template(SetBodies) OpenSim::Set<OpenSim::AbstractBody>;

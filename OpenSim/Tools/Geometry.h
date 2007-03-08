@@ -34,8 +34,6 @@
  * Author:  Ayman Habib
  */
 
-
-// INCLUDES
 namespace OpenSim { 
 
 // CONSTANTS
@@ -57,7 +55,7 @@ class RDTOOLS_API Geometry
 public:
 	// Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
 	enum GeometryType{
-		None, Sphere,  Cylinder, Cone, Ellipsoid, Line, Arrow	
+		None, Sphere,  Cylinder, Cone, Ellipsoid, Torus, Line, Arrow	
 	};
 private:
 	bool			_fixed; /** to indicate if the geometry is fixed vs deformable */
@@ -169,20 +167,57 @@ class RDTOOLS_API AnalyticGeometry : public Geometry
 
 	// Common array of attributes for analytic geometry we can represent
 	// Meaning depends on _analyticType as follows.
-	// If parts of these need to be displayed (e.g. half cylinder then this array will need to expand
+	// Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
 	// Sphere	[Radius, unused, unused, unused, unused, unused]
 	// Cylinder  [Radius, Height, unused, ...]
 	// Cone		 [BaseRadius, TopRadius, Height, unused, ..]
 	// Ellipsoid [AxisLength1, AxisLength2, AxisLength3, unused, ..]
-	double				_attributes[6];
-
+private:
+	bool					_bounds[6];		//-X, +X, -Y, +Y, -Z, +Z
+	bool					_piece;
 public:
-	AnalyticGeometry(GeometryType aGeometricType)
+	AnalyticGeometry(GeometryType aGeometricType):
+		_piece(false)
 	{
 		_analyticType=aGeometricType;
+		for(int i=0; i<6; i++) _bounds[i]=true;
 	}
 	virtual ~AnalyticGeometry() {}
-	const double& getSphereRadius() const
+	void setQuadrants(const bool quadrants[6])
+	{
+		_piece=false;
+		for(int i=0; i<6; i++){
+			_bounds[i]=quadrants[i];
+			_piece = _piece || (!quadrants[i]);
+		}
+	}
+	void getQuadrants(bool quadrants[6])
+	{
+		for(int i=0; i<6; i++){
+			quadrants[i]=_bounds[i];
+		}
+	}
+	const bool isPiece() const
+	{
+		return _piece;
+	}
+};
+
+class RDTOOLS_API AnalyticSphere : public AnalyticGeometry
+{
+protected:
+	double				_attributes[1];
+public:
+	AnalyticSphere():
+		AnalyticGeometry(Sphere)
+		{}
+	AnalyticSphere(double radius):
+		AnalyticGeometry(Sphere)
+		{
+			_attributes[0] = radius;
+		}
+	virtual ~AnalyticSphere() {}
+	const double& getRadius() const
 	{
 		//assert(_analyticType==Sphere);
 		return _attributes[0];
@@ -190,36 +225,91 @@ public:
 	void setSphereRadius(double radius)
 	{
 		//assert(_analyticType==Sphere);
-		_attributes[0] = radius;
-	}
-	void getCylinderParams(double& radius, double& height) const
-	{
-		//assert(_analyticType==Cylinder);
-		radius = _attributes[0];
-		height = _attributes[1];
-	}
-	void getConeParams(double& baseRadius, double& topRadius, double& height) const
-	{
-		//assert(_analyticType==Cone);
-		baseRadius = _attributes[0];
-		topRadius = _attributes[1];
-		height = _attributes[2];
-	}
-	void getEllipsoidParams(double& radiusX, double& radiusY, double& radiusZ) const
-	{
-		//assert(_analyticType==Ellipsoid);
-		radiusX = _attributes[0];
-		radiusY = _attributes[1];
-		radiusZ = _attributes[2];
+			_attributes[0] = radius;		
 	}
 	static AnalyticGeometry* createSphere(double radius)
 	{
-		AnalyticGeometry* sphere = new AnalyticGeometry(Sphere);
+		AnalyticSphere* sphere = new AnalyticSphere();
 		sphere->setSphereRadius(radius);
 		return sphere;
 	}
+};	// AnalyticSphere
 
-};	// Analytic Geometry
+class RDTOOLS_API AnalyticEllipsoid : public AnalyticGeometry
+{
+protected:
+	double				_attributes[3];
+public:
+	AnalyticEllipsoid():
+		AnalyticGeometry(Ellipsoid)
+		{}
+	AnalyticEllipsoid(double radius1, double radius2, double radius3):
+		AnalyticGeometry(Ellipsoid){
+			_attributes[0] = radius1;
+			_attributes[1] = radius2;
+			_attributes[2] = radius3;
+	}
+	virtual ~AnalyticEllipsoid() {}
+	void setEllipsoidParams(double radius1, double radius2, double radius3)
+	{
+		//assert(_analyticType==Sphere);
+		_attributes[0] = radius1;
+		_attributes[1] = radius2;
+		_attributes[2] = radius3;
+	}
+	void getEllipsoidParams(double params[])
+	{
+		//assert(_analyticType==Ellipsoid);
+		for(int i=0;i<3; i++)
+			params[i] = _attributes[i];
+	}
+};
+
+class RDTOOLS_API AnalyticCylinder : public AnalyticGeometry
+{
+protected:
+	double				_attributes[2];
+public:
+	AnalyticCylinder():
+		AnalyticGeometry(Cylinder)
+		{}
+	AnalyticCylinder(const double radius, const double height):
+		AnalyticGeometry(Cylinder)
+		{
+			_attributes[0]=radius;
+			_attributes[1]=height;
+		}
+	virtual ~AnalyticCylinder() {}
+	void getCylinderParams(double params[]) const
+	{
+		//assert(_analyticType==Cylinder);
+		params[0] = _attributes[0];
+		params[1] = _attributes[1];
+	}
+};
+
+class RDTOOLS_API AnalyticTorus : public AnalyticGeometry
+{
+protected:
+	double				_attributes[2];
+public:
+	AnalyticTorus():
+		AnalyticGeometry(Torus)
+		{}
+	AnalyticTorus(const double ringRadius, const double crossSectionRadius):
+		AnalyticGeometry(Torus)
+		{
+			_attributes[0]=ringRadius;
+			_attributes[1]=crossSectionRadius;
+		}
+	virtual ~AnalyticTorus() {}
+	void getTorusParams(double params[]) const
+	{
+		//assert(_analyticType==Torus);
+		params[0] = _attributes[0];
+		params[1] = _attributes[1];
+	}
+};
 
 class RDTOOLS_API PolyhedralGeometry : public Geometry
 {
