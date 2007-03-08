@@ -1853,8 +1853,8 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 		// If the body has a non-negligible mass or has wrap objects attached
 		// to it, it is needed for dynamics.
 		if (leafBody &&
-			 leafBody->getMass() < 0.05 && //TINY_NUMBER &&
-			 (!leafBody->getWrapObjectSet() || leafBody->getWrapObjectSet()->getSize() < 1))
+			 leafBody->getMass() < TINY_NUMBER &&
+			 leafBody->getWrapObjectSet().getSize() < 1)
 		{
 			// Go through all the muscles to see if any have attachments points on the body.
 			// If some do, then the body is needed for dynamics.
@@ -3005,7 +3005,7 @@ bool SdfastFileWriter::checkDynamicParameters() const
 			double mass = body->getMass();
 			if (EQUAL_WITHIN_ERROR(mass, 0.0))
 			{
-				//cerr << "Mass of body " << body->getName() << " is zero." << endl;
+				cerr << "Mass of body " << body->getName() << " is zero." << endl;
 				dynamicsReady = false;
 			}
 
@@ -3018,7 +3018,7 @@ bool SdfastFileWriter::checkDynamicParameters() const
 					inertiaSum += inertia[i][j];
 			if (EQUAL_WITHIN_ERROR(inertiaSum, 0.0))
 			{
-				//cerr << "Inertia matrix of body " << body->getName() << " is zero." << endl;
+				cerr << "Inertia matrix of body " << body->getName() << " is zero." << endl;
 				dynamicsReady = false;
 			}
 		}
