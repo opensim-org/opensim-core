@@ -96,6 +96,9 @@ Object* SimmMuscleWrapPoint::copy() const
  */
 void SimmMuscleWrapPoint::copyData(const SimmMuscleWrapPoint &aPoint)
 {
+	_wrapPath = aPoint._wrapPath;
+	_wrapPathLength = aPoint._wrapPathLength;
+	_wrapObject = aPoint._wrapObject;
 }
 
 //_____________________________________________________________________________
