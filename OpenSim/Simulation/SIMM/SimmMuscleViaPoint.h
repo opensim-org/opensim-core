@@ -98,7 +98,7 @@ public:
 
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
-	std::string& getCoordinateName() const { return _coordinateName; }
+	const std::string& getCoordinateName() const { return _coordinateName; }
 
 	virtual bool isActive() const;
 	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);

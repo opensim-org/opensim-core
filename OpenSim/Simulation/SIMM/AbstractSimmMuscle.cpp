@@ -124,6 +124,7 @@ void AbstractSimmMuscle::copyData(const AbstractSimmMuscle &aMuscle)
 	_muscleWrapSet = aMuscle._muscleWrapSet;
 	_muscleModelIndex = aMuscle._muscleModelIndex;
 	_preScaleLength = 0.0;
+	_pathValid = false;  // path should be recalculated because state may have changed
 }
 
 //_____________________________________________________________________________
@@ -206,6 +207,15 @@ void AbstractSimmMuscle::setup(AbstractModel* aModel)
 
 	calculatePath();
 }
+
+const Array<SimmMusclePoint*> AbstractSimmMuscle::getCurrentPath()
+{
+	if (_pathValid == false)
+		calculatePath();
+
+	return _currentPath;
+}
+
 //_____________________________________________________________________________
 /**
  * updateGeometrySize updates the size of the array of geometry items to be of the

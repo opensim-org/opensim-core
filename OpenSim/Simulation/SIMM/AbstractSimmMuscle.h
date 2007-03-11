@@ -119,7 +119,7 @@ public:
 #endif
    void copyData(const AbstractSimmMuscle &aMuscle);
 	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
-	const Array<SimmMusclePoint*> getCurrentPath() const { return _currentPath; }
+	const Array<SimmMusclePoint*> getCurrentPath();
 	int getMuscleModelIndex() const { return _muscleModelIndex; }
 	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
