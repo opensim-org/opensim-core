@@ -247,8 +247,9 @@ void AbstractSimmMuscle::updateGeometrySize()
 		else {	// remove entries
 			for(int segment = newNumberOfSegments; 
 						segment < numberOfSegements; 
-						segment++)
-				_displayer.removeGeometry(_displayer.getGeometry(segment));
+						segment++) // Remove also shortens the array!, so we'll always delete 
+									  // the entry at newNumberOfSegments
+				_displayer.removeGeometry(_displayer.getGeometry(newNumberOfSegments));
 		}
 	}
 }
