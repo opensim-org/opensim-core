@@ -118,6 +118,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	void setup(AbstractModel* aModel);
+	void updateGeometry();
 
 	// MODEL
 	void setModel(AbstractModel *aModel);

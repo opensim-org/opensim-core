@@ -184,6 +184,18 @@ void ActuatorSet::setup(AbstractModel* aModel)
 	for (int i = 0; i < getSize(); i++)
 		get(i)->setup(aModel);
 }
+//_____________________________________________________________________________
+/**
+ * Update the geometry of the muscles based on coordinate changes
+ */
+void ActuatorSet::updateGeometry()
+{
+	int i;
+	for (i = 0; i < getSize(); i++) {
+		AbstractActuator* act = get(i);
+		act->updateGeometry();
+	}
+}
 
 //_____________________________________________________________________________
 /**
