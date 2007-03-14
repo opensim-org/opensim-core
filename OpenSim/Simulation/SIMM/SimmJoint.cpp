@@ -157,6 +157,7 @@ void SimmJoint::setup(AbstractDynamicsEngine* aEngine)
 
 	_forwardTransform.setIdentity();
 	_inverseTransform.setIdentity();
+	_transformsValid=false;
 
 	/* Look up the parent and child bodies by name in the
 	 * dynamics engine and store pointers to them.
