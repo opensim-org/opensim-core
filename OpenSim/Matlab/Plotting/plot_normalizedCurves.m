@@ -1,4 +1,4 @@
-function plot_normalizedCurves(timeInterval, stoOrMotFileArray, labelArray, startTimeArray, endTimeArray, plotColorStyleArray, plotLineThicknessArray)
+function plot_normalizedCurves(timeInterval, stoOrMotFileArray, labelArray, startTimeArray, endTimeArray, plotColorStyleArray, plotLineThicknessArray, plotXTick, plotXTickLabel, plotYTick, plotYTickLabel, plotXLabel, plotYLabel)
 
 % plotMultipleCurves(timeScale, stoOrMotFileArray, labelArray, startTimeArray,
 % endTimeArray, plotColorArray) plots curves from the storage (.sto) or
@@ -65,7 +65,14 @@ normalizedTimeDt = (timeInterval(2) - timeInterval(1)) / (length(indices) - 1);
 normalizedTime = transpose(timeInterval(1):normalizedTimeDt:timeInterval(2));
 
 % Plot first curve.
-plot(normalizedTime,q.data(indices,columnIndex),plotColorStyleArray{1},'LineWidth',plotLineThicknessArray(1));
+plot(normalizedTime,q.data(indices,columnIndex),plotColorStyleArray{1},...
+    'LineWidth',plotLineThicknessArray(1));
+set(gca,'XTick',plotXTick);
+set(gca,'XTickLabel',plotXTickLabel);
+set(gca,'YTick',plotYTick);
+set(gca,'YTickLabel',plotYTickLabel);
+xlabel(plotXLabel);
+ylabel(plotYLabel);
 hold on;
 
 % Compute and plot curves 2:numberOfCurves.
@@ -88,7 +95,8 @@ for i = 2:numberOfCurves
     normalizedTime = transpose(timeInterval(1):normalizedTimeDt:timeInterval(2));
     
     % Plot ith curve.
-    plot(normalizedTime,q.data(indices,columnIndex),plotColorStyleArray{i},'LineWidth',plotLineThicknessArray(i));
+    plot(normalizedTime,q.data(indices,columnIndex),plotColorStyleArray{i},...
+        'LineWidth',plotLineThicknessArray(i));
     
 end
 
