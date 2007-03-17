@@ -1,7 +1,7 @@
-#ifndef __SimmMarker_h__
-#define __SimmMarker_h__
+#ifndef __PolyObject_h__
+#define __PolyObject_h__
 
-// Marker.h
+// PolyObject.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,58 +30,42 @@
 #include <iostream>
 #include <math.h>
 #include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyBool.h>
+#include <OpenSim/Tools/PropertyStrArray.h>
 #include <OpenSim/Tools/Storage.h>
 #include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/Geometry.h>
-#include "AbstractMarker.h"
+#ifdef BUILD_GUI
+	#include <vtkXMLPolyDataReader.h>
+	#include <vtkPolyData.h>
+#endif
 
 namespace OpenSim {
 
-class AbstractBody;
 class AbstractDynamicsEngine;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM [mocap] marker.
+ * A class implementing a visible object comprised of one or more polygonal
+ * surfaces whose vertices and polygons are specified in a VTK file.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMarker : public AbstractMarker
+class RDSIMULATION_API PolyObject : public VisibleObject  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-
+#ifdef BUILD_GUI
+	Array<vtkPolyData*> _vtkBones;
+	Array<vtkXMLPolyDataReader*> _vtkReaders;
+#endif
 protected:
-	PropertyDblArray _offsetProp;
-	Array<double> &_offset;
-
-	PropertyBool _fixedProp;
-	bool &_fixed;
-
-	// The bodyName property is used only for markers that are part of a
-	// MarkerSet, not for ones that are part of a model.
-	PropertyStr _bodyNameProp;
-	std::string &_bodyName;
-
-	// Body that the marker is attached to
-	AbstractBody* _body;
-
-	// Support for Display
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
-
-	/** A temporary kluge until the default mechanism is working */
-	static Geometry *_defaultGeometry;
-	bool _virtual;
+	/** Name of geometry file name(s) */
+	PropertyStrArray	_propGeometryFileNames;
+	Array<std::string>&	_geometryFileNames;	
 
 //=============================================================================
 // METHODS
@@ -90,57 +74,35 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMarker();
-	SimmMarker(const SimmMarker &aMarker);
-	virtual ~SimmMarker();
+	PolyObject();
+	PolyObject(const std::string &aFileName);
+	PolyObject(const PolyObject &aPoly);
+	virtual ~PolyObject();
 	virtual Object* copy() const;
 
-#ifndef SWIG
-	SimmMarker& operator=(const SimmMarker &aMarker);
-#endif
-	void copyData(const SimmMarker &aMarker);
+	PolyObject& operator=(const PolyObject &aPoly);
+   void copyData(const PolyObject &aPoly);
 
-	virtual void updateFromMarker(const AbstractMarker &aMarker);
-	virtual void getOffset(double *rOffset) const;
-	virtual const double* getOffset() const { return &_offset[0]; }
-	virtual bool setOffset(Array<double>& aOffset);
-	virtual bool setOffset(const double aPoint[3]);
-	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
-	virtual bool getFixed() const { return _fixed; }
-	virtual bool setFixed(bool aFixed);
-	virtual bool getFixedUseDefault() const { return _fixedProp.getUseDefault(); }
-	virtual const std::string* getBodyName() const;
-	virtual bool setBodyName(const std::string& aName);
-	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
-	virtual bool setBodyNameUseDefault(bool aValue);
-	virtual AbstractBody* getBody() const { return _body; }
-	virtual void setBody(AbstractBody* aBody);
-	virtual void scale(const Array<double>& aScaleFactors);
-	virtual void setup(AbstractDynamicsEngine* aEngine);
-	virtual void updateGeometry();
+	void setNumGeometryFiles(int n);
+	const int getNumGeometryFiles() const;
+	void setGeometryFileName(int i, const std::string &aGeometryFileName);
+	const char* getGeometryFileName(int i) const;
 
-	virtual VisibleObject* getDisplayer() { return &_displayer; }
-	virtual void removeSelfFromDisplay();
-	const bool isVirtual()
-	{
-		return _virtual;
-	}
-	void setVirtual(bool aTrueFalse)
-	{
-		_virtual=aTrueFalse;
-	}
-	virtual void peteTest() const;
+   virtual void setup(AbstractDynamicsEngine* aEngine);
+	virtual void scale(Array<double>& aScaleFactors);
+
+	void peteTest() const;
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMarker
+};	// END of class PolyObject
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMarker_h__
+#endif // __PolyObject_h__
 
 
