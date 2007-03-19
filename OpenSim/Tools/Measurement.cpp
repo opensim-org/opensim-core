@@ -1,4 +1,4 @@
-// SimmMeasurement.cpp
+// Measurement.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMeasurement.h"
+#include "Measurement.h"
 
 //=============================================================================
 // STATICS
@@ -40,9 +40,9 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMeasurement::SimmMeasurement() :
-	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
-	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
+Measurement::Measurement() :
+	_markerPairSetProp(PropertyObj("", MarkerPairSet())),
+	_markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
 	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
 	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
@@ -55,7 +55,7 @@ SimmMeasurement::SimmMeasurement() :
 /**
  * Destructor.
  */
-SimmMeasurement::~SimmMeasurement()
+Measurement::~Measurement()
 {
 }
 
@@ -63,12 +63,12 @@ SimmMeasurement::~SimmMeasurement()
 /**
  * Copy constructor.
  *
- * @param aMeasurement SimmMeasurement to be copied.
+ * @param aMeasurement Measurement to be copied.
  */
-SimmMeasurement::SimmMeasurement(const SimmMeasurement &aMeasurement) :
+Measurement::Measurement(const Measurement &aMeasurement) :
    Object(aMeasurement),
-	_markerPairSetProp(PropertyObj("", SimmMarkerPairSet())),
-	_markerPairSet((SimmMarkerPairSet&)_markerPairSetProp.getValueObj()),
+	_markerPairSetProp(PropertyObj("", MarkerPairSet())),
+	_markerPairSet((MarkerPairSet&)_markerPairSetProp.getValueObj()),
 	_bodyScaleSetProp(PropertyObj("", BodyScaleSet())),
 	_bodyScaleSet((BodyScaleSet&)_bodyScaleSetProp.getValueObj()),
 	_apply(_applyProp.getValueBool())
@@ -82,11 +82,11 @@ SimmMeasurement::SimmMeasurement(const SimmMeasurement &aMeasurement) :
  * Copy this measurement and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmMeasurement.
+ * @return Pointer to a copy of this Measurement.
  */
-Object* SimmMeasurement::copy() const
+Object* Measurement::copy() const
 {
-	SimmMeasurement *measurement = new SimmMeasurement(*this);
+	Measurement *measurement = new Measurement(*this);
 	return(measurement);
 }
 
@@ -95,11 +95,11 @@ Object* SimmMeasurement::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmMeasurement to another.
+ * Copy data members from one Measurement to another.
  *
- * @param aMeasurement SimmMeasurement to be copied.
+ * @param aMeasurement Measurement to be copied.
  */
-void SimmMeasurement::copyData(const SimmMeasurement &aMeasurement)
+void Measurement::copyData(const Measurement &aMeasurement)
 {
 	_markerPairSet = aMeasurement._markerPairSet;
 	_bodyScaleSet = aMeasurement._bodyScaleSet;
@@ -108,21 +108,21 @@ void SimmMeasurement::copyData(const SimmMeasurement &aMeasurement)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMeasurement to their null values.
+ * Set the data members of this Measurement to their null values.
  */
-void SimmMeasurement::setNull()
+void Measurement::setNull()
 {
-	setType("SimmMeasurement");
+	setType("Measurement");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SimmMeasurement::setupProperties()
+void Measurement::setupProperties()
 {
 	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
-	_markerPairSetProp.setName("SimmMarkerPairSet");
+	_markerPairSetProp.setName("MarkerPairSet");
 	_propertySet.append(&_markerPairSetProp);
 
 	_bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
@@ -137,11 +137,11 @@ void SimmMeasurement::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Register the types used by SimmMeasurement.
+ * Register the types used by Measurement.
  */
-void SimmMeasurement::registerTypes()
+void Measurement::registerTypes()
 {
-	Object::RegisterType(SimmMarkerPair());
+	Object::RegisterType(MarkerPair());
 	Object::RegisterType(BodyScale());
 }
 
@@ -154,7 +154,7 @@ void SimmMeasurement::registerTypes()
  *
  * @return Reference to this object.
  */
-SimmMeasurement& SimmMeasurement::operator=(const SimmMeasurement &aMeasurement)
+Measurement& Measurement::operator=(const Measurement &aMeasurement)
 {
 	// BASE CLASS
 	Object::operator=(aMeasurement);
@@ -165,17 +165,17 @@ SimmMeasurement& SimmMeasurement::operator=(const SimmMeasurement &aMeasurement)
 }
 
 /* Apply a scale factor to a scale set, according to the elements of
- * the SimmMeasurement's BodyScaleSet.
+ * the Measurement's BodyScaleSet.
  */
 //_____________________________________________________________________________
 /**
  * Apply a scale factor to a scale set, according to the elements of
- * the SimmMeasurement's _bodyScaleSet.
+ * the Measurement's _bodyScaleSet.
  *
  * @param aFactor the scale factor to apply
  * @param aScaleSet the set of scale factors to modify
  */
-void SimmMeasurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
+void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 {
 	for (int i = 0; i < _bodyScaleSet.getSize(); i++)
 	{
@@ -203,7 +203,7 @@ void SimmMeasurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 	}
 }
 
-void SimmMeasurement::peteTest() const
+void Measurement::peteTest() const
 {
 	int i;
 

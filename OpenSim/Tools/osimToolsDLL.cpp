@@ -1,4 +1,4 @@
-// rdCMCDLL.cpp
+// osimToolsDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson
@@ -31,9 +31,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdCMCDLL.h"
+#include "osimToolsDLL.h"
 #include <iostream>
-#include "RegisterTypes_rdCMC.h"
+#include "RegisterTypes_osimTools.h"
 
 using namespace std;
 
@@ -43,10 +43,10 @@ using namespace std;
 static void Plugin_Attach()
 {
    cout<<"\n-------------------------------------------------------\n";
-   cout<<"Library rdCMC...\n";
+   cout<<"Library osimTools...\n";
    cout<<"Computed Muscle Control\n";
    cout<<"US Patent No. 6,750,866\n";
-   RegisterTypes_rdCMC();
+   RegisterTypes_osimTools();
    cout<<"-------------------------------------------------------\n\n";
 }
 

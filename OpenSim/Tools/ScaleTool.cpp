@@ -1,4 +1,4 @@
-// SimmSubject.cpp
+// ScaleTool.cpp
 // Author: Peter Loan
 /* Copyright (c) 2005, Stanford University and Peter Loan.
  * 
@@ -25,10 +25,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmSubject.h"
-#include <OpenSim/Simulation/SIMM/SimmIO.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "ScaleTool.h"
+#include <OpenSim/Common/SimmIO.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 //=============================================================================
 // STATICS
@@ -43,17 +43,17 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmSubject::SimmSubject() :
+ScaleTool::ScaleTool() :
 	_mass(_massProp.getValueDbl()),
 	_height(_heightProp.getValueDbl()),
 	_age(_ageProp.getValueDbl()),
 	_notes(_notesProp.getValueStr()),
-   _genericModelMakerProp(PropertyObj("", SimmGenericModelMaker())),
-	_genericModelMaker((SimmGenericModelMaker&)_genericModelMakerProp.getValueObj()),
-   _modelScalerProp(PropertyObj("", SimmModelScaler())),
-	_modelScaler((SimmModelScaler&)_modelScalerProp.getValueObj()),
-   _markerPlacerProp(PropertyObj("", SimmMarkerPlacer())),
-	_markerPlacer((SimmMarkerPlacer&)_markerPlacerProp.getValueObj())
+   _genericModelMakerProp(PropertyObj("", GenericModelMaker())),
+	_genericModelMaker((GenericModelMaker&)_genericModelMakerProp.getValueObj()),
+   _modelScalerProp(PropertyObj("", ModelScaler())),
+	_modelScaler((ModelScaler&)_modelScalerProp.getValueObj()),
+   _markerPlacerProp(PropertyObj("", MarkerPlacer())),
+	_markerPlacer((MarkerPlacer&)_markerPlacerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -63,18 +63,18 @@ SimmSubject::SimmSubject() :
 /**
  * Constructor from an XML file
  */
-SimmSubject::SimmSubject(const string &aFileName) :
+ScaleTool::ScaleTool(const string &aFileName) :
    Object(aFileName),
 	_mass(_massProp.getValueDbl()),
 	_height(_heightProp.getValueDbl()),
 	_age(_ageProp.getValueDbl()),
 	_notes(_notesProp.getValueStr()),
-   _genericModelMakerProp(PropertyObj("", SimmGenericModelMaker())),
-	_genericModelMaker((SimmGenericModelMaker&)_genericModelMakerProp.getValueObj()),
-   _modelScalerProp(PropertyObj("", SimmModelScaler())),
-	_modelScaler((SimmModelScaler&)_modelScalerProp.getValueObj()),
-   _markerPlacerProp(PropertyObj("", SimmMarkerPlacer())),
-	_markerPlacer((SimmMarkerPlacer&)_markerPlacerProp.getValueObj())
+   _genericModelMakerProp(PropertyObj("", GenericModelMaker())),
+	_genericModelMaker((GenericModelMaker&)_genericModelMakerProp.getValueObj()),
+   _modelScalerProp(PropertyObj("", ModelScaler())),
+	_modelScaler((ModelScaler&)_modelScalerProp.getValueObj()),
+   _markerPlacerProp(PropertyObj("", MarkerPlacer())),
+	_markerPlacer((MarkerPlacer&)_markerPlacerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -95,7 +95,7 @@ SimmSubject::SimmSubject(const string &aFileName) :
 /**
  * Destructor.
  */
-SimmSubject::~SimmSubject()
+ScaleTool::~ScaleTool()
 {
 }
 
@@ -103,20 +103,20 @@ SimmSubject::~SimmSubject()
 /**
  * Copy constructor.
  *
- * @param aSubject SimmSubject to be copied.
+ * @param aSubject ScaleTool to be copied.
  */
-SimmSubject::SimmSubject(const SimmSubject &aSubject) :
+ScaleTool::ScaleTool(const ScaleTool &aSubject) :
    Object(aSubject),
 	_mass(_massProp.getValueDbl()),
 	_height(_heightProp.getValueDbl()),
 	_age(_ageProp.getValueDbl()),
 	_notes(_notesProp.getValueStr()),
-   _genericModelMakerProp(PropertyObj("", SimmGenericModelMaker())),
-	_genericModelMaker((SimmGenericModelMaker&)_genericModelMakerProp.getValueObj()),
-   _modelScalerProp(PropertyObj("", SimmModelScaler())),
-	_modelScaler((SimmModelScaler&)_modelScalerProp.getValueObj()),
-   _markerPlacerProp(PropertyObj("", SimmMarkerPlacer())),
-	_markerPlacer((SimmMarkerPlacer&)_markerPlacerProp.getValueObj())
+   _genericModelMakerProp(PropertyObj("", GenericModelMaker())),
+	_genericModelMaker((GenericModelMaker&)_genericModelMakerProp.getValueObj()),
+   _modelScalerProp(PropertyObj("", ModelScaler())),
+	_modelScaler((ModelScaler&)_modelScalerProp.getValueObj()),
+   _markerPlacerProp(PropertyObj("", MarkerPlacer())),
+	_markerPlacer((MarkerPlacer&)_markerPlacerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -128,11 +128,11 @@ SimmSubject::SimmSubject(const SimmSubject &aSubject) :
  * Copy this subject and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmSubject.
+ * @return Pointer to a copy of this ScaleTool.
  */
-Object* SimmSubject::copy() const
+Object* ScaleTool::copy() const
 {
-	SimmSubject *subject = new SimmSubject(*this);
+	ScaleTool *subject = new ScaleTool(*this);
 	return(subject);
 }
 
@@ -141,11 +141,11 @@ Object* SimmSubject::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmSubject to another.
+ * Copy data members from one ScaleTool to another.
  *
- * @param aSubject SimmSubject to be copied.
+ * @param aSubject ScaleTool to be copied.
  */
-void SimmSubject::copyData(const SimmSubject &aSubject)
+void ScaleTool::copyData(const ScaleTool &aSubject)
 {
 	_mass = aSubject._mass;
 	_height = aSubject._height;
@@ -158,18 +158,18 @@ void SimmSubject::copyData(const SimmSubject &aSubject)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmSubject to their null values.
+ * Set the data members of this ScaleTool to their null values.
  */
-void SimmSubject::setNull()
+void ScaleTool::setNull()
 {
-	setType("SimmSubject");
+	setType("ScaleTool");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SimmSubject::setupProperties()
+void ScaleTool::setupProperties()
 {
 	_massProp.setComment("Mass of the subject in kg.  Subject-specific model generated by scaling step will have this total mass.");
 	_massProp.setName("mass");
@@ -191,15 +191,15 @@ void SimmSubject::setupProperties()
 	_propertySet.append(&_notesProp);
 
 	_genericModelMakerProp.setComment("Specifies the name of the unscaled model (.osim) and the marker set.");
-	_genericModelMakerProp.setName("SimmGenericModelMaker");
+	_genericModelMakerProp.setName("GenericModelMaker");
 	_propertySet.append(&_genericModelMakerProp);
 
 	_modelScalerProp.setComment("Specifies parameters for scaling the model.");
-	_modelScalerProp.setName("SimmModelScaler");
+	_modelScalerProp.setName("ModelScaler");
 	_propertySet.append(&_modelScalerProp);
 
 	_markerPlacerProp.setComment("Specifies parameters for placing markers on the model once a model is scaled. ");
-	_markerPlacerProp.setName("SimmMarkerPlacer");
+	_markerPlacerProp.setName("MarkerPlacer");
 	_propertySet.append(&_markerPlacerProp);
 }
 
@@ -207,13 +207,13 @@ void SimmSubject::setupProperties()
 /**
  * Register the types used by this class.
  */
-void SimmSubject::registerTypes()
+void ScaleTool::registerTypes()
 {
-	Object::RegisterType(SimmGenericModelMaker());
-	Object::RegisterType(SimmModelScaler());
-	Object::RegisterType(SimmMarkerPlacer());
-	SimmGenericModelMaker::registerTypes();
-	SimmModelScaler::registerTypes();
+	Object::RegisterType(GenericModelMaker());
+	Object::RegisterType(ModelScaler());
+	Object::RegisterType(MarkerPlacer());
+	GenericModelMaker::registerTypes();
+	ModelScaler::registerTypes();
 }
 
 //=============================================================================
@@ -225,7 +225,7 @@ void SimmSubject::registerTypes()
  *
  * @return Reference to this object.
  */
-SimmSubject& SimmSubject::operator=(const SimmSubject &aSubject)
+ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
 {
 	// BASE CLASS
 	Object::operator=(aSubject);
@@ -243,13 +243,13 @@ SimmSubject& SimmSubject::operator=(const SimmSubject &aSubject)
  * This method creates a subject-specific model from a generic model plus
  * marker cloud and coordinate data files, and then processes one or more
  * IK trials using the model. It uses:
- * SimmGenericModelMaker::processModel() to load the generic model,
- * SimmModelScaler::processModel() to scale the model to the subject, and
- * SimmMarkerPlacer::processModel() to place markers on the model.
+ * GenericModelMaker::processModel() to load the generic model,
+ * ModelScaler::processModel() to scale the model to the subject, and
+ * MarkerPlacer::processModel() to place markers on the model.
  *
  * @return Whether or not there was a fatal error in any of the steps.
  */
-bool SimmSubject::processModel()
+bool ScaleTool::processModel()
 {
 	AbstractModel *model = NULL;
 
@@ -320,11 +320,11 @@ bool SimmSubject::processModel()
 
 //_____________________________________________________________________________
 /**
- * Create a generic model, using SimmGenericModelMaker::processModel().
+ * Create a generic model, using GenericModelMaker::processModel().
  *
  * @return Pointer to the AbstractModel that is created.
  */
-AbstractModel* SimmSubject::createModel()
+AbstractModel* ScaleTool::createModel()
 {
 	cout << "Processing subject " << getName() << endl;
 
@@ -340,12 +340,12 @@ AbstractModel* SimmSubject::createModel()
 		else
 			return model;
 	} else {
-		cout << "SimmSubject.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
+		cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
 	}
 	return 0;
 }
 
-void SimmSubject::peteTest() const
+void ScaleTool::peteTest() const
 {
 	cout << "   Subject: " << getName() << endl;
 	_genericModelMaker.peteTest();

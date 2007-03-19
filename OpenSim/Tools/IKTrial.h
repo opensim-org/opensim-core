@@ -1,7 +1,7 @@
-#ifndef __SimmIKTrial_h__
-#define __SimmIKTrial_h__
+#ifndef __IKTrial_h__
+#define __IKTrial_h__
 
-// SimmIKTrial.h
+// IKTrial.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,19 +30,19 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/Storage.h>
+#include "osimToolsDLL.h"
 
 namespace OpenSim {
 
 class AbstractModel;
 class CoordinateSet;
-class SimmMarkerData;
+class MarkerData;
 class IKTaskSet;
 
 //=============================================================================
@@ -54,7 +54,7 @@ class IKTaskSet;
  * @author Peter Loan
  * @version 1.0
  */
-class workflow_API SimmIKTrial : public Object  
+class OSIMTOOLS_API IKTrial : public Object  
 {
 
 //=============================================================================
@@ -106,15 +106,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmIKTrial();
-	SimmIKTrial(const SimmIKTrial &aIKTrialParams);
-	virtual ~SimmIKTrial();
+	IKTrial();
+	IKTrial(const IKTrial &aIKTrialParams);
+	virtual ~IKTrial();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmIKTrial& operator=(const SimmIKTrial &aIKTrialParams);
+	IKTrial& operator=(const IKTrial &aIKTrialParams);
 #endif
-   void copyData(const SimmIKTrial &aIKTrialParams);
+   void copyData(const IKTrial &aIKTrialParams);
 
 	double getStartTime() const { return _timeRange[0]; }
 	double getEndTime() const { return _timeRange[1]; }
@@ -128,7 +128,7 @@ public:
 	void findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const;
 
 	bool processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet);
-	bool processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, SimmMarkerData& aMarkerData, Storage& aOutputStorage);
+	bool processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage);
 
 	/*===== Set and Get ===============*/
 	std::string getMarkerDataFilename() const
@@ -159,12 +159,12 @@ private:
 	void setupProperties();
 
 //=============================================================================
-};	// END of class SimmIKTrial
+};	// END of class IKTrial
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmIKTrial_h__
+#endif // __IKTrial_h__
 
 

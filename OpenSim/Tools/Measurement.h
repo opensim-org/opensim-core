@@ -1,7 +1,7 @@
-#ifndef __SimmMeasurement_h__
-#define __SimmMeasurement_h__
+#ifndef __Measurement_h__
+#define __Measurement_h__
 
-// SimmMeasurement.h
+// Measurement.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,19 +30,19 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Scale.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include "SimmMarkerPairSet.h"
-#include "BodyScaleSet.h"
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Scale.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include "MarkerPairSet.h"
+#include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -57,7 +57,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMeasurement : public Object  
+class OSIMTOOLS_API Measurement : public Object  
 {
 
 //=============================================================================
@@ -65,7 +65,7 @@ class RDSIMULATION_API SimmMeasurement : public Object
 //=============================================================================
 protected:
 	PropertyObj _markerPairSetProp;
-	SimmMarkerPairSet &_markerPairSet;
+	MarkerPairSet &_markerPairSet;
 
 	PropertyObj _bodyScaleSetProp;
 	BodyScaleSet &_bodyScaleSet;
@@ -80,22 +80,22 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMeasurement();
-	SimmMeasurement(const SimmMeasurement &aMeasurement);
-	virtual ~SimmMeasurement();
+	Measurement();
+	Measurement(const Measurement &aMeasurement);
+	virtual ~Measurement();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMeasurement& operator=(const SimmMeasurement &aMeasurement);
+	Measurement& operator=(const Measurement &aMeasurement);
 #endif
-   void copyData(const SimmMeasurement &aMeasurement);
+   void copyData(const Measurement &aMeasurement);
 
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
-	const SimmMarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
+	const MarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
 	bool getApply() const { return _apply; }
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
-	/* Register types to be used when reading a SimmMeasurement object from xml file. */
+	/* Register types to be used when reading a Measurement object from xml file. */
 	static void registerTypes();
 
 	void peteTest() const;
@@ -104,12 +104,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMeasurement
+};	// END of class Measurement
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMeasurement_h__
+#endif // __Measurement_h__
 
 

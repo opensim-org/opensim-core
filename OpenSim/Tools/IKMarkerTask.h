@@ -1,7 +1,7 @@
 #ifndef __IKMarkerTask_h__
 #define __IKMarkerTask_h__
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimToolsDLL.h"
 #include "IKTask.h"
 
 namespace OpenSim {
@@ -13,7 +13,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API IKMarkerTask : public IKTask
+class OSIMTOOLS_API IKMarkerTask : public IKTask
 {
 public:
 	IKMarkerTask();

@@ -1,14 +1,14 @@
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Subject/SimmIKTrial.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "IKTrial.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include "SimmIKSolverImpl.h"
-#include "SimmInverseKinematicsTarget.h"
+#include "IKSolverImpl.h"
+#include "IKTarget.h"
 
 
 
@@ -21,8 +21,8 @@ using namespace std;
  * @param aOptimizationTarget The target that IK will minimize
  * @param aIKTrial Parameters specified in input file to control IK.
  */
-SimmIKSolverImpl::
-SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget):
+IKSolverImpl::
+IKSolverImpl(IKTarget& aOptimizationTarget):
 IKSolverInterface(aOptimizationTarget)
 {
 }
@@ -35,7 +35,7 @@ IKSolverInterface(aOptimizationTarget)
  * @param inputData Set of frames to solve packaged as a storage fle.
  * @param outputData the frames solved by the solver represented as a storage onbject.
  */
-void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData)
+void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData)
 {
 	int i;
 
@@ -179,7 +179,7 @@ void SimmIKSolverImpl::solveFrames(const SimmIKTrial& aIKOptions, Storage& input
  * UserData is the set of columns that are not used directly by the IK problem (for example
  * ground reaction forces). This UserData needs to be carried along in IK.
  */
-void SimmIKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
+void IKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
 									   string& resultsHeader, 
 									   string& userHeaders, 
 									   Array<int>& userDataColumnIndices)
@@ -208,7 +208,7 @@ void SimmIKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
  * Companion helper function to (collectUserData) responsible for appending user columns 
  * to outputRow.
  */
-void SimmIKSolverImpl::appendUserData(Array<double>& outputRow, Array<int>& indices, StateVector* inputRow)
+void IKSolverImpl::appendUserData(Array<double>& outputRow, Array<int>& indices, StateVector* inputRow)
 {
 	int i;
 	for(i=0; i< indices.getSize(); i++){

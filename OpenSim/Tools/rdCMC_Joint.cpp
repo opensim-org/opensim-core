@@ -31,13 +31,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/SpeedSet.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
 #include "rdCMC_Task.h"
 #include "rdCMC_Joint.h"
 

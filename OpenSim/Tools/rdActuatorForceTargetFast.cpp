@@ -32,7 +32,7 @@
 // INCLUDES
 //==============================================================================
 #include <iostream>
-#include <OpenSim/Tools/Exception.h>
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "rdActuatorForceTargetFast.h"

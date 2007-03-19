@@ -32,11 +32,11 @@
 //=============================================================================
 #include <time.h>
 #include "CMCTool.h"
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/GCVSplineSet.h>
-#include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/VectorGCVSplineR1R3.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
@@ -44,12 +44,12 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Analyses/ForceApplier.h>
-#include <OpenSim/Analyses/TorqueApplier.h>
+#include <OpenSim/Actuators/ForceApplier.h>
+#include <OpenSim/Actuators/TorqueApplier.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/ForwardTool.h>
-#include <OpenSim/Tools/DebugUtilities.h>
+#include "ForwardTool.h"
+#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "rdCMC.h"
 #include "rdCMC_TaskSet.h"
@@ -75,7 +75,7 @@ CMCTool::~CMCTool()
  * Default constructor.
  */
 CMCTool::CMCTool() :
-	SimulationTool(),
+	AbstractTool(),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -109,7 +109,7 @@ CMCTool::CMCTool() :
  * @param aFileName File name of the XML document.
  */
 CMCTool::CMCTool(const string &aFileName) :
-	SimulationTool(aFileName),
+	AbstractTool(aFileName),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -176,7 +176,7 @@ CMCTool::CMCTool(const string &aFileName) :
  */
 CMCTool::
 CMCTool(const CMCTool &aTool) :
-	SimulationTool(aTool),
+	AbstractTool(aTool),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -412,7 +412,7 @@ CMCTool& CMCTool::
 operator=(const CMCTool &aTool)
 {
 	// BASE CLASS
-	SimulationTool::operator=(aTool);
+	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;

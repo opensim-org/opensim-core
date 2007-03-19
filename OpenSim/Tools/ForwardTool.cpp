@@ -5,18 +5,18 @@
 // INCLUDES
 //=============================================================================
 #include "ForwardTool.h"
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/GCVSplineSet.h>
-#include <OpenSim/Tools/VectorGCVSplineR1R3.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Analyses/ForceApplier.h>
-#include <OpenSim/Analyses/TorqueApplier.h>
+#include <OpenSim/Actuators/ForceApplier.h>
+#include <OpenSim/Actuators/TorqueApplier.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -37,7 +37,7 @@ ForwardTool::~ForwardTool()
  * Default constructor.
  */
 ForwardTool::ForwardTool() :
-	SimulationTool(),
+	AbstractTool(),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -60,7 +60,7 @@ ForwardTool::ForwardTool() :
  * @param aFileName File name of the document.
  */
 ForwardTool::ForwardTool(const string &aFileName) :
-	SimulationTool(aFileName),
+	AbstractTool(aFileName),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -113,7 +113,7 @@ ForwardTool::ForwardTool(const string &aFileName) :
  */
 ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
-	SimulationTool(aTool),
+	AbstractTool(aTool),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -238,7 +238,7 @@ ForwardTool& ForwardTool::
 operator=(const ForwardTool &aTool)
 {
 	// BASE CLASS
-	SimulationTool::operator=(aTool);
+	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
 	_controlsFileName = aTool._controlsFileName;

@@ -30,15 +30,14 @@
 #define rdCMC_TaskSet_h__
 
 // INCLUDES
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include "rdCMC_Task.h"
 
 
 #ifndef SWIG
-template class RDCMC_API OpenSim::Set<OpenSim::rdCMC_Task>;
+template class OSIMTOOLS_API OpenSim::Set<OpenSim::rdCMC_Task>;
 #endif
 
 namespace OpenSim {
@@ -51,7 +50,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDCMC_API rdCMC_TaskSet : public Set<rdCMC_Task> 
+class OSIMTOOLS_API rdCMC_TaskSet : public Set<rdCMC_Task> 
 {
 
 //=============================================================================

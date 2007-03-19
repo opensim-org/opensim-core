@@ -1,4 +1,4 @@
-// RegisterTypes_rdCMC.h
+// osimToolsDLL.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson
@@ -26,18 +26,27 @@
 // This software, originally developed by Realistic Dynamics, Inc., was
 // transferred to Stanford University on November 1, 2006.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#ifndef RegisterTypes_rdCMC_h__
-#define RegisterTypes_rdCMC_h__
+#ifndef osimToolsDLL_h__
+#define osimToolsDLL_h__
 
-#include "rdCMCDLL.h"
+// UNIX PLATFORM
+#if defined(UNIX) || defined(__linux__)
+
+#define OSIMTOOLS_API
+
+// WINDOWS PLATFORM
+#else
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#ifdef OSIMTOOLS_EXPORTS
+#define OSIMTOOLS_API __declspec(dllexport)
+#else
+#define OSIMTOOLS_API __declspec(dllimport)
+#endif
+
+#endif // PLATFORM
 
 
-extern "C" {
-
-RDCMC_API void RegisterTypes_rdCMC(); 
-
-}
-
-#endif // RegisterTypes_rdCMC_h__
-
-
+#endif // osimToolsDLL_h__

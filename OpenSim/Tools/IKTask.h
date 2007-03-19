@@ -1,9 +1,9 @@
 #ifndef __IKTask_h__
 #define __IKTask_h__
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
@@ -14,7 +14,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API IKTask : public Object
+class OSIMTOOLS_API IKTask : public Object
 {
 protected:
 	PropertyDbl _weightProp;

@@ -1,7 +1,7 @@
-#ifndef __SimmModelScaler_h__
-#define __SimmModelScaler_h__
+#ifndef __ModelScaler_h__
+#define __ModelScaler_h__
 
-// SimmModelScaler.h
+// ModelScaler.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,20 +30,20 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
+#include "osimToolsDLL.h"
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include "MeasurementSet.h"
 
 namespace OpenSim {
 
-class SimmMarkerData;
+class MarkerData;
 class AbstractModel;
 
 //=============================================================================
@@ -56,7 +56,7 @@ class AbstractModel;
  * @author Peter Loan
  * @version 1.0
  */
-class  workflow_API SimmModelScaler : public Object  
+class  OSIMTOOLS_API ModelScaler : public Object  
 {
 
 //=============================================================================
@@ -71,7 +71,7 @@ protected:
 
 	// set of measurements to make on generic model and subject's static pose
 	PropertyObj _measurementSetProp;
-	SimmMeasurementSet &_measurementSet;
+	MeasurementSet &_measurementSet;
 
 	// set of XYZ scale factors to use for manual scaling
 	PropertyObj _scaleSetProp;
@@ -116,19 +116,19 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmModelScaler();
-	SimmModelScaler(const SimmModelScaler &aModelScaler);
-	virtual ~SimmModelScaler();
+	ModelScaler();
+	ModelScaler(const ModelScaler &aModelScaler);
+	virtual ~ModelScaler();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmModelScaler& operator=(const SimmModelScaler &aModelScaler);
+	ModelScaler& operator=(const ModelScaler &aModelScaler);
 #endif
-   void copyData(const SimmModelScaler &aModelScaler);
+   void copyData(const ModelScaler &aModelScaler);
 
 	bool processModel(AbstractModel* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
 
-	/* Register types to be used when reading a SimmModelScaler object from xml file. */
+	/* Register types to be used when reading a ModelScaler object from xml file. */
 	static void registerTypes();
 
 	const bool getPreserveMassDist() const
@@ -141,7 +141,7 @@ public:
 	/**
 	 * add a measurement
 	 */
-	void addMeasurement(SimmMeasurement* aMeasurement)
+	void addMeasurement(Measurement* aMeasurement)
 	{
 		_measurementSet.append(aMeasurement);
 	}
@@ -156,11 +156,11 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	SimmMeasurementSet& getMeasurementSet() {
+	MeasurementSet& getMeasurementSet() {
 		return _measurementSet;
 	}
 
-	void setMeasurementSet(SimmMeasurementSet& measurementSet) {
+	void setMeasurementSet(MeasurementSet& measurementSet) {
 		_measurementSet = measurementSet;
 	}
 
@@ -243,16 +243,16 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	double computeMeasurementScaleFactor(const AbstractModel& aModel, const SimmMarkerData& aMarkerData, const SimmMeasurement& aMeasurement) const;
+	double computeMeasurementScaleFactor(const AbstractModel& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 	double takeModelMeasurement(const AbstractModel& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
-	double takeExperimentalMarkerMeasurement(const SimmMarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
+	double takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 //=============================================================================
-};	// END of class SimmModelScaler
+};	// END of class ModelScaler
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmModelScaler_h__
+#endif // __ModelScaler_h__
 
 

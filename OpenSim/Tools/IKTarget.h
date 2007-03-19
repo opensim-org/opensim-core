@@ -1,6 +1,6 @@
-#ifndef __SimmInverseKinematicsTarget_h__
-#define __SimmInverseKinematicsTarget_h__
-// SimmInverseKinematicsTarget.h
+#ifndef __IKTarget_h__
+#define __IKTarget_h__
+// IKTarget.h
 // Authors: Ayman Habib, Peter Loan, Eran Guendelman
 /* Copyright (c) 2005, Stanford University, Ayman Habib, Peter Loan, and Eran Guendelman.
  * 
@@ -23,13 +23,13 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
+#include "osimToolsDLL.h"
 #include <OpenSim/SQP/rdOptimizationTarget.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
-#include <OpenSim/Simulation/SIMM/AbstractMarker.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/AbstractMarker.h>
 
 namespace OpenSim {
 
@@ -37,9 +37,9 @@ class Storage;
 class IKTaskSet;
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -53,7 +53,7 @@ class IKTaskSet;
  * @version 1.0
  */
 
-class workflow_API SimmInverseKinematicsTarget : public rdOptimizationTarget
+class OSIMTOOLS_API IKTarget : public rdOptimizationTarget
 {
 //==============================================================================
 // DATA
@@ -73,7 +73,7 @@ private:
 	// internal flag used for printing weighted errors at end of optimization
 	bool _printPerformanceValues;
 
-	// Marker Map information
+	// VisibleMarker Map information
 	typedef struct
 	{
 		const AbstractMarker* marker;
@@ -119,9 +119,9 @@ public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
 	//---------------------------------------------------------------------------
-	SimmInverseKinematicsTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
+	IKTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
 
-	virtual ~SimmInverseKinematicsTarget(void);
+	virtual ~IKTarget(void);
 
 	//---------------------------------------------------------------------------
 	// UTILITIES

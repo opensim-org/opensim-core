@@ -32,15 +32,14 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 
 #ifdef SWIG
-	#ifdef RDCMC_API
-		#undef RDCMC_API
-		#define RDCMC_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -80,7 +79,7 @@ class rdCMC_TaskSet;
  * @version 1.0
  */
 
-class RDCMC_API rdCMC : public Controller
+class OSIMTOOLS_API rdCMC : public Controller
 {
 //=============================================================================
 // DATA

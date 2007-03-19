@@ -1,4 +1,4 @@
-// SimmIKTrial.cpp
+// IKTrial.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -26,18 +26,18 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include "SimmIKTrial.h"
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
+#include <OpenSim/Common/rdMath.h>
+#include "IKTrial.h"
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include "IKTaskSet.h"
+#include "IKSolverImpl.h"
+#include "IKTarget.h"
 
 //=============================================================================
 // STATICS
@@ -52,7 +52,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmIKTrial::SimmIKTrial() :
+IKTrial::IKTrial() :
    _markerFileName(_markerFileNameProp.getValueStr()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
    _analogFileName(_analogFileNameProp.getValueStr()),
@@ -71,7 +71,7 @@ SimmIKTrial::SimmIKTrial() :
 /**
  * Destructor.
  */
-SimmIKTrial::~SimmIKTrial()
+IKTrial::~IKTrial()
 {
 }
 
@@ -79,9 +79,9 @@ SimmIKTrial::~SimmIKTrial()
 /**
  * Copy constructor.
  *
- * @param aMarkerPlacementParams SimmIKTrial to be copied.
+ * @param aMarkerPlacementParams IKTrial to be copied.
  */
-SimmIKTrial::SimmIKTrial(const SimmIKTrial &aIKTrialParams) :
+IKTrial::IKTrial(const IKTrial &aIKTrialParams) :
    Object(aIKTrialParams),
    _markerFileName(_markerFileNameProp.getValueStr()),
    _coordinateFileName(_coordinateFileNameProp.getValueStr()),
@@ -102,15 +102,15 @@ SimmIKTrial::SimmIKTrial(const SimmIKTrial &aIKTrialParams) :
  * Copy this IK Trial params and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmIKTrial.
+ * @return Pointer to a copy of this IKTrial.
  */
-Object* SimmIKTrial::copy() const
+Object* IKTrial::copy() const
 {
-	SimmIKTrial *IKTrialParams = new SimmIKTrial(*this);
+	IKTrial *IKTrialParams = new IKTrial(*this);
 	return(IKTrialParams);
 }
 
-void SimmIKTrial::copyData(const SimmIKTrial &aIKTrialParams)
+void IKTrial::copyData(const IKTrial &aIKTrialParams)
 {
 	_markerFileName = aIKTrialParams._markerFileName;
 	_coordinateFileName = aIKTrialParams._coordinateFileName;
@@ -129,11 +129,11 @@ void SimmIKTrial::copyData(const SimmIKTrial &aIKTrialParams)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmIKTrial to their null values.
+ * Set the data members of this IKTrial to their null values.
  */
-void SimmIKTrial::setNull()
+void IKTrial::setNull()
 {
-	setType("SimmIKTrial");
+	setType("IKTrial");
 
 	_coordinateFileName = "";
 }
@@ -141,7 +141,7 @@ void SimmIKTrial::setNull()
 /**
  * Connect properties to local pointers.
  */
-void SimmIKTrial::setupProperties()
+void IKTrial::setupProperties()
 {
 	_markerFileNameProp.setComment("TRC file (.trc) containing the time history of experimental marker positions.");
 	_markerFileNameProp.setName("marker_file");
@@ -201,7 +201,7 @@ void SimmIKTrial::setupProperties()
 	_propertySet.append(&_notesProp);
 }
 
-SimmIKTrial& SimmIKTrial::operator=(const SimmIKTrial &aIKTrialParams)
+IKTrial& IKTrial::operator=(const IKTrial &aIKTrialParams)
 {
 	// BASE CLASS
 	Object::operator=(aIKTrialParams);
@@ -211,7 +211,7 @@ SimmIKTrial& SimmIKTrial::operator=(const SimmIKTrial &aIKTrialParams)
 	return(*this);
 }
 
-bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, SimmMarkerData& aMarkerData, Storage& aOutputStorage)
+bool IKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage)
 {
 	// During the IK trial, *all* coordinates that have values specified
 	// in the input coordinate file will use those values for the
@@ -230,7 +230,7 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSe
 		if (_coordinateFileName != "")
 		{
 			SimmMotionData coordinateValues(_coordinateFileName);
-			coordinateValues.convertDegreesToRadians(aModel);
+			aModel.getDynamicsEngine().convertDegreesToRadians(coordinateValues);
 
 			// Adjust the user-defined start and end times to make sure they are in the
 			// range of the marker data. This must be done so that you only look in the
@@ -249,10 +249,10 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSe
 		inputStorage.print("markers_coords_ik.sto");
 
 		// Create target
-		SimmInverseKinematicsTarget *target = new SimmInverseKinematicsTarget(aModel, aIKTaskSet, inputStorage);
+		IKTarget *target = new IKTarget(aModel, aIKTaskSet, inputStorage);
 		target->printTasks();
 		// Create solver
-		SimmIKSolverImpl *ikSolver = new SimmIKSolverImpl(*target);
+		IKSolverImpl *ikSolver = new IKSolverImpl(*target);
 		// Solve
 		ikSolver->solveFrames(*this, inputStorage, aOutputStorage);
 
@@ -268,11 +268,11 @@ bool SimmIKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSe
 	return true;
 }
 
-bool SimmIKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
+bool IKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
 {
 	cout << endl << "Processing IK trial: " << getName() << endl;
 
-	SimmMarkerData markerData(_markerFileName);
+	MarkerData markerData(_markerFileName);
 	/* Convert the marker data into the model's units. */
 	markerData.convertToUnits(aModel.getLengthUnits());
 
@@ -294,7 +294,7 @@ bool SimmIKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
 /* Find the range of frames that is between start time and end time
  * (inclusive). Return the indices of the bounding frames.
  */
-void SimmIKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const
+void IKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const
 {
 	if (_timeRange[0] > _timeRange[1])
 	{
@@ -307,9 +307,9 @@ void SimmIKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oE
 	oEndFrame = aData.findIndex(aData.getSize()-1, _timeRange[1]);
 }
 
-void SimmIKTrial::peteTest() const
+void IKTrial::peteTest() const
 {
-	cout << "   SimmIKTrial: " << getName() << endl;
+	cout << "   IKTrial: " << getName() << endl;
 	cout << "      markerFileName: " << _markerFileName << endl;
 	cout << "      coordinateFileName: " << _coordinateFileName << endl;
 	cout << "      analogFileName: " << _analogFileName << endl;

@@ -1,7 +1,7 @@
-#ifndef __SimmMarkerPairSet_h__
-#define __SimmMarkerPairSet_h__
+#ifndef __MarkerPairSet_h__
+#define __MarkerPairSet_h__
 
-// SimmMarkerPairSet.h
+// MarkerPairSet.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,9 +25,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include "SimmMarkerPair.h"
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Set.h>
+#include "MarkerPair.h"
 
 namespace OpenSim {
 
@@ -40,25 +40,25 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API SimmMarkerPairSet :	public Set<SimmMarkerPair>
+class OSIMTOOLS_API MarkerPairSet :	public Set<MarkerPair>
 {
 private:
 	void setNull();
 public:
-	SimmMarkerPairSet();
-	SimmMarkerPairSet(const SimmMarkerPairSet& aSimmMarkerPairSet);
-	~SimmMarkerPairSet(void);
+	MarkerPairSet();
+	MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet);
+	~MarkerPairSet(void);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	SimmMarkerPairSet& operator=(const SimmMarkerPairSet &aSimmMarkerPairSet);
+	MarkerPairSet& operator=(const MarkerPairSet &aSimmMarkerPairSet);
 #endif
 //=============================================================================
-};	// END of class SimmMarkerPairSet
+};	// END of class MarkerPairSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMarkerPairSet_h__
+#endif // __MarkerPairSet_h__

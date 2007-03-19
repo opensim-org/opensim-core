@@ -3,20 +3,19 @@
 // ForwardTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/SimulationTool.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include "Analyses.h"
-#include "suAnalysesDLL.h"
+#include "osimToolsDLL.h"
 
 #ifdef SWIG
-	#ifdef SUANALYSES_API
-		#undef SUANALYSES_API
-		#define SUANALYSES_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -33,7 +32,7 @@ class TorqueApplier;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class SUANALYSES_API ForwardTool: public SimulationTool
+class OSIMTOOLS_API ForwardTool: public AbstractTool
 {
 //=============================================================================
 // MEMBER VARIABLES

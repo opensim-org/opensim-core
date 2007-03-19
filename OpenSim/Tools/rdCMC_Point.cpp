@@ -32,9 +32,9 @@
 // INCLUDES
 //=============================================================================
 #include "rdCMC_Point.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 
 using namespace std;
 using namespace OpenSim;

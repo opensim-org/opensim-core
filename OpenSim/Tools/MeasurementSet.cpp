@@ -1,4 +1,4 @@
-// SimmMeasurementSet.cpp
+// MeasurementSet.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SimmMeasurementSet.h"
+#include "MeasurementSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -34,26 +34,26 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-SimmMeasurementSet::~SimmMeasurementSet(void)
+MeasurementSet::~MeasurementSet(void)
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Default constructor of a SimmMeasurementSet.
+ * Default constructor of a MeasurementSet.
  */
-SimmMeasurementSet::SimmMeasurementSet() :
-	Set<SimmMeasurement>()
+MeasurementSet::MeasurementSet() :
+	Set<Measurement>()
 {
 	setNull();
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor of a SimmMeasurementSet.
+ * Copy constructor of a MeasurementSet.
  */
-SimmMeasurementSet::SimmMeasurementSet(const SimmMeasurementSet& aSimmMeasurementSet):
-	Set<SimmMeasurement>(aSimmMeasurementSet)
+MeasurementSet::MeasurementSet(const MeasurementSet& aSimmMeasurementSet):
+	Set<Measurement>(aSimmMeasurementSet)
 {
 	setNull();
 	*this = aSimmMeasurementSet;
@@ -63,11 +63,11 @@ SimmMeasurementSet::SimmMeasurementSet(const SimmMeasurementSet& aSimmMeasuremen
 // CONSTRUCTION METHODS
 //=============================================================================
 /**
- * Set the data members of this SimmMeasurementSet to their null values.
+ * Set the data members of this MeasurementSet to their null values.
  */
-void SimmMeasurementSet::setNull()
+void MeasurementSet::setNull()
 {
-	setType("SimmMeasurementSet");
+	setType("MeasurementSet");
 }
 
 //=============================================================================
@@ -80,9 +80,9 @@ void SimmMeasurementSet::setNull()
  * @return Reference to this object.
  */
 #ifndef SWIG
-SimmMeasurementSet& SimmMeasurementSet::operator=(const SimmMeasurementSet &aSimmMeasurementSet)
+MeasurementSet& MeasurementSet::operator=(const MeasurementSet &aSimmMeasurementSet)
 {
-	Set<SimmMeasurement>::operator=(aSimmMeasurementSet);
+	Set<Measurement>::operator=(aSimmMeasurementSet);
 	return (*this);
 }
 #endif

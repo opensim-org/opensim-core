@@ -1,8 +1,8 @@
 #ifndef __IKTaskSet_h__
 #define __IKTaskSet_h__
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Set.h>
 #include "IKTask.h"
 
 namespace OpenSim {
@@ -15,7 +15,7 @@ namespace OpenSim {
  * - Added constructor from a file for use in GUI. -Ayman 02/20/07
  */
 
-class RDSIMULATION_API IKTaskSet : public Set<IKTask>
+class OSIMTOOLS_API IKTaskSet : public Set<IKTask>
 {
 public:
 	IKTaskSet() { setType("IKTaskSet"); }

@@ -1,4 +1,4 @@
-// SimmModelScaler.cpp
+// ModelScaler.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,14 +25,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/ScaleSet.h>
-#include "SimmModelScaler.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include "SimmFileWriter.h"
+#include <OpenSim/Common/ScaleSet.h>
+#include "ModelScaler.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
 
 //=============================================================================
 // STATICS
@@ -47,10 +47,10 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmModelScaler::SimmModelScaler() :
+ModelScaler::ModelScaler() :
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
-	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
+	_measurementSetProp(PropertyObj("", MeasurementSet())),
+	_measurementSet((MeasurementSet&)_measurementSetProp.getValueObj()),
 	_scaleSetProp(PropertyObj("", ScaleSet())),
 	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
 	_markerFileName(_markerFileNameProp.getValueStr()),
@@ -70,7 +70,7 @@ SimmModelScaler::SimmModelScaler() :
 /**
  * Destructor.
  */
-SimmModelScaler::~SimmModelScaler()
+ModelScaler::~ModelScaler()
 {
 }
 
@@ -78,13 +78,13 @@ SimmModelScaler::~SimmModelScaler()
 /**
  * Copy constructor.
  *
- * @param aModelScaler SimmModelScaler to be copied.
+ * @param aModelScaler ModelScaler to be copied.
  */
-SimmModelScaler::SimmModelScaler(const SimmModelScaler &aModelScaler) :
+ModelScaler::ModelScaler(const ModelScaler &aModelScaler) :
    Object(aModelScaler),
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
-	_measurementSetProp(PropertyObj("", SimmMeasurementSet())),
-	_measurementSet((SimmMeasurementSet&)_measurementSetProp.getValueObj()),
+	_measurementSetProp(PropertyObj("", MeasurementSet())),
+	_measurementSet((MeasurementSet&)_measurementSetProp.getValueObj()),
 	_scaleSetProp(PropertyObj("", ScaleSet())),
 	_scaleSet((ScaleSet&)_scaleSetProp.getValueObj()),
    _markerFileName(_markerFileNameProp.getValueStr()),
@@ -106,11 +106,11 @@ SimmModelScaler::SimmModelScaler(const SimmModelScaler &aModelScaler) :
  * Copy this scaling params and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmModelScaler.
+ * @return Pointer to a copy of this ModelScaler.
  */
-Object* SimmModelScaler::copy() const
+Object* ModelScaler::copy() const
 {
-	SimmModelScaler *scalingParams = new SimmModelScaler(*this);
+	ModelScaler *scalingParams = new ModelScaler(*this);
 	return(scalingParams);
 }
 
@@ -119,11 +119,11 @@ Object* SimmModelScaler::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmModelScaler to another.
+ * Copy data members from one ModelScaler to another.
  *
- * @param aModelScaler SimmModelScaler to be copied.
+ * @param aModelScaler ModelScaler to be copied.
  */
-void SimmModelScaler::copyData(const SimmModelScaler &aModelScaler)
+void ModelScaler::copyData(const ModelScaler &aModelScaler)
 {
 	_scalingOrder = aModelScaler._scalingOrder;
 	_measurementSet = aModelScaler._measurementSet;
@@ -140,18 +140,18 @@ void SimmModelScaler::copyData(const SimmModelScaler &aModelScaler)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmModelScaler to their null values.
+ * Set the data members of this ModelScaler to their null values.
  */
-void SimmModelScaler::setNull()
+void ModelScaler::setNull()
 {
-	setType("SimmModelScaler");
+	setType("ModelScaler");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SimmModelScaler::setupProperties()
+void ModelScaler::setupProperties()
 {
 	_scalingOrderProp.setComment("Specifies the scaling method and order. "
 		"Valid options are 'measurements', 'manualScale', singly or both in any sequence.");
@@ -161,7 +161,7 @@ void SimmModelScaler::setupProperties()
 	_propertySet.append(&_scalingOrderProp);
 
 	_measurementSetProp.setComment("Specifies the measurements by which body segments are to be scaled.");
-	_measurementSetProp.setName("SimmMeasurementSet");
+	_measurementSetProp.setName("MeasurementSet");
 	_propertySet.append(&_measurementSetProp);
 
 	_scaleSetProp.setComment("Scale factors to be used for manual scaling.");
@@ -214,11 +214,11 @@ void SimmModelScaler::setupProperties()
 /**
  * Register the types used by this class.
  */
-void SimmModelScaler::registerTypes()
+void ModelScaler::registerTypes()
 {
-	Object::RegisterType(SimmMeasurement());
+	Object::RegisterType(Measurement());
 	//Object::RegisterType(Scale());
-	SimmMeasurement::registerTypes();
+	Measurement::registerTypes();
 }
 
 //=============================================================================
@@ -230,7 +230,7 @@ void SimmModelScaler::registerTypes()
  *
  * @return Reference to this object.
  */
-SimmModelScaler& SimmModelScaler::operator=(const SimmModelScaler &aModelScaler)
+ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
 {
 	// BASE CLASS
 	Object::operator=(aModelScaler);
@@ -252,7 +252,7 @@ SimmModelScaler& SimmModelScaler::operator=(const SimmModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(AbstractModel* aModel, const string& aPathToSubject, double aSubjectMass)
 {
 	int i;
 	ScaleSet theScaleSet;
@@ -289,7 +289,7 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
 			{
 				/* Load the static pose marker file, and convert units.
 			    */
-				SimmMarkerData markerData(aPathToSubject + _markerFileName);
+				MarkerData markerData(aPathToSubject + _markerFileName);
 				markerData.convertToUnits(aModel->getLengthUnits());
 
 				/* Now take and apply the measurements. */
@@ -327,7 +327,7 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
 			}
 			else
 			{
-				throw Exception("SimmModelScaler: ERR- Unrecognized string '"+_scalingOrder[i]+"' in "+_scalingOrderProp.getName()+" property (expecting 'measurements' or 'manualScale').",__FILE__,__LINE__);
+				throw Exception("ModelScaler: ERR- Unrecognized string '"+_scalingOrder[i]+"' in "+_scalingOrderProp.getName()+" property (expecting 'measurements' or 'manualScale').",__FILE__,__LINE__);
 			}
 		}
 
@@ -374,12 +374,12 @@ bool SimmModelScaler::processModel(AbstractModel* aModel, const string& aPathToS
  * For each marker pair, the scale factor is computed by dividing the average distance between the pair 
  * in the experimental marker data by the distance between the pair on the model.
  */
-double SimmModelScaler::computeMeasurementScaleFactor(const AbstractModel& aModel, const SimmMarkerData& aMarkerData, const SimmMeasurement& aMeasurement) const
+double ModelScaler::computeMeasurementScaleFactor(const AbstractModel& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
 {
 	double scaleFactor = 0;
 	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
 	for(int i=0; i<aMeasurement.getNumMarkerPairs(); i++) {
-		const SimmMarkerPair& pair = aMeasurement.getMarkerPair(i);
+		const MarkerPair& pair = aMeasurement.getMarkerPair(i);
 		string name1, name2;
 		pair.getMarkerNames(name1, name2);
 		double modelLength = takeModelMeasurement(aModel, name1, name2, aMeasurement.getName());
@@ -399,7 +399,7 @@ double SimmModelScaler::computeMeasurementScaleFactor(const AbstractModel& aMode
  *
  * @return The measured distance.
  */
-double SimmModelScaler::takeModelMeasurement(const AbstractModel& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
+double ModelScaler::takeModelMeasurement(const AbstractModel& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
 	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
 	const AbstractMarker* marker1 = engine.getMarkerSet()->get(aName1);
@@ -420,7 +420,7 @@ double SimmModelScaler::takeModelMeasurement(const AbstractModel& aModel, const 
 /**
  * Measure the average distance between a marker pair in an experimental marker data.
  */
-double SimmModelScaler::takeExperimentalMarkerMeasurement(const SimmMarkerData& aMarkerData, const string& aName1, const string& aName2, const string& aMeasurementName) const
+double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
 	const Array<string>& experimentalMarkerNames = aMarkerData.getMarkerNames();
 	int marker1 = experimentalMarkerNames.findIndex(aName1);
@@ -444,12 +444,12 @@ double SimmModelScaler::takeExperimentalMarkerMeasurement(const SimmMarkerData& 
 	}
 }
 
-void SimmModelScaler::peteTest() const
+void ModelScaler::peteTest() const
 {
 	int i;
 	Array<double> factors(0.0);
 
-	cout << "   SimmModelScaler: " << getName() << endl;
+	cout << "   ModelScaler: " << getName() << endl;
 	cout << "      scaling_order: " << _scalingOrder << endl;
 	cout << "      measurements (" << _measurementSet.getSize() << "):" << endl;
 	for (i = 0; i < _measurementSet.getSize(); i++)

@@ -1,4 +1,4 @@
-// SimmIKTrialSet.cpp
+// IKTrialSet.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SimmIKTrialSet.h"
+#include "IKTrialSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -34,26 +34,26 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-SimmIKTrialSet::~SimmIKTrialSet(void)
+IKTrialSet::~IKTrialSet(void)
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Default constructor of a SimmIKTrialSet.
+ * Default constructor of a IKTrialSet.
  */
-SimmIKTrialSet::SimmIKTrialSet() :
-	Set<SimmIKTrial>()
+IKTrialSet::IKTrialSet() :
+	Set<IKTrial>()
 {
 	setNull();
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor of a SimmIKTrialSet.
+ * Copy constructor of a IKTrialSet.
  */
-SimmIKTrialSet::SimmIKTrialSet(const SimmIKTrialSet& aSimmIKTrialSet):
-	Set<SimmIKTrial>(aSimmIKTrialSet)
+IKTrialSet::IKTrialSet(const IKTrialSet& aSimmIKTrialSet):
+	Set<IKTrial>(aSimmIKTrialSet)
 {
 	setNull();
 	*this = aSimmIKTrialSet;
@@ -63,11 +63,11 @@ SimmIKTrialSet::SimmIKTrialSet(const SimmIKTrialSet& aSimmIKTrialSet):
 // CONSTRUCTION METHODS
 //=============================================================================
 /**
- * Set the data members of this SimmIKTrialSet to their null values.
+ * Set the data members of this IKTrialSet to their null values.
  */
-void SimmIKTrialSet::setNull()
+void IKTrialSet::setNull()
 {
-	setType("SimmIKTrialSet");
+	setType("IKTrialSet");
 }
 
 //=============================================================================
@@ -80,9 +80,9 @@ void SimmIKTrialSet::setNull()
  * @return Reference to this object.
  */
 #ifndef SWIG
-SimmIKTrialSet& SimmIKTrialSet::operator=(const SimmIKTrialSet &aSimmIKTrialSet)
+IKTrialSet& IKTrialSet::operator=(const IKTrialSet &aSimmIKTrialSet)
 {
-	Set<SimmIKTrial>::operator=(aSimmIKTrialSet);
+	Set<IKTrial>::operator=(aSimmIKTrialSet);
 	return (*this);
 }
 #endif

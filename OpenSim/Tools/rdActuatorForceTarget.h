@@ -29,8 +29,8 @@
 #ifndef rdActuatorForceTarget_h__
 #define rdActuatorForceTarget_h__
 
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/Array.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Array.h>
 class OpenSim::rdCMC;
 
 namespace OpenSim {
@@ -62,7 +62,7 @@ namespace OpenSim {
  * @version 1.0
  * @author Frank C. Anderson
  */
-class RDCMC_API rdActuatorForceTarget : public rdOptimizationTarget
+class OSIMTOOLS_API rdActuatorForceTarget : public rdOptimizationTarget
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //==============================================================================

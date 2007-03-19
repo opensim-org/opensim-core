@@ -30,15 +30,14 @@
 #define rdCMC_Task_h__
 
 // INCLUDES
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyBoolArray.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/FunctionSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyBoolArray.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 namespace OpenSim {
 
@@ -53,7 +52,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDCMC_API rdCMC_Task : public Object
+class OSIMTOOLS_API rdCMC_Task : public Object
 {
 
 //=============================================================================

@@ -1,14 +1,14 @@
 #ifndef _IKSolverInterface_h_
 #define _IKSolverInterface_h_
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimToolsDLL.h"
 #include <iostream>
 
 namespace OpenSim { 
 
-class SimmIKTrial;
+class IKTrial;
 class Storage;
-class SimmInverseKinematicsTarget;
+class IKTarget;
 
 // IKSolverInterface.h
 // Author: Ayman Habib
@@ -34,19 +34,19 @@ class SimmInverseKinematicsTarget;
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class RDSIMULATION_API IKSolverInterface 
+class OSIMTOOLS_API IKSolverInterface 
 {
 protected: 
-	SimmInverseKinematicsTarget&	_ikTarget;
+	IKTarget&	_ikTarget;
 public:
-	IKSolverInterface(SimmInverseKinematicsTarget& aOptimizationTarget):
+	IKSolverInterface(IKTarget& aOptimizationTarget):
 	_ikTarget(aOptimizationTarget)
 	{
 	}
 
 	virtual ~IKSolverInterface() {}
 
-	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData) 
+	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData) 
 	{
 		std::cout<< "Error, IKSolverInterface::solveFrames() - not implemented.\n";
 	};

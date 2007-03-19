@@ -33,8 +33,8 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "rdCMCDLL.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include "rdCMC_Task.h"
 
 namespace OpenSim {
@@ -48,7 +48,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDCMC_API rdCMC_Orientation : public rdCMC_Task
+class OSIMTOOLS_API rdCMC_Orientation : public rdCMC_Task
 {
 
 //=============================================================================

@@ -1,7 +1,7 @@
-#ifndef __SimmMeasurementSet_h__
-#define __SimmMeasurementSet_h__
+#ifndef __MeasurementSet_h__
+#define __MeasurementSet_h__
 
-// SimmMeasurementSet.h
+// MeasurementSet.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,9 +25,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include "SimmMeasurement.h"
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Set.h>
+#include "Measurement.h"
 
 namespace OpenSim {
 
@@ -40,25 +40,25 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API SimmMeasurementSet :	public Set<SimmMeasurement>
+class OSIMTOOLS_API MeasurementSet :	public Set<Measurement>
 {
 private:
 	void setNull();
 public:
-	SimmMeasurementSet();
-	SimmMeasurementSet(const SimmMeasurementSet& aSimmMeasurementSet);
-	~SimmMeasurementSet(void);
+	MeasurementSet();
+	MeasurementSet(const MeasurementSet& aSimmMeasurementSet);
+	~MeasurementSet(void);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	SimmMeasurementSet& operator=(const SimmMeasurementSet &aSimmMeasurementSet);
+	MeasurementSet& operator=(const MeasurementSet &aSimmMeasurementSet);
 #endif
 //=============================================================================
-};	// END of class SimmMeasurementSet
+};	// END of class MeasurementSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMeasurementSet_h__
+#endif // __MeasurementSet_h__

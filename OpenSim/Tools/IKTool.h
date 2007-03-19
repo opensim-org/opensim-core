@@ -3,23 +3,23 @@
 // IKTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Simulation/Model/SimulationTool.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Simulation/Model/AbstractTool.h>
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
 namespace OpenSim {
 
 class IKTaskSet;
-class SimmIKTrialSet;
+class IKTrialSet;
 
 
 //=============================================================================
@@ -30,7 +30,7 @@ class SimmIKTrialSet;
  * @author Eran Guendelman
  * @version 1.0
  */
-class workflow_API IKTool: public SimulationTool
+class OSIMTOOLS_API IKTool: public AbstractTool
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -42,7 +42,7 @@ private:
 
 	// the set of IK trials to perform
 	PropertyObj _IKTrialSetProp;
-	SimmIKTrialSet &_IKTrialSet;
+	IKTrialSet &_IKTrialSet;
 
 //=============================================================================
 // METHODS
@@ -77,7 +77,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	SimmIKTrialSet& getIKTrialSet()
+	IKTrialSet& getIKTrialSet()
 	{
 		return _IKTrialSet;
 	}

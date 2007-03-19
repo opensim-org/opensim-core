@@ -31,15 +31,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdCMCDLL.h"
+#include "osimToolsDLL.h"
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/RootSolver.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
 #include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>

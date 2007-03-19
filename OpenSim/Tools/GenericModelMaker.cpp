@@ -1,4 +1,4 @@
-// SimmGenericModelMaker.cpp
+// GenericModelMaker.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,9 +25,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmGenericModelMaker.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/SimmMarker.h>
+#include "GenericModelMaker.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/VisibleMarker.h>
 
 //=============================================================================
 // STATICS
@@ -42,7 +42,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmGenericModelMaker::SimmGenericModelMaker() :
+GenericModelMaker::GenericModelMaker() :
    _fileName(_fileNameProp.getValueStr()),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
@@ -55,7 +55,7 @@ SimmGenericModelMaker::SimmGenericModelMaker() :
 /**
  * Destructor.
  */
-SimmGenericModelMaker::~SimmGenericModelMaker()
+GenericModelMaker::~GenericModelMaker()
 {
 }
 
@@ -63,9 +63,9 @@ SimmGenericModelMaker::~SimmGenericModelMaker()
 /**
  * Copy constructor.
  *
- * @param aGenericModelMaker SimmGenericModelMaker to be copied.
+ * @param aGenericModelMaker GenericModelMaker to be copied.
  */
-SimmGenericModelMaker::SimmGenericModelMaker(const SimmGenericModelMaker &aGenericModelMaker) :
+GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker) :
    Object(aGenericModelMaker),
    _fileName(_fileNameProp.getValueStr()),
 	_markerSetProp(PropertyObj("", MarkerSet())),
@@ -78,14 +78,14 @@ SimmGenericModelMaker::SimmGenericModelMaker(const SimmGenericModelMaker &aGener
 
 //_____________________________________________________________________________
 /**
- * Copy this SimmGenericModelMaker and return a pointer to the copy.
+ * Copy this GenericModelMaker and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmGenericModelMaker.
+ * @return Pointer to a copy of this GenericModelMaker.
  */
-Object* SimmGenericModelMaker::copy() const
+Object* GenericModelMaker::copy() const
 {
-	SimmGenericModelMaker *genericModelMaker = new SimmGenericModelMaker(*this);
+	GenericModelMaker *genericModelMaker = new GenericModelMaker(*this);
 	return(genericModelMaker);
 }
 
@@ -94,11 +94,11 @@ Object* SimmGenericModelMaker::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmGenericModelMaker to another.
+ * Copy data members from one GenericModelMaker to another.
  *
- * @param aGenericModelMaker SimmGenericModelMaker to be copied.
+ * @param aGenericModelMaker GenericModelMaker to be copied.
  */
-void SimmGenericModelMaker::copyData(const SimmGenericModelMaker &aGenericModelMaker)
+void GenericModelMaker::copyData(const GenericModelMaker &aGenericModelMaker)
 {
 	_fileName = aGenericModelMaker._fileName;
 	_markerSet = aGenericModelMaker._markerSet;
@@ -106,18 +106,18 @@ void SimmGenericModelMaker::copyData(const SimmGenericModelMaker &aGenericModelM
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmGenericModelMaker to their null values.
+ * Set the data members of this GenericModelMaker to their null values.
  */
-void SimmGenericModelMaker::setNull()
+void GenericModelMaker::setNull()
 {
-	setType("SimmGenericModelMaker");
+	setType("GenericModelMaker");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SimmGenericModelMaker::setupProperties()
+void GenericModelMaker::setupProperties()
 {
 	_fileNameProp.setComment("Model file (.osim) for the unscaled model."); 
 	_fileNameProp.setName("model_file");
@@ -134,9 +134,9 @@ void SimmGenericModelMaker::setupProperties()
 /**
  * Register the types used by this class.
  */
-void SimmGenericModelMaker::registerTypes()
+void GenericModelMaker::registerTypes()
 {
-	//Object::RegisterType(SimmMarker());
+	//Object::RegisterType(Marker());
 }
 
 //=============================================================================
@@ -148,7 +148,7 @@ void SimmGenericModelMaker::registerTypes()
  *
  * @return Reference to this object.
  */
-SimmGenericModelMaker& SimmGenericModelMaker::operator=(const SimmGenericModelMaker &aGenericModelMaker)
+GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGenericModelMaker)
 {
 	// BASE CLASS
 	Object::operator=(aGenericModelMaker);
@@ -168,7 +168,7 @@ SimmGenericModelMaker& SimmGenericModelMaker::operator=(const SimmGenericModelMa
  *
  * @return Pointer to the AbstractModel that is constructed.
  */
-AbstractModel* SimmGenericModelMaker::processModel(const string& aPathToSubject)
+AbstractModel* GenericModelMaker::processModel(const string& aPathToSubject)
 {
 	AbstractModel* model = NULL;
 
@@ -193,7 +193,7 @@ AbstractModel* SimmGenericModelMaker::processModel(const string& aPathToSubject)
 	return model;
 }
 
-void SimmGenericModelMaker::peteTest() const
+void GenericModelMaker::peteTest() const
 {
 	cout << "   GenericModel: " << getName() << endl;
 	cout << "      fileName: " << _fileName << endl;

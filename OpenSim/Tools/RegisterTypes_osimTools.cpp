@@ -1,4 +1,4 @@
-// RegisterTypes_rdCMC.cpp
+// RegisterTypes_osimTools.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson
@@ -22,18 +22,34 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
 // THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-// This software, originally developed by Realistic Dynamics, Inc., was
-// transferred to Stanford University on November 1, 2006.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Object.h>
-#include "RegisterTypes_rdCMC.h"
+#include <OpenSim/Common/Object.h>
+#include "RegisterTypes_osimTools.h"
+
+#include "ScaleTool.h"
+#include "IKTool.h"
 #include "CMCTool.h"
-#include "rdCMC_TaskSet.h"
+#include "ForwardTool.h"
+#include "PerturbationTool.h"
+
+#include "GenericModelMaker.h"
+#include "IKCoordinateTask.h"
+#include "IKMarkerTask.h"
+#include "IKTaskSet.h"
+#include "IKTrial.h"
+#include "IKTrialSet.h"
+#include "MarkerPair.h"
+#include "MarkerPairSet.h"
+#include "MarkerPlacer.h"
+#include "Measurement.h"
+#include "MeasurementSet.h"
+#include "ModelScaler.h"
+
 #include "rdCMC_Joint.h"
+#include "rdCMC_TaskSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -41,13 +57,32 @@ using namespace OpenSim;
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
- * the rdCMC library.
+ * the osimTools library.
  */
-RDCMC_API void RegisterTypes_rdCMC()
+OSIMTOOLS_API void RegisterTypes_osimTools()
 {
-	cout<<"RegisterTypes_rdCMC\n";
+	cout<<"RegisterTypes_osimTools\n";
+
+	Object::RegisterType( ScaleTool() );
+	Object::RegisterType( IKTool() );
 	Object::RegisterType( CMCTool() );
-	Object::RegisterType( rdCMC_TaskSet() );
+	Object::RegisterType( ForwardTool() );
+	Object::RegisterType( PerturbationTool() );
+
+	Object::RegisterType( GenericModelMaker() );
+	Object::RegisterType( IKCoordinateTask() );
+	Object::RegisterType( IKMarkerTask() );
+	Object::RegisterType( IKTaskSet() );
+	Object::RegisterType( IKTrial() );
+	Object::RegisterType( IKTrialSet() );
+	Object::RegisterType( MarkerPair() );
+	Object::RegisterType( MarkerPairSet() );
+	Object::RegisterType( MarkerPlacer() );
+	Object::RegisterType( Measurement() );
+	Object::RegisterType( MeasurementSet() );
+	Object::RegisterType( ModelScaler() );
+
 	Object::RegisterType( rdCMC_Joint() );
+	Object::RegisterType( rdCMC_TaskSet() );
 }
 

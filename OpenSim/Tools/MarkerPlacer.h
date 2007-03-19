@@ -1,7 +1,7 @@
-#ifndef __SimmMarkerPlacer_h__
-#define __SimmMarkerPlacer_h__
+#ifndef __MarkerPlacer_h__
+#define __MarkerPlacer_h__
 
-// SimmMarkerPlacer.h
+// MarkerPlacer.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,18 +30,18 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include "IKTaskSet.h"
+#include "osimToolsDLL.h"
+#include "osimToolsDLL.h"
 
 namespace OpenSim {
 
 class AbstractModel;
-class SimmMarkerData;
+class MarkerData;
 
 //=============================================================================
 //=============================================================================
@@ -52,7 +52,7 @@ class SimmMarkerData;
  * @author Peter Loan
  * @version 1.0
  */
-class workflow_API SimmMarkerPlacer : public Object  
+class OSIMTOOLS_API MarkerPlacer : public Object  
 {
 
 //=============================================================================
@@ -108,15 +108,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMarkerPlacer();
-	SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacementParams);
-	virtual ~SimmMarkerPlacer();
+	MarkerPlacer();
+	MarkerPlacer(const MarkerPlacer &aMarkerPlacementParams);
+	virtual ~MarkerPlacer();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMarkerPlacer& operator=(const SimmMarkerPlacer &aMarkerPlacementParams);
+	MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-   void copyData(const SimmMarkerPlacer &aMarkerPlacementParams);
+   void copyData(const MarkerPlacer &aMarkerPlacementParams);
 
 	bool processModel(AbstractModel* aModel, const std::string& aPathToSubject="");
 
@@ -243,14 +243,14 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void moveModelMarkersToPose(AbstractModel& aModel, SimmMarkerData& aPose);
+	void moveModelMarkersToPose(AbstractModel& aModel, MarkerData& aPose);
 //=============================================================================
-};	// END of class SimmMarkerPlacer
+};	// END of class MarkerPlacer
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMarkerPlacer_h__
+#endif // __MarkerPlacer_h__
 
 

@@ -1,4 +1,4 @@
-// SimmMarkerPairSet.cpp
+// MarkerPairSet.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SimmMarkerPairSet.h"
+#include "MarkerPairSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -34,26 +34,26 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-SimmMarkerPairSet::~SimmMarkerPairSet(void)
+MarkerPairSet::~MarkerPairSet(void)
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Default constructor of a SimmMarkerPairSet.
+ * Default constructor of a MarkerPairSet.
  */
-SimmMarkerPairSet::SimmMarkerPairSet() :
-	Set<SimmMarkerPair>()
+MarkerPairSet::MarkerPairSet() :
+	Set<MarkerPair>()
 {
 	setNull();
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor of a SimmMarkerPairSet.
+ * Copy constructor of a MarkerPairSet.
  */
-SimmMarkerPairSet::SimmMarkerPairSet(const SimmMarkerPairSet& aSimmMarkerPairSet):
-	Set<SimmMarkerPair>(aSimmMarkerPairSet)
+MarkerPairSet::MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet):
+	Set<MarkerPair>(aSimmMarkerPairSet)
 {
 	setNull();
 	*this = aSimmMarkerPairSet;
@@ -63,11 +63,11 @@ SimmMarkerPairSet::SimmMarkerPairSet(const SimmMarkerPairSet& aSimmMarkerPairSet
 // CONSTRUCTION METHODS
 //=============================================================================
 /**
- * Set the data members of this SimmMarkerPairSet to their null values.
+ * Set the data members of this MarkerPairSet to their null values.
  */
-void SimmMarkerPairSet::setNull()
+void MarkerPairSet::setNull()
 {
-	setType("SimmMarkerPairSet");
+	setType("MarkerPairSet");
 }
 
 //=============================================================================
@@ -80,9 +80,9 @@ void SimmMarkerPairSet::setNull()
  * @return Reference to this object.
  */
 #ifndef SWIG
-SimmMarkerPairSet& SimmMarkerPairSet::operator=(const SimmMarkerPairSet &aSimmMarkerPairSet)
+MarkerPairSet& MarkerPairSet::operator=(const MarkerPairSet &aSimmMarkerPairSet)
 {
-	Set<SimmMarkerPair>::operator=(aSimmMarkerPairSet);
+	Set<MarkerPair>::operator=(aSimmMarkerPairSet);
 	return (*this);
 }
 #endif

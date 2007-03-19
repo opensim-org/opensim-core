@@ -1,7 +1,7 @@
-#ifndef _SimmMarkerPair_h_
-#define _SimmMarkerPair_h_
+#ifndef _MarkerPair_h_
+#define _MarkerPair_h_
 
-// SimmMarkerPair.h
+// MarkerPair.h
 // Author: Peter Loan
 /* Copyright (c) 2005, Stanford University and Peter Loan.
  * 
@@ -29,9 +29,9 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStrArray.h>
 
 //=============================================================================
 //=============================================================================
@@ -44,7 +44,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API SimmMarkerPair : public Object  
+class OSIMTOOLS_API MarkerPair : public Object  
 {
 
 //=============================================================================
@@ -63,15 +63,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMarkerPair();
-	SimmMarkerPair(const SimmMarkerPair &aMarkerPair);
-	virtual ~SimmMarkerPair();
+	MarkerPair();
+	MarkerPair(const MarkerPair &aMarkerPair);
+	virtual ~MarkerPair();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMarkerPair& operator=(const SimmMarkerPair &aMarkerPair);
+	MarkerPair& operator=(const MarkerPair &aMarkerPair);
 #endif
-	void copyData(const SimmMarkerPair &aMarkerPair);
+	void copyData(const MarkerPair &aMarkerPair);
 
 	void getMarkerNames(std::string& aName1, std::string& aName2) const;
 
@@ -83,12 +83,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMarkerPair
+};	// END of class MarkerPair
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __SimmMarkerPair_h__
+#endif // __MarkerPair_h__
 
 

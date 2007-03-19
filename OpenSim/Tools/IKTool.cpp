@@ -7,14 +7,14 @@
 #include "IKTool.h"
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/IO.h>	
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-#include <OpenSim/Subject/SimmIKTrialSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include "SimmIKSolverImpl.h"
-#include "SimmInverseKinematicsTarget.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include "IKTaskSet.h"
+#include "IKTrialSet.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include "IKSolverImpl.h"
+#include "IKTarget.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -35,11 +35,11 @@ IKTool::~IKTool()
  * Default constructor.
  */
 IKTool::IKTool() :
-	SimulationTool(),
+	AbstractTool(),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
-	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
-	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("IKTool");
 	setNull();
@@ -54,11 +54,11 @@ IKTool::IKTool() :
  * @param aFileName File name of the document.
  */
 IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
-	SimulationTool(aFileName),
+	AbstractTool(aFileName),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
-	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
-	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("IKTool");
 	setNull();
@@ -131,11 +131,11 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
  */
 IKTool::
 IKTool(const IKTool &aTool) :
-	SimulationTool(aTool),
+	AbstractTool(aTool),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
-	_IKTrialSetProp(PropertyObj("", SimmIKTrialSet())),
-	_IKTrialSet((SimmIKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
 {
 	setType("IKTool");
 	setNull();
@@ -174,17 +174,17 @@ void IKTool::setupProperties()
 
 	_IKTrialSetProp.setComment("Parameters for solving the IK problem for each trial. "
 		"Each trial should get a seperate SimmIKTril block.");
-	_IKTrialSetProp.setName("SimmIKTrialSet");
+	_IKTrialSetProp.setName("IKTrialSet");
 	_propertySet.append(&_IKTrialSetProp);
 }
 //_____________________________________________________________________________
 /**
- * Register SimmIKTrial type.
+ * Register IKTrial type.
  */
 void IKTool::registerTypes()
 {
 	Object::RegisterType(IKTool());
-	Object::RegisterType(SimmIKTrial());
+	Object::RegisterType(IKTrial());
 }
 //=============================================================================
 // OPERATORS
@@ -199,7 +199,7 @@ IKTool& IKTool::
 operator=(const IKTool &aTool)
 {
 	// BASE CLASS
-	SimulationTool::operator=(aTool);
+	AbstractTool::operator=(aTool);
 
 	// MEMBER VARIABLES
 	_ikTaskSet = aTool._ikTaskSet;

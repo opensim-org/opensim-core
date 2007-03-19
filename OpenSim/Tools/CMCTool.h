@@ -29,20 +29,20 @@
 #ifndef CMCTool_h__
 #define CMCTool_h__
 
-#include "rdCMCDLL.h"
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/FunctionSet.h>
-#include <OpenSim/Simulation/Model/SimulationTool.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
-	#ifdef RDCMC_API
-		#undef RDCMC_API
-		#define RDCMC_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -56,7 +56,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDCMC_API CMCTool: public SimulationTool
+class OSIMTOOLS_API CMCTool: public AbstractTool
 {
 //=============================================================================
 // MEMBER VARIABLES

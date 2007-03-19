@@ -1,10 +1,10 @@
 #ifndef __IKCoordinateTask_h__
 #define __IKCoordinateTask_h__
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimToolsDLL.h"
 #include "IKTask.h"
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
@@ -15,7 +15,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API IKCoordinateTask : public IKTask
+class OSIMTOOLS_API IKCoordinateTask : public IKTask
 {
 protected:
 	PropertyBool _fromFileProp;

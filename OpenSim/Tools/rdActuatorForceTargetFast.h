@@ -33,7 +33,7 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include "rdCMCDLL.h"
+#include "osimToolsDLL.h"
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 
 namespace OpenSim {
@@ -65,7 +65,7 @@ class rdCMC;
  * @version 1.0
  * @author Frank C. Anderson
  */
-class RDCMC_API rdActuatorForceTargetFast : public rdOptimizationTarget
+class OSIMTOOLS_API rdActuatorForceTargetFast : public rdOptimizationTarget
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //==============================================================================

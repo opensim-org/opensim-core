@@ -1,7 +1,7 @@
-#ifndef __SimmSubject_h__
-#define __SimmSubject_h__
+#ifndef __ScaleTool_h__
+#define __ScaleTool_h__
 
-// SimmSubject.h
+// ScaleTool.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,16 +30,15 @@
 #include <iostream>
 
 #include <math.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Subject/SimmGenericModelMaker.h>
-#include <OpenSim/Subject/SimmModelScaler.h>
-#include <OpenSim/Subject/SimmMarkerPlacer.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include "GenericModelMaker.h"
+#include "ModelScaler.h"
+#include "MarkerPlacer.h"
 
 namespace OpenSim {
 
@@ -53,7 +52,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class workflow_API SimmSubject : public Object  
+class OSIMTOOLS_API ScaleTool : public Object  
 {
 
 //=============================================================================
@@ -73,13 +72,13 @@ protected:
 	std::string &_notes;
 
 	PropertyObj _genericModelMakerProp;
-	SimmGenericModelMaker &_genericModelMaker;
+	GenericModelMaker &_genericModelMaker;
 
 	PropertyObj _modelScalerProp;
-	SimmModelScaler &_modelScaler;
+	ModelScaler &_modelScaler;
 
 	PropertyObj _markerPlacerProp;
-	SimmMarkerPlacer &_markerPlacer;
+	MarkerPlacer &_markerPlacer;
 
 	/** All files in workflow are specified relative to
 	 * where the subject file is. Need to keep track of that in case absolute
@@ -94,31 +93,31 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmSubject();
-	SimmSubject(const std::string &aFileName);
-	SimmSubject(const SimmSubject &aSubject);
-	virtual ~SimmSubject();
+	ScaleTool();
+	ScaleTool(const std::string &aFileName);
+	ScaleTool(const ScaleTool &aSubject);
+	virtual ~ScaleTool();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmSubject& operator=(const SimmSubject &aSubject);
+	ScaleTool& operator=(const ScaleTool &aSubject);
 #endif
-	void copyData(const SimmSubject &aSubject);
+	void copyData(const ScaleTool &aSubject);
 
 	bool processModel();
 	AbstractModel* createModel();
 	/* Query the subject for different parameters */
-	SimmGenericModelMaker& getGenericModelMaker()
+	GenericModelMaker& getGenericModelMaker()
 	{
 		return _genericModelMaker;
 	}
 
-	SimmModelScaler& getModelScaler()
+	ModelScaler& getModelScaler()
 	{
 		return _modelScaler;
 	}
 
-	SimmMarkerPlacer& getMarkerPlacer()
+	MarkerPlacer& getMarkerPlacer()
 	{
 		return _markerPlacer;
 	}
@@ -128,7 +127,7 @@ public:
 	bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getUseDefault(); }
 	bool isDefaultModelScaler() { return _modelScalerProp.getUseDefault(); }
 	bool isDefaultMarkerPlacer() { return _markerPlacerProp.getUseDefault(); }
-	/* Register types to be used when reading a SimmSubject object from xml file. */
+	/* Register types to be used when reading a ScaleTool object from xml file. */
 	static void registerTypes();
 
 	/** Accessor methods to obtain model attributes */
@@ -158,10 +157,10 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmSubject
+};	// END of class ScaleTool
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmSubject_h__
+#endif // __ScaleTool_h__

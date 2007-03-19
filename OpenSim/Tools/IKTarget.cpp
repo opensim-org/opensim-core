@@ -1,4 +1,4 @@
-// SimmInverseKinematicsTarget.cpp
+// IKTarget.cpp
 // Authors: Ayman Habib, Peter Loan, Eran Guendelman
 /* Copyright (c) 2005, Stanford University, Ayman Habib, Peter Loan, and Eran Guendelman.
  * 
@@ -22,21 +22,21 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-#include <OpenSim/Simulation/SIMM/IKCoordinateTask.h>
-#include <OpenSim/Simulation/SIMM/IKMarkerTask.h>
-#include "SimmInverseKinematicsTarget.h"
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include "IKTaskSet.h"
+#include "IKCoordinateTask.h"
+#include "IKMarkerTask.h"
+#include "IKTarget.h"
 
 using namespace std;
 using namespace OpenSim;
 
-const double SimmInverseKinematicsTarget::_perturbation=1e-3; 
+const double IKTarget::_perturbation=1e-3; 
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -51,7 +51,7 @@ static bool debug = false; // used for debugging
 */
 static bool calcDerivs = true; 
 
-SimmInverseKinematicsTarget::SimmInverseKinematicsTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage):
+IKTarget::IKTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage):
 _model(aModel),
 _ikTaskSet(aIKTaskSet),
 _experimentalDataStorage(aExperimentalDataStorage),
@@ -84,8 +84,8 @@ _markers(NULL)
 /**
  * Destructor.
  */
-SimmInverseKinematicsTarget::
-~SimmInverseKinematicsTarget(void)
+IKTarget::
+~IKTarget(void)
 {
 	for(int i=0; i<_markers.getSize(); i++) delete _markers[i];
 	for(int i=0; i<_prescribedQs.getSize(); i++) delete _prescribedQs[i];
@@ -101,7 +101,7 @@ SimmInverseKinematicsTarget::
  * Compute objective function (sum of squared errors in marker positions) using
  * current values (x) for controls. Value of error is returned in p
  */
-int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
+int IKTarget::computePerformance(double *x, double *p)
 {
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
@@ -188,7 +188,7 @@ int SimmInverseKinematicsTarget::computePerformance(double *x, double *p)
 /**
  * Compute derivative of objective function using finite differences
  */
-int SimmInverseKinematicsTarget::
+int IKTarget::
 computePerformanceGradient(double *x,double *dpdx)
 {
 	calcDerivs=true;
@@ -202,10 +202,10 @@ computePerformanceGradient(double *x,double *dpdx)
 /**
  * Default implementation for methods unused by the optimizer for this problem
  */
-int SimmInverseKinematicsTarget::compute(double *x,double *p,double *c){ return (0);};
-int SimmInverseKinematicsTarget::computeGradients(double *dx,double *x,double *dpdx,double *dcdx){return (0);};
-int SimmInverseKinematicsTarget::computeConstraint(double *x,int i,double *c){return (0);};
-int SimmInverseKinematicsTarget::computeConstraintGradient(double *x,int i,double *dcdx){return (0);};
+int IKTarget::compute(double *x,double *p,double *c){ return (0);};
+int IKTarget::computeGradients(double *dx,double *x,double *dpdx,double *dcdx){return (0);};
+int IKTarget::computeConstraint(double *x,int i,double *c){return (0);};
+int IKTarget::computeConstraintGradient(double *x,int i,double *dcdx){return (0);};
 
 //=============================================================================
 // Helper methods for book keeping
@@ -218,7 +218,7 @@ int SimmInverseKinematicsTarget::computeConstraintGradient(double *x,int i,doubl
  * It also sets the values of the prescribed coordinates and returns the
  * initial guess for the unprescribed coordinates.
  */
-void SimmInverseKinematicsTarget::prepareToSolve(int aIndex, double* qGuess)
+void IKTarget::prepareToSolve(int aIndex, double* qGuess)
 {
 	double time;
 	_experimentalDataStorage.getTime(aIndex,time);
@@ -298,7 +298,7 @@ void SimmInverseKinematicsTarget::prepareToSolve(int aIndex, double* qGuess)
  * markers that are in the model and also in the experimental data. Stored with
  * the reference is the corresponding index into the experimental data columns.
  */
-void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray)
+void IKTarget::buildMarkerMap(const Array<string>& aNameArray)
 {
 	_markers.setSize(0);
 
@@ -312,15 +312,15 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
 		string markerName=markerTask->getName();
 		AbstractMarker *modelMarker = markerSet->get(markerName);
 		if(!modelMarker)
-			throw Exception("SimmInverseKinematicsTarget.buildMarkerMap: ERROR- marker '"+markerName+
+			throw Exception("IKTarget.buildMarkerMap: ERROR- marker '"+markerName+
 								 "' named in IKMarkerTask not found in model",__FILE__,__LINE__);
 
 		if(markerTask->getWeight() == 0) continue; // we don't care about marker tasks with zero weight
 
-		// Marker will have a _tx (and _ty, _tz) suffix in the storage file
+		// VisibleMarker will have a _tx (and _ty, _tz) suffix in the storage file
 		int j=aNameArray.findIndex(markerName+"_tx");
 		if(j<0) 
-			throw Exception("SimmInverseKinematicsTarget.buildMarkerMap: ERROR- experimental data for marker '"+markerName+
+			throw Exception("IKTarget.buildMarkerMap: ERROR- experimental data for marker '"+markerName+
 								 "' not found in trc file",__FILE__,__LINE__);
 
 		markerToSolve *newMarker = new markerToSolve;
@@ -340,7 +340,7 @@ void SimmInverseKinematicsTarget::buildMarkerMap(const Array<string>& aNameArray
  * important that coordinates are not added or deleted after this map is made because
  * the indexing into the map depends on a fixed set of coordinates.
  */
-void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameArray)
+void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 {
 	CoordinateSet* coordinateSet = _model.getDynamicsEngine().getCoordinateSet();
 
@@ -373,7 +373,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 		string coordName = coordTask->getName();
 		int coordIndex = coordinateSet->getIndex(coordName);
 		if(coordIndex<0)
-			throw Exception("SimmInverseKinematicsTarget.buildCoordinateMap: ERROR- coordinate '"+coordName+
+			throw Exception("IKTarget.buildCoordinateMap: ERROR- coordinate '"+coordName+
 								 "' named in IKCoordinateTask not found in model",__FILE__,__LINE__);
 
 		coordinateInfo *info = allCoordinates[coordIndex];
@@ -384,7 +384,7 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 		if(coordTask->getFromFile()) {
 			int j = aNameArray.rfindIndex(coordName);
 			if(j < 0)
-				throw Exception("SimmInverseKinematicsTarget.buildCoordinateMap: ERROR- coordinate task '"+coordName+
+				throw Exception("IKTarget.buildCoordinateMap: ERROR- coordinate task '"+coordName+
 									 "' specifies from_file but no column found for this coordinate in coordinates file",__FILE__,__LINE__);
 			info->experimentalColumn = j - 1; // account for time column
 		} else if(!coordTask->getValueUseDefault()) {
@@ -410,10 +410,10 @@ void SimmInverseKinematicsTarget::buildCoordinateMap(const Array<string>& aNameA
 //_____________________________________________________________________________
 /**
  */
-void SimmInverseKinematicsTarget::printTasks() const
+void IKTarget::printTasks() const
 {
 	if(_markers.getSize())
-		cout << "Marker Tasks:" << endl;
+		cout << "VisibleMarker Tasks:" << endl;
 	for(int i=0; i<_markers.getSize(); i++) {
 		cout << "\t" << _markers[i]->marker->getName() << ": weight " << _markers[i]->weight;
 		cout << " from file (columns " << _markers[i]->experimentalColumn << "-" << _markers[i]->experimentalColumn+2 << ")" << endl;
@@ -442,7 +442,7 @@ void SimmInverseKinematicsTarget::printTasks() const
 //_____________________________________________________________________________
 /**
  */
-void SimmInverseKinematicsTarget::printPerformance()
+void IKTarget::printPerformance()
 {
 	_printPerformanceValues = true;
 	double *qs=new double[_nx];
@@ -456,7 +456,7 @@ void SimmInverseKinematicsTarget::printPerformance()
 /**
  * getComputedMarkerLocations returns current commputed (model) marker locations for debugging and display purposes
  */
-void SimmInverseKinematicsTarget::getComputedMarkerLocations(Array<double> &aMarkerLocations) const
+void IKTarget::getComputedMarkerLocations(Array<double> &aMarkerLocations) const
 {
 	aMarkerLocations.setSize(0);
 	for (int i = 0; i < _markers.getSize(); i++) 
@@ -467,7 +467,7 @@ void SimmInverseKinematicsTarget::getComputedMarkerLocations(Array<double> &aMar
 /**
  * getExperimentalMarkerLocations returns current experimental marker locations for debugging and display purposes
  */
-void SimmInverseKinematicsTarget::getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const
+void IKTarget::getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const
 {
 	aMarkerLocations.setSize(0);
 	for (int i = 0; i < _markers.getSize(); i++) 
@@ -478,28 +478,28 @@ void SimmInverseKinematicsTarget::getExperimentalMarkerLocations(Array<double> &
 /**
  * getComputedMarkerLocations returns current marker locations for debugging and display purposes
  */
-void SimmInverseKinematicsTarget::getPrescribedCoordinateValues(Array<double>& aQValues) const
+void IKTarget::getPrescribedCoordinateValues(Array<double>& aQValues) const
 {
 	aQValues.setSize(_prescribedQs.getSize());
 	for (int i = 0; i < _prescribedQs.getSize(); i++)
 		aQValues[i] = _prescribedQs.get(i)->coord->getValue();
 }
 
-void SimmInverseKinematicsTarget::getUnprescribedCoordinateNames(Array<string>& aNameArray)
+void IKTarget::getUnprescribedCoordinateNames(Array<string>& aNameArray)
 {
 	aNameArray.setSize(_unprescribedQs.getSize());
 	for (int i = 0; i < _unprescribedQs.getSize(); i++)
 		aNameArray[i] = _unprescribedQs.get(i)->coord->getName();
 }
 
-void SimmInverseKinematicsTarget::getPrescribedCoordinateNames(Array<string>& aNameArray)
+void IKTarget::getPrescribedCoordinateNames(Array<string>& aNameArray)
 {
 	aNameArray.setSize(_prescribedQs.getSize());
 	for (int i = 0; i < _prescribedQs.getSize(); i++)
 		aNameArray[i] = _prescribedQs.get(i)->coord->getName();
 }
 
-void SimmInverseKinematicsTarget::getOutputMarkerNames(Array<string>& aNameArray)
+void IKTarget::getOutputMarkerNames(Array<string>& aNameArray)
 {
 	aNameArray.setSize(_markers.getSize());
 	for (int i = 0; i < _markers.getSize(); i++)

@@ -1,7 +1,7 @@
-#ifndef __SimmIKTrialSet_h__
-#define __SimmIKTrialSet_h__
+#ifndef __IKTrialSet_h__
+#define __IKTrialSet_h__
 
-// SimmIKTrialSet.h
+// IKTrialSet.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,15 +25,15 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include "SimmIKTrial.h"
+#include "osimToolsDLL.h"
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Set.h>
+#include "IKTrial.h"
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -48,25 +48,25 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class  workflow_API SimmIKTrialSet :	public Set<SimmIKTrial>
+class  OSIMTOOLS_API IKTrialSet :	public Set<IKTrial>
 {
 private:
 	void setNull();
 public:
-	SimmIKTrialSet();
-	SimmIKTrialSet(const SimmIKTrialSet& aSimmIKTrialSet);
-	~SimmIKTrialSet(void);
+	IKTrialSet();
+	IKTrialSet(const IKTrialSet& aSimmIKTrialSet);
+	~IKTrialSet(void);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	SimmIKTrialSet& operator=(const SimmIKTrialSet &aSimmIKTrialSet);
+	IKTrialSet& operator=(const IKTrialSet &aSimmIKTrialSet);
 #endif
 //=============================================================================
-};	// END of class SimmIKTrialSet
+};	// END of class IKTrialSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmIKTrialSet_h__
+#endif // __IKTrialSet_h__

@@ -1,23 +1,23 @@
-#ifndef _SimmIKSolverImpl_h_
-#define _SimmIKSolverImpl_h_
+#ifndef _IKSolverImpl_h_
+#define _IKSolverImpl_h_
 
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Tools/Storage.h>
+#include "osimToolsDLL.h"
+#include "IKSolverInterface.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/Storage.h>
 
 namespace OpenSim { 
 
-class SimmIKTrial;
-class SimmInverseKinematicsTarget;
+class IKTrial;
+class IKTarget;
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
-// SimmIKSolverImpl.h
+// IKSolverImpl.h
 // Author: Ayman Habib
 /* Copyright (c) 2005, Stanford University and Ayman Habib
  * 
@@ -41,13 +41,13 @@ class SimmInverseKinematicsTarget;
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-class workflow_API SimmIKSolverImpl : public IKSolverInterface 
+class OSIMTOOLS_API IKSolverImpl : public IKSolverInterface 
 {
 public:
-	SimmIKSolverImpl(SimmInverseKinematicsTarget& aOptimizationTarget);
-	virtual ~SimmIKSolverImpl() {}
+	IKSolverImpl(IKTarget& aOptimizationTarget);
+	virtual ~IKSolverImpl() {}
 
-	virtual void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData);
+	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 private:
 
 	void collectUserData(const Array<std::string> &,
@@ -63,4 +63,4 @@ private:
 
 }; //namespace
 
-#endif // __SimmIKSolverImpl_h__
+#endif // __IKSolverImpl_h__

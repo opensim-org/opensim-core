@@ -1,4 +1,4 @@
-// SimmMarkerPair.cpp
+// MarkerPair.cpp
 // Author: Peter Loan
 /* Copyright (c) 2005, Stanford University and Peter Loan.
  * 
@@ -26,7 +26,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMarkerPair.h"
+#include "MarkerPair.h"
 
 //=============================================================================
 // STATICS
@@ -43,7 +43,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-SimmMarkerPair::SimmMarkerPair() :
+MarkerPair::MarkerPair() :
 	_markerNames(_markerNamesProp.getValueStrArray())
 {
 	setNull();
@@ -53,7 +53,7 @@ SimmMarkerPair::SimmMarkerPair() :
 /**
  * Destructor.
  */
-SimmMarkerPair::~SimmMarkerPair()
+MarkerPair::~MarkerPair()
 {
 }
 
@@ -61,9 +61,9 @@ SimmMarkerPair::~SimmMarkerPair()
 /**
  * Copy constructor.
  *
- * @param aMarkerPair SimmMarkerPair to be copied.
+ * @param aMarkerPair MarkerPair to be copied.
  */
-SimmMarkerPair::SimmMarkerPair(const SimmMarkerPair &aMarkerPair) :
+MarkerPair::MarkerPair(const MarkerPair &aMarkerPair) :
    Object(aMarkerPair),
 	_markerNames(_markerNamesProp.getValueStrArray())
 {
@@ -72,18 +72,18 @@ SimmMarkerPair::SimmMarkerPair(const SimmMarkerPair &aMarkerPair) :
 }
 //_____________________________________________________________________________
 /**
- * Copy this SimmMarkerPair and return a pointer to the copy.
+ * Copy this MarkerPair and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmMarkerPair.
+ * @return Pointer to a copy of this MarkerPair.
  */
-Object* SimmMarkerPair::copy() const
+Object* MarkerPair::copy() const
 {
-	SimmMarkerPair *markerPair = new SimmMarkerPair(*this);
+	MarkerPair *markerPair = new MarkerPair(*this);
 	return(markerPair);
 }
 
-void SimmMarkerPair::copyData(const SimmMarkerPair &aMarkerPair)
+void MarkerPair::copyData(const MarkerPair &aMarkerPair)
 {
 	_markerNames = aMarkerPair._markerNames;
 }
@@ -94,26 +94,26 @@ void SimmMarkerPair::copyData(const SimmMarkerPair &aMarkerPair)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMarkerPair to their null values.
+ * Set the data members of this MarkerPair to their null values.
  */
-void SimmMarkerPair::setNull()
+void MarkerPair::setNull()
 {
 	setupProperties();
-	setType("SimmMarkerPair");
+	setType("MarkerPair");
 	setName("");
 }
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SimmMarkerPair::setupProperties()
+void MarkerPair::setupProperties()
 {
 	_markerNamesProp.setComment("Names of two markers, the distance between which is used to compute a body scale factor.");
 	_markerNamesProp.setName("markers");
 	_propertySet.append(&_markerNamesProp);
 }
 
-SimmMarkerPair& SimmMarkerPair::operator=(const SimmMarkerPair &aMarkerPair)
+MarkerPair& MarkerPair::operator=(const MarkerPair &aMarkerPair)
 {
 	// BASE CLASS
 	Object::operator=(aMarkerPair);
@@ -123,13 +123,13 @@ SimmMarkerPair& SimmMarkerPair::operator=(const SimmMarkerPair &aMarkerPair)
 	return(*this);
 }
 
-void SimmMarkerPair::getMarkerNames(string& aName1, string& aName2) const
+void MarkerPair::getMarkerNames(string& aName1, string& aName2) const
 {
 	aName1 = _markerNames[0];
 	aName2 = _markerNames[1];
 }
 
-void SimmMarkerPair::peteTest() const
+void MarkerPair::peteTest() const
 {
 	cout << "         MarkerPair: " << getName() << endl;
 	cout << "            _markerNames: " << _markerNames << endl;

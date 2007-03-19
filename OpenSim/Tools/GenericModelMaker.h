@@ -1,7 +1,7 @@
-#ifndef __SimmGenericModelMaker_h__
-#define __SimmGenericModelMaker_h__
+#ifndef __GenericModelMaker_h__
+#define __GenericModelMaker_h__
 
-// SimmGenericModelMaker.h
+// GenericModelMaker.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,17 +29,16 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include "osimToolsDLL.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
 	#endif
 #endif
 
@@ -56,7 +55,7 @@ class AbstractModel;
  * @author Peter Loan
  * @version 1.0
  */
-class workflow_API SimmGenericModelMaker : public Object  
+class OSIMTOOLS_API GenericModelMaker : public Object  
 {
 
 //=============================================================================
@@ -78,19 +77,19 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmGenericModelMaker();
-	SimmGenericModelMaker(const SimmGenericModelMaker &aGenericModelMaker);
-	virtual ~SimmGenericModelMaker();
+	GenericModelMaker();
+	GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
+	virtual ~GenericModelMaker();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmGenericModelMaker& operator=(const SimmGenericModelMaker &aGenericModelMaker);
+	GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);
 #endif
-	void copyData(const SimmGenericModelMaker &aGenericModelMaker);
+	void copyData(const GenericModelMaker &aGenericModelMaker);
 
 	AbstractModel* processModel(const std::string& aPathToSubject="");
 
-	/* Register types to be used when reading a SimmGenericModelMaker object from xml file. */
+	/* Register types to be used when reading a GenericModelMaker object from xml file. */
 	static void registerTypes();
 
 	void peteTest() const;
@@ -119,12 +118,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmGenericModelMaker
+};	// END of class GenericModelMaker
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmGenericModelMaker_h__
+#endif // __GenericModelMaker_h__
 
 

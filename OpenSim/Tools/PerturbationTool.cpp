@@ -6,12 +6,12 @@
 //=============================================================================
 #include "PerturbationTool.h"
 #include "ForwardTool.h"
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/VectorGCVSplineR1R3.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -21,10 +21,10 @@
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Contact.h>
-#include <OpenSim/Analyses/LinearSpring.h>
-#include <OpenSim/Analyses/TorsionalSpring.h>
+#include <OpenSim/Actuators/LinearSpring.h>
+#include <OpenSim/Actuators/TorsionalSpring.h>
 #include <OpenSim/Analyses/ActuatorPerturbationIndependent.h>
-#include <OpenSim/Analyses/ForceApplier.h>
+#include <OpenSim/Actuators/ForceApplier.h>
 
 
 
@@ -94,7 +94,7 @@ PerturbationTool::PerturbationTool() :
  * @param aFileName File name of the document.
  */
 PerturbationTool::PerturbationTool(const string &aFileName):
-	SimulationTool(aFileName),
+	AbstractTool(aFileName),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -172,7 +172,7 @@ PerturbationTool::PerturbationTool(const string &aFileName):
  */
 PerturbationTool::
 PerturbationTool(const PerturbationTool &aTool):
-	SimulationTool(aTool),
+	AbstractTool(aTool),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -457,7 +457,7 @@ PerturbationTool& PerturbationTool::
 operator=(const PerturbationTool &aTool)
 {
 	// BASE CLASS
-	SimulationTool::operator=(aTool);
+	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
 

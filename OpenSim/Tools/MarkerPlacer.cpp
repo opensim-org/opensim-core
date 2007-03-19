@@ -1,4 +1,4 @@
-// SimmMarkerPlacer.cpp
+// MarkerPlacer.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,13 +25,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMarkerPlacer.h"
-#include "SimmIKTrial.h"
-#include "SimmFileWriter.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
+#include "MarkerPlacer.h"
+#include "IKTrial.h"
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/SimmMotionData.h>
 
 //=============================================================================
 // STATICS
@@ -46,7 +46,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMarkerPlacer::SimmMarkerPlacer() :
+MarkerPlacer::MarkerPlacer() :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
@@ -67,7 +67,7 @@ SimmMarkerPlacer::SimmMarkerPlacer() :
 /**
  * Destructor.
  */
-SimmMarkerPlacer::~SimmMarkerPlacer()
+MarkerPlacer::~MarkerPlacer()
 {
 }
 
@@ -75,9 +75,9 @@ SimmMarkerPlacer::~SimmMarkerPlacer()
 /**
  * Copy constructor.
  *
- * @param aMarkerPlacer SimmMarkerPlacer to be copied.
+ * @param aMarkerPlacer MarkerPlacer to be copied.
  */
-SimmMarkerPlacer::SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacer) :
+MarkerPlacer::MarkerPlacer(const MarkerPlacer &aMarkerPlacer) :
    Object(aMarkerPlacer),
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
@@ -101,11 +101,11 @@ SimmMarkerPlacer::SimmMarkerPlacer(const SimmMarkerPlacer &aMarkerPlacer) :
  * Copy this marker placement params and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmMarkerPlacer.
+ * @return Pointer to a copy of this MarkerPlacer.
  */
-Object* SimmMarkerPlacer::copy() const
+Object* MarkerPlacer::copy() const
 {
-	SimmMarkerPlacer *markerPlacementParams = new SimmMarkerPlacer(*this);
+	MarkerPlacer *markerPlacementParams = new MarkerPlacer(*this);
 	return(markerPlacementParams);
 }
 
@@ -114,11 +114,11 @@ Object* SimmMarkerPlacer::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmMarkerPlacer to another.
+ * Copy data members from one MarkerPlacer to another.
  *
- * @param aMarkerPlacer SimmMarkerPlacer to be copied.
+ * @param aMarkerPlacer MarkerPlacer to be copied.
  */
-void SimmMarkerPlacer::copyData(const SimmMarkerPlacer &aMarkerPlacer)
+void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 {
 	_markerFileName = aMarkerPlacer._markerFileName;
 	_timeRange = aMarkerPlacer._timeRange;
@@ -134,11 +134,11 @@ void SimmMarkerPlacer::copyData(const SimmMarkerPlacer &aMarkerPlacer)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMarkerPlacer to their null values.
+ * Set the data members of this MarkerPlacer to their null values.
  */
-void SimmMarkerPlacer::setNull()
+void MarkerPlacer::setNull()
 {
-	setType("SimmMarkerPlacer");
+	setType("MarkerPlacer");
 
 	_coordinateFileName = "";
 }
@@ -147,7 +147,7 @@ void SimmMarkerPlacer::setNull()
 /**
  * Connect properties to local pointers.
  */
-void SimmMarkerPlacer::setupProperties()
+void MarkerPlacer::setupProperties()
 {
 	_ikTaskSetProp.setComment("Task set used to specify weights used in the IK computation of the static pose.");
 	_ikTaskSetProp.setName("IKTaskSet");
@@ -215,7 +215,7 @@ void SimmMarkerPlacer::setupProperties()
  *
  * @return Reference to this object.
  */
-SimmMarkerPlacer& SimmMarkerPlacer::operator=(const SimmMarkerPlacer &aMarkerPlacer)
+MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
 {
 	// BASE CLASS
 	Object::operator=(aMarkerPlacer);
@@ -241,14 +241,14 @@ SimmMarkerPlacer& SimmMarkerPlacer::operator=(const SimmMarkerPlacer &aMarkerPla
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathToSubject)
+bool MarkerPlacer::processModel(AbstractModel* aModel, const string& aPathToSubject)
 {
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
 	/* Load the static pose marker file, and average all the
 	 * frames in the user-specified time range.
 	 */
-	SimmMarkerData staticPose(aPathToSubject + _markerFileName);
+	MarkerData staticPose(aPathToSubject + _markerFileName);
 	staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 	staticPose.convertToUnits(aModel->getLengthUnits());
 
@@ -260,7 +260,7 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 	Storage outputStorage;
 	outputStorage.setName(_markerFileName);
 
-	SimmIKTrial ikTrial;
+	IKTrial ikTrial;
 	if(_coordinateFileName != "") ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
@@ -302,7 +302,7 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 	if (!_outputMotionFileNameProp.getUseDefault())
 	{
 		SimmMotionData motionData(outputStorage);
-		motionData.convertRadiansToDegrees(*aModel);
+		aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
 		motionData.writeSIMMMotionFile(aPathToSubject + _outputMotionFileName, 
 			"static pose", "File generated from solving marker data for model "+aModel->getName());
 	}
@@ -314,15 +314,15 @@ bool SimmMarkerPlacer::processModel(AbstractModel* aModel, const string& aPathTo
 /**
  * Set the local offset of each non-fixed marker so that in the model's
  * current pose the marker coincides with the marker's global position
- * in the passed-in SimmMarkerData.
+ * in the passed-in MarkerData.
  *
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void SimmMarkerPlacer::moveModelMarkersToPose(AbstractModel& aModel, SimmMarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(AbstractModel& aModel, MarkerData& aPose)
 {
 	aPose.averageFrames(0.01);
-	SimmMarkerFrame* frame = aPose.getFrame(0);
+	MarkerFrame* frame = aPose.getFrame(0);
 
 	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
 
@@ -360,7 +360,7 @@ void SimmMarkerPlacer::moveModelMarkersToPose(AbstractModel& aModel, SimmMarkerD
 	cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
 }
 
-void SimmMarkerPlacer::peteTest() const
+void MarkerPlacer::peteTest() const
 {
 	cout << "   MarkerPlacementParams: " << getName() << endl;
 	cout << "      markerFileName: " << _markerFileName << endl;

@@ -33,16 +33,16 @@
 //=============================================================================
 #include <string>
 #include "rdCMC_Task.h"
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyBoolArray.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyBoolArray.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 using namespace std;
 using namespace OpenSim;
