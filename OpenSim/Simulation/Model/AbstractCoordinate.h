@@ -28,9 +28,9 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include <OpenSim/Simulation/SIMM/AbstractDof.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
+#include "AbstractDof.h"
 
 namespace OpenSim {
 
@@ -47,7 +47,7 @@ class Function;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractCoordinate : public Object  
+class OSIMSIMULATION_API AbstractCoordinate : public Object  
 {
 //=============================================================================
 // DATA

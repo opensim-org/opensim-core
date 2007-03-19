@@ -33,7 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Tools/PropertyInt.h>
+#include <OpenSim/Common/PropertyInt.h>
 #include "Callback.h"
 
 
@@ -62,7 +62,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API IntegCallback : public Callback
+class OSIMSIMULATION_API IntegCallback : public Callback
 {
 
 //=============================================================================

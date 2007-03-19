@@ -5,11 +5,11 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <string>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "AbstractModel.h"
 
 
-RDSIMULATION_API void LoadOpenSimLibraries(int argc,char **argv);
-RDSIMULATION_API OpenSim::AbstractModel* LoadModel(const std::string &aModelLibraryName, const std::string &aModelFileName=""); 
+OSIMSIMULATION_API void LoadOpenSimLibraries(int argc,char **argv);
+OSIMSIMULATION_API OpenSim::AbstractModel* LoadModel(const std::string &aModelLibraryName, const std::string &aModelFileName=""); 
 
 
 #endif // __Investigation_h__

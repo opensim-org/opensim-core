@@ -34,10 +34,10 @@
  */
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/FunctionSet.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/rdTools.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/FunctionSet.h>
 
 
 //=============================================================================
@@ -53,7 +53,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API ControlObject : public Object
+class OSIMSIMULATION_API ControlObject : public Object
 {
 
 //=============================================================================
@@ -78,9 +78,9 @@ protected:
 	AbstractModel *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
-	/** Body with respect to which the track goals are specified. */
+	/** VisibleBody with respect to which the track goals are specified. */
 	int _wrtBody;
-	/** Body frame in which the track goals are expressed. */
+	/** VisibleBody frame in which the track goals are expressed. */
 	int _expressBody;
 	/** Flag to specify the active track goals. */
 	bool _active[3];

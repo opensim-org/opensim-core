@@ -30,12 +30,11 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Property.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "Control.h"
 
 

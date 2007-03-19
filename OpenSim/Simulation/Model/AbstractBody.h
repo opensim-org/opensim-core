@@ -29,11 +29,11 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/Set.h>
-#include "WrapObjectSet.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 namespace OpenSim {
 
@@ -47,7 +47,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractBody : public Object  
+class OSIMSIMULATION_API AbstractBody : public Object  
 {
 
 //=============================================================================

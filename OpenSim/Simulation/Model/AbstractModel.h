@@ -27,20 +27,20 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyObjPtr.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ContactForceSet.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include "Analysis.h"
+#include "AnalysisSet.h"
+#include "ContactForceSet.h"
 #include "AbstractDynamicsEngine.h"
 #include "ActuatorSet.h"
-#include "SimmMuscleGroup.h"
-#include "SimmUnits.h"
+#include "MuscleGroup.h"
+#include <OpenSim/Common/Units.h>
 
 
 namespace OpenSim {
@@ -52,9 +52,9 @@ class DerivCallback;
 class DerivCallbackSet;
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -70,7 +70,7 @@ class DerivCallbackSet;
  * @version 1.0
  */
 
-class RDSIMULATION_API AbstractModel  : public Object
+class OSIMSIMULATION_API AbstractModel  : public Object
 {
 
 //=============================================================================
@@ -84,12 +84,12 @@ private:
 	/** Units for all lengths, distances. */
 	PropertyStr _lengthUnitsStrProp;
 	std::string& _lengthUnitsStr;
-	SimmUnits _lengthUnits;
+	Units _lengthUnits;
 
 	/** Units for all forces. */
 	PropertyStr _forceUnitsStrProp;
 	std::string& _forceUnitsStr;
-	SimmUnits _forceUnits;
+	Units _forceUnits;
 
 	/** Dynamics Engine. */
 	PropertyObjPtr<AbstractDynamicsEngine> _dynamicsEngineProp;
@@ -105,7 +105,7 @@ private:
 	ContactForceSet& _contactSet;
 
 	/** Muscle Groups. */
-	Set<SimmMuscleGroup> _muscleGroups;
+	Set<MuscleGroup> _muscleGroups;
 
 	/** Analyses. */
 	AnalysisSet *_analysisSet;
@@ -160,7 +160,7 @@ public:
 		return reinterpret_cast<AbstractModel*>(this->copy()); 
 	}
 
-	SimmMuscleGroup* enterGroup(const std::string& aName);
+	MuscleGroup* enterGroup(const std::string& aName);
 	virtual void setup();
 	bool builtOK() { return _builtOK; }
 
@@ -182,8 +182,8 @@ public:
 	//--------------------------------------------------------------------------
 	// UNITS
 	//--------------------------------------------------------------------------
-	virtual const SimmUnits& getLengthUnits() const { return _lengthUnits; }
-	virtual const SimmUnits& getForceUnits() const { return _forceUnits; }
+	virtual const Units& getLengthUnits() const { return _lengthUnits; }
+	virtual const Units& getForceUnits() const { return _forceUnits; }
 
 	//--------------------------------------------------------------------------
 	// GRAVITY
@@ -281,7 +281,7 @@ public:
 	//--------------------------------------------------------------------------
 	ActuatorSet* getActuatorSet();
 	const ActuatorSet* getActuatorSet() const;
-	SimmMuscleGroup* enterMuscleGroup(const std::string& aName)
+	MuscleGroup* enterMuscleGroup(const std::string& aName)
 	{
 		throw Exception("enterMuscleGroup not implemented.", __FILE__, __LINE__);
 	}

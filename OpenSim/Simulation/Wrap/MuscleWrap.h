@@ -29,17 +29,17 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include "SimmMuscleWrapPoint.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include "MuscleWrapPoint.h"
 #include "WrapResult.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -58,7 +58,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API MuscleWrap : public Object
+class OSIMSIMULATION_API MuscleWrap : public Object
 {
 
 //=============================================================================
@@ -88,7 +88,7 @@ protected:
 
 	WrapResult _previousWrap;  // results from previous wrapping
 
-   SimmMuscleWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
+   MuscleWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
 
 //=============================================================================
 // METHODS
@@ -112,7 +112,7 @@ public:
 	int getEndPoint() const { return _range[1]; }
 	const std::string& getWrapObjectName() const { return _wrapObjectName; }
 	AbstractWrapObject* getWrapObject() const { return _wrapObject; }
-	SimmMuscleWrapPoint& getWrapPoint(int aIndex);
+	MuscleWrapPoint& getWrapPoint(int aIndex);
 	WrapMethod getMethod() const { return _method; }
 	const std::string& getMethodName() const { return _methodName; }
 

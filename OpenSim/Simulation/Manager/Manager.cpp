@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 
 

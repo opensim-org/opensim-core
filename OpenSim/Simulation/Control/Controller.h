@@ -55,7 +55,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API Controller  
+class OSIMSIMULATION_API Controller  
 {
 
 //=============================================================================

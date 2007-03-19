@@ -26,12 +26,12 @@
 // INCLUDES
 //=============================================================================
 #include "WrapCylinder.h"
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 #include "MuscleWrap.h"
 #include "WrapResult.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
 //=============================================================================

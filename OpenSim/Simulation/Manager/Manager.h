@@ -35,9 +35,8 @@
 
 
 // INCLUDES
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Integrator/IntegRKF.h>
 
@@ -51,7 +50,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API Manager
+class OSIMSIMULATION_API Manager
 {
 
 //=============================================================================

@@ -36,11 +36,11 @@
 //============================================================================
 
 #include "IntegCallback.h"
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/ArrayPtrs.h>
 
 namespace OpenSim { 
 
@@ -56,7 +56,7 @@ class AbstractModel;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDSIMULATION_API Analysis: public IntegCallback
+class OSIMSIMULATION_API Analysis: public IntegCallback
 {
 public:
 	//enum { DESCRIP_LENGTH=8192 };

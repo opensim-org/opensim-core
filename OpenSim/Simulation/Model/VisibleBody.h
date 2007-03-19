@@ -1,6 +1,6 @@
-#ifndef _Body_h_
-#define _Body_h_
-// Body.cpp
+#ifndef _VisibleBody_h_
+#define _VisibleBody_h_
+// VisibleBody.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -33,16 +33,16 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Simulation/SIMM/PolyObject.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include "PolyObject.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Body  : public PolyObject
+class OSIMSIMULATION_API VisibleBody  : public PolyObject
 {
 
 //=============================================================================
@@ -79,17 +79,17 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	Body(double aM=1.0,double *aI=NULL);
-	Body(const Body &aBody);
-	Body(const std::string &aFileName);
-	virtual ~Body();
+	VisibleBody(double aM=1.0,double *aI=NULL);
+	VisibleBody(const VisibleBody &aBody);
+	VisibleBody(const std::string &aFileName);
+	virtual ~VisibleBody();
 	virtual Object* copy() const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Body& operator=(const Body &aBody);
+	VisibleBody& operator=(const VisibleBody &aBody);
 #endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -119,4 +119,4 @@ public:
 
 }; //namespace
 
-#endif //__Body_h__
+#endif //__VisibleBody_h__

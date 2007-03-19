@@ -29,8 +29,8 @@
 #include <iostream>
 #include "ActuatorSet.h"
 #include "AbstractModel.h"
-#include <OpenSim/Tools/PropertyObjArray.h>
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/rdMath.h>
 
 using namespace std;
 using namespace OpenSim;

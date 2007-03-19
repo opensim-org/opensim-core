@@ -35,10 +35,10 @@
 
 
 // INCLUDES
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Transform.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Transform.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 //=============================================================================
 //=============================================================================
@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API SimtkAnimationCallback : public IntegCallback
+class OSIMSIMULATION_API SimtkAnimationCallback : public IntegCallback
 {
 //=============================================================================
 // DATA

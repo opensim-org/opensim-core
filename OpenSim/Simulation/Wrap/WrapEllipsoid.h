@@ -29,17 +29,17 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include "AbstractWrapObject.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -59,7 +59,7 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API WrapEllipsoid : public AbstractWrapObject
+class OSIMSIMULATION_API WrapEllipsoid : public AbstractWrapObject
 {
 
 //=============================================================================

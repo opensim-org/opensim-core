@@ -36,11 +36,11 @@
 
 // INCLUDES
 #include "Control.h"
-#include <OpenSim/Tools/Set.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/Storage.h>
 
 
-template class RDSIMULATION_API OpenSim::Set<OpenSim::Control>;
+template class OSIMSIMULATION_API OpenSim::Set<OpenSim::Control>;
 
 
 //=============================================================================
@@ -54,7 +54,7 @@ template class RDSIMULATION_API OpenSim::Set<OpenSim::Control>;
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API ControlSet : public Set<Control>
+class OSIMSIMULATION_API ControlSet : public Set<Control>
 {
 
 //=============================================================================

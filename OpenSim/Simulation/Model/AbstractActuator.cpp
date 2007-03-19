@@ -26,10 +26,10 @@
 // INCLUDES
 //=============================================================================
 #include "AbstractActuator.h"
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/DebugUtilities.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Memory.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/DebugUtilities.h>
 #include <sstream>
 
 using namespace std;

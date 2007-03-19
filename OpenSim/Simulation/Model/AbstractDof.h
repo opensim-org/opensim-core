@@ -30,12 +30,12 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyObjPtr.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/Constant.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
 
 namespace OpenSim {
 
@@ -52,7 +52,7 @@ class AbstractCoordinate;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractDof : public Object  
+class OSIMSIMULATION_API AbstractDof : public Object  
 {
 
 //=============================================================================

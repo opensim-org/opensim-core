@@ -1,4 +1,4 @@
-// SimmMusclePointSet.cpp
+// MusclePointSet.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SimmMusclePointSet.h"
+#include "MusclePointSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -34,26 +34,26 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-SimmMusclePointSet::~SimmMusclePointSet(void)
+MusclePointSet::~MusclePointSet(void)
 {
 }
 
 //_____________________________________________________________________________
 /**
- * Default constructor of a SimmMusclePointSet.
+ * Default constructor of a MusclePointSet.
  */
-SimmMusclePointSet::SimmMusclePointSet() :
-	Set<SimmMusclePoint>()
+MusclePointSet::MusclePointSet() :
+	Set<MusclePoint>()
 {
 	setNull();
 }
 
 //_____________________________________________________________________________
 /**
- * Copy constructor of a SimmMusclePointSet.
+ * Copy constructor of a MusclePointSet.
  */
-SimmMusclePointSet::SimmMusclePointSet(const SimmMusclePointSet& aSimmMusclePointSet):
-	Set<SimmMusclePoint>(aSimmMusclePointSet)
+MusclePointSet::MusclePointSet(const MusclePointSet& aSimmMusclePointSet):
+	Set<MusclePoint>(aSimmMusclePointSet)
 {
 	setNull();
 	*this = aSimmMusclePointSet;
@@ -63,11 +63,11 @@ SimmMusclePointSet::SimmMusclePointSet(const SimmMusclePointSet& aSimmMusclePoin
 // CONSTRUCTION METHODS
 //=============================================================================
 /**
- * Set the data members of this SimmMusclePointSet to their null values.
+ * Set the data members of this MusclePointSet to their null values.
  */
-void SimmMusclePointSet::setNull()
+void MusclePointSet::setNull()
 {
-	setType("SimmMusclePointSet");
+	setType("MusclePointSet");
 }
 
 //=============================================================================
@@ -80,9 +80,9 @@ void SimmMusclePointSet::setNull()
  * @return Reference to this object.
  */
 #ifndef SWIG
-SimmMusclePointSet& SimmMusclePointSet::operator=(const SimmMusclePointSet &aSimmMusclePointSet)
+MusclePointSet& MusclePointSet::operator=(const MusclePointSet &aSimmMusclePointSet)
 {
-	Set<SimmMusclePoint>::operator=(aSimmMusclePointSet);
+	Set<MusclePoint>::operator=(aSimmMusclePointSet);
 	return (*this);
 }
 #endif

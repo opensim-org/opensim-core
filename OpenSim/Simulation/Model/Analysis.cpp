@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "AbstractModel.h"
 
 
 

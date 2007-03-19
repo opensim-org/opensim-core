@@ -33,7 +33,7 @@
 
 #include <string>
 #include <OpenSim/Tools/Math.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/Mtx.h>
 #include "SampleIntegrand.h"
 
 

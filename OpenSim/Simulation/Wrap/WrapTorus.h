@@ -29,10 +29,10 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "AbstractWrapObject.h"
 
 namespace OpenSim {
@@ -40,7 +40,7 @@ namespace OpenSim {
 class VisibleObject;
 class AbstractBody;
 class AbstractDynamicsEngine;
-class SimmMusclePoint;
+class MusclePoint;
 class MuscleWrap;
 class WrapResult;
 
@@ -52,7 +52,7 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API WrapTorus : public AbstractWrapObject
+class OSIMSIMULATION_API WrapTorus : public AbstractWrapObject
 {
 
 	struct CircleCallback {

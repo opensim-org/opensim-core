@@ -35,11 +35,11 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 //=============================================================================
 //=============================================================================
@@ -55,7 +55,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API Callback : public Object
+class OSIMSIMULATION_API Callback : public Object
 {
 
 //=============================================================================

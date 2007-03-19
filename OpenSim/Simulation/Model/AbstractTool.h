@@ -1,16 +1,16 @@
-#ifndef _SimulationTool_h_
-#define _SimulationTool_h_
-// SimulationTool.h
+#ifndef _AbstractTool_h_
+#define _AbstractTool_h_
+// AbstractTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include "AnalysisSet.h"
 namespace OpenSim { 
 
 class AbstractModel;
@@ -24,7 +24,7 @@ class AbstractModel;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDSIMULATION_API SimulationTool: public Object
+class OSIMSIMULATION_API AbstractTool: public Object
 {
 //=============================================================================
 // DATA
@@ -90,10 +90,10 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~SimulationTool();
-	SimulationTool();
-	SimulationTool(const std::string &aFileName);
-	SimulationTool(const SimulationTool &aObject);
+	virtual ~AbstractTool();
+	AbstractTool();
+	AbstractTool(const std::string &aFileName);
+	AbstractTool(const AbstractTool &aObject);
 	//Object* copy() const;
 
 private:
@@ -105,7 +105,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	SimulationTool& operator=(const SimulationTool &aTool);
+	AbstractTool& operator=(const AbstractTool &aTool);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -124,7 +124,7 @@ public:
 	{
 		_resultsDir = aString;
 	};
-	// SimulationTool time range
+	// AbstractTool time range
 	double getStartTime() const
 	{
 		return _ti;
@@ -156,12 +156,12 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class SimulationTool
+};	// END of class AbstractTool
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __SimulationTool_h__
+#endif // __AbstractTool_h__
 
 

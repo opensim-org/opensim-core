@@ -52,7 +52,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API IntegCallbackSet : public Set<Callback>
+class OSIMSIMULATION_API IntegCallbackSet : public Set<Callback>
 {
 
 //=============================================================================

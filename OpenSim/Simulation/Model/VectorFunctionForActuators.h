@@ -33,10 +33,9 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/VectorFunctionUncoupledNxN.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 #include <OpenSim/Simulation/Integrator/IntegRKF.h>
 #include "ModelIntegrand.h"
 
@@ -61,7 +60,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API VectorFunctionForActuators :
+class OSIMSIMULATION_API VectorFunctionForActuators :
 	public VectorFunctionUncoupledNxN
 {
 //=============================================================================

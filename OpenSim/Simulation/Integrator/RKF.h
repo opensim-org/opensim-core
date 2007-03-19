@@ -38,9 +38,9 @@
 #include "Integrand.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -58,7 +58,7 @@ namespace OpenSim {
  *
  * The user must supply a pointer to an Model on construction.
  */
-class RDSIMULATION_API RKF
+class OSIMSIMULATION_API RKF
 {
 //=============================================================================
 // DATA

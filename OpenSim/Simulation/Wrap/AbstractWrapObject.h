@@ -29,20 +29,20 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/Transform.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/Transform.h>
 
 namespace OpenSim {
 
 class VisibleObject;
 class AbstractBody;
 class AbstractDynamicsEngine;
-class SimmMusclePoint;
+class MusclePoint;
 class MuscleWrap;
 class WrapResult;
 
@@ -55,7 +55,7 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractWrapObject : public Object
+class OSIMSIMULATION_API AbstractWrapObject : public Object
 {
 
 //=============================================================================
@@ -137,7 +137,7 @@ public:
 	void setQuadrantName(const std::string& aName);
 	virtual const char* getWrapTypeName() const = 0;
 	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
-	int wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePoint& aPoint2,
+	int wrapMuscleSegment(MusclePoint& aPoint1, MusclePoint& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult) const;
 	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;

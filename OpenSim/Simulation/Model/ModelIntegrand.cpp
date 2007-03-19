@@ -38,8 +38,8 @@
 #include "ModelIntegrand.h"
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include "AbstractModel.h"
+#include "AbstractDynamicsEngine.h"
 
 
 

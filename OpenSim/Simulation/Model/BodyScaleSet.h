@@ -25,8 +25,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
 #include "BodyScale.h"
 
 namespace OpenSim {
@@ -40,7 +40,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API BodyScaleSet :	public Set<BodyScale>
+class OSIMSIMULATION_API BodyScaleSet :	public Set<BodyScale>
 {
 private:
 	void setNull();

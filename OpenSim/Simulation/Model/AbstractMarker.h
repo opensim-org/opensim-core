@@ -29,8 +29,8 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -47,7 +47,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractMarker : public Object
+class OSIMSIMULATION_API AbstractMarker : public Object
 {
 
 //=============================================================================
@@ -97,7 +97,7 @@ private:
 //=============================================================================
 //=============================================================================
 
-//typedef RDSIMULATION_API Set<AbstractMarker> MarkerSet;
+//typedef OSIMSIMULATION_API Set<AbstractMarker> MarkerSet;
 
 } // end of namespace OpenSim
 

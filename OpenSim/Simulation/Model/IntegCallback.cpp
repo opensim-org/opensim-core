@@ -37,8 +37,8 @@
 //=============================================================================
 #include "IntegCallbackSet.h"
 #include "IntegCallback.h"
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include "AbstractModel.h"
 //=============================================================================
 // STATICS
 //=============================================================================

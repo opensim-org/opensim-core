@@ -35,10 +35,10 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 //=============================================================================
 //=============================================================================
@@ -58,7 +58,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API ControlLinearNode : public Object
+class OSIMSIMULATION_API ControlLinearNode : public Object
 {
 
 //=============================================================================

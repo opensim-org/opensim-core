@@ -25,8 +25,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
 #include "AbstractJoint.h"
 
 namespace OpenSim {
@@ -40,7 +40,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API JointSet :	public Set<AbstractJoint>
+class OSIMSIMULATION_API JointSet :	public Set<AbstractJoint>
 {
 private:
 	void setNull();

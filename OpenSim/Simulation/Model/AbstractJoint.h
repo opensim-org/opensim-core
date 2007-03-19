@@ -30,9 +30,9 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/ScaleSet.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 namespace OpenSim {
 
@@ -49,7 +49,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractJoint : public Object  
+class OSIMSIMULATION_API AbstractJoint : public Object  
 {
 
 //=============================================================================

@@ -32,13 +32,13 @@
  */
 
 #include <string>
-#include <OpenSim/Tools/Array.h>
+#include <OpenSim/Common/Array.h>
 #include "IntegCallbackSet.h"
 #include "AnalysisSet.h"
 #include "DerivCallbackSet.h"
 #include "ModelIntegrandForActuators.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include "AbstractModel.h"
+#include "AbstractDynamicsEngine.h"
 
 
 using namespace OpenSim;

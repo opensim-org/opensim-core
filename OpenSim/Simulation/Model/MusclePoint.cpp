@@ -1,4 +1,4 @@
-// SimmMusclePoint.cpp
+// MusclePoint.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,12 +25,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMusclePoint.h"
+#include "MusclePoint.h"
 #include "BodySet.h"
 #include "AbstractModel.h"
-#include "AbstractSimmMuscle.h"
+#include "AbstractMuscle.h"
 #include "AbstractDynamicsEngine.h"
-#include "AbstractWrapObject.h"
+#include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 
 //=============================================================================
 // STATICS
@@ -38,7 +38,7 @@
 using namespace std;
 using namespace OpenSim;
 
-Geometry *SimmMusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
+Geometry *MusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -47,7 +47,7 @@ Geometry *SimmMusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005)
 /**
  * Default constructor.
  */
-SimmMusclePoint::SimmMusclePoint() :
+MusclePoint::MusclePoint() :
    _attachment(_attachmentProp.getValueDblArray()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -61,7 +61,7 @@ SimmMusclePoint::SimmMusclePoint() :
 /**
  * Destructor.
  */
-SimmMusclePoint::~SimmMusclePoint()
+MusclePoint::~MusclePoint()
 {
 }
 
@@ -69,9 +69,9 @@ SimmMusclePoint::~SimmMusclePoint()
 /**
  * Copy constructor.
  *
- * @param aPoint SimmMusclePoint to be copied.
+ * @param aPoint MusclePoint to be copied.
  */
-SimmMusclePoint::SimmMusclePoint(const SimmMusclePoint &aPoint) :
+MusclePoint::MusclePoint(const MusclePoint &aPoint) :
    Object(aPoint),
    _attachment(_attachmentProp.getValueDblArray()),
 	_bodyName(_bodyNameProp.getValueStr()),
@@ -88,11 +88,11 @@ SimmMusclePoint::SimmMusclePoint(const SimmMusclePoint &aPoint) :
  * Copy this muscle point and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmMusclePoint.
+ * @return Pointer to a copy of this MusclePoint.
  */
-Object* SimmMusclePoint::copy() const
+Object* MusclePoint::copy() const
 {
-	SimmMusclePoint *pt = new SimmMusclePoint(*this);
+	MusclePoint *pt = new MusclePoint(*this);
 	return(pt);
 }
 
@@ -101,11 +101,11 @@ Object* SimmMusclePoint::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmMusclePoint to another.
+ * Copy data members from one MusclePoint to another.
  *
- * @param aPoint SimmMusclePoint to be copied.
+ * @param aPoint MusclePoint to be copied.
  */
-void SimmMusclePoint::copyData(const SimmMusclePoint &aPoint)
+void MusclePoint::copyData(const MusclePoint &aPoint)
 {
 	_attachment = aPoint._attachment;
 	_displayer = aPoint._displayer;
@@ -115,11 +115,11 @@ void SimmMusclePoint::copyData(const SimmMusclePoint &aPoint)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMusclePoint to their null values.
+ * Set the data members of this MusclePoint to their null values.
  */
-void SimmMusclePoint::setNull()
+void MusclePoint::setNull()
 {
-	setType("SimmMusclePoint");
+	setType("MusclePoint");
 
 	_body = NULL;
 }
@@ -128,7 +128,7 @@ void SimmMusclePoint::setNull()
 /**
  * Connect properties to local pointers.
  */
-void SimmMusclePoint::setupProperties()
+void MusclePoint::setupProperties()
 {
 	const double defaultAttachment[] = {0.0, 0.0, 0.0};
 	_attachmentProp.setName("location");
@@ -147,9 +147,9 @@ void SimmMusclePoint::setupProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel model containing this SimmMusclePoint.
+ * @param aModel model containing this MusclePoint.
  */
-void SimmMusclePoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
+void MusclePoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
 {
 	// Look up the body by name in the kinematics engine and
 	// store a pointer to it.
@@ -157,7 +157,7 @@ void SimmMusclePoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
 
 	if (!_body)
 	{
-		string errorMessage = "Body " + _bodyName + " referenced in muscle " + aMuscle->getName() + " not found in model " + aModel->getName();
+		string errorMessage = "VisibleBody " + _bodyName + " referenced in muscle " + aMuscle->getName() + " not found in model " + aModel->getName();
 		throw Exception(errorMessage);
 	}
 
@@ -183,7 +183,7 @@ void SimmMusclePoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
  * Update geometry of the muscle point.
  *
  */
-void SimmMusclePoint::updateGeometry()
+void MusclePoint::updateGeometry()
 {
 	Transform position;
 	position.translate(_attachment.get());
@@ -198,7 +198,7 @@ void SimmMusclePoint::updateGeometry()
  *
  * @return Reference to this object.
  */
-SimmMusclePoint& SimmMusclePoint::operator=(const SimmMusclePoint &aPoint)
+MusclePoint& MusclePoint::operator=(const MusclePoint &aPoint)
 {
 	// BASE CLASS
 	Object::operator=(aPoint);
@@ -208,13 +208,13 @@ SimmMusclePoint& SimmMusclePoint::operator=(const SimmMusclePoint &aPoint)
 	return(*this);
 }
 
-void SimmMusclePoint::setBody(AbstractBody& aBody)
+void MusclePoint::setBody(AbstractBody& aBody)
 {
 	_body = &aBody;
 	_bodyName = aBody.getName();
 }
 
-void SimmMusclePoint::setAttachment(double aAttachment[3])
+void MusclePoint::setAttachment(double aAttachment[3])
 {
 	_attachment[0] = aAttachment[0];
 	_attachment[1] = aAttachment[1];
@@ -230,7 +230,7 @@ void SimmMusclePoint::setAttachment(double aAttachment[3])
  *
  * @param aScaleFactors the XYZ scale factors to scale the point by.
  */
-void SimmMusclePoint::scale(Array<double>& aScaleFactors)
+void MusclePoint::scale(Array<double>& aScaleFactors)
 {
 	for (int i = 0; i < 3; i++)
 		_attachment[i] *= aScaleFactors[i];
@@ -238,7 +238,7 @@ void SimmMusclePoint::scale(Array<double>& aScaleFactors)
 	updateGeometry();
 }
 
-void SimmMusclePoint::peteTest() const
+void MusclePoint::peteTest() const
 {
 	cout << "   MusclePoint: " << getName() << endl;
 	cout << "      point: " << getAttachment() << endl;

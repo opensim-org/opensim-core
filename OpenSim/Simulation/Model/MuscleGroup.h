@@ -1,7 +1,7 @@
-#ifndef __SimmMuscleGroup_h__
-#define __SimmMuscleGroup_h__
+#ifndef __MuscleGroup_h__
+#define __MuscleGroup_h__
 
-// SimmMuscleGroup.h
+// MuscleGroup.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,8 +30,8 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -47,7 +47,7 @@ class AbstractActuator;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMuscleGroup : public Object  
+class OSIMSIMULATION_API MuscleGroup : public Object  
 {
 
 //=============================================================================
@@ -65,15 +65,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMuscleGroup();
-	SimmMuscleGroup(const SimmMuscleGroup &aGroup);
-	virtual ~SimmMuscleGroup();
+	MuscleGroup();
+	MuscleGroup(const MuscleGroup &aGroup);
+	virtual ~MuscleGroup();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMuscleGroup& operator=(const SimmMuscleGroup &aGroup);
+	MuscleGroup& operator=(const MuscleGroup &aGroup);
 #endif
-   void copyData(const SimmMuscleGroup &aGroup);
+   void copyData(const MuscleGroup &aGroup);
 
    void setup(AbstractModel* aModel);
 
@@ -87,12 +87,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMuscleGroup
+};	// END of class MuscleGroup
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMuscleGroup_h__
+#endif // __MuscleGroup_h__
 
 

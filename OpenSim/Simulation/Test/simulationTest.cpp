@@ -6,25 +6,25 @@
 #include <iostream>
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Common/rdTools.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Tools/Math.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/GeneralizedForce.h>
+#include <OpenSim/Actuators/GeneralizedForce.h>
 #include <OpenSim/Actuators/GeneralizedForceAtv.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
@@ -51,7 +51,7 @@ void TestContactForceSetSerialization();
 
 //_____________________________________________________________________________
 /**
- * Test the rdSimulation library.
+ * Test the osimSimulation library.
  */
 int main(int argc, char* argv[])
 {

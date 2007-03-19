@@ -29,9 +29,9 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Array.h>
-#include "SimmPoint.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/SimmPoint.h>
 
 namespace OpenSim {
 
@@ -43,7 +43,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API WrapResult
+class OSIMSIMULATION_API WrapResult
 {
 
 //=============================================================================

@@ -34,13 +34,13 @@
  */
 
 // INCLUDES
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 

@@ -29,10 +29,10 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/VisibleObject.h>
 #ifdef BUILD_GUI
 	#include <vtkXMLPolyDataReader.h>
 	#include <vtkPolyData.h>
@@ -51,7 +51,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API PolyObject : public VisibleObject  
+class OSIMSIMULATION_API PolyObject : public VisibleObject  
 {
 
 //=============================================================================

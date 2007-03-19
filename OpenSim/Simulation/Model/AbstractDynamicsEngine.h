@@ -31,13 +31,13 @@
  */
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -57,9 +57,9 @@ class MarkerSet;
 class Transform;
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -80,7 +80,7 @@ class Transform;
  * @author Frank C. Anderson, Peter Loan, Ayman Habib
  * @version 1.0
  */
-class RDSIMULATION_API AbstractDynamicsEngine : public Object
+class OSIMSIMULATION_API AbstractDynamicsEngine : public Object
 {
 
 //=============================================================================

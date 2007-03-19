@@ -30,16 +30,15 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Signal.h>
-#include <OpenSim/Tools/Property.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
-#include <OpenSim/Tools/PropertySet.h>
-#include <OpenSim/Tools/DebugUtilities.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Signal.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/DebugUtilities.h>
 #include "ControlLinear.h"
 #include "ControlLinearNode.h"
 

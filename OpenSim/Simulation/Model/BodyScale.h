@@ -29,10 +29,10 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/PropertyStrArray.h>
 
 namespace OpenSim {
 
@@ -45,7 +45,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API BodyScale : public Object  
+class OSIMSIMULATION_API BodyScale : public Object  
 {
 
 //=============================================================================

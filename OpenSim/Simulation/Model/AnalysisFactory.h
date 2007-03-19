@@ -34,8 +34,8 @@
  
  */
 
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 //=============================================================================
 //=============================================================================
 /**
@@ -57,7 +57,7 @@ namespace OpenSim {
 
 class Analysis;
 
-class RDSIMULATION_API AnalysisFactory
+class OSIMSIMULATION_API AnalysisFactory
 {
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DATA

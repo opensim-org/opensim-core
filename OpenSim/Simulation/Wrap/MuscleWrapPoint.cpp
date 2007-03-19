@@ -1,4 +1,4 @@
-// SimmMuscleWrapPoint.cpp
+// MuscleWrapPoint.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,13 +25,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMuscleWrapPoint.h"
-#include "AbstractModel.h"
-#include "AbstractSimmMuscle.h"
-#include "AbstractBody.h"
-#include "AbstractCoordinate.h"
-#include "CoordinateSet.h"
-#include "AbstractDynamicsEngine.h"
+#include "MuscleWrapPoint.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 
 //=============================================================================
 // STATICS
@@ -46,7 +46,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMuscleWrapPoint::SimmMuscleWrapPoint()
+MuscleWrapPoint::MuscleWrapPoint()
 {
 	setNull();
 }
@@ -55,7 +55,7 @@ SimmMuscleWrapPoint::SimmMuscleWrapPoint()
 /**
  * Destructor.
  */
-SimmMuscleWrapPoint::~SimmMuscleWrapPoint()
+MuscleWrapPoint::~MuscleWrapPoint()
 {
 }
 
@@ -63,10 +63,10 @@ SimmMuscleWrapPoint::~SimmMuscleWrapPoint()
 /**
  * Copy constructor.
  *
- * @param aPoint SimmMuscleWrapPoint to be copied.
+ * @param aPoint MuscleWrapPoint to be copied.
  */
-SimmMuscleWrapPoint::SimmMuscleWrapPoint(const SimmMuscleWrapPoint &aPoint) :
-   SimmMusclePoint(aPoint)
+MuscleWrapPoint::MuscleWrapPoint(const MuscleWrapPoint &aPoint) :
+   MusclePoint(aPoint)
 {
 	setNull();
 	copyData(aPoint);
@@ -77,11 +77,11 @@ SimmMuscleWrapPoint::SimmMuscleWrapPoint(const SimmMuscleWrapPoint &aPoint) :
  * Copy this muscle via point and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SimmMuscleWrapPoint.
+ * @return Pointer to a copy of this MuscleWrapPoint.
  */
-Object* SimmMuscleWrapPoint::copy() const
+Object* MuscleWrapPoint::copy() const
 {
-	SimmMuscleWrapPoint *pt = new SimmMuscleWrapPoint(*this);
+	MuscleWrapPoint *pt = new MuscleWrapPoint(*this);
 	return(pt);
 }
 
@@ -90,11 +90,11 @@ Object* SimmMuscleWrapPoint::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmMuscleWrapPoint to another.
+ * Copy data members from one MuscleWrapPoint to another.
  *
- * @param aPoint SimmMuscleWrapPoint to be copied.
+ * @param aPoint MuscleWrapPoint to be copied.
  */
-void SimmMuscleWrapPoint::copyData(const SimmMuscleWrapPoint &aPoint)
+void MuscleWrapPoint::copyData(const MuscleWrapPoint &aPoint)
 {
 	_wrapPath = aPoint._wrapPath;
 	_wrapPathLength = aPoint._wrapPathLength;
@@ -103,11 +103,11 @@ void SimmMuscleWrapPoint::copyData(const SimmMuscleWrapPoint &aPoint)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMuscleWrapPoint to their null values.
+ * Set the data members of this MuscleWrapPoint to their null values.
  */
-void SimmMuscleWrapPoint::setNull()
+void MuscleWrapPoint::setNull()
 {
-	setType("SimmMuscleWrapPoint");
+	setType("MuscleWrapPoint");
 
 	_wrapPath.setSize(0);
 	_wrapPathLength = 0.0;
@@ -118,12 +118,12 @@ void SimmMuscleWrapPoint::setNull()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel model containing this SimmMuscleWrapPoint.
+ * @param aModel model containing this MuscleWrapPoint.
  */
-void SimmMuscleWrapPoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle)
+void MuscleWrapPoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
 {
 	// base class
-	SimmMusclePoint::setup(aModel, aMuscle);
+	MusclePoint::setup(aModel, aMuscle);
 }
 
 //=============================================================================
@@ -135,17 +135,17 @@ void SimmMuscleWrapPoint::setup(AbstractModel* aModel, AbstractSimmMuscle* aMusc
  *
  * @return Reference to this object.
  */
-SimmMuscleWrapPoint& SimmMuscleWrapPoint::operator=(const SimmMuscleWrapPoint &aPoint)
+MuscleWrapPoint& MuscleWrapPoint::operator=(const MuscleWrapPoint &aPoint)
 {
 	// BASE CLASS
-	SimmMusclePoint::operator=(aPoint);
+	MusclePoint::operator=(aPoint);
 
 	copyData(aPoint);
 
 	return(*this);
 }
 
-void SimmMuscleWrapPoint::peteTest() const
+void MuscleWrapPoint::peteTest() const
 {
 	cout << "   MuscleViaPoint: " << getName() << endl;
 	cout << "      point: " << getAttachment() << endl;

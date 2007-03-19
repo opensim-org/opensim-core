@@ -33,8 +33,8 @@
 
 #include "rdIntegrator.h"
 #include <math.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Exception.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Exception.h>
 #include "RKF.h"
 
 

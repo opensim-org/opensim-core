@@ -5,7 +5,7 @@
 //	AUTHOR: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -25,7 +25,7 @@
  * @version 1.0
  */
 namespace OpenSim { 
-class RDSIMULATION_API PointConstraint
+class OSIMSIMULATION_API PointConstraint
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //==============================================================================

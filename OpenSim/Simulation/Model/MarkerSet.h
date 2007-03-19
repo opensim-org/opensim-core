@@ -25,14 +25,14 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
 #include "AbstractMarker.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -50,7 +50,7 @@ class ScaleSet;
  * @version 1.0
  */
 
-class RDSIMULATION_API MarkerSet :	public Set<AbstractMarker>
+class OSIMSIMULATION_API MarkerSet :	public Set<AbstractMarker>
 {
 private:
 	void setNull();

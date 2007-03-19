@@ -33,8 +33,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 #include "Callback.h"
 
 
@@ -76,7 +76,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API DerivCallback : public Callback
+class OSIMSIMULATION_API DerivCallback : public Callback
 {
 
 //=============================================================================

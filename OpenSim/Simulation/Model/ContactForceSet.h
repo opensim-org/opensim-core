@@ -33,7 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
+#include "ActuatorSet.h"
 
 
 //=============================================================================
@@ -55,7 +55,7 @@ namespace OpenSim {
 class ContactForce;
 class AbstractBody;
 
-class RDSIMULATION_API ContactForceSet : public ActuatorSet 
+class OSIMSIMULATION_API ContactForceSet : public ActuatorSet 
 {
 //=============================================================================
 // MEMBERS

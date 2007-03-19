@@ -31,8 +31,8 @@
  * Author: Frank C. Anderson 
  */
 #include "rdIntegrator.h"
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Exception.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Exception.h>
 #include "IntegRKF.h"
 
 

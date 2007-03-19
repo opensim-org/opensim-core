@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API ContactForce : public Force
+class OSIMSIMULATION_API ContactForce : public Force
 {
 
 //=============================================================================

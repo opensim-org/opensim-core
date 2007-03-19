@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Integrator/IntegRKF.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
 #include <OpenSim/Simulation/integrator/TestIntegrator/SampleIntegrand.h>

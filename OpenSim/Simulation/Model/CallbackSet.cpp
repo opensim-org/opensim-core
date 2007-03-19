@@ -37,7 +37,7 @@
 //=============================================================================
 //#include <Object.h>
 #include "CallbackSet.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "AbstractModel.h"
 
 //=============================================================================
 // STATICS

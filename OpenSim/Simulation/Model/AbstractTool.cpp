@@ -1,14 +1,14 @@
-// SimulationTool.cpp
+// AbstractTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimulationTool.h"
+#include "AbstractTool.h"
 #include "LoadModel.h"
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/IO.h>
+#include "AbstractModel.h"
 
 
 
@@ -23,14 +23,14 @@ using namespace std;
 /**
  * Destructor.
  */
-SimulationTool::~SimulationTool()
+AbstractTool::~AbstractTool()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-SimulationTool::SimulationTool():
+AbstractTool::AbstractTool():
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
@@ -47,7 +47,7 @@ SimulationTool::SimulationTool():
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
-	setType("SimulationTool");
+	setType("AbstractTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -59,7 +59,7 @@ SimulationTool::SimulationTool():
  *
  * @param aFileName File name of the document.
  */
-SimulationTool::SimulationTool(const string &aFileName):
+AbstractTool::AbstractTool(const string &aFileName):
 	Object(aFileName),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
@@ -77,7 +77,7 @@ SimulationTool::SimulationTool(const string &aFileName):
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
 {
-	setType("SimulationTool");
+	setType("AbstractTool");
 	setNull();
 	updateFromXMLNode();
 	// Do the maneuver to change then restore working directory 
@@ -101,32 +101,32 @@ SimulationTool::SimulationTool(const string &aFileName):
  * to the XML document nodes, the the object would need to reconstruct based
  * on the XML document not the values of the object's member variables.
  *
- * There are three proper ways to generate an XML document for a SimulationTool:
+ * There are three proper ways to generate an XML document for a AbstractTool:
  *
- * 1) Construction based on XML file (@see SimulationTool(const char *aFileName)).
+ * 1) Construction based on XML file (@see AbstractTool(const char *aFileName)).
  * In this case, the XML document is created by parsing the XML file.
  *
- * 2) Construction by SimulationTool(const XMLDocument *aDocument).
+ * 2) Construction by AbstractTool(const XMLDocument *aDocument).
  * This constructor explictly requests construction based on an
  * XML document.  In this way the proper connection between an object's node
  * and the corresponding node within the XML document is established.
  * This constructor is a copy constructor of sorts because all essential
- * SimulationTool member variables should be held within the XML document.
+ * AbstractTool member variables should be held within the XML document.
  * The advantage of this style of construction is that nodes
  * within the XML document, such as comments that may not have any
- * associated SimulationTool member variable, are preserved.
+ * associated AbstractTool member variable, are preserved.
  *
  * 3) A call to generateXMLDocument().
- * This method generates an XML document for the SimulationTool from scratch.
+ * This method generates an XML document for the AbstractTool from scratch.
  * Only the essential document nodes are created (that is, nodes that
  * correspond directly to member variables.).
  *
  * @param aTool Object to be copied.
- * @see SimulationTool(const XMLDocument *aDocument)
- * @see SimulationTool(const char *aFileName)
+ * @see AbstractTool(const XMLDocument *aDocument)
+ * @see AbstractTool(const char *aFileName)
  * @see generateXMLDocument()
  */
-SimulationTool::SimulationTool(const SimulationTool &aTool):
+AbstractTool::AbstractTool(const AbstractTool &aTool):
 	Object(aTool),
 	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
@@ -152,7 +152,7 @@ SimulationTool::SimulationTool(const SimulationTool &aTool):
 /**
  * Set all member variables to their null or default values.
  */
-void SimulationTool::
+void AbstractTool::
 setNull()
 {
 	setupProperties();
@@ -175,7 +175,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void SimulationTool::setupProperties()
+void AbstractTool::setupProperties()
 {
 	string comment;
 
@@ -262,8 +262,8 @@ void SimulationTool::setupProperties()
  *
  * @return Reference to this object.
  */
-SimulationTool& SimulationTool::
-operator=(const SimulationTool &aTool)
+AbstractTool& AbstractTool::
+operator=(const AbstractTool &aTool)
 {
 	// BASE CLASS
 	Object::operator=(aTool);
@@ -299,7 +299,7 @@ operator=(const SimulationTool &aTool)
 /**
  * Set the model to be investigated.
  */
-void SimulationTool::
+void AbstractTool::
 setModel(AbstractModel *aModel)
 {
 	_model = aModel;
@@ -309,7 +309,7 @@ setModel(AbstractModel *aModel)
 /**
  * Get the model to be investigated.
  */
-AbstractModel* SimulationTool::
+AbstractModel* AbstractTool::
 getModel() const
 {
 	return(_model);
@@ -322,7 +322,7 @@ getModel() const
 /**
  * Set the output precision.
  */
-void SimulationTool::
+void AbstractTool::
 setOutputPrecision(int aOutputPrecision)
 {
 	_outputPrecision = aOutputPrecision;
@@ -331,7 +331,7 @@ setOutputPrecision(int aOutputPrecision)
 /**
  * Get the output precision.
  */
-int SimulationTool::
+int AbstractTool::
 getOutputPrecision() const
 {
 	return(_outputPrecision);
@@ -344,7 +344,7 @@ getOutputPrecision() const
 /**
  * Get the analysis set.
  */
-AnalysisSet& SimulationTool::
+AnalysisSet& AbstractTool::
 getAnalysisSet() const
 {
 	return(_analysisSet);
@@ -358,13 +358,13 @@ getAnalysisSet() const
  * Load and construct a model based on the property settings of
  * this investigation.
  */
-void SimulationTool::
+void AbstractTool::
 loadModel()
 {
 	// If _modelLibrary is not specified, we do not try to load the model here and assume
 	// the caller/user of this investigation will take care of setting it up.
 	if (_modelLibrary != "") {
-		cout<<"SimulationTool "<<getName()<<" loading a model:" << endl;
+		cout<<"AbstractTool "<<getName()<<" loading a model:" << endl;
 		cout<<"ModelLibrary = " << _modelLibrary << ", ModelFile = " << _modelFile << endl;
 
 		AbstractModel *model = LoadModel(_modelLibrary, _modelFile);
@@ -389,7 +389,7 @@ loadModel()
 /**
  * Adds Analysis objects from analysis set to model.
  */
-void SimulationTool::
+void AbstractTool::
 addAnalysisSetToModel()
 {
 	if (!_model) {
@@ -421,7 +421,7 @@ addAnalysisSetToModel()
  * without interpolation.
  * @param aExtension Extension for written files.
  */
-void SimulationTool::
+void AbstractTool::
 printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {

@@ -1,4 +1,4 @@
-// Body.cpp
+// VisibleBody.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -32,9 +32,9 @@
  */
 
 #include <math.h>
-#include "Body.h"
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
+#include "VisibleBody.h"
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 
 
 using namespace std;
@@ -48,7 +48,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 
-Body::Body(double aM,double *aI):
+VisibleBody::VisibleBody(double aM,double *aI):
 PolyObject(),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
@@ -57,7 +57,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
 	setNull();
 
 	// TYPE
-	setType("Body");
+	setType("VisibleBody");
 
 	setMass(aM);
 	setInertia(aI);
@@ -72,7 +72,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
  *
  * @param aFileName File name of the document.
  */
-Body::Body(const string &aFileName):
+VisibleBody::VisibleBody(const string &aFileName):
 PolyObject(aFileName),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
@@ -85,9 +85,9 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
 /**
  * Copy constructor.
  *
- * @param aBody Body to copy.
+ * @param aBody VisibleBody to copy.
  */
-Body::Body(const Body &aBody) :
+VisibleBody::VisibleBody(const VisibleBody &aBody) :
 PolyObject(aBody),
 _M(_propM.getValueDbl()),
 _I(_propI.getValueDblArray()),
@@ -103,7 +103,7 @@ _centerOfMass(_propCenterOfMass.getValueDblArray())
 /**
  * Destructor.
  */
-Body::~Body()
+VisibleBody::~VisibleBody()
 {
 
 }
@@ -114,17 +114,17 @@ Body::~Body()
  * @param aElement XMLnode to construct body from.
  */
 
-Object *Body::
+Object *VisibleBody::
 copy() const
 {
-	return(new Body(*this));
+	return(new VisibleBody(*this));
 }
 
 //_____________________________________________________________________________
 /**
  * Set all member variables to their null or default values.
  */
-void Body::
+void VisibleBody::
 setNull()
 {
 
@@ -135,7 +135,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void Body::
+void VisibleBody::
 setupProperties()
 {
 	Array<double> zeroVector(0.0, 6);
@@ -168,8 +168,8 @@ setupProperties()
  *
  * @return Reference to this object.
  */
-Body& Body::
-operator=(const Body &aObject)
+VisibleBody& VisibleBody::
+operator=(const VisibleBody &aObject)
 {
 	// BASE CLASS
 	VisibleObject::operator=(aObject);
@@ -194,7 +194,7 @@ operator=(const Body &aObject)
  * Set the mass.
  * The mass must be greater than or equal to zero.
  */
-void Body::
+void VisibleBody::
 setMass(double aM)
 {
 	_M = fabs(aM);
@@ -203,7 +203,7 @@ setMass(double aM)
 /**
  * Get the mass.
  */
-double Body::
+double VisibleBody::
 getMass()
 {
 	return(_M);
@@ -222,7 +222,7 @@ getMass()
  * If aI is NULL, then the inertia scalars are set to represent the inertia
  * matrix for a sphere of uniform density of the same mass as the body
  */
-void Body::
+void VisibleBody::
 setInertia(double *aI)
 {
 	int i;
@@ -241,7 +241,7 @@ setInertia(double *aI)
  * aI1, aI2, aI3 correspond to the moments of inertia.  It is assumed that
  * the products of inertia are 0.0.
  */
-void Body::
+void VisibleBody::
 setInertia(double aI1,double aI2,double aI3)
 {
 	_I[0] = aI1;
@@ -255,7 +255,7 @@ setInertia(double aI1,double aI2,double aI3)
 /**
  * Set the inertia scalars.
  */
-void Body::
+void VisibleBody::
 setInertia(double aI1,double aI2,double aI3,
 	double aI12,double aI23,double aI31)
 {
@@ -272,7 +272,7 @@ setInertia(double aI1,double aI2,double aI3,
  *
  * The argument aI is filled with the values aI1, aI2, aI3, aI12, aI23, aI31.
  */
-void Body::
+void VisibleBody::
 getInertia(double aI[6])
 {
 	int i;
@@ -284,7 +284,7 @@ getInertia(double aI[6])
  *
  * The full scalar inertia matrix is contructed.
  */
-void Body::
+void VisibleBody::
 getInertia(double aI[3][3])
 {
 	// MOMENTS
@@ -302,7 +302,7 @@ getInertia(double aI[3][3])
  * Set Center of mass relative to geometry's CoordinateSystem.
  *
  */
-void Body::
+void VisibleBody::
 setCenterOfMass(const double aCenterOfMass[3])
 {
 	for(int i=0; i < 3; i++)
@@ -313,7 +313,7 @@ setCenterOfMass(const double aCenterOfMass[3])
  * Get Center of mass relative to geometry's CoordinateSystem.
  *
  */
-void Body::
+void VisibleBody::
 getCenterOfMass(double aCenterOfMass[3]) const
 {
 	for(int i=0; i < 3; i++)
@@ -322,7 +322,7 @@ getCenterOfMass(double aCenterOfMass[3]) const
 //--------------------------------------------------------------------------
 // SCALING
 //--------------------------------------------------------------------------
-void Body::
+void VisibleBody::
 scaleBy(const double aScaleFactors[3])
 {
 	// Scale center of mass

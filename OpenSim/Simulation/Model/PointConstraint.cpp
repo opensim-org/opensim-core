@@ -7,8 +7,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 #include "PointConstraint.h"
 
 using namespace OpenSim;

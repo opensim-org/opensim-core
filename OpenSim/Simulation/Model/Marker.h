@@ -1,7 +1,7 @@
-#ifndef __SimmMarker_h__
-#define __SimmMarker_h__
+#ifndef __Marker_h__
+#define __Marker_h__
 
-// Marker.h
+// VisibleMarker.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,14 +29,14 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/Geometry.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/Geometry.h>
 #include "AbstractMarker.h"
 
 namespace OpenSim {
@@ -52,7 +52,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMarker : public AbstractMarker
+class OSIMSIMULATION_API Marker : public AbstractMarker
 {
 
 //=============================================================================
@@ -72,7 +72,7 @@ protected:
 	PropertyStr _bodyNameProp;
 	std::string &_bodyName;
 
-	// Body that the marker is attached to
+	// VisibleBody that the marker is attached to
 	AbstractBody* _body;
 
 	// Support for Display
@@ -90,15 +90,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMarker();
-	SimmMarker(const SimmMarker &aMarker);
-	virtual ~SimmMarker();
+	Marker();
+	Marker(const Marker &aMarker);
+	virtual ~Marker();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMarker& operator=(const SimmMarker &aMarker);
+	Marker& operator=(const Marker &aMarker);
 #endif
-	void copyData(const SimmMarker &aMarker);
+	void copyData(const Marker &aMarker);
 
 	virtual void updateFromMarker(const AbstractMarker &aMarker);
 	virtual void getOffset(double *rOffset) const;
@@ -135,12 +135,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMarker
+};	// END of class Marker
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMarker_h__
+#endif // __Marker_h__
 
 

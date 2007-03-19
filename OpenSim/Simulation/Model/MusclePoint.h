@@ -1,7 +1,7 @@
-#ifndef __SimmMusclePoint_h__
-#define __SimmMusclePoint_h__
+#ifndef __MusclePoint_h__
+#define __MusclePoint_h__
 
-// SimmMusclePoint.h
+// MusclePoint.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,18 +30,18 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Geometry.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Geometry.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/Storage.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -49,7 +49,7 @@ namespace OpenSim {
 
 class AbstractBody;
 class AbstractModel;
-class AbstractSimmMuscle;
+class AbstractMuscle;
 class AbstractDynamicsEngine;
 class AbstractWrapObject;
 
@@ -61,7 +61,7 @@ class AbstractWrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMusclePoint : public Object  
+class OSIMSIMULATION_API MusclePoint : public Object  
 {
 
 //=============================================================================
@@ -92,15 +92,15 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMusclePoint();
-	SimmMusclePoint(const SimmMusclePoint &aPoint);
-	virtual ~SimmMusclePoint();
+	MusclePoint();
+	MusclePoint(const MusclePoint &aPoint);
+	virtual ~MusclePoint();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMusclePoint& operator=(const SimmMusclePoint &aPoint);
+	MusclePoint& operator=(const MusclePoint &aPoint);
 #endif
-   void copyData(const SimmMusclePoint &aPoint);
+   void copyData(const MusclePoint &aPoint);
 
 	Array<double>& getAttachment() const { return _attachment; }
 	void setAttachment(double aAttachment[3]);
@@ -111,7 +111,7 @@ public:
 
 	virtual bool isActive() const { return true; }
 	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
-	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
+	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
 
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() { return &_displayer; };
@@ -125,12 +125,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMusclePoint
+};	// END of class MusclePoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMusclePoint_h__
+#endif // __MusclePoint_h__
 
 

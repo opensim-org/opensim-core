@@ -1,4 +1,4 @@
-// AbstractSimmMuscle.cpp
+// AbstractMuscle.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,19 +25,19 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "AbstractSimmMuscle.h"
+#include "AbstractMuscle.h"
 #include "AbstractCoordinate.h"
-#include "SimmMuscleGroup.h"
-#include "SimmMuscleViaPoint.h"
-#include "SimmMuscleWrapPoint.h"
-#include "WrapResult.h"
+#include "MuscleGroup.h"
+#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
+#include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include "AbstractModel.h"
 #include "AbstractBody.h"
 #include "AbstractDof.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/NatCubicSpline.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/NatCubicSpline.h>
 
 //=============================================================================
 // STATICS
@@ -52,10 +52,10 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-AbstractSimmMuscle::AbstractSimmMuscle() :
+AbstractMuscle::AbstractMuscle() :
    AbstractActuator(),
-	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
-	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
+	_attachmentSetProp(PropertyObj("", MusclePointSet())),
+	_attachmentSet((MusclePointSet&)_attachmentSetProp.getValueObj()),
  	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
@@ -73,7 +73,7 @@ AbstractSimmMuscle::AbstractSimmMuscle() :
 /**
  * Destructor.
  */
-AbstractSimmMuscle::~AbstractSimmMuscle()
+AbstractMuscle::~AbstractMuscle()
 {
 	VisibleObject* disp;
 	if ((disp = getDisplayer())){
@@ -86,12 +86,12 @@ AbstractSimmMuscle::~AbstractSimmMuscle()
 /**
  * Copy constructor.
  *
- * @param aMuscle AbstractSimmMuscle to be copied.
+ * @param aMuscle AbstractMuscle to be copied.
  */
-AbstractSimmMuscle::AbstractSimmMuscle(const AbstractSimmMuscle &aMuscle) :
+AbstractMuscle::AbstractMuscle(const AbstractMuscle &aMuscle) :
    AbstractActuator(aMuscle),
-	_attachmentSetProp(PropertyObj("", SimmMusclePointSet())),
-	_attachmentSet((SimmMusclePointSet&)_attachmentSetProp.getValueObj()),
+	_attachmentSetProp(PropertyObj("", MusclePointSet())),
+	_attachmentSet((MusclePointSet&)_attachmentSetProp.getValueObj()),
  	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
 	_groupNames(_groupNamesProp.getValueStrArray()),
@@ -111,11 +111,11 @@ AbstractSimmMuscle::AbstractSimmMuscle(const AbstractSimmMuscle &aMuscle) :
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one AbstractSimmMuscle to another.
+ * Copy data members from one AbstractMuscle to another.
  *
- * @param aMuscle AbstractSimmMuscle to be copied.
+ * @param aMuscle AbstractMuscle to be copied.
  */
-void AbstractSimmMuscle::copyData(const AbstractSimmMuscle &aMuscle)
+void AbstractMuscle::copyData(const AbstractMuscle &aMuscle)
 {
 	_attachmentSet = aMuscle._attachmentSet;
 	_displayer = aMuscle._displayer;
@@ -129,11 +129,11 @@ void AbstractSimmMuscle::copyData(const AbstractSimmMuscle &aMuscle)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this AbstractSimmMuscle to their null values.
+ * Set the data members of this AbstractMuscle to their null values.
  */
-void AbstractSimmMuscle::setNull()
+void AbstractMuscle::setNull()
 {
-	setType("AbstractSimmMuscle");
+	setType("AbstractMuscle");
 
 	_length = 0.0;
 	_preScaleLength = 0.0;
@@ -146,9 +146,9 @@ void AbstractSimmMuscle::setNull()
 /**
  * Connect properties to local pointers.
  */
-void AbstractSimmMuscle::setupProperties()
+void AbstractMuscle::setupProperties()
 {
-	_attachmentSetProp.setName("SimmMusclePointSet");
+	_attachmentSetProp.setName("MusclePointSet");
 	_propertySet.append(&_attachmentSetProp);
 
 	_displayerProp.setName("display");
@@ -169,10 +169,10 @@ void AbstractSimmMuscle::setupProperties()
 /**
  * Register types that are used by this class.
  */
-void AbstractSimmMuscle::registerTypes()
+void AbstractMuscle::registerTypes()
 {
-	Object::RegisterType(SimmMusclePoint());
-	Object::RegisterType(SimmMuscleViaPoint());
+	Object::RegisterType(MusclePoint());
+	Object::RegisterType(MuscleViaPoint());
 }
 
 //_____________________________________________________________________________
@@ -181,7 +181,7 @@ void AbstractSimmMuscle::registerTypes()
  *
  * @param aModel model containing this muscle.
  */
-void AbstractSimmMuscle::setup(AbstractModel* aModel)
+void AbstractMuscle::setup(AbstractModel* aModel)
 {
 	int i;
 
@@ -208,7 +208,7 @@ void AbstractSimmMuscle::setup(AbstractModel* aModel)
 	calculatePath();
 }
 
-const Array<SimmMusclePoint*> AbstractSimmMuscle::getCurrentPath()
+const Array<MusclePoint*> AbstractMuscle::getCurrentPath()
 {
 	if (_pathValid == false)
 		calculatePath();
@@ -222,7 +222,7 @@ const Array<SimmMusclePoint*> AbstractSimmMuscle::getCurrentPath()
  * correct size based on muscle changes
  * 
  */
-void AbstractSimmMuscle::updateGeometrySize()
+void AbstractMuscle::updateGeometrySize()
 {
 	int numberOfSegements = _displayer.countGeometry();
 
@@ -258,13 +258,13 @@ void AbstractSimmMuscle::updateGeometrySize()
  * to be in the right place based on muscle changes
  * 
  */
-void AbstractSimmMuscle::updateGeometryLocations()
+void AbstractMuscle::updateGeometryLocations()
 {
 	double globalLocation[3];
 	double previousPointGlobalLocation[3];
 
 	for (int i = 0; i < _currentPath.getSize(); i++){
-		SimmMusclePoint* nextPoint = _currentPath.get(i);
+		MusclePoint* nextPoint = _currentPath.get(i);
 		// xform point to global frame
 		Array<double>& location=nextPoint->getAttachment();
 		const AbstractBody* body = nextPoint->getBody();
@@ -289,7 +289,7 @@ void AbstractSimmMuscle::updateGeometryLocations()
  * The resulting geometry is maintained at the VisibleObject layer
  * 
  */
-void AbstractSimmMuscle::updateGeometry()
+void AbstractMuscle::updateGeometry()
 {
 	// Setup has been invoked already on muscle points so they are
 	// in the right location, xform to global frame and create connectors
@@ -309,7 +309,7 @@ void AbstractSimmMuscle::updateGeometry()
  *
  * @return Reference to this object.
  */
-AbstractSimmMuscle& AbstractSimmMuscle::operator=(const AbstractSimmMuscle &aMuscle)
+AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
 {
 	// BASE CLASS
 	AbstractActuator::operator=(aMuscle);
@@ -330,7 +330,7 @@ AbstractSimmMuscle& AbstractSimmMuscle::operator=(const AbstractSimmMuscle &aMus
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */
-void AbstractSimmMuscle::preScale(const ScaleSet& aScaleSet)
+void AbstractMuscle::preScale(const ScaleSet& aScaleSet)
 {
 	_preScaleLength = getLength();
 }
@@ -342,7 +342,7 @@ void AbstractSimmMuscle::preScale(const ScaleSet& aScaleSet)
  * @param aScaleSet XYZ scale factors for the bodies.
  * @return Whether muscle was successfully scaled or not.
  */
-void AbstractSimmMuscle::scale(const ScaleSet& aScaleSet)
+void AbstractMuscle::scale(const ScaleSet& aScaleSet)
 {
 	for (int i = 0; i < _attachmentSet.getSize(); i++)
 	{
@@ -365,13 +365,13 @@ void AbstractSimmMuscle::scale(const ScaleSet& aScaleSet)
 /**
  * Perform computations that need to happen after the muscle is scaled.
  * In most cases, these computations would be performed in the
- * classes descending from AbstractSimmMuscle, where the force-generating
+ * classes descending from AbstractMuscle, where the force-generating
  * properties are stored (except for the recalculation of the path, which
  * is handled here).
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */
-void AbstractSimmMuscle::postScale(const ScaleSet& aScaleSet)
+void AbstractMuscle::postScale(const ScaleSet& aScaleSet)
 {
 	// Update Geometry to reflect scaling.
 	// Done here since scale is invoked before bodies are scaled
@@ -390,11 +390,11 @@ void AbstractSimmMuscle::postScale(const ScaleSet& aScaleSet)
  * Right now this is only speed (contraction velocity; all other calculations
  * are handled by the derived classes.
  */
-void AbstractSimmMuscle::computeActuation()
+void AbstractMuscle::computeActuation()
 {
 	double posRelative[3], velRelative[3];
 	double posStart[3], posEnd[3], velStart[3], velEnd[3];
-	SimmMusclePoint *start, *end;
+	MusclePoint *start, *end;
 
 	calculatePath();
 
@@ -439,7 +439,7 @@ void AbstractSimmMuscle::computeActuation()
  * Calculate the current path of the muscle.
  *
  */
-void AbstractSimmMuscle::calculatePath()
+void AbstractMuscle::calculatePath()
 {
 	if (_pathValid == true)
 		return;
@@ -469,7 +469,7 @@ void AbstractSimmMuscle::calculatePath()
  * Apply the wrap objects to the current muscle path.
  *
  */
-void AbstractSimmMuscle::applyWrapObjects()
+void AbstractMuscle::applyWrapObjects()
 {
 	if (_muscleWrapSet.getSize() < 1)
 		return;
@@ -478,7 +478,7 @@ void AbstractSimmMuscle::applyWrapObjects()
    int start, end, wrapStart, wrapEnd;
    double min_length_change, last_length;
    WrapResult best_wrap;
-   SimmMusclePoint *smp, *emp;
+   MusclePoint *smp, *emp;
    MuscleWrap* ws;
    AbstractWrapObject* wo;
    Array<int> result;
@@ -729,10 +729,10 @@ void AbstractSimmMuscle::applyWrapObjects()
       over a wrap object, determine the percent change in length of the
       muscle segment incurred by wrapping.
 ---------------------------------------------------------------------------- */
-double AbstractSimmMuscle::_calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr)
+double AbstractMuscle::_calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr)
 {
-	SimmMusclePoint* pt1 = _currentPath.get(wr.startPoint);
-	SimmMusclePoint* pt2 = _currentPath.get(wr.endPoint);
+	MusclePoint* pt1 = _currentPath.get(wr.startPoint);
+	MusclePoint* pt2 = _currentPath.get(wr.endPoint);
 
    double straight_length = getModel()->getDynamicsEngine().calcDistance(*pt1->getBody(), pt1->getAttachment(),
 		*pt2->getBody(), pt2->getAttachment());
@@ -752,7 +752,7 @@ double AbstractSimmMuscle::_calc_muscle_length_change(AbstractWrapObject& wo, Wr
  * path of the muscle has already been updated.
  *
  */
-void AbstractSimmMuscle::calculateLength()
+void AbstractMuscle::calculateLength()
 {
 	_length = 0.0;
 
@@ -761,15 +761,15 @@ void AbstractSimmMuscle::calculateLength()
 	int i;
 
 	for (i = 0; i < _currentPath.getSize() - 1; i++) {
-		SimmMusclePoint* p1 = _currentPath[i];
-		SimmMusclePoint* p2 = _currentPath[i+1];
+		MusclePoint* p1 = _currentPath[i];
+		MusclePoint* p2 = _currentPath[i+1];
 
       /* If both points are wrap points on the same wrap object, then this muscle
        * segment wraps over the surface of a wrap object, so just add in the
        * pre-calculated length.
        */
       if (p1->getWrapObject() && p2->getWrapObject() && p1->getWrapObject() == p2->getWrapObject()) {
-			SimmMuscleWrapPoint* smwp = dynamic_cast<SimmMuscleWrapPoint*>(p2);
+			MuscleWrapPoint* smwp = dynamic_cast<MuscleWrapPoint*>(p2);
 			if (smwp) {
 				_length += smwp->getWrapLength();
 				//printf("%d to %d (w)= %.6lf\n", i, i+1, smwp->getWrapLength());
@@ -796,7 +796,7 @@ void AbstractSimmMuscle::calculateLength()
  *
  * @return Current length of the muscle.
  */
-double AbstractSimmMuscle::getLength()
+double AbstractMuscle::getLength()
 {
 	if (_pathValid == false)
 		calculatePath();
@@ -814,7 +814,7 @@ double AbstractSimmMuscle::getLength()
  * @param aCoord Coordinate for which to compute moment arm.
  * @return Moment arm value.
  */   
-double AbstractSimmMuscle::getMomentArm(AbstractCoordinate& aCoord)
+double AbstractMuscle::getMomentArm(AbstractCoordinate& aCoord)
 {
    double delta, originalValue, x[3], y[3];
 	bool clampedSave, lockedSave;
@@ -864,7 +864,7 @@ double AbstractSimmMuscle::getMomentArm(AbstractCoordinate& aCoord)
 	return -spline.evaluate(1, originalValue, 1.0, 1.0);
 }
 
-double AbstractSimmMuscle::getSpeed() const
+double AbstractMuscle::getSpeed() const
 {
 	return _speed;
 }
@@ -880,7 +880,7 @@ double AbstractSimmMuscle::getSpeed() const
  * @param aInitialPennationAngle Pennation angle at optimal fiber length (in radians).
  * @return Current pennation angle (in radians).
  */
-double AbstractSimmMuscle::calcPennation(double aFiberLength, double aOptimalFiberLength,
+double AbstractMuscle::calcPennation(double aFiberLength, double aOptimalFiberLength,
 													  double aInitialPennationAngle) const
 {
    double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
@@ -900,7 +900,7 @@ double AbstractSimmMuscle::calcPennation(double aFiberLength, double aOptimalFib
 /**
  * Apply the muscle's force at its points of attachment to the bodies.
  */
-void AbstractSimmMuscle::apply()
+void AbstractMuscle::apply()
 {
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
@@ -910,8 +910,8 @@ void AbstractSimmMuscle::apply()
 	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
 
 	int i;
-	SimmMusclePoint* start;
-	SimmMusclePoint* end;
+	MusclePoint* start;
+	MusclePoint* end;
 	const AbstractBody* startBody;
 	const AbstractBody* endBody;
 	for (i = 0; i < _currentPath.getSize() - 1; i++) {
@@ -951,7 +951,7 @@ void AbstractSimmMuscle::apply()
 //=============================================================================
 // TESTING
 //=============================================================================
-void AbstractSimmMuscle::peteTest() const
+void AbstractMuscle::peteTest() const
 {
 	int i;
 

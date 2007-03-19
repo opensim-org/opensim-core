@@ -1,7 +1,7 @@
-#ifndef __SimmMusclePointSet_h__
-#define __SimmMusclePointSet_h__
+#ifndef __MusclePointSet_h__
+#define __MusclePointSet_h__
 
-// SimmMusclePointSet.h
+// MusclePointSet.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,9 +25,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
+#include "MusclePoint.h"
 
 namespace OpenSim {
 
@@ -40,25 +40,25 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API SimmMusclePointSet :	public Set<SimmMusclePoint>
+class OSIMSIMULATION_API MusclePointSet :	public Set<MusclePoint>
 {
 private:
 	void setNull();
 public:
-	SimmMusclePointSet();
-	SimmMusclePointSet(const SimmMusclePointSet& aSimmMusclePointSet);
-	~SimmMusclePointSet(void);
+	MusclePointSet();
+	MusclePointSet(const MusclePointSet& aSimmMusclePointSet);
+	~MusclePointSet(void);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	SimmMusclePointSet& operator=(const SimmMusclePointSet &aSimmMusclePointSet);
+	MusclePointSet& operator=(const MusclePointSet &aSimmMusclePointSet);
 #endif
 //=============================================================================
-};	// END of class SimmMusclePointSet
+};	// END of class MusclePointSet
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMusclePointSet_h__
+#endif // __MusclePointSet_h__

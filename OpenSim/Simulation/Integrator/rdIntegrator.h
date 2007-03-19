@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 
 //=============================================================================

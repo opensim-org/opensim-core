@@ -9,9 +9,9 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "PointConstraint.h"
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
+#include "AbstractBody.h"
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -22,7 +22,7 @@
  * @version 1.0
  */
 namespace OpenSim {
-class RDSIMULATION_API BodyConstraint
+class OSIMSIMULATION_API BodyConstraint
 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //==============================================================================

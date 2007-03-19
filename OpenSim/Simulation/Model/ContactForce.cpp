@@ -35,12 +35,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include "ContactForce.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include "AbstractModel.h"
+#include "AbstractDynamicsEngine.h"
 
 
 

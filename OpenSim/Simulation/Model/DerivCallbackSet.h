@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API DerivCallbackSet : public CallbackSet 
+class OSIMSIMULATION_API DerivCallbackSet : public CallbackSet 
 {
 
 //=============================================================================

@@ -27,12 +27,12 @@
 //=============================================================================
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 #include "MuscleWrap.h"
 #include "WrapResult.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/Lmdif.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/Lmdif.h>
+#include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
 //=============================================================================

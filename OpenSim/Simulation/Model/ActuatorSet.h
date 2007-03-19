@@ -27,9 +27,9 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Set.h>
 #include "AbstractActuator.h"
 
 namespace OpenSim {
@@ -37,7 +37,7 @@ namespace OpenSim {
 class AbstractModel;
 
 #ifndef SWIG
-template class RDSIMULATION_API Set<AbstractActuator>;
+template class OSIMSIMULATION_API Set<AbstractActuator>;
 #endif
 
 //=============================================================================
@@ -59,7 +59,7 @@ template class RDSIMULATION_API Set<AbstractActuator>;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class RDSIMULATION_API ActuatorSet : public Set<AbstractActuator>
+class OSIMSIMULATION_API ActuatorSet : public Set<AbstractActuator>
 {
 
 //=============================================================================

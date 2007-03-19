@@ -35,14 +35,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
-#include <OpenSim/Simulation/SIMM/SimmBody.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include "SimtkAnimationCallback.h"
 
 

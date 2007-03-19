@@ -8,8 +8,8 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 #include "PointConstraint.h"
 #include "BodyConstraint.h"
 
@@ -66,7 +66,7 @@ getNC()
 /**
  * Set the body that this constraint is applied to.
  *
- * @param aBody Body that this constraint is applied to.
+ * @param aBody VisibleBody that this constraint is applied to.
  */
 void BodyConstraint::
 setBody(AbstractBody *aBody)
@@ -77,7 +77,7 @@ setBody(AbstractBody *aBody)
 /**
  * Get the body that this constraint is applied to.
  *
- * @return Body that this constraint is applied to.
+ * @return VisibleBody that this constraint is applied to.
  */
 AbstractBody* BodyConstraint::
 getBody()

@@ -35,13 +35,13 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 #include "Callback.h"
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Common/Set.h>
 
 
-template class RDSIMULATION_API OpenSim::Set<OpenSim::Callback>;
+template class OSIMSIMULATION_API OpenSim::Set<OpenSim::Callback>;
 
 
 //=============================================================================
@@ -56,7 +56,7 @@ namespace OpenSim {
 
 class AbstractMOdel;
 
-class RDSIMULATION_API CallbackSet : public Set<Callback>
+class OSIMSIMULATION_API CallbackSet : public Set<Callback>
 {
 
 //=============================================================================

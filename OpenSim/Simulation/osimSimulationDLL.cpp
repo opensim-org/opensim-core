@@ -1,6 +1,4 @@
-#ifndef _rdSimulationDLL_h_
-#define _rdSimulationDLL_h_
-// rdSimulationDLL.h
+// osimSimulationDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -33,24 +31,69 @@
  * Author: Frank C. Anderson 
  */
 
-// UNIX PLATFORM
-#ifndef WIN32
 
-#define RDSIMULATION_API
+//=============================================================================
+// INCLUDES
+//=============================================================================
+#include "osimSimulationDLL.h"
+#include <iostream>
+#include <OpenSim/Simulation/Model/RegisterTypes_osimSimulation.h>
 
-// WINDOWS PLATFORM
-#else
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#ifdef RDSIMULATION_EXPORTS
-#define RDSIMULATION_API __declspec(dllexport)
-#else
-#define RDSIMULATION_API __declspec(dllimport)
+using namespace std;
+
+//
+// Define Plugin_Attach and Plugin_Detach below to be called by both windows and linux
+//
+static void Plugin_Attach()
+{
+	//cout<<"\n-------------------------------------------------------\n";
+	//cout<<"Library osimSimulation...\n";
+	//cout<<"-------------------------------------------------------\n\n";
+}
+
+static void Plugin_Detach()
+{
+}
+
+//
+// The code below handles both windows and linux library entrypoints
+//
+#if defined(WIN32)
+//=============================================================================
+// DLL Main Entry Point
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * This routine is called when the dll is loaded I believe.
+ */
+BOOL APIENTRY DllMain( HANDLE hModule, 
+                       DWORD  ul_reason_for_call, 
+                       LPVOID lpReserved
+                )
+{
+   switch (ul_reason_for_call)
+   {
+      case DLL_PROCESS_ATTACH:
+      case DLL_THREAD_ATTACH:
+         Plugin_Attach();
+         break;
+
+      case DLL_PROCESS_DETACH:
+      case DLL_THREAD_DETACH:
+         Plugin_Detach();
+         break;
+    }
+
+    return TRUE;
+}
+#elif defined(__linux__)
+static void __attribute__((constructor)) Shared_Object_Constructor()
+{
+   Plugin_Attach();
+}
+static void __attribute__((destructor)) Shared_Object_Destructor()
+{
+   Plugin_Detach();
+}
 #endif
-
-#endif // PLATFORM
-
-
-#endif // __rdSimulationDLL_h__

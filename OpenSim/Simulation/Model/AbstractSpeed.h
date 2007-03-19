@@ -28,8 +28,8 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -46,7 +46,7 @@ class AbstractCoordinate;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractSpeed : public Object
+class OSIMSIMULATION_API AbstractSpeed : public Object
 {
 
 //=============================================================================
@@ -96,7 +96,7 @@ private:
 //=============================================================================
 //=============================================================================
 
-//typedef RDSIMULATION_API Set<AbstractSpeed> MarkerSet;
+//typedef OSIMSIMULATION_API Set<AbstractSpeed> MarkerSet;
 
 } // end of namespace OpenSim
 

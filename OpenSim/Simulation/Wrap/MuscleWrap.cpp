@@ -26,9 +26,9 @@
 // INCLUDES
 //=============================================================================
 #include "MuscleWrap.h"
-#include "BodySet.h"
-#include "AbstractDynamicsEngine.h"
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/rdMath.h>
 
 //=============================================================================
 // STATICS
@@ -199,7 +199,7 @@ MuscleWrap& MuscleWrap::operator=(const MuscleWrap& aMuscleWrap)
 	return(*this);
 }
 
-SimmMuscleWrapPoint& MuscleWrap::getWrapPoint(int aIndex)
+MuscleWrapPoint& MuscleWrap::getWrapPoint(int aIndex)
 {
 	if (aIndex < 0 || aIndex > 1)
 	{

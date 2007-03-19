@@ -1,30 +1,30 @@
-#ifndef _RegisterTypes_rdSimulation_h_
-#define _RegisterTypes_rdSimulation_h_
-// RegisterTypes_rdSimulation.h
+#ifndef _RegisterTypes_osimSimulation_h_
+#define _RegisterTypes_osimSimulation_h_
+// RegisterTypes_osimSimulation.h
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 
 extern "C" {
 
-RDSIMULATION_API void RegisterTypes_rdSimulation(); 
+OSIMSIMULATION_API void RegisterTypes_osimSimulation(); 
 
 }
 
 /**
  * A class intended for the purpose of automatically registering classes defined in this simulation Dll
  */
-class rdSimulationInstantiator 
+class osimSimulationInstantiator 
 { 
 public: 
-        rdSimulationInstantiator(); 
+        osimSimulationInstantiator(); 
 private: 
         void registerDllClasses(); 
 }; 
     
 
-#endif // __RegisterTypes_rdSimulation_h__
+#endif // __RegisterTypes_osimSimulation_h__
 
 

@@ -28,17 +28,17 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/IO.h>
 #include "AbstractModel.h"
-#include "AbstractSimmMuscle.h"
+#include "AbstractMuscle.h"
 #include "CoordinateSet.h"
 #include "SpeedSet.h"
 #include "BodySet.h"
-#include <OpenSim/Simulation/Model/IntegCallback.h>
-#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
-#include <OpenSim/Simulation/Model/DerivCallback.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include "IntegCallback.h"
+#include "IntegCallbackSet.h"
+#include "DerivCallback.h"
+#include "DerivCallbackSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -256,18 +256,18 @@ void AbstractModel::setup()
 	 *
 	 */
 	if (_lengthUnitsStrProp.getUseDefault()){
-		_lengthUnits = SimmUnits(SimmUnits::simmMeters);
+		_lengthUnits = Units(Units::simmMeters);
 		_lengthUnitsStr = _lengthUnits.getLabel();
 	}
 	else
-		_lengthUnits = SimmUnits(_lengthUnitsStr);
+		_lengthUnits = Units(_lengthUnitsStr);
 
 	if (_forceUnitsStrProp.getUseDefault()){
-		_forceUnits = SimmUnits(SimmUnits::simmNewtons);
+		_forceUnits = Units(Units::simmNewtons);
 		_forceUnitsStr = _forceUnits.getLabel();
 	}
 	else
-		_forceUnits = SimmUnits(_forceUnitsStr);
+		_forceUnits = Units(_forceUnitsStr);
 
 	/* Muscle groups are set up with these steps:
 	 *   1. empty groups are created and named.
@@ -276,10 +276,10 @@ void AbstractModel::setup()
 	 *   3. muscle->setup() is called so the muscles
 	 *      can store pointers to the groups they're in.
 	 */
-	AbstractSimmMuscle *sm;
+	AbstractMuscle *sm;
 	for (i = 0; i < _actuatorSet.getSize(); i++)
 	{
-		if ((sm = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(i))))
+		if ((sm = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(i))))
 		{
 			const Array<string>* groupNames = sm->getGroupNames();
 			for (int j = 0; j < groupNames->getSize(); j++)
@@ -330,7 +330,7 @@ void AbstractModel::setup()
  * Register the types used by this class.
 void AbstractModel::registerTypes()
 {
-	// now handled by RegisterTypes_rdSimulation()
+	// now handled by RegisterTypes_osimSimulation()
 }
  */
 
@@ -912,13 +912,13 @@ const ActuatorSet* AbstractModel::getActuatorSet() const
  * @param aName the name of the muscle group
  * @return Pointer to the muscle group
  */
-SimmMuscleGroup* AbstractModel::enterGroup(const string& aName)
+MuscleGroup* AbstractModel::enterGroup(const string& aName)
 {
 	for (int i = 0; i < _muscleGroups.getSize(); i++)
 		if (aName == _muscleGroups[i]->getName())
 			return _muscleGroups[i];
 
-	SimmMuscleGroup* newGroup = new SimmMuscleGroup();
+	MuscleGroup* newGroup = new MuscleGroup();
 	newGroup->setName(aName);
 	_muscleGroups.append(newGroup);
 
@@ -1308,7 +1308,7 @@ void AbstractModel::peteTest() const
 
 	for (i = 0; i < _actuatorSet.getSize(); i++)
 	{
-		AbstractSimmMuscle *ms = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(i));
+		AbstractMuscle *ms = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(i));
 		if (ms)
 			ms->peteTest();
 	}
@@ -1323,15 +1323,15 @@ void AbstractModel::peteTest() const
 void AbstractModel::kinTest()
 {
 	int m1 = 0, m2 = 1;
-	AbstractSimmMuscle* ms1;
-	AbstractSimmMuscle* ms2;
+	AbstractMuscle* ms1;
+	AbstractMuscle* ms2;
 	AbstractCoordinate* hip_flex_r;
 	AbstractCoordinate* knee_flex_r;
 
 	hip_flex_r = getDynamicsEngine().getCoordinate("hip_flex_r");
 	knee_flex_r = getDynamicsEngine().getCoordinate("knee_flex_r");
-	ms1 = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(m1));
-	ms2 = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get(m2));
+	ms1 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(m1));
+	ms2 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(m2));
 
 	if (hip_flex_r && knee_flex_r && ms1 && ms2)
 	{
@@ -1373,15 +1373,15 @@ void AbstractModel::kinTest()
 #endif
 void AbstractModel::kinTest()
 {
-	AbstractSimmMuscle* ms1;
-	AbstractSimmMuscle* ms2;
+	AbstractMuscle* ms1;
+	AbstractMuscle* ms2;
 	AbstractCoordinate* hip_flex_r;
 	AbstractCoordinate* knee_flex_r;
 
 	knee_flex_r = getDynamicsEngine().getCoordinateSet()->get("knee_flex_r");
 	hip_flex_r = getDynamicsEngine().getCoordinateSet()->get("hip_flex_r");
-	ms1 = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get("glut_max1_r"));
-	ms2 = dynamic_cast<AbstractSimmMuscle*>(_actuatorSet.get("rectus_fem_r"));
+	ms1 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("glut_max1_r"));
+	ms2 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("rectus_fem_r"));
 
 	if (hip_flex_r && knee_flex_r && ms2)
 	{

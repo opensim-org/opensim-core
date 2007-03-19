@@ -25,9 +25,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Set.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/VisibleObject.h>
 
 namespace OpenSim {
 
@@ -40,7 +40,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class RDSIMULATION_API BoneSet :	public Set<VisibleObject>
+class OSIMSIMULATION_API BoneSet :	public Set<VisibleObject>
 {
 private:
 	void setNull();

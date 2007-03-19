@@ -4,9 +4,9 @@
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Common/IO.h>
 #include "LoadModel.h"
-#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
+#include "ActuatorSet.h"
 #include "ContactForceSet.h"
 
 #ifdef __linux__
@@ -61,7 +61,7 @@ typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const str
 /**
  * A wrapper around Window's LoadLibrary that implements library naming
  * convention and loading policy on windows which follows:
- * If you're loading rdSimulation_D and other libraries that do not have a
+ * If you're loading osimSimulation_D and other libraries that do not have a
  * trailing _D an _D is appended to the library file name.  If loading of that
  * fails, we revert to using the non _D file instead, if that fails we give
  * error and return 0. A reciprocal treatment for release libraries is
@@ -73,7 +73,7 @@ typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const str
  * @return Pointer to the loaded library, NULL on error.
  */
 
-RDSIMULATION_API
+OSIMSIMULATION_API
 PORTABLE_HMODULE
 WINAPI
 LoadOpenSimLibrary(const char *lpLibFileName)
@@ -100,7 +100,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
 	}
 #else
 	if(hasDebugSuffix) {
-		cout << "WARNING: Trying to load a debug library into release rdSimulation" << endl;
+		cout << "WARNING: Trying to load a debug library into release osimSimulation" << endl;
 		tryDebugThenRelease = true;
 	}
 #endif
@@ -144,7 +144,7 @@ LoadOpenSimLibrary(const char *lpLibFileName)
  * @see LoadOpenSimLibrary()
  */
 
-RDSIMULATION_API void 
+OSIMSIMULATION_API void 
 LoadOpenSimLibraries(int argc,char **argv)
 {
 	int i;
@@ -179,7 +179,7 @@ LoadOpenSimLibraries(int argc,char **argv)
  * @param aModelFileName Name of the model xml file (optional).
  * @return Pointer to an intance of the model, NULL if no model was created.
  */
-RDSIMULATION_API AbstractModel* LoadModel(const string &aModelLibraryName, const string &aModelFileName)
+OSIMSIMULATION_API AbstractModel* LoadModel(const string &aModelLibraryName, const string &aModelFileName)
 {
 	// LOAD MODEL LIBRARY
 	PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(aModelLibraryName.c_str());

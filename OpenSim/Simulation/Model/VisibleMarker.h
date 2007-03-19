@@ -1,6 +1,6 @@
-#ifndef _Marker_h_
-#define _Marker_h_
-// Marker.h
+#ifndef _VisibleMarker_h_
+#define _VisibleMarker_h_
+// VisibleMarker.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -32,12 +32,12 @@
 /*  
  * Author:  
  */
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/VisibleObject.h>
 
 //=============================================================================
 //=============================================================================
@@ -48,21 +48,21 @@
  * @version 1.0
  */
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
 namespace OpenSim { 
 
-class RDSIMULATION_API Marker : public VisibleObject
+class OSIMSIMULATION_API VisibleMarker : public VisibleObject
 {
 protected:
 	// PROPERTIES
 	/** Location of marker in respective segment/body */
 	PropertyDblArray	_propMarkerLocation;
-	/** Name of Segment/Body on which marker lives */
+	/** Name of Segment/VisibleBody on which marker lives */
 	PropertyStr		_propReferenceSegmentName;
 	/** Weight of marker to be used by Inverse Kinematics */
 	PropertyDbl		_propMarkerWeight;
@@ -82,16 +82,16 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	Marker();
-	Marker(const Marker &aMarker);
-	virtual ~Marker(void);
+	VisibleMarker();
+	VisibleMarker(const VisibleMarker &aMarker);
+	virtual ~VisibleMarker(void);
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
-	Marker& operator=(const Marker &aMarker);
+	VisibleMarker& operator=(const VisibleMarker &aMarker);
 #endif	
 private:
 	void setNull();

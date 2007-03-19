@@ -23,7 +23,7 @@
  */
 
 #include "MarkerSet.h"
-#include <OpenSim/Tools/ScaleSet.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
 using namespace OpenSim;

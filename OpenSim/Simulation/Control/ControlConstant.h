@@ -35,8 +35,8 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Object.h>
 #include "Control.h"
 
 
@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API ControlConstant : public Control
+class OSIMSIMULATION_API ControlConstant : public Control
 {
 
 //=============================================================================

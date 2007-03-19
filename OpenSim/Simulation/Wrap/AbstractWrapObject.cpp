@@ -26,14 +26,14 @@
 // INCLUDES
 //=============================================================================
 #include "AbstractWrapObject.h"
-#include "AbstractDynamicsEngine.h"
-#include "AbstractBody.h"
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 #include "WrapResult.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 
 //=============================================================================
 // STATICS
@@ -287,7 +287,7 @@ AbstractWrapObject& AbstractWrapObject::operator=(const AbstractWrapObject& aWra
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @return The status, as a WrapAction enum
  */
-int AbstractWrapObject::wrapMuscleSegment(SimmMusclePoint& aPoint1, SimmMusclePoint& aPoint2,
+int AbstractWrapObject::wrapMuscleSegment(MusclePoint& aPoint1, MusclePoint& aPoint2,
 														const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult) const
 {
    int return_code = noWrap;

@@ -1,7 +1,7 @@
-#ifndef __SimmMuscleWrapPoint_h__
-#define __SimmMuscleWrapPoint_h__
+#ifndef __MuscleWrapPoint_h__
+#define __MuscleWrapPoint_h__
 
-// SimmMuscleWrapPoint.h
+// MuscleWrapPoint.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,15 +30,15 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Array.h>
-#include "SimmPoint.h"
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/SimmPoint.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -46,7 +46,7 @@ namespace OpenSim {
 
 class AbstractCoordinate;
 class AbstractModel;
-class AbstractSimmMuscle;
+class AbstractMuscle;
 class AbstractDynamicsEngine;
 class AbstractWrapObject;
 
@@ -59,7 +59,7 @@ class AbstractWrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMuscleWrapPoint : public SimmMusclePoint  
+class OSIMSIMULATION_API MuscleWrapPoint : public MusclePoint  
 {
 
 //=============================================================================
@@ -80,16 +80,16 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMuscleWrapPoint();
-	SimmMuscleWrapPoint(const SimmMuscleWrapPoint &aPoint);
-	virtual ~SimmMuscleWrapPoint();
+	MuscleWrapPoint();
+	MuscleWrapPoint(const MuscleWrapPoint &aPoint);
+	virtual ~MuscleWrapPoint();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMuscleWrapPoint& operator=(const SimmMuscleWrapPoint &aPoint);
+	MuscleWrapPoint& operator=(const MuscleWrapPoint &aPoint);
 #endif
-   void copyData(const SimmMuscleWrapPoint &aPoint);
-	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
+   void copyData(const MuscleWrapPoint &aPoint);
+	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
 
 	Array<SimmPoint>& getWrapPath() { return _wrapPath; }
 	double getWrapLength() const { return _wrapPathLength; }
@@ -103,12 +103,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMuscleWrapPoint
+};	// END of class MuscleWrapPoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMuscleWrapPoint_h__
+#endif // __MuscleWrapPoint_h__
 
 

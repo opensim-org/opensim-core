@@ -35,13 +35,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 #include "Callback.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include "AbstractModel.h"
 
 //=============================================================================
 // STATICS

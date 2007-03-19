@@ -34,13 +34,13 @@
  */
 
 // INCLUDES
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Common/Object.h>
 #include "rdIntegrator.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -86,7 +86,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Integrand : public Object
+class OSIMSIMULATION_API Integrand : public Object
 {
 //=============================================================================
 // DATA

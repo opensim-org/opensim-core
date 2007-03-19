@@ -36,7 +36,7 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/Set.h>
+#include <OpenSim/Common/Set.h>
 #include "Analysis.h"
 
 
@@ -53,7 +53,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API AnalysisSet : public Set<Analysis>
+class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
 {
 //=============================================================================
 // DATA

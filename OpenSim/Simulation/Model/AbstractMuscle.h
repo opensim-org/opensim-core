@@ -1,7 +1,7 @@
-#ifndef __AbstractSimmMuscle_h__
-#define __AbstractSimmMuscle_h__
+#ifndef __AbstractMuscle_h__
+#define __AbstractMuscle_h__
 
-// AbstractSimmMuscle.h
+// AbstractMuscle.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,25 +29,25 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/VisibleObject.h>
 #include "AbstractActuator.h"
-#include "SimmMusclePointSet.h"
-#include "MuscleWrapSet.h"
+#include "MusclePointSet.h"
+#include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
 namespace OpenSim {
 
-class SimmMuscleGroup;
+class MuscleGroup;
 class AbstractCoordinate;
 class WrapResult;
 
@@ -61,14 +61,14 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API AbstractSimmMuscle : public AbstractActuator  
+class OSIMSIMULATION_API AbstractMuscle : public AbstractActuator  
 {
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 	PropertyObj _attachmentSetProp;
-	SimmMusclePointSet &_attachmentSet;
+	MusclePointSet &_attachmentSet;
 
 	// Support for Display
 	PropertyObj _displayerProp;
@@ -76,7 +76,7 @@ protected:
 
 	PropertyStrArray _groupNamesProp;
 	Array<std::string> &_groupNames;
-	Array<SimmMuscleGroup*> _groups;
+	Array<MuscleGroup*> _groups;
 
 	PropertyObj _muscleWrapSetProp;
 	MuscleWrapSet &_muscleWrapSet;
@@ -94,7 +94,7 @@ protected:
 	double _preScaleLength;
 
 	// current path = ordered array of currently active attachment points (fixed + via + wrap)
-	Array<SimmMusclePoint*> _currentPath;
+	Array<MusclePoint*> _currentPath;
 
 	// is current path valid?
 	bool _pathValid;
@@ -106,20 +106,20 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	AbstractSimmMuscle();
-	AbstractSimmMuscle(const AbstractSimmMuscle &aMuscle);
-	virtual ~AbstractSimmMuscle();
+	AbstractMuscle();
+	AbstractMuscle(const AbstractMuscle &aMuscle);
+	virtual ~AbstractMuscle();
 	virtual Object* copy() const = 0;
 	virtual void setup(AbstractModel *aModel);
 
-	static AbstractSimmMuscle* safeDownCast(Object* aObject) { return dynamic_cast<AbstractSimmMuscle*>(aObject); }
+	static AbstractMuscle* safeDownCast(Object* aObject) { return dynamic_cast<AbstractMuscle*>(aObject); }
 
 #ifndef SWIG
-	AbstractSimmMuscle& operator=(const AbstractSimmMuscle &aMuscle);
+	AbstractMuscle& operator=(const AbstractMuscle &aMuscle);
 #endif
-   void copyData(const AbstractSimmMuscle &aMuscle);
-	const SimmMusclePointSet& getAttachmentSet() const { return _attachmentSet; }
-	const Array<SimmMusclePoint*> getCurrentPath();
+   void copyData(const AbstractMuscle &aMuscle);
+	const MusclePointSet& getAttachmentSet() const { return _attachmentSet; }
+	const Array<MusclePoint*> getCurrentPath();
 	int getMuscleModelIndex() const { return _muscleModelIndex; }
 	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
@@ -159,7 +159,7 @@ public:
 	//  all in global/interial frame)
 	virtual void updateGeometry();
 
-	/* Register types to be used when reading an AbstractSimmMuscle object from xml file. */
+	/* Register types to be used when reading an AbstractMuscle object from xml file. */
 	static void registerTypes();
 
 private:
@@ -168,12 +168,12 @@ private:
 	void updateGeometrySize();
 	void updateGeometryLocations();
 //=============================================================================
-};	// END of class AbstractSimmMuscle
+};	// END of class AbstractMuscle
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __AbstractSimmMuscle_h__
+#endif // __AbstractMuscle_h__
 
 

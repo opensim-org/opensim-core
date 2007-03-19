@@ -1,5 +1,5 @@
-#include "Marker.h"
-#include <OpenSim/Simulation/Model/Body.h>
+#include "VisibleMarker.h"
+#include "VisibleBody.h"
 
 
 using namespace OpenSim;
@@ -11,14 +11,14 @@ using namespace std;
 /**
  * Destructor.
  */
-Marker::~Marker(void)
+VisibleMarker::~VisibleMarker(void)
 {
 }
 //_____________________________________________________________________________
 /**
- * Default constructor of an Marker
+ * Default constructor of an VisibleMarker
  */
-Marker::Marker():
+VisibleMarker::VisibleMarker():
 VisibleObject(),
 _markerLocation(_propMarkerLocation.getValueDblArray()),
 _referenceSegmentName(_propReferenceSegmentName.getValueStr()),
@@ -31,9 +31,9 @@ _markerWeight(_propMarkerWeight.getValueDbl())
 /**
  * Copy constructor.
  *
- * @param aBody Body to copy.
+ * @param aBody VisibleBody to copy.
  */
-Marker::Marker(const Marker &aMarker) :
+VisibleMarker::VisibleMarker(const VisibleMarker &aMarker) :
 VisibleObject(aMarker),
 _markerLocation(_propMarkerLocation.getValueDblArray()),
 _referenceSegmentName(_propReferenceSegmentName.getValueStr()),
@@ -53,10 +53,10 @@ _markerWeight(_propMarkerWeight.getValueDbl())
  *
  * @return Copy of this object.
  */
-Object* Marker::
+Object* VisibleMarker::
 copy() const
 {
-	Object *object = new Marker(*this);
+	Object *object = new VisibleMarker(*this);
 	return(object);
 }
 //=============================================================================
@@ -71,8 +71,8 @@ copy() const
  *
  * @return Reference to this object.
  */
-Marker& Marker::
-operator=(const Marker &aMarker)
+VisibleMarker& VisibleMarker::
+operator=(const VisibleMarker &aMarker)
 {
 	// BASE CLASS
 	VisibleObject::operator=(aMarker);
@@ -92,7 +92,7 @@ operator=(const Marker &aMarker)
 /**
  * Get the value of marker weight
  */
-const double Marker::
+const double VisibleMarker::
 getWeight() const
 {
 	return _markerWeight;
@@ -101,7 +101,7 @@ getWeight() const
 /**
  * Set the value of marker weight
  */
-void Marker::
+void VisibleMarker::
 setWeight(const double aWeight)
 {
 	_markerWeight = aWeight;
@@ -110,7 +110,7 @@ setWeight(const double aWeight)
 /**
  * Get the name of the segment that the marker lives on
  */
-const std::string& Marker::
+const std::string& VisibleMarker::
 getReferenceSegmentName() const
 {
 	return _referenceSegmentName;
@@ -119,7 +119,7 @@ getReferenceSegmentName() const
 /**
  * Set the name of the segment that the marker lives on
  */
-void Marker::
+void VisibleMarker::
 setRefSegment(const int aBodyIndex)
 {
 	_refSegmentForMarker=aBodyIndex;
@@ -128,7 +128,7 @@ setRefSegment(const int aBodyIndex)
 /**
  * Get the index of the segment that the marker lives on
  */
-const int Marker::
+const int VisibleMarker::
 getRefSegment() const
 {
 	return _refSegmentForMarker;
@@ -137,7 +137,7 @@ getRefSegment() const
 /**
  * Get the location of the marker in reference segment frame
  */
-void Marker::
+void VisibleMarker::
 getLocation(Array<double>& aLocation) const
 {
 	for(int i=0; i < aLocation.getSize(); i++)
@@ -147,7 +147,7 @@ getLocation(Array<double>& aLocation) const
 /**
  * Set the location of the marker in reference segment frame
  */
-void Marker::
+void VisibleMarker::
 setLocation(Array<double>& aLocation)
 {
 	for(int i=0; i < aLocation.getSize(); i++)
@@ -157,10 +157,10 @@ setLocation(Array<double>& aLocation)
 /**
  * initialize object to null.  
  */
-void Marker::
+void VisibleMarker::
 setNull()
 {
-	setType("Marker");
+	setType("VisibleMarker");
 	//setName("unnamed_marker");
 	setupProperties();
 	_refSegmentForMarker=-2;	// SDFast uses -1 for ground
@@ -169,7 +169,7 @@ setNull()
 /**
  * Set up the serialized member variables.  
  */
-void Marker::
+void VisibleMarker::
 setupProperties()
 {
 	Array<double> zero3(0.0, 3);	
@@ -194,7 +194,7 @@ setupProperties()
 /**
  * Scale marker location by indicate dscale factors.  
  */
-void Marker::
+void VisibleMarker::
 scaleBy(Array<double>& aScales)
 {
 	for(int i=0; i < aScales.getSize(); i++)
@@ -202,9 +202,9 @@ scaleBy(Array<double>& aScales)
 
 }
 
-void Marker::
+void VisibleMarker::
 update(const Object& aObject, Event& aEvent)
 {
-//	const Body& refBody = dynamic_cast<const Body &>(aObject);
+//	const VisibleBody& refBody = dynamic_cast<const VisibleBody &>(aObject);
 	
 }

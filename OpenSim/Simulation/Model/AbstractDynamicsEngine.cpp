@@ -30,10 +30,10 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Tools/GCVSplineSet.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Memory.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "AbstractDynamicsEngine.h"
 #include "AbstractModel.h"

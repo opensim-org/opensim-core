@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "Controller.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 
 //=============================================================================

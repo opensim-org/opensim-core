@@ -1,7 +1,7 @@
-#ifndef __SimmMuscleViaPoint_h__
-#define __SimmMuscleViaPoint_h__
+#ifndef __MuscleViaPoint_h__
+#define __MuscleViaPoint_h__
 
-// SimmMuscleViaPoint.h
+// MuscleViaPoint.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,17 +30,17 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/Storage.h>
-#include "SimmMusclePoint.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -48,7 +48,7 @@ namespace OpenSim {
 
 class AbstractCoordinate;
 class AbstractModel;
-class AbstractSimmMuscle;
+class AbstractMuscle;
 class AbstractDynamicsEngine;
 
 //=============================================================================
@@ -60,7 +60,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMuscleViaPoint : public SimmMusclePoint  
+class OSIMSIMULATION_API MuscleViaPoint : public MusclePoint  
 {
 
 //=============================================================================
@@ -84,24 +84,24 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMuscleViaPoint();
-	SimmMuscleViaPoint(const SimmMuscleViaPoint &aPoint);
-	virtual ~SimmMuscleViaPoint();
+	MuscleViaPoint();
+	MuscleViaPoint(const MuscleViaPoint &aPoint);
+	virtual ~MuscleViaPoint();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmMuscleViaPoint& operator=(const SimmMuscleViaPoint &aPoint);
+	MuscleViaPoint& operator=(const MuscleViaPoint &aPoint);
 #endif
-   void copyData(const SimmMuscleViaPoint &aPoint);
+   void copyData(const MuscleViaPoint &aPoint);
 
-	static SimmMuscleViaPoint* safeDownCast(Object* aObject) { return dynamic_cast<SimmMuscleViaPoint*>(aObject); }
+	static MuscleViaPoint* safeDownCast(Object* aObject) { return dynamic_cast<MuscleViaPoint*>(aObject); }
 
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	const std::string& getCoordinateName() const { return _coordinateName; }
 
 	virtual bool isActive() const;
-	virtual void setup(AbstractModel* aModel, AbstractSimmMuscle* aMuscle);
+	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
 
 	virtual void peteTest() const;
 
@@ -109,12 +109,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmMuscleViaPoint
+};	// END of class MuscleViaPoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMuscleViaPoint_h__
+#endif // __MuscleViaPoint_h__
 
 

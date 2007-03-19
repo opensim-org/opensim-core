@@ -34,17 +34,17 @@
  */
 
 // INCLUDES
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/FunctionSet.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
 #include "ModelIntegrand.h"
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMULATION_API
+		#undef OSIMSIMULATION_API
+		#define OSIMSIMULATION_API
 	#endif
 #endif
 
@@ -60,7 +60,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class RDSIMULATION_API ModelIntegrandForActuators : public ModelIntegrand
+class OSIMSIMULATION_API ModelIntegrandForActuators : public ModelIntegrand
 {
 //=============================================================================
 // DATA

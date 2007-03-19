@@ -1,4 +1,4 @@
-// SimmMuscleGroup.cpp
+// MuscleGroup.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMuscleGroup.h"
+#include "MuscleGroup.h"
 #include "AbstractActuator.h"
 #include "AbstractModel.h"
 
@@ -42,7 +42,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMuscleGroup::SimmMuscleGroup() :
+MuscleGroup::MuscleGroup() :
 	_muscles(NULL)
 {
 	setNull();
@@ -53,7 +53,7 @@ SimmMuscleGroup::SimmMuscleGroup() :
 /**
  * Destructor.
  */
-SimmMuscleGroup::~SimmMuscleGroup()
+MuscleGroup::~MuscleGroup()
 {
 }
 
@@ -63,7 +63,7 @@ SimmMuscleGroup::~SimmMuscleGroup()
  *
  * @param aGroup Group to be copied.
  */
-SimmMuscleGroup::SimmMuscleGroup(const SimmMuscleGroup &aGroup) :
+MuscleGroup::MuscleGroup(const MuscleGroup &aGroup) :
    Object(aGroup),
 	_muscles(NULL)
 {
@@ -77,9 +77,9 @@ SimmMuscleGroup::SimmMuscleGroup(const SimmMuscleGroup &aGroup) :
  *
  * @return Pointer to a copy of this group.
  */
-Object* SimmMuscleGroup::copy() const
+Object* MuscleGroup::copy() const
 {
-	SimmMuscleGroup *grp = new SimmMuscleGroup(*this);
+	MuscleGroup *grp = new MuscleGroup(*this);
 	return(grp);
 }
 
@@ -88,22 +88,22 @@ Object* SimmMuscleGroup::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SimmMuscleGroup to another.
+ * Copy data members from one MuscleGroup to another.
  *
- * @param aGroup SimmMuscleGroup to be copied.
+ * @param aGroup MuscleGroup to be copied.
  */
-void SimmMuscleGroup::copyData(const SimmMuscleGroup &aGroup)
+void MuscleGroup::copyData(const MuscleGroup &aGroup)
 {
 	_muscles = aGroup._muscles;
 }
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMuscleGroup to their null values.
+ * Set the data members of this MuscleGroup to their null values.
  */
-void SimmMuscleGroup::setNull()
+void MuscleGroup::setNull()
 {
-	setType("SimmMuscleGroup");
+	setType("MuscleGroup");
 }
 
 //_____________________________________________________________________________
@@ -111,9 +111,9 @@ void SimmMuscleGroup::setNull()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel model containing this SimmMuscleGroup.
+ * @param aModel model containing this MuscleGroup.
  */
-void SimmMuscleGroup::setup(AbstractModel* aModel)
+void MuscleGroup::setup(AbstractModel* aModel)
 {
 	_muscles.setSize(0);
 
@@ -143,7 +143,7 @@ void SimmMuscleGroup::setup(AbstractModel* aModel)
  *
  * @return Reference to this object.
  */
-SimmMuscleGroup& SimmMuscleGroup::operator=(const SimmMuscleGroup &aGroup)
+MuscleGroup& MuscleGroup::operator=(const MuscleGroup &aGroup)
 {
 	// BASE CLASS
 	Object::operator=(aGroup);
@@ -160,7 +160,7 @@ SimmMuscleGroup& SimmMuscleGroup::operator=(const SimmMuscleGroup &aGroup)
  * @param aName the name of the muscle.
  * @return Boolean indicating whether or not the group contains the muscle.
  */
-bool SimmMuscleGroup::contains(const string& aName) const
+bool MuscleGroup::contains(const string& aName) const
 {
 	for (int i = 0; i < _muscles.getSize(); i++)
 		if (_muscles[i]->getName() == aName)
@@ -169,7 +169,7 @@ bool SimmMuscleGroup::contains(const string& aName) const
 	return false;
 }
 
-void SimmMuscleGroup::peteTest() const
+void MuscleGroup::peteTest() const
 {
 	cout << "Muscle Group: " << getName() << endl;
 	cout << "   muscles: ";

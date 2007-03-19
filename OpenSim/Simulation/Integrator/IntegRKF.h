@@ -35,16 +35,15 @@
 
 // INCLUDES
 #include "rdIntegrator.h"
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/rdMath.h>
 #include "Integrand.h"
 #include "RKF.h"
 
 
 // DLL SPECIFICATIONS FOR TEMPLATES
-//template class RDSIMULATION_API Array<double>;
+//template class OSIMSIMULATION_API Array<double>;
 
 
 //=============================================================================
@@ -63,7 +62,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API IntegRKF
+class OSIMSIMULATION_API IntegRKF
 	: public RKF
 {
 
