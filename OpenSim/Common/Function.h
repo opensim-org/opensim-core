@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fstream>
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 
@@ -61,7 +61,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Function : public Object
+class OSIMCOMMON_API Function : public Object
 {
 //=============================================================================
 // DATA

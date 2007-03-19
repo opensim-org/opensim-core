@@ -37,13 +37,13 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 #include "Function.h"
 #include "Set.h"
 
-template class RDTOOLS_API OpenSim::Set<OpenSim::Function>;
+template class OSIMCOMMON_API OpenSim::Set<OpenSim::Function>;
 
 //=============================================================================
 //=============================================================================
@@ -55,7 +55,7 @@ template class RDTOOLS_API OpenSim::Set<OpenSim::Function>;
  */
 namespace OpenSim { 
 
-class RDTOOLS_API FunctionSet : public Set<Function>
+class OSIMCOMMON_API FunctionSet : public Set<Function>
 {
 //=============================================================================
 // DATA

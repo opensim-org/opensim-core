@@ -1,4 +1,4 @@
-// rdToolsDLL.cpp
+// osimCommonDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -32,9 +32,9 @@
  */
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include <iostream>
-#include "RegisterTypes_rdTools.h"
+#include "RegisterTypes_osimCommon.h"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ using namespace std;
 static void Plugin_Attach()
 {
 	cout<<"-------------------------------------------------------\n";
-	//cout<<"Library rdTools...\n";
+	//cout<<"Library osimCommon...\n";
 	cout<<"This program includes software developed by the\n";
 	cout<<"Apache Software Foundation (http://www.apache.org/).\n";
 	cout<<"-------------------------------------------------------\n\n";

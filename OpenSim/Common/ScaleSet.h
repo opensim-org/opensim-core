@@ -48,7 +48,7 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class RDTOOLS_API ScaleSet : public Set<Scale>
+class OSIMCOMMON_API ScaleSet : public Set<Scale>
 {
 private:
 	void setNull();

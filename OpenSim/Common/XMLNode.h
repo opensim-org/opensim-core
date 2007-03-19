@@ -38,7 +38,7 @@
 #include <iostream>	// Ayman: Remove .h extension per .NET 2003
 #include <xercesc/dom/DOM.hpp>
 #include <string>
-#include "rdTools.h"
+#include "osimCommon.h"
 XERCES_CPP_NAMESPACE_USE
 
 
@@ -61,7 +61,7 @@ XERCES_CPP_NAMESPACE_USE
  */
 namespace OpenSim { 
 
-class RDTOOLS_API XMLNode {
+class OSIMCOMMON_API XMLNode {
 //=============================================================================
 // DATA
 //=============================================================================

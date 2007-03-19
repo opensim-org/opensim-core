@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 
 namespace OpenSim { 
@@ -49,7 +49,7 @@ class Mtx;
  * Removed inheritance from Object since none of this is used and transforms are 
  * created a ton of times during display and simulation
  */
-class RDTOOLS_API Transform /* : public Object*/
+class OSIMCOMMON_API Transform /* : public Object*/
 {
 public:
 	enum AxisName {

@@ -37,13 +37,13 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Array.h"
 #include "VectorFunction.h"
 #include "GCVSpline.h"
 
 
-//template class RDTOOLS_API Array<double>;
+//template class OSIMCOMMON_API Array<double>;
 
 
 //=============================================================================
@@ -77,7 +77,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API VectorGCVSplineR1R3 : public VectorFunction
+class OSIMCOMMON_API VectorGCVSplineR1R3 : public VectorFunction
 {
 //=============================================================================
 // DATA

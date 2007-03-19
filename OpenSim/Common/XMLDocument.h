@@ -39,7 +39,7 @@
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/framework/XMLFormatter.hpp>
-#include "rdTools.h"
+#include "osimCommon.h"
 
 
 XERCES_CPP_NAMESPACE_USE
@@ -61,7 +61,7 @@ XERCES_CPP_NAMESPACE_USE
  */
 namespace OpenSim { 
 
-class RDTOOLS_API XMLDocument {
+class OSIMCOMMON_API XMLDocument {
 
 //=============================================================================
 // DATA

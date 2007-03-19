@@ -34,7 +34,7 @@
  */
 
 
-#include "rdTools.h"
+#include "osimCommon.h"
 
 // Need these undefined to make this work on linux
 #ifdef NAN
@@ -53,7 +53,7 @@ class Plane;
 /**
  * This class provides basic math functions and constants.
  */
-class RDTOOLS_API SIMMUtilities
+class OSIMCOMMON_API SIMMUtilities
 {
 //=============================================================================
 // DATA

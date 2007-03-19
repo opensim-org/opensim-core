@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <fstream>
 
 
@@ -54,7 +54,7 @@ const int IO_STRING_INCREMENT = 2048;
  */
 namespace OpenSim { 
 
-class RDTOOLS_API IO {
+class OSIMCOMMON_API IO {
 
 //=============================================================================
 // DATA

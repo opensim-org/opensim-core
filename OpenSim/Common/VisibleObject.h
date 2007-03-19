@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "Transform.h"
 #include "VisibleProperties.h"
@@ -62,7 +62,7 @@ class Geometry;
  * @author Ayman Habib
  */
 
-class RDTOOLS_API VisibleObject: public Object
+class OSIMCOMMON_API VisibleObject: public Object
 {
 
 //=============================================================================

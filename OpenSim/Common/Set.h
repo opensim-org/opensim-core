@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
 #include "PropertyObjArray.h"

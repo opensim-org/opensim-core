@@ -1,6 +1,6 @@
-#ifndef _rdToolsTemplates_h_
-#define _rdToolsTemplates_h_
-// rdToolsTemplates.h
+#ifndef _osimCommonTemplates_h_
+#define _osimCommonTemplates_h_
+// osimCommonTemplates.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -36,16 +36,16 @@
 
 // NOTES:
 // This header file should not be included in any file that is a part of
-// the rdTools library.  If it is included in files in the rdTools project,
+// the osimCommon library.  If it is included in files in the osimCommon project,
 // templates will be instantiated multiple times.
 //
-// Other projects, such as libraries other than rdTools or executables, should
+// Other projects, such as libraries other than osimCommon or executables, should
 // include this header file to import the template classes below.
 //
 
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
@@ -56,17 +56,17 @@
 
 #ifdef WIN32
 
-extern template class RDTOOLS_API Array<bool>;
-extern template class RDTOOLS_API Array<int>;
-extern template class RDTOOLS_API Array<double>;
-extern template class RDTOOLS_API Array<std::string>;
+extern template class OSIMCOMMON_API Array<bool>;
+extern template class OSIMCOMMON_API Array<int>;
+extern template class OSIMCOMMON_API Array<double>;
+extern template class OSIMCOMMON_API Array<std::string>;
 
-extern template class RDTOOLS_API NamedValueArray<int>;
-extern template class RDTOOLS_API NamedValueArray<double>;
+extern template class OSIMCOMMON_API NamedValueArray<int>;
+extern template class OSIMCOMMON_API NamedValueArray<double>;
 
-extern template class RDTOOLS_API Set<Material>;
+extern template class OSIMCOMMON_API Set<Material>;
 
 #endif  // WIN32
 
 
-#endif  // __rdToolsTemplates_h__
+#endif  // __osimCommonTemplates_h__

@@ -32,7 +32,7 @@
 /*  
  * Author:  
  */
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 
@@ -45,7 +45,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Range : public Object
+class OSIMCOMMON_API Range : public Object
 {
 //=============================================================================
 // DATA

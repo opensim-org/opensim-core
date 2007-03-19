@@ -33,14 +33,14 @@
  * Author: Frank C. Anderson 
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "StateVector.h"
 
 
 const int Storage_DEFAULT_CAPACITY = 256;
 
-template class RDTOOLS_API OpenSim::Array<OpenSim::StateVector>;
+template class OSIMCOMMON_API OpenSim::Array<OpenSim::StateVector>;
 
 //=============================================================================
 //=============================================================================
@@ -66,7 +66,7 @@ template class RDTOOLS_API OpenSim::Array<OpenSim::StateVector>;
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Storage : public Object
+class OSIMCOMMON_API Storage : public Object
 {
 
 //=============================================================================

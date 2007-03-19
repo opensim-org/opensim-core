@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 
 //using namespace std;
@@ -50,15 +50,15 @@
  * @author Frank C. Anderson
  */
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
 namespace OpenSim { 
 
-class RDTOOLS_API Exception {
+class OSIMCOMMON_API Exception {
 
 //=============================================================================
 // DATA

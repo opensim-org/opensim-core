@@ -37,7 +37,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Array.h"
 #include "PropertyInt.h"
@@ -46,7 +46,7 @@
 #include "Function.h"
 
 
-//template class RDTOOLS_API Array<double>;
+//template class OSIMCOMMON_API Array<double>;
 
 
 //=============================================================================
@@ -80,7 +80,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API GCVSpline : public Function
+class OSIMCOMMON_API GCVSpline : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES

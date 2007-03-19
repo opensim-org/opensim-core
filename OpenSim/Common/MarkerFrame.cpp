@@ -1,4 +1,4 @@
-// SimmMarkerFrame.cpp
+// MarkerFrame.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmMarkerFrame.h"
+#include "MarkerFrame.h"
 
 //=============================================================================
 // STATICS
@@ -40,7 +40,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMarkerFrame::SimmMarkerFrame() :
+MarkerFrame::MarkerFrame() :
 	_numMarkers(0),
 	_frameNumber(-1),
 	_units()
@@ -57,7 +57,7 @@ SimmMarkerFrame::SimmMarkerFrame() :
  * @param aTime the time of the frame
  * @param aUnits the units of the XYZ marker coordinates
  */
-SimmMarkerFrame::SimmMarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, SimmUnits& aUnits) :
+MarkerFrame::MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits) :
 	_numMarkers(aNumMarkers),
 	_frameNumber(aFrameNumber),
 	_frameTime(aTime),
@@ -69,7 +69,7 @@ SimmMarkerFrame::SimmMarkerFrame(int aNumMarkers, int aFrameNumber, double aTime
 /**
  * Copy constructor.
  */
-SimmMarkerFrame::SimmMarkerFrame(const SimmMarkerFrame& aFrame) :
+MarkerFrame::MarkerFrame(const MarkerFrame& aFrame) :
    Object(aFrame)
 {
 	setNull();
@@ -85,7 +85,7 @@ SimmMarkerFrame::SimmMarkerFrame(const SimmMarkerFrame& aFrame) :
 /**
  * Destructor.
  */
-SimmMarkerFrame::~SimmMarkerFrame()
+MarkerFrame::~MarkerFrame()
 {
 }
 
@@ -94,11 +94,11 @@ SimmMarkerFrame::~SimmMarkerFrame()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this SimmMarkerFrame to their null values.
+ * Set the data members of this MarkerFrame to their null values.
  */
-void SimmMarkerFrame::setNull()
+void MarkerFrame::setNull()
 {
-	setType("SimmMarkerFrame");
+	setType("MarkerFrame");
 }
 
 //=============================================================================
@@ -110,7 +110,7 @@ void SimmMarkerFrame::setNull()
  *
  * @param aCoords the XYZ coordinates of the marker
  */
-void SimmMarkerFrame::addMarker(double aCoords[3])
+void MarkerFrame::addMarker(double aCoords[3])
 {
 	SimmPoint* pt = new SimmPoint(aCoords);
 	_markers.append(pt);
@@ -125,7 +125,7 @@ void SimmMarkerFrame::addMarker(double aCoords[3])
  *
  * @param aScaleFactor the scale factor
  */
-void SimmMarkerFrame::scale(double aScaleFactor)
+void MarkerFrame::scale(double aScaleFactor)
 {
 	for (int i = 0; i < _numMarkers; i++)
 	{
@@ -135,7 +135,7 @@ void SimmMarkerFrame::scale(double aScaleFactor)
 	}
 }
 
-void SimmMarkerFrame::peteTest() const
+void MarkerFrame::peteTest() const
 {
 	cout << "      MarkerFrame " << _frameNumber << ": " << endl;
 	cout << "         numMarkers: " << _numMarkers << endl;

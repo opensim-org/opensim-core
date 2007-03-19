@@ -1,6 +1,6 @@
-#ifndef _rdTools_h_
-#define _rdTools_h_
-// rdTools.h
+#ifndef _osimCommon_h_
+#define _osimCommon_h_
+// osimCommon.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -35,12 +35,12 @@
 
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include <iostream>
 #include <string>
 #include <math.h>
 
 
-#endif // __rdTools_h__
+#endif // __osimCommon_h__
 
 

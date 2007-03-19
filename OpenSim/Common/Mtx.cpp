@@ -31,7 +31,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "rdMath.h"
 #include "Mtx.h"
 

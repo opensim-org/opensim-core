@@ -33,7 +33,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <time.h>
 #include "IO.h"
 #if defined(__linux__)

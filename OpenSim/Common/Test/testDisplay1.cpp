@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 #include <assert.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -15,7 +15,7 @@ using namespace std;
 int TestVisibleObjectCollection();
 //_____________________________________________________________________________
 /**
- * Test the rdTools library.
+ * Test the osimCommon library.
  */
 int main(int argc, char* argv[])
 {

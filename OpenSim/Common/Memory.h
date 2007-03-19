@@ -32,7 +32,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 //=============================================================================
 
 
@@ -48,7 +48,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Memory {
+class OSIMCOMMON_API Memory {
 
 //=============================================================================
 // DATA

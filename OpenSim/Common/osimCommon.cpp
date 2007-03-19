@@ -1,4 +1,4 @@
-// rdTools.cpp
+// osimCommon.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -32,5 +32,5 @@
  */
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommon.h"
 

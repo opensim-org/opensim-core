@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
@@ -45,9 +45,9 @@ namespace OpenSim {
 class Object;
 
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
@@ -89,7 +89,7 @@ class Object;
 #define Property_PROPERTY_TYPE_MISMATCH() \
 	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeAsString()+".",__FILE__,__LINE__);
 
-class RDTOOLS_API Property  
+class OSIMCOMMON_API Property  
 {
 
 //=============================================================================

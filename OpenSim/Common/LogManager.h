@@ -1,13 +1,13 @@
 #ifndef _LogManager_h_
 #define _LogManager_h_
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <iostream>
 #include <sstream>
 
 namespace OpenSim {
 
-class RDTOOLS_API LogBuffer : public std::stringbuf
+class OSIMCOMMON_API LogBuffer : public std::stringbuf
 {
     public:
         LogBuffer();
@@ -23,7 +23,7 @@ class RDTOOLS_API LogBuffer : public std::stringbuf
         int sync();
 };
 
-class RDTOOLS_API LogManager
+class OSIMCOMMON_API LogManager
 {
     public:
 		// Expose these members so users can manipulate output formats by calling functions on LogManager::out/err

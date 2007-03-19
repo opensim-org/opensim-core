@@ -34,7 +34,7 @@
  */
 
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "PropertyStr.h"
 #include "PropertyDblArray.h"
@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Scale : public Object
+class OSIMCOMMON_API Scale : public Object
 {
 //=============================================================================
 // DATA

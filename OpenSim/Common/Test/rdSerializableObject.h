@@ -35,10 +35,10 @@
 
 
 // INCLUDES
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Object.h>
 
-//extern template class RDTOOLS_API Array<double>;
+//extern template class OSIMCOMMON_API Array<double>;
 
 //=============================================================================
 //=============================================================================

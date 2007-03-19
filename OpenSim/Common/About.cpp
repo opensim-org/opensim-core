@@ -25,7 +25,7 @@
  */
 
 
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 
 #include <string>
 #include <cstring>
@@ -39,22 +39,22 @@
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
-    MAKE_VERSION_STRING(OPENSIM_RDTOOLS_MAJOR_VERSION,  \
-                        OPENSIM_RDTOOLS_MINOR_VERSION,  \
-                        OPENSIM_RDTOOLS_BUILD_VERSION)
+    MAKE_VERSION_STRING(OPENSIM_COMMON_MAJOR_VERSION,  \
+                        OPENSIM_COMMON_MINOR_VERSION,  \
+                        OPENSIM_COMMON_BUILD_VERSION)
 
 #define GET_COPYRIGHT_STRING \
-    MAKE_COPYRIGHT_STRING(OPENSIM_RDTOOLS_COPYRIGHT_YEARS, \
-                          OPENSIM_RDTOOLS_AUTHORS)
+    MAKE_COPYRIGHT_STRING(OPENSIM_COMMON_COPYRIGHT_YEARS, \
+                          OPENSIM_COMMON_AUTHORS)
 
 #define GET_AUTHORS_STRING \
-    MAKE_STRING(OPENSIM_RDTOOLS_AUTHORS)
+    MAKE_STRING(OPENSIM_COMMON_AUTHORS)
 
 #define GET_LIBRARY_STRING \
-    MAKE_STRING(OPENSIM_RDTOOLS_LIBRARY_NAME)
+    MAKE_STRING(OPENSIM_COMMON_LIBRARY_NAME)
 
 #define GET_TYPE_STRING \
-    MAKE_STRING(OPENSIM_RDTOOLS_TYPE)
+    MAKE_STRING(OPENSIM_COMMON_TYPE)
 
 #ifndef NDEBUG
     #define GET_DEBUG_STRING "debug"
@@ -75,9 +75,9 @@ void opensim_version_rdtools(int* major, int* minor, int* build) {
     static const char* v = "OPENSIM version="   GET_VERSION_STRING;
     static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
 
-    if (major) *major = OPENSIM_RDTOOLS_MAJOR_VERSION;
-    if (minor) *minor = OPENSIM_RDTOOLS_MINOR_VERSION;
-    if (build) *build = OPENSIM_RDTOOLS_BUILD_VERSION;
+    if (major) *major = OPENSIM_COMMON_MAJOR_VERSION;
+    if (minor) *minor = OPENSIM_COMMON_MINOR_VERSION;
+    if (build) *build = OPENSIM_COMMON_BUILD_VERSION;
 
     // Force statics to be present in the binary (Release mode otherwise 
     // optimizes them away).

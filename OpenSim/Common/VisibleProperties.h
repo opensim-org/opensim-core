@@ -33,7 +33,7 @@
  * Author:  
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "PropertyInt.h"
 #include "PropertyBool.h"
@@ -56,7 +56,7 @@ class Material;
  * @version 1.0
  * @author Ayman Habib
  */
-class RDTOOLS_API VisibleProperties: public Object
+class OSIMCOMMON_API VisibleProperties: public Object
 {
 public:
 	enum  DisplayPreference {

@@ -30,16 +30,16 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertyObjArray.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertyObjArray.h>
 #include "rdSerializableObject2.h"
 
 

@@ -35,7 +35,7 @@
 
 
 #include <vector>
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Exception.h"
 
 //=============================================================================

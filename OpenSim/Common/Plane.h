@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 
 namespace OpenSim { 
@@ -46,7 +46,7 @@ class Line;
 /**
  * A class for representing a plane.
  */
-class RDTOOLS_API Plane : public Object
+class OSIMCOMMON_API Plane : public Object
 {
 //=============================================================================
 // DATA

@@ -1,18 +1,18 @@
-#ifndef _RegisterTypes_rdTools_h_
-#define _RegisterTypes_rdTools_h_
-// RegisterTypes_rdTools.h
+#ifndef _RegisterTypes_osimCommon_h_
+#define _RegisterTypes_osimCommon_h_
+// RegisterTypes_osimCommon.h
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Tools/rdToolsDLL.h>
+#include "osimCommonDLL.h"
 
 
 extern "C" {
 
-RDTOOLS_API void RegisterTypes_rdTools(); 
+OSIMCOMMON_API void RegisterTypes_osimCommon(); 
 
 }
 
-#endif // __RegisterTypes_rdTools_h__
+#endif // __RegisterTypes_osimCommon_h__
 
 

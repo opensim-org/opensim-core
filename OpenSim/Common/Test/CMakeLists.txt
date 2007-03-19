@@ -3,7 +3,7 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 					${XERCES_INCLUDE_DIR})
 
 LINK_LIBRARIES( debug xerces-c_2D optimized   xerces-c_2 
-				debug rdTools_d	optimized rdTools
+				debug osimCommon_d	optimized osimCommon
 				debug rdSimulation_d optimized rdSimulation)
 				
 ADD_EXECUTABLE(testRootSolver testRootSolver.cpp ExampleVectorFunctionUncoupledNxN.cpp)

@@ -1,6 +1,6 @@
-#ifndef _rdToolsDLL_h_
-#define _rdToolsDLL_h_
-// rdToolsDLL.h
+#ifndef _osimCommonDLL_h_
+#define _osimCommonDLL_h_
+// osimCommonDLL.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -39,7 +39,7 @@
 // UNIX
 #ifndef WIN32
 
-	#define RDTOOLS_API
+	#define OSIMCOMMON_API
 
 
 // WINDOWS
@@ -48,14 +48,14 @@
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX
 	#include <windows.h>
-	#ifdef RDTOOLS_EXPORTS
-		#define RDTOOLS_API __declspec(dllexport)
+	#ifdef OSIMCOMMON_EXPORTS
+		#define OSIMCOMMON_API __declspec(dllexport)
 	#else
-		#define RDTOOLS_API __declspec(dllimport)
+		#define OSIMCOMMON_API __declspec(dllimport)
 	#endif
 
 #endif
 
 
 
-#endif // __rdToolsDLL_h__
+#endif // __osimCommonDLL_h__

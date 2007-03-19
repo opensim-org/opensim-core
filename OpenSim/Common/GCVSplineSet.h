@@ -36,7 +36,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "FunctionSet.h"
 #include "GCVSpline.h"
@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API GCVSplineSet : public FunctionSet
+class OSIMCOMMON_API GCVSplineSet : public FunctionSet
 {
 //=============================================================================
 // DATA

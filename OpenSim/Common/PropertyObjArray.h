@@ -35,14 +35,14 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "ArrayPtrs.h"
 #include "Property.h"
 
 
 #ifdef WIN32
-template class RDTOOLS_API OpenSim::ArrayPtrs<OpenSim::Object>;
+template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif
 
 
@@ -58,7 +58,7 @@ template class RDTOOLS_API OpenSim::ArrayPtrs<OpenSim::Object>;
  */
 namespace OpenSim { 
 
-class RDTOOLS_API PropertyObjArray : public Property
+class OSIMCOMMON_API PropertyObjArray : public Property
 {
 
 //=============================================================================

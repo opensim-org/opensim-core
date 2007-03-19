@@ -28,8 +28,8 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include "Function.h"
+#include "PropertyDbl.h"
 
 namespace OpenSim {
 
@@ -44,7 +44,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDTOOLS_API Constant : public Function
+class OSIMCOMMON_API Constant : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES

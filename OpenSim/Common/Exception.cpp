@@ -36,7 +36,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Exception.h"
 #include "IO.h"
 

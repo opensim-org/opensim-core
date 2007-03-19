@@ -34,7 +34,7 @@
  */
 
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <iostream>
 #include "Exception.h"
 

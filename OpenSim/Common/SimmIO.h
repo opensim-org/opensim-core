@@ -33,19 +33,19 @@
 
 namespace OpenSim {
 
-bool RDSIMULATION_API readNonCommentStringFromStream(std::istream &aStream, std::string &rBuffer);
-bool RDSIMULATION_API readStringFromStream(std::istream &aStream, std::string &rBuffer);
-bool RDSIMULATION_API readStringFromString(std::string &aString, std::string &rBuffer);
-bool RDSIMULATION_API readTabDelimitedStringFromString(std::string &aString, std::string &rBuffer);
-bool RDSIMULATION_API readIntegerFromString(std::string &aString, int *rNumber);
-bool RDSIMULATION_API readDoubleFromString(std::string &aString, double *rNumber);
-bool RDSIMULATION_API readVectorFromString(std::string &aString, SimmPoint &rVec);
-bool RDSIMULATION_API readVectorFromString(std::string &aString, double *rVX, double *rVY, double *rVZ);
-bool RDSIMULATION_API readCoordinatesFromString(std::string &aString, double rVec[3]);
-int RDSIMULATION_API findFirstNonWhiteSpace(std::string &aString);
-int RDSIMULATION_API findFirstWhiteSpace(std::string &aString);
-void RDSIMULATION_API convertString(std::string& aString, bool aPrependUnderscore);
-std::string RDSIMULATION_API getCurrentTimeString();
+bool OSIMCOMMON_API readNonCommentStringFromStream(std::istream &aStream, std::string &rBuffer);
+bool OSIMCOMMON_API readStringFromStream(std::istream &aStream, std::string &rBuffer);
+bool OSIMCOMMON_API readStringFromString(std::string &aString, std::string &rBuffer);
+bool OSIMCOMMON_API readTabDelimitedStringFromString(std::string &aString, std::string &rBuffer);
+bool OSIMCOMMON_API readIntegerFromString(std::string &aString, int *rNumber);
+bool OSIMCOMMON_API readDoubleFromString(std::string &aString, double *rNumber);
+bool OSIMCOMMON_API readVectorFromString(std::string &aString, SimmPoint &rVec);
+bool OSIMCOMMON_API readVectorFromString(std::string &aString, double *rVX, double *rVY, double *rVZ);
+bool OSIMCOMMON_API readCoordinatesFromString(std::string &aString, double rVec[3]);
+int OSIMCOMMON_API findFirstNonWhiteSpace(std::string &aString);
+int OSIMCOMMON_API findFirstWhiteSpace(std::string &aString);
+void OSIMCOMMON_API convertString(std::string& aString, bool aPrependUnderscore);
+std::string OSIMCOMMON_API getCurrentTimeString();
 
 } // end of namespace OpenSim
 

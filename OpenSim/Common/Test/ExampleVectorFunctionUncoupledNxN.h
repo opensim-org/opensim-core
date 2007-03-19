@@ -33,11 +33,11 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/VectorFunctionUncoupledNxN.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 
-//extern template class RDTOOLS_API Array<double>;
+//extern template class OSIMCOMMON_API Array<double>;
 
 //=============================================================================
 //=============================================================================

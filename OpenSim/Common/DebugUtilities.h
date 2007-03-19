@@ -28,7 +28,7 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE. 
 */
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 
 #ifdef WIN32
 #define OPENSIM_NORETURN(declaration) __declspec(noreturn) declaration
@@ -45,7 +45,7 @@
 namespace OpenSim {
 namespace DebugUtilities {
 
-OPENSIM_NORETURN(RDTOOLS_API void Fatal_Error(const char *msg, const char *function, const char *file, unsigned int line));
+OPENSIM_NORETURN(OSIMCOMMON_API void Fatal_Error(const char *msg, const char *function, const char *file, unsigned int line));
 
 }
 }

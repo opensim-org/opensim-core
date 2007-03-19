@@ -29,13 +29,13 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
+#include "osimCommonDLL.h"
+#include "Object.h"
+#include "Storage.h"
+#include "Array.h"
+#include "ArrayPtrs.h"
 #include "SimmMotionEvent.h"
-#include "SimmUnits.h"
+#include "Units.h"
 
 namespace OpenSim {
 
@@ -49,7 +49,7 @@ class AbstractModel;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMotionData : public Object
+class OSIMCOMMON_API SimmMotionData : public Object
 {
 
 //=============================================================================
@@ -61,7 +61,7 @@ private:
 	int _numColumns;
 	double _rangeMin;
 	double _rangeMax;
-	SimmUnits _units;
+	Units _units;
 	std::string _fileName;
 	Array<std::string> _columnNames;
 	Array<std::string> _keys;

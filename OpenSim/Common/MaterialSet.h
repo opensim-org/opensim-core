@@ -33,7 +33,7 @@
  * Author:  
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
 #include "Set.h"
@@ -43,7 +43,7 @@ namespace OpenSim {
 
 
 #ifndef SWIG
-//template class RDTOOLS_API Set<Material>;
+//template class OSIMCOMMON_API Set<Material>;
 #endif
 
 
@@ -55,7 +55,7 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class RDTOOLS_API MaterialSet: public Set<Material>
+class OSIMCOMMON_API MaterialSet: public Set<Material>
 {
 
 //=============================================================================

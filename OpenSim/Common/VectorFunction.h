@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "Array.h"
 
@@ -60,7 +60,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API VectorFunction : public Object
+class OSIMCOMMON_API VectorFunction : public Object
 {
 //=============================================================================
 // DATA

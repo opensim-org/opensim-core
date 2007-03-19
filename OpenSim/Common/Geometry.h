@@ -50,7 +50,7 @@ namespace OpenSim {
 
 
 // Base Geometry
-class RDTOOLS_API Geometry
+class OSIMCOMMON_API Geometry
 {
 public:
 	// Basically subtypes so that we can do dynamic casting safely on GUI side, based on type
@@ -102,7 +102,7 @@ public:
  * It is used by muscle segments so that it's as small and useful as possiblethe 
  * For muscle segments, GUI is free to display it as a line, cylinder or ellipsoid
  */
-class RDTOOLS_API LineGeometry : public Geometry
+class OSIMCOMMON_API LineGeometry : public Geometry
 {	
 protected:
 	double _point1[3];
@@ -144,7 +144,7 @@ public:
 	}
 };
 
-class RDTOOLS_API ArrowGeometry : public LineGeometry
+class OSIMCOMMON_API ArrowGeometry : public LineGeometry
 {	
 public:
 	ArrowGeometry(double aPoint1[3], double aUnitDirTo[3], double aLength):
@@ -162,7 +162,7 @@ public:
  * to be stuffed in this class, it may be worth it to separate it into a bunch,
  * one per shape.
  */
-class RDTOOLS_API AnalyticGeometry : public Geometry
+class OSIMCOMMON_API AnalyticGeometry : public Geometry
 {	 
 
 	// Common array of attributes for analytic geometry we can represent
@@ -203,7 +203,7 @@ public:
 	}
 };
 
-class RDTOOLS_API AnalyticSphere : public AnalyticGeometry
+class OSIMCOMMON_API AnalyticSphere : public AnalyticGeometry
 {
 protected:
 	double				_attributes[1];
@@ -235,7 +235,7 @@ public:
 	}
 };	// AnalyticSphere
 
-class RDTOOLS_API AnalyticEllipsoid : public AnalyticGeometry
+class OSIMCOMMON_API AnalyticEllipsoid : public AnalyticGeometry
 {
 protected:
 	double				_attributes[3];
@@ -265,7 +265,7 @@ public:
 	}
 };
 
-class RDTOOLS_API AnalyticCylinder : public AnalyticGeometry
+class OSIMCOMMON_API AnalyticCylinder : public AnalyticGeometry
 {
 protected:
 	double				_attributes[2];
@@ -288,7 +288,7 @@ public:
 	}
 };
 
-class RDTOOLS_API AnalyticTorus : public AnalyticGeometry
+class OSIMCOMMON_API AnalyticTorus : public AnalyticGeometry
 {
 protected:
 	double				_attributes[2];
@@ -311,7 +311,7 @@ public:
 	}
 };
 
-class RDTOOLS_API PolyhedralGeometry : public Geometry
+class OSIMCOMMON_API PolyhedralGeometry : public Geometry
 {
 protected:
 	std::string _geometryFile;

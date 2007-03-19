@@ -2,26 +2,26 @@
 // Author:  Frank C. Anderson
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Signal.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Line.h>
-#include <OpenSim/Tools/Plane.h>
-#include <OpenSim/Tools/GCVSplineSet.h>
-#include <OpenSim/Tools/SIMMUtilities.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertySet.h>
-#include <OpenSim/Tools/RootSolver.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Signal.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Line.h>
+#include <OpenSim/Common/Plane.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/SIMMUtilities.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/RootSolver.h>
 #include "ExampleVectorFunctionUncoupledNxN.h"
 
 
@@ -36,7 +36,7 @@ using namespace std;
 int TestRootSolver();
 //_____________________________________________________________________________
 /**
- * Test the rdTools library.
+ * Test the osimCommon library.
  */
 int main(int argc, char* argv[])
 {

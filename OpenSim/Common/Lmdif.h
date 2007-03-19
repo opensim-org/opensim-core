@@ -13,9 +13,9 @@
  *
  *****************************************************/
 
-#include "rdTools.h"
+#include "osimCommon.h"
 
-void RDTOOLS_API lmdif_C(
+void OSIMCOMMON_API lmdif_C(
   void (*fcn)(int, int, double[], double[], int *, void *),
   int    m,
   int    n,

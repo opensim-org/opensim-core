@@ -1,4 +1,4 @@
-// SimmUnits.cpp
+// Units.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -25,8 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SimmUnits.h"
-#include <OpenSim/Tools/rdMath.h>
+#include "Units.h"
+#include "rdMath.h"
 
 //=============================================================================
 // STATICS
@@ -41,7 +41,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmUnits::SimmUnits() :
+Units::Units() :
 	_type(simmUnknownUnits)
 {
 }
@@ -50,9 +50,9 @@ SimmUnits::SimmUnits() :
 /**
  * Copy constructor.
  *
- * @param aUnits SimmUnits to be copied.
+ * @param aUnits Units to be copied.
  */
-SimmUnits::SimmUnits(const SimmUnits& aUnits)
+Units::Units(const Units& aUnits)
 {
 	_type = aUnits._type;
 }
@@ -63,7 +63,7 @@ SimmUnits::SimmUnits(const SimmUnits& aUnits)
  *
  * @param aString string containing the units text label
  */
-SimmUnits::SimmUnits(string& aString) :
+Units::Units(string& aString) :
 	_type(simmUnknownUnits)
 {
    if (aString == "RADIANS" || aString == "RAD" || aString == "radians" || aString == "rad")
@@ -90,7 +90,7 @@ SimmUnits::SimmUnits(string& aString) :
  *
  * @param aType the unit type.
  */
-SimmUnits::SimmUnits(UnitType aType)
+Units::Units(UnitType aType)
 {
 	_type = aType;
 }
@@ -99,7 +99,7 @@ SimmUnits::SimmUnits(UnitType aType)
 /**
  * Destructor
  */
-SimmUnits::~SimmUnits()
+Units::~Units()
 {
 }
 
@@ -115,7 +115,7 @@ SimmUnits::~SimmUnits()
  * @param aValue the number to convert
  * @return The number converted to the new units
  */
-double SimmUnits::convertTo(UnitType aType, double aValue) const
+double Units::convertTo(UnitType aType, double aValue) const
 {
 	return aValue * convertTo(aType);
 }
@@ -128,7 +128,7 @@ double SimmUnits::convertTo(UnitType aType, double aValue) const
  * @param aUnit the units to convert to
  * @return The conversion factor
  */
-double SimmUnits::convertTo(const SimmUnits& aUnit) const
+double Units::convertTo(const Units& aUnit) const
 {
 	return convertTo(aUnit._type);
 }
@@ -141,7 +141,7 @@ double SimmUnits::convertTo(const SimmUnits& aUnit) const
  * @param aType the units to convert to
  * @return The conversion factor
  */
-double SimmUnits::convertTo(UnitType aType) const
+double Units::convertTo(UnitType aType) const
 {
 	if (_type == aType)
 		return 1.0;
@@ -211,7 +211,7 @@ double SimmUnits::convertTo(UnitType aType) const
  *
  * @return Pointer to the character string.
  */
-const char* SimmUnits::getLabel() const
+const char* Units::getLabel() const
 {
 	switch(_type)
 	{
@@ -237,8 +237,8 @@ const char* SimmUnits::getLabel() const
 	}
 }
 
-void SimmUnits::peteTest() const
+void Units::peteTest() const
 {
-	cout << "   SimmUnits: " << getLabel() << endl;
+	cout << "   Units: " << getLabel() << endl;
 }
 

@@ -1,4 +1,4 @@
-// SimmMarkerData.cpp
+// MarkerData.cpp
 // Author: Peter Loan
 /* Copyright (c) 2005, Stanford University and Peter Loan.
  * 
@@ -29,8 +29,8 @@
 #include <fstream>
 #include <math.h>
 #include <float.h>
-#include <OpenSim/Tools/rdMath.h>
-#include "SimmMarkerData.h"
+#include "rdMath.h"
+#include "MarkerData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
 
@@ -47,7 +47,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SimmMarkerData::SimmMarkerData() :
+MarkerData::MarkerData() :
 	_numFrames(0),
 	_numMarkers(0),
 	_markerNames("")
@@ -58,7 +58,7 @@ SimmMarkerData::SimmMarkerData() :
 /**
  * Constructor from a TRB/TRC file.
  */
-SimmMarkerData::SimmMarkerData(const string& aFileName) :
+MarkerData::MarkerData(const string& aFileName) :
 	_numFrames(0),
 	_numMarkers(0),
 	_markerNames("")
@@ -93,7 +93,7 @@ SimmMarkerData::SimmMarkerData(const string& aFileName) :
 /**
  * Destructor.
  */
-SimmMarkerData::~SimmMarkerData()
+MarkerData::~MarkerData()
 {
 }
 
@@ -105,9 +105,9 @@ SimmMarkerData::~SimmMarkerData()
  * Read TRC file.
  *
  * @param aFilename name of TRC file.
- * @param aSMD SimmMarkerData object to hold the file contents
+ * @param aSMD MarkerData object to hold the file contents
  */
-void SimmMarkerData::readTRCFile(const string& aFileName, SimmMarkerData& aSMD)
+void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
 {
    ifstream in;
    string line, buffer;
@@ -165,7 +165,7 @@ void SimmMarkerData::readTRCFile(const string& aFileName, SimmMarkerData& aSMD)
 #endif
       }
 
-		SimmMarkerFrame *frame = new SimmMarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
+		MarkerFrame *frame = new MarkerFrame(aSMD._numMarkers, frameNum, time, aSMD._units);
 
       /* keep reading sets of coordinates until the end of the line is
        * reached. If more coordinates were read than there are markers,
@@ -251,9 +251,9 @@ void SimmMarkerData::readTRCFile(const string& aFileName, SimmMarkerData& aSMD)
  *
  * @param aStream stream to read from.
  * @param aFileName name of file that stream is from.
- * @param aSMD SimmMarkerData object to hold the file contents
+ * @param aSMD MarkerData object to hold the file contents
  */
-void SimmMarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, SimmMarkerData& aSMD)
+void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, MarkerData& aSMD)
 {
    string line, buffer;
    int pathFileType, markersRead;
@@ -316,7 +316,7 @@ void SimmMarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileNam
       }
    }
 
-   aSMD._units = SimmUnits(buffer);
+   aSMD._units = Units(buffer);
 
    /* read line 4 - trc data column names */
    getline(aStream, line);
@@ -348,7 +348,7 @@ void SimmMarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileNam
    {
 		string errorMessage;
 		errorMessage = "Could not read all marker names in TRC file " + aFileName + 
-			". Make sure there's exactly one tab per column & that Marker names are tab separated in header.\n";
+			". Make sure there's exactly one tab per column & that VisibleMarker names are tab separated in header.\n";
 		throw Exception(errorMessage);
 
    }
@@ -387,9 +387,9 @@ void SimmMarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileNam
  * Read TRB file.
  *
  * @param aFileName name of file to read.
- * @param aSMD SimmMarkerData object to hold the file contents
+ * @param aSMD MarkerData object to hold the file contents
  */
-void SimmMarkerData::readTRBFile(const string& aFileName, SimmMarkerData& aSMD)
+void MarkerData::readTRBFile(const string& aFileName, MarkerData& aSMD)
 {
 #if 0
    int i, j, index, headerSize, numMarkersThisFrame;
@@ -476,7 +476,7 @@ finish:
  * @param rStartFrame index of start frame is returned here.
  * @param rEndFrame index of end frame is returned here.
  */
-void SimmMarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const
+void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const
 {
 	int i;
 
@@ -515,7 +515,7 @@ void SimmMarkerData::findFrameRange(double aStartTime, double aEndTime, int& rSt
  * getStartFrameTime: Exposes the time for first frame
  */
 
-double SimmMarkerData::getStartFrameTime() const
+double MarkerData::getStartFrameTime() const
 {
 	if (_numFrames<=0)
 		return 1.0;
@@ -528,7 +528,7 @@ double SimmMarkerData::getStartFrameTime() const
  *
  * getLastFrameTime: Expose the time for the last frame
  */
-double SimmMarkerData::getLastFrameTime() const
+double MarkerData::getLastFrameTime() const
 {
 	if (_numFrames<=0)
 		return -1.0;
@@ -551,7 +551,7 @@ double SimmMarkerData::getLastFrameTime() const
  * @param aStartTime start time of frame range to average.
  * @param aEndTime end time of frame range to average.
  */
-void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double aEndTime)
+void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEndTime)
 {
 	if (_numFrames < 2)
 		return;
@@ -560,7 +560,7 @@ void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double 
 	double *minX = NULL, *minY = NULL, *minZ = NULL, *maxX = NULL, *maxY = NULL, *maxZ = NULL;
 
 	findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
-	SimmMarkerFrame *averagedFrame = new SimmMarkerFrame(*_frames[startIndex]);
+	MarkerFrame *averagedFrame = new MarkerFrame(*_frames[startIndex]);
 
 	/* If aThreshold is greater than zero, then calculate
 	 * the movement of each marker so you can check if it
@@ -682,7 +682,7 @@ void SimmMarkerData::averageFrames(double aThreshold, double aStartTime, double 
  *
  * @param aStorage storage block to fill in with marker data.
  */
-void SimmMarkerData::makeRdStorage(Storage& rStorage)
+void MarkerData::makeRdStorage(Storage& rStorage)
 {
 	/* First clear any existing frames. */
 	rStorage.reset(0);
@@ -724,7 +724,7 @@ void SimmMarkerData::makeRdStorage(Storage& rStorage)
  *
  * @param aUnits units to convert to.
  */
-void SimmMarkerData::convertToUnits(const SimmUnits& aUnits)
+void MarkerData::convertToUnits(const Units& aUnits)
 {
 	double scaleFactor = _units.convertTo(aUnits);
 
@@ -749,7 +749,7 @@ void SimmMarkerData::convertToUnits(const SimmUnits& aUnits)
  * @param aIndex index of the row to get.
  * @return Pointer to the frame of data.
  */
-SimmMarkerFrame* SimmMarkerData::getFrame(int aIndex) const
+MarkerFrame* MarkerData::getFrame(int aIndex) const
 {
 	if (aIndex < 0 || aIndex >= _numFrames)
 		return NULL;
@@ -764,7 +764,7 @@ SimmMarkerFrame* SimmMarkerData::getFrame(int aIndex) const
  * @param aName name of marker.
  * @return Index of the named marker.
  */
-int SimmMarkerData::getMarkerIndex(const string& aName) const
+int MarkerData::getMarkerIndex(const string& aName) const
 {
 	for (int i = 0; i < _markerNames.getSize(); i++)
 	{
@@ -775,7 +775,7 @@ int SimmMarkerData::getMarkerIndex(const string& aName) const
 	return -1;
 }
 
-void SimmMarkerData::peteTest() const
+void MarkerData::peteTest() const
 {
 	cout << "   MarkerData: " << endl;
 	cout << "      numFrames: " << _numFrames << endl;

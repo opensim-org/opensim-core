@@ -33,12 +33,12 @@
  * Author:  
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 namespace OpenSim { 
@@ -53,7 +53,7 @@ class Object;
  * @author Ayman Habib
  */
 
-class RDTOOLS_API Event  
+class OSIMCOMMON_API Event  
 {
 
 //=============================================================================

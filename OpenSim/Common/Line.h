@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 
 //=============================================================================
@@ -44,7 +44,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Line : public Object
+class OSIMCOMMON_API Line : public Object
 {
 //=============================================================================
 // DATA

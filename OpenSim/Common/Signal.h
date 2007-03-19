@@ -34,7 +34,7 @@
  */
 
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Array.h"
 
 
@@ -45,7 +45,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Signal
+class OSIMCOMMON_API Signal
 {
 //=============================================================================
 // DATA

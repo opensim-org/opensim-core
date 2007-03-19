@@ -35,13 +35,13 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Array.h"
 #include "VectorFunctionUncoupledNxN.h"
 
 
-//template class RDTOOLS_API Array<double>;
+//template class OSIMCOMMON_API Array<double>;
 
 
 //=============================================================================
@@ -67,7 +67,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API RootSolver
+class OSIMCOMMON_API RootSolver
 {
 //=============================================================================
 // MEMBER VARIABLES

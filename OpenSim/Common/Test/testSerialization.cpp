@@ -2,17 +2,17 @@
 // Author:  Frank C. Anderson
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyIntArray.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertySet.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/Object.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyIntArray.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Object.h>
 #include "rdSerializableObject.h"
 #include "rdSerializableObject2.h"
 
@@ -28,7 +28,7 @@ using namespace std;
 int TestSerialization();
 //_____________________________________________________________________________
 /**
- * Test the rdTools library.
+ * Test the osimCommon library.
  */
 int main(int argc, char* argv[])
 {

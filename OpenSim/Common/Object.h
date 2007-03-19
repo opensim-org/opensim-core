@@ -44,7 +44,7 @@
 #include <map>
 #include "Observable.h"
 #include "Event.h"
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "PropertySet.h"
 
 // Only the necessary Xerces includes/defines
@@ -66,7 +66,7 @@ class DOMElement;	// should be in proper namespace if we care
 // EXPORT LINE FOR MICROSOFT VISUAL C++
 #ifdef WIN32
 #ifndef SWIG
-template class RDTOOLS_API OpenSim::ArrayPtrs<OpenSim::Object>;
+template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif
 #endif
 
@@ -78,9 +78,9 @@ typedef std::map<std::string, bool, std::less<std::string> > defaultsReadFromFil
 const char ObjectDEFAULT_NAME[] = "default";
 
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
@@ -106,7 +106,7 @@ namespace OpenSim {
 class VisibleObject;
 class XMLDocument;
 
-class RDTOOLS_API Object  
+class OSIMCOMMON_API Object  
 {
 
 //=============================================================================

@@ -38,7 +38,7 @@
 #include "Mtx.h"
 #include "Line.h"
 #include "Plane.h"
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
+#include "SimmMacros.h"
 
 
 using namespace OpenSim;

@@ -34,7 +34,7 @@
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
+#include "SimmMacros.h"
 
 
 

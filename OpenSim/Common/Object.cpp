@@ -1620,29 +1620,29 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
 }
 /** 
     * The following code accounts for an object made up to call 
-    * RegisterTypes_rdTools function on entry to the DLL in a cross platform manner 
+    * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
     * 
     * @todo Figure out if there're scenarios due to static initialization order that breaks this. 
     * -Ayman May 06 
     */ 
      
-class rdToolsInstantiator 
+class osimCommonInstantiator 
 { 
 public: 
-        rdToolsInstantiator(); 
+        osimCommonInstantiator(); 
 private: 
         void registerDllClasses(); 
 }; 
     
-rdToolsInstantiator::rdToolsInstantiator() 
+osimCommonInstantiator::osimCommonInstantiator() 
 { 
         registerDllClasses(); 
 } 
     
-extern "C" RDTOOLS_API void RegisterTypes_rdTools(); 
-void rdToolsInstantiator::registerDllClasses() 
+extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon(); 
+void osimCommonInstantiator::registerDllClasses() 
 { 
-        RegisterTypes_rdTools(); 
+        RegisterTypes_osimCommon(); 
 } 
     
-static rdToolsInstantiator instantiator; 
+static osimCommonInstantiator instantiator; 

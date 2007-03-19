@@ -33,7 +33,7 @@
  * Author:  
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Object.h"
 #include "Material.h"
 
@@ -47,7 +47,7 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class RDTOOLS_API MaterialManager: public Object
+class OSIMCOMMON_API MaterialManager: public Object
 {
 
 //=============================================================================

@@ -36,7 +36,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 
 // DEFINES
 #define RDSPLINE_MAXSIZE 2048
@@ -49,7 +49,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Spline
+class OSIMCOMMON_API Spline
 {
 //=============================================================================
 // DATA

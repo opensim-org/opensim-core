@@ -1,7 +1,7 @@
-#ifndef __SimmUnits_h__
-#define __SimmUnits_h__
+#ifndef __Units_h__
+#define __Units_h__
 
-// SimmUnits.h
+// Units.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,7 +29,7 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimCommonDLL.h"
 
 namespace OpenSim {
 
@@ -41,7 +41,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmUnits
+class OSIMCOMMON_API Units
 {
 
 public:
@@ -71,26 +71,26 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmUnits();
-	SimmUnits(const SimmUnits& aUnits);
-	SimmUnits(std::string& aString);
-	SimmUnits(UnitType aType);
-	virtual ~SimmUnits();
+	Units();
+	Units(const Units& aUnits);
+	Units(std::string& aString);
+	Units(UnitType aType);
+	virtual ~Units();
 	double convertTo(UnitType aType, double aValue) const;
 	double convertTo(UnitType aType) const;
-	double convertTo(const SimmUnits& aUnit) const;
+	double convertTo(const Units& aUnit) const;
 	UnitType getType() const { return _type; }
 	const char* getLabel() const;
 
 	void peteTest() const;
 
 //=============================================================================
-};	// END of class SimmUnits
+};	// END of class Units
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmUnits_h__
+#endif // __Units_h__
 
 

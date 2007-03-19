@@ -29,10 +29,10 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
+#include "osimCommonDLL.h"
+#include "Object.h"
+#include "PropertyDbl.h"
+#include "PropertyDblArray.h"
 
 namespace OpenSim {
 
@@ -44,7 +44,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMotionEvent : public Object  
+class OSIMCOMMON_API SimmMotionEvent : public Object  
 {
 
 //=============================================================================

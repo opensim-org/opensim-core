@@ -33,13 +33,13 @@
  * Author:  
  */
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Event.h"
 
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
@@ -50,7 +50,7 @@
 
 namespace OpenSim { 
 
-class RDTOOLS_API TransformChangeEvent: public Event
+class OSIMCOMMON_API TransformChangeEvent: public Event
 {
 
 //=============================================================================

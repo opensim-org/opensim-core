@@ -37,7 +37,7 @@
 #pragma warning( disable : 4251 )
 #endif
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Property.h"
 
@@ -54,7 +54,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API PropertyDblArray : public Property
+class OSIMCOMMON_API PropertyDblArray : public Property
 {
 
 //=============================================================================

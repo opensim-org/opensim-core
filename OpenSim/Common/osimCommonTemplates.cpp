@@ -30,11 +30,11 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#define RDTOOLSTEMPLATES
+#define OSIMCOMMONTEMPLATES
 
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
@@ -46,15 +46,15 @@
 using namespace OpenSim;
 #ifdef WIN32
 
-//template class RDTOOLS_API Array<bool>;
-//template class RDTOOLS_API Array<int>;
-//template class RDTOOLS_API Array<double>;
-//template class RDTOOLS_API Array<std::string>;
+//template class OSIMCOMMON_API Array<bool>;
+//template class OSIMCOMMON_API Array<int>;
+//template class OSIMCOMMON_API Array<double>;
+//template class OSIMCOMMON_API Array<std::string>;
 
-//template class RDTOOLS_API NamedValueArray<int>;
-//template class RDTOOLS_API NamedValueArray<double>;
+//template class OSIMCOMMON_API NamedValueArray<int>;
+//template class OSIMCOMMON_API NamedValueArray<double>;
 
-//template class RDTOOLS_API Set<Material>;
+//template class OSIMCOMMON_API Set<Material>;
 
 #endif  // WIN32
 

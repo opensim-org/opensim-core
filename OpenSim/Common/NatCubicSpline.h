@@ -32,7 +32,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Array.h"
 #include "PropertyInt.h"
@@ -54,7 +54,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API NatCubicSpline : public Function
+class OSIMCOMMON_API NatCubicSpline : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES

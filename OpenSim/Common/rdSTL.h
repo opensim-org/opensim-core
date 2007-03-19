@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdToolsDLL.h"
+#include "osimCommonDLL.h"
 #include <vector>
 
 
@@ -50,8 +50,8 @@
 #else
 
 	// TEMPLATE GENERATION
-	template class RDTOOLS_API std::vector<int>;
-	template class RDTOOLS_API std::vector<double>;
+	template class OSIMCOMMON_API std::vector<int>;
+	template class OSIMCOMMON_API std::vector<double>;
 
 #endif
 

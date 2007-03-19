@@ -34,11 +34,11 @@
  */
 
 
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Array.h"
 
 
-//template class RDTOOLS_API Array<double>;
+//template class OSIMCOMMON_API Array<double>;
 
 
 //=============================================================================
@@ -57,7 +57,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API StateVector
+class OSIMCOMMON_API StateVector
 {
 //=============================================================================
 

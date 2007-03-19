@@ -27,13 +27,13 @@
 //=============================================================================
 #include <fstream>
 #include <sstream>
-#include <OpenSim/Tools/rdMath.h>
+#include "rdMath.h"
 #include "SimmMotionData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
-#include "AbstractModel.h"
-#include "AbstractDof.h"
-#include "CoordinateSet.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 //=============================================================================
 // STATICS
@@ -407,7 +407,7 @@ void SimmMotionData::readMotionFileHeader(ifstream &in, const string& aFileName,
       else if (buffer == "units")
       {
 			if (readStringFromStream(in, str))
-				rData._units = SimmUnits(str);
+				rData._units = Units(str);
       }
       else if (buffer == "cursor")
       {

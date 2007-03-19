@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 
 
 //=============================================================================
@@ -46,7 +46,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API Mtx
+class OSIMCOMMON_API Mtx
 {
 //=============================================================================
 // DATA

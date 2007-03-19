@@ -45,15 +45,15 @@ class Object;
 // EXPORT LINE FOR MICROSOFT VISUAL C++
 #ifdef WIN32
 #ifndef SWIG
-template class RDTOOLS_API ArrayPtrs<Object>;
+template class OSIMCOMMON_API ArrayPtrs<Object>;
 #endif
 #endif
 
 
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
@@ -61,7 +61,7 @@ template class RDTOOLS_API ArrayPtrs<Object>;
 //=============================================================================
 /**
  */
-class RDTOOLS_API Observable  
+class OSIMCOMMON_API Observable  
 {
 
 //=============================================================================

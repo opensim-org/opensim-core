@@ -3,10 +3,10 @@
 // Tests collection of Visible Objects and their dependencies.
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/SIMM/SimmModel.h>
 #include <OpenSim/Simulation/SIMM/SimmModelIterator.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -16,7 +16,7 @@ using namespace std;
 int TestVisibleObjectCollection();
 //_____________________________________________________________________________
 /**
- * Test the rdTools library.
+ * Test the osimCommon library.
  */
 int main(int argc, char* argv[])
 {

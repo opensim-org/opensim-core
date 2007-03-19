@@ -33,7 +33,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "Memory.h"
 
 

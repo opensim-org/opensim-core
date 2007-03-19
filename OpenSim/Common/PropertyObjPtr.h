@@ -30,7 +30,7 @@
 */
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Object.h"
 #include "Property.h"

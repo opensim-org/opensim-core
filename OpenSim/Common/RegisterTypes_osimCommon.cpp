@@ -1,17 +1,17 @@
-// RegisterTypes_rdTools.cpp
+// RegisterTypes_osimCommon.cpp
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include "RegisterTypes_rdTools.h"
+#include "Object.h"
+#include "VisibleObject.h"
+#include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
-//#include "Transform.h"
+#include "Transform.h"
 #include "VectorGCVSplineR1R3.h"
 #include "Scale.h"
 #include "NatCubicSpline.h"
@@ -27,11 +27,11 @@ using namespace std;
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
- * the rdTools library.
+ * the osimCommon library.
  */
-RDTOOLS_API void RegisterTypes_rdTools()
+OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
-	//cout<<"RegisterTypes_rdTools  \n";
+	//cout<<"RegisterTypes_osimCommon  \n";
 
 	Object::RegisterType( FunctionSet() );
 	Object::RegisterType( GCVSplineSet() );

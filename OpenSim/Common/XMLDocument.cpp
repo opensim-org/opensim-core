@@ -41,7 +41,7 @@
 #include <xercesc/dom/DOMException.hpp>
 #include <xercesc/sax/ErrorHandler.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
-#include "rdTools.h"
+#include "osimCommon.h"
 #include "XMLDocument.h"
 #include "Exception.h"
 

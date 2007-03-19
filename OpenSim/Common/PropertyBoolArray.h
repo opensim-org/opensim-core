@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Property.h"
 
@@ -50,7 +50,7 @@ namespace OpenSim {
  * @version 1.0
  * @author Frank C. Anderson
  */
-class RDTOOLS_API PropertyBoolArray : public Property
+class OSIMCOMMON_API PropertyBoolArray : public Property
 {
 
 //=============================================================================

@@ -1,7 +1,7 @@
-#ifndef __SimmMarkerData_h__
-#define __SimmMarkerData_h__
+#ifndef __MarkerData_h__
+#define __MarkerData_h__
 
-// SimmMarkerData.h
+// MarkerData.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -29,14 +29,14 @@
 // INCLUDE
 #include <iostream>
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include "AbstractModel.h"
-#include "SimmMarkerFrame.h"
-#include "SimmUnits.h"
+#include "osimCommonDLL.h"
+#include "Object.h"
+#include "Storage.h"
+#include "rdMath.h"
+#include "ArrayPtrs.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include "MarkerFrame.h"
+#include "Units.h"
 
 namespace OpenSim {
 
@@ -48,7 +48,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmMarkerData : public Object
+class OSIMCOMMON_API MarkerData : public Object
 {
 
 //=============================================================================
@@ -64,9 +64,9 @@ private:
 	int _originalStartFrame;
 	int _originalNumFrames;
 	std::string _fileName;
-	SimmUnits _units;
+	Units _units;
 	Array<std::string> _markerNames;
-	ArrayPtrs<SimmMarkerFrame> _frames;
+	ArrayPtrs<MarkerFrame> _frames;
 
 //=============================================================================
 // METHODS
@@ -75,17 +75,17 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmMarkerData();
-	SimmMarkerData(const std::string& aFileName);
-	virtual ~SimmMarkerData();
+	MarkerData();
+	MarkerData(const std::string& aFileName);
+	virtual ~MarkerData();
 	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
 	void averageFrames(double aThreshold = -1.0, double aStartTime = rdMath::MINUS_INFINITY, double aEndTime = rdMath::PLUS_INFINITY);
 	const std::string& getFileName() const { return _fileName; }
 	void makeRdStorage(Storage& rStorage);
-	SimmMarkerFrame* getFrame(int aIndex) const;
+	MarkerFrame* getFrame(int aIndex) const;
 	int getMarkerIndex(const std::string& aName) const;
-	const SimmUnits& getUnits() const { return _units; }
-	void convertToUnits(const SimmUnits& aUnits);
+	const Units& getUnits() const { return _units; }
+	void convertToUnits(const Units& aUnits);
 	const Array<std::string>& getMarkerNames() const { return _markerNames; }
 	int getNumFrames() const { return _numFrames; }
 	double getStartFrameTime() const;
@@ -93,17 +93,17 @@ public:
 	void peteTest() const;
 
 private:
-	void readTRCFile(const std::string& aFileName, SimmMarkerData& aSMD);
-	void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, SimmMarkerData& aSMD);
-	void readTRBFile(const std::string& aFileName, SimmMarkerData& aSMD);
+	void readTRCFile(const std::string& aFileName, MarkerData& aSMD);
+	void readTRCFileHeader(std::ifstream &in, const std::string& aFileName, MarkerData& aSMD);
+	void readTRBFile(const std::string& aFileName, MarkerData& aSMD);
 
 //=============================================================================
-};	// END of class SimmMarkerData
+};	// END of class MarkerData
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmMarkerData_h__
+#endif // __MarkerData_h__
 
 

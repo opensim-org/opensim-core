@@ -50,15 +50,15 @@ XERCES_CPP_NAMESPACE_USE
  * @author Eran Guendelman
  */
 #ifdef SWIG
-	#ifdef RDTOOLS_API
-		#undef RDTOOLS_API
-		#define RDTOOLS_API
+	#ifdef OSIMCOMMON_API
+		#undef OSIMCOMMON_API
+		#define OSIMCOMMON_API
 	#endif
 #endif
 
 namespace OpenSim { 
 
-class RDTOOLS_API XMLParsingException : public Exception {
+class OSIMCOMMON_API XMLParsingException : public Exception {
 
 //=============================================================================
 // DATA

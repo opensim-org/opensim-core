@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "rdTools.h"
+#include "osimCommon.h"
 #include <string>
 #include "Object.h"
 #include "Property.h"
@@ -52,7 +52,7 @@
  */
 namespace OpenSim { 
 
-class RDTOOLS_API PropertyObj : public Property
+class OSIMCOMMON_API PropertyObj : public Property
 {
 
 //=============================================================================
