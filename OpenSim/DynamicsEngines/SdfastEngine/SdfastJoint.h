@@ -28,13 +28,13 @@
 
 // INCLUDE
 #include <string>
-#include "SdfastEngineDLL.h"
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractJoint.h>
-#include <OpenSim/Simulation/SDFast/sdfast.h>
+#include "osimSdfastEngineDLL.h"
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include "sdfast.h"
 #include "SdfastBody.h"
 #include "SdfastCoordinate.h"
 
@@ -48,7 +48,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class SDFAST_ENGINE_API SdfastJoint : public AbstractJoint  
+class OSIMSDFASTENGINE_API SdfastJoint : public AbstractJoint  
 {
 
 //=============================================================================

@@ -30,9 +30,9 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/Storage.h>
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/Storage.h>
 #include "SimmStep.h"
 
 namespace OpenSim {

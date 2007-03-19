@@ -1,6 +1,6 @@
 #ifndef _SdfastEngineDLL_h_
 #define _SdfastEngineDLL_h_
-// SdfastEngineDLL.h
+// osimSdfastEngineDLL.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -37,7 +37,7 @@
 // UNIX PLATFORM
 #ifndef WIN32
 
-#define SDFAST_ENGINE_API
+#define OSIMSDFASTENGINE_API
 
 // WINDOWS PLATFORM
 #else
@@ -45,10 +45,10 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef SDFAST_ENGINE_EXPORTS
-#define SDFAST_ENGINE_API __declspec(dllexport)
+#ifdef OSIMSDFASTENGINE_EXPORTS
+#define OSIMSDFASTENGINE_API __declspec(dllexport)
 #else
-#define SDFAST_ENGINE_API __declspec(dllimport)
+#define OSIMSDFASTENGINE_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

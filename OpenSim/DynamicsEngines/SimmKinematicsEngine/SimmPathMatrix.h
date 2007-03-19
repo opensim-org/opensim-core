@@ -31,7 +31,7 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimSimmKinematicsEngineDLL.h"
 #include "SimmPath.h"
 
 namespace OpenSim {

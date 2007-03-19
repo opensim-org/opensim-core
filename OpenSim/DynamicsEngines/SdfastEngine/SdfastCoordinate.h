@@ -30,18 +30,18 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include "SdfastEngineDLL.h"
-#include <OpenSim/Tools/PropertyBool.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/PropertyObjPtr.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-#include <OpenSim/Simulation/SIMM/AbstractDof.h>
-#include <OpenSim/Simulation/SDFast/sdfast.h>
+#include "osimSdfastEngineDLL.h"
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include "sdfast.h"
 
 namespace OpenSim {
 
@@ -55,7 +55,7 @@ class SdfastEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class SDFAST_ENGINE_API SdfastCoordinate : public AbstractCoordinate  
+class OSIMSDFASTENGINE_API SdfastCoordinate : public AbstractCoordinate  
 {
 //=============================================================================
 // DATA

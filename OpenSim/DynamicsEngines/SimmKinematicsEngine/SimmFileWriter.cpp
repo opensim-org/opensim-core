@@ -27,31 +27,31 @@
 //=============================================================================
 #include <sstream>
 #include "SimmFileWriter.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Simulation/SIMM/JointSet.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Simulation/SIMM/DofSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
-#include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
-#include <OpenSim/Simulation/SIMM/SimmZajacHill.h>
-#include <OpenSim/Simulation/SIMM/SimmDarrylMuscle.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmUnits.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/PolyObject.h>
-#include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
-#include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/NatCubicSpline.h>
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
+#include <OpenSim/Simulation/Model/MusclePointSet.h>
+#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include <OpenSim/Actuators/SimmZajacHill.h>
+#include <OpenSim/Actuators/SimmDarrylMuscle.h>
+#include "SimmCoordinate.h"
+#include "SimmRotationDof.h"
+#include "SimmTranslationDof.h"
+#include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/Model/PolyObject.h>
+#include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/Common/rdMath.h>
 
 //=============================================================================
 // STATICS
@@ -161,9 +161,9 @@ bool SimmFileWriter::writeJointFile(const string& aFileName) const
       out << "motion_file " << mMotionFilename << endl;
 #endif
 
-	if (_model->getLengthUnits().getType() != SimmUnits::simmUnknownUnits)
+	if (_model->getLengthUnits().getType() != Units::simmUnknownUnits)
 		out << "length_units " << _model->getLengthUnits().getLabel() << endl;
-	if (_model->getForceUnits().getType() != SimmUnits::simmUnknownUnits)
+	if (_model->getForceUnits().getType() != Units::simmUnknownUnits)
 		out << "force_units " << _model->getForceUnits().getLabel() << endl;
 
 #if 0
@@ -272,7 +272,7 @@ bool SimmFileWriter::writeJointFile(const string& aFileName) const
    out << "origin 0.0 0.0 0.0" << endl;
    out << "\nmaterial mat2\n";
 	/* The floor bone file is in meters, so scale it to fit this model. */
-	double floorScale = 1.0 / _model->getLengthUnits().convertTo(SimmUnits::simmMeters);
+	double floorScale = 1.0 / _model->getLengthUnits().convertTo(Units::simmMeters);
 	out << "scale " << floorScale << " " << floorScale * 2.0 << " " << floorScale * 4.0 << endl;
    out << " endworldobject\n\n";
 
@@ -282,7 +282,7 @@ bool SimmFileWriter::writeJointFile(const string& aFileName) const
 
 	/* The default ball object in SIMM is in meters, so scale it to fit this model. */
 	out << "beginmotionobject ball\n";
-	double scale = 0.25 / _model->getLengthUnits().convertTo(SimmUnits::simmMeters);
+	double scale = 0.25 / _model->getLengthUnits().convertTo(Units::simmMeters);
 	out << "material blue" << endl;
 	out << "scale " << scale << " " << scale << " " << scale << endl;
    out << "endmotionobject\n\n";
@@ -656,7 +656,7 @@ bool SimmFileWriter::writeMuscleFile(const string& aFileName) const
 	int i;
 	for (i = 0; i < actuatorSet->getSize(); i++)
 	{
-		AbstractSimmMuscle* muscle = dynamic_cast<AbstractSimmMuscle*>(actuatorSet->get(i));
+		AbstractMuscle* muscle = dynamic_cast<AbstractMuscle*>(actuatorSet->get(i));
 		if (muscle)
 			writeMuscle(*muscle, out);
 	}
@@ -667,18 +667,18 @@ bool SimmFileWriter::writeMuscleFile(const string& aFileName) const
 	return true;
 }
 
-bool SimmFileWriter::writeMuscle(AbstractSimmMuscle& aMuscle, ofstream& aStream) const
+bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, ofstream& aStream) const
 {
 	int i;
 	aStream << "beginmuscle " << aMuscle.getName() << endl;
 
-	const SimmMusclePointSet& pts = aMuscle.getAttachmentSet();
+	const MusclePointSet& pts = aMuscle.getAttachmentSet();
 
 	aStream << "beginpoints" << endl;
 	for (i = 0; i < pts.getSize(); i++)
 	{
 		Array<double>& attachment = pts.get(i)->getAttachment();
-		SimmMuscleViaPoint* mvp = dynamic_cast<SimmMuscleViaPoint*>(pts.get(i));
+		MuscleViaPoint* mvp = dynamic_cast<MuscleViaPoint*>(pts.get(i));
 		aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pts.get(i)->getBody()->getName();
 		if (mvp)
 		{

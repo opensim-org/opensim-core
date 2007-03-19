@@ -25,17 +25,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/Constant.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
 #include "SimmJoint.h"
-#include "AbstractDynamicsEngine.h"
-#include "SimmMacros.h"
-#include "DofSet.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
 #include "SimmRotationDof.h"
 #include "SimmTranslationDof.h"
-#include "BodySet.h"
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 //=============================================================================
 // STATICS

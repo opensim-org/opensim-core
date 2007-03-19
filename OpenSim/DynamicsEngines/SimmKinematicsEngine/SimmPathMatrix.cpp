@@ -27,7 +27,7 @@
 // INCLUDES
 //=============================================================================
 #include "SimmPathMatrix.h"
-#include "AbstractBody.h"
+#include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <ostream>
 
 //=============================================================================

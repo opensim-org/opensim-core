@@ -30,23 +30,21 @@
 #include <math.h>
 #include <float.h>
 #include "SdfastFileWriter.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Simulation/SIMM/JointSet.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/SpeedSet.h>
-#include <OpenSim/Simulation/SIMM/DofSet.h>
-#include <OpenSim/Simulation/SIMM/DofSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include <OpenSim/Simulation/SIMM/SimmIO.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/NatCubicSpline.h>
-#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Common/SimmIO.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -1206,7 +1204,8 @@ void SdfastFileWriter::writeSdfastQRestraintData(ofstream& out)
 
    for (int i = 0; i < _coordinates.getSize(); i++)
    {
-		SimmCoordinate* sc = dynamic_cast<SimmCoordinate*>(_coordinates[i].modelCoordinate);
+		// Shouldn't haev to dynamic cast it to a SimmCoordinate...
+		AbstractCoordinate* sc = _coordinates[i].modelCoordinate;
 		if (sc)
 		{
 			if ((func = sc->getRestraintFunction()) && sc->isRestraintActive())
@@ -1862,11 +1861,11 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 			const ActuatorSet* act = _model->getActuatorSet();
 			for (i = 0; i < act->getSize(); i++)
 			{
-				AbstractSimmMuscle* muscle = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+				AbstractMuscle* muscle = dynamic_cast<AbstractMuscle*>(act->get(i));
 				if (muscle)
 				{
 					int j;
-					const SimmMusclePointSet& attachments = muscle->getAttachmentSet();
+					const MusclePointSet& attachments = muscle->getAttachmentSet();
 					for (j = 0; j < attachments.getSize(); j++)
 					{
 						if (attachments.get(j)->getBody() == leafBody)

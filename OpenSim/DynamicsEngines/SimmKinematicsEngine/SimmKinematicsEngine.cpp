@@ -30,31 +30,32 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Tools/GCVSpline.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Memory.h>
+#include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include "SimmMacros.h"
+#include <OpenSim/Common/SimmMacros.h>
 #include "SimmKinematicsEngine.h"
-#include "AbstractModel.h"
-#include "AbstractBody.h"
-#include "AbstractCoordinate.h"
-#include "AbstractJoint.h"
-#include "MarkerSet.h"
-#include "AbstractDof.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 #include "SimmCoordinate.h"
 #include "SimmBody.h"
 #include "SimmJoint.h"
 #include "SimmStep.h"
 #include "SimmTranslationDof.h"
 #include "SimmRotationDof.h"
-#include "SimmMarker.h"
-#include "SimmUnits.h"
-#include "BodySet.h"
-#include "CoordinateSet.h"
-#include "SpeedSet.h"
-#include "JointSet.h"
+#include <OpenSim/Simulation/Model/VisibleMarker.h>
+#include <OpenSim/Common/Units.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 
 //=============================================================================
 // STATICS
@@ -233,7 +234,7 @@ void SimmKinematicsEngine::registerTypes()
 	Object::RegisterType(GCVSpline());
 	Object::RegisterType(SimmTranslationDof());
 	Object::RegisterType(SimmRotationDof());
-	Object::RegisterType(SimmMarker());
+	Object::RegisterType(Marker());
 }
 
 //--------------------------------------------------------------------------

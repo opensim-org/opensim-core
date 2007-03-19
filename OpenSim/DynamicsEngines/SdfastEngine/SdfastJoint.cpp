@@ -27,14 +27,14 @@
 //=============================================================================
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/Constant.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
 #include "SdfastJoint.h"
 #include "SdfastEngine.h"
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 //=============================================================================
 // STATICS

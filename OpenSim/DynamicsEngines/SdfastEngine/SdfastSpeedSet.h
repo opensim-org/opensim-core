@@ -25,8 +25,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SdfastEngineDLL.h"
-#include <OpenSim/Tools/Set.h>
+#include "osimSdfastEngineDLL.h"
+#include <OpenSim/Common/Set.h>
 #include "SdfastSpeed.h"
 
 namespace OpenSim {
@@ -40,7 +40,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class SDFAST_ENGINE_API SdfastSpeedSet :	public Set<SdfastSpeed>
+class OSIMSDFASTENGINE_API SdfastSpeedSet :	public Set<SdfastSpeed>
 {
 private:
 	void setNull();

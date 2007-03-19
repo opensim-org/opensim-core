@@ -26,8 +26,8 @@
 // INCLUDES
 //=============================================================================
 #include "SimmBody.h"
-#include "AbstractDynamicsEngine.h"
-#include "SimmMacros.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS

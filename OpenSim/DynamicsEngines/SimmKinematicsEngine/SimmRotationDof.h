@@ -29,10 +29,10 @@
 // INCLUDE
 #include <iostream>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include "AbstractDof.h"
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 
 namespace OpenSim {
 
@@ -44,7 +44,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmRotationDof : public AbstractDof  
+class OSIMSIMMKINEMATICSENGINE_API SimmRotationDof : public AbstractDof  
 {
 
 //=============================================================================

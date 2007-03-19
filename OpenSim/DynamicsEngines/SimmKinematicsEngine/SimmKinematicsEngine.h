@@ -26,24 +26,24 @@
  */
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimSimmKinematicsEngineDLL.h"
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/NatCubicSpline.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include "AbstractDynamicsEngine.h"
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include "SimmPathMatrix.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMSIMMKINEMATICSENGINE_API
+		#undef OSIMSIMMKINEMATICSENGINE_API
+		#define OSIMSIMMKINEMATICSENGINE_API
 	#endif
 #endif
 
@@ -57,7 +57,7 @@ class JointIterator;
 class AbstractDof;
 class AbstractCoordinate;
 class MarkerSet;
-class SimmMarkerData;
+class MarkerData;
 
 //=============================================================================
 //=============================================================================
@@ -74,7 +74,7 @@ class SimmMarkerData;
  * @version 1.0
  */
 
-class RDSIMULATION_API SimmKinematicsEngine  : public AbstractDynamicsEngine
+class OSIMSIMMKINEMATICSENGINE_API SimmKinematicsEngine  : public AbstractDynamicsEngine
 {
 
 //=============================================================================
@@ -110,7 +110,7 @@ private:
 	void setupProperties();
 	void copyData(const SimmKinematicsEngine &aEngine);
 	AbstractBody* identifyGroundBody();
-	//void solveFrames(const SimmIKTrial& aIKOptions, Storage& inputData, Storage& outputData);
+	//void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 
 protected:
 	void createCoordinateJointLists();
@@ -120,9 +120,9 @@ public:
 	virtual void setup(AbstractModel* aModel);
 	void makePaths();
 #if 0
-	void solveInverseKinematics(const SimmIKTrial& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);
-	SimmMotionData* solveInverseKinematics(const SimmIKTrial& aIKOptions, SimmMarkerData& aMarkerData);
-	SimmMotionData* solveInverseKinematics(const SimmIKTrial& aIKOptions, SimmMarkerData& aMarkerData, SimmMotionData& aCoordinateData);
+	void solveInverseKinematics(const IKTrial& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);
+	SimmMotionData* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData);
+	SimmMotionData* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData, SimmMotionData& aCoordinateData);
 #endif
 
 	//--------------------------------------------------------------------------

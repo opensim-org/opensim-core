@@ -26,10 +26,10 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/SDFast/sdfast.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/DofSet.h>
-#include <OpenSim/Models/SdfastEngine/SdfastCoordinate.h>
-#include <OpenSim/Tools/NatCubicSpline.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastCoordinate.h>
+#include <OpenSim/Common/NatCubicSpline.h>
 #include <string>
 
 extern "C" {

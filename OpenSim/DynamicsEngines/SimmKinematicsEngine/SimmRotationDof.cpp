@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "SimmRotationDof.h"
-#include "AbstractCoordinate.h"
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 
 //=============================================================================
 // STATICS

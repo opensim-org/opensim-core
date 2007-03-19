@@ -25,8 +25,8 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "SdfastEngineDLL.h"
-#include <OpenSim/Tools/Set.h>
+#include "osimSdfastEngineDLL.h"
+#include <OpenSim/Common/Set.h>
 #include "SdfastJoint.h"
 
 namespace OpenSim {
@@ -40,7 +40,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class SDFAST_ENGINE_API SdfastJointSet : public Set<SdfastJoint>
+class OSIMSDFASTENGINE_API SdfastJointSet : public Set<SdfastJoint>
 {
 private:
 	void setNull();

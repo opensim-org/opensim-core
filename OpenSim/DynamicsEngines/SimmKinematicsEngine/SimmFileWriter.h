@@ -29,19 +29,19 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
+#include "osimSimmKinematicsEngineDLL.h"
 
 #ifdef SWIG
-	#ifdef workflow_API
-		#undef workflow_API
-		#define workflow_API
+	#ifdef OSIMSIMMKINEMATICSENGINE_API
+		#undef OSIMSIMMKINEMATICSENGINE_API
+		#define OSIMSIMMKINEMATICSENGINE_API
 	#endif
 #endif
 
 namespace OpenSim {
 
 class AbstractModel;
-class AbstractSimmMuscle;
+class AbstractMuscle;
 class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
@@ -55,7 +55,7 @@ class MarkerSet;
  * @author Peter Loan
  * @version 1.0
  */
-class  workflow_API SimmFileWriter
+class  OSIMSIMMKINEMATICSENGINE_API SimmFileWriter
 {
 
 //=============================================================================
@@ -83,7 +83,7 @@ private:
 	void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
 	bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
 	bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
-	bool writeMuscle(AbstractSimmMuscle& aMuscle, std::ofstream& aStream) const;
+	bool writeMuscle(AbstractMuscle& aMuscle, std::ofstream& aStream) const;
 	const std::string& getGravityLabel(double aGravity[3]) const;
 //=============================================================================
 };	// END of class SimmFileWriter

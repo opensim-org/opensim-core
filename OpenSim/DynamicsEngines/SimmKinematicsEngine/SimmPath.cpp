@@ -25,11 +25,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
 #include "SimmPath.h"
-#include "AbstractBody.h"
-#include "AbstractJoint.h"
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
 
 //=============================================================================
 // STATICS

@@ -29,8 +29,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Simulation/SIMM/SimmStep.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmStep.h>
 
 namespace OpenSim {
 

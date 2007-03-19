@@ -31,14 +31,14 @@
 #include <fstream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Tools/Storage.h>
-#include "AbstractBody.h"
-#include "BoneSet.h"
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/BoneSet.h>
 
 namespace OpenSim {
 
@@ -52,7 +52,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmBody : public AbstractBody  
+class OSIMSIMMKINEMATICSENGINE_API SimmBody : public AbstractBody  
 {
 
 //=============================================================================

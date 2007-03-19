@@ -27,10 +27,10 @@
 //=============================================================================
 #include "SdfastCoordinate.h"
 #include "SdfastEngine.h"
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractJoint.h>
-#include <OpenSim/Simulation/SIMM/SimmIO.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Common/SimmIO.h>
+#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS

@@ -4,8 +4,8 @@
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Object.h>
-#include "RegisterTypes_SdfastEngine.h"
+#include <OpenSim/Common/Object.h>
+#include "RegisterTypes_osimSdfastEngine.h"
 #include "SdfastEngine.h"
 #include "SdfastBody.h"
 #include "SdfastJoint.h"
@@ -15,14 +15,14 @@
 using namespace std;
 using namespace OpenSim;
 
-static SdfastEngineInstantiator instantiator; 
+static osimSdfastEngineInstantiator instantiator; 
 
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
  * the rdSimulation library.
  */
-SDFAST_ENGINE_API void RegisterTypes_SdfastEngine()
+OSIMSDFASTENGINE_API void RegisterTypes_SdfastEngine()
 {
 	cout<<"RegisterTypes_SdfastEngine\n";
 
@@ -33,12 +33,12 @@ SDFAST_ENGINE_API void RegisterTypes_SdfastEngine()
 	Object::RegisterType( SdfastSpeed() );
 }
 
-SdfastEngineInstantiator::SdfastEngineInstantiator() 
+osimSdfastEngineInstantiator::osimSdfastEngineInstantiator() 
 { 
         registerDllClasses(); 
 } 
     
-void SdfastEngineInstantiator::registerDllClasses() 
+void osimSdfastEngineInstantiator::registerDllClasses() 
 { 
         RegisterTypes_SdfastEngine(); 
 } 

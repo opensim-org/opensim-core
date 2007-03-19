@@ -30,14 +30,14 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include "SdfastEngineDLL.h"
-#include <OpenSim/Tools/VisibleObject.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/PropertyObj.h>
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
-#include <OpenSim/Simulation/SDFast/sdfast.h>
+#include "osimSdfastEngineDLL.h"
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include "sdfast.h"
 
 namespace OpenSim {
 
@@ -51,7 +51,7 @@ class SdfastEngine;
  * @author Peter Loan, Frank C. Anderson
  * @version 1.0
  */
-class SDFAST_ENGINE_API SdfastBody : public AbstractBody  
+class OSIMSDFASTENGINE_API SdfastBody : public AbstractBody  
 {
 
 //=============================================================================

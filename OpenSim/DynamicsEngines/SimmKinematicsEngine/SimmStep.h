@@ -31,9 +31,9 @@
 #include <string>
 #include <math.h>
 #include <vector>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/Storage.h>
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
 
@@ -48,7 +48,7 @@ class AbstractJoint;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmStep
+class OSIMSIMMKINEMATICSENGINE_API SimmStep
 {
 public:
 	typedef enum

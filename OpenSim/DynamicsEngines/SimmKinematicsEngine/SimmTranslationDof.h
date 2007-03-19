@@ -30,9 +30,9 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Storage.h>
-#include "AbstractDof.h"
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 
 namespace OpenSim {
 
@@ -48,7 +48,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmTranslationDof : public AbstractDof  
+class OSIMSIMMKINEMATICSENGINE_API SimmTranslationDof : public AbstractDof  
 {
 public:
 	enum AxisIndex

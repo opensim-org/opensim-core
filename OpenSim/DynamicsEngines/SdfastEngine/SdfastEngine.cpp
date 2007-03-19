@@ -30,28 +30,28 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/Memory.h>
-#include <OpenSim/Tools/GCVSpline.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/Memory.h>
+#include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/SQP/rdFSQP.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
+#include <OpenSim/Common/SimmMacros.h>
 #include "SdfastEngine.h"
 #include "sdufuncs.h"
-#include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
-#include <OpenSim/Simulation/SIMM/SpeedSet.h>
-#include <OpenSim/Simulation/SIMM/JointSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractDof.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include <OpenSim/Simulation/SIMM/SimmBody.h>
-#include <OpenSim/Simulation/SIMM/SimmJoint.h>
-#include <OpenSim/Simulation/SIMM/SimmStep.h>
-#include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmUnits.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmStep.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
+#include <OpenSim/Common/Units.h>
 
 //=============================================================================
 // STATICS
@@ -516,7 +516,7 @@ void SdfastEngine::setConfiguration(const double aY[])
 	int i;
 	ActuatorSet* act = getModel()->getActuatorSet();
 	for (i = 0; i < act->getSize(); i++) {
-		AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
 		if (sm)
 			sm->invalidatePath();
 	}
@@ -554,7 +554,7 @@ void SdfastEngine::setConfiguration(const double aQ[],const double aU[])
 	int i;
 	ActuatorSet* act = getModel()->getActuatorSet();
 	for (i = 0; i < act->getSize(); i++) {
-		AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
 		if (sm)
 			sm->invalidatePath();
 	}
@@ -2310,7 +2310,7 @@ void SdfastEngine::peteTest() const
 /**
  * Default constructor.
  */
-SDFAST_ENGINE_API AbstractModel*
+OSIMSDFASTENGINE_API AbstractModel*
 CreateModel()
 {
 	AbstractModel *model = new AbstractModel();
@@ -2321,7 +2321,7 @@ CreateModel()
 /**
  * Deserialization from file.
  */
-SDFAST_ENGINE_API AbstractModel*
+OSIMSDFASTENGINE_API AbstractModel*
 CreateModel_File(const string &aModelFile)
 {
 	Object::RegisterType(SdfastEngine());

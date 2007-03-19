@@ -1,25 +1,25 @@
-#ifndef _RegisterTypes_SdfastEngine_h_
-#define _RegisterTypes_SdfastEngine_h_
+#ifndef _RegisterTypes_osimSdfastEngine_h_
+#define _RegisterTypes_osimSdfastEngine_h_
 // RegisterTypes_SdfastEngine.h
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include "SdfastEngineDLL.h"
+#include "osimSdfastEngineDLL.h"
 
 
 extern "C" {
 
-SDFAST_ENGINE_API void RegisterTypes_SdfastEngine(); 
+OSIMSDFASTENGINE_API void RegisterTypes_SdfastEngine(); 
 
 }
 
 /**
  * A class intended for the purpose of automatically registering classes defined in this simulation Dll
  */
-class SdfastEngineInstantiator 
+class osimSdfastEngineInstantiator 
 { 
 public: 
-        SdfastEngineInstantiator(); 
+        osimSdfastEngineInstantiator(); 
 private: 
         void registerDllClasses(); 
 }; 

@@ -28,8 +28,8 @@
 #include <iostream>
 #include "SdfastBody.h"
 #include "SdfastEngine.h"
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Simulation/SIMM/SimmMacros.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS

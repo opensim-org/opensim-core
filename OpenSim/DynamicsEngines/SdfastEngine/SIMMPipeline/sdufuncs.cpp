@@ -17,7 +17,7 @@
 		it to your specific simulation.
 
 *******************************************************************************/
-#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 #include <OpenSim/Simulation/SDFast/sdfast.h>
 
 using namespace std;

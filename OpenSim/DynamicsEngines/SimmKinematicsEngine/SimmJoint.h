@@ -30,15 +30,15 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include "AbstractJoint.h"
-#include "AbstractCoordinate.h"
-#include "AbstractBody.h"
-#include "DofSet.h"
+#include "osimSimmKinematicsEngineDLL.h"
+#include <OpenSim/Common/PropertyStrArray.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
 
 namespace OpenSim {
 
@@ -52,7 +52,7 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmJoint : public AbstractJoint  
+class OSIMSIMMKINEMATICSENGINE_API SimmJoint : public AbstractJoint  
 {
 
 //=============================================================================

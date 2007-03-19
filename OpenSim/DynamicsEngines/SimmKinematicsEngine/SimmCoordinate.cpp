@@ -26,16 +26,16 @@
 // INCLUDES
 //=============================================================================
 #include "SimmCoordinate.h"
-#include "AbstractDof.h"
-#include "DofSet.h"
-#include "AbstractJoint.h"
+#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include "SimmKinematicsEngine.h"
-#include "AbstractDynamicsEngine.h"
-#include "ActuatorSet.h"
-#include "AbstractSimmMuscle.h"
-#include "AbstractModel.h"
-#include "SimmIO.h"
-#include "SimmMacros.h"
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Common/SimmIO.h>
+#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS
@@ -458,7 +458,7 @@ bool SimmCoordinate::setValue(double aValue)
 			// TODO: use Observer mechanism for _jointList, _pathList, and muscles
 			ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
 			for (i = 0; i < act->getSize(); i++) {
-				AbstractSimmMuscle* sm = dynamic_cast<AbstractSimmMuscle*>(act->get(i));
+				AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
 				if (sm)
 					sm->invalidatePath();
 			}
