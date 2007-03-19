@@ -37,9 +37,8 @@ FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp 
 FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Simtk/*.h Wrap/*.h *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 
-		    ${XERCES_INCLUDE_DIR}
-		    ${OpenSim_SOURCE_DIR}/Tools)
+		    ${OpenSim_SOURCE_DIR}/Vendors
+			 ${XERCES_INCLUDE_DIR})
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
