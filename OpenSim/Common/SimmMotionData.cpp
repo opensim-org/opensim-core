@@ -31,9 +31,9 @@
 #include "SimmMotionData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
-#include <OpenSim/Simulation/Model/AbstractDof.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
+//#include <OpenSim/Simulation/Model/AbstractModel.h>
+//#include <OpenSim/Simulation/Model/AbstractDof.h>
+//#include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 //=============================================================================
 // STATICS
@@ -802,41 +802,41 @@ int SimmMotionData::getFrameNumberForTime(double time) const
 		return i;
 }
 
-void SimmMotionData::convertDegreesToRadians(AbstractModel& aModel)
-{
-	int i;
-	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
-
-	// Loop through the coordinates in the model. For each one that is rotational,
-	// see if it has a corresponding column of data. If it does, multiply that
-	// column by DTR.
-	for (i = 0; i < coordinateSet->getSize(); i++) {
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
-			int index = getColumnIndex(coordinateSet->get(i)->getName());
-			if (index >= 0) {
-				scaleColumn(index, rdMath::DTR);
-			}
-		}
-	}
-}
-
-void SimmMotionData::convertRadiansToDegrees(AbstractModel& aModel)
-{
-	int i;
-	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
-
-	// Loop through the coordinates in the model. For each one that is rotational,
-	// see if it has a corresponding column of data. If it does, multiply that
-	// column by RTD.
-	for (i = 0; i < coordinateSet->getSize(); i++) {
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
-			int index = getColumnIndex(coordinateSet->get(i)->getName());
-			if (index >= 0) {
-				scaleColumn(index, rdMath::RTD);
-			}
-		}
-	}
-}
+//void SimmMotionData::convertDegreesToRadians(AbstractModel& aModel)
+//{
+//	int i;
+//	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
+//
+//	// Loop through the coordinates in the model. For each one that is rotational,
+//	// see if it has a corresponding column of data. If it does, multiply that
+//	// column by DTR.
+//	for (i = 0; i < coordinateSet->getSize(); i++) {
+//		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+//			int index = getColumnIndex(coordinateSet->get(i)->getName());
+//			if (index >= 0) {
+//				scaleColumn(index, rdMath::DTR);
+//			}
+//		}
+//	}
+//}
+//
+//void SimmMotionData::convertRadiansToDegrees(AbstractModel& aModel)
+//{
+//	int i;
+//	const CoordinateSet* coordinateSet = aModel.getDynamicsEngine().getCoordinateSet();
+//
+//	// Loop through the coordinates in the model. For each one that is rotational,
+//	// see if it has a corresponding column of data. If it does, multiply that
+//	// column by RTD.
+//	for (i = 0; i < coordinateSet->getSize(); i++) {
+//		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+//			int index = getColumnIndex(coordinateSet->get(i)->getName());
+//			if (index >= 0) {
+//				scaleColumn(index, rdMath::RTD);
+//			}
+//		}
+//	}
+//}
 
 void SimmMotionData::peteTest() const
 {

@@ -39,7 +39,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+//class AbstractModel;
 
 //=============================================================================
 //=============================================================================
@@ -109,8 +109,10 @@ public:
 	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	bool deleteColumn(const std::string& aColumnName);
 	void scaleColumn(int aColumnIndex, double aScaleFactor);
-	void convertDegreesToRadians(AbstractModel& aModel);
-	void convertRadiansToDegrees(AbstractModel& aModel);
+
+	// TODO: shouldn't put Model dependent stuff here (in Common library) -- move this functionality to 
+	//void convertDegreesToRadians(AbstractModel& aModel);
+	//void convertRadiansToDegrees(AbstractModel& aModel);
 	int getFrameNumberForTime(double time) const;
 	void writeSIMMMotionFile(const std::string& aFileName, const std::string& aName, const std::string& aComment) const;
 	const Array<std::string>& getColumnNames()const

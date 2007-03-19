@@ -34,7 +34,6 @@
 #include "Storage.h"
 #include "rdMath.h"
 #include "ArrayPtrs.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include "MarkerFrame.h"
 #include "Units.h"
 
