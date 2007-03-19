@@ -35,7 +35,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdSQPDLL.h"
+#include "osimSQPDLL.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "rdOptimizationTarget.h"

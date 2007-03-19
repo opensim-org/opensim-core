@@ -10,9 +10,9 @@
 #include <iostream>
 #include <string>
 #include <CFSQP/cfsqpusr.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include "rdSQPDLL.h"
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include "osimSQPDLL.h"
 #include "rdFSQP.h"
 #include "rdOptimizationTarget.h"
 

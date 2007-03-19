@@ -1,6 +1,4 @@
-#ifndef _rdSQPDLL_h_
-#define _rdSQPDLL_h_
-// rdSQPDLL.h
+// osimSQPDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -33,30 +31,38 @@
  * Author: Frank C. Anderson 
  */
 
-// UNIX PLATFORM
-#ifndef WIN32
+//=============================================================================
+// INCLUDES
+//=============================================================================
+#include "osimSQPDLL.h"
+#include <stdio.h>
 
-#define RDSQP_API
 
-// WINDOWS PLATFORM
-#else
+#ifdef WIN32
+//=============================================================================
+// DLL Main Entry Point
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ *	This routine is called when the dll is loaded I believe.
+ */
+BOOL APIENTRY DllMain( HANDLE hModule, 
+                       DWORD  ul_reason_for_call, 
+                       LPVOID lpReserved
+					 )
+{
+    switch (ul_reason_for_call)
+	{
+		case DLL_PROCESS_ATTACH:
+			break;
+		case DLL_THREAD_ATTACH:
+			break;
+		case DLL_THREAD_DETACH:
+			break;
+		case DLL_PROCESS_DETACH:
+			break;
+    }
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#ifdef RDSQP_EXPORTS
-#define RDSQP_API __declspec(dllexport)
-#else
-#define RDSQP_API __declspec(dllimport)
+    return TRUE;
+}
 #endif
-
-#endif // PLATFORM
-
-#ifdef SWIG
-#ifdef RDSQP_API
-		#undef RDSQP_API
-		#define RDSQP_API
-	#endif
-#endif
-
-#endif // __rdSQPDLL_h__

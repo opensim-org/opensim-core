@@ -11,7 +11,7 @@
 // INCLUDES
 //=============================================================================
 #include <ostream>
-#include "rdSQPDLL.h"
+#include "osimSQPDLL.h"
 #include "rdOptimizationTarget.h"
 
 
@@ -24,7 +24,7 @@
  */
 namespace OpenSim { 
 
-class RDSQP_API rdFSQP
+class OSIMSQP_API rdFSQP
 {
 //=============================================================================
 // DATA

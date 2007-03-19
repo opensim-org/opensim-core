@@ -38,8 +38,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/Mtx.h>
-#include "rdSQPDLL.h"
+#include <OpenSim/Common/Mtx.h>
+#include "osimSQPDLL.h"
 #include "rdOptimizationTarget.h"
 
 
@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class RDSQP_API rdSQP
+class OSIMSQP_API rdSQP
 {
 //=============================================================================
 // DATA
