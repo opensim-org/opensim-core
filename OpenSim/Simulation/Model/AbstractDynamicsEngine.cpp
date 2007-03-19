@@ -34,6 +34,7 @@
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/Memory.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/SimmMotionData.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "AbstractDynamicsEngine.h"
 #include "AbstractModel.h"
@@ -648,6 +649,40 @@ void AbstractDynamicsEngine::convertDegreesToRadians(Storage *rStorage) const
 void AbstractDynamicsEngine::convertRadiansToDegrees(Storage *rStorage) const
 {
 	scaleRotationalDofColumns(rStorage, rdMath::RTD);
+}
+//_____________________________________________________________________________
+void AbstractDynamicsEngine::scaleRotationalDofColumns(SimmMotionData &rMotionData, double factor) const
+{
+	// Loop through the coordinates in the model. For each one that is rotational,
+	// see if it has a corresponding column of data. If it does, multiply that
+	// column by the given scaling factor.
+	const CoordinateSet* coordinateSet = _model->getDynamicsEngine().getCoordinateSet();
+	for (int i = 0; i < coordinateSet->getSize(); i++) {
+		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+			int index = rMotionData.getColumnIndex(coordinateSet->get(i)->getName());
+			if(index >= 0) rMotionData.scaleColumn(index, factor);
+		}
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Convert the rotational generalized coordinates from units of
+ * degrees to units of radians for all the state-vectors in a SimmMotionData
+ * object.  Coordinates are identified by column names.
+ */
+void AbstractDynamicsEngine::convertDegreesToRadians(SimmMotionData &rMotionData) const
+{
+	scaleRotationalDofColumns(rMotionData, rdMath::DTR);
+}
+//_____________________________________________________________________________
+/**
+ * Convert the rotational generalized coordinates from units of
+ * radians to units of degrees for all the state-vectors in a SimmMotionData
+ * object.  Coordinates are identified by column names.
+ */
+void AbstractDynamicsEngine::convertRadiansToDegrees(SimmMotionData &rMotionData) const
+{
+	scaleRotationalDofColumns(rMotionData, rdMath::RTD);
 }
 //_____________________________________________________________________________
 /**
