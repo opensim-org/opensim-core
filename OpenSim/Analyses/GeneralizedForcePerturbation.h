@@ -9,12 +9,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include "suAnalysesDLL.h"
-#include <OpenSim/Tools/GCVSpline.h>
+#include "osimAnalysesDLL.h"
+#include <OpenSim/Common/GCVSpline.h>
 #include "Contact.h"
 
 
@@ -32,7 +31,7 @@ namespace OpenSim {
 class AbstractModel;
 class AbstractCoordinate;
 
-class SUANALYSES_API GeneralizedForcePerturbation : public DerivCallback 
+class OSIMANALYSES_API GeneralizedForcePerturbation : public DerivCallback 
 {
 //=============================================================================
 // DATA

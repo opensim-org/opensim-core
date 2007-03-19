@@ -9,9 +9,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdTools.h>
 #include <OpenSim/Simulation/Model/BodyConstraint.h>
-#include "Analyses.h"
 #include "Decomp.h"
 
 
@@ -24,7 +22,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API DecompHard : public Decomp
+class OSIMANALYSES_API DecompHard : public Decomp
 {
 //=============================================================================
 // DATA

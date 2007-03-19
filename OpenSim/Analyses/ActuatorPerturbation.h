@@ -9,11 +9,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 #include "Contact.h"
 
 
@@ -30,7 +29,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class SUANALYSES_API ActuatorPerturbation : public DerivCallback 
+class OSIMANALYSES_API ActuatorPerturbation : public DerivCallback 
 {
 //=============================================================================
 // DATA

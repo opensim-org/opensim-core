@@ -9,12 +9,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 
 
 //=============================================================================
@@ -28,7 +27,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API Kinematics : public Analysis 
+class OSIMANALYSES_API Kinematics : public Analysis 
 {
 //=============================================================================
 // DATA

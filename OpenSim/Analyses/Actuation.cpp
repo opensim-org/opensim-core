@@ -9,11 +9,9 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
-//#include <OpenSim/Simulation/SIMM/ActuatorIterator.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "Actuation.h"
 
 

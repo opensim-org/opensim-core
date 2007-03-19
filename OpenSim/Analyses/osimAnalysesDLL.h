@@ -8,7 +8,7 @@
 // UNIX PLATFORM
 #ifndef WIN32
 
-#define SUANALYSES_API
+#define OSIMANALYSES_API
 
 // WINDOWS PLATFORM
 #else
@@ -16,10 +16,10 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef SUANALYSES_EXPORTS
-#define SUANALYSES_API __declspec(dllexport)
+#ifdef OSIMANALYSES_EXPORTS
+#define OSIMANALYSES_API __declspec(dllexport)
 #else
-#define SUANALYSES_API __declspec(dllimport)
+#define OSIMANALYSES_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

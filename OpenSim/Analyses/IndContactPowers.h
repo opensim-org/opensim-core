@@ -9,9 +9,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include "suAnalysesDLL.h"
+#include <OpenSim/Common/rdMath.h>
+#include "osimAnalysesDLL.h"
 #include "IndAcc.h"
 
 
@@ -31,7 +30,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API IndContactPowers : public IndAcc
+class OSIMANALYSES_API IndContactPowers : public IndAcc
 {
 //=============================================================================
 // DATA

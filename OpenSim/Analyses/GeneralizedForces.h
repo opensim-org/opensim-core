@@ -9,10 +9,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 
 
 //=============================================================================
@@ -28,7 +27,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class SUANALYSES_API GeneralizedForces : public Analysis 
+class OSIMANALYSES_API GeneralizedForces : public Analysis 
 {
 //=============================================================================
 // DATA

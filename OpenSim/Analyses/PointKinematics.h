@@ -9,18 +9,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 #ifdef SWIG
-	#ifdef SUANALYSES_API
-		#undef SUANALYSES_API
-		#define SUANALYSES_API
+	#ifdef OSIMANALYSES_API
+		#undef OSIMANALYSES_API
+		#define OSIMANALYSES_API
 	#endif
 #endif
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 
 const int PointKinematicsNAME_LENGTH = 256;
@@ -40,7 +39,7 @@ namespace OpenSim {
 class AbstractModel;
 class AbstractBody;
 
-class SUANALYSES_API PointKinematics : public Analysis 
+class OSIMANALYSES_API PointKinematics : public Analysis 
 {
 //=============================================================================
 // DATA

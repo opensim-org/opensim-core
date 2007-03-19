@@ -4,16 +4,13 @@
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Object.h>
-#include "RegisterTypes_suAnalyses.h"
+#include <OpenSim/Common/Object.h>
+#include "RegisterTypes_osimAnalyses.h"
 #include "Kinematics.h"
 #include "Actuation.h"
 #include "PointKinematics.h"
 #include "BodyKinematics.h"
 #include "ActuatorGeneralizedForces.h"
-
-#include "PerturbationTool.h"
-#include "ForwardTool.h"
 
 
 
@@ -27,12 +24,9 @@ static suAnalysesInstantiator instantiator;
  * The purpose of this routine is to register all class types exported by
  * the Analyses library.
  */
-SUANALYSES_API void RegisterTypes_suAnalyses()
+OSIMANALYSES_API void RegisterTypes_suAnalyses()
 {
 	//cout<<"RegisterTypes_suAnalyses\n";
-
-	Object::RegisterType( PerturbationTool() );
-	Object::RegisterType( ForwardTool() );
 
 	Object::RegisterType( Kinematics() );
 	Object::RegisterType( Actuation() );

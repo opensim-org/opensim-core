@@ -9,9 +9,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include "suAnalysesDLL.h"
+#include <OpenSim/Common/rdMath.h>
+#include "osimAnalysesDLL.h"
 #include "IndAcc.h"
 
 const int BodyPointIndAcc_NAME_LENGTH = 256;
@@ -31,7 +30,7 @@ namespace OpenSim {
 class AbstractModel;
 class AbstractBody;
 
-class SUANALYSES_API BodyPointIndAcc : public IndAcc 
+class OSIMANALYSES_API BodyPointIndAcc : public IndAcc 
 {
 //=============================================================================
 // DATA

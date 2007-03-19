@@ -25,7 +25,7 @@
  */
 
 
-#include <OpenSim/Analyses/suAnalysesDLL.h>
+#include "osimAnalysesDLL.h"
 
 
 #include <string>
@@ -40,22 +40,22 @@
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
-    MAKE_VERSION_STRING(OPENSIM_SUANALYSES_MAJOR_VERSION,  \
-                        OPENSIM_SUANALYSES_MINOR_VERSION,  \
-                        OPENSIM_SUANALYSES_BUILD_VERSION)
+    MAKE_VERSION_STRING(OPENSIM_ANALYSES_MAJOR_VERSION,  \
+                        OPENSIM_ANALYSES_MINOR_VERSION,  \
+                        OPENSIM_ANALYSES_BUILD_VERSION)
 
 #define GET_COPYRIGHT_STRING \
-    MAKE_COPYRIGHT_STRING(OPENSIM_SUANALYSES_COPYRIGHT_YEARS, \
-                          OPENSIM_SUANALYSES_AUTHORS)
+    MAKE_COPYRIGHT_STRING(OPENSIM_ANALYSES_COPYRIGHT_YEARS, \
+                          OPENSIM_ANALYSES_AUTHORS)
 
 #define GET_AUTHORS_STRING \
-    MAKE_STRING(OPENSIM_SUANALYSES_AUTHORS)
+    MAKE_STRING(OPENSIM_ANALYSES_AUTHORS)
 
 #define GET_LIBRARY_STRING \
-    MAKE_STRING(OPENSIM_SUANALYSES_LIBRARY_NAME)
+    MAKE_STRING(OPENSIM_ANALYSES_LIBRARY_NAME)
 
 #define GET_TYPE_STRING \
-    MAKE_STRING(OPENSIM_SUANALYSES_TYPE)
+    MAKE_STRING(OPENSIM_ANALYSES_TYPE)
 
 #ifndef NDEBUG
     #define GET_DEBUG_STRING "debug"
@@ -76,9 +76,9 @@ void opensim_version_Analyses(int* major, int* minor, int* build) {
     static const char* v = "OPENSIM version="   GET_VERSION_STRING;
     static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
 
-    if (major) *major = OPENSIM_SUANALYSES_MAJOR_VERSION;
-    if (minor) *minor = OPENSIM_SUANALYSES_MINOR_VERSION;
-    if (build) *build = OPENSIM_SUANALYSES_BUILD_VERSION;
+    if (major) *major = OPENSIM_ANALYSES_MAJOR_VERSION;
+    if (minor) *minor = OPENSIM_ANALYSES_MINOR_VERSION;
+    if (build) *build = OPENSIM_ANALYSES_BUILD_VERSION;
 
     // Force statics to be present in the binary (Release mode otherwise 
     // optimizes them away).

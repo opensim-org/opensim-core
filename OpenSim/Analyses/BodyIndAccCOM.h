@@ -9,9 +9,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include "suAnalysesDLL.h"
+#include <OpenSim/Common/rdMath.h>
+#include "osimAnalysesDLL.h"
 #include "IndAcc.h"
 #include "BodyIndAcc.h"
 
@@ -30,7 +29,7 @@ namespace OpenSim {
 class AbstractModel;
 class AbstractBody;
 
-class SUANALYSES_API BodyIndAccCOM : public BodyIndAcc 
+class OSIMANALYSES_API BodyIndAccCOM : public BodyIndAcc 
 {
 //=============================================================================
 // DATA

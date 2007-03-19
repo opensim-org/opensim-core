@@ -10,7 +10,7 @@
 // INCLUDES
 //==============================================================================
 #include <math.h>
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "DecompHard.h"
 

@@ -6,9 +6,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 #include <iostream>
-#include "RegisterTypes_suAnalyses.h"
+#include "RegisterTypes_osimAnalyses.h"
 
 
 using namespace std;

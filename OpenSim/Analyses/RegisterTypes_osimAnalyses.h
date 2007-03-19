@@ -4,12 +4,12 @@
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Analyses/suAnalysesDLL.h>
+#include "osimAnalysesDLL.h"
 
 
 extern "C" {
 
-SUANALYSES_API void RegisterTypes_Analyses(); 
+OSIMANALYSES_API void RegisterTypes_Analyses(); 
 
 }
 

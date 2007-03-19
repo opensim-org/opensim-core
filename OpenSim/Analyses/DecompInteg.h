@@ -9,10 +9,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 #include "Contact.h"
 #include "Actuation.h"
 #include "Decomp.h"
@@ -32,7 +31,7 @@ namespace OpenSim {
 
 class AbstractModel;
 
-class SUANALYSES_API DecompInteg : public Decomp
+class OSIMANALYSES_API DecompInteg : public Decomp
 {
 //=============================================================================
 // DATA

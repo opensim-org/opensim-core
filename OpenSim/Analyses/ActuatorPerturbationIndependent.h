@@ -9,11 +9,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 #include "Contact.h"
 #include "ActuatorPerturbation.h"
 
@@ -57,7 +56,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API ActuatorPerturbationIndependent :
+class OSIMANALYSES_API ActuatorPerturbationIndependent :
 	public ActuatorPerturbation  
 {
 //=============================================================================

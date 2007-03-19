@@ -9,16 +9,15 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 
 
 #ifdef SWIG
-	#ifdef SUANALYSES_API
-		#undef SUANALYSES_API
-		#define SUANALYSES_API
+	#ifdef OSIMANALYSES_API
+		#undef OSIMANALYSES_API
+		#define OSIMANALYSES_API
 	#endif
 #endif
 //=============================================================================
@@ -32,7 +31,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API Actuation : public Analysis 
+class OSIMANALYSES_API Actuation : public Analysis 
 {
 //=============================================================================
 // DATA

@@ -16,13 +16,12 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
-#include <OpenSim/Simulation/SIMM/SpeedSet.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Common/Storage.h>
 #include "ActuatorGeneralizedForces.h"
 
 

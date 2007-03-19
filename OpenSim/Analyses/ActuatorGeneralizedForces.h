@@ -9,12 +9,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Tools/PropertyStrArray.h>
-#include "suAnalysesDLL.h"
+#include <OpenSim/Common/PropertyStrArray.h>
+#include "osimAnalysesDLL.h"
 
 
 //=============================================================================
@@ -29,7 +28,7 @@ namespace OpenSim {
 
 class AbstractActuator;
 
-class SUANALYSES_API ActuatorGeneralizedForces : public Analysis 
+class OSIMANALYSES_API ActuatorGeneralizedForces : public Analysis 
 {
 //=============================================================================
 // DATA

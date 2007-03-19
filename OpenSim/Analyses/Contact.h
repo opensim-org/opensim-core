@@ -10,11 +10,10 @@
 // INCLUDES
 //=============================================================================
 #include <string>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include "suAnalysesDLL.h"
+#include "osimAnalysesDLL.h"
 
 
 //=============================================================================
@@ -29,7 +28,7 @@
  */
 namespace OpenSim { 
 
-class SUANALYSES_API Contact : public Analysis 
+class OSIMANALYSES_API Contact : public Analysis 
 {
 //=============================================================================
 // DATA
