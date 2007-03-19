@@ -72,7 +72,7 @@ protected:
 	PropertyStr _bodyNameProp;
 	std::string &_bodyName;
 
-	// VisibleBody that the marker is attached to
+	// Body that the marker is attached to
 	AbstractBody* _body;
 
 	// Support for Display

@@ -132,7 +132,7 @@ void Marker::setNull()
  */
 void Marker::setupProperties()
 {
-	_bodyNameProp.setComment("VisibleBody segment in the model on which the marker resides.");
+	_bodyNameProp.setComment("Body segment in the model on which the marker resides.");
 	_bodyNameProp.setName("body");
 	_propertySet.append(&_bodyNameProp);
 
@@ -169,7 +169,7 @@ void Marker::setup(AbstractDynamicsEngine* aEngine)
 
 		if (!_body)
 		{
-			string errorMessage = "Error: VisibleBody " + _bodyName + " referenced in marker " + getName() +
+			string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
 				" does not exist in model " +	aEngine->getModel()->getName();
 			throw Exception(errorMessage);
 		}

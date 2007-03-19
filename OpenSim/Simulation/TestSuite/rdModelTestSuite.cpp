@@ -200,7 +200,7 @@ TestNames(Model *aModel)
 
 	int i;
 
-	fprintf(_outFPT,"\n\n VisibleBody          Name\n------------------------------");
+	fprintf(_outFPT,"\n\n Body          Name\n------------------------------");
 	for (i=0;i<aModel->getNB();i++)
 		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getBodyName(i).c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
@@ -677,7 +677,7 @@ TestBodies(Model *aModel)
 	int i;
 
 
-	fprintf(_outFPT,"\n\n VisibleBody      Mass\n"
+	fprintf(_outFPT,"\n\n Body      Mass\n"
 		"------------------");
 
 	for (i=0;i<aModel->getNB();i++)
@@ -692,7 +692,7 @@ TestBodies(Model *aModel)
 
 		aModel->getInertiaBodyLocal(i,rI);
 
-		fprintf(_outFPT,"\nInertia Matrix for VisibleBody: %d -----",i);
+		fprintf(_outFPT,"\nInertia Matrix for Body: %d -----",i);
 
 		fprintf(_outFPT,"\n         X              Y              Z"
 			"\n---------------------------------------------");
@@ -773,7 +773,7 @@ TestKinematics(Model *aModel)
 	int i;
 	double aPoint[] = { 0.0, 0.0, 0.0 };
 
-	fprintf(_outFPT,"\n\n VisibleBody                 Position"
+	fprintf(_outFPT,"\n\n Body                 Position"
 					"                               Velocity\n"
 "---------------------------------------------------------"
 "----------------------");
@@ -796,7 +796,7 @@ TestKinematics(Model *aModel)
 		"--------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody               Acceleration\n"
+	fprintf(_outFPT,"\n\n Body               Acceleration\n"
 		"---------------------------------------------");
 
 
@@ -822,7 +822,7 @@ TestKinematics(Model *aModel)
 	fprintf(_outFPT,"\n---------------------------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody       Direction Cosines (Array)\n"
+	fprintf(_outFPT,"\n\n Body       Direction Cosines (Array)\n"
 		"--------------------------------------");
 
 	for (i=0;i<aModel->getNB();i++)
@@ -842,7 +842,7 @@ TestKinematics(Model *aModel)
 	fprintf(_outFPT,"\n--------------------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody       Direction Cosines (Vector)\n"
+	fprintf(_outFPT,"\n\n Body       Direction Cosines (Vector)\n"
 		"--------------------------------------");
 
 	double *rDirCosVector;
@@ -866,7 +866,7 @@ TestKinematics(Model *aModel)
 	delete rDirCosVector;
 
 
-	fprintf(_outFPT,"\n\n VisibleBody            Angular Velocity (Global)        "
+	fprintf(_outFPT,"\n\n Body            Angular Velocity (Global)        "
 		"Resultant\n"
 		"-------------------------------------------------------------");
 
@@ -885,7 +885,7 @@ TestKinematics(Model *aModel)
 		"-------------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody            Angular Velocity (Local)         "
+	fprintf(_outFPT,"\n\n Body            Angular Velocity (Local)         "
 		"Resultant\n"
 		"-------------------------------------------------------------");
 
@@ -904,7 +904,7 @@ TestKinematics(Model *aModel)
 		"-------------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody        Angular Acceleration (Global)        "
+	fprintf(_outFPT,"\n\n Body        Angular Acceleration (Global)        "
 		"Resultant\n"
 		"------------------------------------------------------------");
 
@@ -923,7 +923,7 @@ TestKinematics(Model *aModel)
 		"------------------------------\n");
 
 
-	fprintf(_outFPT,"\n\n VisibleBody        Angular Acceleration (Local)         "
+	fprintf(_outFPT,"\n\n Body        Angular Acceleration (Local)         "
 		"Resultant\n"
 		"------------------------------------------------------------");
 

@@ -78,9 +78,9 @@ protected:
 	AbstractModel *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
-	/** VisibleBody with respect to which the track goals are specified. */
+	/** Body with respect to which the track goals are specified. */
 	int _wrtBody;
-	/** VisibleBody frame in which the track goals are expressed. */
+	/** Body frame in which the track goals are expressed. */
 	int _expressBody;
 	/** Flag to specify the active track goals. */
 	bool _active[3];

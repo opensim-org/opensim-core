@@ -157,7 +157,7 @@ void MusclePoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
 
 	if (!_body)
 	{
-		string errorMessage = "VisibleBody " + _bodyName + " referenced in muscle " + aMuscle->getName() + " not found in model " + aModel->getName();
+		string errorMessage = "Body " + _bodyName + " referenced in muscle " + aMuscle->getName() + " not found in model " + aModel->getName();
 		throw Exception(errorMessage);
 	}
 

@@ -707,7 +707,7 @@ check() const
 }
 //_____________________________________________________________________________
 /**
- * setup sets the actual VisibleBody references _ba, _bB
+ * setup sets the actual Body references _ba, _bB
  */
 void Force::
 setup(AbstractModel* aModel)

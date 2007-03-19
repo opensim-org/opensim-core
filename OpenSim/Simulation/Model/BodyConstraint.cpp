@@ -66,7 +66,7 @@ getNC()
 /**
  * Set the body that this constraint is applied to.
  *
- * @param aBody VisibleBody that this constraint is applied to.
+ * @param aBody Body that this constraint is applied to.
  */
 void BodyConstraint::
 setBody(AbstractBody *aBody)
@@ -77,7 +77,7 @@ setBody(AbstractBody *aBody)
 /**
  * Get the body that this constraint is applied to.
  *
- * @return VisibleBody that this constraint is applied to.
+ * @return Body that this constraint is applied to.
  */
 AbstractBody* BodyConstraint::
 getBody()

@@ -188,7 +188,7 @@ public:
 	// CHECK
 	//--------------------------------------------------------------------------
 	virtual bool check() const;
-	// Setup method to initialize VisibleBody references
+	// Setup method to initialize Body references
 	void setup(AbstractModel* aModel);
 
 	//--------------------------------------------------------------------------
