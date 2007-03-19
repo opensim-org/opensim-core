@@ -8,7 +8,7 @@
 //=============================================================================
 
 // INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimActuatorsDLL.h"
 #include <iostream>
 #include <string>
 
@@ -20,7 +20,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Muscle 
+class OSIMACTUATORS_API Muscle 
 {
 
 //=============================================================================

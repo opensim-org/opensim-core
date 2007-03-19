@@ -33,7 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "SetPoint.h"
 
 
@@ -48,7 +48,7 @@
  */
 namespace OpenSim { 
 
-class RDACTUATORS_API PolynomialSetPoint : public SetPoint
+class OSIMACTUATORS_API PolynomialSetPoint : public SetPoint
 {
 
 //=============================================================================

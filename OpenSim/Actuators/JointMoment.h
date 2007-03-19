@@ -37,9 +37,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Actuators.h"
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Actuators/GeneralizedForceAtv.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include "GeneralizedForceAtv.h"
 
 
 //=============================================================================
@@ -57,7 +56,7 @@
  */
 namespace OpenSim { 
 
-class RDACTUATORS_API JointMoment : public GeneralizedForceAtv
+class OSIMACTUATORS_API JointMoment : public GeneralizedForceAtv
 {
 //=============================================================================
 // DATA

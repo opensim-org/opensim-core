@@ -9,7 +9,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <RD/Tools/rdTools.h>
 #include <RD/Tools/rdMath.h>
 #include <RD/Tools/PropertyDbl.h> //added
 #include <RD/Tools/Storage.h>
@@ -43,7 +42,7 @@
  */
 namespace OpenSim { 
 
-class RDACTUATORS_API MuscleZajac : public Force 
+class OSIMACTUATORS_API MuscleZajac : public Force 
 {
 //=============================================================================
 // DATA

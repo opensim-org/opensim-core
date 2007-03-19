@@ -26,8 +26,8 @@
 // INCLUDES
 //=============================================================================
 #include "SimmZajacHill.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/rdMath.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/rdMath.h>
 
 //=============================================================================
 // STATICS
@@ -46,7 +46,7 @@ const int SimmZajacHill::STATE_FIBER_LENGTH = 1;
  * Default constructor.
  */
 SimmZajacHill::SimmZajacHill() :
-   AbstractSimmMuscle(),
+   AbstractMuscle(),
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
@@ -80,7 +80,7 @@ SimmZajacHill::~SimmZajacHill()
  * @param aMuscle SimmZajacHill to be copied.
  */
 SimmZajacHill::SimmZajacHill(const SimmZajacHill &aMuscle) :
-   AbstractSimmMuscle(aMuscle),
+   AbstractMuscle(aMuscle),
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
@@ -218,7 +218,7 @@ void SimmZajacHill::setupProperties()
 void SimmZajacHill::setup(AbstractModel* aModel)
 {
 	// Base class
-	AbstractSimmMuscle::setup(aModel);
+	AbstractMuscle::setup(aModel);
 
 	// Reasonable initial activation value
 	_activation = 0.01;
@@ -241,7 +241,7 @@ void SimmZajacHill::setup(AbstractModel* aModel)
 SimmZajacHill& SimmZajacHill::operator=(const SimmZajacHill &aMuscle)
 {
 	// BASE CLASS
-	AbstractSimmMuscle::operator=(aMuscle);
+	AbstractMuscle::operator=(aMuscle);
 
 	copyData(aMuscle);
 
@@ -258,7 +258,7 @@ SimmZajacHill& SimmZajacHill::operator=(const SimmZajacHill &aMuscle)
 void SimmZajacHill::registerTypes()
 {
 	// Base class
-	AbstractSimmMuscle::registerTypes();
+	AbstractMuscle::registerTypes();
 }
 
 //=============================================================================
@@ -273,7 +273,7 @@ void SimmZajacHill::registerTypes()
  */
 void SimmZajacHill::scale(const ScaleSet& aScaleSet)
 {
-	AbstractSimmMuscle::scale(aScaleSet);
+	AbstractMuscle::scale(aScaleSet);
 
 	// some force-generating parameters are scaled in postScale(),
 	// so as of now there is nothing else to do here...
@@ -290,7 +290,7 @@ void SimmZajacHill::scale(const ScaleSet& aScaleSet)
  */
 void SimmZajacHill::postScale(const ScaleSet& aScaleSet)
 {
-	AbstractSimmMuscle::postScale(aScaleSet);
+	AbstractMuscle::postScale(aScaleSet);
 
 	if (_preScaleLength > 0.0)
 	{
@@ -327,7 +327,7 @@ void SimmZajacHill::computeStateDerivatives(double rDYDT[])
 void SimmZajacHill::computeActuation()
 {
 	// Base Class (to calculate speed)
-	AbstractSimmMuscle::computeActuation();
+	AbstractMuscle::computeActuation();
 
    double normState[2], normStateDeriv[2], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
@@ -712,7 +712,7 @@ double SimmZajacHill::computeIsometricForce(double aActivation)
 
 void SimmZajacHill::peteTest() const
 {
-	AbstractSimmMuscle::peteTest();
+	AbstractMuscle::peteTest();
 
 	cout << "   timeScale: " << _timeScale << endl;
 	cout << "   activation1: " << _activation1 << endl;

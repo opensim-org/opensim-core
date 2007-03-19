@@ -36,7 +36,7 @@
 // UNIX PLATFORM
 #ifndef WIN32
 
-#define RDACTUATORS_API
+#define OSIMACTUATORS_API
 
 // WINDOWS PLATFORM
 #else
@@ -44,10 +44,10 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef RDACTUATORS_EXPORTS
-#define RDACTUATORS_API __declspec(dllexport)
+#ifdef OSIMACTUATORS_EXPORTS
+#define OSIMACTUATORS_API __declspec(dllexport)
 #else
-#define RDACTUATORS_API __declspec(dllimport)
+#define OSIMACTUATORS_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

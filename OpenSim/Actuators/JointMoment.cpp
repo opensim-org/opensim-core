@@ -7,14 +7,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "JointMoment.h"
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-#include <OpenSim/Simulation/SIMM/SpeedSet.h>
+#include "Muscle.h"
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
 
 
 

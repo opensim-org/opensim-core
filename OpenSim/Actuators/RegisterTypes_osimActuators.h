@@ -4,19 +4,19 @@
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Actuators/rdActuatorsDLL.h>
+#include "osimActuatorsDLL.h"
 
 
 extern "C" {
 
-RDACTUATORS_API void RegisterTypes_Actuators(); 
+OSIMACTUATORS_API void RegisterTypes_Actuators(); 
 
 }
 
-class rdActuatorsInstantiator
+class osimActuatorsInstantiator
 {
 public:
-       rdActuatorsInstantiator();
+       osimActuatorsInstantiator();
 private:
        void registerDllClasses();
 };

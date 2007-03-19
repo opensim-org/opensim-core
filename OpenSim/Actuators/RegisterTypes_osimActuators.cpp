@@ -4,19 +4,22 @@
 
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Object.h>
-#include "RegisterTypes_rdActuators.h"
+#include <OpenSim/Common/Object.h>
+#include "RegisterTypes_osimActuators.h"
 #include "GeneralizedForceAtv.h"
 #include "LinearSetPoint.h"
 #include "PolynomialSetPoint.h"
 #include "JointMoment.h"
+#include "Torque.h"
+#include "Muscle.h"
+#include "GeneralizedForce.h"
 
 
 
 using namespace OpenSim;
 using namespace std;
 
-static rdActuatorsInstantiator instantiator;
+static osimActuatorsInstantiator instantiator;
 
 
 //_____________________________________________________________________________
@@ -24,22 +27,24 @@ static rdActuatorsInstantiator instantiator;
  * The purpose of this routine is to register all class types exported by
  * the rdSimulation library.
  */
-RDACTUATORS_API void RegisterTypes_rdActuators()
+OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
-	//cout<<"RegisterTypes_rdActuators\n";
+	//cout<<"RegisterTypes_osimActuators\n";
 
 	Object::RegisterType( GeneralizedForceAtv() );
 	Object::RegisterType( LinearSetPoint() );
 	Object::RegisterType( PolynomialSetPoint() );
 	Object::RegisterType( JointMoment() );
+	Object::RegisterType( Torque() );
+	Object::RegisterType( GeneralizedForce() );
 }
 
-rdActuatorsInstantiator::rdActuatorsInstantiator()
+osimActuatorsInstantiator::osimActuatorsInstantiator()
 {
        registerDllClasses();
 }
 
-void rdActuatorsInstantiator::registerDllClasses()
+void osimActuatorsInstantiator::registerDllClasses()
 {
-       RegisterTypes_rdActuators();
+       RegisterTypes_osimActuators();
 }

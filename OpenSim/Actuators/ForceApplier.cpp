@@ -14,14 +14,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
-#include <OpenSim/Tools/VectorFunction.h>
-#include <OpenSim/Tools/VectorGCVSplineR1R3.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Common/VectorFunction.h>
+#include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include "ForceApplier.h"
 
 using namespace OpenSim;

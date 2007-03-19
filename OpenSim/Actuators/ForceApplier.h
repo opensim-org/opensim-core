@@ -9,15 +9,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Tools/VectorFunction.h>
-#include <OpenSim/Tools/FunctionSet.h>
-#include "suAnalysesDLL.h"
-#include "Contact.h"
+#include <OpenSim/Common/VectorFunction.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include "osimActuatorsDLL.h"
+#include <OpenSim/Analyses/Contact.h>
 
 
 //=============================================================================
@@ -34,7 +33,7 @@ namespace OpenSim {
 class AbstractModel;
 class AbstractBody;
 
-class SUANALYSES_API ForceApplier : public DerivCallback 
+class OSIMACTUATORS_API ForceApplier : public DerivCallback 
 {
 //=============================================================================
 // DATA

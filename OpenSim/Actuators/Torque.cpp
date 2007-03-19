@@ -35,14 +35,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include "Torque.h"
 
 

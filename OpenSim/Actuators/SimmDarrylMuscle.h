@@ -26,24 +26,24 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Tools/Function.h>
-#include "AbstractSimmMuscle.h"
+#include "osimActuatorsDLL.h"
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMACTUATORS_API
+		#undef OSIMACTUATORS_API
+		#define OSIMACTUATORS_API
 	#endif
 #endif
 
 namespace OpenSim {
 
-class RDSIMULATION_API SimmMuscleGroup;
+class OSIMACTUATORS_API MuscleGroup;
 
 //=============================================================================
 //=============================================================================
@@ -53,7 +53,7 @@ class RDSIMULATION_API SimmMuscleGroup;
  * @author Peter Loan
  * @version 1.0
  */
-class RDSIMULATION_API SimmDarrylMuscle : public AbstractSimmMuscle  
+class OSIMACTUATORS_API SimmDarrylMuscle : public AbstractMuscle  
 {
 
 //=============================================================================

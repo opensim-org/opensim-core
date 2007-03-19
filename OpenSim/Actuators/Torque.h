@@ -34,13 +34,13 @@
  */
 
 #include <string>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/PropertyStr.h>
-#include <OpenSim/Tools/PropertyInt.h>
-#include <OpenSim/Tools/PropertyDblArray.h>
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/VectorFunction.h>
-#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+#include "osimActuatorsDLL.h"
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/VectorFunction.h>
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
 
 
 //=============================================================================
@@ -60,7 +60,7 @@ namespace OpenSim {
 
 class AbstractBody;
 
-class RDSIMULATION_API Torque : public AbstractActuator
+class OSIMACTUATORS_API Torque : public AbstractActuator
 {
 
 //=============================================================================

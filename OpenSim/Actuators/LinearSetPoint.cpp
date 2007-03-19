@@ -35,10 +35,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "LinearSetPoint.h"
 
 using namespace std;

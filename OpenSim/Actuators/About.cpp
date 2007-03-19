@@ -25,7 +25,7 @@
  */
 
 
-#include "rdActuatorsDLL.h"
+#include "osimActuatorsDLL.h"
 
 #include <string>
 #include <cstring>
@@ -39,22 +39,22 @@
 #define MAKE_STRING(a) STR(a)
 
 #define GET_VERSION_STRING  \
-    MAKE_VERSION_STRING(OPENSIM_RDACTUATORS_MAJOR_VERSION,  \
-                        OPENSIM_RDACTUATORS_MINOR_VERSION,  \
-                        OPENSIM_RDACTUATORS_BUILD_VERSION)
+    MAKE_VERSION_STRING(OPENSIM_OSIMACTUATORS_MAJOR_VERSION,  \
+                        OPENSIM_OSIMACTUATORS_MINOR_VERSION,  \
+                        OPENSIM_OSIMACTUATORS_BUILD_VERSION)
 
 #define GET_COPYRIGHT_STRING \
-    MAKE_COPYRIGHT_STRING(OPENSIM_RDACTUATORS_COPYRIGHT_YEARS, \
-                          OPENSIM_RDACTUATORS_AUTHORS)
+    MAKE_COPYRIGHT_STRING(OPENSIM_OSIMACTUATORS_COPYRIGHT_YEARS, \
+                          OPENSIM_OSIMACTUATORS_AUTHORS)
 
 #define GET_AUTHORS_STRING \
-    MAKE_STRING(OPENSIM_RDACTUATORS_AUTHORS)
+    MAKE_STRING(OPENSIM_OSIMACTUATORS_AUTHORS)
 
 #define GET_LIBRARY_STRING \
-    MAKE_STRING(OPENSIM_RDACTUATORS_LIBRARY_NAME)
+    MAKE_STRING(OPENSIM_OSIMACTUATORS_LIBRARY_NAME)
 
 #define GET_TYPE_STRING \
-    MAKE_STRING(OPENSIM_RDACTUATORS_TYPE)
+    MAKE_STRING(OPENSIM_OSIMACTUATORS_TYPE)
 
 #ifndef NDEBUG
     #define GET_DEBUG_STRING "debug"
@@ -75,9 +75,9 @@ void opensim_version_rdactuators(int* major, int* minor, int* build) {
     static const char* v = "OPENSIM version="   GET_VERSION_STRING;
     static const char* c = "OPENSIM copyright=" GET_COPYRIGHT_STRING;
 
-    if (major) *major = OPENSIM_RDACTUATORS_MAJOR_VERSION;
-    if (minor) *minor = OPENSIM_RDACTUATORS_MINOR_VERSION;
-    if (build) *build = OPENSIM_RDACTUATORS_BUILD_VERSION;
+    if (major) *major = OPENSIM_OSIMACTUATORS_MAJOR_VERSION;
+    if (minor) *minor = OPENSIM_OSIMACTUATORS_MINOR_VERSION;
+    if (build) *build = OPENSIM_OSIMACTUATORS_BUILD_VERSION;
 
     // Force statics to be present in the binary (Release mode otherwise 
     // optimizes them away).

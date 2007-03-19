@@ -9,12 +9,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Simulation/Model/GeneralizedForce.h>
-#include "rdActuatorsDLL.h"
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/Storage.h>
+#include "GeneralizedForce.h"
+#include "osimActuatorsDLL.h"
 
 
 //=============================================================================
@@ -31,7 +30,7 @@ namespace OpenSim {
 
 class AbstractCoordinate;
 
-class RDACTUATORS_API SpringGeneralizedForce : public GeneralizedForce 
+class OSIMACTUATORS_API SpringGeneralizedForce : public GeneralizedForce 
 {
 //=============================================================================
 // DATA

@@ -34,12 +34,12 @@
  */
 
 //INCLUDES
-#include <OpenSim/Simulation/rdSimulationDLL.h>
+#include "osimActuatorsDLL.h"
 
 #ifdef SWIG
-	#ifdef RDSIMULATION_API
-		#undef RDSIMULATION_API
-		#define RDSIMULATION_API
+	#ifdef OSIMACTUATORS_API
+		#undef OSIMACTUATORS_API
+		#define OSIMACTUATORS_API
 	#endif
 #endif
 
@@ -52,7 +52,7 @@
  */
 namespace OpenSim { 
 
-class RDSIMULATION_API Springs  
+class OSIMACTUATORS_API Springs  
 {
 
 //=============================================================================

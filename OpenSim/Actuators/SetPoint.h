@@ -33,8 +33,8 @@
  * Author: Frank C. Anderson 
  */
 
-#include "rdActuatorsDLL.h"
-#include <OpenSim/Tools/PropertyDbl.h>
+#include "osimActuatorsDLL.h"
+#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/ContactForce.h>
 
 
@@ -52,7 +52,7 @@
  */
 namespace OpenSim { 
 
-class RDACTUATORS_API SetPoint : public ContactForce
+class OSIMACTUATORS_API SetPoint : public ContactForce
 {
 //=============================================================================
 // DATA

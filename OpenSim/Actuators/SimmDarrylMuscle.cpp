@@ -25,9 +25,9 @@
 // INCLUDES
 //=============================================================================
 #include "SimmDarrylMuscle.h"
-#include "SimmMacros.h"
-#include <OpenSim/Tools/rdMath.h>
-#include <OpenSim/Tools/DebugUtilities.h>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/DebugUtilities.h>
 
 //=============================================================================
 // STATICS
@@ -46,7 +46,7 @@ const int SimmDarrylMuscle::STATE_FIBER_LENGTH = 1;
  * Default constructor.
  */
 SimmDarrylMuscle::SimmDarrylMuscle() :
-   AbstractSimmMuscle(),
+   AbstractMuscle(),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -82,7 +82,7 @@ SimmDarrylMuscle::~SimmDarrylMuscle()
  * @param aMuscle SimmDarrylMuscle to be copied.
  */
 SimmDarrylMuscle::SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle) :
-   AbstractSimmMuscle(aMuscle),
+   AbstractMuscle(aMuscle),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -236,7 +236,7 @@ void SimmDarrylMuscle::setupProperties()
 void SimmDarrylMuscle::setup(AbstractModel* aModel)
 {
 	// Base class
-	AbstractSimmMuscle::setup(aModel);
+	AbstractMuscle::setup(aModel);
 
 	// Reasonable initial activation value
 	_activation = 0.01;
@@ -259,7 +259,7 @@ void SimmDarrylMuscle::setup(AbstractModel* aModel)
 SimmDarrylMuscle& SimmDarrylMuscle::operator=(const SimmDarrylMuscle &aMuscle)
 {
 	// BASE CLASS
-	AbstractSimmMuscle::operator=(aMuscle);
+	AbstractMuscle::operator=(aMuscle);
 
 	copyData(aMuscle);
 
@@ -276,7 +276,7 @@ SimmDarrylMuscle& SimmDarrylMuscle::operator=(const SimmDarrylMuscle &aMuscle)
 void SimmDarrylMuscle::registerTypes()
 {
 	// Base class
-	AbstractSimmMuscle::registerTypes();
+	AbstractMuscle::registerTypes();
 }
 
 //=============================================================================
@@ -291,7 +291,7 @@ void SimmDarrylMuscle::registerTypes()
  */
 void SimmDarrylMuscle::scale(const ScaleSet& aScaleSet)
 {
-	AbstractSimmMuscle::scale(aScaleSet);
+	AbstractMuscle::scale(aScaleSet);
 
 	// some force-generating parameters are scaled in postScale(),
 	// so as of now there is nothing else to do here...
@@ -309,7 +309,7 @@ void SimmDarrylMuscle::scale(const ScaleSet& aScaleSet)
 void SimmDarrylMuscle::postScale(const ScaleSet& aScaleSet)
 {
 	// Base class
-	AbstractSimmMuscle::postScale(aScaleSet);
+	AbstractMuscle::postScale(aScaleSet);
 
 	if (_preScaleLength > 0.0)
 	{
@@ -348,7 +348,7 @@ void SimmDarrylMuscle::computeStateDerivatives(double rDYDT[])
 void SimmDarrylMuscle::computeActuation()
 {
 	// Base Class (to calculate speed)
-	AbstractSimmMuscle::computeActuation();
+	AbstractMuscle::computeActuation();
 
    double normState[2], normStateDeriv[2], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
@@ -369,7 +369,7 @@ void SimmDarrylMuscle::computeActuation()
    else
       normStateDeriv[STATE_ACTIVATION] = (_excitation - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
 
-	pennation_angle = AbstractSimmMuscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
+	pennation_angle = AbstractMuscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
    ca = cos(pennation_angle);
 
    norm_muscle_tendon_length = getLength() / _optimalFiberLength;
@@ -399,7 +399,7 @@ void SimmDarrylMuscle::computeActuation()
          double h = norm_muscle_tendon_length - _tendonSlackLength;
          double w = _optimalFiberLength * sin(_pennationAngle);
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-			double new_pennation_angle = AbstractSimmMuscle::calcPennation(new_fiber_length, 1.0, _pennationAngle);
+			double new_pennation_angle = AbstractMuscle::calcPennation(new_fiber_length, 1.0, _pennationAngle);
          double new_ca = cos(new_pennation_angle);
          normStateDeriv[STATE_FIBER_LENGTH] = getSpeed() / (Vmax * new_ca);
 		}

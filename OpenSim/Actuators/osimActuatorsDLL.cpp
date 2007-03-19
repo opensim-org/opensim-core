@@ -35,9 +35,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdActuatorsDLL.h"
+#include "osimActuatorsDLL.h"
 #include <iostream>
-#include "RegisterTypes_rdActuators.h"
+#include "RegisterTypes_osimActuators.h"
 
 using namespace std;
 

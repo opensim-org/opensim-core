@@ -34,7 +34,7 @@
  */
 
 #include <string>
-#include <OpenSim/Tools/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "SetPoint.h"
 
 
@@ -51,7 +51,7 @@ namespace OpenSim {
 
 class AbstractBody;
 
-class RDACTUATORS_API LinearSetPoint : public SetPoint
+class OSIMACTUATORS_API LinearSetPoint : public SetPoint
 {
 //=============================================================================
 // MEMBERS
