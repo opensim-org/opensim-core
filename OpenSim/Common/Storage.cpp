@@ -33,7 +33,7 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "rdMath.h"
 #include "IO.h"
 #include "Signal.h"

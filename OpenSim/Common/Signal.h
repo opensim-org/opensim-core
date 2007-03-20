@@ -34,7 +34,7 @@
  */
 
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Array.h"
 
 

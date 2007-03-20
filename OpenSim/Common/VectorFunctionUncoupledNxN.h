@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "VectorFunction.h"
 #include "Array.h"
 

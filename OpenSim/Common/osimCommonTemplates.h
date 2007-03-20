@@ -49,7 +49,6 @@
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
-#include "NamedValueArray.h"
 #include "Set.h"
 #include "Material.h"
 
@@ -60,9 +59,6 @@ extern template class OSIMCOMMON_API Array<bool>;
 extern template class OSIMCOMMON_API Array<int>;
 extern template class OSIMCOMMON_API Array<double>;
 extern template class OSIMCOMMON_API Array<std::string>;
-
-extern template class OSIMCOMMON_API NamedValueArray<int>;
-extern template class OSIMCOMMON_API NamedValueArray<double>;
 
 extern template class OSIMCOMMON_API Set<Material>;
 

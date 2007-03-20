@@ -26,7 +26,6 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/version.h>
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/IO.h>

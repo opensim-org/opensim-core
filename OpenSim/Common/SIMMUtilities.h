@@ -34,39 +34,17 @@
  */
 
 
-#include "osimCommon.h"
-
-// Need these undefined to make this work on linux
-#ifdef NAN
-#undef NAN
-#endif
-
+#include "osimCommonDLL.h"
 
 namespace OpenSim { 
-
-class Line;
-class Plane;
-
 
 //=============================================================================
 //=============================================================================
 /**
- * This class provides basic math functions and constants.
+ * 
  */
 class OSIMCOMMON_API SIMMUtilities
 {
-//=============================================================================
-// DATA
-//=============================================================================
-public:
-	static const double PI;
-	static const double RTD;
-	static const double DTR;
-	static const double SMALL;
-	static const double ZERO;
-	static const double NAN;
-	static const double INF;
-
 //=============================================================================
 // METHODS
 //=============================================================================

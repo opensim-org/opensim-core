@@ -36,7 +36,8 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include <stdio.h>
+#include "osimCommonDLL.h"
 
 // DEFINES
 #define RDSPLINE_MAXSIZE 2048

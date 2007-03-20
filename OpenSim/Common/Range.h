@@ -32,7 +32,7 @@
 /*  
  * Author:  
  */
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 

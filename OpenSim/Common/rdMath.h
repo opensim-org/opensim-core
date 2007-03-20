@@ -34,7 +34,7 @@
  */
 
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 
 // Need these undefined to make this work on linux
 #ifdef NAN

@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 
 namespace OpenSim { 

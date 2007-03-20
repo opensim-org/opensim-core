@@ -33,8 +33,11 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <time.h>
+#include <math.h>
+#include <string>
+
 #include "IO.h"
 #if defined(__linux__)
 	#include <sys/stat.h>

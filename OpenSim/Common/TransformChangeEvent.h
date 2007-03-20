@@ -33,7 +33,7 @@
  * Author:  
  */
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Event.h"
 
 #ifdef SWIG

@@ -27,7 +27,6 @@
 //=============================================================================
 #include "AbstractActuator.h"
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Memory.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <sstream>

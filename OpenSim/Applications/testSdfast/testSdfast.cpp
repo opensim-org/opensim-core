@@ -24,7 +24,6 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>

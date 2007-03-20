@@ -34,6 +34,7 @@
 
 // INCLUDES
 #include "ExampleVectorFunctionUncoupledNxN.h"
+#include <math.h>
 
 
 

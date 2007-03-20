@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <string>
 #include "Property.h"
 

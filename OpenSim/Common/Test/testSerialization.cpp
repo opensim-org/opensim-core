@@ -2,7 +2,6 @@
 // Author:  Frank C. Anderson
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyIntArray.h>

@@ -2,8 +2,12 @@
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#include <iostream>
 #include "IO.h"
 #include "LoadOpenSimLibrary.h"
+
+using namespace OpenSim;
+using namespace std;
 
 #ifdef __linux__
 // Current solution for linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
@@ -28,10 +32,6 @@ static void *LoadLibrary(const char *name) {
 #else
 #define LoadLibraryError()
 #endif
-
-
-using namespace OpenSim;
-using namespace std;
 
 //_____________________________________________________________________________
 /**

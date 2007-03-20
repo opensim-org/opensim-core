@@ -32,7 +32,6 @@
 #include <time.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/Memory.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/SimmMacros.h>

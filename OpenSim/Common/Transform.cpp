@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE. 
  */
 
-
+#include <math.h>
 #include "rdMath.h"
 #include "Mtx.h"
 #include "Transform.h"

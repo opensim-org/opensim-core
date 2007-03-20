@@ -33,7 +33,6 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 

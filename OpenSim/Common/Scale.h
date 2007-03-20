@@ -34,7 +34,7 @@
  */
 
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyStr.h"
 #include "PropertyDblArray.h"

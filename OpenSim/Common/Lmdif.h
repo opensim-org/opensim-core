@@ -13,7 +13,7 @@
  *
  *****************************************************/
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 
 void OSIMCOMMON_API lmdif_C(
   void (*fcn)(int, int, double[], double[], int *, void *),

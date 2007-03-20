@@ -34,7 +34,7 @@
 
 // INCLUDES
 #include <xercesc/util/XMLStringTokenizer.hpp>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "XMLNode.h"
 #include "IO.h"
 #include "Object.h"

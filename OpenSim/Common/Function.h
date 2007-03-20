@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fstream>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 

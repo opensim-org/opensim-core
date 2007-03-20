@@ -37,7 +37,7 @@
 #pragma warning( disable : 4251 )
 #endif
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <string>
 #include "Property.h"
 

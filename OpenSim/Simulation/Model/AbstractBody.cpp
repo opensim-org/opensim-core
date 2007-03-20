@@ -28,6 +28,7 @@
 #include "AbstractBody.h"
 #include "AbstractDynamicsEngine.h"
 #include <OpenSim/Common/SimmMacros.h>
+#include <math.h>
 
 //=============================================================================
 // STATICS

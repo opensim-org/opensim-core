@@ -33,7 +33,7 @@
  * Author:  
  */
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 
 #ifdef SWIG
 	#ifdef OSIMCOMMON_API

@@ -36,7 +36,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Exception.h"
 #include "IO.h"
 

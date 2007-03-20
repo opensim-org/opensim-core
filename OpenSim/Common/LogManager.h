@@ -1,7 +1,7 @@
 #ifndef _LogManager_h_
 #define _LogManager_h_
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <iostream>
 #include <sstream>
 

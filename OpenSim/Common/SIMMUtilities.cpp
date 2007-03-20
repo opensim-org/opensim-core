@@ -45,7 +45,6 @@
 
 
 using namespace OpenSim;
-const double SIMMUtilities::PI = acos(-1.0);
 
 
 //=============================================================================

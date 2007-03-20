@@ -44,7 +44,7 @@
 #include <map>
 #include "Observable.h"
 #include "Event.h"
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "PropertySet.h"
 
 // Only the necessary Xerces includes/defines

@@ -38,7 +38,7 @@
 #include <iostream>	// Ayman: Remove .h extension per .NET 2003
 #include <xercesc/dom/DOM.hpp>
 #include <string>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 XERCES_CPP_NAMESPACE_USE
 
 

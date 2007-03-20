@@ -38,7 +38,6 @@
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
-#include "NamedValueArray.h"
 #include "Set.h"
 #include "Material.h"
 
@@ -51,9 +50,6 @@ using namespace OpenSim;
 //template class OSIMCOMMON_API Array<double>;
 //template class OSIMCOMMON_API Array<std::string>;
 
-//template class OSIMCOMMON_API NamedValueArray<int>;
-//template class OSIMCOMMON_API NamedValueArray<double>;
-
 //template class OSIMCOMMON_API Set<Material>;
 
 #endif  // WIN32
@@ -63,9 +59,6 @@ typedef Array<bool> ArrayBool;
 typedef Array<int> ArrayInt;
 typedef Array<double> ArrayDbl;
 typedef Array<std::string> ArrayStr;
-
-typedef NamedValueArray<int> NamedValueArrayInt;
-typedef NamedValueArray<double> NamedValueArrayDbl;
 
 typedef Set<Material> SetMaterial;
 

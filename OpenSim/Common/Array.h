@@ -35,7 +35,7 @@
 
 
 #include <iostream>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Exception.h"
 
 static const int Array_CAPMIN = 1;

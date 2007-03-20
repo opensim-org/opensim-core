@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 #include <assert.h>
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/Model/AbstractModel.h>
 
 using namespace OpenSim;

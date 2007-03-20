@@ -35,6 +35,7 @@
 // INCLUDES
 #include <iostream>
 #include <string>
+#include <math.h>
 #include "Signal.h"
 #include "rdMath.h"
 #include "Mtx.h"

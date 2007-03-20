@@ -35,7 +35,9 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
+#include <math.h>
+#include <stdio.h>
 
 
 //=============================================================================

@@ -32,7 +32,7 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <string>
 #include "Array.h"
 #include "PropertyInt.h"

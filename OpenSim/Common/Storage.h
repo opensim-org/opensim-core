@@ -33,7 +33,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "StateVector.h"
 

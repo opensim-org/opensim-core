@@ -36,7 +36,7 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include "Object.h"
 #include "FunctionSet.h"
 #include "GCVSpline.h"

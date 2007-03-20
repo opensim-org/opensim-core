@@ -35,7 +35,6 @@
 
 
 // INCLUDES
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Object.h>
 
 //extern template class OSIMCOMMON_API Array<double>;

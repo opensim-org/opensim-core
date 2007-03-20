@@ -2,7 +2,7 @@
 // Author:  Frank C. Anderson
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/osimCommon.h>
+#include <math.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Signal.h>

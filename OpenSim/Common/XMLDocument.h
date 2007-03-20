@@ -39,7 +39,7 @@
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/framework/XMLFormatter.hpp>
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 
 
 XERCES_CPP_NAMESPACE_USE

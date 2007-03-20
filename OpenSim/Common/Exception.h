@@ -35,7 +35,7 @@
 
 
 // INCLUDES
-#include "osimCommon.h"
+#include "osimCommonDLL.h"
 #include <string>
 
 //using namespace std;
