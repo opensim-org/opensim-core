@@ -25,19 +25,19 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/VisibleProperties.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Tools/Mtx.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/VisibleProperties.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/SIMM/SimmModel.h>
-#include <OpenSim/Simulation/SIMM/SimmPoint.h>
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+#include <OpenSim/Common/SimmPoint.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
+#include <OpenSim/Simulation/SIMM/ScaleTool.h>
+#include <OpenSim/Common/MarkerData.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -327,7 +327,7 @@ int main(int argc,char **argv)
 
 				// Print a default setup file
 				} else if((option=="-PrintSetup")||(option=="-PS")) {
-					SimmSubject *subject = new SimmSubject();
+					ScaleTool *subject = new ScaleTool();
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
 					Object::setSerializeAllDefaults(true);
@@ -350,7 +350,7 @@ int main(int argc,char **argv)
 		std::string markerDataFile = "delaware3_ss_walking1.trc";
 
 		// CONSTRUCT SUBJECT INSTANCE
-		SimmSubject *subject = new SimmSubject(inName);
+		ScaleTool *subject = new ScaleTool(inName);
 		Object *subjectCopy = subject->copy();
 		subjectCopy->print("test_subject.xml");
 
@@ -368,7 +368,7 @@ int main(int argc,char **argv)
 		Array<int> inboardJoint(-1, model->getNB()); // joint index that this body is a child of
 		Array<int> outboardJoint(-1, model->getNB()); // joint index that this body is a parent of
 
-		SimmMarkerData markerData(markerDataFile);
+		MarkerData markerData(markerDataFile);
 		markerData.convertToUnits(model->getLengthUnits());
 		model->deleteUnusedMarkers(markerData.getMarkerNames());
 
@@ -458,7 +458,7 @@ int main(int argc,char **argv)
 				if(verbose) std::cout << "Processing outboard marker " << child->getMarker(outboardMarkersUsed[outboardMarkerIndex])->getName() << std::endl;
 				Array<SimmPoint> markerTriplet(defaultPoint);
 				for(int findex=0; findex<markerData.getNumFrames(); findex++) {
-					SimmMarkerFrame *frame = markerData.getFrame(findex);
+					MarkerFrame *frame = markerData.getFrame(findex);
 				
 					// Construct transform into inboard body frame	
 					SimmPoint markerLocations[3];

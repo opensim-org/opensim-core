@@ -31,11 +31,11 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/version.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
-#include <OpenSim/Analyses/ForwardTool.h>
-#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Tools/ForwardTool.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 #include <OpenSim/Actuators/GeneralizedForceAtv.h>
 
 

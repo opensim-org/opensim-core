@@ -25,16 +25,16 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Subject/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Tools/ScaleTool.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Tools/IKSolverImpl.h>
+#include <OpenSim/Tools/IKTarget.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -57,13 +57,13 @@ int main(int argc,char **argv)
 {
 	// Construct model and read parameters file
 	//Object::RegisterType(VisibleObject());
-	Object::RegisterType(SimmSubject());
-	SimmSubject::registerTypes();
-	SimmSubject* subject = new SimmSubject("CrouchGait.xml");
+	Object::RegisterType(ScaleTool());
+	ScaleTool::registerTypes();
+	ScaleTool* subject = new ScaleTool("CrouchGait.xml");
 	AbstractModel* model = subject->createModel();
 	if (!subject->isDefaultModelScaler())
 	{
-		SimmModelScaler& scaler = subject->getModelScaler();
+		ModelScaler& scaler = subject->getModelScaler();
 		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
 	}
 	else
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 
 	if (!subject->isDefaultMarkerPlacer())
 	{
-		SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+		MarkerPlacer& placer = subject->getMarkerPlacer();
 		placer.processModel(model, subject->getPathToSubject());
 	}
 	else

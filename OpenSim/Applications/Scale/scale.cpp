@@ -26,20 +26,20 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/version.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/VisibleProperties.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/VisibleProperties.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
-#include <OpenSim/Subject/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
+#include <OpenSim/Tools/ScaleTool.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
 
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/Applications/IK/SimmInverseKinematicsTarget.h>
+#include <OpenSim/Tools/IKSolverImpl.h>
+#include <OpenSim/Tools/IKTarget.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
 
 	// REGISTER TYPES
 	Object::RegisterType(VisibleObject());
-	Object::RegisterType(SimmSubject());
-	SimmSubject::registerTypes();
+	Object::RegisterType(ScaleTool());
+	ScaleTool::registerTypes();
 
 	// PARSE COMMAND LINE
 	string inName;
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 
 				// Print a default setup file
 				} else if((option=="-PrintSetup")||(option=="-PS")) {
-					SimmSubject *subject = new SimmSubject();
+					ScaleTool *subject = new ScaleTool();
 					subject->setName("default");
 					// Add in useful objects that may need to be instantiated
 					Object::setSerializeAllDefaults(true);
@@ -127,14 +127,14 @@ int main(int argc,char **argv)
 
 	try {
 		// Construct model and read parameters file
-		SimmSubject* subject = new SimmSubject(inName);
+		ScaleTool* subject = new ScaleTool(inName);
 		AbstractModel* model = subject->createModel();
 
 		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
 
 		if (!subject->isDefaultModelScaler())
 		{
-			SimmModelScaler& scaler = subject->getModelScaler();
+			ModelScaler& scaler = subject->getModelScaler();
 			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getMass())) return 1;
 		}
 		else
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
 
 		if (!subject->isDefaultMarkerPlacer())
 		{
-			SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+			MarkerPlacer& placer = subject->getMarkerPlacer();
 			if(!placer.processModel(model, subject->getPathToSubject())) return 1;
 		}
 		else

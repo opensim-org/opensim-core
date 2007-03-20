@@ -5,9 +5,9 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/version.h>
-#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/Analyses/PerturbationTool.h>
+#include <OpenSim/Tools/PerturbationTool.h>
 
 using namespace OpenSim;
 using namespace std;

@@ -1,20 +1,11 @@
-INCLUDE_DIRECTORIES(
-	${OpenSim_SOURCE_DIR}
-	${OpenSim_SOURCE_DIR}/Vendors 		  
-	${XERCES_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+						  ${OpenSim_SOURCE_DIR}/Vendors
+						  ${XERCES_INCLUDE_DIR})
 
-FILE(GLOB SOURCE_FILES *.cpp ../../Subject/Simm*.cpp)
-FILE(GLOB INCLUDE_FILES *.h ../../Subject/Simm*.h)
+# cmake should automatically figure out what other libraries are needed
+LINK_LIBRARIES(debug osimTools_d optimized osimTools)
 
-LINK_LIBRARIES(
-	debug xerces-c_2D optimized  xerces-c_2 
-	debug rdTools_d optimized rdTools
-	debug rdSimulation_d optimized rdSimulation
-	debug rdSQP_d optimized rdSQP)
-
-ADD_DEFINITIONS(-DRDSIMULATION_EXPORTS -Dworkflow_EXPORTS)
-
-ADD_EXECUTABLE(ik ${SOURCE_FILES} ${INCLUDE_FILES})
+ADD_EXECUTABLE(ik solveIK.cpp)
 
 INSTALL_TARGETS(/bin/ ik)
 

@@ -3,9 +3,9 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${XERCES_INCLUDE_DIR})
 
 
-LINK_LIBRARIES( debug rdTools_d optimized rdTools
-		debug rdSimulation_d optimized rdSimulation
-		debug suAnalyses_d optimized suAnalyses)
+LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
+		debug osimSimulation_d optimized osimSimulation
+		debug osimAnalyses_d optimized osimAnalyses)
 
 ADD_EXECUTABLE(testForward testForward.cpp)
 

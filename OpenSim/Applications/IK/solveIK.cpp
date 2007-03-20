@@ -26,16 +26,16 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/version.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Subject/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/SimmMarker.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include "IKTool.h"
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Tools/ScaleTool.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
+#include <OpenSim/Tools/IKTool.h>
 
 using namespace std;
 using namespace OpenSim;

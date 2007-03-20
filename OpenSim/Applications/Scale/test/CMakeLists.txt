@@ -8,9 +8,9 @@ FILE(GLOB INCLUDE_FILES ../../IK/Simm*.h ../../../Subject/Simm*.h)
 
 
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
-		debug rdTools_d optimized rdTools
-		debug rdSimulation_d optimized rdSimulation
-		debug rdSQP_d optimized rdSQP)
+		debug osimCommon_d optimized osimCommon
+		debug osimSimulation_d optimized osimSimulation
+		debug osimSQP_d optimized osimSQP)
 
 ADD_EXECUTABLE(testScale ${SOURCE_FILES} ${INCLUDE_FILES})
 

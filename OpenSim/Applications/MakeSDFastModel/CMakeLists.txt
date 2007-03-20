@@ -1,16 +1,13 @@
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 		    
-		    ${XERCES_INCLUDE_DIR})
+						  ${OpenSim_SOURCE_DIR}/Vendors
+						  ${XERCES_INCLUDE_DIR})
 
+ADD_DEFINITIONS(-DOSIMSDFASTENGINE_EXPORTS)
 
-ADD_DEFINITIONS(-DSDFAST_ENGINE_EXPORTS)
+# cmake should automatically figure out what other libraries are needed
+LINK_LIBRARIES(debug osimSdfastEngine_d optimized osimSdfastEngine)
 
-LINK_LIBRARIES( debug rdTools_d optimized rdTools
-		debug rdSimulation_d optimized rdSimulation
-		debug suAnalyses_d optimized suAnalyses
-		debug SdfastEngine_d optimized SdfastEngine)
-
-ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp ${OpenSim_SOURCE_DIR}/OpenSim/Models/SdfastEngine/SdfastStubs.c ${OpenSim_SOURCE_DIR}/OpenSim/Models/SdfastEngine/SdfastStubsCPP.cpp ${OpenSim_SOURCE_DIR}/OpenSim/Subject/SdfastFileWriter.cpp)
+ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/SdfastStubs.c ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/SdfastStubsCPP.cpp)
 
 ##GET_TARGET_PROPERTY(buildLocation makeSDFastModel LOCATION)
 ##IF (${buildLocation} MATCHES ".+Debug.+")

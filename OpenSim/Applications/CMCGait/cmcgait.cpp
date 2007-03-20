@@ -32,8 +32,8 @@
 #include <iostream>
 #include <OpenSim/version.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/CMC/CMCTool.h>
-#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Tools/CMCTool.h>
+#include <OpenSim/Common/IO.h>
 
 using namespace std;
 using namespace OpenSim;

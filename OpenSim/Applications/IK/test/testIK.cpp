@@ -25,12 +25,12 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Subject/SimmSubject.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
-#include <OpenSim/Subject/SdfastFileWriter.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Tools/ScaleTool.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SdfastFileWriter.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -50,31 +50,31 @@ int main(int argc,char **argv)
 // Eran: comment out everything for now because we now use InvestigationIK
 #if 0
 	// Construct model and read parameters file
-	Object::RegisterType(SimmSubject());
-	SimmSubject::registerTypes();
-	SimmSubject* subject = new SimmSubject("subject_ik_setup.xml");
+	Object::RegisterType(ScaleTool());
+	ScaleTool::registerTypes();
+	ScaleTool* subject = new ScaleTool("subject_ik_setup.xml");
 	AbstractModel* model = subject->createModel();
 
 	//----------------------- Model scaling section
 	if (!subject->isDefaultModelScaler())
 	{
-		SimmModelScaler& scaler = subject->getModelScaler();
+		ModelScaler& scaler = subject->getModelScaler();
 		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
 	}
 	else
 	{
-		cout << "SimmModelScaler parameters have not been defined. The generic model will not be scaled." << endl;
+		cout << "ModelScaler parameters have not been defined. The generic model will not be scaled." << endl;
 	}
 
 	//----------------------- Marker placement section
 	if (!subject->isDefaultMarkerPlacer())
 	{
-		SimmMarkerPlacer& placer = subject->getMarkerPlacer();
+		MarkerPlacer& placer = subject->getMarkerPlacer();
 		placer.processModel(model, subject->getPathToSubject());
 	}
 	else
 	{
-		cout << "SimmMarkerPlacer parameters have not been defined. No markers have been moved." << endl;
+		cout << "MarkerPlacer parameters have not been defined. No markers have been moved." << endl;
 	}
 
 	//--------------------- IK proper section

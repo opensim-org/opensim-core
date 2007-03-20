@@ -4,12 +4,12 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/Tools/Mtx.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Analyses/ForwardTool.h>
+#include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/PointKinematics.h>

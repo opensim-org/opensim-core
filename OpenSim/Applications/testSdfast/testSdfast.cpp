@@ -24,14 +24,14 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/VisibleProperties.h>
-#include <OpenSim/Tools/ScaleSet.h>
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/VisibleProperties.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
-#include <OpenSim/Models/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 
 using namespace std;
 using namespace OpenSim;
