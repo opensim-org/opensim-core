@@ -37,7 +37,7 @@
 //=============================================================================
 #include "osimSimulationDLL.h"
 #include <iostream>
-#include <OpenSim/Simulation/Model/RegisterTypes_osimSimulation.h>
+#include "RegisterTypes_osimSimulation.h"
 
 
 using namespace std;

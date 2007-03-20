@@ -6,33 +6,36 @@
 #include <iostream>
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimSimulation.h"
-#include "ContactForceSet.h"
-#include "Force.h"
-#include "AnalysisSet.h"
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Control/ControlConstant.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
 
-#include "AbstractModel.h"
-#include "ActuatorSet.h"
-#include "BodyScale.h"
-#include "BodyScaleSet.h"
-#include "BodySet.h"
-#include "BoneSet.h"
-#include "CoordinateSet.h"
-#include "DofSet.h"
-#include "JointSet.h"
-#include "MarkerSet.h"
-#include "PolyObject.h"
-#include "Marker.h"
-#include "SpeedSet.h"
-#include <OpenSim/Simulation/Wrap/MuscleWrap.h>
-#include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
-#include <OpenSim/Simulation/Wrap/WrapTorus.h>
-#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include "Model/ContactForceSet.h"
+#include "Model/Force.h"
+#include "Model/AnalysisSet.h"
+#include "Model/AbstractModel.h"
+#include "Model/ActuatorSet.h"
+#include "Model/BodyScale.h"
+#include "Model/BodyScaleSet.h"
+#include "Model/BodySet.h"
+#include "Model/BoneSet.h"
+#include "Model/CoordinateSet.h"
+#include "Model/DofSet.h"
+#include "Model/JointSet.h"
+#include "Model/Marker.h"
+#include "Model/MarkerSet.h"
+#include "Model/MusclePoint.h"
+#include "Model/PolyObject.h"
+#include "Model/SpeedSet.h"
+#include "Model/VisibleMarker.h"
+#include "Control/ControlSet.h"
+#include "Control/ControlConstant.h"
+#include "Control/ControlLinear.h"
+#include "Wrap/MuscleViaPoint.h"
+#include "Wrap/MuscleWrap.h"
+#include "Wrap/MuscleWrapSet.h"
+#include "Wrap/WrapCylinder.h"
+#include "Wrap/WrapEllipsoid.h"
+#include "Wrap/WrapSphere.h"
+#include "Wrap/WrapTorus.h"
+#include "Wrap/WrapObjectSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -48,13 +51,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 {
 	//cout<<"RegisterTypes_osimSimulation\n";
 
-	Object::RegisterType( ControlSet() );
-	Object::RegisterType( ControlConstant() );
-	Object::RegisterType( ControlLinear() );
-	Object::RegisterType( ControlLinearNode() );
 	Object::RegisterType( Force() );
 	Object::RegisterType( AnalysisSet() );
-
 	Object::RegisterType( AbstractModel() );
 	Object::RegisterType( ActuatorSet() );
 	Object::RegisterType( BodyScale() );
@@ -65,10 +63,19 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( CoordinateSet() );
 	Object::RegisterType( DofSet() );
 	Object::RegisterType( JointSet() );
-	Object::RegisterType( MarkerSet() );
-	Object::RegisterType( PolyObject() );
 	Object::RegisterType( Marker() );
+	Object::RegisterType( MarkerSet() );
+	Object::RegisterType( MusclePoint() );
+	Object::RegisterType( PolyObject() );
 	Object::RegisterType( SpeedSet() );
+	Object::RegisterType( VisibleMarker() );
+
+	Object::RegisterType( ControlSet() );
+	Object::RegisterType( ControlConstant() );
+	Object::RegisterType( ControlLinear() );
+	Object::RegisterType( ControlLinearNode() );
+
+	Object::RegisterType( MuscleViaPoint() );
 	Object::RegisterType( MuscleWrap() );
 	Object::RegisterType( MuscleWrapSet() );
 	Object::RegisterType( WrapCylinder() );

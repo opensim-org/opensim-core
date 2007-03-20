@@ -4,7 +4,7 @@
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "osimSimulationDLL.h"
 
 
 extern "C" {
