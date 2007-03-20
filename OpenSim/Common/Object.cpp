@@ -818,7 +818,7 @@ updateFromXMLNode()
 
 				// Initialize to default object of corresponding type (returns 0 if type not recognized)
 				Object *object = newInstanceOfType(objectType);
-				if(!object) continue;
+				if(!object) { std::cerr << "Object type " << objectType << " not recognized" << std::endl; continue; }
 				objectsFound++;
 
 				if(type==Property::ObjPtr) {
@@ -1572,6 +1572,7 @@ makeObjectFromFile(const std::string &aFileName)
 		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
 		string rootName = XMLNode::Transcode(elt->getNodeName());
 		Object* newObject = newInstanceOfType(rootName);
+		if(!newObject) throw Exception("Unrecognized XML element '"+rootName+"' and root of file '"+aFileName+"'",__FILE__,__LINE__);
 		newObject->_document=doc;
 		newObject->setXMLNode(elt);
 		newObject->updateFromXMLNode();
