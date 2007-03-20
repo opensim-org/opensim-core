@@ -44,7 +44,11 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/NatCubicSpline.h>
-#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
+#include "SdfastEngine.h"
+#include "SdfastBody.h"
+#include "SdfastCoordinate.h"
+#include "SdfastJoint.h"
+#include "SdfastSpeed.h"
 
 using namespace OpenSim;
 using namespace std;

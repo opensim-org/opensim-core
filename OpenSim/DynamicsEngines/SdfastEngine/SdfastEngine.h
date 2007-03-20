@@ -42,9 +42,10 @@
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "sdfast.h"
-#include "SdfastCoordinateSet.h"
-#include "SdfastSpeedSet.h"
-#include "SdfastJointSet.h"
+#include "SdfastBody.h"
+#include "SdfastCoordinate.h"
+#include "SdfastJoint.h"
+#include "SdfastSpeed.h"
 
 #ifdef SWIG
 	#ifdef OSIMSDFASTENGINE_API
@@ -55,15 +56,14 @@
 
 namespace OpenSim {
 
-class AbstractBody;
 class SdfastBody;
-class BodyIterator;
+class SdfastCoordinate;
+class SdfastJoint;
+class SdfastSpeed;
 class CoordinateSet;
-class CoordinateIterator;
-class JointIterator;
+class AbstractBody;
 class AbstractDof;
 class AbstractCoordinate;
-class MarkerData;
 class AbstractModel;
 class Transform;
 

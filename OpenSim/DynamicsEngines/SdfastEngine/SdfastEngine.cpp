@@ -322,17 +322,6 @@ SdfastEngine& SdfastEngine::operator=(const SdfastEngine &aEngine)
  */
 void SdfastEngine::setupProperties()
 {
-	_bodySetProp.setName("SdfastBodySet");
-	_propertySet.append(&_bodySetProp);
-
-	_coordinateSetProp.setName("SdfastCoordinateSet");
-	_propertySet.append(&_coordinateSetProp);
-
-	_speedSetProp.setName("SdfastSpeedSet");
-	_propertySet.append(&_speedSetProp);
-
-	_jointSetProp.setName("SdfastJointSet");
-	_propertySet.append(&_jointSetProp);
 }
 
 //_____________________________________________________________________________

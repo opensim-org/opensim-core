@@ -197,24 +197,21 @@ void AbstractDynamicsEngine::setupProperties()
 	_gravityProp.setValue(3, defaultGravity);
 	_propertySet.append(&_gravityProp);
 
+	// Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)
+	// don't need to call _bodySetProp.setName()...
 	_bodySetProp.setComment("Bodies in the model.");
-	_bodySetProp.setName("BodySet");
 	_propertySet.append(&_bodySetProp);
 
 	_jointSetProp.setComment("Joints in the model.");
-	_jointSetProp.setName("JointSet");
 	_propertySet.append(&_jointSetProp);
 
 	_coordinateSetProp.setComment("Generalized coordinates in the model.");
-	_coordinateSetProp.setName("CoordinateSet");
 	_propertySet.append(&_coordinateSetProp);
 
 	_speedSetProp.setComment("Generalized speeds in the model.");
-	_speedSetProp.setName("SpeedSet");
 	_propertySet.append(&_speedSetProp);
 
 	_markerSetProp.setComment("Markers in the model.");
-	_markerSetProp.setName("MarkerSet");
 	_propertySet.append(&_markerSetProp);
 }
 
