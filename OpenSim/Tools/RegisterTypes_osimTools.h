@@ -35,6 +35,14 @@ OSIMTOOLS_API void RegisterTypes_osimTools();
 
 }
 
+class osimToolsInstantiator
+{
+public:
+       osimToolsInstantiator();
+private:
+       void registerDllClasses();
+};
+
 #endif // RegisterTypes_osimTools_h__
 
 

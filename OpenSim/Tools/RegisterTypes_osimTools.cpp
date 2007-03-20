@@ -54,6 +54,8 @@
 using namespace std;
 using namespace OpenSim;
 
+static osimToolsInstantiator instantiator;
+
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
@@ -61,7 +63,7 @@ using namespace OpenSim;
  */
 OSIMTOOLS_API void RegisterTypes_osimTools()
 {
-	cout<<"RegisterTypes_osimTools\n";
+	//cout<<"RegisterTypes_osimTools\n";
 
 	Object::RegisterType( ScaleTool() );
 	Object::RegisterType( IKTool() );
@@ -86,3 +88,13 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( rdCMC_TaskSet() );
 }
 
+
+osimToolsInstantiator::osimToolsInstantiator()
+{
+       registerDllClasses();
+}
+
+void osimToolsInstantiator::registerDllClasses()
+{
+       RegisterTypes_osimTools();
+}

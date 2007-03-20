@@ -42,12 +42,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-   cout<<"\n-------------------------------------------------------\n";
-   cout<<"Library osimTools...\n";
-   cout<<"Computed Muscle Control\n";
-   cout<<"US Patent No. 6,750,866\n";
-   RegisterTypes_osimTools();
-   cout<<"-------------------------------------------------------\n\n";
+	//cout<<"\n-------------------------------------------------------\n";
+	//cout<<"Library osimTools...\n";
+	//cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()
