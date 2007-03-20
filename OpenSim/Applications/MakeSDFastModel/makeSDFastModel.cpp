@@ -30,6 +30,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastFileWriter.h>
@@ -50,6 +51,9 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
+	LoadOpenSimLibrary("osimActuators");
+	LoadOpenSimLibrary("osimSimmKinematicsEngine");
+
 	// PARSE COMMAND LINE
 	static string unassigned = "Unassigned";
 	string inName = unassigned;

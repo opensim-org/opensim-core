@@ -62,7 +62,7 @@ protected:
 	// PROPERTIES
 	/** Location of marker in respective segment/body */
 	PropertyDblArray	_propMarkerLocation;
-	/** Name of Segment/VisibleBody on which marker lives */
+	/** Name of Segment/Body on which marker lives */
 	PropertyStr		_propReferenceSegmentName;
 	/** Weight of marker to be used by Inverse Kinematics */
 	PropertyDbl		_propMarkerWeight;

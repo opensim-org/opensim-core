@@ -6,7 +6,8 @@
 #include <iostream>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/LoadModel.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Tools/PerturbationTool.h>
 
 using namespace OpenSim;
