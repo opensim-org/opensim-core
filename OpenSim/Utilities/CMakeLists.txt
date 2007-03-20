@@ -2,31 +2,31 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES
 
 IF(NOT OPENSIM_MINIMAL_BUILD)
 ADD_EXECUTABLE(convertControls rdConvertControls.cpp)
-TARGET_LINK_LIBRARIES(convertControls debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(convertControls debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(convertStorageToControls rdConvertStorageToControls.cpp)
-TARGET_LINK_LIBRARIES(convertStorageToControls debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(convertStorageToControls debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(simplifyControls rdSimplifyControls.cpp)
-TARGET_LINK_LIBRARIES(simplifyControls debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(simplifyControls debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(perturbStorage perturbStorage.cpp)
-TARGET_LINK_LIBRARIES(perturbStorage debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(perturbStorage debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(storageAdd storageAdd.cpp)
-TARGET_LINK_LIBRARIES(storageAdd debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(storageAdd debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(storageIntegrate storageIntegrate.cpp)
-TARGET_LINK_LIBRARIES(storageIntegrate debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(storageIntegrate debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(storageInterpolate storageInterpolate.cpp)
-TARGET_LINK_LIBRARIES(storageInterpolate debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(storageInterpolate debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(storageSubtract storageSubtract.cpp)
-TARGET_LINK_LIBRARIES(storageSubtract debug xerces-c_2D optimized xerces-c_2 rdTools rdSimulation)
+TARGET_LINK_LIBRARIES(storageSubtract debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
 
 ADD_EXECUTABLE(storageFilter storageFilter.cpp)
-TARGET_LINK_LIBRARIES(storageFilter debug xerces-c_2D optimized xerces-c_2 rdTools)
+TARGET_LINK_LIBRARIES(storageFilter debug xerces-c_2D optimized xerces-c_2 osimCommon)
 
 INSTALL_TARGETS(/bin/ convertControls)
 INSTALL_TARGETS(/bin/ convertStorageToControls)

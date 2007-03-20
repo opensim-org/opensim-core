@@ -73,7 +73,7 @@ private:
 	// internal flag used for printing weighted errors at end of optimization
 	bool _printPerformanceValues;
 
-	// VisibleMarker Map information
+	// Marker Map information
 	typedef struct
 	{
 		const AbstractMarker* marker;

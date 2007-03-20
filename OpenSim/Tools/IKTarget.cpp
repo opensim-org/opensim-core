@@ -317,7 +317,7 @@ void IKTarget::buildMarkerMap(const Array<string>& aNameArray)
 
 		if(markerTask->getWeight() == 0) continue; // we don't care about marker tasks with zero weight
 
-		// VisibleMarker will have a _tx (and _ty, _tz) suffix in the storage file
+		// Marker will have a _tx (and _ty, _tz) suffix in the storage file
 		int j=aNameArray.findIndex(markerName+"_tx");
 		if(j<0) 
 			throw Exception("IKTarget.buildMarkerMap: ERROR- experimental data for marker '"+markerName+
@@ -413,7 +413,7 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 void IKTarget::printTasks() const
 {
 	if(_markers.getSize())
-		cout << "VisibleMarker Tasks:" << endl;
+		cout << "Marker Tasks:" << endl;
 	for(int i=0; i<_markers.getSize(); i++) {
 		cout << "\t" << _markers[i]->marker->getName() << ": weight " << _markers[i]->weight;
 		cout << " from file (columns " << _markers[i]->experimentalColumn << "-" << _markers[i]->experimentalColumn+2 << ")" << endl;

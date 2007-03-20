@@ -348,7 +348,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    {
 		string errorMessage;
 		errorMessage = "Could not read all marker names in TRC file " + aFileName + 
-			". Make sure there's exactly one tab per column & that VisibleMarker names are tab separated in header.\n";
+			". Make sure there's exactly one tab per column & that Marker names are tab separated in header.\n";
 		throw Exception(errorMessage);
 
    }

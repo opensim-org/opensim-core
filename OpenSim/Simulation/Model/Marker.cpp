@@ -413,7 +413,7 @@ void Marker::updateGeometry()
 }
 void Marker::peteTest() const
 {
-	cout << "   VisibleMarker: " << getName() << endl;
+	cout << "   Marker: " << getName() << endl;
 	cout << "      location: " << _offset << endl;
 	cout << "      fixed: " << ((_fixed) ? ("true") : ("false")) << endl;
 }

@@ -30,7 +30,6 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Simulation/Model/AbstractModel.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SdfastFileWriter.h>
 
 using namespace std;
 using namespace OpenSim;

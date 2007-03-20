@@ -2,10 +2,9 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/XMLDocument.h>
-#include <OpenSim/Tools/XMLNode.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 

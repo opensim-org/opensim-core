@@ -1,7 +1,7 @@
 #ifndef __Marker_h__
 #define __Marker_h__
 
-// VisibleMarker.h
+// Marker.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 

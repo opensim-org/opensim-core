@@ -3,8 +3,7 @@
 // INCLUDES
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/Storage.h>
 
 // DEFINES
 

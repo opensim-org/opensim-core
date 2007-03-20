@@ -4,9 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/Storage.h>
-#include <OpenSim/Tools/IO.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
 
 // DEFINES
 

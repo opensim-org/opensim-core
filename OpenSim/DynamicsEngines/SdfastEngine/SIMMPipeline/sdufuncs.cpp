@@ -18,7 +18,7 @@
 
 *******************************************************************************/
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
-#include <OpenSim/Simulation/SDFast/sdfast.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/sdfast.h>
 
 using namespace std;
 using namespace OpenSim;

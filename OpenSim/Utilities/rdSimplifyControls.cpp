@@ -33,11 +33,10 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Tools/rdTools.h>
-#include <OpenSim/Tools/IO.h>
-#include <OpenSim/Tools/PropertyDbl.h>
-#include <OpenSim/Tools/PropertySet.h>
-#include <OpenSim/Tools/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>

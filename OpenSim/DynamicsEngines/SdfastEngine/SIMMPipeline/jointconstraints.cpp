@@ -25,7 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/SDFast/sdfast.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/sdfast.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/DofSet.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastCoordinate.h>

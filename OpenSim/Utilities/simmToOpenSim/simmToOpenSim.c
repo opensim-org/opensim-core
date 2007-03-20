@@ -196,17 +196,17 @@ void write_xml_muscle(FILE* fp, ModelStruct* ms, MuscleStruct* m, const char* mu
 
 	/* Attachment points. */
 	if(m->num_orig_points) {
-		fprintf(fp, "\t\t\t<SimmMusclePointSet>\n");
+		fprintf(fp, "\t\t\t<MusclePointSet>\n");
 		fprintf(fp, "\t\t\t<objects>\n");
 		for (j = 0; j < *m->num_orig_points; j++)
 		{
 			MusclePoint* mp = &m->mp_orig[j];
 			if (mp->numranges == 0)
 			{
-				fprintf(fp, "\t\t\t\t<SimmMusclePoint>\n");
+				fprintf(fp, "\t\t\t\t<MusclePoint>\n");
 				fprintf(fp, "\t\t\t\t\t<location>%.12lf %.12lf %.12lf</location>\n", mp->point[0], mp->point[1], mp->point[2]);
 				fprintf(fp, "\t\t\t\t\t<body>%s</body>\n", ms->segment[mp->segment].name);
-				fprintf(fp, "\t\t\t\t</SimmMusclePoint>\n");
+				fprintf(fp, "\t\t\t\t</MusclePoint>\n");
 			}
 			else if (mp->numranges == 1)
 			{
@@ -219,12 +219,12 @@ void write_xml_muscle(FILE* fp, ModelStruct* ms, MuscleStruct* m, const char* mu
 				else
 					conv = conversion;
 
-				fprintf(fp, "\t\t\t\t<SimmMuscleViaPoint>\n");
+				fprintf(fp, "\t\t\t\t<MuscleViaPoint>\n");
 				fprintf(fp, "\t\t\t\t\t<location>%.12lf %.12lf %.12lf</location>\n", mp->point[0], mp->point[1], mp->point[2]);
 				fprintf(fp, "\t\t\t\t\t<body>%s</body>\n", ms->segment[mp->segment].name);
 				fprintf(fp, "\t\t\t\t\t<coordinate>%s</coordinate>\n", ms->gencoord[mp->ranges[0].genc].name);
 				fprintf(fp, "\t\t\t\t\t<range>%.12lf %.12lf</range>\n", mp->ranges[0].start * conv, mp->ranges[0].end * conv);
-				fprintf(fp, "\t\t\t\t</SimmMuscleViaPoint>\n");
+				fprintf(fp, "\t\t\t\t</MuscleViaPoint>\n");
 			}
 			else
 			{
@@ -233,7 +233,7 @@ void write_xml_muscle(FILE* fp, ModelStruct* ms, MuscleStruct* m, const char* mu
 			}
 		}
 		fprintf(fp, "\t\t\t</objects>\n");
-		fprintf(fp, "\t\t\t</SimmMusclePointSet>\n");
+		fprintf(fp, "\t\t\t</MusclePointSet>\n");
 	}
 
 	/* Simple (double) parameters. */
@@ -413,12 +413,12 @@ void write_xml_markers(FILE* fp, ModelStruct* ms)
 		SegmentStruct* ss = &ms->segment[i];
 		for (j = 0; j < ms->segment[i].numMarkers; j++)
 		{
-			fprintf(fp, "%s\t\t<SimmMarker name=\"%s\">\n", tabs, ss->marker[j].name);
+			fprintf(fp, "%s\t\t<Marker name=\"%s\">\n", tabs, ss->marker[j].name);
 			fprintf(fp, "%s\t\t\t<body>%s</body>\n", tabs, ss->name);
 			fprintf(fp, "%s\t\t\t<location>%.12lf %.12lf %.12lf</location>\n", tabs, ss->marker[j].offset[0], ss->marker[j].offset[1], ss->marker[j].offset[2]);
 			fprintf(fp, "%s\t\t\t<weight>%.12lf</weight>\n", tabs, ss->marker[j].weight);
 			fprintf(fp, "%s\t\t\t<fixed>%s</fixed>\n", tabs, (ss->marker[j].fixed == yes) ? ("true") : ("false"));
-			fprintf(fp, "%s\t\t</SimmMarker>\n", tabs);
+			fprintf(fp, "%s\t\t</Marker>\n", tabs);
 		}
 	}
 

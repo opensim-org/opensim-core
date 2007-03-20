@@ -5,7 +5,9 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 ADD_DEFINITIONS(-DOSIMSDFASTENGINE_EXPORTS)
 
 # cmake should automatically figure out what other libraries are needed
-LINK_LIBRARIES(debug osimSdfastEngine_d optimized osimSdfastEngine)
+LINK_LIBRARIES(
+	debug osimSimulation_d optimized osimSimulation
+	debug osimSdfastEngine_d optimized osimSdfastEngine)
 
 ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/SdfastStubs.c ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/SdfastStubsCPP.cpp)
 
