@@ -50,7 +50,6 @@
 #include "SimmStep.h"
 #include "SimmTranslationDof.h"
 #include "SimmRotationDof.h"
-#include <OpenSim/Simulation/Model/VisibleMarker.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
