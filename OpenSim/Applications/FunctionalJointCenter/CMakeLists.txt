@@ -10,8 +10,6 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 		debug osimSimulation_d optimized osimSimulation
 		debug osimSQP_d optimized osimSQP)
 
-ADD_DEFINITIONS(-Dworkflow_EXPORTS)
-
 ADD_EXECUTABLE(fjc ${SOURCE_FILES} ${INCLUDE_FILES})
 
 

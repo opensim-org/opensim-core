@@ -3,8 +3,6 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 			 ${XERCES_INCLUDE_DIR}
 		    ${OpenSim_SOURCE_DIR}/OpenSim/Models/SIMMPipeline/4.1)
 
-ADD_DEFINITIONS(-DSDFAST_ENGINE_EXPORTS)
-
 FILE(GLOB SOURCE_FILES testSdfast.cpp dyn/*.c dyn/*.cpp ${OpenSim_SOURCE_DIR}/OpenSim/Models/SIMMPipeline/4.1/*.cpp ${OpenSim_SOURCE_DIR}/OpenSim/Models/SIMMPipeline/4.1/*.c)
 FILE(GLOB INCLUDE_FILES testSdfast.h dyn/*.h ${OpenSim_SOURCE_DIR}/OpenSim/Models/SIMMPipeline/4.1/*.h)
 
