@@ -6,15 +6,15 @@
 #include <iostream>
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimActuators.h"
+
+#include "GeneralizedForce.h"
 #include "GeneralizedForceAtv.h"
+#include "JointMoment.h"
 #include "LinearSetPoint.h"
 #include "PolynomialSetPoint.h"
-#include "JointMoment.h"
+#include "SimmDarrylMuscle.h"
+#include "SimmZajacHill.h"
 #include "Torque.h"
-#include "Muscle.h"
-#include "GeneralizedForce.h"
-
-
 
 using namespace OpenSim;
 using namespace std;
@@ -31,12 +31,15 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
 	//cout<<"RegisterTypes_osimActuators\n";
 
+	Object::RegisterType( GeneralizedForce() );
 	Object::RegisterType( GeneralizedForceAtv() );
+	Object::RegisterType( JointMoment() );
 	Object::RegisterType( LinearSetPoint() );
 	Object::RegisterType( PolynomialSetPoint() );
-	Object::RegisterType( JointMoment() );
+	Object::RegisterType( SimmDarrylMuscle() );
+	Object::RegisterType( SimmZajacHill() );
 	Object::RegisterType( Torque() );
-	Object::RegisterType( GeneralizedForce() );
+
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()
