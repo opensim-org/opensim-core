@@ -12,7 +12,7 @@ using namespace std;
 #ifdef __linux__
 // Current solution for linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
 // using macros.  Also use macros for portable handles.
-#include <dlfcn.h>
+//
 // LoadLibrary used to be a macro for dlopen but we want to transparently support
 // adding the "lib" prefix to library names when loading them, so made it a function
 static void *LoadLibrary(const char *name) {
@@ -27,7 +27,6 @@ static void *LoadLibrary(const char *name) {
 	}
 	return lib;
 }
-#define GetProcAddress(handle, proc) dlsym(handle, proc)
 #define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
 #else
 #define LoadLibraryError()

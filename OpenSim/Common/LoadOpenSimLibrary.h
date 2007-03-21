@@ -11,6 +11,8 @@
 #define OPENSIM_PORTABLE_HMODULE void *
 #define OPENSIM_PORTABLE_HINSTANCE void *
 #define WINAPI
+#include <dlfcn.h>
+#define GetProcAddress(handle, proc) dlsym(handle, proc)
 #else
 #define OPENSIM_PORTABLE_HMODULE HMODULE
 #define OPENSIM_PORTABLE_HINSTANCE HINSTANCE
