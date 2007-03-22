@@ -36,7 +36,7 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMANALYSES_API PointKinematics : public Analysis 
@@ -72,7 +72,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	PointKinematics(AbstractModel *aModel=0);
+	PointKinematics(Model *aModel=0);
 	PointKinematics(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	PointKinematics(const PointKinematics &aObject);
@@ -111,7 +111,7 @@ public:
 	void setPointName(const char *aName);
 	const char* getPointName();
 	// MODEL
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	
 	// STORAGE
 	void setStorageCapacityIncrements(int aIncrement);

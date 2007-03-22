@@ -45,7 +45,7 @@
 namespace OpenSim {
 
 class AbstractCoordinate;
-class AbstractModel;
+class Model;
 class AbstractMuscle;
 class AbstractDynamicsEngine;
 class AbstractWrapObject;
@@ -89,7 +89,7 @@ public:
 	MuscleWrapPoint& operator=(const MuscleWrapPoint &aPoint);
 #endif
    void copyData(const MuscleWrapPoint &aPoint);
-	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
+	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 
 	Array<SimmPoint>& getWrapPath() { return _wrapPath; }
 	double getWrapLength() const { return _wrapPathLength; }

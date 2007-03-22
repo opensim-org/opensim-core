@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "Actuation.h"
 
@@ -45,7 +45,7 @@ Actuation::~Actuation()
  *
  * @param aModel Model for which the Actuation are to be recorded.
  */
-Actuation::Actuation(AbstractModel *aModel) :
+Actuation::Actuation(Model *aModel) :
 	Analysis(aModel)
 {
 	// NULL
@@ -168,7 +168,7 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 /**
  * Set the model pointer for analysis.
  */
-void Actuation::setModel(AbstractModel *aModel)
+void Actuation::setModel(Model *aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
@@ -423,7 +423,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * AbstractModel::integBeginCallback() and has the same argument list.
+ * Model::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -464,7 +464,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * AbstractModel::integStepCallback(), which has the same argument list.
+ * Model::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -498,7 +498,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * AbstractModel::integEndCallback() and has the same argument list.
+ * Model::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

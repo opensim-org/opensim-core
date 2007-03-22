@@ -39,7 +39,7 @@
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include "ContactForce.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractDynamicsEngine.h"
 
 

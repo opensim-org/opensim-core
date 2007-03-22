@@ -40,7 +40,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class AbstractMuscle;
 class AbstractBody;
 class AbstractJoint;
@@ -50,7 +50,7 @@ class MarkerSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class for writing SIMM joint and muscle files for any AbstractModel.
+ * A class for writing SIMM joint and muscle files for any Model.
  *
  * @author Peter Loan
  * @version 1.0
@@ -62,7 +62,7 @@ class  OSIMSIMMKINEMATICSENGINE_API SimmFileWriter
 // DATA
 //=============================================================================
 protected:
-	AbstractModel *_model;
+	Model *_model;
 
 //=============================================================================
 // METHODS
@@ -72,7 +72,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmFileWriter();
-	SimmFileWriter(AbstractModel *aModel);
+	SimmFileWriter(Model *aModel);
 	virtual ~SimmFileWriter();
 
 	bool writeJointFile(const std::string& aFileName) const;

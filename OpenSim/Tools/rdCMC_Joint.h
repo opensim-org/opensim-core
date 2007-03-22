@@ -33,7 +33,7 @@
 // INCLUDE
 //============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "rdCMC_Task.h"
 
 namespace OpenSim {
@@ -95,7 +95,7 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	void setCoordinateName(const std::string &aName);
 	std::string getCoordinateName() const;
 	double getLimit() const;

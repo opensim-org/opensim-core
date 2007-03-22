@@ -35,7 +35,7 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "GenericModelMaker.h"
 #include "ModelScaler.h"
 #include "MarkerPlacer.h"
@@ -105,7 +105,7 @@ public:
 	void copyData(const ScaleTool &aSubject);
 
 	bool processModel();
-	AbstractModel* createModel();
+	Model* createModel();
 	/* Query the subject for different parameters */
 	GenericModelMaker& getGenericModelMaker()
 	{

@@ -32,7 +32,7 @@
 #include <iostream>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Common/IO.h>
 
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
 	CMCTool cmcgait(setupFileName);
 
 	// PRINT MODEL INFORMATION
-	AbstractModel *model = cmcgait.getModel();
+	Model *model = cmcgait.getModel();
 	if(model==NULL) {
 		cout<<"\n"<<argv[0]<<":  ERROR- failed to load model.\n";
 		exit(-1);

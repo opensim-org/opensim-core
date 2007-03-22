@@ -8,7 +8,7 @@
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>

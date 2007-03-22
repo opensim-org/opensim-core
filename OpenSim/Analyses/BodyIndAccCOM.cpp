@@ -12,7 +12,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "BodyIndAccCOM.h"
@@ -68,12 +68,12 @@ BodyIndAccCOM::~BodyIndAccCOM()
  * Construct an induced acceleration COM instance for performing an induced
  * acceleration COM analysis on the bodies of a model.
  *
- * @param aModel AbstractModel on which the analyses are to be performed.
+ * @param aModel Model on which the analyses are to be performed.
  * @param aN Number of bodies that will be used to calculate COM
  * @param aBodyList Array containing aN body numbers corresponding to
  * 					  those used in calculating COM
  */
-BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel, int aN,
+BodyIndAccCOM::BodyIndAccCOM(Model *aModel, int aN,
 	 AbstractBody* aBodyList[]) : BodyIndAcc(aModel)
 {
 	setName("BodyIndAccCOM");
@@ -102,7 +102,7 @@ BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel, int aN,
  * Note that the induced accelerations are not read in from file.  The
  * induced accelerations are recomputed based on the force decomposition.
  *
- * @param aModel AbstractModel on which the analyses were performed.
+ * @param aModel Model on which the analyses were performed.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.
  * @param aDir Directory in which the results reside.
@@ -114,7 +114,7 @@ BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel, int aN,
  * @todo	check that code is correct for generalized force case
  * @todo add initial velocity and ind pos due to init vel and pos to all
  */
-BodyIndAccCOM::BodyIndAccCOM(AbstractModel *aModel,Storage *aStates,
+BodyIndAccCOM::BodyIndAccCOM(Model *aModel,Storage *aStates,
 	Storage *aControls,char *aBaseName,char *aDir,char *aExtension,
 	int aN,AbstractBody* aBodyList[]) :
 	BodyIndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)

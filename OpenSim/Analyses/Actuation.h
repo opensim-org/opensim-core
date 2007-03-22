@@ -54,7 +54,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Actuation(AbstractModel *aModel=0);
+	Actuation(Model *aModel=0);
 	Actuation(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	Actuation(const Actuation &aObject);
@@ -83,7 +83,7 @@ public:
 	Storage* getSpeedStorage() const;
 	Storage* getPowerStorage() const;
 	// MODEL
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

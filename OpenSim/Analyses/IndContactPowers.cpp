@@ -10,7 +10,7 @@
 #include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include "IndContactPowers.h"
 
@@ -43,7 +43,7 @@ IndContactPowers::~IndContactPowers()
  *
  * @param aContactVelocities Velocities of the contact point expressed in the
  * global frame.  See class Contact.
- * @param aModel AbstractModel on which the simulation was run.
+ * @param aModel Model on which the simulation was run.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.  If NULL,
  * accelerations are computed based on a NULL decompostion.
@@ -52,7 +52,7 @@ IndContactPowers::~IndContactPowers()
  * @see Contact, IndAcc
  */
 IndContactPowers::IndContactPowers(Storage *aContactVelocities,
-	AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+	Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 	char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {

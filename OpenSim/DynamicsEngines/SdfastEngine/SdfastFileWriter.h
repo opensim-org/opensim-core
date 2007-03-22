@@ -36,7 +36,7 @@
 namespace OpenSim {
 
 class SdfastEngine;
-class AbstractModel;
+class Model;
 class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
@@ -47,7 +47,7 @@ class DofSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class for writing SIMM joint and muscle files for any AbstractModel.
+ * A class for writing SIMM joint and muscle files for any Model.
  *
  * @author Peter Loan
  * @version 1.0
@@ -154,10 +154,10 @@ public:
 //=============================================================================
 protected:
 	// Model to save dynamics for
-	AbstractModel *_model;
+	Model *_model;
 
 	// Equivalent OpenSim model with SdfastEngine, for use in simulations.
-	AbstractModel *_simulationModel;
+	Model *_simulationModel;
 	SdfastEngine *_simulationEngine;
 
 	// Folder to write files to
@@ -209,7 +209,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SdfastFileWriter();
-	SdfastFileWriter(AbstractModel* aModel, const std::string& aFolderName);
+	SdfastFileWriter(Model* aModel, const std::string& aFolderName);
 	virtual ~SdfastFileWriter();
 	bool isValidSdfastModel();
 	void makeSdfastModel();

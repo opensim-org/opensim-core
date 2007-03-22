@@ -35,7 +35,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class AbstractActuator;
 
 //=============================================================================
@@ -75,7 +75,7 @@ public:
 #endif
    void copyData(const MuscleGroup &aGroup);
 
-   void setup(AbstractModel* aModel);
+   void setup(Model* aModel);
 
 	bool contains(const std::string& aName) const;
 

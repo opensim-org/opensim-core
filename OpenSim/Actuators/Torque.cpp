@@ -40,7 +40,7 @@
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "Torque.h"
@@ -486,7 +486,7 @@ check() const
  * setup sets the actual Body references _ba, _bB
  */
 void Torque::
-setup(AbstractModel* aModel)
+setup(Model* aModel)
 {
 	AbstractActuator::setup(aModel);
 	if (aModel)

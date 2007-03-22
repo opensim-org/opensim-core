@@ -12,7 +12,7 @@
 #include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
@@ -51,9 +51,9 @@ BodyIndPowers::~BodyIndPowers()
  * Construct an induced power instance for performing an induced
  * power analysis on the bodies of a model.
  *
- * @param aModel AbstractModel on which the analyses are to be performed.
+ * @param aModel Model on which the analyses are to be performed.
  */
-BodyIndPowers::BodyIndPowers(AbstractModel *aModel) :
+BodyIndPowers::BodyIndPowers(Model *aModel) :
 	BodyIndAcc(aModel)
 {
 	setName("BodyInducedPowers");
@@ -76,13 +76,13 @@ BodyIndPowers::BodyIndPowers(AbstractModel *aModel) :
  * Note that the induced accelerations are not read in from file.  The
  * induced accelerations are recomputed based on the force decomposition.
  *
- * @param aModel AbstractModel on which the analyses were performed.
+ * @param aModel Model on which the analyses were performed.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension.
  */
-BodyIndPowers::BodyIndPowers(AbstractModel *aModel,Storage *aStates,Storage *aControls,
+BodyIndPowers::BodyIndPowers(Model *aModel,Storage *aStates,Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	BodyIndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {

@@ -40,7 +40,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class CoordinateSet;
 class MarkerData;
 class IKTaskSet;
@@ -127,8 +127,8 @@ public:
 	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
 	void findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const;
 
-	bool processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet);
-	bool processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage);
+	bool processTrial(Model& aModel, IKTaskSet& aIKTaskSet);
+	bool processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage);
 
 	/*===== Set and Get ===============*/
 	std::string getMarkerDataFilename() const

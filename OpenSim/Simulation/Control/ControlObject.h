@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API ControlObject : public Object
 {
@@ -75,7 +75,7 @@ private:
 	static const char PROP_R2[];
 protected:
 	/** Model. */
-	AbstractModel *_model;
+	Model *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
 	/** Body with respect to which the track goals are specified. */
@@ -149,8 +149,8 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	void setModel(AbstractModel *aModel);
-	AbstractModel* getModel() const;
+	void setModel(Model *aModel);
+	Model* getModel() const;
 	// ON,OFF
 	void setOn(bool aTrueFalse);
 	bool getOn() const;

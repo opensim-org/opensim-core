@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API Callback : public Object
 {
@@ -63,7 +63,7 @@ class OSIMSIMULATION_API Callback : public Object
 //=============================================================================
 protected:
 	/** Model. */
-	AbstractModel *_model;
+	Model *_model;
 private:
 	/** On, off flag. */
 	PropertyBool _onProp;
@@ -82,7 +82,7 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Callback(AbstractModel *aModel=NULL);
+	Callback(Model *aModel=NULL);
 	Callback(const Callback &aCallback);
 	Callback(const std::string &aFileName);
 	virtual ~Callback();
@@ -102,8 +102,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	// MODEL
-	virtual void setModel(AbstractModel *);
-	AbstractModel* getModel() const;
+	virtual void setModel(Model *);
+	Model* getModel() const;
 	// ON,OFF
 	void setOn(bool aTrueFalse);
 	bool getOn() const;

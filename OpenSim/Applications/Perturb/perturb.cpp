@@ -7,7 +7,7 @@
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/PerturbationTool.h>
 
 using namespace OpenSim;
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
 	PerturbationTool perturb(setupFileName);
 
 	// PRINT MODEL INFORMATION
-	AbstractModel *model = perturb.getModel();
+	Model *model = perturb.getModel();
 	if(model==NULL) {
 		cout<<"\nperturb:  ERROR- failed to load model.\n";
 		exit(-1);

@@ -25,7 +25,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API GeneralizedForces : public Analysis 
 {
@@ -51,7 +51,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForces(AbstractModel *aModel=0);
+	GeneralizedForces(Model *aModel=0);
 	GeneralizedForces(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	GeneralizedForces(const GeneralizedForces &aObject);
@@ -80,7 +80,7 @@ public:
 	Storage* getActuatorGenForcesStorage();
 	Storage* getContactGenForcesStorage();
 
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

@@ -9,9 +9,9 @@
 
 namespace OpenSim
 {
-class AbstractModel;
+class Model;
 
-OSIMSIMULATION_API AbstractModel* LoadModel(const std::string &aModelLibraryName, const std::string &aModelFileName=""); 
+OSIMSIMULATION_API Model* LoadModel(const std::string &aModelLibraryName, const std::string &aModelFileName=""); 
 }
 
 #endif // __LoadModel_h__

@@ -32,7 +32,7 @@
 
 // INCLUDES
 #include "VectorFunctionForActuators.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractActuator.h"
 
 using namespace OpenSim;
@@ -261,7 +261,7 @@ evaluate(const double *aX,double *rF)
 {
 	int i;
 	int N = getNX();
-	AbstractModel *model = _integrand->getModel();
+	Model *model = _integrand->getModel();
 	int nyModel = model->getNumStates();
 
 	// Controls

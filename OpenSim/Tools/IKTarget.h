@@ -27,7 +27,7 @@
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractMarker.h>
 
@@ -59,7 +59,7 @@ class OSIMTOOLS_API IKTarget : public rdOptimizationTarget
 // DATA
 //==============================================================================
 private:
-	AbstractModel& _model;
+	Model& _model;
 
 	// Task set contains weights and other properties affecting performance criterion
 	IKTaskSet& _ikTaskSet;
@@ -119,7 +119,7 @@ public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
 	//---------------------------------------------------------------------------
-	IKTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
+	IKTarget(Model &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
 
 	virtual ~IKTarget(void);
 
@@ -138,7 +138,7 @@ public:
 	void getUnprescribedCoordinateNames(Array<std::string>& aNameArray);
 	void getPrescribedCoordinateNames(Array<std::string>& aNameArray);
 	void getOutputMarkerNames(Array<std::string>& aNameArray);
-	AbstractModel& getModel() { return _model; };
+	Model& getModel() { return _model; };
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------

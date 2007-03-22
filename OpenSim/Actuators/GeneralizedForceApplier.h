@@ -27,7 +27,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractCoordinate;
 
 class OSIMACTUATORS_API GeneralizedForceApplier : public DerivCallback 
@@ -63,10 +63,10 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForceApplier(AbstractModel *aModel);	
-	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord);
-	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce);
-	GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex);
+	GeneralizedForceApplier(Model *aModel);	
+	GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord);
+	GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce);
+	GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex);
 	virtual ~GeneralizedForceApplier();
 private:
 	void setNull();

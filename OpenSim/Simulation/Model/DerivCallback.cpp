@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "DerivCallback.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 
 //=============================================================================
@@ -64,7 +64,7 @@ DerivCallback::~DerivCallback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-DerivCallback::DerivCallback(AbstractModel *aModel) :
+DerivCallback::DerivCallback(Model *aModel) :
 	Callback(aModel)
 {
 	setNull();

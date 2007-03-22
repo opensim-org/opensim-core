@@ -29,7 +29,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include "IKTrial.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Common/SimmMotionData.h>
 #include <OpenSim/Common/MarkerData.h>
@@ -211,7 +211,7 @@ IKTrial& IKTrial::operator=(const IKTrial &aIKTrialParams)
 	return(*this);
 }
 
-bool IKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage)
+bool IKTrial::processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage)
 {
 	// During the IK trial, *all* coordinates that have values specified
 	// in the input coordinate file will use those values for the
@@ -268,7 +268,7 @@ bool IKTrial::processTrialCommon(AbstractModel& aModel, IKTaskSet& aIKTaskSet, M
 	return true;
 }
 
-bool IKTrial::processTrial(AbstractModel& aModel, IKTaskSet& aIKTaskSet)
+bool IKTrial::processTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 {
 	cout << endl << "Processing IK trial: " << getName() << endl;
 

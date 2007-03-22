@@ -11,7 +11,7 @@
 #include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
@@ -71,9 +71,9 @@ IndAcc::~IndAcc()
  * This constructor is used if the induced acceleration analysis is going to
  * be performed during the course of a simulation.
  *
- * @param aModel AbstractModel on which the analyses are to be performed.
+ * @param aModel Model on which the analyses are to be performed.
  */
-IndAcc::IndAcc(AbstractModel *aModel) :
+IndAcc::IndAcc(Model *aModel) :
 	Analysis(aModel)
 {
 	int i;
@@ -136,7 +136,7 @@ IndAcc::IndAcc(AbstractModel *aModel) :
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension of the force decomposition files.
  */
-IndAcc::IndAcc(AbstractModel *aModel,Storage *aStates, Storage *aControls,
+IndAcc::IndAcc(Model *aModel,Storage *aStates, Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	Analysis(aModel)
 {

@@ -1,7 +1,7 @@
 #ifndef __AbstractModel_h__
 #define __AbstractModel_h__
 
-// AbstractModel.h
+// Model.h
 // Authors: Frank C. Anderson, Peter Loan, Ayman Habib
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -70,7 +70,7 @@ class DerivCallbackSet;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API AbstractModel  : public Object
+class OSIMSIMULATION_API Model  : public Object
 {
 
 //=============================================================================
@@ -139,25 +139,25 @@ private:
 	// CONSTRUCTION AND DESTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	AbstractModel();
-	AbstractModel(const std::string &aFileName)
+	Model();
+	Model(const std::string &aFileName)
 #ifdef SWIG
 		throw(OpenSim::Exception)
 #endif
 	;
-	AbstractModel(const AbstractModel& aModel);
-	virtual ~AbstractModel();
+	Model(const Model& aModel);
+	virtual ~Model();
 	virtual Object* copy() const;
-	void copyData(const AbstractModel &aModel);
+	void copyData(const Model &aModel);
 	void setupProperties();
 	//static void registerTypes();
 
 	/**
 	 * Dynamic casting across JNI is messy. This method does the upCasting on C++ side
 	 */
-	AbstractModel* clone()
+	Model* clone()
 	{
-		return reinterpret_cast<AbstractModel*>(this->copy()); 
+		return reinterpret_cast<Model*>(this->copy()); 
 	}
 
 	MuscleGroup* enterGroup(const std::string& aName);
@@ -166,7 +166,7 @@ public:
 
 protected:
 #ifndef SWIG
-	AbstractModel& operator=(const AbstractModel &AbstractModel);
+	Model& operator=(const Model &Model);
 #endif
 
 private:
@@ -337,7 +337,7 @@ public:
 	void kinTest();
 
 //=============================================================================
-};	// END of class AbstractModel
+};	// END of class Model
 //=============================================================================
 //=============================================================================
 

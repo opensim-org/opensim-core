@@ -56,7 +56,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API ModelIntegrand : public Integrand
 {
@@ -65,7 +65,7 @@ class OSIMSIMULATION_API ModelIntegrand : public Integrand
 //=============================================================================
 protected:
 	/** Model. */
-	AbstractModel *_model;
+	Model *_model;
 	/** Control set. */
 	bool _ownsControlSet;
 	ControlSet *_controlSet;
@@ -103,7 +103,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ModelIntegrand(AbstractModel *aModel);
+	ModelIntegrand(Model *aModel);
 	virtual ~ModelIntegrand();
 private:
 	void setNull();
@@ -115,7 +115,7 @@ public:
 	// Size
 	virtual int getSize() const;
 	// Model
-	AbstractModel* getModel();
+	Model* getModel();
 	// Control Set
 	void setControlSet(const ControlSet &aControlSet);
 	void setControlSetReference(ControlSet &aControlSet);

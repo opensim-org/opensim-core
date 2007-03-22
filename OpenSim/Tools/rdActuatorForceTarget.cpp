@@ -76,7 +76,7 @@ rdActuatorForceTarget::rdActuatorForceTarget(int aNX,rdCMC *aController) :
 	}
 
 	// ALLOCATE STATE ARRAYS
-	AbstractModel *model = _controller->getModel();
+	Model *model = _controller->getModel();
 	if(model==NULL) {
 		throw(Exception("rdActuatorForceTarget: ERROR- no model.\n"));
 	}
@@ -193,7 +193,7 @@ computePerformance(double *aF,double *rP)
 {
 	int i;
 
-	AbstractModel *model = _controller->getModel();
+	Model *model = _controller->getModel();
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
 	// TIME STUFF

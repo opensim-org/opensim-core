@@ -4,7 +4,7 @@
 #include <OpenSim/SQP/rdFSQP.h>
 #include "IKTrial.h"
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "IKSolverImpl.h"

@@ -28,7 +28,7 @@
 #include "MarkerPlacer.h"
 #include "IKTrial.h"
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/SimmMotionData.h>
@@ -241,7 +241,7 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(AbstractModel* aModel, const string& aPathToSubject)
+bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 {
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
@@ -319,7 +319,7 @@ bool MarkerPlacer::processModel(AbstractModel* aModel, const string& aPathToSubj
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void MarkerPlacer::moveModelMarkersToPose(AbstractModel& aModel, MarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
 {
 	aPose.averageFrames(0.01);
 	MarkerFrame* frame = aPose.getFrame(0);

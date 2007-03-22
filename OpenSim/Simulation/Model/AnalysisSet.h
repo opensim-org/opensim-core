@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
 {
@@ -60,7 +60,7 @@ class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
 //=============================================================================
 protected:
 	/** Model on which the callbacks have been set. */
-	AbstractModel *_model;
+	Model *_model;
 
 //=============================================================================
 // METHODS
@@ -69,7 +69,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	AnalysisSet(AbstractModel *aModel=0);
+	AnalysisSet(Model *aModel=0);
 	AnalysisSet(const std::string &aFileName);
 	AnalysisSet(const AnalysisSet &aSet);
 	virtual ~AnalysisSet();
@@ -81,8 +81,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setModel(AbstractModel *aModel);
-	AbstractModel* getModel();
+	void setModel(Model *aModel);
+	Model* getModel();
 	void setOn(bool aTrueFalse);
 
 	//--------------------------------------------------------------------------

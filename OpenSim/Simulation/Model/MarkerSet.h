@@ -38,7 +38,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class ScaleSet;
 
 //=============================================================================

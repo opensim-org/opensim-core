@@ -190,7 +190,7 @@ operator=(const ControlSet &aSet)
  * @param aForModelControls Flag indicating whether or not to get the size
  * for only model controls or all controls in the set.  Model controls are
  * controls that are involved in controlling a model; the number of model
- * controls should be the same as that returned by AbstractModel::getNumControls().
+ * controls should be the same as that returned by Model::getNumControls().
  * Example of non-model controls include the final time of a simulation or
  * an initial value for a joint angle; these quantities are for setting up
  * a simulation, they are not involved in controlling a model.  If

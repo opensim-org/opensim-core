@@ -10,7 +10,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "SpringGeneralizedForce.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>

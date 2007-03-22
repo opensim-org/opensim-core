@@ -52,7 +52,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Kinematics(AbstractModel *aModel=0);
+	Kinematics(Model *aModel=0);
 	Kinematics(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	Kinematics(const Kinematics &aObject);
@@ -84,7 +84,7 @@ public:
 	Storage* getPositionStorage();
 
 	// MODEL
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

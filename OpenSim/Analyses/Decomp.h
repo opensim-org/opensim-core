@@ -89,8 +89,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	Decomp(AbstractModel *aModel);
-	Decomp(AbstractModel *aModel,char *aBaseName,char *aDir=NULL,
+	Decomp(Model *aModel);
+	Decomp(Model *aModel,char *aBaseName,char *aDir=NULL,
 		char *aExtension=NULL);
 	virtual ~Decomp();
 private:

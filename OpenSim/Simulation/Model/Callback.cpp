@@ -41,7 +41,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 
 #include "Callback.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -68,7 +68,7 @@ Callback::~Callback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-Callback::Callback(AbstractModel *aModel):
+Callback::Callback(Model *aModel):
 	_on(_onProp.getValueBool()),
 	_startTime(_startTimeProp.getValueDbl()),
 	_endTime(_endTimeProp.getValueDbl())
@@ -199,7 +199,7 @@ operator=(const Callback &aCallback)
  *
  * @return Pointer to the model.
  */
-AbstractModel* Callback::
+Model* Callback::
 getModel() const
 {
 	return(_model);
@@ -210,7 +210,7 @@ getModel() const
  *
  */
 void Callback::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	_model=aModel;
 }

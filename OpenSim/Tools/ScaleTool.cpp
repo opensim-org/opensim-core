@@ -28,7 +28,7 @@
 #include "ScaleTool.h"
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -251,7 +251,7 @@ ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
  */
 bool ScaleTool::processModel()
 {
-	AbstractModel *model = NULL;
+	Model *model = NULL;
 
 	cout << "Processing subject " << getName() << endl;
 
@@ -322,16 +322,16 @@ bool ScaleTool::processModel()
 /**
  * Create a generic model, using GenericModelMaker::processModel().
  *
- * @return Pointer to the AbstractModel that is created.
+ * @return Pointer to the Model that is created.
  */
-AbstractModel* ScaleTool::createModel()
+Model* ScaleTool::createModel()
 {
 	cout << "Processing subject " << getName() << endl;
 
 	/* Make the generic model. */
 	if (!_genericModelMakerProp.getUseDefault())
 	{
-		AbstractModel *model = _genericModelMaker.processModel(_pathToSubject);
+		Model *model = _genericModelMaker.processModel(_pathToSubject);
 		if (model==0)
 		{
 			cout << "===ERROR===: Unable to load generic model." << endl;

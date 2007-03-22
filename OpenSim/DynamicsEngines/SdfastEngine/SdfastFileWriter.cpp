@@ -30,7 +30,7 @@
 #include <math.h>
 #include <float.h>
 #include "SdfastFileWriter.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -84,7 +84,7 @@ SdfastFileWriter::~SdfastFileWriter()
 /**
  * Default constructor.
  */
-SdfastFileWriter::SdfastFileWriter(AbstractModel* aModel, const string& aFolderName = string(".")) :
+SdfastFileWriter::SdfastFileWriter(Model* aModel, const string& aFolderName = string(".")) :
 	_model(NULL),
 	_simulationModel(NULL),
 	_simulationEngine(NULL),
@@ -3060,7 +3060,7 @@ void SdfastFileWriter::initialize()
 	 * with a new SdfastEngine. The components of this engine
 	 * will get filled in by makeSdfastModel().
 	 */
-	_simulationModel = (AbstractModel*)_model->copy();
+	_simulationModel = (Model*)_model->copy();
 	_simulationEngine = new SdfastEngine();
 
 	// Note that _simulationModel will take over ownership of _simulationEngine.

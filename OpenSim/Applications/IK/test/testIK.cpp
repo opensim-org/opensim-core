@@ -28,7 +28,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
 	Object::RegisterType(ScaleTool());
 	ScaleTool::registerTypes();
 	ScaleTool* subject = new ScaleTool("subject_ik_setup.xml");
-	AbstractModel* model = subject->createModel();
+	Model* model = subject->createModel();
 
 	//----------------------- Model scaling section
 	if (!subject->isDefaultModelScaler())

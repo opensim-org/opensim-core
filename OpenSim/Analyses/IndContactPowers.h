@@ -46,7 +46,7 @@ protected:
 //=============================================================================
 public:
 	IndContactPowers(Storage *aContactVelocities,
-		AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+		Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~IndContactPowers();
 private:

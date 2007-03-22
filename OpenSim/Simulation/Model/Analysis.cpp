@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 
 
@@ -51,7 +51,7 @@ using namespace std;
  *
  * @param aModel Model on which the analysis is to be performed.
  */
-Analysis::Analysis(AbstractModel *aModel):
+Analysis::Analysis(Model *aModel):
 	IntegCallback(aModel),
 	_inDegrees(_inDegreesProp.getValueBool())
 {
@@ -236,7 +236,7 @@ getInDegrees() const
  */
 
 void Analysis::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	// BASE CLASS
 	IntegCallback::setModel(aModel);

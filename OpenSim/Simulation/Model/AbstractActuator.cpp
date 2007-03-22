@@ -153,7 +153,7 @@ void AbstractActuator::bindPseudoState(int aIndex, double &yp, const std::string
  *
  * @param aModel model containing this actuator.
  */
-void AbstractActuator::setup(AbstractModel* aModel)
+void AbstractActuator::setup(Model* aModel)
 {
 	_model = aModel;
 }

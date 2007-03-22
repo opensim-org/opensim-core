@@ -158,7 +158,7 @@ public:
 
 	virtual void postScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
-	virtual void setup(AbstractModel* aModel);
+	virtual void setup(Model* aModel);
 
 	double calcTendonForce(double aNormTendonLength) const;
 	double calcPassiveForce(double aNormFiberLength) const;

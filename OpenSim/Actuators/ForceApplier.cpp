@@ -16,7 +16,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/VectorFunction.h>
@@ -46,7 +46,7 @@ ForceApplier::~ForceApplier()
  * @param aBody Index of the body to which an external force should be applied.
  */
 ForceApplier::
-ForceApplier(AbstractModel *aModel, AbstractBody *aBody) :
+ForceApplier(Model *aModel, AbstractBody *aBody) :
 	DerivCallback(aModel),
 	_body(NULL)
 {
@@ -89,7 +89,7 @@ ForceApplier(AbstractModel *aModel, AbstractBody *aBody) :
  * be specified and in radians.
  */
 ForceApplier::
-ForceApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *forceData,
+ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *forceData,
              int fxNum, int fyNum, int fzNum,
 			 int pxNum, int pyNum, int pzNum,
 			 Storage *aQStore, Storage *aUStore) :

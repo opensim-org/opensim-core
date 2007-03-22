@@ -38,7 +38,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Transform.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 //=============================================================================
@@ -71,9 +71,9 @@ protected:
 public:
 	// A Factory method to create the callback, so that it's created on the C++ side
 	// and memory menagement on the Java side is side-stepped
-	static SimtkAnimationCallback* CreateAnimationCallback(AbstractModel *aModel);
+	static SimtkAnimationCallback* CreateAnimationCallback(Model *aModel);
 protected:
-	SimtkAnimationCallback(AbstractModel *aModel);
+	SimtkAnimationCallback(Model *aModel);
 	virtual ~SimtkAnimationCallback();
 private:
 	void setNull();
@@ -98,10 +98,10 @@ public:
 	}
 	const Transform* getBodyTransform(int bodyIndex) const;
 
-	void extractOffsets(AbstractModel& displayModel);
+	void extractOffsets(Model& displayModel);
 public:
 	// Load transforms vector from KinematicsEngine
-	void getTransformsFromKinematicsEngine(AbstractModel& simmModel);
+	void getTransformsFromKinematicsEngine(Model& simmModel);
 	// Synchronization stuff
 	// Implementation of Peterson's Algorithm that doesn't work!
 /*

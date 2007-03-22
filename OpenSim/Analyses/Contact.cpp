@@ -11,7 +11,7 @@
 #include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "Contact.h"
@@ -52,7 +52,7 @@ Contact::~Contact()
  * Construct an Contact object for recording the various qunatities
  * associates with contact.
  *
- * @param aModel AbstractModel for which the kinematics are to be recorded.
+ * @param aModel Model for which the kinematics are to be recorded.
  * @param aResultantForcePointGroups Array containing group assignment for each contact point.
  *  The array must be as long as the number of contact points in the model.
  *  For a contact point to not be included in a resultant force point (RFP) calculation,
@@ -61,7 +61,7 @@ Contact::~Contact()
  *  If no array is given, the RFP is calcualted for all contact points in the
  *  model.
  */
-Contact::Contact(AbstractModel *aModel,int *aResultantForcePointGroups) :
+Contact::Contact(Model *aModel,int *aResultantForcePointGroups) :
 	Analysis(aModel)
 {
 	// NULL
@@ -572,7 +572,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * AbstractModel::integBeginCallback() and has the same argument list.
+ * Model::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -619,7 +619,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * AbstractModel::integStepCallback(), which has the same argument list.
+ * Model::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -653,7 +653,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * AbstractModel::integEndCallback() and has the same argument list.
+ * Model::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

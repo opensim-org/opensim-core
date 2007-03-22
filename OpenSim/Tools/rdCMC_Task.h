@@ -37,7 +37,7 @@
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/FunctionSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -114,7 +114,7 @@ protected:
 
 
 	/** Model. */
-	AbstractModel *_model;
+	Model *_model;
 
 	/** Number of task functions. */
 	int _nTrk;
@@ -175,8 +175,8 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	virtual void setModel(AbstractModel *aModel);
-	AbstractModel* getModel() const;
+	virtual void setModel(Model *aModel);
+	Model* getModel() const;
 	// ON,OFF
 	void setOn(bool aTrueFalse);
 	bool getOn() const;

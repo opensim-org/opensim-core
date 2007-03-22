@@ -78,7 +78,7 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	}
 
 	// MODEL
-	AbstractModel *model = _controller->getModel();
+	Model *model = _controller->getModel();
 	if(model==NULL) {
 		throw(Exception("rdActuatorForceTargetFast: ERROR- no model.\n"));
 	}
@@ -261,7 +261,7 @@ computeConstraint(double *x,int ic,double *c)
 {
 	int i;
 
-	AbstractModel *model = _controller->getModel();
+	Model *model = _controller->getModel();
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
 	// TIME STUFF

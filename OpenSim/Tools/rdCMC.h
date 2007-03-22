@@ -33,7 +33,7 @@
 // INCLUDE
 //============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 
 #ifdef SWIG
@@ -144,7 +144,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	rdCMC(AbstractModel *aModel,rdCMC_TaskSet *aSet);
+	rdCMC(Model *aModel,rdCMC_TaskSet *aSet);
 	virtual ~rdCMC();
 	void setNull();
 

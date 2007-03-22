@@ -117,7 +117,7 @@ protected:
 	void createCoordinatePathLists();
 
 public:
-	virtual void setup(AbstractModel* aModel);
+	virtual void setup(Model* aModel);
 	void makePaths();
 #if 0
 	void solveInverseKinematics(const IKTrial& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);

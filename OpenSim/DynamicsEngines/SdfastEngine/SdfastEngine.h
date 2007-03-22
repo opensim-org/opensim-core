@@ -64,7 +64,7 @@ class CoordinateSet;
 class AbstractBody;
 class AbstractDof;
 class AbstractCoordinate;
-class AbstractModel;
+class Model;
 class Transform;
 
 //=============================================================================
@@ -141,8 +141,8 @@ private:
 	void linkToModelLibrary();
 
 public:
-	void init(AbstractModel* aModel);
-	virtual void setup(AbstractModel* aModel);
+	void init(Model* aModel);
+	virtual void setup(Model* aModel);
 
 	virtual void peteTest() const;
 
@@ -343,8 +343,8 @@ private:
 // STATIC METHOD FOR CREATING THIS MODEL
 //=============================================================================
 extern "C" {
-OSIMSDFASTENGINE_API OpenSim::AbstractModel* CreateModel();
-OSIMSDFASTENGINE_API OpenSim::AbstractModel* CreateModel_File(const std::string &aModelFile);
+OSIMSDFASTENGINE_API OpenSim::Model* CreateModel();
+OSIMSDFASTENGINE_API OpenSim::Model* CreateModel_File(const std::string &aModelFile);
 }
 
 #endif // __SdfastEngine_h__

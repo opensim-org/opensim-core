@@ -47,7 +47,7 @@
 namespace OpenSim {
 
 class AbstractCoordinate;
-class AbstractModel;
+class Model;
 class AbstractMuscle;
 class AbstractDynamicsEngine;
 
@@ -101,7 +101,7 @@ public:
 	const std::string& getCoordinateName() const { return _coordinateName; }
 
 	virtual bool isActive() const;
-	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
+	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 
 	virtual void peteTest() const;
 

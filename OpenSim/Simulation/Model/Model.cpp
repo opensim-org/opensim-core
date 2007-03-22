@@ -1,4 +1,4 @@
-// AbstractModel.cpp
+// Model.cpp
 // Authors: Frank C. Anderson, Peter Loan, Ayman Habib
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -30,7 +30,7 @@
 #include <math.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractMuscle.h"
 #include "CoordinateSet.h"
 #include "SpeedSet.h"
@@ -56,7 +56,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-AbstractModel::AbstractModel() :
+Model::Model() :
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
@@ -73,7 +73,7 @@ AbstractModel::AbstractModel() :
 /**
  * Constructor from an XML file
  */
-AbstractModel::AbstractModel(const string &aFileName) :
+Model::Model(const string &aFileName) :
 	Object(aFileName),
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
@@ -106,10 +106,10 @@ AbstractModel::AbstractModel(const string &aFileName) :
 /**
  * Copy constructor.
  *
- * @param aModel AbstractModel to be copied.
+ * @param aModel Model to be copied.
  */
 
-AbstractModel::AbstractModel(const AbstractModel &aModel) :
+Model::Model(const Model &aModel) :
    Object(aModel),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
@@ -127,7 +127,7 @@ AbstractModel::AbstractModel(const AbstractModel &aModel) :
 /**
  * Destructor.
  */
-AbstractModel::~AbstractModel()
+Model::~Model()
 {
 	if (_analysisSet) {
 		delete _analysisSet;
@@ -146,14 +146,14 @@ AbstractModel::~AbstractModel()
 }
 //_____________________________________________________________________________
 /**
- * Copy this AbstractModel and return a pointer to the copy.
+ * Copy this Model and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this AbstractModel.
+ * @return Pointer to a copy of this Model.
  */
-Object* AbstractModel::copy() const
+Object* Model::copy() const
 {
-	AbstractModel *model = new AbstractModel(*this);
+	Model *model = new Model(*this);
 	return(model);
 }
 
@@ -167,7 +167,7 @@ Object* AbstractModel::copy() const
  *
  * @param aModel model to be copied
  */
-void AbstractModel::copyData(const AbstractModel &aModel)
+void Model::copyData(const Model &aModel)
 {
 	_fileName = aModel._fileName;
 	_lengthUnits = aModel._lengthUnits;
@@ -191,9 +191,9 @@ void AbstractModel::copyData(const AbstractModel &aModel)
 /**
  * Set the values of all data members to an appropriate "null" value.
  */
-void AbstractModel::setNull()
+void Model::setNull()
 {
-	setType("AbstractModel");
+	setType("Model");
 
 	_analysisSet = NULL;
 	_integCallbackSet = NULL;
@@ -207,7 +207,7 @@ void AbstractModel::setNull()
  * Connect properties to local pointers.
  *
  */
-void AbstractModel::setupProperties()
+void Model::setupProperties()
 {
 	_contactSetProp.setName("ContactForceSet");
 	_propertySet.append(&_contactSetProp);
@@ -232,7 +232,7 @@ void AbstractModel::setupProperties()
  * not yet designed to be called after a model has been
  * copied.
  */
-void AbstractModel::setup()
+void Model::setup()
 {
 	// Set the current directory to the directory containing the model
 	// file.  This is allow files (i.e. bone files) to be specified using
@@ -328,7 +328,7 @@ void AbstractModel::setup()
 //_____________________________________________________________________________
 /**
  * Register the types used by this class.
-void AbstractModel::registerTypes()
+void Model::registerTypes()
 {
 	// now handled by RegisterTypes_osimSimulation()
 }
@@ -344,7 +344,7 @@ void AbstractModel::registerTypes()
  *
  * @return Reference to this object.
  */
-AbstractModel& AbstractModel::operator=(const AbstractModel &aModel)
+Model& Model::operator=(const Model &aModel)
 {
 	// BASE CLASS
 	Object::operator=(aModel);
@@ -367,7 +367,7 @@ AbstractModel& AbstractModel::operator=(const AbstractModel &aModel)
  *
  * @param rGrav the XYZ gravity vector in the global frame is returned here.
  */
-void AbstractModel::getGravity(double rGrav[3]) const
+void Model::getGravity(double rGrav[3]) const
 {
 	getDynamicsEngine().getGravity(rGrav);
 }
@@ -378,7 +378,7 @@ void AbstractModel::getGravity(double rGrav[3]) const
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool AbstractModel::setGravity(double aGrav[3])
+bool Model::setGravity(double aGrav[3])
 {
 	return getDynamicsEngine().setGravity(aGrav);
 }
@@ -393,7 +393,7 @@ bool AbstractModel::setGravity(double aGrav[3])
  *
  * @return Number of controls.
  */
-int AbstractModel::getNumControls() const
+int Model::getNumControls() const
 {
 	return _actuatorSet.getNumControls();
 }
@@ -403,7 +403,7 @@ int AbstractModel::getNumControls() const
  *
  * @return Number of states.
  */
-int AbstractModel::getNumStates() const
+int Model::getNumStates() const
 {
 	int n;
 	n = getDynamicsEngine().getNumCoordinates();
@@ -419,7 +419,7 @@ int AbstractModel::getNumStates() const
  *
  * @return Number of pseudostates.
  */
-int AbstractModel::getNumPseudoStates() const
+int Model::getNumPseudoStates() const
 {
 	int n = _actuatorSet.getNumPseudoStates();
 	n += _contactSet.getNumPseudoStates();
@@ -432,7 +432,7 @@ int AbstractModel::getNumPseudoStates() const
  *
  * @return Number of bodies.
  */
-int AbstractModel::getNumBodies() const
+int Model::getNumBodies() const
 {
 	return getDynamicsEngine().getNumBodies();
 }
@@ -442,7 +442,7 @@ int AbstractModel::getNumBodies() const
  *
  * @return Number of joints.
  */
-int AbstractModel::getNumJoints() const
+int Model::getNumJoints() const
 {
 	return getDynamicsEngine().getNumJoints();
 }
@@ -452,7 +452,7 @@ int AbstractModel::getNumJoints() const
  *
  * @return Number of coordinates.
  */
-int AbstractModel::getNumCoordinates() const
+int Model::getNumCoordinates() const
 {
 	return getDynamicsEngine().getNumCoordinates();
 }
@@ -462,7 +462,7 @@ int AbstractModel::getNumCoordinates() const
  *
  * @return Number of speeds.
  */
-int AbstractModel::getNumSpeeds() const
+int Model::getNumSpeeds() const
 {
 	return getDynamicsEngine().getNumSpeeds();
 }
@@ -472,7 +472,7 @@ int AbstractModel::getNumSpeeds() const
  *
  * @return The number of actuators
  */
-int AbstractModel::getNumActuators() const
+int Model::getNumActuators() const
 {
 	return _actuatorSet.getSize();
 }
@@ -482,7 +482,7 @@ int AbstractModel::getNumActuators() const
  *
  * @return The number of contacts
  */
-int AbstractModel::getNumContacts() const
+int Model::getNumContacts() const
 {
 	return _contactSet.getSize();
 }
@@ -493,7 +493,7 @@ int AbstractModel::getNumContacts() const
  *
  * @return The number of analyses
  */
-int AbstractModel::getNumAnalyses() const
+int Model::getNumAnalyses() const
 {
 	if (_analysisSet)
 		return _analysisSet->getSize();
@@ -509,7 +509,7 @@ int AbstractModel::getNumAnalyses() const
 /**
  * Returns true if model has a dynamics engine
  */
-bool AbstractModel::hasDynamicsEngine() const
+bool Model::hasDynamicsEngine() const
 {
 	return _dynamicsEngine != 0;
 }
@@ -519,7 +519,7 @@ bool AbstractModel::hasDynamicsEngine() const
  *
  * @return Reference to the abstract dynamics engine
  */
-AbstractDynamicsEngine& AbstractModel::getDynamicsEngine() const
+AbstractDynamicsEngine& Model::getDynamicsEngine() const
 {
 	assert(hasDynamicsEngine());
 
@@ -531,7 +531,7 @@ AbstractDynamicsEngine& AbstractModel::getDynamicsEngine() const
  *
  * @param the abstract dynamics engine to set to
  */
-void AbstractModel::setDynamicsEngine(AbstractDynamicsEngine& aEngine)
+void Model::setDynamicsEngine(AbstractDynamicsEngine& aEngine)
 {
 	// TODO: make a copy() ?
 	_dynamicsEngine = &aEngine;
@@ -549,7 +549,7 @@ void AbstractModel::setDynamicsEngine(AbstractDynamicsEngine& aEngine)
  * @param aX Controls at time aT.
  * @param aY States at time aT.
  */
-void AbstractModel::set(double aT, const double aX[], const double aY[])
+void Model::set(double aT, const double aX[], const double aY[])
 {
 	// TIME
 	setTime(aT);
@@ -571,7 +571,7 @@ void AbstractModel::set(double aT, const double aX[], const double aY[])
  *
  * @param Current time.
  */
-void AbstractModel::setTime(double aTime)
+void Model::setTime(double aTime)
 {
 	_time = aTime;
 }
@@ -582,7 +582,7 @@ void AbstractModel::setTime(double aTime)
  *
  * @return Current time.
  */
-double AbstractModel::getTime() const
+double Model::getTime() const
 {
 	return _time;
 }
@@ -599,7 +599,7 @@ double AbstractModel::getTime() const
  *
  * @param Time normalization constant.
  */
-void AbstractModel::setTimeNormConstant(double aNormConst)
+void Model::setTimeNormConstant(double aNormConst)
 {
 	_tNormConst = aNormConst;
 
@@ -613,7 +613,7 @@ void AbstractModel::setTimeNormConstant(double aNormConst)
  *
  * @return Current time normalization constant.
  */
-double AbstractModel::getTimeNormConstant() const
+double Model::getTimeNormConstant() const
 {
 	return _tNormConst;
 }
@@ -628,7 +628,7 @@ double AbstractModel::getTimeNormConstant() const
  *
  * @param aX Array of control values
  */
-void AbstractModel::setControls(const double aX[])
+void Model::setControls(const double aX[])
 {
 	_actuatorSet.setControls(aX);
 }
@@ -639,7 +639,7 @@ void AbstractModel::setControls(const double aX[])
  * @param aIndex The index of the control to set
  * @param aValue The control value
  */
-void AbstractModel::setControl(int aIndex, double aValue)
+void Model::setControl(int aIndex, double aValue)
 {
 	_actuatorSet.setControl(aIndex, aValue);
 }
@@ -650,7 +650,7 @@ void AbstractModel::setControl(int aIndex, double aValue)
  * @param aName The name of the control to set
  * @param aValue The control value
  */
-void AbstractModel::setControl(const string &aName, double aValue)
+void Model::setControl(const string &aName, double aValue)
 {
 	_actuatorSet.setControl(aName, aValue);
 }
@@ -660,7 +660,7 @@ void AbstractModel::setControl(const string &aName, double aValue)
  *
  * @param rX The control values are returned here.
  */
-void AbstractModel::getControls(double rX[]) const
+void Model::getControls(double rX[]) const
 {
 	_actuatorSet.getControls(rX);
 }
@@ -671,7 +671,7 @@ void AbstractModel::getControls(double rX[]) const
  * @param aIndex The index of the control to get
  * @return The control value
  */
-double AbstractModel::getControl(int aIndex) const
+double Model::getControl(int aIndex) const
 {
 	return _actuatorSet.getControl(aIndex);
 }
@@ -682,7 +682,7 @@ double AbstractModel::getControl(int aIndex) const
  * @param aName The name of the control to get
  * @return The control value
  */
-double AbstractModel::getControl(const string &aName) const
+double Model::getControl(const string &aName) const
 {
 	return _actuatorSet.getControl(aName);
 }
@@ -693,7 +693,7 @@ double AbstractModel::getControl(const string &aName) const
  * @param aIndex Index of the control whose name to get.
  * @return Name of the control.
  */
-string AbstractModel::getControlName(int aIndex) const
+string Model::getControlName(int aIndex) const
 {
 	return _actuatorSet.getControlName(aIndex);
 }
@@ -704,7 +704,7 @@ string AbstractModel::getControlName(int aIndex) const
  * @param aName Name of the control whose index to get.
  * @return Index of the control.  -1 is returned if there is no control
  * with the specified name.
-int AbstractModel::getControlIndex(const string &aName) const
+int Model::getControlIndex(const string &aName) const
 {
 	return _actuatorSet.getControlIndex(aName);
 }
@@ -721,7 +721,7 @@ int AbstractModel::getControlIndex(const string &aName) const
  * @param aYI Array of states.  The size of rY must be at least the number
  * of states, which can be found by calling getNumStates().
  */
-void AbstractModel::setStates(const double aY[])
+void Model::setStates(const double aY[])
 {
 	// CONFIGURATION
 	getDynamicsEngine().setConfiguration(aY);
@@ -742,7 +742,7 @@ void AbstractModel::setStates(const double aY[])
  * @param rYI Array of states.  The size of rY must be at least the number
  * of states, which can be found by calling getNumStates().
  */
-void AbstractModel::getStates(double rY[]) const
+void Model::getStates(double rY[]) const
 {
 	// CONFIGURATION
 	getDynamicsEngine().getConfiguration(rY);
@@ -762,7 +762,7 @@ void AbstractModel::getStates(double rY[]) const
  *
  * @param rStateNames Array of state names..
  */
-void AbstractModel::getStateNames(Array<string> &rStateNames) const
+void Model::getStateNames(Array<string> &rStateNames) const
 {
 	getDynamicsEngine().getCoordinateSet()->getNames(rStateNames);
 	getDynamicsEngine().getSpeedSet()->getNames(rStateNames);
@@ -780,7 +780,7 @@ void AbstractModel::getStateNames(Array<string> &rStateNames) const
  * @param aYI Array of states.  The size of rY must be at least the number
  * of states, which can be found by calling getNumStates().
  */
-void AbstractModel::setInitialStates(const double aYI[])
+void Model::setInitialStates(const double aYI[])
 {
 	memcpy(&_yi[0],aYI,getNumStates()*sizeof(double));
 }
@@ -791,7 +791,7 @@ void AbstractModel::setInitialStates(const double aYI[])
  * @param rYI Array of states.  The size of rY must be at least the number
  * of states, which can be found by calling getNumStates().
  */
-void AbstractModel::getInitialStates(double rYI[]) const
+void Model::getInitialStates(double rYI[]) const
 {
 	memcpy(rYI,&_yi[0],getNumStates()*sizeof(double));
 }
@@ -807,7 +807,7 @@ void AbstractModel::getInitialStates(double rYI[]) const
  * @param rStateNames Array of pseudo-state names.
  * @return Number of pseudo-states.
  */
-int AbstractModel::getPseudoStateNames(Array<string> &rStateNames) const
+int Model::getPseudoStateNames(Array<string> &rStateNames) const
 {
 	//TODO_CLAY
 	return 0;
@@ -822,7 +822,7 @@ int AbstractModel::getPseudoStateNames(Array<string> &rStateNames) const
  * @param aYP Array of pseudo-states.  The size of rYP must be at least the
  * number of pseudo-states, which can be found by calling getNumPseudoStates().
  */
-void AbstractModel::setPseudoStates(const double aYP[])
+void Model::setPseudoStates(const double aYP[])
 {
 	// ACTUATORS
 	ActuatorSet *actuatorSet = getActuatorSet();
@@ -841,7 +841,7 @@ void AbstractModel::setPseudoStates(const double aYP[])
  * @param rYIP Array of pseudo-states.  The size of rYP must be at least the
  * number of pseudo-states, which can be found by calling getNumPseudoStates().
  */
-void AbstractModel::getPseudoStates(double rYP[]) const
+void Model::getPseudoStates(double rYP[]) const
 {
 	// ACTUATORS
 	const ActuatorSet *actuatorSet = getActuatorSet();
@@ -863,7 +863,7 @@ void AbstractModel::getPseudoStates(double rYP[]) const
  * @param aYPI Array of pseudo-states.  The size of rYP must be at least the
  * number of pseudo-states, which can be found by calling getNumPseudoStates().
  */
-void AbstractModel::setInitialPseudoStates(const double aYPI[])
+void Model::setInitialPseudoStates(const double aYPI[])
 {
 	memcpy(&_ypi[0],aYPI,getNumPseudoStates()*sizeof(double));
 }
@@ -874,7 +874,7 @@ void AbstractModel::setInitialPseudoStates(const double aYPI[])
  * @param rYPI Array of pseudo-states.  The size of rYP must be at least the
  * number of pseudo-states, which can be found by calling getNumPseudoStates().
  */
-void AbstractModel::getInitialPseudoStates(double rYPI[]) const
+void Model::getInitialPseudoStates(double rYPI[]) const
 {
 	memcpy(rYPI,&_ypi[0],getNumPseudoStates()*sizeof(double));
 }
@@ -889,7 +889,7 @@ void AbstractModel::getInitialPseudoStates(double rYPI[]) const
  *
  * @return Pointer to the actuator set.
  */
-ActuatorSet* AbstractModel::getActuatorSet()
+ActuatorSet* Model::getActuatorSet()
 {
 	return(&_actuatorSet);
 }
@@ -899,7 +899,7 @@ ActuatorSet* AbstractModel::getActuatorSet()
  *
  * @return Pointer to the actuator set.
  */
-const ActuatorSet* AbstractModel::getActuatorSet() const
+const ActuatorSet* Model::getActuatorSet() const
 {
 	return(&_actuatorSet);
 }
@@ -912,7 +912,7 @@ const ActuatorSet* AbstractModel::getActuatorSet() const
  * @param aName the name of the muscle group
  * @return Pointer to the muscle group
  */
-MuscleGroup* AbstractModel::enterGroup(const string& aName)
+MuscleGroup* Model::enterGroup(const string& aName)
 {
 	for (int i = 0; i < _muscleGroups.getSize(); i++)
 		if (aName == _muscleGroups[i]->getName())
@@ -935,7 +935,7 @@ MuscleGroup* AbstractModel::enterGroup(const string& aName)
  *
  * @return Pointer to the contact set.
  */
-ContactForceSet* AbstractModel::getContactSet()
+ContactForceSet* Model::getContactSet()
 {
 	return(&_contactSet);
 }
@@ -945,7 +945,7 @@ ContactForceSet* AbstractModel::getContactSet()
  *
  * @return Pointer to the contact set.
  */
-const ContactForceSet* AbstractModel::getContactSet() const
+const ContactForceSet* Model::getContactSet() const
 {
 	return(&_contactSet);
 }
@@ -960,7 +960,7 @@ const ContactForceSet* AbstractModel::getContactSet() const
  *
  * @retun Integration callback set of this model.
  */
-IntegCallbackSet* AbstractModel::getIntegCallbackSet()
+IntegCallbackSet* Model::getIntegCallbackSet()
 {
 	return(_integCallbackSet);
 }
@@ -970,7 +970,7 @@ IntegCallbackSet* AbstractModel::getIntegCallbackSet()
  *
  * @retun Integration callback set of this model.
  */
-const IntegCallbackSet* AbstractModel::getIntegCallbackSet() const
+const IntegCallbackSet* Model::getIntegCallbackSet() const
 {
 	return(_integCallbackSet);
 }
@@ -980,11 +980,11 @@ const IntegCallbackSet* AbstractModel::getIntegCallbackSet() const
  *
  * @param aCallback Pointer to the integration callback to add.
  */
-void AbstractModel::addIntegCallback(IntegCallback *aCallback)
+void Model::addIntegCallback(IntegCallback *aCallback)
 {
 	// CHECK FOR NULL
 	if(aCallback==NULL) {
-		printf("AbstractModel.addIntegCallback:  ERROR- NULL callback.\n");
+		printf("Model.addIntegCallback:  ERROR- NULL callback.\n");
 	}
 
 	// ADD
@@ -1002,7 +1002,7 @@ void AbstractModel::addIntegCallback(IntegCallback *aCallback)
  *
  * @return Derivative callback set of this model.
  */
-DerivCallbackSet* AbstractModel::getDerivCallbackSet()
+DerivCallbackSet* Model::getDerivCallbackSet()
 {
 	return(_derivCallbackSet);
 }
@@ -1012,7 +1012,7 @@ DerivCallbackSet* AbstractModel::getDerivCallbackSet()
  *
  * @return Derivative callback set of this model.
  */
-const DerivCallbackSet* AbstractModel::getDerivCallbackSet() const
+const DerivCallbackSet* Model::getDerivCallbackSet() const
 {
 	return(_derivCallbackSet);
 }
@@ -1022,11 +1022,11 @@ const DerivCallbackSet* AbstractModel::getDerivCallbackSet() const
  *
  * @param aCallback Pointer to the derivative callback to add.
  */
-void AbstractModel::addDerivCallback(DerivCallback *aCallback)
+void Model::addDerivCallback(DerivCallback *aCallback)
 {
 	// CHECK FOR NULL
 	if(aCallback==NULL) {
-		printf("AbstractModel.addDerivCallback:  ERROR- NULL callback.\n");
+		printf("Model.addDerivCallback:  ERROR- NULL callback.\n");
 	}
 
 	// ADD
@@ -1044,7 +1044,7 @@ void AbstractModel::addDerivCallback(DerivCallback *aCallback)
  *
  * @return Analysis set of this model.
  */
-AnalysisSet* AbstractModel::getAnalysisSet()
+AnalysisSet* Model::getAnalysisSet()
 {
 	return _analysisSet;
 }
@@ -1054,7 +1054,7 @@ AnalysisSet* AbstractModel::getAnalysisSet()
  *
  * @return Analysis set of this model.
  */
-const AnalysisSet* AbstractModel::getAnalysisSet() const
+const AnalysisSet* Model::getAnalysisSet() const
 {
 	return _analysisSet;
 }
@@ -1064,7 +1064,7 @@ const AnalysisSet* AbstractModel::getAnalysisSet() const
  *
  * @param aAnalysis pointer to the analysis to add
  */
-void AbstractModel::addAnalysis(Analysis *aAnalysis)
+void Model::addAnalysis(Analysis *aAnalysis)
 {
 	if (aAnalysis && _analysisSet)
 	{
@@ -1092,7 +1092,7 @@ void AbstractModel::addAnalysis(Analysis *aAnalysis)
  * normalized for integration, but are in un-normalized units.  The
  * length of rDYDT should be at least getNumStates().
  */
-void AbstractModel::computeDerivatives(double rDYDT[])
+void Model::computeDerivatives(double rDYDT[])
 {
 	// Q's and U's
 	int nq = getNumCoordinates();
@@ -1119,7 +1119,7 @@ void AbstractModel::computeDerivatives(double rDYDT[])
  * _actuatorSet.getNumStates()+_contactSet.getNumStates()
  * These have not been time normalized for integration, but are in un-normalized units.
  */
-void AbstractModel::computeAuxiliaryDerivatives(double rDYDT[])
+void Model::computeAuxiliaryDerivatives(double rDYDT[])
 {
 	// Actuators
 	_actuatorSet.computeStateDerivatives(&rDYDT[0]);
@@ -1146,7 +1146,7 @@ void AbstractModel::computeAuxiliaryDerivatives(double rDYDT[])
  *        individual bodies should be scaled with the body scale factors.
  * @return Whether or not scaling was successful.
  */
-bool AbstractModel::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
+bool Model::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
 {
 	int i;
 
@@ -1199,7 +1199,7 @@ bool AbstractModel::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPr
  *
  * @param aOStream Output stream.
  */
-void AbstractModel::printBasicInfo(std::ostream &aOStream) const
+void Model::printBasicInfo(std::ostream &aOStream) const
 {
 	aOStream<<"             MODEL: "<<getName()<<"\n";
 	aOStream<<"         actuators: "<<getNumActuators()<<"\n";
@@ -1212,7 +1212,7 @@ void AbstractModel::printBasicInfo(std::ostream &aOStream) const
  *
  * @param aOStream Output stream.
  */
-void AbstractModel::printDetailedInfo(std::ostream &aOStream) const
+void Model::printDetailedInfo(std::ostream &aOStream) const
 {
 	//int i;
 
@@ -1297,11 +1297,11 @@ void AbstractModel::printDetailedInfo(std::ostream &aOStream) const
 //=============================================================================
 // TEST
 //=============================================================================
-void AbstractModel::peteTest() const
+void Model::peteTest() const
 {
 	int i;
 
-	cout << "AbstractModel " << getName() << endl;
+	cout << "Model " << getName() << endl;
 
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
 	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
@@ -1320,7 +1320,7 @@ void AbstractModel::peteTest() const
 }
 
 #if 0
-void AbstractModel::kinTest()
+void Model::kinTest()
 {
 	int m1 = 0, m2 = 1;
 	AbstractMuscle* ms1;
@@ -1371,7 +1371,7 @@ void AbstractModel::kinTest()
 	}
 }
 #endif
-void AbstractModel::kinTest()
+void Model::kinTest()
 {
 	AbstractMuscle* ms1;
 	AbstractMuscle* ms2;

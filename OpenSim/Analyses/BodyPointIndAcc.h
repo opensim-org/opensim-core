@@ -27,7 +27,7 @@ const int BodyPointIndAcc_BUFFER_LENGTH = 2048;
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMANALYSES_API BodyPointIndAcc : public IndAcc 
@@ -59,8 +59,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3]);
-	BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3],
+	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3]);
+	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3],
 		Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~BodyPointIndAcc();

@@ -51,7 +51,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ActuatorGeneralizedForces(AbstractModel *aModel=0);
+	ActuatorGeneralizedForces(Model *aModel=0);
 	ActuatorGeneralizedForces(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	ActuatorGeneralizedForces(const ActuatorGeneralizedForces &aObject);
@@ -78,7 +78,7 @@ public:
 	void setStorageCapacityIncrements(int aIncrement);
 	Storage* getActuatorGenForcesStorage();
 
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	void setActuatorList(const Array<std::string>& aActuatorNames);
 	//--------------------------------------------------------------------------
 	// ANALYSIS

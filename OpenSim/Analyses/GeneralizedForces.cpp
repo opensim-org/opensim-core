@@ -18,7 +18,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "GeneralizedForces.h"
@@ -56,9 +56,9 @@ GeneralizedForces::~GeneralizedForces()
  * Construct an GeneralizedForces object for recording the joint torques of
  * a model's generalized coodinates during a simulation.
  *
- * @param aModel AbstractModel for which the joint torques are to be recorded.
+ * @param aModel Model for which the joint torques are to be recorded.
  */
-GeneralizedForces::GeneralizedForces(AbstractModel *aModel) :
+GeneralizedForces::GeneralizedForces(Model *aModel) :
 	Analysis(aModel)
 {
 	setName("GeneralizedForces");
@@ -138,10 +138,10 @@ Object* GeneralizedForces::copy() const
 /**
  * Set the model for which the GeneralizedForces analysis is to be computed.
  *
- * @param aModel AbstractModel pointer
+ * @param aModel Model pointer
  */
 void GeneralizedForces::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	Analysis::setModel(aModel);
 
@@ -453,7 +453,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * AbstractModel::integBeginCallback() and has the same argument list.
+ * Model::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -485,7 +485,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * AbstractModel::integStepCallback(), which has the same argument list.
+ * Model::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -519,7 +519,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * AbstractModel::integEndCallback() and has the same argument list.
+ * Model::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

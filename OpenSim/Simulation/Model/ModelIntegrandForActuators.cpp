@@ -37,7 +37,7 @@
 #include "AnalysisSet.h"
 #include "DerivCallbackSet.h"
 #include "ModelIntegrandForActuators.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractDynamicsEngine.h"
 
 
@@ -56,7 +56,7 @@ using namespace std;
  * @param aModel An instance of an Model.
  */
 ModelIntegrandForActuators::
-ModelIntegrandForActuators(AbstractModel *aModel) :
+ModelIntegrandForActuators(Model *aModel) :
 	ModelIntegrand(aModel),
 	_qCorrections(0.0),
 	_uCorrections(0.0),

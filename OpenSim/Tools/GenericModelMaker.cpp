@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "GenericModelMaker.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 
 //=============================================================================
@@ -166,11 +166,11 @@ GenericModelMaker& GenericModelMaker::operator=(const GenericModelMaker &aGeneri
  * Execute the model making process, which involves reading
  * an XML model file and possible updating its marker set.
  *
- * @return Pointer to the AbstractModel that is constructed.
+ * @return Pointer to the Model that is constructed.
  */
-AbstractModel* GenericModelMaker::processModel(const string& aPathToSubject)
+Model* GenericModelMaker::processModel(const string& aPathToSubject)
 {
-	AbstractModel* model = NULL;
+	Model* model = NULL;
 
 	cout << endl << "Step 1: Loading generic model" << endl;
 
@@ -178,7 +178,7 @@ AbstractModel* GenericModelMaker::processModel(const string& aPathToSubject)
 	{
 		_fileName = aPathToSubject + _fileName;
 
-		model = new AbstractModel(_fileName);
+		model = new Model(_fileName);
 		model->setup();
 
 		if (model->builtOK())

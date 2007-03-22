@@ -107,7 +107,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY (also used by the CMCTool)
 	//--------------------------------------------------------------------------
-	static void initializeExternalLoads(AbstractModel *aModel, 
+	static void initializeExternalLoads(Model *aModel, 
 		const std::string &aExternalLoadsFileName,
 		const std::string &aExternalLoadsModelKinematicsFileName,
 		const std::string &aExternalLoadsBody1,

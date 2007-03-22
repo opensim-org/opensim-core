@@ -32,7 +32,7 @@
 // INCLUDES
 //=============================================================================
 #include "rdCMC_Point.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 
@@ -186,5 +186,5 @@ computeEffectiveMassMatrix()
 
 	// EFFECTIVE MASS MATRIX
 	// TODO- This method is not available anywhere.
-	//AbstractModel::ComputeEffectiveMassMatrix(nx,nu,_j,Iinv,_m);
+	//Model::ComputeEffectiveMassMatrix(nx,nu,_j,Iinv,_m);
 }

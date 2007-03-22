@@ -12,7 +12,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
@@ -61,7 +61,7 @@ BodyPointIndAcc::~BodyPointIndAcc()
  * @point aPoint Point value.
  */
 BodyPointIndAcc::
-BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3])
+BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3])
 	: IndAcc(aModel)
 {
 	// STATES
@@ -95,7 +95,7 @@ BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3])
  * @todo add initial velocity and ind pos due to init vel and pos to all
  */
 BodyPointIndAcc::
-BodyPointIndAcc(AbstractModel *aModel,AbstractBody *aBody,double aPoint[3],
+BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3],
 	Storage *aStates,Storage *aControls,char *aBaseName,char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {

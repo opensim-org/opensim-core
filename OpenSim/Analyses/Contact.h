@@ -21,7 +21,7 @@
 /**
  * A class for recording the contact forces (and torques) generated
  * during a simulation.  This class will record only the forces (and torques)
- * returned by the getContactForces() method of AbstractModel.
+ * returned by the getContactForces() method of Model.
  *
  * @author Frank C. Anderson
  * @version 1.0
@@ -77,7 +77,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Contact(AbstractModel *aModel,int *aResultantForcePointGroups=NULL);
+	Contact(Model *aModel,int *aResultantForcePointGroups=NULL);
 	virtual ~Contact();
 private:
 	void setNull();

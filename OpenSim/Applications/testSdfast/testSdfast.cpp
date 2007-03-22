@@ -28,7 +28,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 
@@ -51,13 +51,13 @@ int main(int argc, char **argv)
 
 	try {
 			// Construct the model with the SimmKinematicsEngine
-			AbstractModel *model1 = new AbstractModel("ellWrap.xml");
+			Model *model1 = new Model("ellWrap.xml");
 			model1->setup();
 			//model1->peteTest();
 			model1->kinTest();
 
 			// Construct the model with the SdfastEngine
-			AbstractModel *model2 = new AbstractModel("ellWrapSdfast.xml");
+			Model *model2 = new Model("ellWrapSdfast.xml");
 			model2->setup();
 			//model2->peteTest();
 			model2->kinTest();

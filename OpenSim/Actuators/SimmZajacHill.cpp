@@ -215,7 +215,7 @@ void SimmZajacHill::setupProperties()
  *
  * @param aModel model containing this SimmZajacHill.
  */
-void SimmZajacHill::setup(AbstractModel* aModel)
+void SimmZajacHill::setup(Model* aModel)
 {
 	// Base class
 	AbstractMuscle::setup(aModel);

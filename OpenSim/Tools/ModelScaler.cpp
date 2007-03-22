@@ -27,7 +27,7 @@
 //=============================================================================
 #include <OpenSim/Common/ScaleSet.h>
 #include "ModelScaler.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -252,7 +252,7 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(AbstractModel* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
 {
 	int i;
 	ScaleSet theScaleSet;
@@ -374,7 +374,7 @@ bool ModelScaler::processModel(AbstractModel* aModel, const string& aPathToSubje
  * For each marker pair, the scale factor is computed by dividing the average distance between the pair 
  * in the experimental marker data by the distance between the pair on the model.
  */
-double ModelScaler::computeMeasurementScaleFactor(const AbstractModel& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
+double ModelScaler::computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
 {
 	double scaleFactor = 0;
 	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
@@ -399,7 +399,7 @@ double ModelScaler::computeMeasurementScaleFactor(const AbstractModel& aModel, c
  *
  * @return The measured distance.
  */
-double ModelScaler::takeModelMeasurement(const AbstractModel& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
+double ModelScaler::takeModelMeasurement(const Model& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
 	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
 	const AbstractMarker* marker1 = engine.getMarkerSet()->get(aName1);

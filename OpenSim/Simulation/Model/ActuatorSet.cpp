@@ -28,7 +28,7 @@
 //=============================================================================
 #include <iostream>
 #include "ActuatorSet.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/rdMath.h>
 
@@ -176,7 +176,7 @@ setupSerializedMembers()
 {
 }
 
-void ActuatorSet::setup(AbstractModel* aModel)
+void ActuatorSet::setup(Model* aModel)
 {
 	_model = aModel;
 	// INDICES
@@ -287,7 +287,7 @@ operator=(const ActuatorSet &aAbsActuatorSet)
  * @return Pointer to the model.
  */
 void ActuatorSet::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	_model = aModel;
 
@@ -307,7 +307,7 @@ setModel(AbstractModel *aModel)
  *
  * @return Pointer to the model.
  */
-AbstractModel* ActuatorSet::
+Model* ActuatorSet::
 getModel() const
 {
 	return(_model);

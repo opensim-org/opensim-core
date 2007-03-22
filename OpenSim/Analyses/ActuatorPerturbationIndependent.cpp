@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Common/Object.h>
 #include "ActuatorPerturbationIndependent.h"
@@ -45,10 +45,10 @@ ActuatorPerturbationIndependent::~ActuatorPerturbationIndependent()
  * during an integration while forcing all other muscles to exert their nominal
  * force.
  *
- * @param aModel AbstractModel for which actuator forces are to be perturbed.
+ * @param aModel Model for which actuator forces are to be perturbed.
  */
 ActuatorPerturbationIndependent::
-ActuatorPerturbationIndependent(AbstractModel *aModel) :
+ActuatorPerturbationIndependent(Model *aModel) :
 	ActuatorPerturbation(aModel)
 {
 	setNull();

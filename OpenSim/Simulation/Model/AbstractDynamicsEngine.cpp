@@ -36,7 +36,7 @@
 #include <OpenSim/Common/SimmMotionData.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "AbstractDynamicsEngine.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractBody.h"
 #include "AbstractCoordinate.h"
 #include "AbstractJoint.h"
@@ -165,7 +165,7 @@ void AbstractDynamicsEngine::setNull()
  *
  * @param aModel model containing this dynamics engine.
  */
-void AbstractDynamicsEngine::setup(AbstractModel* aModel)
+void AbstractDynamicsEngine::setup(Model* aModel)
 {
 	_model = aModel;
 

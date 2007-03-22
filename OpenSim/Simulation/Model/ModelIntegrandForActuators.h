@@ -51,14 +51,14 @@
 //=============================================================================
 //=============================================================================
 /**
- * This class makes AbstractModel into a valid Integrand.
+ * This class makes Model into a valid Integrand.
  *
  * @version 1.0
  * @author Frank C. Anderson
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API ModelIntegrandForActuators : public ModelIntegrand
 {
@@ -97,7 +97,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ModelIntegrandForActuators(AbstractModel *aModel);
+	ModelIntegrandForActuators(Model *aModel);
 	virtual ~ModelIntegrandForActuators();
 private:
 	void setNull();

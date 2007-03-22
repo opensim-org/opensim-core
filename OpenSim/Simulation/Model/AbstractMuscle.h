@@ -110,7 +110,7 @@ public:
 	AbstractMuscle(const AbstractMuscle &aMuscle);
 	virtual ~AbstractMuscle();
 	virtual Object* copy() const = 0;
-	virtual void setup(AbstractModel *aModel);
+	virtual void setup(Model *aModel);
 
 	static AbstractMuscle* safeDownCast(Object* aObject) { return dynamic_cast<AbstractMuscle*>(aObject); }
 

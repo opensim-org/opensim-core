@@ -48,7 +48,7 @@
 namespace OpenSim {
 
 class AbstractBody;
-class AbstractModel;
+class Model;
 class AbstractMuscle;
 class AbstractDynamicsEngine;
 class AbstractWrapObject;
@@ -111,7 +111,7 @@ public:
 
 	virtual bool isActive() const { return true; }
 	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
-	virtual void setup(AbstractModel* aModel, AbstractMuscle* aMuscle);
+	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() { return &_displayer; };

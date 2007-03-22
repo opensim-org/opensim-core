@@ -12,7 +12,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
@@ -58,7 +58,7 @@ DecompTaylor::~DecompTaylor()
  * @see setPerturbation()
  */
 DecompTaylor::
-DecompTaylor(AbstractModel *aModel) :
+DecompTaylor(Model *aModel) :
 	Decomp(aModel)
 {
 	setNull();
@@ -911,7 +911,7 @@ computeFrictionFactors(double aT,double *aX,double *aY)
  * for all contact points.
  *
  * Prior to calling this method, the model states must be set and
- * AbstractModel::computeContact() should be called.
+ * Model::computeContact() should be called.
  *
  * @param rForces Forces of contact points arranged as follows:
  * rForces[point index][3], so the dimension of rForces should be np*3.
@@ -943,7 +943,7 @@ computeContactForces(double *rForces)
  * frame of BodyA.
  *
  * Prior to calling this method, the model states must be set and
- * AbstractModel::computeContact() should be called.
+ * Model::computeContact() should be called.
  *
  * @param rVels Velocities of contact points arranged as follows:
  * rVels[point index][3], so the dimension of rVels should be np*3.

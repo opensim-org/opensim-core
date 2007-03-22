@@ -44,7 +44,7 @@ namespace OpenSim {
 class ScaleSet;
 class BodySet;
 class JointSet;
-class AbstractModel;
+class Model;
 class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
@@ -89,7 +89,7 @@ class OSIMSIMULATION_API AbstractDynamicsEngine : public Object
 //=============================================================================
 protected:
 	/** Pointer to the model that owns this dynamics engine. */
-	AbstractModel* _model;
+	Model* _model;
 
 	/** Array containg the acceleration due to gravity. */
 	PropertyDblArray _gravityProp;
@@ -126,7 +126,7 @@ public:
 	AbstractDynamicsEngine(const std::string &aFileName);
 	virtual ~AbstractDynamicsEngine();
 	virtual Object* copy() const = 0;
-	virtual void setup(AbstractModel* aModel);
+	virtual void setup(Model* aModel);
 
 protected:
 	AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE);
@@ -151,7 +151,7 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL
 	//--------------------------------------------------------------------------
-	AbstractModel* getModel() const { return _model; }
+	Model* getModel() const { return _model; }
 
 	//--------------------------------------------------------------------------
 	// GRAVITY

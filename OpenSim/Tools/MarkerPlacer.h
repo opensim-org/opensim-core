@@ -40,7 +40,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class MarkerData;
 
 //=============================================================================
@@ -118,7 +118,7 @@ public:
 #endif
    void copyData(const MarkerPlacer &aMarkerPlacementParams);
 
-	bool processModel(AbstractModel* aModel, const std::string& aPathToSubject="");
+	bool processModel(Model* aModel, const std::string& aPathToSubject="");
 
 	/**
 	 * get/set StaticPoseFilename
@@ -243,7 +243,7 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void moveModelMarkersToPose(AbstractModel& aModel, MarkerData& aPose);
+	void moveModelMarkersToPose(Model& aModel, MarkerData& aPose);
 //=============================================================================
 };	// END of class MarkerPlacer
 //=============================================================================

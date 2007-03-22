@@ -36,7 +36,7 @@
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include "SimmKinematicsEngine.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
@@ -161,7 +161,7 @@ void SimmKinematicsEngine::setNull()
  *
  * @param aModel model containing this SimmKinematicsEngine.
  */
-void SimmKinematicsEngine::setup(AbstractModel* aModel)
+void SimmKinematicsEngine::setup(Model* aModel)
 {
 	// Base class
 	AbstractDynamicsEngine::setup(aModel);

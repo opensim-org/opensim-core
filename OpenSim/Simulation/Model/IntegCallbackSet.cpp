@@ -36,7 +36,7 @@
 // INCLUDES
 //=============================================================================
 #include "IntegCallbackSet.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -63,7 +63,7 @@ IntegCallbackSet::~IntegCallbackSet()
 /**
  * Construct an empty callback set for a model.
  */
-IntegCallbackSet::IntegCallbackSet(AbstractModel *aModel)
+IntegCallbackSet::IntegCallbackSet(Model *aModel)
 {
 	setType("IntegCallbackSet");
 	setNull();
@@ -98,7 +98,7 @@ setNull()
  *
  * @return Pointer to the model.
  */
-AbstractModel* IntegCallbackSet::
+Model* IntegCallbackSet::
 getModel()
 {
 	return(_model);

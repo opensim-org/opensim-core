@@ -27,7 +27,7 @@
 //=============================================================================
 #include "SdfastCoordinate.h"
 #include "SdfastEngine.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/SimmMacros.h>

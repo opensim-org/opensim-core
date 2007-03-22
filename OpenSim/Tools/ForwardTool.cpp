@@ -15,7 +15,7 @@
 #include <OpenSim/Actuators/ForceApplier.h>
 #include <OpenSim/Actuators/TorqueApplier.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 
 using namespace OpenSim;
@@ -419,7 +419,7 @@ void ForwardTool::run()
  * are assumed to be applied to the right and left foot.
  */
 void ForwardTool::
-initializeExternalLoads(AbstractModel *aModel, const string &aExternalLoadsFileName,
+initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 								const string &aExternalLoadsModelKinematicsFileName,
 								const string &aExternalLoadsBody1,
 								const string &aExternalLoadsBody2,

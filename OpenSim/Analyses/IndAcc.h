@@ -31,7 +31,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API IndAcc : public Analysis 
 {
@@ -77,8 +77,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	IndAcc(AbstractModel *aModel);
-	IndAcc(AbstractModel *aModel,Storage *aStates,Storage *aControls,
+	IndAcc(Model *aModel);
+	IndAcc(Model *aModel,Storage *aStates,Storage *aControls,
 		char *aBaseName,char *aDir=NULL,char *aExtension=NULL);
 	virtual ~IndAcc();
 private:

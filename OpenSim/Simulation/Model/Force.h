@@ -189,7 +189,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual bool check() const;
 	// Setup method to initialize Body references
-	void setup(AbstractModel* aModel);
+	void setup(Model* aModel);
 
 	//--------------------------------------------------------------------------
 	// UTILITY

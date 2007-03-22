@@ -44,7 +44,7 @@
 
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 
 //=============================================================================
@@ -85,7 +85,7 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Analysis(AbstractModel *aModel=0);
+	Analysis(Model *aModel=0);
 	Analysis(const std::string &aFileName);
 	virtual ~Analysis();
 	Analysis(const Analysis &aObject);
@@ -102,7 +102,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	// DEGREES/RADIANS
 	void setInDegrees(bool aTrueFalse);
 	bool getInDegrees() const;

@@ -28,7 +28,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractCoordinate;
 
 class OSIMANALYSES_API GeneralizedForcePerturbation : public DerivCallback 
@@ -53,8 +53,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	GeneralizedForcePerturbation(AbstractModel *aModel);
-	GeneralizedForcePerturbation(AbstractModel *aModel, GCVSpline *_aSpline);
+	GeneralizedForcePerturbation(Model *aModel);
+	GeneralizedForcePerturbation(Model *aModel, GCVSpline *_aSpline);
 	virtual ~GeneralizedForcePerturbation();
 private:
 	void setNull();

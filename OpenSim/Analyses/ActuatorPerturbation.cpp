@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "ActuatorPerturbation.h"
 
@@ -45,10 +45,10 @@ ActuatorPerturbation::~ActuatorPerturbation()
  * Construct a derivative callback instance for perturbing actuator forces
  * during an integration.
  *
- * @param aModel AbstractModel for which actuator forces are to be perturbed.
+ * @param aModel Model for which actuator forces are to be perturbed.
  */
 ActuatorPerturbation::
-ActuatorPerturbation(AbstractModel *aModel) :
+ActuatorPerturbation(Model *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();

@@ -26,7 +26,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API DecompNoComp : public Analysis 
 {
@@ -76,8 +76,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	DecompNoComp(AbstractModel *aModel);
-	DecompNoComp(AbstractModel *aModel,char *aBaseName,char *aDir=NULL,
+	DecompNoComp(Model *aModel);
+	DecompNoComp(Model *aModel,char *aBaseName,char *aDir=NULL,
 		char *aExtension=NULL);
 	virtual ~DecompNoComp();
 private:

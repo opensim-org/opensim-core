@@ -27,7 +27,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API ActuatorPerturbation : public DerivCallback 
 {
@@ -56,7 +56,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ActuatorPerturbation(AbstractModel *aModel);
+	ActuatorPerturbation(Model *aModel);
 	virtual ~ActuatorPerturbation();
 private:
 	void setNull();

@@ -214,7 +214,7 @@ operator=(const rdCMC_Joint &aTask)
  * @param aModel Model.
  */
 void rdCMC_Joint::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	rdCMC_Task::setModel(aModel);
 	updateWorkVariables();

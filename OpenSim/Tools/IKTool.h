@@ -53,7 +53,7 @@ private:
 public:
 	virtual ~IKTool();
 	IKTool();
-	IKTool(const std::string &aFileName, AbstractModel* guiModel=0);
+	IKTool(const std::string &aFileName, Model* guiModel=0);
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
 

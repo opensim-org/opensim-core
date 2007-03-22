@@ -38,7 +38,7 @@
 #include "ModelIntegrand.h"
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractDynamicsEngine.h"
 
 
@@ -57,7 +57,7 @@ using namespace std;
  *
  * @param aModel An instance of an Model.
  */
-ModelIntegrand::ModelIntegrand(AbstractModel *aModel):
+ModelIntegrand::ModelIntegrand(Model *aModel):
 	_x(0.0),_xPrev(0.0),_yPrev(0.0),_yp(0.0)
 {
 	setNull();
@@ -136,7 +136,7 @@ getSize() const
  *
  * @return Model.
  */
-AbstractModel* ModelIntegrand::
+Model* ModelIntegrand::
 getModel()
 {
 	return(_model);

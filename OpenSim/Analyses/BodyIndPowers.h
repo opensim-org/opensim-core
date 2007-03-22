@@ -25,7 +25,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API BodyIndPowers : public BodyIndAcc
 {
@@ -41,8 +41,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyIndPowers(AbstractModel *aModel);
-	BodyIndPowers(AbstractModel *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
+	BodyIndPowers(Model *aModel);
+	BodyIndPowers(Model *aModel,Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~BodyIndPowers();
 private:

@@ -25,7 +25,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API BodyKinematics : public Analysis 
 {
@@ -55,7 +55,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyKinematics(AbstractModel *aModel=0, bool aInDegrees=true);
+	BodyKinematics(Model *aModel=0, bool aInDegrees=true);
 	BodyKinematics(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	BodyKinematics(const BodyKinematics &aObject);
@@ -88,7 +88,7 @@ public:
 	void setAngVelInLocalFrame(bool aTrueFalse);
 	bool getAngVelInLocalFrame();
 
-	virtual void setModel(AbstractModel *aModel);
+	virtual void setModel(Model *aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

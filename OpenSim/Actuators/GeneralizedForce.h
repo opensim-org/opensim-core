@@ -131,7 +131,7 @@ public:
 	virtual bool check() const;
 	virtual bool isQValid() const;
 	// Setup method to initialize Body references
-	void setup(AbstractModel* aModel);
+	void setup(Model* aModel);
 
 	//--------------------------------------------------------------------------
 	// XML

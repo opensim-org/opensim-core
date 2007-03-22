@@ -27,7 +27,7 @@
 //=============================================================================
 #include "MuscleGroup.h"
 #include "AbstractActuator.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -113,7 +113,7 @@ void MuscleGroup::setNull()
  *
  * @param aModel model containing this MuscleGroup.
  */
-void MuscleGroup::setup(AbstractModel* aModel)
+void MuscleGroup::setup(Model* aModel)
 {
 	_muscles.setSize(0);
 

@@ -14,7 +14,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/VectorFunction.h>
@@ -45,7 +45,7 @@ LinearSpring::~LinearSpring()
  * @param aModel Model for which external forces are to be applied.
  */
 LinearSpring::
-LinearSpring(AbstractModel *aModel, AbstractBody *aBody) :
+LinearSpring(Model *aModel, AbstractBody *aBody) :
 	ForceApplier(aModel,aBody)
 {
 	setNull();

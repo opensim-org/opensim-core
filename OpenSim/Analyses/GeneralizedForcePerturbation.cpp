@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -50,10 +50,10 @@ GeneralizedForcePerturbation::~GeneralizedForcePerturbation()
  * generalized force is set to be a unit torque.  This can then be scaled
  * if the user wants to apply a constant torque to a generalized coordinate.
  *
- * @param aModel AbstractModel for which actuator forces are to be perturbed.
+ * @param aModel Model for which actuator forces are to be perturbed.
  */
 GeneralizedForcePerturbation::
-GeneralizedForcePerturbation(AbstractModel *aModel) :
+GeneralizedForcePerturbation(Model *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -69,11 +69,11 @@ GeneralizedForcePerturbation(AbstractModel *aModel) :
  * to define a function object. This function is used to define the 
  * generalized force that is applied during the simulation.
  *
- * @param aModel AbstractModel for which actuator forces are to be perturbed.
+ * @param aModel Model for which actuator forces are to be perturbed.
  * @param aFunction Function that defines the generalized force to be applied.
  */
 GeneralizedForcePerturbation::
-GeneralizedForcePerturbation(AbstractModel *aModel, GCVSpline *_aSpline) :
+GeneralizedForcePerturbation(Model *aModel, GCVSpline *_aSpline) :
 	DerivCallback(aModel)
 {
 	setNull();

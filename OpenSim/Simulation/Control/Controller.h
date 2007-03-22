@@ -53,7 +53,7 @@ const int ControllerDESCRIP_LENGTH = 8192;
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API Controller  
 {
@@ -66,7 +66,7 @@ public:
 	static const int DESCRIP_LENGTH;
 protected:
 	/** Model. */
-	AbstractModel *_model;
+	Model *_model;
 	/** Flag to indicate on or off state. */
 	bool _on;
 	/** Name. */
@@ -81,7 +81,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Controller(AbstractModel *aModel);
+	Controller(Model *aModel);
 	virtual ~Controller();
 	void setNull();
 
@@ -89,7 +89,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
-	AbstractModel* getModel();
+	Model* getModel();
 	// ON/OFF
 	void setOn(bool aTrueFalse);
 	bool getOn();

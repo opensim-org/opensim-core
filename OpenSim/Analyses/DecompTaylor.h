@@ -29,7 +29,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API DecompTaylor : public Decomp
 {
@@ -111,7 +111,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	DecompTaylor(AbstractModel *aModel);
+	DecompTaylor(Model *aModel);
 	virtual ~DecompTaylor();
 private:
 	void setNull();

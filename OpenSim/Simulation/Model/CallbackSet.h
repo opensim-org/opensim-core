@@ -64,7 +64,7 @@ class OSIMSIMULATION_API CallbackSet : public Set<Callback>
 //=============================================================================
 protected:
 	/** Model for which the callbacks have been set. */
-	AbstractModel *_model;
+	Model *_model;
 
 //=============================================================================
 // METHODS
@@ -73,7 +73,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	CallbackSet(AbstractModel *aModel=0);
+	CallbackSet(Model *aModel=0);
 	virtual ~CallbackSet();
 private:
 	void setNull();
@@ -82,7 +82,7 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	AbstractModel* getModel();
+	Model* getModel();
 	void setOn(bool aTrueFalse);
 
 //=============================================================================

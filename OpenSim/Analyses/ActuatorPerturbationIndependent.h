@@ -85,7 +85,7 @@ private:
 // METHODS
 //=============================================================================
 public:
-	ActuatorPerturbationIndependent(AbstractModel *aModel);
+	ActuatorPerturbationIndependent(Model *aModel);
 	virtual ~ActuatorPerturbationIndependent();
 	
 private:

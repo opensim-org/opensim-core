@@ -919,7 +919,7 @@ void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[],
 
 	fp = fopen(filename, "w");
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	fprintf(fp, "<AbstractModel name=\"%s\">\n", ms->name);
+	fprintf(fp, "<Model name=\"%s\">\n", ms->name);
 	write_xml_defaults(fp, ms, angleUnits);
 	if (angleUnits == DEGREES)
 		fprintf(fp, "\t<angle_units> degrees </angle_units>\n");
@@ -928,7 +928,7 @@ void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[],
 	write_xml_units(fp, ms);
 	write_xml_muscles(fp, ms, angleUnits);
 	write_xml_ke(fp, ms, geometryDirectory, angleUnits);
-	fprintf(fp, "</AbstractModel>\n");
+	fprintf(fp, "</Model>\n");
 	fclose(fp);
 }
 

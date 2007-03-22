@@ -42,7 +42,7 @@
 #include <OpenSim/Common/PropertyBoolArray.h>
 #include <OpenSim/Common/PropertyIntArray.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -311,7 +311,7 @@ operator=(const rdCMC_Task &aTask)
  * @param aModel Model.
  */
 void rdCMC_Task::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	_model = aModel;
 }
@@ -322,7 +322,7 @@ setModel(AbstractModel *aModel)
  *
  * @return Pointer to the model.
  */
-AbstractModel* rdCMC_Task::
+Model* rdCMC_Task::
 getModel() const
 {
 	return(_model);

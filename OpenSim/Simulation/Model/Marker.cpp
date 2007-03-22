@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "Marker.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractDynamicsEngine.h"
 #include "BodySet.h"
 

@@ -30,7 +30,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMACTUATORS_API LinearSpring : public ForceApplier 
@@ -60,7 +60,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	LinearSpring(AbstractModel *aModel, AbstractBody *aBody);	
+	LinearSpring(Model *aModel, AbstractBody *aBody);	
 	virtual ~LinearSpring();
 private:
 	void setNull();

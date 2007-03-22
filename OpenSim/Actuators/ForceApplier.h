@@ -30,7 +30,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMACTUATORS_API ForceApplier : public DerivCallback 
@@ -63,8 +63,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	ForceApplier(AbstractModel *aModel,AbstractBody *aBody);	
-	ForceApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
+	ForceApplier(Model *aModel,AbstractBody *aBody);	
+	ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
 		Storage *forceData,int fxNum,int fyNum,int fzNum,
 		int pxNum,int pyNum,int pzNum,Storage *aQStore,Storage *aUStore);
 	virtual ~ForceApplier();

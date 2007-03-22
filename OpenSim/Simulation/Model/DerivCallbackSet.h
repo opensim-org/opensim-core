@@ -66,7 +66,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	DerivCallbackSet(AbstractModel *aModel=0);
+	DerivCallbackSet(Model *aModel=0);
 	virtual ~DerivCallbackSet();
 private:
 	void setNull();

@@ -27,7 +27,7 @@
 //=============================================================================
 #include <sstream>
 #include "SimmFileWriter.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -75,7 +75,7 @@ SimmFileWriter::SimmFileWriter() :
 /**
  * Constructor taking a model pointer
  */
-SimmFileWriter::SimmFileWriter(AbstractModel *aModel) :
+SimmFileWriter::SimmFileWriter(Model *aModel) :
 	_model(NULL)
 {
 	_model = aModel;

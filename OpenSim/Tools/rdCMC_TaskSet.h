@@ -32,7 +32,7 @@
 // INCLUDES
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "rdCMC_Task.h"
 
 
@@ -58,7 +58,7 @@ class OSIMTOOLS_API rdCMC_TaskSet : public Set<rdCMC_Task>
 //=============================================================================
 protected:
 	/** Model for which the tracking is conducted. */
-	AbstractModel *_model;
+	Model *_model;
 	/** Array of task positions. */
 	Array<double> _pTask;
 	/** Array of task velocities. */
@@ -105,8 +105,8 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	// MODEL
-	void setModel(AbstractModel *aModel);
-	AbstractModel* getModel() const;
+	void setModel(Model *aModel);
+	Model* getModel() const;
 	// FUNCTIONS
 	void setFunctions(FunctionSet &aFuncSet);
 	void setFunctionsForVelocity(FunctionSet &aFuncSet);

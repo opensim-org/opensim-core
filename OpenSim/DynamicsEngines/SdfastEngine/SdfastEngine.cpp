@@ -44,7 +44,7 @@
 #include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/AbstractDof.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Common/Units.h>
 #include <cassert>
@@ -159,7 +159,7 @@ Object* SdfastEngine::copy() const
  * Initialize the engine and the SD/FAST model.
  *
  */
-void SdfastEngine::init(AbstractModel *aModel)
+void SdfastEngine::init(Model *aModel)
 {
 	_sdinit();
 
@@ -319,7 +319,7 @@ void SdfastEngine::linkToModelLibrary()
  *
  * @param aModel model containing this SdfastEngine.
  */
-void SdfastEngine::setup(AbstractModel* aModel)
+void SdfastEngine::setup(Model* aModel)
 {
 	linkToModelLibrary();
 
@@ -485,8 +485,8 @@ void SdfastEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) c
  * This static method is intended to be called from the function
  * sduforce().  sduforce() is a "C" function and, therefore, doesn't know
  * about C++ objects.  Internally, this method uses a static pointer
- * to call the virtual methods AbstractModel::applyActuatorForces() and
- * AbstractModel::applyContactForces().  This method assumes that
+ * to call the virtual methods Model::applyActuatorForces() and
+ * Model::applyContactForces().  This method assumes that
  * computeActuation() and computeContact() have already been called.
  */
 void SdfastEngine::sduforce()
@@ -2337,10 +2337,10 @@ void SdfastEngine::peteTest() const
 /**
  * Default constructor.
  */
-OSIMSDFASTENGINE_API AbstractModel*
+OSIMSDFASTENGINE_API Model*
 CreateModel()
 {
-	AbstractModel *model = new AbstractModel();
+	Model *model = new Model();
 	return(model);
 }
 
@@ -2348,11 +2348,11 @@ CreateModel()
 /**
  * Deserialization from file.
  */
-OSIMSDFASTENGINE_API AbstractModel*
+OSIMSDFASTENGINE_API Model*
 CreateModel_File(const string &aModelFile)
 {
 	Object::RegisterType(SdfastEngine());
 	SdfastEngine::registerTypes();
-	AbstractModel *model = new AbstractModel(aModelFile);
+	Model *model = new Model(aModelFile);
 	return(model);
 }

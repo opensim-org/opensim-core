@@ -10,7 +10,7 @@
 #include "Model/ContactForceSet.h"
 #include "Model/Force.h"
 #include "Model/AnalysisSet.h"
-#include "Model/AbstractModel.h"
+#include "Model/Model.h"
 #include "Model/ActuatorSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
@@ -53,7 +53,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
 	Object::RegisterType( Force() );
 	Object::RegisterType( AnalysisSet() );
-	Object::RegisterType( AbstractModel() );
+	Object::RegisterType( Model() );
 	Object::RegisterType( ActuatorSet() );
 	Object::RegisterType( BodyScale() );
 	Object::RegisterType( BodyScaleSet() );

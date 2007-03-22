@@ -15,7 +15,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/FunctionSet.h>
@@ -43,7 +43,7 @@ TorsionalSpring::~TorsionalSpring()
  * @param aBody Body to which external torques are to be applied.
  */
 TorsionalSpring::
-TorsionalSpring(AbstractModel *aModel,AbstractBody *aBody) : 
+TorsionalSpring(Model *aModel,AbstractBody *aBody) : 
 	TorqueApplier(aModel,aBody)
 {
 	setNull();

@@ -38,7 +38,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include "GeneralizedForce.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
@@ -304,7 +304,7 @@ apply()
  * setup sets the actual Coordinate reference _q
  */
 void GeneralizedForce::
-setup(AbstractModel* aModel)
+setup(Model* aModel)
 {
 	AbstractActuator::setup(aModel);
 	if (_model) {

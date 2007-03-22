@@ -18,7 +18,7 @@
 //=============================================================================
 /**
  * A class for computing a decomposition by hard constraints for the
- * AbstractModel.
+ * Model.
  */
 namespace OpenSim { 
 
@@ -61,7 +61,7 @@ private:
 // METHODS
 //=============================================================================
 public:
-	DecompHard(AbstractModel *aModel);
+	DecompHard(Model *aModel);
 	virtual ~DecompHard();
 private:
 	void setNull();

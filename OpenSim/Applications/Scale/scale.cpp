@@ -30,7 +30,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
 	try {
 		// Construct model and read parameters file
 		ScaleTool* subject = new ScaleTool(inName);
-		AbstractModel* model = subject->createModel();
+		Model* model = subject->createModel();
 
 		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
 

@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "MuscleWrapPoint.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
@@ -120,7 +120,7 @@ void MuscleWrapPoint::setNull()
  *
  * @param aModel model containing this MuscleWrapPoint.
  */
-void MuscleWrapPoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
+void MuscleWrapPoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 {
 	// base class
 	MusclePoint::setup(aModel, aMuscle);

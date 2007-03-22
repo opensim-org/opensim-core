@@ -133,7 +133,7 @@ setupProperties()
  * @param aModel Model.
  */
 void rdCMC_TaskSet::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	_model = aModel;
 
@@ -152,7 +152,7 @@ setModel(AbstractModel *aModel)
  *
  * @return Pointer to the model.
  */
-AbstractModel* rdCMC_TaskSet::
+Model* rdCMC_TaskSet::
 getModel() const
 {
 	return(_model);

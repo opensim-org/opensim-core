@@ -48,7 +48,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API Manager
 {
@@ -60,7 +60,7 @@ private:
 	/** Simulation session name. */
 	std::string _sessionName;
 	/** Model for which the simulation is performed. */
-	AbstractModel *_model;
+	Model *_model;
 	/** Array of integrated states. */
 	Array<double> _y;
 	/** Number of model pseudostates. */

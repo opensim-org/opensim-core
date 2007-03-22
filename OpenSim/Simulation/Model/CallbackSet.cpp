@@ -37,7 +37,7 @@
 //=============================================================================
 //#include <Object.h>
 #include "CallbackSet.h"
-#include "AbstractModel.h"
+#include "Model.h"
 
 //=============================================================================
 // STATICS
@@ -64,7 +64,7 @@ CallbackSet::~CallbackSet()
 /**
  * Default constructor.
  */
-CallbackSet::CallbackSet(AbstractModel *aModel)
+CallbackSet::CallbackSet(Model *aModel)
 {
 	setType("CallbackSet");
 	setNull();
@@ -97,7 +97,7 @@ setNull()
  *
  * @return Pointer to the model.
  */
-AbstractModel* CallbackSet::
+Model* CallbackSet::
 getModel()
 {
 	return(_model);

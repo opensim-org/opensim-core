@@ -11,7 +11,7 @@
 #include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
@@ -54,7 +54,7 @@ BodyIndAcc::~BodyIndAcc()
  *
  * @param aModel Model on which the analyses are to be performed.
  */
-BodyIndAcc::BodyIndAcc(AbstractModel *aModel) :
+BodyIndAcc::BodyIndAcc(Model *aModel) :
 	IndAcc(aModel)
 {
 	setName("BodyIndAcc");
@@ -85,7 +85,7 @@ BodyIndAcc::BodyIndAcc(AbstractModel *aModel) :
  * @todo	verify induced accelerations are correct
  * @todo	check that code is correct for generalized force case
  */
-BodyIndAcc::BodyIndAcc(AbstractModel *aModel,Storage *aStates,Storage *aControls,
+BodyIndAcc::BodyIndAcc(Model *aModel,Storage *aStates,Storage *aControls,
 	char *aBaseName,char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {

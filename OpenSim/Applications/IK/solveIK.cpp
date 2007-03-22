@@ -29,7 +29,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
 	//ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION
-	AbstractModel *model = ik.getModel();
+	Model *model = ik.getModel();
 	if(model==NULL) {
 		cout<<"\nik:  ERROR- failed to load model.\n";
 		exit(-1);

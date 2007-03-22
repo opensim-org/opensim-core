@@ -11,7 +11,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include "GeneralizedForceAtv.h"
 #include "Muscle.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>

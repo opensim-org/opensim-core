@@ -6,7 +6,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include "LoadModel.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "ActuatorSet.h"
 #include "ContactForceSet.h"
 
@@ -18,10 +18,10 @@ extern "C" {
 // Type definition for the CreateModel() function
 // This is necessary to create a pointer that can properly point to the
 // CreateModel() function.
-typedef OpenSim::AbstractModel* (*CREATEMODEL)();
-typedef OpenSim::AbstractModel* (*CREATEMODEL_FILE)(const string &);
-typedef OpenSim::AbstractModel* (*CREATEMODEL_ActuatorsContacts)(OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
-typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const string&,OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
+typedef OpenSim::Model* (*CREATEMODEL)();
+typedef OpenSim::Model* (*CREATEMODEL_FILE)(const string &);
+typedef OpenSim::Model* (*CREATEMODEL_ActuatorsContacts)(OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
+typedef OpenSim::Model* (*CREATEMODEL_ParamsActuatorsContacts)(const string&,OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
 
 }
 
@@ -35,7 +35,7 @@ typedef OpenSim::AbstractModel* (*CREATEMODEL_ParamsActuatorsContacts)(const str
  * @param aModelFileName Name of the model xml file (optional).
  * @return Pointer to an intance of the model, NULL if no model was created.
  */
-OSIMSIMULATION_API AbstractModel* 
+OSIMSIMULATION_API Model* 
 OpenSim::LoadModel(const string &aModelLibraryName, const string &aModelFileName)
 {
 	// LOAD MODEL LIBRARY
@@ -45,7 +45,7 @@ OpenSim::LoadModel(const string &aModelLibraryName, const string &aModelFileName
 		return(NULL);
 	}
 
-	AbstractModel *model=NULL;
+	Model *model=NULL;
 	if(aModelFileName!="") {
 		// GET POINTER TO THE CreateModel_File() FUNCTION
 		CREATEMODEL_FILE createModelFunction = (CREATEMODEL_FILE)GetProcAddress(modelLibrary,"CreateModel_File");

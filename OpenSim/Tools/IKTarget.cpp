@@ -51,7 +51,7 @@ static bool debug = false; // used for debugging
 */
 static bool calcDerivs = true; 
 
-IKTarget::IKTarget(AbstractModel &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage):
+IKTarget::IKTarget(Model &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage):
 _model(aModel),
 _ikTaskSet(aIKTaskSet),
 _experimentalDataStorage(aExperimentalDataStorage),

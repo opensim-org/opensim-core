@@ -27,7 +27,7 @@
 #include <string>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 	Object::RegisterType(ScaleTool());
 	ScaleTool::registerTypes();
 	ScaleTool* subject = new ScaleTool("CrouchGait.xml");
-	AbstractModel* model = subject->createModel();
+	Model* model = subject->createModel();
 	if (!subject->isDefaultModelScaler())
 	{
 		ModelScaler& scaler = subject->getModelScaler();

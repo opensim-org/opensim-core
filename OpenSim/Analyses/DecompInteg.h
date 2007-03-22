@@ -29,7 +29,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMANALYSES_API DecompInteg : public Decomp
 {
@@ -70,7 +70,7 @@ protected:
 //=============================================================================
 public:
 	DecompInteg(const Manager *aManager,const Contact *aContact,
-		const Actuation *aActuation,AbstractModel *aModelTwin,
+		const Actuation *aActuation,Model *aModelTwin,
 		double aDT=0.0,double aDF=0.0);
 	virtual ~DecompInteg();
 private:

@@ -14,7 +14,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/VectorFunction.h>
@@ -40,11 +40,11 @@ TorqueApplier::~TorqueApplier()
  * Construct a derivative callback instance for applying external torques
  * during an integration.
  *
- * @param aModel AbstractModel for which external torques are to be applied.
+ * @param aModel Model for which external torques are to be applied.
  * @param aBody Body to which external torques are to be applied.
  */
 TorqueApplier::
-TorqueApplier(AbstractModel *aModel,AbstractBody *aBody) :
+TorqueApplier(Model *aModel,AbstractBody *aBody) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -76,7 +76,7 @@ TorqueApplier(AbstractModel *aModel,AbstractBody *aBody) :
  * @param tzNum Column index of applied torque's z coordinate in storage object.
  */
 TorqueApplier::
-TorqueApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage *torqueData,
+TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage *torqueData,
               int txNum, int tyNum, int tzNum) :
 	DerivCallback(aModel)
 {

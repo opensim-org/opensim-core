@@ -14,7 +14,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include "GeneralizedForceApplier.h"
@@ -38,10 +38,10 @@ GeneralizedForceApplier::~GeneralizedForceApplier()
  * Construct a derivative callback instance for applying a generalized force
  * during an integration.
  *
- * @param aModel AbstractModel for which generalized forces are to be applied.
+ * @param aModel Model for which generalized forces are to be applied.
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(AbstractModel *aModel) :
+GeneralizedForceApplier(Model *aModel) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -62,11 +62,11 @@ GeneralizedForceApplier(AbstractModel *aModel) :
  * Construct a derivative callback instance for applying a generalized forces
  * during an integration.
  *
- * @param aModel AbstractModel for which generalized forces are to be applied.
+ * @param aModel Model for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord) :
+GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -87,12 +87,12 @@ GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord) :
  * Construct a derivative callback instance for applying generalized forces
  * during an integration.
  *
- * @param aModel AbstractModel for which generalized forces are to be applied.
+ * @param aModel Model for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  * @param aGeneralizedForce Generalized force to be applied
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce) :
+GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord,double aGeneralizedForce) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -115,13 +115,13 @@ GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,doub
  * Construct a derivative callback instance for applying generalized forces
  * during an integration. 
  *
- * @param aModel AbstractModel for which generalized forces are to be applied.
+ * @param aModel Model for which generalized forces are to be applied.
  * @param aGenCoord Generalized coordinate to which generalized forces are to be applied.
  * @param aGeneralizedForceStorage Storage containing (t,x,y,z) of generalized force to be applied 
  * @param aIndex Collumn of storage corresponding to generalized force
  */
 GeneralizedForceApplier::
-GeneralizedForceApplier(AbstractModel *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex) :
+GeneralizedForceApplier(Model *aModel,AbstractCoordinate *aGenCoord,Storage* aGeneralizedForceStorage,int aIndex) :
 	DerivCallback(aModel)
 {
 	setNull();

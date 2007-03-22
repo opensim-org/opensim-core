@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
@@ -46,9 +46,9 @@ Kinematics::~Kinematics()
  * Construct an Kinematics object for recording the kinematics of
  * a model's generalized coodinates during a simulation.
  *
- * @param aModel AbstractModel for which the kinematics are to be recorded.
+ * @param aModel Model for which the kinematics are to be recorded.
  */
-Kinematics::Kinematics(AbstractModel *aModel) :
+Kinematics::Kinematics(Model *aModel) :
 	Analysis(aModel),
 	_coordinates(_coordinatesProp.getValueStrArray())
 {
@@ -359,7 +359,7 @@ getPositionStorage()
 /**
  * Set the model pointer for analyzing kinematics.
  */
-void Kinematics::setModel(AbstractModel *aModel)
+void Kinematics::setModel(Model *aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
@@ -467,7 +467,7 @@ record(double aT,double *aX,double *aY)
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * AbstractModel::integBeginCallback() and has the same argument list.
+ * Model::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -508,7 +508,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * AbstractModel::integStepCallback(), which has the same argument list.
+ * Model::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -542,7 +542,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * AbstractModel::integEndCallback() and has the same argument list.
+ * Model::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

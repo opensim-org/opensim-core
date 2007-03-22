@@ -12,7 +12,7 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include "IKTaskSet.h"
 #include "IKTrialSet.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "IKSolverImpl.h"
 #include "IKTarget.h"
 
@@ -53,7 +53,7 @@ IKTool::IKTool() :
  *
  * @param aFileName File name of the document.
  */
-IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
+IKTool::IKTool(const string &aFileName, Model* guiModel) :
 	AbstractTool(aFileName),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
@@ -83,7 +83,7 @@ IKTool::IKTool(const string &aFileName, AbstractModel* guiModel) :
 #if 0
 		if (_modelFile == "") 
 			throw( Exception("Model file not specified for inverse kinematics investigation",__FILE__,__LINE__) );
-		setModel(new AbstractModel(_modelFile));
+		setModel(new Model(_modelFile));
 #endif
 		if (_model) {
 			if(!_model->hasDynamicsEngine()) 

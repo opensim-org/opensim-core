@@ -29,7 +29,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMACTUATORS_API TorqueApplier : public DerivCallback 
@@ -58,8 +58,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	TorqueApplier(AbstractModel *aModel,AbstractBody *aBody);
-	TorqueApplier(AbstractModel *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
+	TorqueApplier(Model *aModel,AbstractBody *aBody);
+	TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
 		Storage *torqueData,int txNum, int tyNum, int tzNum);
 	virtual ~TorqueApplier();
 private:

@@ -178,7 +178,7 @@ operator=(const Control &aControl)
 /**
  * Set whether or not this control is a model control.  A model control is
  * a control that is expected by a model.  The number of model controls is
- * returned by a call to AbstractModel::getNumControls().  Controls that are not model
+ * returned by a call to Model::getNumControls().  Controls that are not model
  * controls may be, for example, controls that are used to set up a
  * simulation.  Such examples might include an initial state of a model
  * (e.g., joint angle, joint angular velocity, ...) or the final time of
@@ -186,7 +186,7 @@ operator=(const Control &aControl)
  *
  * @param aTrueFalse If true, the control is treated as a model control.   If
  * false, the control is not treated as a model control.
- * @see AbstractModel::getNumControls()
+ * @see Model::getNumControls()
  */
 void Control::
 setIsModelControl(bool aTrueFalse)
@@ -197,7 +197,7 @@ setIsModelControl(bool aTrueFalse)
 /**
  * Get whether or not this control is a model control.  A model control is
  * a control that is expected by a model.  The number of model controls is
- * returned by a call to AbstractModel::getNumControls().  Controls that are not model
+ * returned by a call to Model::getNumControls().  Controls that are not model
  * controls may be, for example, controls that are used to set up a
  * simulation.  Such examples might include an initial state of a model
  * (e.g., joint angle, joint angular velocity, ...) or the final time of

@@ -34,7 +34,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 
 #ifndef SWIG
 template class OSIMSIMULATION_API Set<AbstractActuator>;
@@ -67,7 +67,7 @@ class OSIMSIMULATION_API ActuatorSet : public Set<AbstractActuator>
 //=============================================================================
 protected:
 	/** Model that is actuated. */
-	AbstractModel *_model;
+	Model *_model;
 
 	/** Control to actuator map. */
 	Array<int> _controlToActuator;
@@ -117,12 +117,12 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
-	void setup(AbstractModel* aModel);
+	void setup(Model* aModel);
 	void updateGeometry();
 
 	// MODEL
-	void setModel(AbstractModel *aModel);
-	AbstractModel* getModel() const;
+	void setModel(Model *aModel);
+	Model* getModel() const;
 
 	// ACTUATOR
 	bool remove(int aIndex);

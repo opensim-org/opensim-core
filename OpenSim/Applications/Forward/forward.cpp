@@ -33,7 +33,7 @@
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Actuators/GeneralizedForceAtv.h>
@@ -132,7 +132,7 @@ int main(int argc,char **argv)
 	//forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
-	AbstractModel *model = forward.getModel();
+	Model *model = forward.getModel();
 	if(model==NULL) {
 		cout<<"\nforward:  ERROR- failed to load model.\n";
 		exit(-1);

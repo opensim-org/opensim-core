@@ -36,11 +36,11 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "SimtkAnimationCallback.h"
 
 
@@ -60,7 +60,7 @@ using namespace OpenSim;
  * Callbacks are auto deleted by the model destructor.
  */
 SimtkAnimationCallback*
-SimtkAnimationCallback::CreateAnimationCallback(AbstractModel *aModel)
+SimtkAnimationCallback::CreateAnimationCallback(Model *aModel)
 {
 	SimtkAnimationCallback* newAnimationCallback = new SimtkAnimationCallback(aModel);
 	aModel->addIntegCallback(newAnimationCallback);
@@ -88,7 +88,7 @@ SimtkAnimationCallback::~SimtkAnimationCallback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-SimtkAnimationCallback::SimtkAnimationCallback(AbstractModel *aModel) :
+SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	IntegCallback(aModel)
 {
 	//cout<<"\n\nCreating new SimtkAnimationCallback...\n";
@@ -189,7 +189,7 @@ const Transform* SimtkAnimationCallback::getBodyTransform(int index) const
  * Cache Coms for bodies so that we can get the xform for the bodies from SDFast in one go with 
  * minimal computation on our side. If displaying a SimmModel for example in IK then offsets are set to 0
  */
-void SimtkAnimationCallback::extractOffsets(AbstractModel& displayModel)
+void SimtkAnimationCallback::extractOffsets(Model& displayModel)
 {
 }
 /*------------------------------------------------------------------
@@ -198,7 +198,7 @@ void SimtkAnimationCallback::extractOffsets(AbstractModel& displayModel)
  * @param dModel: The model to use with associated kinematicsEngine
  */
 void SimtkAnimationCallback::
-getTransformsFromKinematicsEngine(AbstractModel& dModel)
+getTransformsFromKinematicsEngine(Model& dModel)
 {
 	AbstractDynamicsEngine& de = dModel.getDynamicsEngine();
 	BodySet *bodySet = de.getBodySet();

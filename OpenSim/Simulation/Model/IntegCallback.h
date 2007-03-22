@@ -60,7 +60,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API IntegCallback : public Callback
 {
@@ -79,7 +79,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	IntegCallback(AbstractModel *aModel=0);
+	IntegCallback(Model *aModel=0);
 	// Support for Object behavior
 	IntegCallback(const std::string &aFileName);
 	IntegCallback(const IntegCallback &aIntegCallback);

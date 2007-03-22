@@ -26,7 +26,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMANALYSES_API BodyIndAccCOM : public BodyIndAcc 
@@ -47,8 +47,8 @@ private:
 // METHODS
 //=============================================================================
 public:
-	BodyIndAccCOM(AbstractModel *aModel, int aN=0, AbstractBody* aBodyList[] = NULL);
-	BodyIndAccCOM(AbstractModel *aModel,Storage *aStates,Storage *aControls,
+	BodyIndAccCOM(Model *aModel, int aN=0, AbstractBody* aBodyList[] = NULL);
+	BodyIndAccCOM(Model *aModel,Storage *aStates,Storage *aControls,
 		char *aBaseName,char *aDir=NULL,char *aExtension=NULL,
 		int aN=0,AbstractBody* aBodyList[]=NULL);
 	virtual ~BodyIndAccCOM();

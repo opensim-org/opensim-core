@@ -6,7 +6,7 @@
 #include <iostream>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/ForwardTool.h>
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 	forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
-	AbstractModel *model = forward.getModel();
+	Model *model = forward.getModel();
 	if(model==NULL) {
 		cout<<"\nperturb:  ERROR- failed to load model.\n";
 		exit(-1);

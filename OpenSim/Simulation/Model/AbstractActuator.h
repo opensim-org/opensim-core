@@ -38,7 +38,7 @@
 
 namespace OpenSim {
 
-class AbstractModel;
+class Model;
 class VisibleObject;
 
 //=============================================================================
@@ -60,7 +60,7 @@ public:
 	static const double LARGE;
 protected:
 	/** Model which the actuator actuates. */
-	AbstractModel *_model;
+	Model *_model;
 
 	/** Flag indicating whether the actuator applies a force or a torque. */
 	bool _appliesForce;
@@ -115,10 +115,10 @@ protected:
 	void bindState(int aIndex,double &y,const std::string &aSuffix);
 	void bindPseudoState(int aIndex,double &yp,const std::string &aSuffix);
 public:
-	virtual void setup(AbstractModel *aModel);
+	virtual void setup(Model *aModel);
 	// MODEL
-	void setModel(AbstractModel *aModel) { _model = aModel; }
-	AbstractModel* getModel() const { return _model; }
+	void setModel(Model *aModel) { _model = aModel; }
+	Model* getModel() const { return _model; }
 	// CONTROLS
 	virtual int getNumControls() const { return _x.getSize(); }
 	virtual const std::string getControlName(int aIndex) const;

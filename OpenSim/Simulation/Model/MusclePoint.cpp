@@ -27,7 +27,7 @@
 //=============================================================================
 #include "MusclePoint.h"
 #include "BodySet.h"
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractMuscle.h"
 #include "AbstractDynamicsEngine.h"
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
@@ -149,7 +149,7 @@ void MusclePoint::setupProperties()
  *
  * @param aModel model containing this MusclePoint.
  */
-void MusclePoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
+void MusclePoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 {
 	// Look up the body by name in the kinematics engine and
 	// store a pointer to it.

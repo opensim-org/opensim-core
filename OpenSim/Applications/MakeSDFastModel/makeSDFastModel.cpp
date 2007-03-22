@@ -31,7 +31,7 @@
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastFileWriter.h>
 
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
 		if (inName != unassigned)
 		{
 			// Construct the model
-			AbstractModel *model = new AbstractModel(inName);
+			Model *model = new Model(inName);
 			model->setup();
 			//model->peteTest();
 

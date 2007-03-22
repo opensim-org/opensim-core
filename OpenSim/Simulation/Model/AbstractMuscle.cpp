@@ -31,7 +31,7 @@
 #include "MuscleViaPoint.h"
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractBody.h"
 #include "AbstractDof.h"
 #include <OpenSim/Common/SimmMacros.h>
@@ -181,7 +181,7 @@ void AbstractMuscle::registerTypes()
  *
  * @param aModel model containing this muscle.
  */
-void AbstractMuscle::setup(AbstractModel* aModel)
+void AbstractMuscle::setup(Model* aModel)
 {
 	int i;
 

@@ -40,7 +40,7 @@
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include "AbstractModel.h"
+#include "Model.h"
 #include "AbstractDynamicsEngine.h"
 #include "BodySet.h"
 #include "Force.h"
@@ -710,7 +710,7 @@ check() const
  * setup sets the actual Body references _ba, _bB
  */
 void Force::
-setup(AbstractModel* aModel)
+setup(Model* aModel)
 {
 	AbstractActuator::setup(aModel);
 	if (aModel)

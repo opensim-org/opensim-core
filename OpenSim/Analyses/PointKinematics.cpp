@@ -9,7 +9,7 @@
 //=============================================================================
 #include <string>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
@@ -48,7 +48,7 @@ PointKinematics::~PointKinematics()
  *
  * @param aModel Model for which the analyses are to be recorded.
  */
-PointKinematics::PointKinematics(AbstractModel *aModel) :
+PointKinematics::PointKinematics(Model *aModel) :
 Analysis(aModel),
 _body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
@@ -301,7 +301,7 @@ deleteStorage()
  * @param aModel Model pointer
  */
 void PointKinematics::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	Analysis::setModel(aModel);
 

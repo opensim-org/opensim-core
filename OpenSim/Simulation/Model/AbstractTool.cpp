@@ -7,7 +7,7 @@
 //=============================================================================
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
-#include "AbstractModel.h"
+#include "Model.h"
 
 
 
@@ -289,7 +289,7 @@ operator=(const AbstractTool &aTool)
  * Set the model to be investigated.
  */
 void AbstractTool::
-setModel(AbstractModel *aModel)
+setModel(Model *aModel)
 {
 	_model = aModel;
 	_analysisSet.setModel(_model);
@@ -298,7 +298,7 @@ setModel(AbstractModel *aModel)
 /**
  * Get the model to be investigated.
  */
-AbstractModel* AbstractTool::
+Model* AbstractTool::
 getModel() const
 {
 	return(_model);
@@ -355,7 +355,7 @@ loadModel()
 	if (_modelFile != "") {
 		cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
-		AbstractModel *model = new AbstractModel(_modelFile);
+		Model *model = new Model(_modelFile);
 
 		// If replacing actuator set read in from model file, clear it here
 		if(_replaceActuatorSet) model->getActuatorSet()->setSize(0);

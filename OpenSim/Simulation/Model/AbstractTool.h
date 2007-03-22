@@ -13,7 +13,7 @@
 #include "AnalysisSet.h"
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 
 //=============================================================================
@@ -31,7 +31,7 @@ class OSIMSIMULATION_API AbstractTool: public Object
 //=============================================================================
 protected:
 	/** Pointer to the model being investigated. */
-	AbstractModel *_model;
+	Model *_model;
 
 	// SERIALIZED PROPERTIES
 	/** Name of the xml file used to deserialize or construct a model. */
@@ -107,8 +107,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	virtual void setModel(AbstractModel *aModel);
-	virtual AbstractModel* getModel() const;
+	virtual void setModel(Model *aModel);
+	virtual Model* getModel() const;
 	void setOutputPrecision(int aPrecision);
 	int getOutputPrecision() const;
 	AnalysisSet& getAnalysisSet() const;

@@ -233,7 +233,7 @@ void SimmDarrylMuscle::setupProperties()
  *
  * @param aModel model containing this SimmDarrylMuscle.
  */
-void SimmDarrylMuscle::setup(AbstractModel* aModel)
+void SimmDarrylMuscle::setup(Model* aModel)
 {
 	// Base class
 	AbstractMuscle::setup(aModel);

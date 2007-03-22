@@ -38,7 +38,7 @@
 #include "IntegCallbackSet.h"
 #include "IntegCallback.h"
 #include <OpenSim/Common/PropertyInt.h>
-#include "AbstractModel.h"
+#include "Model.h"
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -66,7 +66,7 @@ IntegCallback::~IntegCallback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-IntegCallback::IntegCallback(AbstractModel *aModel) :
+IntegCallback::IntegCallback(Model *aModel) :
 	Callback(aModel),
 	_stepInterval(_stepIntervalProp.getValueInt())
 {

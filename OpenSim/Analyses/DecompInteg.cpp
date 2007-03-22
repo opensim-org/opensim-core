@@ -12,7 +12,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include "DecompInteg.h"
@@ -73,7 +73,7 @@ DecompInteg::~DecompInteg()
  */
 DecompInteg::
 DecompInteg(const Manager *aManager,const Contact *aContact,
-	const Actuation *aActuation,AbstractModel *aModelTwin,double aDT,double aDF) :
+	const Actuation *aActuation,Model *aModelTwin,double aDT,double aDF) :
 	Decomp(aModelTwin)
 {
 	setNull();

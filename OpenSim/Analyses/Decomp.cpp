@@ -12,7 +12,7 @@
 #include <string.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "Decomp.h"
 
@@ -66,9 +66,9 @@ Decomp::~Decomp()
  * This constructor is used if the decomposition analysis is going to
  * be performed during the course of a simulation.
  *
- * @param aModel AbstractModel on which the analyses are to be performed.
+ * @param aModel Model on which the analyses are to be performed.
  */
-Decomp::Decomp(AbstractModel *aModel) :
+Decomp::Decomp(Model *aModel) :
 	Analysis(aModel),
 	_cNames("")
 {
@@ -117,14 +117,14 @@ Decomp::Decomp(AbstractModel *aModel) :
  * accelerates the model in a pure sense, without its associated reaction
  * forces.
  *
- * @param aModel AbstractModel on which the simulation was run.
+ * @param aModel Model on which the simulation was run.
  * @param aStates Set of model states.
  * @param aBaseName Base name for the force decompositon files.  If NULL,
  * accelerations are computed based on a NULL decompostion.
  * @param aDir Directory in which the results reside.
  * @param aExtension File extension of the force decomposition files.
  */
-Decomp::Decomp(AbstractModel *aModel,char *aBaseName,char *aDir,char *aExtension) :
+Decomp::Decomp(Model *aModel,char *aBaseName,char *aDir,char *aExtension) :
 	Analysis(aModel),
 	_cNames("")
 {
@@ -571,7 +571,7 @@ getUsePresetContactEstablishedSettings() const
  * Set whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
+ * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNumContacts().
  * @param aTrueFalse Wheter or not contact has been established.
  * @see setUsePresetContactEstablished()
  */
@@ -590,7 +590,7 @@ setContactEstablished(int aIndex,bool aTrueFalse)
  * Get whether or not contact has been established at a specified
  * contact point.
  *
- * @param aIndex Index of the contact point: 0 <= aIndex < AbstractModel::getNumContacts().
+ * @param aIndex Index of the contact point: 0 <= aIndex < Model::getNumContacts().
  * @return True if contact has been established; false if not or on an error.
  * @see setUsePresetContactEstablished()
  */
@@ -750,7 +750,7 @@ sum()
  * necessary initializations may be performed.
  *
  * This method is meant to be called at the begining of an integration in
- * AbstractModel::integBeginCallback() and has the same argument list.
+ * Model::integBeginCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
@@ -782,7 +782,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  * feeding it the necessary data.
  *
  * When called during an integration, this method is meant to be called in
- * AbstractModel::integStepCallback(), which has the same argument list.
+ * Model::integStepCallback(), which has the same argument list.
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
@@ -816,7 +816,7 @@ step(double *aXPrev,double *aYPrev,
  * necessary finalizations may be performed.
  *
  * This method is meant to be called at the end of an integration in
- * AbstractModel::integEndCallback() and has the same argument list.
+ * Model::integEndCallback() and has the same argument list.
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it

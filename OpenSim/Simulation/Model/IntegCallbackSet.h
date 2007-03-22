@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 
 class OSIMSIMULATION_API IntegCallbackSet : public Set<Callback>
 {
@@ -60,7 +60,7 @@ class OSIMSIMULATION_API IntegCallbackSet : public Set<Callback>
 //=============================================================================
 protected:
 	/** Model on which the callbacks have been set. */
-	AbstractModel *_model;
+	Model *_model;
 
 //=============================================================================
 // METHODS
@@ -69,7 +69,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	IntegCallbackSet(AbstractModel *aModel=0);
+	IntegCallbackSet(Model *aModel=0);
 	virtual ~IntegCallbackSet();
 private:
 	void setNull();
@@ -78,8 +78,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setModel(AbstractModel *aModel);
-	AbstractModel* getModel();
+	void setModel(Model *aModel);
+	Model* getModel();
 	void setOn(bool aTrueFalse);
 	IntegCallback* getIntegCallback(int aIndex) const;
 

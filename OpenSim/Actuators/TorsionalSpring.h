@@ -32,7 +32,7 @@
  */
 namespace OpenSim { 
 
-class AbstractModel;
+class Model;
 class AbstractBody;
 
 class OSIMACTUATORS_API TorsionalSpring : public TorqueApplier 
@@ -60,7 +60,7 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	TorsionalSpring(AbstractModel *aModel, AbstractBody *aBody);
+	TorsionalSpring(Model *aModel, AbstractBody *aBody);
 	virtual ~TorsionalSpring();
 private:
 	void setNull();

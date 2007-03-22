@@ -75,7 +75,7 @@ rdCMC::~rdCMC()
  * @param aModel Model that is to be controlled.
  * @param aTaskSet Set of tracking tasks.
  */
-rdCMC::rdCMC(AbstractModel *aModel,rdCMC_TaskSet *aTaskSet) :
+rdCMC::rdCMC(Model *aModel,rdCMC_TaskSet *aTaskSet) :
 	Controller(aModel), _paramList(-1) , _f(0.0)
 {
 	// NULL

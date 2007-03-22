@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <assert.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -18,7 +18,7 @@ int TestVisibleObjectCollection();
  */
 int main(int argc, char* argv[])
 {
-	AbstractModel* model = new AbstractModel("C:/Projects/Models/FullBody/FullBody.xml");
+	Model* model = new Model("C:/Projects/Models/FullBody/FullBody.xml");
 	model->setup();
 
 	delete model;

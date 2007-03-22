@@ -26,7 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "MuscleViaPoint.h"
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
@@ -159,7 +159,7 @@ bool MuscleViaPoint::isActive() const
  *
  * @param aModel model containing this MuscleViaPoint.
  */
-void MuscleViaPoint::setup(AbstractModel* aModel, AbstractMuscle* aMuscle)
+void MuscleViaPoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 {
 	// base class
 	MusclePoint::setup(aModel, aMuscle);
