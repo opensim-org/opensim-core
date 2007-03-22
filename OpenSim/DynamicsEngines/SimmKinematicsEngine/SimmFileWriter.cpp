@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/DofSet.h>
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
-#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 #include <OpenSim/Actuators/SimmZajacHill.h>
 #include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include "SimmCoordinate.h"

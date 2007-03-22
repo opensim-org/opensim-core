@@ -28,7 +28,7 @@
 #include "AbstractMuscle.h"
 #include "AbstractCoordinate.h"
 #include "MuscleGroup.h"
-#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include "MuscleViaPoint.h"
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include "AbstractModel.h"

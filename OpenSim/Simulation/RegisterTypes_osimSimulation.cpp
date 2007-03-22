@@ -22,13 +22,13 @@
 #include "Model/Marker.h"
 #include "Model/MarkerSet.h"
 #include "Model/MusclePoint.h"
+#include "Model/MuscleViaPoint.h"
 #include "Model/PolyObject.h"
 #include "Model/SpeedSet.h"
 #include "Model/VisibleMarker.h"
 #include "Control/ControlSet.h"
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
-#include "Wrap/MuscleViaPoint.h"
 #include "Wrap/MuscleWrap.h"
 #include "Wrap/MuscleWrapSet.h"
 #include "Wrap/WrapCylinder.h"
@@ -66,6 +66,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( Marker() );
 	Object::RegisterType( MarkerSet() );
 	Object::RegisterType( MusclePoint() );
+	Object::RegisterType( MuscleViaPoint() );
 	Object::RegisterType( PolyObject() );
 	Object::RegisterType( SpeedSet() );
 	Object::RegisterType( VisibleMarker() );
@@ -75,7 +76,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( ControlLinear() );
 	Object::RegisterType( ControlLinearNode() );
 
-	Object::RegisterType( MuscleViaPoint() );
 	Object::RegisterType( MuscleWrap() );
 	Object::RegisterType( MuscleWrapSet() );
 	Object::RegisterType( WrapCylinder() );
