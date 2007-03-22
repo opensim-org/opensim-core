@@ -3,33 +3,31 @@
 %{
 #include <xercesc/util/XercesVersion.hpp>
 #include <xercesc/util/XercesDefs.hpp>
-#include <OpenSim/Tools/rdToolsDLL.h>
-#include <OpenSim/Simulation/rdSimulationDLL.h>
-#include <OpenSim/Tools/Exception.h>
-#include <OpenSim/Tools/Array.h>
-#include <OpenSim/Tools/ArrayPtrs.h>
-#include <OpenSim/Tools/Property.h>
-#include <OpenSim/Tools/PropertySet.h>
-#include <OpenSim/Tools/Object.h>
-#include <OpenSim/Tools/Material.h>
-#include <OpenSim/Tools/VisibleProperties.h>
-#include <OpenSim/Tools/Transform.h>
-#include <OpenSim/Tools/Geometry.h>
-#include <OpenSim/Tools/VisibleObject.h>
+#include <OpenSim/Common/osimCommonDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Material.h>
+#include <OpenSim/Common/VisibleProperties.h>
+#include <OpenSim/Common/Transform.h>
+#include <OpenSim/Common/Geometry.h>
+#include <OpenSim/Common/VisibleObject.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/MaterialSet.h>
+#include <OpenSim/Common/StateVector.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Range.h>
+#include <OpenSim/Common/Scale.h>
+#include <OpenSim/Common/ScaleSet.h>
 
-#include <OpenSim/Tools/Set.h>
-
-#include <OpenSim/Tools/MaterialSet.h>
-
-#include <OpenSim/Simulation/SIMM/AbstractActuator.h>
-#include <OpenSim/Simulation/SIMM/ActuatorSet.h>
-
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
-
-#include <OpenSim/Tools/StateVector.h>
-#include <OpenSim/Tools/Storage.h>
-
-#include <OpenSim/Simulation/SIMM/AbstractModel.h>
+#include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
@@ -45,96 +43,88 @@
 #include <OpenSim/Simulation/Model/IntegCallback.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/AnalysisFactory.h>
-#include <OpenSim/Simulation/Model/SimulationTool.h>
-#include <OpenSim/Analyses/suAnalysesDLL.h>
-#include <OpenSim/Analyses/ForwardTool.h>
-#include <OpenSim/Analyses/PerturbationTool.h>
+#include <OpenSim/Simulation/Model/AbstractTool.h>
+#include <OpenSim/Simulation/Model/AbstractMarker.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 
 #include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 
+#include <OpenSim/Tools/osimToolsDLL.h>
+#include <OpenSim/Tools/ForwardTool.h>
+#include <OpenSim/Tools/PerturbationTool.h>
+
+#include <OpenSim/Analyses/osimAnalysesDLL.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/IndAcc.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/GeneralizedForces.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractMarker.h>
+#include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapSphere.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+#include <OpenSim/Simulation/Wrap/WrapTorus.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Simulation/Wrap/MuscleWrap.h>
+#include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
 
-#include <OpenSim/Simulation/SIMM/MarkerSet.h>
-#include <OpenSim/Tools/Range.h>
-#include <OpenSim/Tools/Scale.h>
-#include <OpenSim/Tools/ScaleSet.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/osimSimmKinematicsEngineDLL.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
-	/* This group of headers added by KMS 3/22/06 */
-#include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
-#include <OpenSim/Simulation/SIMM/WrapSphere.h>
-#include <OpenSim/Simulation/SIMM/WrapCylinder.h>
-#include <OpenSim/Simulation/SIMM/WrapTorus.h>
-#include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
-#include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
-#include <OpenSim/Simulation/SIMM/MuscleWrap.h>
-#include <OpenSim/Simulation/SIMM/MuscleWrapSet.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractBody.h>
-#include <OpenSim/Simulation/SIMM/SimmBody.h>
-#include <OpenSim/Simulation/SIMM/BodySet.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 
-#include <OpenSim/Tools/Function.h>
-#include <OpenSim/Tools/Constant.h>
-#include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-#include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
-#include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractMarker.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractDof.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
+#include <OpenSim/Simulation/Model/MusclePointSet.h>
+#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include <OpenSim/Common/SimmPoint.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
+#include <OpenSim/Common/Units.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractJoint.h>
-#include <OpenSim/Simulation/SIMM/SimmJoint.h>
-#include <OpenSim/Simulation/SIMM/JointSet.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
+#include <OpenSim/Actuators/SimmDarrylMuscle.h>
+#include <OpenSim/Actuators/SimmZajacHill.h>
 
-#include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/AbstractMarker.h>
-#include <OpenSim/Simulation/SIMM/SimmMarker.h>
+#include <OpenSim/Tools/GenericModelMaker.h>
+#include <OpenSim/Tools/ModelScaler.h>
+#include <OpenSim/Tools/MarkerPlacer.h>
+#include <OpenSim/Tools/IKTrial.h>
+#include <OpenSim/Tools/IKTrialSet.h>
 
-#include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
-#include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
-#include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
-#include <OpenSim/Simulation/SIMM/SimmPoint.h>
-#include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
-#include <OpenSim/Simulation/SIMM/SimmUnits.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Tools/IKTask.h>
+#include <OpenSim/Tools/IKTaskSet.h>
+#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Common/MarkerData.h>
 
-#include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
-#include <OpenSim/Simulation/SIMM/SimmDarrylMuscle.h>
-#include <OpenSim/Simulation/SIMM/SimmZajacHill.h>
+#include <OpenSim/Tools/IKSolverInterface.h>
+#include <OpenSim/Tools/Measurement.h>
+#include <OpenSim/Tools/MeasurementSet.h>
 
-#include <OpenSim/Applications/Workflow/workflowDLL.h>
-#include <OpenSim/Subject/SimmGenericModelMaker.h>
-#include <OpenSim/Subject/SimmModelScaler.h>
-#include <OpenSim/Subject/SimmMarkerPlacer.h>
-#include <OpenSim/Subject/SimmIKTrial.h>
-#include <OpenSim/Subject/SimmIKTrialSet.h>
-
-#include <OpenSim/Subject/simmSubject.h>
-#include <OpenSim/Subject/SimmFileWriter.h>
-#include <OpenSim/Simulation/SIMM/IKTask.h>
-#include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-#include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
-
-#include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
-#include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
-#include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
-
-#include <OpenSim/Applications/IK/IKTool.h>
-#include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-#include <OpenSim/SQP/rdSQPDLL.h>
+#include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/IKSolverImpl.h>
+#include <OpenSim/SQP/osimSQPDLL.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
 
-#include <OpenSim/Cmc/rdCMCDLL.h>
-#include <OpenSim/Cmc/CMCTool.h>
+#include <OpenSim/Tools/CMCTool.h>
+#include <OpenSim/Tools/ScaleTool.h>
 
 using namespace OpenSim;
 %}
@@ -272,34 +262,30 @@ using namespace OpenSim;
 };
 
 /* rest of header files to be wrapped */
-%include <OpenSim/Tools/rdToolsDLL.h>
-%include <OpenSim/Simulation/rdSimulationDLL.h>
-%include <OpenSim/Tools/Exception.h>
-%include <OpenSim/Tools/Array.h>
-%include <OpenSim/Tools/ArrayPtrs.h>
-%include <OpenSim/Tools/Property.h>
-%include <OpenSim/Tools/PropertySet.h>
-%include <OpenSim/Tools/Object.h>
-%include <OpenSim/Tools/Material.h>
-%include <OpenSim/Tools/VisibleProperties.h>
-%include <OpenSim/Tools/Transform.h>
-%include <OpenSim/Tools/Geometry.h>
-%include <OpenSim/Tools/VisibleObject.h>
-
-%include <OpenSim/Tools/Set.h>
-
+%include <OpenSim/Common/osimCommonDLL.h>
+%include <OpenSim/Common/Exception.h>
+%include <OpenSim/Common/Array.h>
+%include <OpenSim/Common/ArrayPtrs.h>
+%include <OpenSim/Common/Property.h>
+%include <OpenSim/Common/PropertySet.h>
+%include <OpenSim/Common/Object.h>
+%include <OpenSim/Common/Material.h>
+%include <OpenSim/Common/VisibleProperties.h>
+%include <OpenSim/Common/Transform.h>
+%include <OpenSim/Common/Geometry.h>
+%include <OpenSim/Common/VisibleObject.h>
+%include <OpenSim/Common/Set.h>
 %template(SetMaterials) OpenSim::Set<OpenSim::Material>;
-%include <OpenSim/Tools/MaterialSet.h>
+%include <OpenSim/Common/MaterialSet.h>
+%include <OpenSim/Common/StateVector.h>
+%include <OpenSim/Common/Storage.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractActuator.h>
+%include <OpenSim/Simulation/osimSimulationDLL.h>
+%include <OpenSim/Simulation/Model/AbstractActuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::AbstractActuator>;
-%include <OpenSim/Simulation/SIMM/ActuatorSet.h>
-
+%include <OpenSim/Simulation/Model/ActuatorSet.h>
 %include <OpenSim/Simulation/Model/ContactForceSet.h>
-%include <OpenSim/Tools/StateVector.h>
-%include <OpenSim/Tools/Storage.h>
-
-%include <OpenSim/Simulation/SIMM/AbstractModel.h>
+%include <OpenSim/Simulation/Model/AbstractModel.h>
 
 %include <OpenSim/Simulation/Control/Control.h>
 %template(SetControls) OpenSim::Set<OpenSim::Control>;
@@ -321,15 +307,15 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/Analysis.h>
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
 %include <OpenSim/Simulation/Model/AnalysisSet.h>
-%include <OpenSim/Simulation/Model/AnalysisFactory.h>
-%include <OpenSim/Simulation/Model/SimulationTool.h>
-%include <OpenSim/Analyses/suAnalysesDLL.h>
-%include <OpenSim/Analyses/ForwardTool.h>
-%include <OpenSim/Analyses/PerturbationTool.h>
+%include <OpenSim/Simulation/Model/AbstractTool.h>
+%include <OpenSim/Analyses/osimAnalysesDLL.h>
+%include <OpenSim/Tools/osimToolsDLL.h>
+%include <OpenSim/Tools/ForwardTool.h>
+%include <OpenSim/Tools/PerturbationTool.h>
 
 %include <OpenSim/Simulation/Simtk/SimtkAnimationCallback.h>
 
-%include <OpenSim/Analyses/suAnalysesDLL.h>
+%include <OpenSim/Analyses/osimAnalysesDLL.h>
 %include <OpenSim/Analyses/Kinematics.h>
 %include <OpenSim/Analyses/Actuation.h>
 %include <OpenSim/Analyses/IndAcc.h>
@@ -340,90 +326,87 @@ using namespace OpenSim;
 %template(ArrayInt) OpenSim::Array<int>;
 %template(ArrayStr) OpenSim::Array<std::string>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
-%include <OpenSim/Simulation/SIMM/AbstractMarker.h>
+%include <OpenSim/Simulation/Model/AbstractMarker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::AbstractMarker>;
-%include <OpenSim/Simulation/SIMM/MarkerSet.h>
-%include <OpenSim/Tools/Range.h>
-%include <OpenSim/Tools/Scale.h>
+%include <OpenSim/Simulation/Model/MarkerSet.h>
+%include <OpenSim/Common/Range.h>
+%include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
-%include <OpenSim/Tools/ScaleSet.h>
+%include <OpenSim/Common/ScaleSet.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractWrapObject.h>
-%include <OpenSim/Simulation/SIMM/WrapSphere.h>
-%include <OpenSim/Simulation/SIMM/WrapCylinder.h>
-%include <OpenSim/Simulation/SIMM/WrapTorus.h>
-%include <OpenSim/Simulation/SIMM/WrapEllipsoid.h>
+%include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+%include <OpenSim/Simulation/Wrap/WrapSphere.h>
+%include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+%include <OpenSim/Simulation/Wrap/WrapTorus.h>
+%include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::AbstractWrapObject>;
-%include <OpenSim/Simulation/SIMM/WrapObjectSet.h>
-%include <OpenSim/Simulation/SIMM/MuscleWrap.h>
+%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+%include <OpenSim/Simulation/Wrap/MuscleWrap.h>
 %template(SetMuscleWrap) OpenSim::Set<OpenSim::MuscleWrap>;
-%include <OpenSim/Simulation/SIMM/MuscleWrapSet.h>
+%include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractBody.h>
-%include <OpenSim/Simulation/SIMM/SimmBody.h>
+%include <OpenSim/Simulation/Model/AbstractBody.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/osimSimmKinematicsEngineDLL.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
 %template(SetBodies) OpenSim::Set<OpenSim::AbstractBody>;
-%include <OpenSim/Simulation/SIMM/BodySet.h>
+%include <OpenSim/Simulation/Model/BodySet.h>
 
-%include <OpenSim/Tools/Function.h>
-%include <OpenSim/Tools/Constant.h>
+%include <OpenSim/Common/Function.h>
+%include <OpenSim/Common/Constant.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractDof.h>
-%include <OpenSim/Simulation/SIMM/AbstractCoordinate.h>
-%include <OpenSim/Simulation/SIMM/SimmCoordinate.h>
+%include <OpenSim/Simulation/Model/AbstractDof.h>
+%include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::AbstractCoordinate>;
-%include <OpenSim/Simulation/SIMM/CoordinateSet.h>
+%include <OpenSim/Simulation/Model/CoordinateSet.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractJoint.h>
-%include <OpenSim/Simulation/SIMM/SimmJoint.h>
+%include <OpenSim/Simulation/Model/AbstractJoint.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
 %template(SetJoints) OpenSim::Set<OpenSim::AbstractJoint>;
-%include <OpenSim/Simulation/SIMM/JointSet.h>
+%include <OpenSim/Simulation/Model/JointSet.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractDynamicsEngine.h>
-%include <OpenSim/Simulation/SIMM/SimmKinematicsEngine.h>
+%include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractMarker.h>
-%include <OpenSim/Simulation/SIMM/SimmMarker.h>
+%include <OpenSim/Simulation/Model/AbstractMarker.h>
 
-%include <OpenSim/Simulation/SIMM/SimmMuscleGroup.h>
+%include <OpenSim/Simulation/Model/MusclePoint.h>
+%include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+%template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;
+%template(ArrayMusclePoint) OpenSim::Array<OpenSim::MusclePoint*>;
+%include <OpenSim/Simulation/Model/MusclePointSet.h>
 
-%include <OpenSim/Simulation/SIMM/SimmMusclePoint.h>
-%include <OpenSim/Simulation/SIMM/SimmMuscleViaPoint.h>
-%template(SetSimmMusclePoint) OpenSim::Set<OpenSim::SimmMusclePoint>;
-%template(ArraySimmMusclePoint) OpenSim::Array<OpenSim::SimmMusclePoint*>;
-%include <OpenSim/Simulation/SIMM/SimmMusclePointSet.h>
+%include <OpenSim/Simulation/Model/AbstractMuscle.h>
+%include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Actuators/SimmDarrylMuscle.h>
+%include <OpenSim/Actuators/SimmZajacHill.h>
 
-%include <OpenSim/Simulation/SIMM/AbstractSimmMuscle.h>
-%include <OpenSim/Simulation/SIMM/SimmDarrylMuscle.h>
-%include <OpenSim/Simulation/SIMM/SimmZajacHill.h>
+%include <OpenSim/Common/SimmPoint.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
+%include <OpenSim/Common/Units.h>
 
-%include <OpenSim/Simulation/SIMM/SimmPoint.h>
-%include <OpenSim/Simulation/SIMM/SimmRotationDof.h>
-%include <OpenSim/Simulation/SIMM/SimmTranslationDof.h>
-%include <OpenSim/Simulation/SIMM/SimmUnits.h>
+%include <OpenSim/Tools/GenericModelMaker.h>
+%include <OpenSim/Tools/ModelScaler.h>
+%include <OpenSim/Tools/MarkerPlacer.h>
+%include <OpenSim/Tools/IKTrial.h>
+%template(SetIKTrial) OpenSim::Set<OpenSim::IKTrial>;
+%include <OpenSim/Tools/IKTrialSet.h>
 
-%include <OpenSim/Applications/Workflow/workflowDLL.h>
-%include <OpenSim/Subject/SimmGenericModelMaker.h>
-%include <OpenSim/Subject/SimmModelScaler.h>
-%include <OpenSim/Subject/SimmMarkerPlacer.h>
-%include <OpenSim/Subject/SimmIKTrial.h>
-%template(SetSimmIKTrial) OpenSim::Set<OpenSim::SimmIKTrial>;
-%include <OpenSim/Subject/SimmIKTrialSet.h>
-
-%include <OpenSim/Subject/simmSubject.h>
-%include <OpenSim/Subject/SimmFileWriter.h>
-%include <OpenSim/Simulation/SIMM/IKTask.h>
+%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+%include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
-%include <OpenSim/Simulation/SIMM/IKTaskSet.h>
-%include <OpenSim/Simulation/SIMM/SimmMotionData.h>
-%include <OpenSim/Simulation/SIMM/SimmMarkerData.h>
+%include <OpenSim/Tools/IKTaskSet.h>
+%include <OpenSim/Common/SimmMotionData.h>
+%include <OpenSim/Common/MarkerData.h>
 
-%include <OpenSim/Simulation/SIMM/IKSolverInterface.h>
-%include <OpenSim/Applications/IK/IKTool.h>
-%include <OpenSim/Simulation/SIMM/SimmMeasurement.h>
-%template(SetSimmMeasurements) OpenSim::Set<OpenSim::SimmMeasurement>;
-%include <OpenSim/Simulation/SIMM/SimmMeasurementSet.h>
-%include <OpenSim/Applications/IK/SimmIKSolverImpl.h>
-%include <OpenSim/SQP/rdSQPDLL.h>
+%include <OpenSim/Tools/IKSolverInterface.h>
+%include <OpenSim/Tools/IKTool.h>
+%include <OpenSim/Tools/Measurement.h>
+%template(SetMeasurements) OpenSim::Set<OpenSim::Measurement>;
+%include <OpenSim/Tools/MeasurementSet.h>
+%include <OpenSim/Tools/IKSolverImpl.h>
+%include <OpenSim/SQP/osimSQPDLL.h>
 %include <OpenSim/SQP/rdOptimizationTarget.h>
-%include <OpenSim/Cmc/rdCMCDLL.h>
-%include <OpenSim/Cmc/CMCTool.h>
+%include <OpenSim/Tools/CMCTool.h>
+%include <OpenSim/Tools/ScaleTool.h>
