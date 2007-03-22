@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdIntegrator.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/rdMath.h>

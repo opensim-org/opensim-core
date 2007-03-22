@@ -31,7 +31,6 @@
  * Author: Frank C. Anderson 
  */
 
-#include "rdIntegrator.h"
 #include <math.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Exception.h>

@@ -30,7 +30,6 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include "rdIntegrator.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Exception.h>
 #include "IntegRKF.h"

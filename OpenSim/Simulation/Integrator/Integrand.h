@@ -35,7 +35,7 @@
 
 // INCLUDES
 #include <OpenSim/Common/Object.h>
-#include "rdIntegrator.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API

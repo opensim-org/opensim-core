@@ -34,7 +34,7 @@
  */
 
 // INCLUDES
-#include "rdIntegrator.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Integrand.h"
 
 #ifdef SWIG
