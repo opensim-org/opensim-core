@@ -17,6 +17,8 @@
 #define STDCALL __stdcall
 #endif
 
+#define SDFAST_DLL_API __declspec(dllexport)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -205,7 +207,7 @@ void sdprinterr(FILE *aFP);
 void sdclearerr();
 
 // USER WRITTEN ROUTINES
-void init_sdm();
+SDFAST_DLL_API void init_sdm();
 
 #ifdef __cplusplus
 }

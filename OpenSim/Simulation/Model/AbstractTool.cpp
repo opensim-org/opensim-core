@@ -6,7 +6,6 @@
 // INCLUDES
 //=============================================================================
 #include "AbstractTool.h"
-#include "LoadModel.h"
 #include <OpenSim/Common/IO.h>
 #include "AbstractModel.h"
 
@@ -31,7 +30,6 @@ AbstractTool::~AbstractTool()
  * Default constructor.
  */
 AbstractTool::AbstractTool():
-	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
@@ -61,7 +59,6 @@ AbstractTool::AbstractTool():
  */
 AbstractTool::AbstractTool(const string &aFileName):
 	Object(aFileName),
-	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
@@ -128,7 +125,6 @@ AbstractTool::AbstractTool(const string &aFileName):
  */
 AbstractTool::AbstractTool(const AbstractTool &aTool):
 	Object(aTool),
-	_modelLibrary(_modelLibraryProp.getValueStr()),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
@@ -158,7 +154,6 @@ setNull()
 	setupProperties();
 
 	_model = NULL;
-	_modelLibrary = "";
 	_modelFile = "";
 	_replaceActuatorSet = true;
 	_contactForceSetFile = "";
@@ -178,11 +173,6 @@ setNull()
 void AbstractTool::setupProperties()
 {
 	string comment;
-
-	comment = "Name of the model library to load. Do not include the library extension (e.g., .dll or .lib).";
-	_modelLibraryProp.setComment(comment);
-	_modelLibraryProp.setName("model_library");
-	_propertySet.append( &_modelLibraryProp );
 
 	comment = "Name of the .osim file used to construct a model.";
 	_modelFileProp.setComment(comment);
@@ -271,7 +261,6 @@ operator=(const AbstractTool &aTool)
 	// MEMEBER VARIABLES
 	_model = aTool._model;
 
-	_modelLibrary = aTool._modelLibrary;
 	_modelFile = aTool._modelFile;
 	_actuatorSetFiles = aTool._actuatorSetFiles;
 	_contactForceSetFile = aTool._contactForceSetFile;
@@ -363,11 +352,10 @@ loadModel()
 {
 	// If _modelLibrary is not specified, we do not try to load the model here and assume
 	// the caller/user of this investigation will take care of setting it up.
-	if (_modelLibrary != "") {
-		cout<<"AbstractTool "<<getName()<<" loading a model:" << endl;
-		cout<<"ModelLibrary = " << _modelLibrary << ", ModelFile = " << _modelFile << endl;
+	if (_modelFile != "") {
+		cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
-		AbstractModel *model = LoadModel(_modelLibrary, _modelFile);
+		AbstractModel *model = new AbstractModel(_modelFile);
 
 		// If replacing actuator set read in from model file, clear it here
 		if(_replaceActuatorSet) model->getActuatorSet()->setSize(0);

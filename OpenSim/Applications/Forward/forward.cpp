@@ -32,10 +32,10 @@
 #include <iostream>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 #include <OpenSim/Actuators/GeneralizedForceAtv.h>
 
 
@@ -56,6 +56,8 @@ int main(int argc,char **argv)
 	//----------------------
 	try {
 	//----------------------
+
+	LoadOpenSimLibrary("osimSdfastEngine");
 
 	// PARSE COMMAND LINE
 	int i;

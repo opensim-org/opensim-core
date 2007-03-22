@@ -29,6 +29,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "osimSdfastEngineDLL.h"
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmStep.h>
 
@@ -51,7 +52,7 @@ class DofSet;
  * @author Peter Loan
  * @version 1.0
  */
-class SdfastFileWriter
+class OSIMSDFASTENGINE_API SdfastFileWriter
 {
 //=============================================================================
 // STRUCTURES
@@ -220,7 +221,7 @@ public:
 		const std::string& aBonePath = "no_path",
 		const std::string& aKineticsFile = "no_kinetics",
 		const std::string& aOutputMotionFile = "results.mot");
-	void writeSimulationModelFile(const std::string& aFileName);
+	void writeSimulationModelFile(const std::string& aFileName, const std::string& aModelLibraryName);
 	void identifySdfastType(AbstractJoint& aJoint, JointInfo& aInfo);
 	void initialize();
 

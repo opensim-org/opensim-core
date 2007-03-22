@@ -251,15 +251,15 @@ void SdfastJoint::setLocationInParent(const double aLocation[3])
 		// COMPARE TO CURRENT
 		bool different = false;
 		double itjCurrent[3];
-		sdgetitj(_index,itjCurrent);
+		_SdfastEngine->_sdgetitj(_index,itjCurrent);
 		for(int i=0; i<3; i++) {
 			if(!rdMath::IsEqual(itjNew[i],itjCurrent[i],rdMath::ZERO)) different = true;
 		}
 		if(!different) return;
 
 		// SET NEW ITJ
-		sditj(_index,itjNew);
-		sdinit();
+		_SdfastEngine->_sditj(_index,itjNew);
+		_SdfastEngine->_sdinit();
 
 		// TODO: check for SDFast errors.
 	}
@@ -298,7 +298,7 @@ void SdfastJoint::setLocationInChild(const double aLocation[3])
 
 		// COMPARE TO CURRENT
 		double btjCurrent[3];
-		sdgetbtj(_index,btjCurrent);
+		_SdfastEngine->_sdgetbtj(_index,btjCurrent);
 		bool different = false;
 		for(int i=0; i<3; i++) {
 			if(!rdMath::IsEqual(btjNew[i],btjCurrent[i],rdMath::ZERO)) different=true;
@@ -306,8 +306,8 @@ void SdfastJoint::setLocationInChild(const double aLocation[3])
 		if(!different) return;
 
 		// SET NEW ITJ
-		sdbtj(_index,btjNew);
-		sdinit();
+		_SdfastEngine->_sdbtj(_index,btjNew);
+		_SdfastEngine->_sdinit();
 
 		// TODO: check for SDFast errors.
 	}
@@ -352,12 +352,12 @@ const Transform& SdfastJoint::getForwardTransform()
 		parentOrigin[i] = -parentOrigin[i];
 		childOrigin[i] = -childOrigin[i];
 	}
-	sdpos(_parentBody->getSdfastIndex(), parentOrigin, parentOriginGrnd);
-	sdpos(_childBody->getSdfastIndex(), childOrigin, childOriginGrnd);
+	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(), parentOrigin, parentOriginGrnd);
+	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(), childOrigin, childOriginGrnd);
 
 	// Now get the direction cosine matrices for the bodies.
-	sdorient(_parentBody->getSdfastIndex(), parentDirCos);
-	sdorient(_childBody->getSdfastIndex(), childDirCos);
+	_SdfastEngine->_sdorient(_parentBody->getSdfastIndex(), parentDirCos);
+	_SdfastEngine->_sdorient(_childBody->getSdfastIndex(), childDirCos);
 
 	// Now copy the translations and orientations into transforms.
 	// 'parent' is the transform from ground to the parent frame.
@@ -421,12 +421,12 @@ const Transform& SdfastJoint::getInverseTransform()
 		parentOrigin[i] = -parentOrigin[i];
 		childOrigin[i] = -childOrigin[i];
 	}
-	sdpos(_parentBody->getSdfastIndex(),parentOrigin,parentOriginGrnd);
-	sdpos(_childBody->getSdfastIndex(),childOrigin,childOriginGrnd);
+	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(),parentOrigin,parentOriginGrnd);
+	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(),childOrigin,childOriginGrnd);
 
 	// Now get the direction cosine matrices for the bodies.
-	sdorient(_parentBody->getSdfastIndex(), parentDirCos);
-	sdorient(_childBody->getSdfastIndex(), childDirCos);
+	_SdfastEngine->_sdorient(_parentBody->getSdfastIndex(), parentDirCos);
+	_SdfastEngine->_sdorient(_childBody->getSdfastIndex(), childDirCos);
 
 	// Now copy the translations and orientations into transforms.
 	// 'parent' is the transform from ground to the parent frame.
@@ -514,7 +514,7 @@ bool SdfastJoint::hasXYZAxes() const
 bool SdfastJoint::isTreeJoint() const
 {
 	int info[50], slider[6];
-	sdjnt(getSdfastIndex(), info, slider);
+	_SdfastEngine->_sdjnt(getSdfastIndex(), info, slider);
 	return info[1] == 0;
 }
 

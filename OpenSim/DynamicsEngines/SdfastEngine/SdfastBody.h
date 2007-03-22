@@ -37,7 +37,6 @@
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
-#include "sdfast.h"
 
 namespace OpenSim {
 

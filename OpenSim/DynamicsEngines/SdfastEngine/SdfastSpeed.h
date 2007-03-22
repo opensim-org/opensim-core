@@ -36,7 +36,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/AbstractSpeed.h>
-#include "sdfast.h"
 
 namespace OpenSim {
 

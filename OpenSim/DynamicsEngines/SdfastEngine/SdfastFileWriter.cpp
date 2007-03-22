@@ -1750,15 +1750,18 @@ void SdfastFileWriter::writeModelSourceFile(const string& aFileName, const strin
 	out.close();
 }
 
-void SdfastFileWriter::writeSimulationModelFile(const string& aFileName)
+void SdfastFileWriter::writeSimulationModelFile(const string& aFileName, const string& aModelLibraryName)
 {
 	IO::SetPrecision(8);
 
 	if (!_initialized)
 		initialize();
 
-	if (_simulationModel)
+	if (_simulationModel) {
+		SdfastEngine *engine = dynamic_cast<SdfastEngine*>(&_simulationModel->getDynamicsEngine());
+		if(engine) engine->setModelLibraryName(aModelLibraryName);
 		_simulationModel->print(aFileName);
+	}
 }
 
 void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInfo)

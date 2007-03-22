@@ -41,7 +41,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/AbstractDof.h>
-#include "sdfast.h"
 
 namespace OpenSim {
 

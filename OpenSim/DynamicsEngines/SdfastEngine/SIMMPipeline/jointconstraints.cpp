@@ -25,22 +25,23 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/DynamicsEngines/SdfastEngine/sdfast.h>
+#include "sdfast.h"
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/DofSet.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastCoordinate.h>
 #include <OpenSim/Common/NatCubicSpline.h>
 #include <string>
 
+#define SDFAST_DLL_API __declspec(dllexport)
+
 extern "C" {
 #include "universal.h"
 extern dpModelStruct sdm;
-}
 
 using namespace OpenSim;
 using namespace std;
 
-void setJointConstraintFunctions(CoordinateSet *aCoordinateSet)
+SDFAST_DLL_API int setJointConstraintFunctions(CoordinateSet *aCoordinateSet)
 {
 	for (int i = 0; i < sdm.nq; i++) {
 		int jointIndex = sdm.q[i].joint;
@@ -51,13 +52,13 @@ void setJointConstraintFunctions(CoordinateSet *aCoordinateSet)
 			//std::cout << "Got constraint func for " << sdm.q[i].name << std::endl;
 
 			int index = aCoordinateSet->getIndex(sdm.q[i].name);
-			if(index<0) throw Exception("setJointConstraintFunctions: ERR- could not find coordinate named '"+string(sdm.q[i].name)+"'",__FILE__,__LINE__);
+			if(index<0) { std::cout << "setJointConstraintFunctions: ERR- could not find coordinate named '"+string(sdm.q[i].name)+"'" << std::endl; return -1; }
 			SdfastCoordinate *coordinate = dynamic_cast<SdfastCoordinate*>(aCoordinateSet->get(index));
-			if(!coordinate) throw Exception("setJointConstraintFunctions: ERR- dynamic_cast to SdfastCoordinate failed",__FILE__,__LINE__);
+			if(!coordinate) { std::cout << "setJointConstraintFunctions: ERR- dynamic_cast to SdfastCoordinate failed" << std::endl; return -1; }
 			Function *function = coordinate->getConstraintFunction();
-			if(!function) throw Exception("setJointConstraintFunctions: ERR- coordinate '"+string(sdm.q[i].name)+" missing constraint function",__FILE__,__LINE__);
+			if(!function) { std::cout << "setJointConstraintFunctions: ERR- coordinate '"+string(sdm.q[i].name)+" missing constraint function" << std::endl; return -1; }
 			NatCubicSpline *spline = dynamic_cast<NatCubicSpline*>(function);
-			if(!spline) throw Exception("setJointConstraintFunctions: ERR- constraint function of '"+string(sdm.q[i].name)+"' expected to be a natCubicSpline",__FILE__,__LINE__);
+			if(!spline) { std::cout << "setJointConstraintFunctions: ERR- constraint function of '"+string(sdm.q[i].name)+"' expected to be a natCubicSpline" << std::endl; return -1; }
 
 			(void)malloc_function(func,spline->getSize());
 			func->numpoints = spline->getSize();
@@ -71,16 +72,19 @@ void setJointConstraintFunctions(CoordinateSet *aCoordinateSet)
 			calc_spline_coefficients(func);
 		}
 	}
+	return 0;
 }
 
-void setCoordinateInitialValues(CoordinateSet *aCoordinateSet)
+SDFAST_DLL_API int setCoordinateInitialValues(CoordinateSet *aCoordinateSet)
 {
 	for (int i = 0; i < sdm.nq; i++) {
 		int index = aCoordinateSet->getIndex(sdm.q[i].name);
-		if(index<0) throw Exception("setJointConstraintFunctions: ERR- could not find coordinate named '"+string(sdm.q[i].name)+"'",__FILE__,__LINE__);
+		if(index<0) { std::cout << "setJointConstraintFunctions: ERR- could not find coordinate named '"+string(sdm.q[i].name)+"'" << std::endl; return -1; }
 		SdfastCoordinate *coordinate = dynamic_cast<SdfastCoordinate*>(aCoordinateSet->get(index));
-		if(!coordinate) throw Exception("setJointConstraintFunctions: ERR- dynamic_cast to SdfastCoordinate failed",__FILE__,__LINE__);
+		if(!coordinate) { std::cout << "setJointConstraintFunctions: ERR- dynamic_cast to SdfastCoordinate failed" << std::endl; return -1; }
 		//std::cout << sdm.q[i].name << ": " << coordinate->getInitialValue() << endl;
 		sdm.q[i].initial_value = coordinate->getInitialValue();
 	}
+	return 0;
+}
 }

@@ -28,7 +28,12 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors
 			 ${XERCES_INCLUDE_DIR})
 
-ADD_LIBRARY(osim${KIT} ${SOURCE_FILES} ${INCLUDE_FILES}) 
+
+# We're building SdfastEngine as a DLL now
+LINK_LIBRARIES( osimCommon osimSimulation )
+ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+# DEPRACATED: used to build it as a statically linked library
+#ADD_LIBRARY(osim${KIT} ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 # For linux, gait23 doesn't link properly with SdfastEngine unless -fPIC is used
 IF(NOT WIN32)

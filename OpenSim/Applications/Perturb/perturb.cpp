@@ -27,6 +27,8 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
+	LoadOpenSimLibrary("osimSdfastEngine");
+
 	// PARSE COMMAND LINE
 	string option = "";
 	string setupFileName = "";

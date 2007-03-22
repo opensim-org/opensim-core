@@ -41,11 +41,11 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmPathMatrix.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include "sdfast.h"
 #include "SdfastBody.h"
 #include "SdfastCoordinate.h"
 #include "SdfastJoint.h"
 #include "SdfastSpeed.h"
+#include "SdfastFunctionPointerHelper.h"
 
 #ifdef SWIG
 	#ifdef OSIMSDFASTENGINE_API
@@ -102,6 +102,9 @@ protected:
 
 	AbstractBody* _groundBody;
 
+	PropertyStr _modelLibraryNameProp;
+	std::string &_modelLibraryName;
+
 	/** The following variables are initialized by a call to sdinfo(), but
 	they had better match the sizes of the _bodySet, _coordinateSet, and
 	_speedSet objects. */
@@ -143,12 +146,18 @@ private:
 	AbstractBody* identifyGroundBody();
 	SdfastJoint* getInboardTreeJoint(SdfastBody *aBody) const;
 	void constructSystemVariables();
+	void linkToModelLibrary();
 
 public:
 	void init(AbstractModel* aModel);
 	virtual void setup(AbstractModel* aModel);
 
 	virtual void peteTest() const;
+
+	//--------------------------------------------------------------------------
+   // GET/SET
+	//--------------------------------------------------------------------------
+	void setModelLibraryName(const std::string &aModelLibraryName) { _modelLibraryName = aModelLibraryName; }
 
 	//--------------------------------------------------------------------------
    // ADDING COMPONENTS
@@ -311,6 +320,25 @@ public:
 
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
+
+
+
+private:
+
+	//--------------------------------------------------------------------------
+	// FUNCTION POINTERS INTO SDFAST FUNCTIONS
+	//--------------------------------------------------------------------------
+	// OPENSIM_TYPEDEF_AND_MEMBER_SDFAST_FUNCTION: defines a typedef for that function type, and 
+	// declares a member in the SdfastEngine class which will store the pointer to that function.
+	// Makes use of OPENSIM_FOR_ALL_SDFAST_FUNCTIONS defined in SdfastFunctionPointerHelper.h
+#define OPENSIM_TYPEDEF_AND_MEMBER_SDFAST_FUNCTION(name, returntype, args) \
+	typedef returntype (*FUNC_##name)args; \
+	FUNC_##name _##name;
+	OPENSIM_FOR_ALL_SDFAST_FUNCTIONS(OPENSIM_TYPEDEF_AND_MEMBER_SDFAST_FUNCTION);
+
+	friend class SdfastBody;
+	friend class SdfastCoordinate;
+	friend class SdfastJoint;
 
 //=============================================================================
 };	// END of class SdfastEngine

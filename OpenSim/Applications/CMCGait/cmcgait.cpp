@@ -41,7 +41,6 @@ using namespace OpenSim;
 
 static void PrintUsage(const char *aProgName, ostream &aOStream);
 
-
 //_____________________________________________________________________________
 /**
  * Main routine for running the Computed Muscle Control (CMC) algorithm.
@@ -53,6 +52,8 @@ int main(int argc,char **argv)
 	//----------------------
 	try {
 	//----------------------
+	
+	LoadOpenSimLibrary("osimSdfastEngine");
 
 	// PARSE COMMAND LINE
 	int i;

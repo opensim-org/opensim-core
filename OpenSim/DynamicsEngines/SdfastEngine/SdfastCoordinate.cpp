@@ -371,7 +371,7 @@ void SdfastCoordinate::determineType()
 {
 	int info[50], slider[6];
 
-	sdjnt(getJointIndex(), info, slider);
+	_SdfastEngine->_sdjnt(getJointIndex(), info, slider);
 
 	if (slider[getAxisIndex()] == 0)
 		_motionType = AbstractDof::Rotational;
@@ -476,7 +476,7 @@ bool SdfastCoordinate::setValue(double aValue)
 	_locked = true;
 	_SdfastEngine->assemble();
 	_locked = false;
-	sdstate(_SdfastEngine->getModel()->getTime(), y, &y[_SdfastEngine->getNumCoordinates()]);
+	_SdfastEngine->_sdstate(_SdfastEngine->getModel()->getTime(), y, &y[_SdfastEngine->getNumCoordinates()]);
 #endif
 
 	return true;

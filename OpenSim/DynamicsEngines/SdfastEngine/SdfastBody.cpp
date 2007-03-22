@@ -272,7 +272,7 @@ double SdfastBody::getMass() const
 {
 	if(_index<0) return 0.0;
 	double mass = 0.0;
-	sdgetmass(_index,&mass);
+	_SdfastEngine->_sdgetmass(_index,&mass);
 	return mass;
 }
 //_____________________________________________________________________________
@@ -299,8 +299,8 @@ bool SdfastBody::setMass(double aMass)
 	_mass = aMass;
 
 	// Update sdfast
-	sdmass(_index,aMass);
-	sdinit();
+	_SdfastEngine->_sdmass(_index,aMass);
+	_SdfastEngine->_sdinit();
 	//cout<<"SdfastBody.setMass: body="<<getName()<<"  orig="<<mass<<"  new="<<_mass<<endl;
 
 	return true;
@@ -353,7 +353,7 @@ void SdfastBody::getInertia(double rInertia[3][3]) const
 			}
 		}
 	} else {
-		sdgetiner(_index,rInertia);
+		_SdfastEngine->_sdgetiner(_index,rInertia);
 	}
 }
 //_____________________________________________________________________________
@@ -422,8 +422,8 @@ bool SdfastBody::setInertia(const double aInertia[3][3])
 		}
 	}
 
-	sdiner(_index,inertia);
-	sdinit();
+	_SdfastEngine->_sdiner(_index,inertia);
+	_SdfastEngine->_sdinit();
 
 	return true;
 }
@@ -484,8 +484,8 @@ void SdfastBody::scaleInertialProperties(const Array<double>& aScaleFactors, boo
 {
 	double mass, inertia[3][3];
 
-	sdgetmass(_index, &mass);
-	sdgetiner(_index, inertia);
+	_SdfastEngine->_sdgetmass(_index, &mass);
+	_SdfastEngine->_sdgetiner(_index, inertia);
 
 	// Scales assuming mass stays the same
 	scaleInertiaTensor(mass, aScaleFactors, inertia);
@@ -509,8 +509,8 @@ void SdfastBody::scaleMass(double aScaleFactor)
 {
 	double mass, inertia[3][3];
 
-	sdgetmass(_index, &mass);
-	sdgetiner(_index, inertia);
+	_SdfastEngine->_sdgetmass(_index, &mass);
+	_SdfastEngine->_sdgetiner(_index, inertia);
 
 	mass *= aScaleFactor;
 	for (int i=0;i<3;i++)

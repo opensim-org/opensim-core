@@ -7,7 +7,7 @@ LINK_LIBRARIES(
 	debug osimSimulation_d optimized osimSimulation
 	debug osimSdfastEngine_d optimized osimSdfastEngine)
 
-ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/Stubs/SdfastStubs.c ${OpenSim_SOURCE_DIR}/OpenSim/DynamicsEngines/SdfastEngine/Stubs/SdfastStubsCPP.cpp)
+ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp)
 
 ##GET_TARGET_PROPERTY(buildLocation makeSDFastModel LOCATION)
 ##IF (${buildLocation} MATCHES ".+Debug.+")

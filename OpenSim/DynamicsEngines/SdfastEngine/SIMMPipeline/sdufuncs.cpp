@@ -17,11 +17,12 @@
 		it to your specific simulation.
 
 *******************************************************************************/
-#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
-#include <OpenSim/DynamicsEngines/SdfastEngine/sdfast.h>
+#include "sdfast.h"
+#include <cassert>
 
 using namespace std;
-using namespace OpenSim;
+
+#define SDFAST_DLL_API __declspec(dllexport)
 
 extern "C" {
 #include "universal.h"
@@ -29,15 +30,9 @@ extern "C" {
 // function prototype
 void sdstab(double velin,double posin);
 
-/*************** DEFINES (for this file only) *********************************/
-
-/* Tolerances and Integration parameters. */
-#define ASSEMBLY_TOL 1e-7
-
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 MotionData* kinetics_data = NULL;
 dpModelStruct sdm;
-char buffer[512];
 
 /**************** GLOBAL VARIABLES (used in only a few files) *****************/
 
@@ -59,11 +54,15 @@ char buffer[512];
 
 int sduforce(double t, double q[], double u[])
 {
+	assert(false);
+	// THIS IS NOT CALLED ANYMORE
+#if 0
 	if (SdfastEngine::_Instance)
 		SdfastEngine::_Instance->sduforce();
 
 	// TODOAUG: restraint torques should eventually be implemented as actuators or contacts
 	apply_joint_restraint_torques(q, u);
+#endif
 
    return 1;
 }
@@ -603,7 +602,7 @@ double interpolate_spline(double abscissa, dpSplineFunction* func, Derivative de
  * The rotational coordinates and speeds are expected to be in radians and
  * radians/sec.
  */
-void compute_constrained_coords(double *y) {
+SDFAST_DLL_API void compute_constrained_coords(double *y) {
 	int i;
 	double q_ind_value, u_ind_value;
 	for (i=0;i<sdm.nq;i++) {
@@ -668,7 +667,7 @@ int check_for_sderror(char caller[])
    return err;
 }
 
-void init_sdm()
+SDFAST_DLL_API void init_sdm()
 {
 	int info[50];
 

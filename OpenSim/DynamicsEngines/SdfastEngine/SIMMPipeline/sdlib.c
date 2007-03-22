@@ -12,6 +12,12 @@ FAR Supplement.  Symbolic Dynamics, Inc., Mountain View, CA 94041
 #include <math.h>
 #include <stdio.h>
 
+#ifdef SDFAST_DLL
+#define SDFAST_DLL_API __declspec(dllexport)
+#else
+#define SDFAST_DLL_API
+#endif
+
 typedef struct {
     int lasterr_,lastrou_;
 } sdgerror_t;
@@ -1145,7 +1151,7 @@ void sdvinteg(func,time,st,dst,param,dt,step,neqin,tol,work,err,which)
     *time = tfin;
 }
 
-sddc2ang(dircos,a1,a2,a3)
+SDFAST_DLL_API sddc2ang(dircos,a1,a2,a3)
     double dircos[3][3],*a1,*a2,*a3;
 {
     double quot,angle,th1,th2,th3,costh2,temp[10];
@@ -1240,7 +1246,7 @@ sddc2ang(dircos,a1,a2,a3)
     *a3 = temp[0];
 }
 
-sddc2quat(dircos,e1,e2,e3,e4)
+SDFAST_DLL_API sddc2quat(dircos,e1,e2,e3,e4)
     double dircos[3][3],*e1,*e2,*e3,*e4;
 {
     double tmp,tmp1,tmp2,tmp3,tmp4,temp[10];
@@ -1341,7 +1347,7 @@ sddc2quat(dircos,e1,e2,e3,e4)
     *e4 = (tmp*tmp4);
 }
 
-sdang2dc(a1,a2,a3,dircos)
+SDFAST_DLL_API sdang2dc(a1,a2,a3,dircos)
     double a1,a2,a3,dircos[3][3];
 {
     double cos1,cos2,cos3,sin1,sin2,sin3;
@@ -1363,7 +1369,7 @@ sdang2dc(a1,a2,a3,dircos)
     dircos[2][2] = (cos1*cos2);
 }
 
-sdquat2dc(ie1,ie2,ie3,ie4,dircos)
+SDFAST_DLL_API sdquat2dc(ie1,ie2,ie3,ie4,dircos)
     double ie1,ie2,ie3,ie4,dircos[3][3];
 {
     double e1,e2,e3,e4,e11,e22,e33,e44,norm;
@@ -1420,7 +1426,7 @@ sdvnorm(ivec)
     return norm;
 }
 
-void sdvcopy(ivec,ovec)
+SDFAST_DLL_API void sdvcopy(ivec,ovec)
     double ivec[3],ovec[3];
 {
 

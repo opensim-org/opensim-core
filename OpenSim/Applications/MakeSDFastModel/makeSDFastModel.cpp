@@ -59,6 +59,7 @@ int main(int argc,char **argv)
 	string inName = unassigned;
 	string sdfastName = unassigned;
 	string headerName = unassigned;
+	string modelLibraryName = unassigned;
 	string sourceName = unassigned;
 	string simModelName = unassigned;
 	string folderName = ".";
@@ -92,6 +93,9 @@ int main(int argc,char **argv)
 				}
 				else if((option=="-MH")||(option=="-ModelHeader")) {
 					headerName = argv[++i];
+				}
+				else if((option=="-ML")||(option=="-ModelLibrary")) {
+					modelLibraryName = argv[++i];
 				}
 				else if((option=="-OM")||(option=="-OutputModel")) {
 					simModelName = argv[++i];
@@ -130,7 +134,7 @@ int main(int argc,char **argv)
 				sfw.writeModelHeaderFile(headerName);
 
 			if (simModelName != unassigned)
-				sfw.writeSimulationModelFile(simModelName);
+				sfw.writeSimulationModelFile(simModelName, modelLibraryName);
 
 			delete model;
 		}
@@ -156,6 +160,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";
 	aOStream<<"-ModelHeader, -MH         FileName         Output model header file (model.h in SIMM)\n";
+	aOStream<<"-ModelLibrary, -ML        FileName         The compiled SD/Fast model for computing the dynamics for this model\n";
 	aOStream<<"-OuputModel, -OM          ModelFile        Output SDfastEngine model file (XML format).\n";
 	aOStream<<"-Directory, -D            DirectoryName    Directory into which to write output.\n";
 }

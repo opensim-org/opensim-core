@@ -34,10 +34,6 @@ protected:
 	AbstractModel *_model;
 
 	// SERIALIZED PROPERTIES
-	/** Name of the model library to load.  Do not include the library
-	extension (e.g., .dll or .lib). */
-	PropertyStr _modelLibraryProp;
-	std::string &_modelLibrary;
 	/** Name of the xml file used to deserialize or construct a model. */
 	PropertyStr _modelFileProp;
 	std::string &_modelFile;

@@ -34,7 +34,6 @@
 #include <OpenSim/Common/Transform.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
-#include "sdfast.h"
 #include "SdfastBody.h"
 #include "SdfastCoordinate.h"
 

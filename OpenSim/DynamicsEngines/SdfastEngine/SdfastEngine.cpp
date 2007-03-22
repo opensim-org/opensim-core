@@ -33,6 +33,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include "SdfastEngine.h"
@@ -44,13 +45,8 @@
 #include <OpenSim/Simulation/Model/AbstractDof.h>
 #include <OpenSim/Simulation/Model/AbstractModel.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmStep.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
 #include <OpenSim/Common/Units.h>
+#include <cassert>
 
 //=============================================================================
 // STATICS
@@ -65,9 +61,23 @@ SdfastEngine* SdfastEngine::_Instance = NULL;
 const double SdfastEngine::ASSEMBLY_TOLERANCE = 1e-7;
 static char simmGroundName[] = "ground";
 
-// Function defined in jointconstraints.cpp
-void setCoordinateInitialValues(CoordinateSet *aCoordinateSet);
-void setJointConstraintFunctions(CoordinateSet *aCoordinateSet);
+//=============================================================================
+// SD/Fast function utilities
+//=============================================================================
+
+// Declare stub function for each desired SD/Fast function
+#define OPENSIM_DECLARE_SDFAST_FUNCTION_PROTOTYPE(name, returntype, args) \
+	returntype SDFAST_STUB_##name args { return returntype(); }
+OPENSIM_FOR_ALL_SDFAST_FUNCTIONS(OPENSIM_DECLARE_SDFAST_FUNCTION_PROTOTYPE)
+
+// Initalize function pointer to point to the stub function.  Called from setNull().
+#define OPENSIM_INITIALIZE_SDFAST_FUNCTION_POINTER(name, returntype, args) \
+	_##name = (FUNC_##name)SDFAST_STUB_##name;
+
+// Link function pointer to function in library.  Called from linkToModelLibrary().
+#define OPENSIM_LINK_SDFAST_FUNCTION_POINTER(name, returntype, args) \
+	_##name = (FUNC_##name)GetProcAddress(modelLibrary, #name); \
+	if(!_##name) { throw Exception("SdfastEngine.linkToModelLibrary: ERROR- did not find function "#name" in model library "+_modelLibraryName,__FILE__,__LINE__); }
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -77,7 +87,8 @@ void setJointConstraintFunctions(CoordinateSet *aCoordinateSet);
  * Default constructor.
  */
 SdfastEngine::SdfastEngine() :
-	AbstractDynamicsEngine()
+	AbstractDynamicsEngine(),
+	_modelLibraryName(_modelLibraryNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -89,7 +100,8 @@ SdfastEngine::SdfastEngine() :
  * Constructor from an XML Document
  */
 SdfastEngine::SdfastEngine(const string &aFileName) :
-	AbstractDynamicsEngine(aFileName)
+	AbstractDynamicsEngine(aFileName),
+	_modelLibraryName(_modelLibraryNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -116,7 +128,8 @@ SdfastEngine::~SdfastEngine()
  * Copy constructor.
  */
 SdfastEngine::SdfastEngine(const SdfastEngine& aEngine) :
-   AbstractDynamicsEngine(aEngine)
+   AbstractDynamicsEngine(aEngine),
+	_modelLibraryName(_modelLibraryNameProp.getValueStr())
 {
 	// Should the copy constructor ever be called???
 	setNull();
@@ -148,14 +161,16 @@ Object* SdfastEngine::copy() const
  */
 void SdfastEngine::init(AbstractModel *aModel)
 {
-	sdinit();
+	_sdinit();
 
 	// SYSTEM INFORMATION
 	constructSystemVariables();
 
-	init_sdm();
-	setCoordinateInitialValues(getCoordinateSet());
-	setJointConstraintFunctions(getCoordinateSet());
+	_init_sdm();
+	if(_setCoordinateInitialValues(getCoordinateSet()) < 0)
+		throw Exception("SdfastEngine.init: ERR- setCoordinateInitialValues failed",__FILE__,__LINE__);
+	if(_setJointConstraintFunctions(getCoordinateSet()) < 0)
+		throw Exception("SdfastEngine.init: ERR- setCoordinateInitialValues failed",__FILE__,__LINE__);
 	initializeState();
 	prescribe();
 
@@ -200,7 +215,7 @@ void SdfastEngine::constructSystemVariables()
 {
 	// GET SYSTEM INFORMATION.
 	int sysinfo[50];
-	sdinfo(sysinfo);
+	_sdinfo(sysinfo);
 
 	// ASSIGN
 	_numBodies = sysinfo[1] + 1; // ground counts as a body because it's in _bodySet
@@ -266,12 +281,36 @@ void SdfastEngine::setNull()
 	setType("SdfastEngine");
 
 	_groundBody = NULL;
+	_modelLibraryName = "";
 	_numQs = 0;
 	_numUs = 0;
 	_numBodies = 0;
 	_numJoints = 0;
 	_y = NULL;
 	_dy = NULL;
+
+	OPENSIM_FOR_ALL_SDFAST_FUNCTIONS(OPENSIM_INITIALIZE_SDFAST_FUNCTION_POINTER);
+}
+//_____________________________________________________________________________
+/**
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aModel model containing this SdfastEngine.
+ */
+void SdfastEngine::linkToModelLibrary()
+{
+	if(_modelLibraryName == "")
+		throw Exception("SdfastEngine.linkToModelLibrary: ERROR- Need to specify a model library name",__FILE__,__LINE__);
+
+	std::cout << "Linking SdfastEngine to model library " << _modelLibraryName << std::endl;
+
+	// Hook up pointers
+	OPENSIM_PORTABLE_HINSTANCE modelLibrary = LoadOpenSimLibrary(_modelLibraryName.c_str(), true);
+	if(modelLibrary==NULL)
+		throw Exception("SdfastEngine.linkToModelLibrary: ERROR- Model library "+_modelLibraryName+" could not be loaded",__FILE__,__LINE__);
+
+	OPENSIM_FOR_ALL_SDFAST_FUNCTIONS(OPENSIM_LINK_SDFAST_FUNCTION_POINTER);
 }
 
 //_____________________________________________________________________________
@@ -283,6 +322,8 @@ void SdfastEngine::setNull()
  */
 void SdfastEngine::setup(AbstractModel* aModel)
 {
+	linkToModelLibrary();
+
 	// Base class
 	AbstractDynamicsEngine::setup(aModel);
 
@@ -322,6 +363,9 @@ SdfastEngine& SdfastEngine::operator=(const SdfastEngine &aEngine)
  */
 void SdfastEngine::setupProperties()
 {
+	_modelLibraryNameProp.setComment("Name of the sdfast model library to load.");
+	_modelLibraryNameProp.setName("model_library");
+	_propertySet.append(&_modelLibraryNameProp);
 }
 
 //_____________________________________________________________________________
@@ -498,7 +542,7 @@ void SdfastEngine::setConfiguration(const double aY[])
 	int nu = getNumSpeeds();
 	int nqnu = nq + nu;
 	memcpy(_y,aY,nqnu*sizeof(double));
-	sdstate(getModel()->getTime(),_y,&_y[nq]);
+	_sdstate(getModel()->getTime(),_y,&_y[nq]);
 
 	// TODO: use Observer mechanism
 	int i;
@@ -536,7 +580,7 @@ void SdfastEngine::setConfiguration(const double aQ[],const double aU[])
 	int nu = getNumSpeeds();
 	memcpy(_y,aQ,nq*sizeof(double));
 	memcpy(&_y[nq],aU,nu*sizeof(double));
-	sdstate(_model->getTime(),_y,&_y[nq]);
+	_sdstate(_model->getTime(),_y,&_y[nq]);
 
 	// TODO: use Observer mechanism
 	int i;
@@ -696,9 +740,9 @@ void SdfastEngine::prescribe()
 		// you don't know if a question mark was used in the SD/FAST
 		// input file. So only try to set its value if the desired value
 		// is different than the current one.
-		sdgetpres(coord->getJointIndex(),coord->getAxisIndex(),&pres);
+		_sdgetpres(coord->getJointIndex(),coord->getAxisIndex(),&pres);
 		if(desiredValue!=pres)
-			sdpres(coord->getJointIndex(),coord->getAxisIndex(),desiredValue);
+			_sdpres(coord->getJointIndex(),coord->getAxisIndex(),desiredValue);
 		//if (check_for_sderror("SET_PRESCRIBED_MOTION") == 19)
 			//fprintf(stderr,"Unable to change prescribed state of %s\n", coord->getName());
 	}
@@ -723,7 +767,7 @@ void SdfastEngine::assemble()
          lock[i] = 0;
    }
 
-   sdassemble(_model->getTime(), _y, lock, ASSEMBLY_TOLERANCE, 500, &fcnt, &err);
+   _sdassemble(_model->getTime(), _y, lock, ASSEMBLY_TOLERANCE, 500, &fcnt, &err);
    if (err) {
       cerr << "Assembly failed, err = " << err << endl;
       cerr << "Closest solution:" << endl;
@@ -732,7 +776,7 @@ void SdfastEngine::assemble()
 		}
    }
 
-   sdinitvel(_model->getTime(), _y, lock, ASSEMBLY_TOLERANCE, 500, &fcnt, &err);
+   _sdinitvel(_model->getTime(), _y, lock, ASSEMBLY_TOLERANCE, 500, &fcnt, &err);
    if (err){
       cerr << "Velocity analysis failed." << endl;
       cerr << "Check that prescribed gencoord velocities are not being set to new values." << endl;
@@ -755,8 +799,8 @@ void SdfastEngine::assemble()
 bool SdfastEngine::setGravity(double aGrav[3])
 {
 	AbstractDynamicsEngine::setGravity(aGrav);
-	sdgrav(aGrav);
-	sdinit(); // it is imporant to call this after sdgrav
+	_sdgrav(aGrav);
+	_sdinit(); // it is imporant to call this after sdgrav
 	return true;
 }
 
@@ -847,12 +891,12 @@ bool SdfastEngine::adjustJointVectorsForNewMassCenter(SdfastBody* aBody)
 	aBody->getMassCenter(newMassCenter);
 	SdfastJoint *btjJoint = getInboardTreeJoint(aBody);
 	if(btjJoint!=NULL) {
-		sdgetbtj(btjJoint->getSdfastIndex(),btj);
+		_sdgetbtj(btjJoint->getSdfastIndex(),btj);
 		cout<<"Joint "<<btjJoint->getName()<<": origBTJ="<<btj[0]<<","<<btj[1]<<","<<btj[2];
 		btjJoint->getLocationInChild(jointLocation);
 		Mtx::Subtract(1,3,jointLocation,newMassCenter,btj);
-		sdbtj(btjJoint->getSdfastIndex(),btj);
-		sdgetbtj(btjJoint->getSdfastIndex(),btj);
+		_sdbtj(btjJoint->getSdfastIndex(),btj);
+		_sdgetbtj(btjJoint->getSdfastIndex(),btj);
 		cout<<"  scaledBTJ = "<<btj[0]<<","<<btj[1]<<","<<btj[2]<<endl;
 	}
 
@@ -861,16 +905,16 @@ bool SdfastEngine::adjustJointVectorsForNewMassCenter(SdfastBody* aBody)
 		if(aBody != _jointSet.get(i)->getParentBody()) continue;
 		double itj[3];
 		SdfastJoint *itjJoint = (SdfastJoint*)_jointSet.get(i);
-		sdgetitj(itjJoint->getSdfastIndex(),itj);
+		_sdgetitj(itjJoint->getSdfastIndex(),itj);
 		cout<<"Joint "<<itjJoint->getName()<<": origITJ="<<itj[0]<<","<<itj[1]<<","<<itj[2];
 		itjJoint->getLocationInParent(jointLocation);
 		Mtx::Subtract(1,3,jointLocation,newMassCenter,itj);
-		sditj(itjJoint->getSdfastIndex(),itj);
-		sdgetitj(itjJoint->getSdfastIndex(),itj);
+		_sditj(itjJoint->getSdfastIndex(),itj);
+		_sdgetitj(itjJoint->getSdfastIndex(),itj);
 		cout<<"  scaledITJ = "<<itj[0]<<","<<itj[1]<<","<<itj[2]<<endl;
 	}
 
-	sdinit();
+	_sdinit();
 
 #if 0
 	// Check for SD/FAST errors. If there are any, then a joint
@@ -952,7 +996,7 @@ void SdfastEngine::getPosition(const AbstractBody &aBody, const double aPoint[3]
 	if (b) {
 		double sdpt[3];
 		b->transformToSdfastFrame(aPoint, sdpt);
-		sdpos(b->getSdfastIndex(), sdpt, rPos);
+		_sdpos(b->getSdfastIndex(), sdpt, rPos);
 	}
 }
 
@@ -976,7 +1020,7 @@ void SdfastEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3]
 	if (b) {
 		double sdpt[3];
 		b->transformToSdfastFrame(aPoint, sdpt);
-		sdvel(b->getSdfastIndex(), sdpt, rVel);
+		_sdvel(b->getSdfastIndex(), sdpt, rVel);
 	}
 }
 
@@ -1001,7 +1045,7 @@ void SdfastEngine::getAcceleration(const AbstractBody &aBody, const double aPoin
 	if (b) {
 		double sdpt[3];
 		b->transformToSdfastFrame(aPoint, sdpt);
-		sdacc(b->getSdfastIndex(), sdpt, rAcc);
+		_sdacc(b->getSdfastIndex(), sdpt, rAcc);
 	}
 }
 
@@ -1017,7 +1061,7 @@ void SdfastEngine::getDirectionCosines(const AbstractBody &aBody, double rDirCos
 	const SdfastBody* b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
-		sdorient(b->getSdfastIndex(), rDirCos);
+		_sdorient(b->getSdfastIndex(), rDirCos);
 }
 
 //_____________________________________________________________________________
@@ -1038,7 +1082,7 @@ void SdfastEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirCo
 	{
 		double dirCos[3][3];
 
-		sdorient(b->getSdfastIndex(), dirCos);
+		_sdorient(b->getSdfastIndex(), dirCos);
 
 		// Copy the direction cosines to the return vector.
 		memcpy(rDirCos, &dirCos[0][0], 9 * sizeof(double));
@@ -1058,8 +1102,8 @@ void SdfastEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[
 
 	if (b)
 	{
-		sdangvel(b->getSdfastIndex(), rAngVel);
-		sdtrans(b->getSdfastIndex(), rAngVel, getGroundBodyIndex(), rAngVel);
+		_sdangvel(b->getSdfastIndex(), rAngVel);
+		_sdtrans(b->getSdfastIndex(), rAngVel, getGroundBodyIndex(), rAngVel);
 	}
 }
 
@@ -1075,7 +1119,7 @@ void SdfastEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
-		sdangvel(b->getSdfastIndex(), rAngVel);
+		_sdangvel(b->getSdfastIndex(), rAngVel);
 }
 
 //_____________________________________________________________________________
@@ -1092,8 +1136,8 @@ void SdfastEngine::getAngularAcceleration(const AbstractBody &aBody, double rAng
 
 	if (b)
 	{
-		sdangacc(b->getSdfastIndex(), rAngAcc);
-		sdtrans(b->getSdfastIndex(), rAngAcc, getGroundBodyIndex(), rAngAcc);
+		_sdangacc(b->getSdfastIndex(), rAngAcc);
+		_sdtrans(b->getSdfastIndex(), rAngAcc, getGroundBodyIndex(), rAngAcc);
 	}
 }
 
@@ -1109,7 +1153,7 @@ void SdfastEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, do
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
-		sdangacc(b->getSdfastIndex(), rAngAcc);
+		_sdangacc(b->getSdfastIndex(), rAngAcc);
 }
 
 //_____________________________________________________________________________
@@ -1132,10 +1176,10 @@ Transform SdfastEngine::getTransform(const AbstractBody &aBody)
 		sdb->transformToSdfastFrame(origin, opos1);
 
 		// 2. Convert the origin of aBody into the inertial frame.
-		sdpos(sdb->getSdfastIndex(), opos1, opos2);
+		_sdpos(sdb->getSdfastIndex(), opos1, opos2);
 
 		// 3. Get the orientation of aBody in the inertial frame.
-		sdorient(sdb->getSdfastIndex(), dirCos);
+		_sdorient(sdb->getSdfastIndex(), dirCos);
 
 		// 4. Fill in the transform with the translation and rotation.
 		t.setPosition(opos2);
@@ -1170,8 +1214,8 @@ void SdfastEngine::applyForce(const AbstractBody &aBody, const double aPoint[3],
 	}
 
 	double force[3];
-	sdtrans(GROUND, f, sdBody->getSdfastIndex(), force);
-	sdpointf(sdBody->getSdfastIndex(), p, force);
+	_sdtrans(GROUND, f, sdBody->getSdfastIndex(), force);
+	_sdpointf(sdBody->getSdfastIndex(), p, force);
 }
 
 //_____________________________________________________________________________
@@ -1239,7 +1283,7 @@ void SdfastEngine::applyForceBodyLocal(const AbstractBody &aBody, const double a
 			f[i] = aForce[i];
 		}
 
-		sdpointf(sdBody->getSdfastIndex(), p, f);
+		_sdpointf(sdBody->getSdfastIndex(), p, f);
 	}
 }
 
@@ -1311,8 +1355,8 @@ void SdfastEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3
 		for (i = 0 ; i < 3; i++)
 			torque[i] = aTorque[i];
 
-		sdtrans(getGroundBodyIndex(), torque, b->getSdfastIndex(), torque);
-		sdbodyt(b->getSdfastIndex(), torque);
+		_sdtrans(getGroundBodyIndex(), torque, b->getSdfastIndex(), torque);
+		_sdbodyt(b->getSdfastIndex(), torque);
 	}
 }
 
@@ -1380,7 +1424,7 @@ void SdfastEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double 
 		for (i = 0; i < 3; i++)
 			torque[i] = aTorque[i];
 
-		sdbodyt(b->getSdfastIndex(), torque);
+		_sdbodyt(b->getSdfastIndex(), torque);
 	}
 }
 
@@ -1442,7 +1486,7 @@ void SdfastEngine::applyGeneralizedForce(const AbstractCoordinate &aU, double aF
 	const SdfastCoordinate *c = dynamic_cast<const SdfastCoordinate*>(&aU);
 
 	if (c)
-		sdhinget(c->getJointIndex(), c->getAxisIndex(), aF);
+		_sdhinget(c->getJointIndex(), c->getAxisIndex(), aF);
 }
 
 //_____________________________________________________________________________
@@ -1496,7 +1540,7 @@ double SdfastEngine::getNetAppliedGeneralizedForce(const AbstractCoordinate &aU)
 	{
 		double f;
 
-		sdgetht(c->getJointIndex(), c->getAxisIndex(), &f);
+		_sdgetht(c->getJointIndex(), c->getAxisIndex(), &f);
 
 		return f;
 	}
@@ -1519,7 +1563,7 @@ double SdfastEngine::getNetAppliedGeneralizedForce(const AbstractCoordinate &aU)
  */
 void SdfastEngine::computeGeneralizedForces(double aDUDT[], double rF[]) const
 {
-	sdcomptrq(aDUDT, rF);
+	_sdcomptrq(aDUDT, rF);
 }
 
 //_____________________________________________________________________________
@@ -1538,7 +1582,7 @@ void SdfastEngine::computeGeneralizedForces(double aDUDT[], double rF[]) const
  */
 void SdfastEngine::computeReactions(double rForces[][3], double rTorques[][3]) const
 {
-	sdreac(rForces, rTorques);
+	_sdreac(rForces, rTorques);
 }
 
 
@@ -1559,7 +1603,7 @@ void SdfastEngine::computeReactions(double rForces[][3], double rTorques[][3]) c
 void SdfastEngine::
 computeConstrainedCoordinates(double *y) const
 {
-	compute_constrained_coords(y);
+	_compute_constrained_coords(y);
 }
 
 
@@ -1574,7 +1618,7 @@ computeConstrainedCoordinates(double *y) const
  */
 void SdfastEngine::formMassMatrix(double *rI)
 {
-	sdmassmat(rI);
+	_sdmassmat(rI);
 }
 
 //_____________________________________________________________________________
@@ -1594,8 +1638,8 @@ void SdfastEngine::formEulerTransform(const AbstractBody &aBody, double *rE) con
 		// GET ORIENTATION OF aBody
 		double ang[3], dc[3][3];
 
-		sdorient(b->getSdfastIndex(), dc);	
-		sddc2ang(dc, &ang[0], &ang[1], &ang[2]);
+		_sdorient(b->getSdfastIndex(), dc);	
+		_sddc2ang(dc, &ang[0], &ang[1], &ang[2]);
 
 		// ROW 1
 		*rE =  cos(ang[2]) / cos(ang[1]);
@@ -1666,7 +1710,7 @@ void SdfastEngine::formJacobianEuler(const AbstractBody &aBody, double *rJE, con
  */
 void SdfastEngine::computeDerivatives(double *dqdt,double *dudt)
 {
-	sdderiv(dqdt,dudt);
+	_sdderiv(dqdt,dudt);
 	int nq = getNumCoordinates();
 	int nu = getNumSpeeds();
 	memcpy(_dy,dqdt,nq*sizeof(double));
@@ -1699,7 +1743,7 @@ void SdfastEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3]
 	const SdfastBody* b2 = dynamic_cast<const SdfastBody*>(&aBodyTo);
 
 	if(b1 && b2)
-		sdtrans(b1->getSdfastIndex(),(double*)aVec,b2->getSdfastIndex(),rVec);
+		_sdtrans(b1->getSdfastIndex(),(double*)aVec,b2->getSdfastIndex(),rVec);
 }
 
 //_____________________________________________________________________________
@@ -1729,7 +1773,7 @@ void SdfastEngine::transform(const AbstractBody &aBodyFrom, const Array<double>&
 		aVec2[0] = aVec[0];
 		aVec2[1] = aVec[1];
 		aVec2[2] = aVec[2];
-		sdtrans(b1->getSdfastIndex(), aVec2, b2->getSdfastIndex(), rVec2);
+		_sdtrans(b1->getSdfastIndex(), aVec2, b2->getSdfastIndex(), rVec2);
 		rVec[0] = rVec2[0];
 		rVec[1] = rVec2[1];
 		rVec[2] = rVec2[2];
@@ -1766,17 +1810,17 @@ void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const double
 		b1->transformToSdfastFrame(aPos, sdpt);
 
 		// 2. Convert the point into the ground frame.
-		sdpos(b1->getSdfastIndex(), sdpt, sdpt2);
+		_sdpos(b1->getSdfastIndex(), sdpt, sdpt2);
 
 		// 3. Subtract the coordinates of aBodyTo's origin. This
 		// creates a vector from the origin of aBodyTo to the point,
 		// expressed in the ground frame.
-		sdpos(b2->getSdfastIndex(), origin, rPos);
+		_sdpos(b2->getSdfastIndex(), origin, rPos);
 		for (i = 0; i < 3; i++)
 			sdpt2[i] -= rPos[i];
 
 		// 4. Get the orientation of aBodyTo in the ground frame.
-		sdorient(b2->getSdfastIndex(), dirCos);
+		_sdorient(b2->getSdfastIndex(), dirCos);
 
 		// 5. Convert the point into the SD/FAST frame of aBodyTo.
 		Mtx::Multiply(1, 3, 3, sdpt2, &dirCos[0][0], sdpt);
@@ -1840,7 +1884,7 @@ void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const double
 		double sdPos[3];
 
 		from->transformToSdfastFrame(pos, sdPos);
-		sdpos(from->getSdfastIndex(), sdPos, rPos);
+		_sdpos(from->getSdfastIndex(), sdPos, rPos);
 	}
 }
 
@@ -1888,8 +1932,8 @@ double SdfastEngine::calcDistance(const AbstractBody& aBody1, const Array<double
 		b1->transformToSdfastFrame(aPoint1, sdpt1);
 		b2->transformToSdfastFrame(aPoint2, sdpt2);
 
-		sdpos(b1->getSdfastIndex(), sdpt1, pos1);
-		sdpos(b2->getSdfastIndex(), sdpt2, pos2);
+		_sdpos(b1->getSdfastIndex(), sdpt1, pos1);
+		_sdpos(b2->getSdfastIndex(), sdpt2, pos2);
 
 		return sqrt((pos1[0] - pos2[0])*(pos1[0] - pos2[0]) + (pos1[1] - pos2[1])*(pos1[1] - pos2[1]) +
 			         (pos1[2] - pos2[2])*(pos1[2] - pos2[2]));
@@ -1920,8 +1964,8 @@ double SdfastEngine::calcDistance(const AbstractBody& aBody1, const double aPoin
 		b1->transformToSdfastFrame(aPoint1, sdpt1);
 		b2->transformToSdfastFrame(aPoint2, sdpt2);
 
-		sdpos(b1->getSdfastIndex(), sdpt1, pos1);
-		sdpos(b2->getSdfastIndex(), sdpt2, pos2);
+		_sdpos(b1->getSdfastIndex(), sdpt1, pos1);
+		_sdpos(b2->getSdfastIndex(), sdpt2, pos2);
 
 		return sqrt((pos1[0] - pos2[0])*(pos1[0] - pos2[0]) + (pos1[1] - pos2[1])*(pos1[1] - pos2[1]) +
 			         (pos1[2] - pos2[2])*(pos1[2] - pos2[2]));
@@ -1940,7 +1984,7 @@ double SdfastEngine::calcDistance(const AbstractBody& aBody1, const double aPoin
  */
 void SdfastEngine::convertQuaternionsToAngles(double *aQ, double *rQAng) const
 {
-	sdst2ang(aQ,rQAng);
+	_sdst2ang(aQ,rQAng);
 }
 
 //_____________________________________________________________________________
@@ -2027,7 +2071,7 @@ void SdfastEngine::convertQuaternionsToAngles(Storage *rQStore) const
  */
 void SdfastEngine::convertAnglesToQuaternions(double *aQAng, double *rQ) const
 {
-	sdang2st(aQAng,rQ);
+	_sdang2st(aQAng,rQ);
 }
 
 //_____________________________________________________________________________
@@ -2116,7 +2160,7 @@ void SdfastEngine::convertAnglesToQuaternions(Storage *rQStore) const
  */
 void SdfastEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
 {
-	sdang2dc(aE1,aE2,aE3,rDirCos);
+	_sdang2dc(aE1,aE2,aE3,rDirCos);
 }
 
 //_____________________________________________________________________________
@@ -2133,7 +2177,7 @@ void SdfastEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doubl
 
 	double dirCos[3][3];
 
-	sdang2dc(aE1,aE2,aE3,dirCos);
+	_sdang2dc(aE1,aE2,aE3,dirCos);
 
 	// Assign the returned values to the return vector.
 	memcpy(rDirCos,&dirCos[0][0],9*sizeof(double));
@@ -2149,7 +2193,7 @@ void SdfastEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doubl
  */
 void SdfastEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const
 {
-	sddc2ang(aDirCos,rE1,rE2,rE3);
+	_sddc2ang(aDirCos,rE1,rE2,rE3);
 }
 
 //_____________________________________________________________________________
@@ -2170,7 +2214,7 @@ void SdfastEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1,
 	// Copy the input vector to the local one.
 	memcpy(&dirCos[0][0], aDirCos, 9 * sizeof(double));
 
-	sddc2ang(dirCos, rE1, rE2, rE3);
+	_sddc2ang(dirCos, rE1, rE2, rE3);
 }
 
 //_____________________________________________________________________________
@@ -2184,7 +2228,7 @@ void SdfastEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1,
  */
 void SdfastEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
 {
-	sddc2quat(aDirCos,rQ1,rQ2,rQ3,rQ4);
+	_sddc2quat(aDirCos,rQ1,rQ2,rQ3,rQ4);
 }
 
 //_____________________________________________________________________________
@@ -2205,7 +2249,7 @@ void SdfastEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double 
 	// Copy the input vector to the local one.
 	memcpy(&dirCos[0][0],aDirCos,9*sizeof(double));
 
-	sddc2quat(dirCos,rQ1,rQ2,rQ3,rQ4);
+	_sddc2quat(dirCos,rQ1,rQ2,rQ3,rQ4);
 }
 
 //_____________________________________________________________________________
@@ -2219,7 +2263,7 @@ void SdfastEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double 
  */
 void SdfastEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const
 {
-	sdquat2dc(aQ1,aQ2,aQ3,aQ4,rDirCos);
+	_sdquat2dc(aQ1,aQ2,aQ3,aQ4,rDirCos);
 }
 
 //_____________________________________________________________________________
@@ -2237,7 +2281,7 @@ void SdfastEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, 
 
 	double dirCos[3][3];
 
-	sdquat2dc(aQ1,aQ2,aQ3,aQ4,dirCos);
+	_sdquat2dc(aQ1,aQ2,aQ3,aQ4,dirCos);
 
 	// Assign the returned values to the return vector.
 	memcpy(rDirCos,&dirCos[0][0],9*sizeof(double));
