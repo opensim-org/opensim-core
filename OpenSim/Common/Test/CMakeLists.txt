@@ -12,5 +12,3 @@ ADD_TEST(testRootSolver ${TEST_PATH}/testRootSolver)
 ADD_EXECUTABLE(testSerialization testSerialization.cpp rdSerializableObject.cpp rdSerializableObject2.cpp)
 ADD_TEST(testSerialization ${TEST_PATH}/testSerialization)
 
-ADD_EXECUTABLE(testDisplay testDisplay1.cpp)
-ADD_TEST(testDisplay ${TEST_PATH}/testDisplay)

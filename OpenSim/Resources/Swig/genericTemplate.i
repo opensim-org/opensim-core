@@ -27,7 +27,7 @@
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
-#include <OpenSim/Simulation/Model/AbstractModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
@@ -91,7 +91,7 @@
 
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
-#include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+#include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 #include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
@@ -285,7 +285,7 @@ using namespace OpenSim;
 %template(SetActuators) OpenSim::Set<OpenSim::AbstractActuator>;
 %include <OpenSim/Simulation/Model/ActuatorSet.h>
 %include <OpenSim/Simulation/Model/ContactForceSet.h>
-%include <OpenSim/Simulation/Model/AbstractModel.h>
+%include <OpenSim/Simulation/Model/Model.h>
 
 %include <OpenSim/Simulation/Control/Control.h>
 %template(SetControls) OpenSim::Set<OpenSim::Control>;
@@ -371,7 +371,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
 
 %include <OpenSim/Simulation/Model/MusclePoint.h>
-%include <OpenSim/Simulation/Wrap/MuscleViaPoint.h>
+%include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 %template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;
 %template(ArrayMusclePoint) OpenSim::Array<OpenSim::MusclePoint*>;
 %include <OpenSim/Simulation/Model/MusclePointSet.h>
