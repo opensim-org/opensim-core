@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(OPENSIM_INCLUDE_PATH);$(OPENSIM_INCLUDE_PATH)/Vendors/xerces-c-src_2_7_0/src;$(OPENSIM_INCLUDE_PATH)/OpenSim/DynamicsEngines/SdfastEngine/SIMMPipeline"
-				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS,OSIMSDFASTENGINE_EXPORTS"
+				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -74,7 +74,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="$(OPENSIM_INCLUDE_PATH);$(OPENSIM_INCLUDE_PATH)/Vendors/xerces-c-src_2_7_0/src;$(OPENSIM_INCLUDE_PATH)/OpenSim/DynamicsEngines/SdfastEngine/SIMMPipeline"
-				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,OSIMSDFASTENGINE_EXPORTS"
+				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"

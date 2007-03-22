@@ -12,11 +12,7 @@ FAR Supplement.  Symbolic Dynamics, Inc., Mountain View, CA 94041
 #include <math.h>
 #include <stdio.h>
 
-#ifdef SDFAST_DLL
 #define SDFAST_DLL_API __declspec(dllexport)
-#else
-#define SDFAST_DLL_API
-#endif
 
 typedef struct {
     int lasterr_,lastrou_;
