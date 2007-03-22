@@ -42,3 +42,7 @@ EXPORTS
 	sdpresacc
 	sdassemble
 	sdinitvel
+	sddc2ang
+	sddc2quat
+	sdang2dc
+	sdquat2dc

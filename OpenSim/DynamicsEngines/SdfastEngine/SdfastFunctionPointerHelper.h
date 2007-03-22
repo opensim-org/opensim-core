@@ -56,7 +56,6 @@
 	macro(sdprespos, void, (int aJoint, int aAxis, double aPrval)); \
 	macro(sdpresvel, void, (int aJoint, int aAxis, double aPrval)); \
 	macro(sdpresacc, void, (int aJoint, int aAxis, double aPrval)); \
-	macro(sdvcopy, void, (double aVec[], double rVec[])); \
 	macro(init_sdm, void, ()); \
 	macro(setJointConstraintFunctions, int, (CoordinateSet *aCoordinateSet)); \
 	macro(setCoordinateInitialValues, int, (CoordinateSet *aCoordinateSet)); \
