@@ -19,10 +19,19 @@
 *******************************************************************************/
 #include "sdfast.h"
 #include <cassert>
+#include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
+#include <iostream>
 
-using namespace std;
+#define STRLEN(p) (strlen(p)+1)
 
 #define SDFAST_DLL_API __declspec(dllexport)
+
+using namespace OpenSim;
+using namespace std;
+
+// This is a back-pointer to the engine that has linked to these sdfast functions.  It can be used for callbacks.
+SdfastEngine *engine = NULL;
 
 extern "C" {
 #include "universal.h"
@@ -31,7 +40,6 @@ extern "C" {
 void sdstab(double velin,double posin);
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-MotionData* kinetics_data = NULL;
 dpModelStruct sdm;
 
 /**************** GLOBAL VARIABLES (used in only a few files) *****************/
@@ -40,30 +48,17 @@ dpModelStruct sdm;
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
+SDFAST_DLL_API void setSdfastEngineInstance(SdfastEngine *aEngine)
+{
+	//std::cout << "Setting sdfast engine to " << aEngine << std::endl;
+	engine = aEngine;
+}	
 
-
-/* SDUFORCE: this function is used to apply forces to the body segments.
- * The first section of code determines the current frame for the external
- * force data, if any exist. You may want to change this code, depending
- * on what type of external force[s] you want to apply, and how many
- * frames of data there are. Sduforce() then calls the functions to
- * apply the muscles forces, the restraint torques, and the external
- * forces, respectively.  It also calls the functions to apply spring
- * forces for spring-based contact.
- */
 
 int sduforce(double t, double q[], double u[])
 {
+	// THIS IS NOT CALLED IN OUR PIPELINE
 	assert(false);
-	// THIS IS NOT CALLED ANYMORE
-#if 0
-	if (SdfastEngine::_Instance)
-		SdfastEngine::_Instance->sduforce();
-
-	// TODOAUG: restraint torques should eventually be implemented as actuators or contacts
-	apply_joint_restraint_torques(q, u);
-#endif
-
    return 1;
 }
 
@@ -72,7 +67,7 @@ int sdumotion(double t, double q[], double u[])
 {
    set_fixed_gencoords();
 
-	set_prescribed_gencoords(t, q, u, kinetics_data);
+	set_prescribed_gencoords(t, q, u, 0);
 
    return 1;
 }
@@ -247,17 +242,6 @@ void sduconsfrc(double t, double q[], double u[], double mults[])
 }
 
 /************* Initialization Routines **************/
-
-/* Set on/off state of prescribed motion for all Qs based on their types */
-void init_motion(void)
-{
-   set_prescribed_motion(dpUnconstrainedQ, 0);
-   set_prescribed_motion(dpConstrainedQ, 0);
-	set_prescribed_motion(dpPrescribedQ, 1);
-   set_prescribed_motion(dpFixedQ, 1);
-
-   check_for_sderror("INIT_MOTION");
-}
 
 
 /* SET_FIXED_GENCOORDS: This routine prescribes the position, velocity, and
@@ -615,31 +599,6 @@ SDFAST_DLL_API void compute_constrained_coords(double *y) {
 			y[i+sdm.nq] = interpolate_spline(q_ind_value,sdm.q[i].constraint_func,first,u_ind_value,0.0);
 	    }
    }
-}
-
-
-/* SET_PRESCRIBED_MOTION: This routine turns on/off prescribed motion for all 
- * the Qs of the specified type.
- */
-void set_prescribed_motion(dpQType type, int value)
-{
-   int i, pres;
-
-	/* use NU instead of NQ: don't want to try to set 4th quaternion axes */
-	for (i = 0; i < sdm.nu; i++)
-	{
-      if (sdm.q[i].type == type)
-      {
-         /* Get the current state (prescribed/unprescribed) of the Q, and try to
-          * change it only if it needs changing.
-          */
-         sdgetpres(sdm.q[i].joint, sdm.q[i].axis, &pres);
-         if (value != pres)
-            sdpres(sdm.q[i].joint, sdm.q[i].axis, value);
-         if (check_for_sderror("SET_PRESCRIBED_MOTION") == 19)
-            fprintf(stderr,"Unable to change prescribed state of %s\n", sdm.q[i].name);
-      }
-	}
 }
 
 /* Display any posted SD/FAST error messages with the name of the function

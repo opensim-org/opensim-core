@@ -60,4 +60,5 @@
 	macro(init_sdm, void, ()); \
 	macro(setJointConstraintFunctions, int, (CoordinateSet *aCoordinateSet)); \
 	macro(setCoordinateInitialValues, int, (CoordinateSet *aCoordinateSet)); \
-	macro(compute_constrained_coords, void, (double *y));
+	macro(compute_constrained_coords, void, (double *y)); \
+	macro(setSdfastEngineInstance, void, (SdfastEngine *aEngine));

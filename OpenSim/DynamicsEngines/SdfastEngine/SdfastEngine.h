@@ -88,14 +88,6 @@ class OSIMSDFASTENGINE_API SdfastEngine  : public AbstractDynamicsEngine
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	/** A pointer to the last constructed SdfastEngine object.  This has been
-	introduced to fulfill the SDFast mechanism of applying user-supplied
-	forces through sduforce().  SDFast somtines calls sduForce(), and so
-	it is necessary to redirect this call through a static function.  See
-	SdfastEngine::sduforce(). */
-	static SdfastEngine *_Instance;
-
 protected:
 	/** Body number for ground. */
 	static const int GROUND;

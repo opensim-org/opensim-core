@@ -36,6 +36,7 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/DebugUtilities.h>
 #include "SdfastEngine.h"
 #include "sdufuncs.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -56,7 +57,6 @@ using namespace std;
 using namespace OpenSim;
 
 const int SdfastEngine::GROUND = -1;
-SdfastEngine* SdfastEngine::_Instance = NULL;
 
 const double SdfastEngine::ASSEMBLY_TOLERANCE = 1e-7;
 static char simmGroundName[] = "ground";
@@ -190,9 +190,6 @@ void SdfastEngine::init(AbstractModel *aModel)
 	}
 
 	if(_y) setConfiguration(_y);
-
-	// static instance
-	_Instance = this;
 }
 
 //_____________________________________________________________________________
@@ -311,6 +308,8 @@ void SdfastEngine::linkToModelLibrary()
 		throw Exception("SdfastEngine.linkToModelLibrary: ERROR- Model library "+_modelLibraryName+" could not be loaded",__FILE__,__LINE__);
 
 	OPENSIM_FOR_ALL_SDFAST_FUNCTIONS(OPENSIM_LINK_SDFAST_FUNCTION_POINTER);
+
+	_setSdfastEngineInstance(this);
 }
 
 //_____________________________________________________________________________
@@ -492,11 +491,10 @@ void SdfastEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) c
  */
 void SdfastEngine::sduforce()
 {
+	// Should not be called anymore
+	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
+#if 0
 	cout << "\n\nSdfastEngine::sduforce: ... SdfastEngine has called sduforce()!\n\n";
-	if (_Instance == NULL) {
-		cerr << "\n\nSdfastEngine::sduforce: ERR- no valid SdfastEngine object.\n\n";
-		return;
-	}
 
 	_Instance->getModel()->getActuatorSet()->apply();
 	_Instance->getModel()->getContactSet()->apply();
@@ -506,6 +504,7 @@ void SdfastEngine::sduforce()
 
 	//TODO ever? or are spring forces part of contact forces?
 	//_Instance->applySpringForces();
+#endif
 }
 
 //_____________________________________________________________________________
@@ -518,12 +517,8 @@ void SdfastEngine::sduforce()
  */
 void SdfastEngine::sdumotion()
 {
+	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
 	cout << "\n\nSdfastEngine::sdumotion: ... SdfastEngine has called sdumotion()!\n\n";
-
-	if (_Instance == NULL) {
-		cerr << "\n\nSdfastEngine::sdumotion: ERR- no valid SdfastEngine object.\n\n";
-		return;
-	}
 }
 
 
