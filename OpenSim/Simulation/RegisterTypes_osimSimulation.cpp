@@ -23,9 +23,7 @@
 #include "Model/MarkerSet.h"
 #include "Model/MusclePoint.h"
 #include "Model/MuscleViaPoint.h"
-#include "Model/PolyObject.h"
 #include "Model/SpeedSet.h"
-#include "Model/VisibleMarker.h"
 #include "Control/ControlSet.h"
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
@@ -67,9 +65,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( MarkerSet() );
 	Object::RegisterType( MusclePoint() );
 	Object::RegisterType( MuscleViaPoint() );
-	Object::RegisterType( PolyObject() );
 	Object::RegisterType( SpeedSet() );
-	Object::RegisterType( VisibleMarker() );
 
 	Object::RegisterType( ControlSet() );
 	Object::RegisterType( ControlConstant() );

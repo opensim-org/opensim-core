@@ -112,8 +112,6 @@ public:
 	virtual Object* copy() const = 0;
 	virtual void setup(Model *aModel);
 
-	static AbstractMuscle* safeDownCast(Object* aObject) { return dynamic_cast<AbstractMuscle*>(aObject); }
-
 #ifndef SWIG
 	AbstractMuscle& operator=(const AbstractMuscle &aMuscle);
 #endif
@@ -162,6 +160,7 @@ public:
 	/* Register types to be used when reading an AbstractMuscle object from xml file. */
 	static void registerTypes();
 
+	OPENSIM_DECLARE_DERIVED(AbstractMuscle, AbstractActuator);
 private:
 	void setNull();
 	void setupProperties();

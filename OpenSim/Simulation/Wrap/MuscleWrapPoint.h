@@ -99,6 +99,8 @@ public:
 
 	virtual void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(MuscleWrapPoint, MusclePoint);
+
 private:
 	void setNull();
 	void setupProperties();

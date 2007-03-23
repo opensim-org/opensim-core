@@ -230,6 +230,8 @@ void AbstractMuscle::updateGeometrySize()
 	// just updating
 	bool update = (numberOfSegements!=0);  
 	int newNumberOfSegments=_currentPath.getSize()-1;
+	if (newNumberOfSegments <= 0)
+		return;
 	// Keep track whether any Geometry needs to be created/deleted.
 	bool segmentsChanged = (update && (newNumberOfSegments!= numberOfSegements));
 	// update geom array to have correct number of entries

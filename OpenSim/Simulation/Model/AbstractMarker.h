@@ -90,6 +90,8 @@ public:
 	virtual void updateGeometry() = 0;
 	virtual void peteTest() const { }
 
+	OPENSIM_DECLARE_DERIVED(AbstractMarker, Object);
+
 private:
 	void setNull();
 //=============================================================================

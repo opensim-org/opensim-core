@@ -161,7 +161,11 @@ public:
 	}
 
 	MuscleGroup* enterGroup(const std::string& aName);
-	virtual void setup();
+	virtual void setup()
+#ifdef SWIG
+		throw(OpenSim::Exception)
+#endif
+		;
 	bool builtOK() { return _builtOK; }
 
 protected:

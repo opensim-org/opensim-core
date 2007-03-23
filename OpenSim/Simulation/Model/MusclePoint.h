@@ -119,6 +119,7 @@ public:
 
 	virtual void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(MusclePoint, Object);
 protected:
 
 private:

@@ -131,6 +131,7 @@ public:
 	}
 	virtual void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(Marker, AbstractMarker);
 private:
 	void setNull();
 	void setupProperties();

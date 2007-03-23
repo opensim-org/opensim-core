@@ -88,8 +88,6 @@ public:
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 
-	static WrapEllipsoid* safeDownCast(Object* aObject) { return dynamic_cast<WrapEllipsoid*>(aObject); }
-
 	virtual void scale(Array<double>& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
 
@@ -98,6 +96,7 @@ public:
 
 	virtual void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, AbstractWrapObject);
 protected:
 	void setupProperties();
 

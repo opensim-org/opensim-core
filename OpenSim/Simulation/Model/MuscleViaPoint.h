@@ -94,8 +94,6 @@ public:
 #endif
    void copyData(const MuscleViaPoint &aPoint);
 
-	static MuscleViaPoint* safeDownCast(Object* aObject) { return dynamic_cast<MuscleViaPoint*>(aObject); }
-
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	const std::string& getCoordinateName() const { return _coordinateName; }
@@ -105,6 +103,7 @@ public:
 
 	virtual void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(MuscleViaPoint, MusclePoint);
 private:
 	void setNull();
 	void setupProperties();
