@@ -518,7 +518,6 @@ int SdfastEngine::sdumotion(double t, double q[], double u[])
 		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
 		if(coord->getSdfastType() == SdfastCoordinate::dpFixed || coord->getSdfastType() == SdfastCoordinate::dpPrescribed)
 		{
-			cout << "SdfastEngine::sdumotion: set fixed " << coord->getJointIndex() << ", " << coord->getAxisIndex() << " to " << coord->getInitialValue() << endl;
 			_sdprespos(coord->getJointIndex(), coord->getAxisIndex(), coord->getInitialValue());
 			_sdpresvel(coord->getJointIndex(), coord->getAxisIndex(), 0.0); 
 			_sdpresacc(coord->getJointIndex(), coord->getAxisIndex(), 0.0);

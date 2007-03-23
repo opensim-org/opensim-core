@@ -324,20 +324,28 @@ void SdfastCoordinate::setup(AbstractDynamicsEngine* aEngine)
 
 	_SdfastEngine = dynamic_cast<SdfastEngine*>(aEngine);
 
-	if(_constraintFunction && _constraintIndependentCoordinateName != "") {
+	if(getSdfastType() == dpConstrained) {
+		if(!_constraintFunction)
+			throw Exception("SdfastCoordinate.setup: ERR- Constrained coordinate '"+getName()+"' does not have valid constraint function",
+								 __FILE__,__LINE__);
+
+		if(_constraintNumber < 0)
+			throw Exception("SdfastCoordinate.setup: ERR- Constraineed coordinate '"+getName()+
+					"' does not have a valid constraint number",__FILE__,__LINE__);
+
+		if(_constraintIndependentCoordinateName == "")
+			throw Exception("SdfastCoordinate.setup: ERR- Constrained coordinate '"+getName()+
+								 "' needs to have an independent coordinate set for its constraint function",__FILE__,__LINE__);
+
 		AbstractCoordinate *coord = aEngine->getCoordinateSet()->get(_constraintIndependentCoordinateName);
 		if(!coord) 
 			throw Exception("SdfastCoordinate.setup: ERR- Did not find independent coordinate '"+_constraintIndependentCoordinateName+
 								 "' needed for constraint function in coordinate '"+getName()+"'",__FILE__,__LINE__);
+
 		_constraintIndependentCoordinate = dynamic_cast<SdfastCoordinate*>(coord);
 		if(!_constraintIndependentCoordinate) 
 			throw Exception("SdfastCoordinate.setup: ERR- Independent coordinate '"+_constraintIndependentCoordinateName+
-								 "' referenced by coordinate '"+getName()+"' is not an SdfastCoordinate",__FILE__,__LINE__);
-
-		if(_constraintNumber < 0)
-			throw Exception("SdfastCoordinate.setup: ERR- Coordinate '"+getName()+
-					"' has a constraint function and an independent coordinate for that constraint, but '"+
-					_constraintNumberProp.getName()+"' is not set",__FILE__,__LINE__);
+								 "' referenced by constrained coordinate '"+getName()+"' is not an SdfastCoordinate",__FILE__,__LINE__);
 	}
 
 	// Make sure the range is min to max.
