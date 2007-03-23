@@ -406,9 +406,9 @@ void SdfastEngine::addBody(SdfastBody* aBody)
  *
  * @param aJoint pointer to the joint to add
  */
-void SdfastEngine::addJoint(SdfastJoint* aJoint)
+void SdfastEngine::addJoint(SdfastJoint* aJoint, bool aSetup)
 {
-	aJoint->setup(this);
+	if(aSetup) aJoint->setup(this);
 	aJoint->setSdfastIndex(_jointSet.getSize());
 	_jointSet.append(aJoint);
 }
@@ -419,9 +419,9 @@ void SdfastEngine::addJoint(SdfastJoint* aJoint)
  *
  * @param aCoord pointer to the coordinate to add
  */
-void SdfastEngine::addCoordinate(SdfastCoordinate* aCoord)
+void SdfastEngine::addCoordinate(SdfastCoordinate* aCoord, bool aSetup)
 {
-	aCoord->setup(this);
+	if(aSetup) aCoord->setup(this);
 	aCoord->setSdfastIndex(_coordinateSet.getSize());
 	_coordinateSet.append(aCoord);
 }
@@ -432,9 +432,9 @@ void SdfastEngine::addCoordinate(SdfastCoordinate* aCoord)
  *
  * @param aSpeed pointer to the speed to add
  */
-void SdfastEngine::addSpeed(SdfastSpeed* aSpeed)
+void SdfastEngine::addSpeed(SdfastSpeed* aSpeed, bool aSetup)
 {
-	aSpeed->setup(this);
+	if(aSetup) aSpeed->setup(this);
 	aSpeed->setSdfastIndex(_speedSet.getSize());
 	_speedSet.append(aSpeed);
 }

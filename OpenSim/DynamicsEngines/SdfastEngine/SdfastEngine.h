@@ -144,9 +144,9 @@ public:
    // ADDING COMPONENTS
 	//--------------------------------------------------------------------------
 	void addBody(SdfastBody* aBody);
-	void addJoint(SdfastJoint* aJoint);
-	void addCoordinate(SdfastCoordinate* aCoord);
-	void addSpeed(SdfastSpeed* aSpeed);
+	void addJoint(SdfastJoint* aJoint, bool aSetup=true);
+	void addCoordinate(SdfastCoordinate* aCoord, bool aSetup=true);
+	void addSpeed(SdfastSpeed* aSpeed, bool aSetup=true);
 
 	//--------------------------------------------------------------------------
 	// COORDINATES

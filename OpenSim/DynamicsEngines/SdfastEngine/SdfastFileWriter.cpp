@@ -899,7 +899,7 @@ void SdfastFileWriter::addJointToSimulationModel(JointInfo& aJointInfo)
 
 	// Joint type
 	joint->setSdfastType(getDpJointName(aJointInfo.type, aJointInfo.direction));
-	_simulationEngine->addJoint(joint);
+	_simulationEngine->addJoint(joint, false);
 }
 
 AbstractCoordinate* SdfastFileWriter::addCoordinateToSimulationModel(DofInfo& aDofInfo)
@@ -941,7 +941,11 @@ AbstractCoordinate* SdfastFileWriter::addCoordinateToSimulationModel(DofInfo& aD
 	// the initial_value field needs to be set to. 
 	coord->setInitialValue(aDofInfo.initialValue);
 	coord->setDefaultValue(aDofInfo.modelDof->getValue());
-	_simulationEngine->addCoordinate(coord);
+	// NOTE: Pass false to addCoordinate so it won't call setup() on
+	// SdfastCoordinate... For a constrained coordinate, SdfastCoordinate::setup
+	// would try to get a pointer to the independent coordinate of the constraint function,
+	// and since we haven't added all of the coordinates to the model yet that may fail.
+	_simulationEngine->addCoordinate(coord, false);
 
 	return coord;
 }
@@ -954,7 +958,7 @@ AbstractSpeed* SdfastFileWriter::addSpeedToSimulationModel(const string& aName, 
 	speed->setDefaultValue(aDefaultValue);
 	speed->setCoordinateName(aCoordName);
 
-	_simulationEngine->addSpeed(speed);
+	_simulationEngine->addSpeed(speed, false);
 
 	return speed;
 }
