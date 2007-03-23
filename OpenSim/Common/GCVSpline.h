@@ -177,7 +177,7 @@ public:
 	virtual double
 		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0);
 
-	OpenSim_DERIVED(GCVSpline, Function)
+	OPENSIM_DECLARE_DERIVED(GCVSpline, Function);
 
 //=============================================================================
 };	// END class GCVSpline

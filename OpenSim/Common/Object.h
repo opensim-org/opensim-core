@@ -366,35 +366,44 @@ public:
 	{
 		return _serializeAllDefaults;
 	}
+public: 
+	static bool isKindOf(const char *type) 
+	{ 
+		return (strcmp("Object",type)==0);
+	} 
+	virtual bool isA(const char *type) 
+	{ 
+		return this->isKindOf(type); 
+	} 
+
 //=============================================================================
 };	// END of class Object
+/**
+ * Add public static method declaration in class derived from a
+ * parent to assist in downcasting objects of the parent type to the 
+ * derived type as well as support dynamic casting across JNI.
+ */
+#define OPENSIM_DECLARE_DERIVED(thisClass,parentclass) \
+	typedef parentclass Parent; \
+  public: \
+  static bool isKindOf(const char *type) \
+  { \
+    if (strcmp(#thisClass,type)==0) \
+      { \
+      return true; \
+      } \
+    return Parent::isKindOf(type); \
+  } \
+  virtual bool isA(const char *type) \
+  { \
+    return this->thisClass::isKindOf(type); \
+  } \
+  static thisClass* safeDownCast(OpenSim::Object *obj) \
+  { \
+      return dynamic_cast<thisClass *>(obj); \
+  } 
+
 
 }; //namespace
-//=============================================================================
-//=============================================================================
-/**
- * Add public static method declaration in class derived from an abstract
- * parent to assist in downcasting objects of the parent type to the 
- * derived type.
- */
-#define OpenSim_DERIVED(Derived,Parent) \
-    static bool isA(const Parent& p)                        \
-        { return dynamic_cast<const Derived*>(&p) != 0; }   \
-    static const Derived& downcast(const Parent& p)         \
-        { return dynamic_cast<const Derived&>(p); }         \
-    static Derived& downcast(Parent& p)                     \
-        { return dynamic_cast<Derived&>(p); }
-
-/**
- * This is like OpenSim_DERIVED except it allows for an intermediate
- * "helper" class between Derived and Parent.
- */
-#define OpenSim_DERIVED2(Derived,Helper,Parent) \
-    static bool isA(const Parent& p)                                        \
-        { return Helper::isA(p); }                                          \
-    static const Derived& downcast(const Parent& p)                         \
-        { return reinterpret_cast<const Derived&>(Helper::downcast(p)); }   \
-    static Derived& downcast(Parent& p)                                     \
-        { return reinterpret_cast<Derived&>(Helper::downcast(p)); }
 
 #endif //__Object_h__

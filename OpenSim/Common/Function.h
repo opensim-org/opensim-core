@@ -101,8 +101,6 @@ public:
 	virtual ~Function();
 	virtual Object* copy() const = 0;
 
-	static Function* safeDownCast(Object* aObject) { return dynamic_cast<Function*>(aObject); }
-
 private:
 	void setNull();
 	void setupProperties();
@@ -144,6 +142,8 @@ public:
 	virtual double
 		evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
 	virtual void scaleY(double aScaleFactor) = 0;
+
+	OPENSIM_DECLARE_DERIVED(Function, Object);
 
 //=============================================================================
 };	// END class Function

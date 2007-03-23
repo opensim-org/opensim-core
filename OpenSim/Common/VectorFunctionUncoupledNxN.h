@@ -100,7 +100,7 @@ public:
 	// EVALUATE
 	//--------------------------------------------------------------------------
 
-	OpenSim_DERIVED(VectorFunctionUncoupledNxN, VectorFunction)
+	OPENSIM_DECLARE_DERIVED(VectorFunctionUncoupledNxN, VectorFunction)
 
 //=============================================================================
 };	// END class VectorFunctionUncoupledNxN

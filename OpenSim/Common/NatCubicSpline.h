@@ -128,7 +128,7 @@ private:
 	double evaluate(double aX, double velocity, double acceleration, int aDerivOrder);
 	void calcCoefficients();
 
-	OpenSim_DERIVED(NatCubicSpline, Function)
+	OPENSIM_DECLARE_DERIVED(NatCubicSpline, Function)
 
 //=============================================================================
 };	// END class NatCubicSpline
