@@ -125,25 +125,16 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\sdfor.c">
-			</File>
-			<File
 				RelativePath=".\_template__dyn.c">
 			</File>
 			<File
 				RelativePath=".\_template__sar.c">
 			</File>
 			<File
-				RelativePath="$(OPENSIM_INCLUDE_PATH)\OpenSim\DynamicsEngines\SdfastEngine\SIMMPipeline\sdufuncs.cpp">
-			</File>
-			<File
-				RelativePath="$(OPENSIM_INCLUDE_PATH)\OpenSim\DynamicsEngines\SdfastEngine\SIMMPipeline\jointconstraints.cpp">
-			</File>
-			<File
-				RelativePath="$(OPENSIM_INCLUDE_PATH)\OpenSim\DynamicsEngines\SdfastEngine\SIMMPipeline\gcvspl.c">
-			</File>
-			<File
 				RelativePath="$(OPENSIM_INCLUDE_PATH)\OpenSim\DynamicsEngines\SdfastEngine\SIMMPipeline\sdlib.c">
+			</File>
+			<File
+				RelativePath="$(OPENSIM_INCLUDE_PATH)\OpenSim\DynamicsEngines\SdfastEngine\SIMMPipeline\sdufuncs.cpp">
 			</File>
 		</Filter>
 		<Filter

@@ -27,11 +27,8 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <string>
-#include <math.h>
 #include "osimSdfastEngineDLL.h"
-#include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
@@ -41,6 +38,7 @@
 namespace OpenSim {
 
 class SdfastEngine;
+class VisibleObject;
 
 //=============================================================================
 //=============================================================================

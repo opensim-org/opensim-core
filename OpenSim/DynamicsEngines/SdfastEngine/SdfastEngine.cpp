@@ -32,21 +32,25 @@
 #include <time.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include "SdfastEngine.h"
-#include "sdufuncs.h"
+#include "SdfastBody.h"
+#include "SdfastCoordinate.h"
+#include "SdfastJoint.h"
+#include "SdfastSpeed.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/Storage.h>
 #include <cassert>
 
 //=============================================================================
@@ -59,6 +63,7 @@ using namespace OpenSim;
 const int SdfastEngine::GROUND = -1;
 
 const double SdfastEngine::ASSEMBLY_TOLERANCE = 1e-7;
+const double SdfastEngine::BAUMGARTE_STAB = 20.0;
 static char simmGroundName[] = "ground";
 
 //=============================================================================
@@ -166,11 +171,8 @@ void SdfastEngine::init(Model *aModel)
 	// SYSTEM INFORMATION
 	constructSystemVariables();
 
-	_init_sdm();
-	if(_setCoordinateInitialValues(getCoordinateSet()) < 0)
-		throw Exception("SdfastEngine.init: ERR- setCoordinateInitialValues failed",__FILE__,__LINE__);
-	if(_setJointConstraintFunctions(getCoordinateSet()) < 0)
-		throw Exception("SdfastEngine.init: ERR- setCoordinateInitialValues failed",__FILE__,__LINE__);
+	_sdstab(2.0*BAUMGARTE_STAB,BAUMGARTE_STAB*BAUMGARTE_STAB);
+
 	initializeState();
 	prescribe();
 
@@ -489,22 +491,11 @@ void SdfastEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) c
  * Model::applyContactForces().  This method assumes that
  * computeActuation() and computeContact() have already been called.
  */
-void SdfastEngine::sduforce()
+int SdfastEngine::sduforce(double t, double q[], double u[])
 {
 	// Should not be called anymore
 	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
-#if 0
-	cout << "\n\nSdfastEngine::sduforce: ... SdfastEngine has called sduforce()!\n\n";
-
-	_Instance->getModel()->getActuatorSet()->apply();
-	_Instance->getModel()->getContactSet()->apply();
-
-	//TODOAUG the user can implement restraints as actuators (active) or contacts (passive)
-	//_Instance->applyRestraintTorques();
-
-	//TODO ever? or are spring forces part of contact forces?
-	//_Instance->applySpringForces();
-#endif
+	return 1;
 }
 
 //_____________________________________________________________________________
@@ -515,12 +506,227 @@ void SdfastEngine::sduforce()
  * sdumotion().  sdumotion() is a "C" function and, therefore, doesn't know
  * about C++ objects.
  */
-void SdfastEngine::sdumotion()
+int SdfastEngine::sdumotion(double t, double q[], double u[])
 {
-	OPENSIM_FUNCTION_NOT_IMPLEMENTED();
-	cout << "\n\nSdfastEngine::sdumotion: ... SdfastEngine has called sdumotion()!\n\n";
+	int nq = getNumCoordinates();
+
+	// Set fixed and prescribed gencoords
+	// Used to be set_fixed_gencoords and set_prescribed_gencoords in sdufuncs.cpp.  set_prescribed_gencoords used to
+	// handle setting prescribed coordinates based on a kinetics file, but we had stopped using the kinetics file functionality
+	// and so it degenerated to simply setting the coordinate to its initial value (just like fixed coordinates)
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpFixed || coord->getSdfastType() == SdfastCoordinate::dpPrescribed)
+		{
+			cout << "SdfastEngine::sdumotion: set fixed " << coord->getJointIndex() << ", " << coord->getAxisIndex() << " to " << coord->getInitialValue() << endl;
+			_sdprespos(coord->getJointIndex(), coord->getAxisIndex(), coord->getInitialValue());
+			_sdpresvel(coord->getJointIndex(), coord->getAxisIndex(), 0.0); 
+			_sdpresacc(coord->getJointIndex(), coord->getAxisIndex(), 0.0);
+		}
+	}
+
+	checkForSderror("SDUMOTION");
+
+	return 1;
 }
 
+//_____________________________________________________________________________
+/**
+ */
+void SdfastEngine::sduconsfrc(double t, double q[], double u[], double mults[])
+{
+	int nq = getNumCoordinates();
+
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpConstrained)
+		{
+			SdfastCoordinate *independentCoordinate = coord->getConstraintIndependentCoordinate();
+			assert(independentCoordinate);
+			double q_ind_value = q[independentCoordinate->getSdfastIndex()];
+
+			assert(coord->getConstraintNumber() >= 0);
+	      _sdhinget(coord->getJointIndex(), coord->getAxisIndex(), mults[coord->getConstraintNumber()]);
+
+			// partial first derivative (not sure why as opposed to total derivative, but this is what sdufuncs.cpp used to have)
+			double int_spline = coord->getConstraintFunction()->evaluate(1, q_ind_value); 
+         double torque = -mults[coord->getConstraintNumber()] * int_spline;
+
+	      _sdhinget(independentCoordinate->getJointIndex(), independentCoordinate->getAxisIndex(), torque);
+      }
+   }
+
+#if 0
+	// This was taken from sdufuncs.cpp...  Was commented out there too...  Will need to fill this in if we plan on supporting this.
+
+	/* constraint objects */
+   for (i = 0; i < sdm.num_constraint_objects; i++)
+   {
+      dpConstraintObject *co = &sdm.constraint_object[i];
+      if (co->active == dpNo)
+         continue;
+
+      for (int j = 0; j < co->numPoints; j++)
+      {
+         int constraint_num = co->points[j].constraint_num;
+         apply_constraint_forces(co, mults[constraint_num], j);
+      }
+   }
+#endif
+
+	checkForSderror("SDUCONSFRC");
+}
+
+//_____________________________________________________________________________
+/**
+ */
+void SdfastEngine::sduperr(double t, double q[], double errors[])
+{
+	int nq = getNumCoordinates();
+
+   /* constrained gencoords */
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpConstrained) {
+			SdfastCoordinate *independentCoordinate = coord->getConstraintIndependentCoordinate();
+			assert(independentCoordinate);
+			double q_ind_value = q[independentCoordinate->getSdfastIndex()];
+			double q_dep_value = q[i];
+			double q_value = coord->getConstraintFunction()->evaluate(0, q_ind_value);
+         errors[coord->getConstraintNumber()] = q_dep_value - q_value;
+		}
+   }
+
+#if 0
+	// Taken as-is from sdufuncs.cpp, needs to be updated for C++ code
+   /* constraint objects */
+   if (sdm.enforce_constraints == 1)
+   {
+      for (i = 0; i < sdm.num_constraint_objects; i++)
+      {
+         dpConstraintObject *co = &sdm.constraint_object[i];
+         if (co->active == dpNo)
+            continue;
+         for (int j = 0; j < co->numPoints; j++)
+         {
+            int constraint_num = co->points[j].constraint_num;
+            errors[constraint_num] = calculate_constraint_position_error(co, PERR, j);
+         }
+      }
+   }
+#endif
+}
+
+//_____________________________________________________________________________
+/**
+ */
+void SdfastEngine::sduverr(double t, double q[], double u[], double errors[])
+{
+	int nq = getNumCoordinates();
+
+   /* constrained gencoords */
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpConstrained) {
+			assert(coord->getConstraintIndependentCoordinate());
+			int q_ind_index = coord->getConstraintIndependentCoordinate()->getSdfastIndex();
+			double q_ind_value = q[q_ind_index];
+			double u_ind_value = u[q_ind_index];
+			double u_dep_value = u[i];
+			double v_value = coord->getConstraintFunction()->evaluateTotalFirstDerivative(q_ind_value, u_ind_value);
+         errors[coord->getConstraintNumber()] = u_dep_value - v_value;
+      }
+   }
+
+#if 0
+	// Taken as-is from sdufuncs.cpp, needs to be updated for C++ code
+   /* constraint objects */
+   if (sdm.enforce_constraints == 1)
+   {
+      for (i = 0; i < sdm.num_constraint_objects; i++)
+      {
+         dpConstraintObject *co = &sdm.constraint_object[i];
+         if (co->active == dpNo)
+            continue;
+
+         for (int j = 0; j < co->numPoints; j++)
+         {
+            int constraint_num = co->points[j].constraint_num;
+            errors[constraint_num] = calculate_constraint_velocity_error(co, j);
+         }
+      }
+   }
+#endif
+}
+
+//_____________________________________________________________________________
+/**
+ */
+void SdfastEngine::sduaerr(double t, double q[], double u[], double udot[], double errors[])
+{
+	int nq = getNumCoordinates();
+
+   /* constrained gencoords */
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpConstrained) {
+			assert(coord->getConstraintIndependentCoordinate());
+			int q_ind_index = coord->getConstraintIndependentCoordinate()->getSdfastIndex();
+			double q_ind_value = q[q_ind_index];
+			double u_ind_value = u[q_ind_index];
+			double a_ind_value = udot[q_ind_index];
+			double a_dep_value = udot[i];
+			double a_value = coord->getConstraintFunction()->evaluateTotalSecondDerivative(q_ind_value, u_ind_value, a_ind_value);
+         errors[coord->getConstraintNumber()] = a_dep_value - a_value;
+      }
+   }
+
+#if 0
+	// Taken as-is from sdufuncs.cpp, needs to be updated for C++ code
+   /* constraint objects */
+   if (sdm.enforce_constraints == 1)
+   {
+      for (i = 0; i < sdm.num_constraint_objects; i++)
+      {
+         dpConstraintObject *co = &sdm.constraint_object[i];
+         if (co->active == dpNo)
+            continue;
+
+         for (int j = 0; j < co->numPoints; j++)
+         {
+            int constraint_num = co->points[j].constraint_num;
+            errors[constraint_num] = calculate_constraint_acceleration_error(co, j);
+         }
+      }
+   }
+#endif
+}
+
+//_____________________________________________________________________________
+/**
+ */
+int SdfastEngine::checkForSderror(const string &caller)
+{
+   int routine, err;
+
+   _sderror(&routine, &err);
+
+   switch (err)
+   {
+      case 0:
+         break;
+      case 19:
+			cout << caller << ": trying to set a non-? parameter.";
+         break;
+      default:
+			cout << caller << ":";
+         _sdprinterr(stdout);
+         break;
+   }
+   _sdclearerr();
+
+   return err;
+}
 
 //--------------------------------------------------------------------------
 // CONFIGURATION
@@ -725,8 +931,8 @@ void SdfastEngine::prescribe()
 
 	for(int i=0; i<_coordinateSet.getSize(); i++) {
 		SdfastCoordinate *coord = (SdfastCoordinate*)_coordinateSet.get(i);
-		if((coord->getSdfastQType()==SdfastCoordinate::dpUnconstrained) ||
-		(coord->getSdfastQType()==SdfastCoordinate::dpConstrained))
+		if((coord->getSdfastType()==SdfastCoordinate::dpUnconstrained) ||
+		(coord->getSdfastType()==SdfastCoordinate::dpConstrained))
 			desiredValue = 0;
 		else
 			desiredValue = 1;
@@ -756,7 +962,7 @@ void SdfastEngine::assemble()
 
    for(i=0; i<_numQs; i++) {
 		coord = (SdfastCoordinate*)_coordinateSet.get(i);
-		if (coord->getLocked() || coord->getSdfastQType() == SdfastCoordinate::dpFixed)
+		if (coord->getLocked() || coord->getSdfastType() == SdfastCoordinate::dpFixed)
          lock[i] = 1;
       else
          lock[i] = 0;
@@ -1598,7 +1804,19 @@ void SdfastEngine::computeReactions(double rForces[][3], double rTorques[][3]) c
 void SdfastEngine::
 computeConstrainedCoordinates(double *y) const
 {
-	_compute_constrained_coords(y);
+	int nq = getNumCoordinates();
+	for(int i=0; i<nq; i++) {
+		SdfastCoordinate *coord = static_cast<SdfastCoordinate*>(getCoordinateSet()->get(i));
+		if(coord->getSdfastType() == SdfastCoordinate::dpConstrained) {
+			int q_ind_index = coord->getConstraintIndependentCoordinate()->getSdfastIndex();
+			// Coordinate
+			double q_ind_value = y[q_ind_index];
+			y[i] = coord->getConstraintFunction()->evaluate(0, q_ind_value);
+			// Speed
+			double u_ind_value = y[nq + q_ind_index];
+			y[nq + i] = coord->getConstraintFunction()->evaluateTotalFirstDerivative(q_ind_value, u_ind_value);
+	    }
+   }
 }
 
 

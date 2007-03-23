@@ -29,8 +29,7 @@
 #include <math.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/ScaleSet.h>
 #include "SdfastJoint.h"
 #include "SdfastEngine.h"
 #include <OpenSim/Common/SimmMacros.h>

@@ -30,6 +30,7 @@
 #include "SdfastEngine.h"
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/VisibleObject.h>
 
 //=============================================================================
 // STATICS

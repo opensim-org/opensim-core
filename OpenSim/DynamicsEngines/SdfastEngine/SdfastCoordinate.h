@@ -27,9 +27,7 @@
 
 
 // INCLUDE
-#include <iostream>
 #include <string>
-#include <math.h>
 #include "osimSdfastEngineDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyInt.h>
@@ -113,6 +111,14 @@ protected:
 	PropertyBool _restraintActiveProp;
 	bool &_restraintActive;
 
+	PropertyStr _constraintIndependentCoordinateNameProp;
+	std::string &_constraintIndependentCoordinateName;
+
+	SdfastCoordinate *_constraintIndependentCoordinate;
+
+	PropertyInt _constraintNumberProp;
+	int &_constraintNumber;
+
 	PropertyObjPtr<Function> _constraintFunctionProp;
 	Function *&_constraintFunction;
 
@@ -189,11 +195,15 @@ public:
 	Function* getRestraintFunction() const;
 	Function* getMinRestraintFunction() const;
 	Function* getMaxRestraintFunction() const;
+	void setConstraintIndependentCoordinateName(const std::string &aName) { _constraintIndependentCoordinateName = aName; }
+	SdfastCoordinate* getConstraintIndependentCoordinate() { return _constraintIndependentCoordinate; }
+	void setConstraintNumber(int aNumber) { _constraintNumber = aNumber; }
+	int getConstraintNumber() const { return _constraintNumber; }
 	Function* getConstraintFunction() const;
 	void setConstraintFunction(const Function *function);
 
 	void setSdfastType(SdfastQType aType) { _QType = aType; }
-	int getSdfastQType() const { return _QType; }
+	int getSdfastType() const { return _QType; }
 	void setSdfastIndex(int aIndex) { _index = aIndex; }
 	int getSdfastIndex() const { return _index; }
 	void setJointIndex(int aJointIndex) { _joint = aJointIndex; }

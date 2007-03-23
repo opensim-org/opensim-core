@@ -32,12 +32,12 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/Transform.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include "SdfastBody.h"
-#include "SdfastCoordinate.h"
 
 namespace OpenSim {
+
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================

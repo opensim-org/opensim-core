@@ -56,8 +56,8 @@
 	macro(sdprespos, void, (int aJoint, int aAxis, double aPrval)); \
 	macro(sdpresvel, void, (int aJoint, int aAxis, double aPrval)); \
 	macro(sdpresacc, void, (int aJoint, int aAxis, double aPrval)); \
-	macro(init_sdm, void, ()); \
-	macro(setJointConstraintFunctions, int, (CoordinateSet *aCoordinateSet)); \
-	macro(setCoordinateInitialValues, int, (CoordinateSet *aCoordinateSet)); \
-	macro(compute_constrained_coords, void, (double *y)); \
+	macro(sderror, void, (int *routine, int *errnum)); \
+	macro(sdprinterr, void, (FILE *fnum)); \
+	macro(sdclearerr, void, ()); \
+	macro(sdstab, void, (double velin, double posin)); \
 	macro(setSdfastEngineInstance, void, (SdfastEngine *aEngine));

@@ -46,3 +46,7 @@ EXPORTS
 	sddc2quat
 	sdang2dc
 	sdquat2dc
+	sderror
+	sdprinterr
+	sdclearerr
+	sdstab

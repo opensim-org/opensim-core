@@ -26,25 +26,12 @@
  */
 
 // INCLUDES
-#include <iostream>
 #include <string>
 #include "osimSdfastEngineDLL.h"
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/NatCubicSpline.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmPathMatrix.h>
-#include <OpenSim/Common/Units.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include "SdfastBody.h"
-#include "SdfastCoordinate.h"
-#include "SdfastJoint.h"
-#include "SdfastSpeed.h"
 #include "SdfastFunctionPointerHelper.h"
 
 #ifdef SWIG
@@ -66,6 +53,7 @@ class AbstractDof;
 class AbstractCoordinate;
 class Model;
 class Transform;
+class Storage;
 
 //=============================================================================
 //=============================================================================
@@ -113,6 +101,7 @@ protected:
 
 private:
 	static const double ASSEMBLY_TOLERANCE;
+	static const double BAUMGARTE_STAB;
 
 //=============================================================================
 // METHODS
@@ -169,8 +158,12 @@ public:
 	//--------------------------------------------------------------------------
 	// SD/FAST FUNCTIONS
 	//--------------------------------------------------------------------------
-	void sduforce();
-	void sdumotion();
+	int sduforce(double t, double q[], double u[]);
+	int sdumotion(double t, double q[], double u[]);
+	void sduconsfrc(double t, double q[], double u[], double mults[]);
+	void sduperr(double t, double q[], double errors[]);
+	void sduverr(double t, double q[], double u[], double errors[]);
+	void sduaerr(double t, double q[], double u[], double udot[], double errors[]);
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
@@ -316,6 +309,8 @@ public:
 
 
 private:
+
+	int checkForSderror(const std::string &caller);
 
 	//--------------------------------------------------------------------------
 	// FUNCTION POINTERS INTO SDFAST FUNCTIONS

@@ -26,15 +26,11 @@
  */
 
 // INCLUDE
-#include <iostream>
 #include <string>
-#include <math.h>
 #include "osimSdfastEngineDLL.h"
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/AbstractSpeed.h>
 
 namespace OpenSim {

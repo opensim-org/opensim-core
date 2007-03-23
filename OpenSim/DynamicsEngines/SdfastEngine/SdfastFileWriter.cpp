@@ -927,7 +927,11 @@ AbstractCoordinate* SdfastFileWriter::addCoordinateToSimulationModel(DofInfo& aD
 
 	if(aDofInfo.modelDof->getCoordinate() && aDofInfo.constrained) {
 		const Function *func = aDofInfo.modelDof->getFunction();
-		if(func) coord->setConstraintFunction(func);
+		if(func) {
+			coord->setConstraintFunction(func);
+			coord->setConstraintIndependentCoordinateName(aDofInfo.modelDof->getCoordinate()->getName());
+			coord->setConstraintNumber(aDofInfo.errorNumber);
+		}
 	}
 	coord->setName(aDofInfo.name);
 	coord->setJointIndex(aDofInfo.joint);

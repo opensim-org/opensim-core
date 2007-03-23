@@ -47,7 +47,7 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  * SDFast corresponding code.
  *
  * @param argc Number of command line arguments (should be 2 or more).
- * @param argv Command line arguments:  mkModel -IM inFile and at least one of [-SD SdfastFile] [-FF SourceFile] [-MH HeaderFile] [-OM SimulationModelFile] [-D OutputDirectory]
+ * @param argv Command line arguments:  mkModel -IM inFile and at least one of [-SD SdfastFile] [-OM SimulationModelFile] [-D OutputDirectory]
  */
 int main(int argc,char **argv)
 {
@@ -88,12 +88,14 @@ int main(int argc,char **argv)
 				else if((option=="-SD")||(option=="-SystemDescription")) {
 					sdfastName = argv[++i];
 				}
+#if 0
 				else if((option=="-FF")||(option=="-ForwardFile")) {
 					sourceName = argv[++i];
 				}
 				else if((option=="-MH")||(option=="-ModelHeader")) {
 					headerName = argv[++i];
 				}
+#endif
 				else if((option=="-ML")||(option=="-ModelLibrary")) {
 					modelLibraryName = argv[++i];
 				}
@@ -158,8 +160,10 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 	aOStream<<"-Help, -H                                  Print the command-line options for "<<progName<<".\n";
 	aOStream<<"-InputModel, -IM          ModelFile        Input SimmKinematicsEngine model file (XML format).\n";
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
+#if 0
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";
 	aOStream<<"-ModelHeader, -MH         FileName         Output model header file (model.h in SIMM)\n";
+#endif
 	aOStream<<"-ModelLibrary, -ML        FileName         The compiled SD/Fast model for computing the dynamics for this model\n";
 	aOStream<<"-OuputModel, -OM          ModelFile        Output SDfastEngine model file (XML format).\n";
 	aOStream<<"-Directory, -D            DirectoryName    Directory into which to write output.\n";

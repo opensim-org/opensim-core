@@ -29,7 +29,7 @@
 #include "SdfastEngine.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
-#include <OpenSim/Common/SimmIO.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
@@ -59,6 +59,9 @@ SdfastCoordinate::SdfastCoordinate() :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
+	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
+	_constraintIndependentCoordinate(NULL),
+	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
 	_index(_indexProp.getValueInt()),
@@ -99,6 +102,9 @@ SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
+	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
+	_constraintIndependentCoordinate(NULL),
+	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
 	_index(_indexProp.getValueInt()),
@@ -132,6 +138,9 @@ SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
+	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
+	_constraintIndependentCoordinate(NULL),
+	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
 	_index(_indexProp.getValueInt()),
@@ -180,6 +189,9 @@ void SdfastCoordinate::copyData(const SdfastCoordinate &aCoordinate)
 	_minRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._minRestraintFunction);
 	_maxRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._maxRestraintFunction);
 	_restraintActive = aCoordinate._restraintActive;
+	_constraintIndependentCoordinateName = aCoordinate._constraintIndependentCoordinateName;
+	_constraintIndependentCoordinate = aCoordinate._constraintIndependentCoordinate;
+	_constraintNumber = aCoordinate._constraintNumber;
 	_constraintFunction = (Function*)Object::SafeCopy(aCoordinate._constraintFunction);
 	_index = aCoordinate._index;
 	_joint = aCoordinate._joint;
@@ -219,6 +231,9 @@ void SdfastCoordinate::copyData(const AbstractCoordinate &aCoordinate)
 void SdfastCoordinate::setNull(void)
 {
 	setType("SdfastCoordinate");
+
+	_constraintIndependentCoordinateName = "";
+	_constraintNumber = -1;
 }
 
 //_____________________________________________________________________________
@@ -285,9 +300,14 @@ void SdfastCoordinate::setupProperties(void)
 	_restraintActiveProp.setValue(true);
 	_propertySet.append(&_restraintActiveProp);
 
+	_constraintIndependentCoordinateNameProp.setName("constraint_independent_coordinate");
+	_propertySet.append(&_constraintIndependentCoordinateNameProp);
+
+	_constraintNumberProp.setName("constraint_number");
+	_propertySet.append(&_constraintNumberProp);
+
 	_constraintFunctionProp.setName("constraint_function");
 	_propertySet.append(&_constraintFunctionProp);
-
 }
 
 //_____________________________________________________________________________
@@ -303,6 +323,22 @@ void SdfastCoordinate::setup(AbstractDynamicsEngine* aEngine)
 	AbstractCoordinate::setup(aEngine);
 
 	_SdfastEngine = dynamic_cast<SdfastEngine*>(aEngine);
+
+	if(_constraintFunction && _constraintIndependentCoordinateName != "") {
+		AbstractCoordinate *coord = aEngine->getCoordinateSet()->get(_constraintIndependentCoordinateName);
+		if(!coord) 
+			throw Exception("SdfastCoordinate.setup: ERR- Did not find independent coordinate '"+_constraintIndependentCoordinateName+
+								 "' needed for constraint function in coordinate '"+getName()+"'",__FILE__,__LINE__);
+		_constraintIndependentCoordinate = dynamic_cast<SdfastCoordinate*>(coord);
+		if(!_constraintIndependentCoordinate) 
+			throw Exception("SdfastCoordinate.setup: ERR- Independent coordinate '"+_constraintIndependentCoordinateName+
+								 "' referenced by coordinate '"+getName()+"' is not an SdfastCoordinate",__FILE__,__LINE__);
+
+		if(_constraintNumber < 0)
+			throw Exception("SdfastCoordinate.setup: ERR- Coordinate '"+getName()+
+					"' has a constraint function and an independent coordinate for that constraint, but '"+
+					_constraintNumberProp.getName()+"' is not set",__FILE__,__LINE__);
+	}
 
 	// Make sure the range is min to max.
 	if (_range[1] < _range[0]){
