@@ -761,7 +761,7 @@ PrintInform(int aInform,ostream &aOStream)
 {
 	switch(aInform) {
 		case(0):
-			aOStream<<"rdFSQP(0): Normal termination.";
+			aOStream<<"rdFSQP(0): Normal termination.\n";
 			break;
 		case(1):
 			aOStream<<"rdFSQP(1): User-provided initial guess is infeasible ";
