@@ -426,15 +426,36 @@ void NatCubicSpline::calcCoefficients()
 
 }
 
-
+/**
+ * Evaluates function or its (partial) derivatives
+ */
 double NatCubicSpline::evaluate(int aDerivOrder, double aX, double aY, double aZ)
 {
-	return evaluate(aX, 1.0, 1.0, aDerivOrder);
+	// pass 0 for acceleration so that if we're computing the second derivative we get the proper partial derivative
+	return evaluate(aX, 1.0, 0.0, aDerivOrder); 
+}
+
+/**
+ * Evaluates total first derivative
+ */
+double NatCubicSpline::
+evaluateTotalFirstDerivative(double aX,double aDxdt)
+{
+	return evaluate(aX, aDxdt, 0.0, 1);
+}
+
+/**
+ * Evaluates total second derivative
+ */
+double NatCubicSpline::
+evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
+{
+	return evaluate(aX, aDxdt, aD2xdt2, 2);
 }
 
 //_____________________________________________________________________________
 /**
- * Evaluate this function or a derivative of this function given a set of
+ * Evaluate this function or a total derivative of this function given a set of
  * independent variables.  Only splines of one dimension are supported by
  * this class, so values of independent variables y and z are ignored.
  *
@@ -471,7 +492,7 @@ double NatCubicSpline::evaluate(double aX, double velocity,
       if (aDerivOrder == 1)
          return _b[0]*velocity;
       if (aDerivOrder == 2)
-         return _b[0]*acceleration;
+         return 0;
    }
    else if (aX > _x[n-1])
    {
@@ -480,7 +501,7 @@ double NatCubicSpline::evaluate(double aX, double velocity,
       if (aDerivOrder == 1)
          return _b[n-1]*velocity;
       if (aDerivOrder == 2)
-         return _b[n-1]*acceleration;
+         return 0;
    }
 
    /* Check to see if the abscissa is close to one of the end points

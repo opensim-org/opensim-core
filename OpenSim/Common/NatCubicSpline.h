@@ -119,11 +119,13 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
 	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0);
-	double evaluate(double aX, double velocity, double acceleration, int aDerivOrder);
+	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt);
+	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
 
 	virtual void updateFromXMLNode();
 
 private:
+	double evaluate(double aX, double velocity, double acceleration, int aDerivOrder);
 	void calcCoefficients();
 
 	OpenSim_DERIVED(NatCubicSpline, Function)

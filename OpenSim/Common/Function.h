@@ -139,6 +139,10 @@ public:
 	virtual int getNumberOfPoints() const = 0;
 	virtual double
 		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) = 0;
+	virtual double
+		evaluateTotalFirstDerivative(double aX,double aDxdt);
+	virtual double
+		evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
 	virtual void scaleY(double aScaleFactor) = 0;
 
 //=============================================================================

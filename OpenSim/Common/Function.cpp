@@ -338,3 +338,20 @@ getMaxZ() const
 //=============================================================================
 // EVALUATE
 //=============================================================================
+/**
+ * Evaluates total first derivative using the chain rule.
+ */
+double Function::
+evaluateTotalFirstDerivative(double aX,double aDxdt)
+{
+	return evaluate(1,aX) * aDxdt;
+}
+
+/**
+ * Evaluates total second derivative using the chain rule.
+ */
+double Function::
+evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
+{
+	return evaluate(1,aX) * aD2xdt2 + evaluate(2,aX) * aDxdt * aDxdt;
+}
