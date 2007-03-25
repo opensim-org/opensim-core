@@ -46,7 +46,6 @@
 #include "SimmTranslationDof.h"
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/PolyObject.h>
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Common/VisibleObject.h>
