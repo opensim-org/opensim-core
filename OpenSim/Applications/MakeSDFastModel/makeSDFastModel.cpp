@@ -135,8 +135,11 @@ int main(int argc,char **argv)
 			if (headerName != unassigned)
 				sfw.writeModelHeaderFile(headerName);
 
-			if (simModelName != unassigned)
+			if (simModelName != unassigned) {
+				if(modelLibraryName == unassigned)
+					std::cerr << "WARNING: Generating an SDFast-based OpenSim model with no model library (-ML/-ModelLibrary not specified)." << std::endl;
 				sfw.writeSimulationModelFile(simModelName, modelLibraryName);
+			}
 
 			delete model;
 		}
