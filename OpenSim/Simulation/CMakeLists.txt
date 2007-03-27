@@ -28,13 +28,12 @@ Control
 Integrator
 Manager
 Model
-Simtk
 Wrap
 )
 
 
-FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp Simtk/*.cpp Wrap/*.cpp *.cpp)
-FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Simtk/*.h Wrap/*.h *.h)
+FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp Wrap/*.cpp *.cpp)
+FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Wrap/*.h *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors
