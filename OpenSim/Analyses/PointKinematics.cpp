@@ -235,19 +235,11 @@ constructDescription()
 void PointKinematics::
 constructColumnLabels()
 {
-	char labels[BUFFER_LENGTH];
-
-	// GET STATE NAMES
-	char name[NAME_LENGTH];
-	strcpy(labels,"time");
-	sprintf(name,"\t%s_X",getPointName());
-	strcat(labels,name);
-	sprintf(name,"\t%s_Y",getPointName());
-	strcat(labels,name);
-	sprintf(name,"\t%s_Z",getPointName());
-	strcat(labels,name);
-	strcat(labels,"\n");
-
+	Array<string> labels;
+	labels.append("time");
+	labels.append(getPointName() + "_X");
+	labels.append(getPointName() + "_Y");
+	labels.append(getPointName() + "_Z");
 	setColumnLabels(labels);
 }
 
@@ -444,10 +436,10 @@ setPointName(const char *aName)
  *
  * @param aName Name for the point.
  */
-const char* PointKinematics::
+const std::string &PointKinematics::
 getPointName()
 {
-	return(_pointName.c_str());
+	return(_pointName);
 }
 
 //-----------------------------------------------------------------------------

@@ -139,25 +139,20 @@ constructDescription()
 void BodyIndAcc::
 constructColumnLabels()
 {
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	BodySet *bs = _model->getDynamicsEngine().getBodySet();
-	int i=0;
-
-	for(i=0; i<bs->getSize(); i++)
+	for(int i=0; i<bs->getSize(); i++)
 	{
 		AbstractBody *body = bs->get(i);
-		labels += "\t" + body->getName() + "_X";
-		labels += "\t" + body->getName() + "_Y";
-		labels += "\t" + body->getName() + "_Z";
-		labels += "\t" + body->getName() + "_Ox";
-		labels += "\t" + body->getName() + "_Oy";
-		labels += "\t" + body->getName() + "_Oz";
+		labels.append(body->getName() + "_X");
+		labels.append(body->getName() + "_Y");
+		labels.append(body->getName() + "_Z");
+		labels.append(body->getName() + "_Ox");
+		labels.append(body->getName() + "_Oy");
+		labels.append(body->getName() + "_Oz");
 	}
-
-	labels += "\n";
-
-	setColumnLabels(labels.c_str());
-
+	setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________

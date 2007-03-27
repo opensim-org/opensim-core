@@ -51,8 +51,8 @@ public:
 private:
 
 	void collectUserData(const Array<std::string> &,
-						std::string& resultsHeader, 
-						std::string& userHeaders, 
+						const Array<std::string> &resultColumnLabels,
+						Array<std::string> &userColumnLabels,
 						Array<int>& userDataColumnIndices);
 
 	void appendUserData(Array<double>& outputRow, 

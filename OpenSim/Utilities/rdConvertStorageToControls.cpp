@@ -30,7 +30,6 @@ int main(int argc,char **argv)
 {
 	// PARSE COMMAND LINE
 	string inName,outName;
-	int startIndex=0;
 	int numControls=0;
 	char *columnName;
 	if((argc!=4)&&(argc!=5)) {
@@ -63,17 +62,8 @@ int main(int argc,char **argv)
 	Storage* storage = new Storage(inName.c_str());
 
 	// DETERMINE START INDEX
-	int i;
-	const char *colLabels = storage->getColumnLabels();
-	char *labels = new char[strlen(colLabels)+1];
-	strcpy(labels,colLabels);
-	cout<<endl<<endl<<labels<<endl<<endl;
-	char *tok = strtok(labels," \t");
-	for(i=0;(tok=strtok(NULL," \t"));i++) {
-
-		if(strcmp(tok,columnName)==0) break;
-	}
-	startIndex = i;
+	const Array<std::string> &colLabels = storage->getColumnLabels();
+	int startIndex = colLabels.findIndex(columnName)-1;
 	cout<<"startIndex = "<<startIndex<<endl;
 
 
@@ -102,19 +92,11 @@ int main(int argc,char **argv)
 ControlLinear*
 ExtractControl(Storage* storage,int index)
 {
+	int i;
 
 	// NAME ATTRIBUTE
-	const char *columnLabels = storage->getColumnLabels();
-	//	cout<<"these are the column labels\n "<<columnLabels<<endl;
-	char *labels = new char[(strlen(columnLabels) +2)];
-	strcpy(labels,columnLabels);
-	char *colName;
-	const char delim[] = "\t ";
-	int i;
-	colName = strtok(labels,delim);
-	for(i=0;i<(index+1);i++)
-		colName = strtok(NULL,delim);
-
+	const Array<std::string> &columnLabels = storage->getColumnLabels();
+	std::string colName = columnLabels.get(index+1);
 
 	// TIME
 	cout<<"\nExtracting column "<<colName<<"..."<<endl;
@@ -148,9 +130,6 @@ ExtractControl(Storage* storage,int index)
 	// CHECK
 	cout<<"Control "<<control->getName()<<" has "<<control->getNumParameters()<<" nodes."
 		<<endl;
-
-	// CLEAN UP
-	delete[] labels;
 
 
 	return(control);

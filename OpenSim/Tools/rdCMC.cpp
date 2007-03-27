@@ -91,13 +91,13 @@ rdCMC::rdCMC(Model *aModel,rdCMC_TaskSet *aTaskSet) :
 	}
 
 	// STORAGE
-	std::string labels = "time";
-	for(int i=0;i<_taskSet->getSize();i++)
-		labels += std::string("\t") + std::string(_taskSet->get(i)->getName());
+	Array<string> labels;
+	labels.append("time");
+	for(int i=0;i<_taskSet->getSize();i++) labels.append(_taskSet->get(i)->getName());
 	_pErrStore = new Storage(1000,"PositionErrors");
-	_pErrStore->setColumnLabels(labels.c_str());
+	_pErrStore->setColumnLabels(labels);
 	_vErrStore = new Storage(1000,"VelocityErrors");
-	_pErrStore->setColumnLabels(labels.c_str());
+	_pErrStore->setColumnLabels(labels);
 	_stressTermWeightStore = new Storage(1000,"StressTermWeight");
 }
 

@@ -506,18 +506,18 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	int nu = getNumSpeeds();
 
 	// Get coordinate file indices
-	string qName,columnLabels;
+	Array<string> columnLabels;
+	columnLabels.append("time");
+	string qName;
 	AbstractCoordinate *coord;
 	Array<int> index(-1,nq);
-	columnLabels = "time";
 	const CoordinateSet *coordinateSet = getCoordinateSet();
 	int sizeCoordSet = coordinateSet->getSize();
 	for(i=0;i<sizeCoordSet;i++) {
 		coord = coordinateSet->get(i);
 		if(coord==NULL) continue;
 		qName = coord->getName();
-		columnLabels += "\t";
-		columnLabels += qName;
+		columnLabels.append(qName);
 		index[i] = aQIn.getColumnIndex(qName);
 		if(index[i]<0) {
 			string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
@@ -533,7 +533,7 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	Array<double> q(0.0,nq);
 	Storage *qStore = new Storage();
 	qStore->setName("GeneralizedCoordinates");
-	qStore->setColumnLabels(columnLabels.c_str());
+	qStore->setColumnLabels(columnLabels);
 	int size = aQIn.getSize();
 	StateVector *vector;
 	int j;
@@ -577,8 +577,8 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	
 	// Compute storage object for simulation
 	// Need to set column labels before converting rad->deg
-	rQComplete->setColumnLabels(columnLabels.c_str());
-	rUComplete->setColumnLabels(columnLabels.c_str());
+	rQComplete->setColumnLabels(columnLabels);
+	rUComplete->setColumnLabels(columnLabels);
 
 	// Convert back to degrees
 	convertRadiansToDegrees(rQComplete);
@@ -593,7 +593,7 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
  */
 void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage *rStorage, double factor) const
 {
-	const Array<std::string>& columnLabels = rStorage->getColumnLabelsArray();
+	const Array<std::string>& columnLabels = rStorage->getColumnLabels();
 
 	if(columnLabels.getSize() == 0)
 		throw Exception("AbstractDynamicsEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",

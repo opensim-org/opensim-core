@@ -257,9 +257,9 @@ setModel(Model *aModel)
  * @param aLabels String of tab delimited labels.
  */
 void Analysis::
-setColumnLabels(const char *aLabels)
+setColumnLabels(const Array<string> &aLabels)
 {
-	_labels = aLabels ? string(aLabels) : "";
+	_labels = aLabels;
 }
 //_____________________________________________________________________________
 /**
@@ -267,10 +267,10 @@ setColumnLabels(const char *aLabels)
  *
  * @return Labels for this analysis.
  */
-const char* Analysis::
+const Array<string> &Analysis::
 getColumnLabels() const
 {
-	return(_labels.c_str());
+	return _labels;
 }
 
 

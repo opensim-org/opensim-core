@@ -13,7 +13,6 @@
 #include "osimAnalysesDLL.h"
 #include "IndAcc.h"
 
-const int BodyPointIndAcc_NAME_LENGTH = 256;
 const int BodyPointIndAcc_BUFFER_LENGTH = 2048;
 
 //=============================================================================
@@ -38,13 +37,10 @@ class OSIMANALYSES_API BodyPointIndAcc : public IndAcc
 public:
 	static const int NAME_LENGTH;
 	static const int BUFFER_LENGTH;
-private:
-	char _buffer[BodyPointIndAcc_BUFFER_LENGTH];
-	char _tmp[BodyPointIndAcc_BUFFER_LENGTH];
 protected:
 	AbstractBody *_body;
 	double _point[3];
-	char _pointName[BodyPointIndAcc_NAME_LENGTH];
+	std::string _pointName;
 	Storage *_axPointStore;
 	Storage *_ayPointStore;
 	Storage *_azPointStore;
@@ -78,10 +74,10 @@ public:
 	AbstractBody* getBody();
 	void setPoint(double aPoint[3]);
 	void getPoint(double rPoint[3]);
-	void setPointName(const char *aName);
-	const char* getPointName();
+	void setPointName(const std::string &aName);
+	const std::string &getPointName();
 	virtual void setStorageCapacityIncrements(int aIncrement);
-	char* getColumnLabels(const char *aTag);
+	void getColumnLabels(const char *aTag, Array<std::string> &rLabels);
 
 	//--------------------------------------------------------------------------
 	// OPERATIONS

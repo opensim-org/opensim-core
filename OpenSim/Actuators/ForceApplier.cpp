@@ -174,9 +174,11 @@ constructDescription()
 void ForceApplier::
 constructColumnLabels()
 {
-	char labels[2048];
-
-	strcpy(labels,"time\tForce_x\tForce_y\tForce_z\n");
+	Array<string> labels;
+	labels.append("time");
+	labels.append("Force_x");
+	labels.append("Force_y");
+	labels.append("Force_z");
 	_appliedForceStore->setColumnLabels(labels);
 }
 
@@ -196,7 +198,6 @@ allocateStorage()
 
 	_appliedForceStore = new Storage(1000,title);
 	_appliedForceStore->setDescription(getDescription());
-	_appliedForceStore->setColumnLabels(_appliedForceStore->getColumnLabels());
 }
 
 

@@ -109,7 +109,7 @@ public:
 	void getPoint(double rPoint[3]);
 	// POINT NAME
 	void setPointName(const char *aName);
-	const char* getPointName();
+	const std::string &getPointName();
 	// MODEL
 	virtual void setModel(Model *aModel);
 	

@@ -30,7 +30,6 @@
 
 
 using namespace OpenSim;
-const int BodyPointIndAcc::NAME_LENGTH = BodyPointIndAcc_NAME_LENGTH;
 const int BodyPointIndAcc::BUFFER_LENGTH = BodyPointIndAcc_BUFFER_LENGTH;
 
 
@@ -169,18 +168,13 @@ constructDescription()
  * Construct column labels for the inducded induced accelerations of the
  * body points.
  */
-char* BodyPointIndAcc::
-getColumnLabels(const char *aTag)
+void BodyPointIndAcc::
+getColumnLabels(const char *aTag, Array<std::string> &rLabels)
 {
-	int i;
-	strcpy(_buffer,"time");
-	for(i=0;i<getNumComponents();i++) {
-		sprintf(_tmp,"\t%s_%s",getComponentName(i),aTag);
-		strcat(_buffer,_tmp);
-	}
-	strcat(_buffer,"\n");
-
-	return(_buffer);
+	rLabels.setSize(0);
+	rLabels.append("time");
+	for(int i=0;i<getNumComponents();i++)
+		rLabels.append(getComponentName(i)+std::string("_")+aTag);
 }
 //_____________________________________________________________________________
 /**
@@ -189,23 +183,27 @@ getColumnLabels(const char *aTag)
 void BodyPointIndAcc::
 allocatePointStorage()
 {
+	Array<std::string> labels;
+
 	// ALLOCATE STORAGE
 	// X
 	_axPointStore = new Storage(500,"BodyPointInducedAccelerations_X");
 	_axPointStore->setCapacityIncrement(1000);
 	_axPointStore->setDescription(getDescription());
-	_axPointStore->setColumnLabels(getColumnLabels("X"));
+	getColumnLabels("X", labels);
+	_axPointStore->setColumnLabels(labels);
 	// Y
 	_ayPointStore = new Storage(500,"BodyPointInducedAccelerations_Y");
 	_ayPointStore->setCapacityIncrement(1000);
 	_ayPointStore->setDescription(getDescription());
-	_ayPointStore->setColumnLabels(getColumnLabels("Y"));
+	getColumnLabels("Y", labels);
+	_ayPointStore->setColumnLabels(labels);
 	// Z
 	_azPointStore = new Storage(500,"BodyPointInducedAccelerations_Z");
 	_azPointStore->setCapacityIncrement(1000);
 	_azPointStore->setDescription(getDescription());
-	_azPointStore->setColumnLabels(getColumnLabels("Z"));
-
+	getColumnLabels("Z", labels);
+	_azPointStore->setColumnLabels(labels);
 }
 
 
@@ -329,10 +327,9 @@ getPoint(double rPoint[3])
  * @param aName Name for the point.
  */
 void BodyPointIndAcc::
-setPointName(const char *aName)
+setPointName(const std::string &aName)
 {
-	strncpy(_pointName,aName,NAME_LENGTH);
-	_pointName[NAME_LENGTH-1] = 0;
+	_pointName = aName;
 }
 //_____________________________________________________________________________
 /**
@@ -340,7 +337,7 @@ setPointName(const char *aName)
  *
  * @param aName Name for the point.
  */
-const char* BodyPointIndAcc::
+const std::string &BodyPointIndAcc::
 getPointName()
 {
 	return(_pointName);

@@ -71,12 +71,6 @@ const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\n";
  */
 Storage::~Storage()
 {
-	// CHARACTER STRINGS
-	if(_columnLabels!=NULL) {
-		delete[] _columnLabels;  _columnLabels=NULL;
-	}
-	// Strings in _columnLabelsArray need to be deleted as well
-	_columnLabelsArray.setSize(0);
 }
 
 //=============================================================================
@@ -87,8 +81,7 @@ Storage::~Storage()
  * Default constructor.
  */
 Storage::Storage(int aCapacity,const string &aName) :
-	_storage(StateVector()),
-	_columnLabelsArray("")
+	_storage(StateVector())
 {
 	// SET NULL STATES
 	setNull();
@@ -109,8 +102,7 @@ Storage::Storage(int aCapacity,const string &aName) :
  * constructed.
  */
 Storage::Storage(const string &aFileName) :
-	_storage(StateVector()),
-	_columnLabelsArray("")
+	_storage(StateVector())
 {
 	// SET NULL STATES
 	setNull();
@@ -173,7 +165,7 @@ Storage::Storage(const string &aFileName) :
 	// COLUMN LABELS
 	if(!oldStyleDescription) {
 		getline(*fp, line);
-		setColumnLabels(line.c_str());
+		parseColumnLabels(line.c_str());
 	}
 	// CAPACITY
 	_storage.ensureCapacity(nr);
@@ -199,8 +191,7 @@ Storage::Storage(const string &aFileName) :
  * Copy constructor.
  */
 Storage::Storage(const Storage &aStorage,bool aCopyData) :
-	_storage(StateVector()),
-	_columnLabelsArray("")
+	_storage(StateVector())
 {
 	// NULL THE DATA
 	setNull();
@@ -232,8 +223,7 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
 Storage::
 Storage(const Storage &aStorage,int aStateIndex,int aN,
 			 const char *aDelimiter) :
-	_storage(StateVector()),
-	_columnLabelsArray("")
+	_storage(StateVector())
 {
 	// NULL THE DATA
 	setNull();
@@ -246,7 +236,6 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 	setName(aStorage.getName());
 	setDescription(aStorage.getDescription());
 	setHeaderToken(aStorage.getHeaderToken());
-	setColumnLabels(aStorage.getColumnLabels());
 	setStepInterval(aStorage.getStepInterval());
 
 	// ERROR CHECK
@@ -263,24 +252,14 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 	}
 	delete[] data;
 
-	// ADJUST COLUMN LABELS
-	if(_columnLabels==NULL) return;
-	int length = strlen(_columnLabels);
-	if(length==0) return;
-	char *newLabels = new char[length];
-	char *label=strtok(_columnLabels,aDelimiter);
-	if(label==NULL) return;
-	strcpy(newLabels,label);
-	int I;
-	for(I=i=0;(label=strtok(NULL,aDelimiter));i++) {
-		if(i<aStateIndex) continue;
-		strcat(newLabels,"\t");
-		strcat(newLabels,label);
-		I++;
-		if(I>=aN) break;
+	// COPY THE FIRST COLUMN AND COLUMNS aStateIndex+1 through aStateIndex+aN (corresponding to states aStateIndex - aStateIndex+aN-1)
+	int originalNumCol = aStorage.getColumnLabels().getSize();
+	_columnLabels.setSize(0);
+	if(originalNumCol) {
+		_columnLabels.append(aStorage.getColumnLabels()[0]);
+		for(int i=0;i<aN && aStateIndex+1+i<originalNumCol;i++) 
+			_columnLabels.append(aStorage.getColumnLabels()[aStateIndex+1+i]);
 	}
-	setColumnLabels(newLabels);
-	delete[] newLabels;
 }
 //_____________________________________________________________________________
 /**
@@ -308,7 +287,6 @@ setNull()
 {
 	_writeSIMMHeader = false;
 	setHeaderToken(DEFAULT_HEADER_TOKEN);
-	_columnLabels = NULL;
 	_stepInterval = 1;
 	_lastI = 0;
 }
@@ -420,14 +398,14 @@ getHeaderToken() const
 const int Storage::
 getColumnIndex(const std::string &aColumnName, int startIndex) const
 {
-	int i;
-	int size = _columnLabelsArray.getSize();
-	for(i=startIndex;i<size;i++)
-		if(_columnLabelsArray[i]==aColumnName)
+	int size = _columnLabels.getSize();
+	for(int i=startIndex;i<size;i++)
+		if(_columnLabels[i]==aColumnName)
 			return(i-1);
 
 	return(-1);
 }
+
 
 //_____________________________________________________________________________
 /**
@@ -448,84 +426,61 @@ getColumnIndex(const std::string &aColumnName, int startIndex) const
  * @param aLabels Character string containing labels for the columns.
  */
 void Storage::
-setColumnLabels(const char *aLabels)
+parseColumnLabels(const char *aLabels)
 {
+	_columnLabels.setSize(0);
+
 	// HANDLE NULL POINTER
-	if(aLabels==NULL) {
-		if(_columnLabels!=NULL) {
-				delete[] _columnLabels; _columnLabels = NULL;
-		}
-		return;
-	}
+	if(aLabels==NULL) return;
 
 	// HANDLE ZERO LENGTH STRING
 	int len = strlen(aLabels);
-	if(len==0) {
-		if(_columnLabels!=NULL) {
-				delete[] _columnLabels; _columnLabels = NULL;
-		}
-		return;
-	}
-
-	// SHOULD A CARRIAGE RETURN BE STRIPPED?
-	bool stripReturn = false;
-	if(aLabels[len-1]=='\n') {
-		stripReturn = true;
-	}
-
-	// DELETE OLD
-	if(_columnLabels!=NULL) delete[] _columnLabels;
+	if(len==0) return;
 
 	// SET NEW
-	_columnLabels = new char[len+1];
-	if(stripReturn) {
-		strncpy(_columnLabels,aLabels,len-1);
-		_columnLabels[len-1] = 0;
+	char *labelsCopy = new char[len+1];
+	if(aLabels[len-1]=='\n') { 
+		// strip carriage return 
+		strncpy(labelsCopy,aLabels,len-1);
+		labelsCopy[len-1] = 0;
 	} else {
-		strcpy(_columnLabels,aLabels);
+		strcpy(labelsCopy,aLabels);
 	}
 
-	// ARRAY OF LABELS
-	_columnLabelsArray.setSize(0);
-	// Make a copy to work with 
-	char *labelsCopy = new char[strlen(_columnLabels)+1];
-	strcpy(labelsCopy,_columnLabels);
 	// Parse 
 	char *token = strtok(labelsCopy,DEFAULT_HEADER_SEPARATOR );
 	while(token!=NULL)
 	{
 		// Append column label
-		string nextColumnHeader = token;
-		_columnLabelsArray.append(nextColumnHeader);
+		_columnLabels.append(token);
 
 		// Get next label 
 		token = strtok( NULL, DEFAULT_HEADER_SEPARATOR );
 	}
+
 	delete[] labelsCopy;
-
 }
+
 //_____________________________________________________________________________
 /**
- * Get column labels string.
- *
- * @return Character string of column labels.
+ * Set column labels array.
  */
-const char* Storage::
-getColumnLabels() const
+void Storage::
+setColumnLabels(const Array<std::string> &aColumnLabels)
 {
-	return(_columnLabels);
+	_columnLabels = aColumnLabels;
 }
 
 //_____________________________________________________________________________
 /**
- * Get column labels string.
+ * Get column labels array.
  *
  * @return Character string of column labels.
  */
 const Array<string> &Storage::
-getColumnLabelsArray() const
+getColumnLabels() const
 {
-	return(_columnLabelsArray);
+	return(_columnLabels);
 }
 
 //-----------------------------------------------------------------------------
@@ -2272,7 +2227,7 @@ resample(const double aDT, const int aDegree)
 
 	GCVSplineSet *splineSet = new GCVSplineSet(aDegree,this);
 
-	string saveLabels = getColumnLabels();
+	Array<std::string> saveLabels = getColumnLabels();
 	// Free up memory used by Storage
 	_storage.setSize(0);
 	// For every column, collect data and fit spline to originalTimes, dataColumn.
@@ -2280,7 +2235,7 @@ resample(const double aDT, const int aDegree)
 
 	copyData(*newStorage);
 
-	setColumnLabels(saveLabels.c_str());
+	setColumnLabels(saveLabels);
 
 	delete newStorage;
 	delete splineSet;
@@ -2576,31 +2531,17 @@ writeColumnLabels(FILE *rFP) const
 {
 	if(rFP==NULL) return(-1);
 
-	if(_columnLabels!=NULL) {
-		fprintf(rFP,"%s\n",_columnLabels);
+	if(_columnLabels.getSize()) {
+		fprintf(rFP,"%s",_columnLabels[0].c_str());
+		for(int i=1;i<_columnLabels.getSize();i++) fprintf(rFP,"\t%s",_columnLabels[i].c_str());
+		fprintf(rFP,"\n");
 	} else {
-		writeDefaultColumnLabels(rFP);
+		// Write default column labels
+		fprintf(rFP,"time");
+		int n=getSmallestNumberOfStates();
+		for(int i=0;i<n;i++) fprintf(rFP,"\tstate_%d",i);
+		fprintf(rFP,"\n");
 	}
-
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Write default column labels.
- *
- * @param rFP File pointer.
- */
-int Storage::
-writeDefaultColumnLabels(FILE *rFP) const
-{
-	if(rFP==NULL) return(-1);
-
-	fprintf(rFP,"time");
-	int i,n=getSmallestNumberOfStates();
-	for(i=0;i<n;i++) {
-		fprintf(rFP,"\tstate_%d",i);
-	}
-	fprintf(rFP,"\n");
 
 	return(0);
 }

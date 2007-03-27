@@ -143,7 +143,7 @@ SimmMotionData::SimmMotionData(Storage& aData) :
 	setNull();
 
 	/* Copy the column labels. */
-	const Array<string>& columnLabels = aData.getColumnLabelsArray();
+	const Array<string>& columnLabels = aData.getColumnLabels();
 	//string* timeLabel = new string("time");
 	//_columnNames.append(timeLabel);
 	int i;
@@ -740,13 +740,13 @@ void SimmMotionData::addToRdStorage(Storage& rStorage, double aStartTime, double
 	 */
 	if (addedData)
 	{
-		string columnLabels(rStorage.getColumnLabels());
+		Array<std::string> columnLabels = rStorage.getColumnLabels();
 		for (int i = 1; i < _columnNames.getSize(); i++) // Start at 1 to avoid duplicate time label
 		{
 			if (_columnNames[i] != getUnassignedColName())
-				columnLabels += _columnNames[i] + '\t';
+				columnLabels.append(_columnNames[i]);
 		}
-		rStorage.setColumnLabels(columnLabels.c_str());
+		rStorage.setColumnLabels(columnLabels);
 	}
 }
 

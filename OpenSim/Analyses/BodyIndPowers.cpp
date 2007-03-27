@@ -140,20 +140,12 @@ void BodyIndPowers::
 constructColumnLabels()
 {
 	// GET STATE NAMES
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	BodySet *bs = _model->getDynamicsEngine().getBodySet();
-	int i=0;
-
-	for(i=0; i<bs->getSize(); i++)
-	{
-		AbstractBody *body=bs->get(i);
-		labels += "\t";
-		labels += body->getName();
-	}
-
-	labels += "\tTotal\n";
-
-	setColumnLabels(labels.c_str());
+	for(int i=0; i<bs->getSize(); i++) labels.append(bs->get(i)->getName());
+	labels.append("Total");
+	setColumnLabels(labels);
 
 }
 

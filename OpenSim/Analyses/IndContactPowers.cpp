@@ -116,23 +116,20 @@ constructDescription()
 void IndContactPowers::
 constructColumnLabels()
 {
-	string labels;
 	char tmp[Object::NAME_LENGTH];
+	Array<string> labels;
+	labels.append("time");
 
 	// GET GENERALIZED SPEED NAMES
-	int i;
-	AbstractBody *a, *b;
-	labels = "Time";
-	for(i=0;i<_model->getNumContacts();i++) {
-		a = _model->getContactSet()->getContactBodyA(i);
-		b = _model->getContactSet()->getContactBodyB(i);
-		sprintf(tmp,"\t%d_%s_%s",i,
+	for(int i=0;i<_model->getNumContacts();i++) {
+		AbstractBody *a = _model->getContactSet()->getContactBodyA(i);
+		AbstractBody *b = _model->getContactSet()->getContactBodyB(i);
+		sprintf(tmp,"%d_%s_%s",i,
 			a->getName().c_str(),b->getName().c_str());
-		labels += tmp;
+		labels.append(tmp);
 	}
-	labels += "\tTotal\n";
-
-	setColumnLabels(labels.c_str());
+	labels.append("Total");
+	setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________

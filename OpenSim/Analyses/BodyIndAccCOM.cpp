@@ -216,27 +216,19 @@ constructDescription()
 void BodyIndAccCOM::
 constructColumnLabels()
 {
-	char labels[MAXLEN];
-
 	// GET STATE NAMES
-	int i;
-	char name[MAXLEN];
 	if(getComponentName(0)==NULL) {
-		setColumnLabels(NULL);
+		setColumnLabels(Array<std::string>());
 	} else {
-		strcpy(labels,"time");
-		for(i=0;i<getNumComponents();i++) {
-			sprintf(name,"\t%s_X",getComponentName(i));
-			strcat(labels,name);
-			sprintf(name,"\t%s_Y",getComponentName(i));
-			strcat(labels,name);
-			sprintf(name,"\t%s_Z",getComponentName(i));
-			strcat(labels,name);
+		Array<std::string> labels;
+		labels.append("time");
+		for(int i=0;i<getNumComponents();i++) {
+			labels.append(std::string(getComponentName(i))+"_X");
+			labels.append(std::string(getComponentName(i))+"_Y");
+			labels.append(std::string(getComponentName(i))+"_Z");
 		}
-		strcat(labels,"\n");
+		setColumnLabels(labels);
 	}
-
-	setColumnLabels(labels);
 }
 
 

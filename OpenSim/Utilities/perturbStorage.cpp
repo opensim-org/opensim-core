@@ -48,39 +48,13 @@ int main(int argc,char **argv)
 
 
 	// GET COLUMN LABELS
-	const char *columnLabels = store.getColumnLabels();
-	char *label,*labels = new char[strlen(columnLabels)+1];
-	strcpy(labels,columnLabels);
-
-	// PARSE TO DESIRED COLUMN
-	int i,column;
-	bool notFound;
-	for(i=0,notFound=true;notFound;i++) {
-		
-		if(i==0) {
-			label = strtok(labels," ");
-		} else {
-			label = strtok(NULL," ");
-		}
-
-		if(label==NULL) break;
-
-		cout<<label<<endl;
-		
-		if(strcmp(label,columnName)==0) {
-			column = i;
-			notFound = false;
-		}
-	}
-
-
-	// NOT FOUND
-	if(notFound) {
+	const Array<std::string> &columnLabels = store.getColumnLabels();
+	int column = columnLabels.findIndex(columnName);
+	if(column < 0) {
 		cout<<endl<<endl<<"Column "<<columnName<<" not found.\n"<<endl<<endl;
 		exit(-1);
-	}
-	// UNSUPPORTED COLUMN
-	if(column<=0) {
+	} else if(column==0) {
+		// UNSUPPORTED COLUMN
 		cout<<"Perturbing the first column (col=0) is not currently supported."<<endl;
 		exit(-1);
 	}
@@ -91,7 +65,7 @@ int main(int argc,char **argv)
 	StateVector *vec;
 	double t;
 	int n = store.getSize();
-	for(i=0;i<n;i++) {
+	for(int i=0;i<n;i++) {
 
 		vec = store.getStateVector(i);
 		if(vec==NULL) continue;

@@ -277,13 +277,16 @@ constructDescription()
 void Decomp::
 constructColumnLabels()
 {
+	char label[256];
+
 	// CREATE FORCE HEADERS
-	int i;
-	char label[256],labels[2048];
-	strcpy(labels,"time");
-	for(i=0;i<_np;i++) {
-		sprintf(label,"\tp%dx\tp%dy\tp%dz",i,i,i);
-		strcat(labels,label);
+	Array<string> labels;
+	labels.append("time");
+	for(int i=0;i<_np;i++) {
+		sprintf(label,"p%d",i);
+		labels.append(string(label)+"x");
+		labels.append(string(label)+"y");
+		labels.append(string(label)+"z");
 	}
 
 	setColumnLabels(labels);

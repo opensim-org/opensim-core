@@ -60,34 +60,31 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	Array<string> markerNames;
 	_ikTarget.getOutputMarkerNames(markerNames);
 
-	string resultsHeader = "time\t";
+	Array<string> resultColumnLabels;
+	resultColumnLabels.append("time");
 	for (i = 0; i < unprescribedCoordinateNames.getSize(); i++)
-		resultsHeader += unprescribedCoordinateNames[i] + "\t";
+		resultColumnLabels.append(unprescribedCoordinateNames[i]);
 
 	for (i = 0; i < prescribedCoordinateNames.getSize(); i++)
-		resultsHeader += prescribedCoordinateNames[i] + "\t";
+		resultColumnLabels.append(prescribedCoordinateNames[i]);
 
-	string markerComponentNames[] = {"_px", "_py", "_pz"};
 	// Include markers for visual verification in SIMM
-	if (aIKOptions.getIncludeMarkers())
-	{
-		for (i = 0; i < markerNames.getSize(); i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				resultsHeader += markerNames[i] + markerComponentNames[j] + "\t";
-			}
+	if (aIKOptions.getIncludeMarkers()) {
+		for (i = 0; i < markerNames.getSize(); i++) {
+			resultColumnLabels.append(markerNames[i] + "_px");
+			resultColumnLabels.append(markerNames[i] + "_py");
+			resultColumnLabels.append(markerNames[i] + "_pz");
 		}
 	}
 	// User data (colummns that are in input storage file but not used by IK,
 	// to be passed along for later processing.
-	const Array<string> &inputColumnNames	 = inputData.getColumnLabelsArray();
+	const Array<string> &inputColumnLabels = inputData.getColumnLabels();
 	Array<int> userDataColumnIndices(0);
-	string userHeaders;
-	collectUserData(inputColumnNames, resultsHeader, userHeaders, userDataColumnIndices);
-	resultsHeader += userHeaders;
+	Array<string> userColumnLabels;
+	collectUserData(inputColumnLabels, resultColumnLabels, userColumnLabels, userDataColumnIndices);
+	resultColumnLabels.append(userColumnLabels);
 
-	outputData.setColumnLabels(resultsHeader.c_str());
+	outputData.setColumnLabels(resultColumnLabels);
 
 	// Set the lower and upper bounds on the unprescribed Q array
 	// TODO: shouldn't have to search for coordinates by name
@@ -180,26 +177,18 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
  * ground reaction forces). This UserData needs to be carried along in IK.
  */
 void IKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
-									   string& resultsHeader, 
-									   string& userHeaders, 
-									   Array<int>& userDataColumnIndices)
+											  const Array<string> &resultColumnLabels,
+											  Array<string> &userColumnLabels,
+											  Array<int>& userDataColumnIndices)
 {
 	// Find columns that are none of the above to append them to the end of the list
-	int i;
-	for(i=0; i< inputColumnLabels.getSize(); i++){
+	for(int i=0; i< inputColumnLabels.getSize(); i++){
 		string nextLabel = inputColumnLabels[i];
-		// We'll find out if the column is already there by doing string search for 
-		// either \t$column or $column\t to account for substrings
-		string searchString1(nextLabel+"\t");
-		string searchString2("\t"+nextLabel);
-		if (strstr(resultsHeader.c_str(), searchString1.c_str())==0 &&
-			strstr(resultsHeader.c_str(), searchString2.c_str())==0 ){
-			// Append to userHeaders
-			userHeaders += nextLabel+"\t";
+		if(resultColumnLabels.findIndex(nextLabel)==-1) {
+			// This input column is not already part of our results, so we'll add it as user data
+			userColumnLabels.append(nextLabel);
 			// Keep track of indices to match data with labels
 			userDataColumnIndices.append(i);
-
-			// cout << "Column:" << nextLabel << " index" << i << endl;
 		}
 	}
 }

@@ -34,8 +34,8 @@ class OSIMANALYSES_API Contact : public Analysis
 // DATA
 //=============================================================================
 private:
-	std::string _scalarLabels;
-	std::string _resultantForcePointLabels;
+	Array<std::string> _scalarLabels;
+	Array<std::string> _resultantForcePointLabels;
 	/** Array containing group assignemnts for each contact point in resultant
 		 force point calc **/
 	int *_resultantForcePointGroupAssignements;
@@ -90,8 +90,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	std::string getScalarColumnLabels();
-	std::string getResultantForcePointColumnLabels();
+	const Array<std::string> &getScalarColumnLabels();
+	const Array<std::string> &getResultantForcePointColumnLabels();
 	Storage* getPointsStorage() const;
 	Storage* getVelocityStorage() const;
 	Storage* getForceStorage() const;

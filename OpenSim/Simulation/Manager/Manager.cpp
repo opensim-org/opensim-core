@@ -155,18 +155,15 @@ bool Manager::
 constructStorage()
 {
 	Storage *store;
-	string columnLabels;
+	Array<string> columnLabels;
 
 	// CONTROLS
 	int i;
 	int nx = _model->getNumControls();
 	store = new Storage(512,"controls");
-	columnLabels = "time";
-	for(i=0;i<nx;i++) {
-		columnLabels += "\t";
-		columnLabels += _model->getControlName(i);
-	}
-	store->setColumnLabels(columnLabels.c_str());
+	columnLabels.append("time");
+	for(i=0;i<nx;i++) columnLabels.append(_model->getControlName(i));
+	store->setColumnLabels(columnLabels);
 	_integrand->setControlStorage(store);
 
 	// STATES
@@ -174,12 +171,10 @@ constructStorage()
 	_model->getStateNames(stateNames);
 	int ny = stateNames.getSize();
 	store = new Storage(512,"states");
-	columnLabels = "time";
-	for(i=0;i<ny;i++) {
-		columnLabels += "\t";
-		columnLabels += stateNames[i];
-	}
-	store->setColumnLabels(columnLabels.c_str());
+	columnLabels.setSize(0);
+	columnLabels.append("time");
+	for(i=0;i<ny;i++) columnLabels.append(stateNames[i]);
+	store->setColumnLabels(columnLabels);
 	_integrand->setStateStorage(store);
 
 	// PSEUDO-STATES
@@ -187,12 +182,10 @@ constructStorage()
 	_model->getPseudoStateNames(pseudoNames);
 	int nyp = pseudoNames.getSize();
 	store = new Storage(512,"pseudo");
-	columnLabels = "time";
-	for(i=0;i<nyp;i++) {
-		columnLabels += "\t";
-		columnLabels += pseudoNames[i];
-	}
-	store->setColumnLabels(columnLabels.c_str());
+	columnLabels.setSize(0);
+	columnLabels.append("time");
+	for(i=0;i<nyp;i++) columnLabels.append(pseudoNames[i]);
+	store->setColumnLabels(columnLabels);
 	_integrand->setPseudoStateStorage(store);
 
 	return(true);

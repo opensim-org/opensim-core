@@ -86,10 +86,8 @@ protected:
 	Array<StateVector> _storage;
 	/** Token used to mark the end of the description in a file. */
 	std::string _headerToken;
-	/** Column labels for the states, usually tab delimited. */
-	char *_columnLabels;
-	/** Parsed version of _columnLabels to be used to query data by column */
-	Array<std::string> _columnLabelsArray;
+	/** Column labels. */
+	Array<std::string> _columnLabels;
 	/** Step interval at which states in a simulation are stored. See
 	store(). */
 	int _stepInterval;
@@ -159,9 +157,8 @@ public:
 	const std::string& getHeaderToken() const;
 	// COLUMN LABELS
 	const int getColumnIndex(const std::string &aColumnName, int startIndex=0) const;
-	void setColumnLabels(const char *aLabels=NULL);
-	const char* getColumnLabels() const;
-	const Array<std::string> &getColumnLabelsArray() const;
+	void setColumnLabels(const Array<std::string> &aColumnLabels);
+	const Array<std::string> &getColumnLabels() const;
 	//--------------------------------------------------------------------------
 	// RESET
 	//--------------------------------------------------------------------------
@@ -228,7 +225,6 @@ private:
 	int writeSIMMHeader(FILE *rFP,double aDT=-1) const;
 	int writeDescription(FILE *rFP) const;
 	int writeColumnLabels(FILE *rFP) const;
-	int writeDefaultColumnLabels(FILE *rFP) const;
 
 //=============================================================================
 };	// END of class Storage

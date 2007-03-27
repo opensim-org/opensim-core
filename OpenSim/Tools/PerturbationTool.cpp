@@ -599,25 +599,24 @@ void PerturbationTool::run()
 
 	if(_perturbGravity) _model->getGravity(original_gravity);
 
-	string columnLabels = "time";
-	for(int i=0; i<actuators.getSize(); i++)
-		columnLabels += "\t" + actuators.get(i)->getName();
-	if(_perturbGravity)
-		columnLabels += "\tgravity";
+	Array<string> columnLabels;
+	columnLabels.append("time");
+	for(int i=0; i<actuators.getSize(); i++) columnLabels.append(actuators.get(i)->getName());
+	if(_perturbGravity) columnLabels.append("gravity");
 
 	// Figure out which columns are being recorded in the Kinematics and BodyKinematics analyses...
 	// but make sure to ignore the first (time) column
-	int ncoords = kin ? kin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
-	int nbodycoords = bodyKin ? bodyKin->getPositionStorage()->getColumnLabelsArray().getSize()-1 : 0;
+	int ncoords = kin ? kin->getPositionStorage()->getColumnLabels().getSize()-1 : 0;
+	int nbodycoords = bodyKin ? bodyKin->getPositionStorage()->getColumnLabels().getSize()-1 : 0;
 	int nvalues = ncoords + nbodycoords;
 	if(nvalues==0) 
 		throw Exception("PerturbationTool.run: ERROR- No (active) analyses found -- no perturbation to compute.",__FILE__,__LINE__);
 
 	Array<string> values_name("",nvalues);
 	for(int i=0;i<ncoords;i++)
-		values_name[i] = kin->getPositionStorage()->getColumnLabelsArray()[i+1];
+		values_name[i] = kin->getPositionStorage()->getColumnLabels()[i+1];
 	for(int i=0;i<nbodycoords;i++)
-		values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabelsArray()[i+1];
+		values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabels()[i+1];
 
 	cout << "PERTURBED DATA:" << endl;
 	if(actuators.getSize()) {
@@ -632,7 +631,7 @@ void PerturbationTool::run()
 	if(ncoords) {
 		cout << "Kinematics: ";
 		for(int i=0;i<ncoords;i++) {
-			values_name[i] = kin->getPositionStorage()->getColumnLabelsArray()[i+1];
+			values_name[i] = kin->getPositionStorage()->getColumnLabels()[i+1];
 			cout << (i>0?", ":"") << values_name[i];
 		}
 		cout << endl;
@@ -640,7 +639,7 @@ void PerturbationTool::run()
 	if(nbodycoords) {
 		cout << "BodyKinematics: ";
 		for(int i=0;i<nbodycoords;i++) {
-			values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabelsArray()[i+1];
+			values_name[ncoords+i] = bodyKin->getPositionStorage()->getColumnLabels()[i+1];
 			cout << (i>0?", ":"") << values_name[ncoords+i];
 		}
 		cout << endl;
@@ -663,18 +662,19 @@ void PerturbationTool::run()
 		values_dAdFStorage.set(i,new Storage);
 		values_deltaAStorage.set(i,new Storage);
 		values_perturbedStorage[i]->setName(values_name[i]+"_perturbed");
-		values_perturbedStorage[i]->setColumnLabels(columnLabels.c_str());
+		values_perturbedStorage[i]->setColumnLabels(columnLabels);
 		values_dAdFStorage[i]->setName(values_name[i]+"_dAdF");
-		values_dAdFStorage[i]->setColumnLabels(columnLabels.c_str());
+		values_dAdFStorage[i]->setColumnLabels(columnLabels);
 		values_deltaAStorage[i]->setName(values_name[i]+"_deltaA");
-		values_deltaAStorage[i]->setColumnLabels(columnLabels.c_str());
+		values_deltaAStorage[i]->setColumnLabels(columnLabels);
 	}
 
 	Storage unperturbedAccelStorage;
 	unperturbedAccelStorage.setName("unperturbedAccel");
-	columnLabels = "time";
-	for(int i=0;i<nvalues;i++) columnLabels += "\t" + values_name[i];
-	unperturbedAccelStorage.setColumnLabels(columnLabels.c_str());
+	columnLabels.setSize(0);
+	columnLabels.append("time");
+	for(int i=0;i<nvalues;i++) columnLabels.append(values_name[i]);
+	unperturbedAccelStorage.setColumnLabels(columnLabels);
 
 	Array<double> deltaA(0,nperturb);
 
@@ -962,10 +962,18 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	lTrq->setScaleFunction(lScaleTorsionalSpline);
 	_model->addDerivCallback(lTrq);
 
-
-	string labels = "time\tr_scale_linear\tl_scale_linear\tr_scale_torsional\tl_scale_torsional\tr_stance\tl_stance\tr_footflat\tl_footflat";
+	Array<string> labels;
+	labels.append("time"); 
+	labels.append("r_scale_linear"); 
+	labels.append("l_scale_linear");
+	labels.append("r_scale_torsional"); 
+	labels.append("l_scale_torsional");
+	labels.append("r_stance");
+	labels.append("l_stance");
+	labels.append("r_footflat");
+	labels.append("l_footflat");
 	Storage debugStorage;
-	debugStorage.setColumnLabels(labels.c_str());
+	debugStorage.setColumnLabels(labels);
 	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
 		double values[8] = {rScaleTranslationalSpline->evaluate(0,tScale), 
 								  lScaleTranslationalSpline->evaluate(0,tScale),

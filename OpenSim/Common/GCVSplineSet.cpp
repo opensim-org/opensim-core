@@ -141,18 +141,16 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 	setDescription(aStore->getDescription());
 
 	// GET COLUMN NAMES
-	const char *labels = aStore->getColumnLabels();
-	char *name,*names = new char[strlen(labels)+1];
+	const Array<std::string> &labels = aStore->getColumnLabels();
 	char tmp[Object::NAME_LENGTH];
-	strcpy(names,labels);
+	std::string name;
 
 	// LOOP THROUGHT THE STATES
-	int i,nTime=1,nData=1;
+	int nTime=1,nData=1;
 	double *times=NULL,*data=NULL;
 	GCVSpline *spline;
-	name = strtok(names,"\t");
 	//printf("GCVSplineSet.construct:  contructing splines...\n");
-	for(i=0;nData>0;i++) {
+	for(int i=0;nData>0;i++) {
 
 		// GET TIMES AND DATA
 		nTime = aStore->getTimeColumn(times,i);
@@ -167,9 +165,10 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 		if(nData==0) break;
 
 		// GET COLUMN NAME
-		// Delimiter is assumed to be a tab.
-		name = strtok(NULL,"\t");
-		if(name==NULL) {
+		// Note that state i is in column i+1
+		if(i+1 < labels.getSize()) {
+			name = labels[i+1];
+		} else {
 			sprintf(tmp,"data_%d",i);
 			name = tmp;
 		}
@@ -188,7 +187,6 @@ construct(int aDegree,Storage *aStore,double aErrorVariance)
 	setMaxX(aStore->getLastTime());
 
 	// CLEANUP
-	if(names!=NULL) delete[] names;
 	if(times!=NULL) delete[] times;
 	if(data!=NULL) delete[] data;
 }
@@ -271,16 +269,16 @@ constructStorage(int aDerivOrder,double aDX)
 	// SET COLUMN LABELS
 	GCVSpline *spline;
 	int len = n*(Object::NAME_LENGTH+4);
-	char *labels = new char[len];
-	strcpy(labels,"time");
+	Array<std::string> labels;
+	labels.append("time");
 	for(i=0;i<n;i++) {
 		spline = getGCVSpline(i);
 		if(spline==NULL) {
-			sprintf(name,"\tdata_%d",i);
+			sprintf(name,"data_%d",i);
+			labels.append(name);
 		} else {
-			sprintf(name,"\t%s",spline->getName().c_str());
+			labels.append(spline->getName());
 		}
-		strcat(labels,name);
 	}
 	store->setColumnLabels(labels);
 
@@ -351,7 +349,6 @@ constructStorage(int aDerivOrder,double aDX)
 
 	// CLEANUP
 	if(y!=NULL) delete[] y;
-	if(labels!=NULL) delete[] labels;
 
 	return(store);
 }

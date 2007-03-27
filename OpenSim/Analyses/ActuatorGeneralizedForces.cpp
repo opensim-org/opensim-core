@@ -272,22 +272,15 @@ constructColumnLabels()
 	// CHECK FOR NULL
 	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
 	{
-		setColumnLabels(NULL);
+		setColumnLabels(Array<string>());
 		return;
 	}
 
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
-
-	for(int i=0; i<ss->getSize(); i++)
-	{
-		AbstractSpeed* speed = ss->get(i);
-		labels += "\t" + speed->getName();
-	}
-
-	labels += "\n";
-
-	setColumnLabels(labels.c_str());
+	for(int i=0; i<ss->getSize(); i++) labels.append(ss->get(i)->getName());
+	setColumnLabels(labels);
 }
 
 

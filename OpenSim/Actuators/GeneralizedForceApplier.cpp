@@ -188,8 +188,9 @@ constructDescription()
 void GeneralizedForceApplier::
 constructColumnLabels()
 {
-	char labels[2048];
-	strcpy(labels,"time\tGenForce\n");
+	Array<std::string> labels;
+	labels.append("time");
+	labels.append("GenForce");
 	_appliedGeneralizedForceStore->setColumnLabels(labels);
 }
 
@@ -202,7 +203,6 @@ allocateStorage()
 {
 	_appliedGeneralizedForceStore = new Storage(1000,"Generalized forces applied to " + _genCoord->getName());
 	_appliedGeneralizedForceStore->setDescription(getDescription());
-	_appliedGeneralizedForceStore->setColumnLabels(_appliedGeneralizedForceStore->getColumnLabels());
 }
 
 

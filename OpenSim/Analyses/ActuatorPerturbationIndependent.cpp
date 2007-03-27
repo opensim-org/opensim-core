@@ -105,22 +105,12 @@ constructDescription()
 void ActuatorPerturbationIndependent::
 constructColumnLabels()
 {
-	// GET ACTUATOR NAMES
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	ActuatorSet *as = _model->getActuatorSet();
-	int i=0;
-
-	for(i=0; i<as->getSize(); i++)
-	{
-		AbstractActuator *act=as->get(i);
-		labels += "\t";
-		labels += act->getName();
-	}
-	labels += "\n";
-
-	_unperturbedForceStorage->setColumnLabels(labels.c_str());
-	_perturbedForceStorage->setColumnLabels(labels.c_str());
-
+	for(int i=0; i<as->getSize(); i++) labels.append(as->get(i)->getName());
+	_unperturbedForceStorage->setColumnLabels(labels);
+	_perturbedForceStorage->setColumnLabels(labels);
 }
 
 

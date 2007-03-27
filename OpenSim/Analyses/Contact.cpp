@@ -176,7 +176,8 @@ constructDescription()
 void Contact::
 constructColumnLabels(int nResultantForcePointgroups)
 {
-	string labels = "Time";
+	Array<string> labels;
+	labels.append("time");
 
 	// VECTOR LABELS
 	int p;
@@ -187,43 +188,44 @@ constructColumnLabels(int nResultantForcePointgroups)
 
 		// BODY A
 		a = _model->getContactSet()->getContactBodyA(p);
-		sprintf(tmp,"\t%d_A_%s_x",p,a->getName().c_str());
-		labels += tmp;
-		sprintf(tmp,"\t%d_A_%s_y",p,a->getName().c_str());
-		labels += tmp;
-		sprintf(tmp,"\t%d_A_%s_z",p,a->getName().c_str());
-		labels += tmp;
+		sprintf(tmp,"%d_A_%s_x",p,a->getName().c_str());
+		labels.append(tmp);
+		sprintf(tmp,"%d_A_%s_y",p,a->getName().c_str());
+		labels.append(tmp);
+		sprintf(tmp,"%d_A_%s_z",p,a->getName().c_str());
+		labels.append(tmp);
 
 		// BODY B
 		b = _model->getContactSet()->getContactBodyB(p);
-		sprintf(tmp,"\t%d_B_%s_x",p,b->getName().c_str());
-		labels += tmp;
-		sprintf(tmp,"\t%d_B_%s_y",p,b->getName().c_str());
-		labels += tmp;
-		sprintf(tmp,"\t%d_B_%s_z",p,b->getName().c_str());
-		labels += tmp;
+		sprintf(tmp,"%d_B_%s_x",p,b->getName().c_str());
+		labels.append(tmp);
+		sprintf(tmp,"%d_B_%s_y",p,b->getName().c_str());
+		labels.append(tmp);
+		sprintf(tmp,"%d_B_%s_z",p,b->getName().c_str());
+		labels.append(tmp);
 	}
-	setColumnLabels(labels.c_str());
+	setColumnLabels(labels);
 
 	// SCALAR LABELS
-	_scalarLabels = "Time";
+	_scalarLabels.setSize(0);
+	_scalarLabels.append("time");
 	for(p=0;p<np;p++) {
 		a = _model->getContactSet()->getContactBodyA(p);
 		b = _model->getContactSet()->getContactBodyB(p);
-		sprintf(tmp,"\t%d_%s_%s",
-			p,a->getName().c_str(),b->getName().c_str());
-		_scalarLabels += tmp;
+		sprintf(tmp,"%d_%s_%s",p,a->getName().c_str(),b->getName().c_str());
+		_scalarLabels.append(tmp);
 	}
 
 	// RESULTANT FORCE POINT LABELS
-	_resultantForcePointLabels = "Time";
+	_resultantForcePointLabels.setSize(0);
+	_resultantForcePointLabels.append("time");
 	for(p=0;p<nResultantForcePointgroups;p++) {
-		sprintf(tmp,"\tresultantForcePoint_Group_%d_x",p);
-		_resultantForcePointLabels = tmp;
-		sprintf(tmp,"\tresultantForcePoint_Group_%d_y",p);
-		_resultantForcePointLabels = tmp;
-		sprintf(tmp,"\tresultantForcePoint_Group_%d_z",p);
-		_resultantForcePointLabels = tmp;
+		sprintf(tmp,"resultantForcePoint_Group_%d_x",p);
+		_resultantForcePointLabels.append(tmp);
+		sprintf(tmp,"resultantForcePoint_Group_%d_y",p);
+		_resultantForcePointLabels.append(tmp);
+		sprintf(tmp,"resultantForcePoint_Group_%d_z",p);
+		_resultantForcePointLabels.append(tmp);
 	}
 }
 //_____________________________________________________________________________
@@ -251,22 +253,22 @@ allocateStorage()
 	// POWERS
 	_pwrStore = new Storage(1000,"ContactPowers");
 	_pwrStore->setDescription(getDescription().c_str());
-	_pwrStore->setColumnLabels(getScalarColumnLabels().c_str());
+	_pwrStore->setColumnLabels(getScalarColumnLabels());
 
 	// RESULTANT FORCE POINT
 	_resultantForcePointsStore = new Storage(1000,"ContactResultantForcePoint");
 	_resultantForcePointsStore->setDescription(getDescription());
-	_resultantForcePointsStore->setColumnLabels(getResultantForcePointColumnLabels().c_str());
+	_resultantForcePointsStore->setColumnLabels(getResultantForcePointColumnLabels());
 
 	// TOTAL FORCE
 	_totFStore = new Storage(1000,"ContactTotalForces");
 	_totFStore->setDescription(getDescription());
-	_totFStore->setColumnLabels(getResultantForcePointColumnLabels().c_str());
+	_totFStore->setColumnLabels(getResultantForcePointColumnLabels());
 		
 	// TOTAL TORQUE
 	_totTorqueStore = new Storage(1000,"ContactTotalTorques");
 	_totTorqueStore->setDescription(getDescription());
-	_totTorqueStore->setColumnLabels(getResultantForcePointColumnLabels().c_str());
+	_totTorqueStore->setColumnLabels(getResultantForcePointColumnLabels());
 }
 
 
@@ -302,7 +304,7 @@ deleteStorage()
  *
  * @return Column labels for scalar variables.
  */
-string Contact::
+const Array<string> &Contact::
 getScalarColumnLabels()
 {
 	return(_scalarLabels);
@@ -313,7 +315,7 @@ getScalarColumnLabels()
  *
  * @return Column labels for resultant force point groups.
  */
-string Contact::
+const Array<string> &Contact::
 getResultantForcePointColumnLabels()
 {
 	return(_resultantForcePointLabels);

@@ -75,7 +75,11 @@ setNull()
 	_force = 0.0;
 	_forceStore = new Storage();
 	_forceStore->setName("forceStore");
-	_forceStore->setColumnLabels("time\tnominal\tperturbed");
+	Array<std::string> labels;
+	labels.append("time");
+	labels.append("nominal");
+	labels.append("perturbed");
+	_forceStore->setColumnLabels(labels);
 }
 
 //=============================================================================

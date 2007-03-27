@@ -57,8 +57,8 @@ _ikTaskSet(aIKTaskSet),
 _experimentalDataStorage(aExperimentalDataStorage),
 _markers(NULL)
 {
-	buildMarkerMap(aExperimentalDataStorage.getColumnLabelsArray());
-	buildCoordinateMap(aExperimentalDataStorage.getColumnLabelsArray());
+	buildMarkerMap(aExperimentalDataStorage.getColumnLabels());
+	buildCoordinateMap(aExperimentalDataStorage.getColumnLabels());
 
 	/** Number of controls -- also allocates _dx. */
 	setNumControls(_unprescribedQs.getSize());

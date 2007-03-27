@@ -295,21 +295,19 @@ constructColumnLabels()
 	// CHECK FOR NULL
 	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
 	{
-		setColumnLabels(NULL);
+		setColumnLabels(Array<string>());
 		return;
 	}
 
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
-
 	for(int i=0; i<_coordinateIndices.getSize(); i++) {
 		AbstractSpeed *speed= ss->get(_coordinateIndices[i]);
-		labels += "\t" + AbstractSpeed::getCoordinateName(speed->getName());
+		labels.append(AbstractSpeed::getCoordinateName(speed->getName()));
 	}
 
-	labels += "\n";
-
-	setColumnLabels(labels.c_str());
+	setColumnLabels(labels);
 	if (_pStore)
 		_pStore->setColumnLabels(getColumnLabels());
 	if (_vStore)

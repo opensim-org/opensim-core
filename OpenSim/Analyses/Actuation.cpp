@@ -261,28 +261,11 @@ constructColumnLabels()
 	if (_model)
 	{
 		// ASSIGN
-		string labels = "time";
+		Array<string> labels;
+		labels.append("time");
 		ActuatorSet *ai = _model->getActuatorSet();
-		AbstractActuator *act=0;
-	
-		int i;
-		for (i=0; i < ai->getSize(); i++)
-		{
-			act = ai->get(i);
-			labels += "\t";
-			labels += act->getName();
-		}
-
-		labels += "\n";
-
-		setColumnLabels(labels.c_str());
-
-		if (_forceStore)
-			_forceStore->setColumnLabels(getColumnLabels());
-		if (_speedStore)
-			_speedStore->setColumnLabels(getColumnLabels());
-		if (_powerStore)
-			_powerStore->setColumnLabels(getColumnLabels());
+		for (int i=0; i < ai->getSize(); i++) labels.append(ai->get(i)->getName());
+		setColumnLabels(labels);
 	}
 	_forceStore->setColumnLabels(getColumnLabels());
 	_speedStore->setColumnLabels(getColumnLabels());

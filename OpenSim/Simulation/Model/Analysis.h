@@ -71,7 +71,7 @@ private:
 
 	// WORK ARRAYS
 	/** Column labels. */
-	std::string _labels;
+	Array<std::string> _labels;
 
 protected:
 	ArrayPtrs<Storage> _storageList;
@@ -107,8 +107,8 @@ public:
 	void setInDegrees(bool aTrueFalse);
 	bool getInDegrees() const;
 	// COLUMN LABLES
-	void setColumnLabels(const char *aLabels);
-	const char* getColumnLabels() const;
+	void setColumnLabels(const Array<std::string> &aLabels);
+	const Array<std::string> &getColumnLabels() const;
 #ifndef SWIG
 	// These symbols are swigged out because they are not defined and never used!
 	// STORAGE INTERVAL

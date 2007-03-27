@@ -303,23 +303,15 @@ constructColumnLabels()
 	// CHECK FOR NULL
 	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
 	{
-		setColumnLabels(NULL);
+		setColumnLabels(Array<string>());
 		return;
 	}
 
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
-	int i=0;
-
-	for(i=0; i<ss->getSize(); i++)
-	{
-		AbstractSpeed* speed = ss->get(i);
-		labels += "\t" + speed->getName();
-	}
-
-	labels += "\n";
-
-	setColumnLabels(labels.c_str());
+	for(int i=0; i<ss->getSize(); i++) labels.append(ss->get(i)->getName());
+	setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
@@ -376,22 +368,23 @@ allocateStorage()
 	allocateStoragePointers();
 
 	// CREATE FORCE HEADERS
-	int i;
-	char tmp[2048],tmp1[2048];
-	strcpy(tmp1,"time");
-	for(i=0;i<_ne;i++) {
-		sprintf(tmp,"\ts%dx\ts%dy\ts%dz",i,i,i);
-		strcat(tmp1,tmp);
+	char tmp[2048];
+	Array<string> labels;
+	labels.append("time");
+	for(int i=0;i<_ne;i++) {
+		sprintf(tmp,"s%d",i);
+		labels.append(string(tmp)+"x");
+		labels.append(string(tmp)+"y");
+		labels.append(string(tmp)+"z");
 	}
 
 	// ALLOCATE STORAGE
-	int c;
-	for(c=0;c<_nc;c++) {
+	for(int c=0;c<_nc;c++) {
 
 		// FORCE
 		_feStore[c] = new Storage(1000,"ForceDecomposition");
 		_feStore[c]->setCapacityIncrement(1000);
-		_feStore[c]->setColumnLabels(tmp1);
+		_feStore[c]->setColumnLabels(labels);
 		
 		// ACCELERATION
 		_aeStore[c] = new Storage(1000,"InducedAccelerations");

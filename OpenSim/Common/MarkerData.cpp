@@ -688,15 +688,15 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 	rStorage.reset(0);
 
 	/* Make the column labels. */
-	string columnLabels = "time\t";
-	int i;
-	for (i = 0; i < _numMarkers; i++)
+	Array<string> columnLabels;
+	columnLabels.append("time");
+	for (int i = 0; i < _numMarkers; i++)
 	{
-		columnLabels += _markerNames[i] + "_tx\t";
-		columnLabels += _markerNames[i] + "_ty\t";
-		columnLabels += _markerNames[i] + "_tz\t";
+		columnLabels.append(_markerNames[i] + "_tx");
+		columnLabels.append(_markerNames[i] + "_ty");
+		columnLabels.append(_markerNames[i] + "_tz");
 	}
-	rStorage.setColumnLabels(columnLabels.c_str());
+	rStorage.setColumnLabels(columnLabels);
 
 	/* Store the marker coordinates in an array of doubles
 	 * and add it to the Storage.
@@ -704,7 +704,7 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 	int numColumns = _numMarkers * 3;
 	double* row = new double [numColumns];
 
-	for (i = 0; i < _numFrames; i++)
+	for (int i = 0; i < _numFrames; i++)
 	{
 		for (int j = 0, index = 0; j < _numMarkers; j++)
 		{

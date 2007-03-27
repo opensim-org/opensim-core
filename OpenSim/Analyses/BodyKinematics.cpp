@@ -230,25 +230,28 @@ constructDescription()
 void BodyKinematics::
 constructColumnLabels()
 {
-	string labels = "time";
+	Array<string> labels;
+	labels.append("time");
 
 	BodySet *bs = _model->getDynamicsEngine().getBodySet();
 	for(int i=0; i<_bodyIndices.getSize(); i++) {
 		AbstractBody *body = bs->get(_bodyIndices[i]);
-		labels += "\t" + body->getName() + "_X";
-		labels += "\t" + body->getName() + "_Y";
-		labels += "\t" + body->getName() + "_Z";
-		labels += "\t" + body->getName() + "_Ox";
-		labels += "\t" + body->getName() + "_Oy";
-		labels += "\t" + body->getName() + "_Oz";
+		labels.append(body->getName() + "_X");
+		labels.append(body->getName() + "_Y");
+		labels.append(body->getName() + "_Z");
+		labels.append(body->getName() + "_Ox");
+		labels.append(body->getName() + "_Oy");
+		labels.append(body->getName() + "_Oz");
 	}
 
 	if(_recordCenterOfMass) {
 		// ADD NAMES FOR POSITION, VELOCITY, AND ACCELERATION OF WHOLE BODY
-		labels += "\t"+CENTER_OF_MASS_NAME+"_X\t"+CENTER_OF_MASS_NAME+"_Y\t"+CENTER_OF_MASS_NAME+"_Z\n";
+		labels.append(CENTER_OF_MASS_NAME + "_X");
+		labels.append(CENTER_OF_MASS_NAME + "_Y");
+		labels.append(CENTER_OF_MASS_NAME + "_Z");
 	}
 
-	setColumnLabels(labels.c_str());
+	setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________

@@ -147,10 +147,11 @@ constructDescription()
 void TorqueApplier::
 constructColumnLabels()
 {
-	char labels[2048];
-
-	strcpy(labels,"time\tTorque_x\tTorque_y\tTorque_z\n");
-
+	Array<std::string> labels;
+	labels.append("time");
+	labels.append("Torque_x");
+	labels.append("Torque_y");
+	labels.append("Torque_z");
 	_appliedTorqueStore->setColumnLabels(labels);
 }
 
@@ -163,9 +164,6 @@ allocateStorage()
 {
 	_appliedTorqueStore = new Storage(1000,"Forces applied to " + _body->getName());
 	_appliedTorqueStore->setDescription(getDescription());
-	_appliedTorqueStore->setColumnLabels(_appliedTorqueStore->getColumnLabels());
-
-//
 }
 
 
