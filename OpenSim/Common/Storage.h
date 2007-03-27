@@ -136,6 +136,7 @@ public:
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
 	// DATA
 	int getData(int aTimeIndex,int aStateIndex,double &rValue) const;
+	int getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const;
 	int getData(int aTimeIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aN,double *rData) const;
@@ -196,12 +197,12 @@ public:
 	void divide(int aN,double aY[]);
 	void divide(StateVector *aStateVector);
 	void divide(Storage *aStorage);
-	Storage* integrate(int aI1=-2,int aI2=-1);
-	Storage* integrate(double aT1,double aT2);
-	int computeArea(int aN,double *aArea);
-	int computeArea(double aTI,double aTF,int aN,double *aArea);
-	int computeAverage(int aN,double *aAve);
-	int computeAverage(double aTI,double aTF,int aN,double *aAve);
+	Storage* integrate(int aI1=-2,int aI2=-1) const;
+	Storage* integrate(double aT1,double aT2) const;
+	int computeArea(int aN,double *aArea) const;
+	int computeArea(double aTI,double aTF,int aN,double *aArea) const;
+	int computeAverage(int aN,double *aAve) const;
+	int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
 	void pad(int aPadSize);
 	void lowpassFIR(int aOrder,double aCutoffFequency);
 
@@ -225,6 +226,8 @@ private:
 	int writeSIMMHeader(FILE *rFP,double aDT=-1) const;
 	int writeDescription(FILE *rFP) const;
 	int writeColumnLabels(FILE *rFP) const;
+	int integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const;
+	int integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const;
 
 //=============================================================================
 };	// END of class Storage

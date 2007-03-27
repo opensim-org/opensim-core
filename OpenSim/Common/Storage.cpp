@@ -719,20 +719,10 @@ getData(int aTimeIndex,int aStateIndex,double &rValue) const
 }
 //_____________________________________________________________________________
 /**
- * At a specified time index, get a number of state values starting at
- * a specified state.  The method simply gets part of a row of data
- * from adjacent columns in the storage object.
- *
- * @param aTimeIndex Index that identifies the time (row) at which to get the
- * data value:  0 <= aTimeIndex < _storage.getSize().
- * @param aStateIndex Index of the state (column) at which to start getting
- * the data.
- * @param aN Number of states (columns) to get.
- * @param rData Data values. rData should be able to hold at least N values.
- * @return Number of states that were gotten.
+ * Helper function for getData
  */
 int Storage::
-getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
+getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const
 {
 	if(aN<=0) return(0);
 	if(aStateIndex<0) return(0);
@@ -749,20 +739,48 @@ getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
 	if(aStateIndex>=size) return(0);
 	int n = aStateIndex + aN;
 	if(n>size) n = size;
+	int N = n - aStateIndex;
+
+	// ALLOCATE MEMORY
+	if(*rData==NULL) *rData = new double[N];
 
 	// ASSIGN DATA
 	int i,j;
 	Array<double> &data = vec->getData();
-	for(i=0,j=aStateIndex;j<n;i++,j++) rData[i] = data[j];
+	double *pData = *rData;
+	for(i=0,j=aStateIndex;j<n;i++,j++) pData[i] = data[j];
 
-	int N = n - aStateIndex;
 	return(N);
 }
 //_____________________________________________________________________________
 /**
- * Get the first aN states at a specified time index.
+ * At a specified time index, get a number of state values starting at
+ * a specified state.  The method simply gets part of a row of data
+ * from adjacent columns in the storage object.
+ *
+ * @param aTimeIndex Index that identifies the time (row) at which to get the
+ * data value:  0 <= aTimeIndex < _storage.getSize().
+ * @param aStateIndex Index of the state (column) at which to start getting
+ * the data.
+ * @param aN Number of states (columns) to get.
+ * @param rData Data values. rData should be able to hold at least N values.
+ * @return Number of states that were gotten.
+ */
+int Storage::
+getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
+{
+	if(rData==NULL) return(0);
+	else return getData(aTimeIndex,aStateIndex,aN,&rData);
+}
+//_____________________________________________________________________________
+/**
+ * At a specified time index, get a number of state values starting at
+ * a specified state.  The method simply gets part of a row of data
+ * from adjacent columns in the storage object.
  *
  *	@param aTimeIndex Time index at which to get the states.
+ * @param aStateIndex Index of the state (column) at which to start getting
+ * the data.
  * @param aN Number of states to get.
  * @param rData Pointer to an array where the returned data will be set.  The
  * size of *rData is assumed to be at least aN.  If rData comes in as NULL,
@@ -772,31 +790,7 @@ getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const
 int Storage::
 getData(int aTimeIndex,int aN,double **rData) const
 {
-	if(aN<=0) return(0);
-	if(aTimeIndex<0) return(0);
-	if(aTimeIndex>=_storage.getSize()) return(0);
-
-	// GET STATEVECTOR
-	StateVector *vec = getStateVector(aTimeIndex);
-	if(vec==NULL) return(0);
-	if(vec->getSize()<=0) return(0);
-
-	// NUMBER OF STATES TO GET
-	int n = aN;
-	if(n > vec->getSize()) n = vec->getSize();
-
-	// ALLOCATE MEMORY
-	if(*rData==NULL) {
-		*rData = new double[n];
-	}
-
-	// ASSIGN DATA
-	int i;
-	Array<double> &data = vec->getData();
-	double *pData = *rData;
-	for(i=0;i<n;i++) pData[i] = data[i];
-
-	return(n);
+	return getData(aTimeIndex,0,aN,rData);
 }
 //_____________________________________________________________________________
 /**
@@ -811,25 +805,8 @@ getData(int aTimeIndex,int aN,double **rData) const
 int Storage::
 getData(int aTimeIndex,int aN,double *rData) const
 {
-	if(aN<=0) return(0);
-	if(aTimeIndex<0) return(0);
-	if(aTimeIndex>=_storage.getSize()) return(0);
-
-	// GET STATEVECTOR
-	StateVector *vec = getStateVector(aTimeIndex);
-	if(vec==NULL) return(0);
-	if(vec->getSize()<=0) return(0);
-
-	// NUMBER OF STATES TO GET
-	int n = aN;
-	if(n > vec->getSize()) n = vec->getSize();
-
-	// ASSIGN DATA
-	int i;
-	Array<double> &data = vec->getData();
-	for(i=0;i<n;i++) rData[i] = data[i];
-
-	return(n);
+	if(rData==NULL) return(0);
+	else return getData(aTimeIndex,0,aN,&rData);
 }
 //_____________________________________________________________________________
 /**
@@ -920,52 +897,7 @@ int Storage::
 getDataAtTime(double aT,int aN,double *rData) const
 {
 	if(rData==NULL) return(0);
-
-	// FIND THE CORRECT INTERVAL FOR aT
-	int i = findIndex(_lastI,aT);
-	if((i<0)||(_storage.getSize()<=0)) return(0);
-
-	// CHECK FOR i AT END POINTS
-	int i1=i,i2=i+1;
-	if(i2==_storage.getSize()) {
-		i1--;  if(i1<0) i1=0;
-		i2--;  if(i2<0) i2=0;
-	}
-
-	// STATES AT FIRST INDEX
-	int n1 = getStateVector(i1)->getSize();
-	double t1 = getStateVector(i1)->getTime();
-	Array<double> &y1 = getStateVector(i1)->getData();
-
-	// STATES AT NEXT INDEX
-	int n2 = getStateVector(i2)->getSize();
-	double t2 = getStateVector(i2)->getTime();
-	Array<double> y2 = getStateVector(i2)->getData();
-
-	// GET THE SMALLEST N TO PREVENT MEMORY OVER-RUNS
-	int ns = (n1<n2) ? n1 : n2;
-
-	// ALLOCATE MEMORY?
-	if(aN<ns) ns = aN;
-
-	// ASSIGN VALUES
-	double pct;
-	double num = aT-t1;
-	double den = t2-t1;
-	if(den<rdMath::ZERO) {
-		pct = 0.0;
-	} else {
-		pct = num/den;
-	}
-	for(i=0;i<ns;i++) {
-		if(pct==0.0) {
-			rData[i] = y1[i];
-		} else {
-			rData[i] = y1[i] + pct*(y2[i]-y1[i]);
-		}
-	}
-
-	return(ns);	
+	else return getDataAtTime(aT,aN,&rData);
 }
 //_____________________________________________________________________________
 /**
@@ -1616,7 +1548,7 @@ divide(Storage *aStorage)
  * The number of valid states in aAve is returned.
  */
 int Storage::
-computeAverage(int aN,double *aAve)
+computeAverage(int aN,double *aAve) const
 {
 	int n = computeArea(aN,aAve);
 	if(n==0) return(0);
@@ -1654,7 +1586,7 @@ computeAverage(int aN,double *aAve)
  * an estimate of the state at aTI or at aTF.
  */
 int Storage::
-computeAverage(double aTI,double aTF,int aN,double *aAve)
+computeAverage(double aTI,double aTF,int aN,double *aAve) const
 {
 	int n = computeArea(aTI,aTF,aN,aAve);
 	if(n==0) return(0);
@@ -1670,23 +1602,22 @@ computeAverage(double aTI,double aTF,int aN,double *aAve)
 
 //_____________________________________________________________________________
 /**
- * Compute the area of the first aN states stored for all state vectors
- * stored in this storage instance.
- *
- * It is assumed that there is enough memory at aArea to hold aN states.
- * If aN exceeds the number of states held in storage, aN is disregarded.
- *
- * The number of valid states in aArea is returned.
+ * Helper function for integrate/computeArea
  */
 int Storage::
-computeArea(int aN,double *aArea)
+integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 {
 	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) return(0);
+	if(_storage.getSize()<=0) {
+		printf("Storage.integrate: ERROR- no stored states.\n");
+		return(0);
+	}
 
-	// CHECK FOR VALID OUTPUT ARRAYS
-	if(aN<=0) return(0);
-	if(aArea==NULL) return(0);
+	// CHECK INDICES
+	if(aI1>=aI2) {
+		printf("Storage.integrate:  ERROR- aI1 >= aI2.\n");
+		return(0);
+	}
 
 	// GET THE SMALLEST NUMBER OF STATES
 	int n = getSmallestNumberOfStates();
@@ -1696,26 +1627,185 @@ computeArea(int aN,double *aArea)
 		return(0);
 	}
 
+	// SET THE INDICES
+	if(aI1<0) aI1 = 0;
+	if(aI2<0) aI2 = _storage.getSize()-1;
+
 	// WORKING MEMORY
 	double ti,tf;
+	double *yi=NULL,*yf=NULL;
 
-	// INITIALIZE AREA
-	int i;
-	for(i=0;i<n;i++) aArea[i]=0.0;
-
-	// INTERVALS
-	int I;
-	for(I=0;I<(_storage.getSize()-1);I++) {
-		ti = getStateVector(I)->getTime();
-		Array<double> &yi = getStateVector(I)->getData();
-		tf = getStateVector(I+1)->getTime();
-		Array<double> &yf = getStateVector(I+1)->getData();
-		for(i=0;i<n;i++) {
-			aArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-		}
+	bool functionAllocatedArea = false;
+	if(!rArea) {
+		rArea = new double [n];
+		functionAllocatedArea = true;
 	}
 
+	// INITIALIZE AREA
+	for(int i=0;i<n;i++) rArea[i]=0.0;
+
+	// RECORD FIRST STATE
+	if(rStorage) {
+		ti = getStateVector(aI1)->getTime();
+		rStorage->append(ti,n,rArea);
+	}
+
+	// INTEGRATE
+	for(int I=aI1;I<aI2;I++) {
+
+		// INITIAL
+		ti = getStateVector(I)->getTime();
+		yi = getStateVector(I)->getData().get();
+
+		// FINAL
+		tf = getStateVector(I+1)->getTime();
+		yf = getStateVector(I+1)->getData().get();
+
+		// AREA
+		for(int i=0;i<n;i++) {
+			rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
+		}
+
+		// APPEND
+		if(rStorage) rStorage->append(tf,n,rArea);
+	}
+
+	// CLEANUP
+	if(functionAllocatedArea) delete[] rArea;
+
 	return(n);
+}
+//_____________________________________________________________________________
+/**
+ * Helper function for integrate/computeArea
+ */
+int Storage::
+integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
+{
+	// CHECK THAT THERE ARE STATES STORED
+	if(_storage.getSize()<=0) {
+		printf("Storage.integrate: ERROR- no stored states.\n");
+		return(0);
+	}
+
+	// CHECK INITIAL AND FINAL TIMES
+	if(aTI>=aTF) {
+		printf("Storage.integrate:  ERROR- bad time range.\n");
+		printf("\tInitial time (%lf) is not smaller than final time (%lf)\n",
+		 aTI,aTF);
+		return(0);
+	}
+
+	// CHECK TIME RANGE
+	double fstT = getFirstTime();
+	double lstT = getLastTime();
+	if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
+		printf("Storage.integrate: ERROR- bad time range.\n");
+		printf("\tThe specified range (%lf to %lf) is not covered by\n",aTI,aTF);
+		printf("\ttime range of the stored states (%lf to %lf).\n",fstT,lstT);
+		return(0);
+	}
+
+	// CHECK FOR VALID OUTPUT ARRAYS
+	if(aN<=0) return(0);
+
+	// GET THE SMALLEST NUMBER OF STATES
+	int n = getSmallestNumberOfStates();
+	if(n>aN) n = aN;
+	if(n<=0) {
+		printf("Storage.integrate: ERROR- no stored states\n");
+		return(0);
+	}
+
+	// WORKING MEMORY
+	double ti,tf;
+	double *yI = new double[n];
+	double *yF = new double[n];
+
+	bool functionAllocatedArea = false;
+	if(!rArea) {
+		rArea = new double [n];
+		functionAllocatedArea = true;
+	}
+
+	// INITIALIZE AREA
+	for(int i=0;i<n;i++) rArea[i]=0.0;
+
+	// RECORD FIRST STATE
+	if(rStorage) rStorage->append(aTI,n,rArea);
+
+	// GET RELAVENT STATE INDICES
+	int II = findIndex(aTI)+1;
+	int FF = findIndex(aTF);
+
+	// SAME INTERVAL
+	if(II>FF) {
+		getDataAtTime(aTI,n,&yI);
+		getDataAtTime(aTF,n,&yF);
+		for(int i=0;i<n;i++) {
+			rArea[i] += 0.5*(yF[i]+yI[i])*(aTF-aTI);
+		}
+		if(rStorage) rStorage->append(aTF,n,rArea);
+
+	// SPANS MULTIPLE INTERVALS
+	} else {
+		double *yi=NULL,*yf=NULL;
+
+		// FIRST SLICE
+		getDataAtTime(aTI,n,&yI);
+		tf = getStateVector(II)->getTime();
+		yf = getStateVector(II)->getData().get();
+		for(int i=0;i<n;i++) {
+			rArea[i] += 0.5*(yf[i]+yI[i])*(tf-aTI);
+		}
+		if(rStorage) rStorage->append(tf,n,rArea);
+
+		// INTERVALS
+		for(int I=II;I<FF;I++) {
+			ti = getStateVector(I)->getTime();
+			yi = getStateVector(I)->getData().get();
+			tf = getStateVector(I+1)->getTime();
+			yf = getStateVector(I+1)->getData().get();
+			for(int i=0;i<n;i++) {
+				rArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
+			}
+			if(rStorage) rStorage->append(tf,n,rArea);
+		}
+
+		// LAST SLICE
+		ti = getStateVector(FF)->getTime();
+		yi = getStateVector(FF)->getData().get();
+		getDataAtTime(aTF,n,&yF);
+		for(int i=0;i<n;i++) {
+			rArea[i] += 0.5*(yF[i]+yi[i])*(aTF-ti);
+		}
+		if(rStorage) rStorage->append(aTF,n,rArea);
+	}
+
+	// CLEANUP
+	delete[] yI;
+	delete[] yF;
+	if(functionAllocatedArea) delete[] rArea;
+
+	return(n);
+}
+//_____________________________________________________________________________
+/**
+ * Compute the area of the first aN states stored for all state vectors
+ * stored in this storage instance.
+ *
+ * It is assumed that there is enough memory at aArea to hold aN states.
+ * If aN exceeds the number of states held in storage, aN is disregarded.
+ *
+ * The number of valid states in aArea is returned.
+ */
+int Storage::
+computeArea(int aN,double *aArea) const
+{
+	// CHECK FOR VALID OUTPUT ARRAYS
+	if(aN<=0) return(0);
+	else if(aArea==NULL) return(0);
+	else return integrate(0,_storage.getSize()-1,aN,aArea,NULL);
 }
 //_____________________________________________________________________________
 /**
@@ -1732,98 +1822,12 @@ computeArea(int aN,double *aArea)
  * an estimate of the state at aTI or at aTF.
  */
 int Storage::
-computeArea(double aTI,double aTF,int aN,double *aArea)
+computeArea(double aTI,double aTF,int aN,double *aArea) const
 {
-	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) return(0);
-
 	// CHECK FOR VALID OUTPUT ARRAYS
 	if(aN<=0) return(0);
-	if(aArea==NULL) return(0);
-
-	// CHECK INITIAL AND FINAL TIMES
-	if(aTI>=aTF) {
-		printf("Storage.computeArea:  ERROR- bad time range.\n");
-		printf("\tInitial time (%lf) is not smaller than final time (%lf)\n",
-		 aTI,aTF);
-		return(0);
-	}
-
-	// CHECK TIME RANGE
-	double fstT = getFirstTime();
-	double lstT = getLastTime();
-	if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
-		printf("Storage.computeArea: ERROR- bad time range.\n");
-		printf("\tThe specified range (%lf to %lf) is not covered by\n",aTI,aTF);
-		printf("\ttime range of the stored states (%lf to %lf).\n",fstT,lstT);
-		return(0);
-	}
-
-	// GET THE SMALLEST NUMBER OF STATES
-	int n = getSmallestNumberOfStates();
-	if(n>aN) n = aN;
-	if(n<=0) {
-		printf("Storage.computeArea: ERROR- no stored states\n");
-		return(0);
-	}
-
-	// WORKING MEMORY
-	double ti,tf;
-	double *yi=NULL,*yf=NULL;
-	double *yI = new double[n];
-	double *yF = new double[n];
-
-	// INITIALIZE AREA
-	int i;
-	for(i=0;i<n;i++) aArea[i]=0.0;
-
-	// GET RELAVENT STATE INDICES
-	int II = findIndex(aTI)+1;
-	int FF = findIndex(aTF);
-
-	// SAME INTERVAL
-	if(II>FF) {
-		getDataAtTime(aTI,n,&yI);
-		getDataAtTime(aTF,n,&yF);
-		for(i=0;i<n;i++) {
-			aArea[i] += 0.5*(yF[i]+yI[i])*(aTF-aTI);
-		}
-
-	// SPANS MULTIPLE INTERVALS
-	} else {
-		// FIRST SLICE
-		getDataAtTime(aTI,n,&yI);
-		ti = getStateVector(II)->getTime();
-		yi = getStateVector(II)->getData().get();
-		for(i=0;i<n;i++) {
-			aArea[i] += 0.5*(yi[i]+yI[i])*(ti-aTI);
-		}
-
-		// INTERVALS
-		for(int I=II;I<FF;I++) {
-			ti = getStateVector(I)->getTime();
-			yi = getStateVector(I)->getData().get();
-			tf = getStateVector(I+1)->getTime();
-			yf = getStateVector(I+1)->getData().get();
-			for(i=0;i<n;i++) {
-				aArea[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-			}
-		}
-
-		// LAST SLICE
-		getDataAtTime(aTF,n,&yF);
-		tf = getStateVector(FF)->getTime();
-		yf = getStateVector(FF)->getData().get();
-		for(i=0;i<n;i++) {
-			aArea[i] += 0.5*(yF[i]+yf[i])*(aTF-tf);
-		}
-	}
-
-	// CLEANUP
-	if(yI!=NULL) delete []yI;
-	if(yF!=NULL) delete []yF;
-
-	return(n);
+	else if(aArea==NULL) return(0);
+	else return integrate(aTI,aTF,aN,aArea,NULL);
 }
 //_____________________________________________________________________________
 /**
@@ -1849,80 +1853,18 @@ computeArea(double aTI,double aTF,int aN,double *aArea)
  * error is encountered.
  */
 Storage* Storage::
-integrate(int aI1,int aI2)
+integrate(int aI1,int aI2) const
 {
-	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) {
-		printf("Storage.integrate: ERROR- no stored states.\n");
-		return(NULL);
-	}
-
-	// CHECK INDICES
-	if(aI1>=aI2) {
-		printf("Storage.integrate:  ERROR- aI1 >= aI2.\n");
-		return(NULL);
-	}
-
-	// GET THE SMALLEST NUMBER OF STATES
-	int n = getSmallestNumberOfStates();
-	if(n<=0) {
-		printf("Storage.computeArea: ERROR- no stored states\n");
-		return(NULL);
-	}
-
-	// SET THE INDICES
-	if(aI1<0) aI1 = 0;
-	if(aI2<0) aI2 = _storage.getSize()-1;
-
 	// CREATE COPY
 	Storage *integStore = new Storage(*this,false);
+	integStore->setName(getName()+"_integrated");
 
-	// SET A NEW NAME
-	const char *tmp = getName().c_str();
-	int tmpLen = strlen(tmp);
-	int addLen = strlen("_integrated");
-	char *newName = new char[tmpLen+addLen+1];
-	strcpy(newName,getName().c_str());
-	strcat(newName,"_integrated");
-	integStore->setName(newName);
-	delete newName;
-
-	// WORKING MEMORY
-	int i;
-	double ti,tf;
-	double *yi=NULL,*yf=NULL;
-	double *area = new double[n];
-	for(i=0;i<n;i++) area[i]=0.0;
-
-	// RECORD FIRST STATE
-	ti = getStateVector(aI1)->getTime();
-	integStore->append(ti,n,area);
-
-	// INTEGRATE
-	int I;
-	for(I=aI1;I<aI2;I++) {
-
-		// INITIAL
-		ti = getStateVector(I)->getTime();
-		yi = getStateVector(I)->getData().get();
-
-		// FINAL
-		tf = getStateVector(I+1)->getTime();
-		yf = getStateVector(I+1)->getData().get();
-
-		// AREA
-		for(i=0;i<n;i++) {
-			area[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-		}
-
-		// APPEND
-		integStore->append(tf,n,area);
-	}
-
-	// CLEANUP
-	if(area!=NULL) delete []area;
-
-	return(integStore);
+	int n = getSmallestNumberOfStates();
+	int result = integrate(aI1,aI2,n,NULL,integStore);
+	if(result<=0) {
+		delete integStore;
+		return NULL;
+	} else return integStore;
 }
 //_____________________________________________________________________________
 /**
@@ -1943,112 +1885,18 @@ integrate(int aI1,int aI2)
  * error is encountered.
  */
 Storage* Storage::
-integrate(double aTI,double aTF)
+integrate(double aTI,double aTF) const
 {
-	// CHECK THAT THERE ARE STATES STORED
-	if(_storage.getSize()<=0) {
-		printf("Storage.integrate: ERROR- no stored states.\n");
-		return(NULL);
-	}
-
-	// CHECK INITIAL AND FINAL TIMES
-	if(aTI>=aTF) {
-		printf("Storage.integrate:  ERROR- bad time range.\n");
-		printf("\tInitial time (%lf) is not smaller than final time (%lf)\n",
-		 aTI,aTF);
-		return(NULL);
-	}
-
-	// CHECK TIME RANGE
-	double fstT = getFirstTime();
-	double lstT = getLastTime();
-	if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
-		printf("Storage.integrate: WARN\n");
-		printf("\tThe specified range (%lf to %lf) is not covered by\n",aTI,aTF);
-		printf("\ttime range of the stored states (%lf to %lf).\n",fstT,lstT);
-	}
-
-	// GET THE SMALLEST NUMBER OF STATES
-	int n = getSmallestNumberOfStates();
-	if(n<=0) {
-		printf("Storage.integrate: ERROR- no stored states\n");
-		return(NULL);
-	}
-
 	// CREATE COPY
 	Storage *integStore = new Storage(*this,false);
-	const char *tmp = getName().c_str();
-	int tmpLen = strlen(tmp);
-	int addLen = strlen("_integrated");
-	char *newName = new char[tmpLen+addLen+1];
-	strcpy(newName,getName().c_str());
-	strcat(newName,"_integrated");
-	integStore->setName(newName);
-	delete newName;
+	integStore->setName(getName()+"_integrated");
 
-	// WORKING MEMORY
-	int i;
-	double ti,tf;
-	double *yi=NULL,*yf=NULL;
-	double *yI = new double[n];  for(i=0;i<n;i++) yI[i]=0.0;
-	double *yF = new double[n];  for(i=0;i<n;i++) yF[i]=0.0;
-	double *area = new double[n];  for(i=0;i<n;i++) area[i]=0.0;
-
-	// RECORD FIRST STATE
-	integStore->append(aTI,n,area);
-
-	// GET RELAVENT STATE INDICES
-	int II = findIndex(aTI)+1;
-	int FF = findIndex(aTF);
-
-	// SAME INTERVAL
-	if(II>FF) {
-		getDataAtTime(aTI,n,&yI);
-		getDataAtTime(aTF,n,&yF);
-		for(i=0;i<n;i++) {
-			area[i] += 0.5*(yF[i]+yI[i])*(aTF-aTI);
-		}
-		integStore->append(aTF,n,area);
-
-	// SPANS MULTIPLE INTERVALS
-	} else {
-		// FIRST SLICE
-		getDataAtTime(aTI,n,&yI);
-		tf = getStateVector(II)->getTime();
-		yf = getStateVector(II)->getData().get();
-		for(i=0;i<n;i++) {
-			area[i] += 0.5*(yf[i]+yI[i])*(tf-aTI);
-		}
-		integStore->append(tf,n,area);
-
-		// INTERVALS
-		for(int I=II;I<FF;I++) {
-			ti = getStateVector(I)->getTime();
-			yi = getStateVector(I)->getData().get();
-			tf = getStateVector(I+1)->getTime();
-			yf = getStateVector(I+1)->getData().get();
-			for(i=0;i<n;i++) {
-				area[i] += 0.5*(yf[i]+yi[i])*(tf-ti);
-			}
-			integStore->append(tf,n,area);
-		}
-
-		// LAST SLICE
-		getDataAtTime(aTF,n,&yF);
-		ti = getStateVector(FF)->getTime();
-		yi = getStateVector(FF)->getData().get();
-		for(i=0;i<n;i++) {
-			area[i] += 0.5*(yF[i]+yi[i])*(aTF-ti);
-		}
-		integStore->append(aTF,n,area);
-	}
-
-	// CLEANUP
-	if(yI!=NULL) delete []yI;
-	if(yF!=NULL) delete []yF;
-	if(area!=NULL) delete []area;
-
-	return(integStore);
+	int n = getSmallestNumberOfStates();
+	int result = integrate(aTI,aTF,n,NULL,integStore);
+	if(result<=0) {
+		delete integStore;
+		return NULL;
+	} else return integStore;
 }
 
 //_____________________________________________________________________________
