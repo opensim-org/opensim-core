@@ -158,7 +158,7 @@ XMLDocument::~XMLDocument()
 	if(_parser!=NULL) {
 		delete _parser;  _parser=NULL;  _document=NULL;
 	} else if(_document!=NULL) {
-		delete _document; _document=NULL;
+		_document->release(); _document=NULL;
 	}
 
 	// TERMINATE
