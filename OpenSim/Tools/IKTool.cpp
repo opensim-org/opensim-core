@@ -54,7 +54,7 @@ IKTool::IKTool() :
  * @param aFileName File name of the document.
  */
 IKTool::IKTool(const string &aFileName, Model* guiModel) :
-	AbstractTool(aFileName),
+	AbstractTool(aFileName, guiModel),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", IKTrialSet())),

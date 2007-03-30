@@ -48,16 +48,16 @@ AbstractTool::AbstractTool():
 	setType("AbstractTool");
 	setNull();
 }
-//_____________________________________________________________________________
+
 /**
- * Construct from file.
+ * Construct from file, and an optional GuiModel
  *
  * The object is constructed from the root element of the XML document.
  * The type of object is the tag name of the XML root element.
  *
  * @param aFileName File name of the document.
  */
-AbstractTool::AbstractTool(const string &aFileName):
+AbstractTool::AbstractTool(const string &aFileName, Model* aGuiModel):
 	Object(aFileName),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
@@ -83,10 +83,14 @@ AbstractTool::AbstractTool(const string &aFileName):
 	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
 	IO::chDir(directoryOfSetupFile);
 
-	loadModel();
+	if (aGuiModel)
+		setModel(aGuiModel);
+	else
+		loadModel();
 
 	IO::chDir(saveWorkingDirectory);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.

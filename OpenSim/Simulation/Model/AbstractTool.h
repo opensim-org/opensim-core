@@ -88,7 +88,7 @@ protected:
 public:
 	virtual ~AbstractTool();
 	AbstractTool();
-	AbstractTool(const std::string &aFileName);
+	AbstractTool(const std::string &aFileName, Model* aGuiModel=0);
 	AbstractTool(const AbstractTool &aObject);
 	//Object* copy() const;
 

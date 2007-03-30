@@ -168,8 +168,12 @@ public:
 		return _scaleSet;
 	}
 
-	void setScaleSet(ScaleSet& aScaleSet) {
-		_scaleSet = aScaleSet;
+	void setScaleSetFile(const std::string& aScaleSetFilename) {
+		ScaleSet* newScales = new ScaleSet(aScaleSetFilename);
+		_scaleSet.setSize(newScales->getSize());
+		for(int i=0; i< newScales->getSize(); i++)
+			_scaleSet.set(i, newScales->get(i));
+		delete newScales;
 	}
 
 	Array<double> getTimeRange() {
