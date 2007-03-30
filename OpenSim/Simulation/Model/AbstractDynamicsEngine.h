@@ -55,7 +55,7 @@ class AbstractDof;
 class AbstractMarker;
 class MarkerSet;
 class Transform;
-class SimmMotionData;
+class Storage;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -318,8 +318,8 @@ public:
 
 	void convertRadiansToDegrees(Storage *rStorage) const;
 	void convertDegreesToRadians(Storage *rStorage) const;
-	void convertRadiansToDegrees(SimmMotionData& rMotionData) const;
-	void convertDegreesToRadians(SimmMotionData& rMotionData) const;
+	void convertRadiansToDegrees(Storage& rMotionData) const;
+	void convertDegreesToRadians(Storage& rMotionData) const;
 	void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
 	void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
 
@@ -342,7 +342,7 @@ public:
 
 private:
 	void scaleRotationalDofColumns(Storage *rStorage, double factor) const;
-	void scaleRotationalDofColumns(SimmMotionData &rMotionData, double factor) const;
+	void scaleRotationalDofColumns(Storage &rMotionData, double factor) const;
 //=============================================================================
 };	// END of class AbstractDynamicsEngine
 //=============================================================================

@@ -36,7 +36,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "StateVector.h"
-
+#include "Units.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
 
@@ -66,6 +66,9 @@ template class OSIMCOMMON_API OpenSim::Array<OpenSim::StateVector>;
  */
 namespace OpenSim { 
 
+typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
+
+//static std::string[] simmReservedKeys;
 class OSIMCOMMON_API Storage : public Object
 {
 
@@ -95,7 +98,10 @@ protected:
 	mutable int _lastI;
 	/** Flag for whether or not to insert a SIMM style header. */
 	bool _writeSIMMHeader;
-
+	/** Units in which the data is represented. */
+	Units _units;
+	/** Map between keys in file header and values */
+	MapKeysToValues	_keyValueMap;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -118,6 +124,7 @@ private:
 	void setNull();
 	void copyData(const Storage &aStorage);
 	void parseColumnLabels(const char *aLabels);
+	bool isSimmReservedToken(const std::string& aToken);
 public:
 
 	//--------------------------------------------------------------------------
@@ -125,6 +132,9 @@ public:
 	//--------------------------------------------------------------------------
 	// SIZE
 	int getSize() const { return(_storage.getSize()); }
+	int getNumColumns() const {
+		return ((_storage.getSize()==0)?0:_storage.get(0).getSize());
+	}
 	// STATEVECTOR
 	int getSmallestNumberOfStates() const;
 	StateVector* getStateVector(int aTimeIndex) const;
@@ -134,6 +144,10 @@ public:
 	double getLastTime() const;
 	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
+	// HEADERS, Key-Value pairs
+	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
+	void getValueForKey(const std::string& aKey, std::string& rValue) const;
+	bool hasKey(const std::string& aKey) const;
 	// DATA
 	int getData(int aTimeIndex,int aStateIndex,double &rValue) const;
 	int getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const;
@@ -157,7 +171,7 @@ public:
 	void setHeaderToken(const std::string &aToken);
 	const std::string& getHeaderToken() const;
 	// COLUMN LABELS
-	const int getColumnIndex(const std::string &aColumnName, int startIndex=0) const;
+	const int getStateIndex(const std::string &aColumnName, int startIndex=0) const;
 	void setColumnLabels(const Array<std::string> &aColumnLabels);
 	const Array<std::string> &getColumnLabels() const;
 	//--------------------------------------------------------------------------
@@ -205,7 +219,9 @@ public:
 	int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
 	void pad(int aPadSize);
 	void lowpassFIR(int aOrder,double aCutoffFequency);
-
+	// Append rows of passed in storage to current storage at matched time
+	//void join(Storage& aStorage, double startTime, double endTime);
+	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
@@ -216,14 +232,14 @@ public:
 	// IO
 	//--------------------------------------------------------------------------
 	void print() const;
-	bool print(const std::string &aFileName,const std::string &aMode="w") const;
+	bool print(const std::string &aFileName,const std::string &aMode="w", const std::string& aComment="") const;
 	int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
 	// convenience function for Analyses and DerivCallbacks
 	static void printResult(const Storage *aStorage,const std::string &aName,
 		const std::string &aDir,double aDT,const std::string &aExtension);
 private:
 	int writeHeader(FILE *rFP,double aDT=-1) const;
-	int writeSIMMHeader(FILE *rFP,double aDT=-1) const;
+	int writeSIMMHeader(FILE *rFP,double aDT=-1, const char*aComment=0) const;
 	int writeDescription(FILE *rFP) const;
 	int writeColumnLabels(FILE *rFP) const;
 	int integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const;

@@ -85,7 +85,7 @@ Object::~Object()
 		  //delete _node;        
         _node = NULL;
     }
-	 if(_document!=NULL) { delete _document;  _document=NULL; }
+	 //if(_document!=NULL) { delete _document; _document=NULL; }
 }
 
 //_____________________________________________________________________________

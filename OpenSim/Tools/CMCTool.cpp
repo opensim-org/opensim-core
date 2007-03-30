@@ -787,12 +787,12 @@ computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
 	forceStore->computeAverage(size,&ave[0]);
 
 	// GET INDICES
-	int iFX = forceStore->getColumnIndex("FX");
-	int iFY = forceStore->getColumnIndex("FY");
-	int iFZ = forceStore->getColumnIndex("FZ");
-	int iMX = forceStore->getColumnIndex("MX");
-	int iMY = forceStore->getColumnIndex("MY");
-	int iMZ = forceStore->getColumnIndex("MZ");
+	int iFX = forceStore->getStateIndex("FX");
+	int iFY = forceStore->getStateIndex("FY");
+	int iFZ = forceStore->getStateIndex("FZ");
+	int iMX = forceStore->getStateIndex("MX");
+	int iMY = forceStore->getStateIndex("MY");
+	int iMZ = forceStore->getStateIndex("MZ");
 	//cout<<"Residual Indices:\n";
 	//cout<<"iFX="<<iFX<<" iFY="<<iFY<<" iFZ="<<iFZ<<endl;
 	//cout<<"iMX="<<iMX<<" iMY="<<iMY<<" iMZ="<<iMZ<<endl;

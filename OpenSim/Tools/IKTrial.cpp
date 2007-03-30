@@ -31,7 +31,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
@@ -229,7 +229,7 @@ bool IKTrial::processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerDat
 
 		if (_coordinateFileName != "")
 		{
-			SimmMotionData coordinateValues(_coordinateFileName);
+			Storage coordinateValues(_coordinateFileName);
 			aModel.getDynamicsEngine().convertDegreesToRadians(coordinateValues);
 
 			// Adjust the user-defined start and end times to make sure they are in the

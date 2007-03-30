@@ -33,7 +33,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "AbstractDynamicsEngine.h"
 #include "Model.h"
@@ -518,7 +518,7 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 		if(coord==NULL) continue;
 		qName = coord->getName();
 		columnLabels.append(qName);
-		index[i] = aQIn.getColumnIndex(qName);
+		index[i] = aQIn.getStateIndex(qName);
 		if(index[i]<0) {
 			string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
 			msg += qName;
@@ -647,7 +647,7 @@ void AbstractDynamicsEngine::convertRadiansToDegrees(Storage *rStorage) const
 	scaleRotationalDofColumns(rStorage, rdMath::RTD);
 }
 //_____________________________________________________________________________
-void AbstractDynamicsEngine::scaleRotationalDofColumns(SimmMotionData &rMotionData, double factor) const
+void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rMotionData, double factor) const
 {
 	// Loop through the coordinates in the model. For each one that is rotational,
 	// see if it has a corresponding column of data. If it does, multiply that
@@ -655,28 +655,28 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(SimmMotionData &rMotionDa
 	const CoordinateSet* coordinateSet = _model->getDynamicsEngine().getCoordinateSet();
 	for (int i = 0; i < coordinateSet->getSize(); i++) {
 		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
-			int index = rMotionData.getColumnIndex(coordinateSet->get(i)->getName());
-			if(index >= 0) rMotionData.scaleColumn(index, factor);
+			int index = rMotionData.getStateIndex(coordinateSet->get(i)->getName());
+			if(index >= 0) rMotionData.multiplyColumn(index, factor);
 		}
 	}
 }
 //_____________________________________________________________________________
 /**
  * Convert the rotational generalized coordinates from units of
- * degrees to units of radians for all the state-vectors in a SimmMotionData
+ * degrees to units of radians for all the state-vectors in a Storage
  * object.  Coordinates are identified by column names.
  */
-void AbstractDynamicsEngine::convertDegreesToRadians(SimmMotionData &rMotionData) const
+void AbstractDynamicsEngine::convertDegreesToRadians(Storage &rMotionData) const
 {
 	scaleRotationalDofColumns(rMotionData, rdMath::DTR);
 }
 //_____________________________________________________________________________
 /**
  * Convert the rotational generalized coordinates from units of
- * radians to units of degrees for all the state-vectors in a SimmMotionData
+ * radians to units of degrees for all the state-vectors in a Storage
  * object.  Coordinates are identified by column names.
  */
-void AbstractDynamicsEngine::convertRadiansToDegrees(SimmMotionData &rMotionData) const
+void AbstractDynamicsEngine::convertRadiansToDegrees(Storage &rMotionData) const
 {
 	scaleRotationalDofColumns(rMotionData, rdMath::RTD);
 }

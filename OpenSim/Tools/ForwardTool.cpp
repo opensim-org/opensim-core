@@ -474,109 +474,109 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 	// Read the indices of all the ground reaction data columns.
 	// We assume that the right foot's data appears before the left foot's data
 	// when reading the kinetics file's columns from left to right.
-	int rightForceX  = kineticsStore.getColumnIndex("ground_force_vx");
+	int rightForceX  = kineticsStore.getStateIndex("ground_force_vx");
 	if(rightForceX<0) {
 		string msg = "ForwardTool.run: ERR- Column index for right ground_force_vx not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightForceY  = kineticsStore.getColumnIndex("ground_force_vy");
+	int rightForceY  = kineticsStore.getStateIndex("ground_force_vy");
 	if(rightForceY<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_force_vy not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightForceZ  = kineticsStore.getColumnIndex("ground_force_vz");
+	int rightForceZ  = kineticsStore.getStateIndex("ground_force_vz");
 	if(rightForceZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_force_vz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftForceX   = kineticsStore.getColumnIndex("ground_force_vx", rightForceX + 2);
+	int leftForceX   = kineticsStore.getStateIndex("ground_force_vx", rightForceX + 2);
 	if(leftForceX<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_vx not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftForceY   = kineticsStore.getColumnIndex("ground_force_vy", rightForceY + 2);
+	int leftForceY   = kineticsStore.getStateIndex("ground_force_vy", rightForceY + 2);
 	if(leftForceY<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_vy not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftForceZ   = kineticsStore.getColumnIndex("ground_force_vz", rightForceZ + 2);
+	int leftForceZ   = kineticsStore.getStateIndex("ground_force_vz", rightForceZ + 2);
 	if(leftForceZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_vz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightCopX    = kineticsStore.getColumnIndex("ground_force_px");
+	int rightCopX    = kineticsStore.getStateIndex("ground_force_px");
 	if(rightCopX<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_force_px not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightCopY    = kineticsStore.getColumnIndex("ground_force_py");
+	int rightCopY    = kineticsStore.getStateIndex("ground_force_py");
 	if(rightCopY<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_force_py not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightCopZ    = kineticsStore.getColumnIndex("ground_force_pz");
+	int rightCopZ    = kineticsStore.getStateIndex("ground_force_pz");
 	if(rightCopZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_force_pz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftCopX     = kineticsStore.getColumnIndex("ground_force_px", rightCopX + 2);
+	int leftCopX     = kineticsStore.getStateIndex("ground_force_px", rightCopX + 2);
 	if(leftCopX<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_px not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftCopY     = kineticsStore.getColumnIndex("ground_force_py", rightCopY + 2);
+	int leftCopY     = kineticsStore.getStateIndex("ground_force_py", rightCopY + 2);
 	if(leftCopY<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_py not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftCopZ     = kineticsStore.getColumnIndex("ground_force_pz", rightCopZ + 2);
+	int leftCopZ     = kineticsStore.getStateIndex("ground_force_pz", rightCopZ + 2);
 	if(leftCopZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_force_pz not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightTorqueX = kineticsStore.getColumnIndex("ground_torque_x");
+	int rightTorqueX = kineticsStore.getStateIndex("ground_torque_x");
 	if(rightTorqueX<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_torque_x not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightTorqueY = kineticsStore.getColumnIndex("ground_torque_y");
+	int rightTorqueY = kineticsStore.getStateIndex("ground_torque_y");
 	if(rightTorqueY<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_torque_y not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int rightTorqueZ = kineticsStore.getColumnIndex("ground_torque_z");
+	int rightTorqueZ = kineticsStore.getStateIndex("ground_torque_z");
 	if(rightTorqueZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for right ground_torque_z not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftTorqueX  = kineticsStore.getColumnIndex("ground_torque_x", rightTorqueX + 2);
+	int leftTorqueX  = kineticsStore.getStateIndex("ground_torque_x", rightTorqueX + 2);
 	if(leftTorqueX<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_torque_x not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftTorqueY  = kineticsStore.getColumnIndex("ground_torque_y", rightTorqueY + 2);
+	int leftTorqueY  = kineticsStore.getStateIndex("ground_torque_y", rightTorqueY + 2);
 	if(leftTorqueY<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_torque_y not found in ";
 		msg += aExternalLoadsFileName + ".";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	int leftTorqueZ  = kineticsStore.getColumnIndex("ground_torque_z", rightTorqueZ + 2);
+	int leftTorqueZ  = kineticsStore.getStateIndex("ground_torque_z", rightTorqueZ + 2);
 	if(leftTorqueZ<0) {
 		string msg = "FowardTool.run: ERR- Column index for left ground_torque_z not found in ";
 		msg += aExternalLoadsFileName + ".";

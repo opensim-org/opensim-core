@@ -34,12 +34,14 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
+#include <sstream>
 #include "rdMath.h"
 #include "IO.h"
 #include "Signal.h"
 #include "Storage.h"
 #include "GCVSplineSet.h"
-
+#include "SimmIO.h"
+#include "SimmMacros.h"
 
 
 using namespace OpenSim;
@@ -122,7 +124,9 @@ Storage::Storage(const string &aFileName) :
 	bool oldStyleDescription = false;
 	int nr=0,nc=0,nd=0;
 	streampos begin = fp->tellg();
-	for(int i=0;i<3;i++) {
+	bool simmHeader=false;
+	int parseErrors=0;
+	for(int i=0;i<3 || (simmHeader &&parseErrors<10);i++) {
 		line = IO::ReadLine(*fp);
 		if(line.empty() && !fp->good()) {
 			printf("Storage: ERROR- no lines in %s.\n",aFileName.c_str());
@@ -135,13 +139,27 @@ Storage::Storage(const string &aFileName) :
 		if(key=="nr" || key=="nRows" || key=="datarows") {
 			nr = atoi(rest.c_str());
 			begin = fp->tellg();
+			if (key=="datarows")	simmHeader=true;
+
 		} else if(key=="nc" || key=="nColumns" || key=="datacolumns") {
 			nc = atoi(rest.c_str());
 			begin = fp->tellg();
+			if (key=="datacolumns")	simmHeader=true;
 		} else if(key=="nd" || key=="nDescrip") {
 			nd = atoi(rest.c_str());
 			oldStyleDescription = true;
-		}
+		} else if (isSimmReservedToken(key)) {
+			_keyValueMap[key]= rest;
+		} else if (key=="units" || key=="Units" || key=="UNITS") {
+			_units = Units(rest);
+		} else if(key==DEFAULT_HEADER_TOKEN){
+			break;
+		} else 
+			parseErrors++;
+	}
+	if(parseErrors==10 || nc==0 || nr==0) {
+		printf("Storage: ERROR- failed to parse file %s.\n",aFileName.c_str());
+		return;
 	}
 	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName.c_str(),nr,nc);
 
@@ -304,6 +322,7 @@ setNull()
 void Storage::
 copyData(const Storage &aStorage)
 {
+	_units = aStorage._units;
 	// ENSURE CAPACITY
 	_storage.ensureCapacity(aStorage._storage.getCapacity());
 
@@ -396,7 +415,7 @@ getHeaderToken() const
  * added a default Parameter for startIndex. -Ayman
  */
 const int Storage::
-getColumnIndex(const std::string &aColumnName, int startIndex) const
+getStateIndex(const std::string &aColumnName, int startIndex) const
 {
 	int size = _columnLabels.getSize();
 	for(int i=startIndex;i<size;i++)
@@ -982,7 +1001,7 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 int Storage::
 getDataColumn(const std::string& aColumnName,double *&rData) const
 {
-	return getDataColumn(getColumnIndex(aColumnName), rData);
+	return getDataColumn(getStateIndex(aColumnName), rData);
 }
 
 //=============================================================================
@@ -2119,10 +2138,11 @@ print() const
  * @param aFileName Name of file to which to save.
  * @param aMode Writing mode: "w" means write and "a" means append.  The 
  * default is "w".
+ * @param aComment string to be written to the file header (preceded by # per SIMM)
  * @return true on success
  */
 bool Storage::
-print(const string &aFileName,const string &aMode) const
+print(const string &aFileName,const string &aMode, const string& aComment) const
 {
 	// OPEN THE FILE
 	FILE *fp = IO::OpenFile(aFileName,aMode);
@@ -2139,7 +2159,7 @@ print(const string &aFileName,const string &aMode) const
 
 	// WRITE SIMM HEADER
 	if(_writeSIMMHeader) {
-		n = writeSIMMHeader(fp);
+		n = writeSIMMHeader(fp, -1, aComment.c_str());
 		if(n<0) {
 			printf("Storage.print(const string&,const string&): failed to\n");
 			printf(" write SIMM header to file %s\n",aFileName.c_str());
@@ -2315,12 +2335,15 @@ writeHeader(FILE *rFP,double aDT) const
  * @return SIMM header.
  */
 int Storage::
-writeSIMMHeader(FILE *rFP,double aDT) const
+writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 {
 	if(rFP==NULL) return(-1);
 
 	// COMMENT
-	fprintf(rFP,"\n# SIMM Motion File Header:\n");
+	if (aComment)
+		fprintf(rFP,"\n# %s\n", aComment);
+	else
+		fprintf(rFP,"\n# SIMM Motion File Header:\n");
 
 	// NAME
 	fprintf(rFP,"name %s\n",getName().c_str());
@@ -2393,3 +2416,104 @@ writeColumnLabels(FILE *rFP) const
 
 	return(0);
 }
+void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime)
+{
+	bool addedData = false;
+	double time, stateTime;
+
+	/* Loop through the rows in rStorage from aStartTime to aEndTime,
+	 * looking for a match (by time) in the rows of SimmMotionData.
+	 * If you find a match, add the columns in the SimmMotionData
+	 * to the end of the state vector in the Storage. If you
+	 * don't find one, it's a fatal error so throw an exception.
+	 * Don't add a column if its name is 'unassigned'.
+	 */
+	int i, j, startIndex = rStorage.findIndex(0, aStartTime);
+	int endIndex = rStorage.findIndex(rStorage.getSize() - 1, aEndTime);
+	int numColumns=getColumnLabels().getSize();
+	for (i = startIndex; i <= endIndex; i++)
+	{
+		rStorage.getTime(i, stateTime);
+		for (j = 0; j < getSize(); j++)
+		{
+			/* Assume that the first column is 'time'. */
+			time = getStateVector(j)->getTime();
+			if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
+			{
+				Array<double>& states = rStorage.getStateVector(i)->getData();
+				for (int k = 1; k < numColumns; k++)	// Start at 1 to avoid duplicate time column
+				{
+					if (_columnLabels[k] != "Unassigned")
+					{
+						states.append(getStateVector(j)->getData().get(k-1));
+						addedData = true;
+					}
+				}
+				break;
+			}
+		}
+		if (j == getSize())
+		{
+			stringstream errorMessage;
+			errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << getDocumentFileName();
+			throw (Exception(errorMessage.str()));
+		}
+	}
+
+	/* Add the coordinate names to the Storage (if at least
+	 * one row of data was added to the object).
+	 */
+	if (addedData)
+	{
+		const Array<std::string>& oldColumnLabels =rStorage.getColumnLabels();
+		Array<std::string> newColumnLabels(oldColumnLabels);
+		for (int i = 1; i < _columnLabels.getSize(); i++) // Start at 1 to avoid duplicate time label
+		{
+			if (!(_columnLabels[i] == "Unassigned"))
+				newColumnLabels.append( _columnLabels[i]);
+		}
+		rStorage.setColumnLabels(newColumnLabels);
+	}
+}
+
+void Storage::
+addKeyValuePair(const std::string& aKey, const std::string& aValue)
+{
+	if (_keyValueMap.find(aKey)!=_keyValueMap.end()){
+		// Should we warn here?
+	}
+	_keyValueMap[aKey]=aValue;
+	cout << "key, value " << aKey << ", " << aValue << endl;
+
+}
+void Storage::
+getValueForKey(const std::string& aKey, std::string& rValue) const
+{
+	MapKeysToValues::const_iterator iter =_keyValueMap.find(aKey);
+	if (iter!=_keyValueMap.end()){
+		rValue=iter->second;
+	}
+	else
+		rValue="";
+
+}
+bool Storage::hasKey(const std::string& aKey) const
+{
+	return (_keyValueMap.find(aKey)!=_keyValueMap.end());
+}
+
+static string simmReservedKeys[] = {"range", "Range", "RANGE", 
+								  "wrap", "Wrap", "WRAP",
+								  "enforce_loops",
+								  "enforce_constraints",
+								  "calc_derivatives"};
+
+bool Storage::isSimmReservedToken(const std::string& aToken)
+{
+	for(int i=0; i<9; i++){
+		if (simmReservedKeys[i]==aToken)
+			return true;
+	}
+	return false;
+}
+

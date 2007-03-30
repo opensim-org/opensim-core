@@ -31,7 +31,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Common/MarkerData.h>
-#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Common/Storage.h>
 
 //=============================================================================
 // STATICS
@@ -231,7 +231,7 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
 //_____________________________________________________________________________
 /**
  * This method creates a SimmMotionTrial instance with the markerFile and
- * timeRange parameters. It also creates a SimmMotionData instance with the
+ * timeRange parameters. It also creates a Storage instance with the
  * coordinateFile parameter. Then it updates the coordinates and markers in
  * the model, if specified. Then it does IK to fit the model to the static
  * pose. Then it uses the current model pose to relocate all non-fixed markers
@@ -301,10 +301,12 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
 	if (!_outputMotionFileNameProp.getUseDefault())
 	{
-		SimmMotionData motionData(outputStorage);
+		Storage motionData(outputStorage);
 		aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
-		motionData.writeSIMMMotionFile(aPathToSubject + _outputMotionFileName, 
-			"static pose", "File generated from solving marker data for model "+aModel->getName());
+		motionData.setWriteSIMMHeader(true);
+		motionData.setName("static pose");
+		motionData.print(aPathToSubject + _outputMotionFileName, 
+			"w", "File generated from solving marker data for model "+aModel->getName());
 	}
 
 	return true;

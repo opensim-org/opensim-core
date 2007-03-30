@@ -20,7 +20,6 @@
 #include <OpenSim/Common/MaterialSet.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/SimmMotionData.h>
 #include <OpenSim/Common/Range.h>
 #include <OpenSim/Common/Scale.h>
 #include <OpenSim/Common/ScaleSet.h>
@@ -280,7 +279,6 @@ using namespace OpenSim;
 %include <OpenSim/Common/MaterialSet.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/Storage.h>
-%include <OpenSim/Common/SimmMotionData.h>
 
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/AbstractActuator.h>

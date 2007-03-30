@@ -121,8 +121,8 @@ public:
 	void makePaths();
 #if 0
 	void solveInverseKinematics(const IKTrial& aIKOptions, const std::string aMarkerDataFileName, const std::string aOutputFileName);
-	SimmMotionData* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData);
-	SimmMotionData* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData, SimmMotionData& aCoordinateData);
+	Storage* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData);
+	Storage* solveInverseKinematics(const IKTrial& aIKOptions, MarkerData& aMarkerData, Storage& aCoordinateData);
 #endif
 
 	//--------------------------------------------------------------------------
