@@ -38,6 +38,7 @@
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
 #include "Property.h"
+#include "PropertyGroup.h"
 
 
 #ifdef SWIG
@@ -74,6 +75,10 @@ class OSIMCOMMON_API PropertySet
 public:
 	/** Set of properties. */
 	ArrayPtrs<Property> _array;
+
+protected:
+	/** Array of property groups. */
+	ArrayPtrs<PropertyGroup> _propertyGroups;
 
 //=============================================================================
 // METHODS
@@ -120,6 +125,15 @@ public:
 	virtual void remove(const std::string &aName);
 	// Clear
 	virtual void clear();
+
+   PropertyGroup* addGroup(std::string aGroupName);
+   void addPropertyToGroup(std::string aGroupName, std::string aPropertyName);
+   void addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName);
+	void addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty);
+	void addPropertyToGroup(std::string aGroupName, Property* aProperty);
+	ArrayPtrs<PropertyGroup>& getGroups() { return _propertyGroups; }
+	PropertyGroup* getGroupContaining(Property* aProperty);
+	int getGroupIndexContaining(Property* aProperty);
 
 //=============================================================================
 };	// END of class PropertySet

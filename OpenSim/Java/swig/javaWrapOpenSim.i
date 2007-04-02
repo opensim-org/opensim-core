@@ -9,8 +9,10 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/PropertySet.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/ObjectGroup.h>
 #include <OpenSim/Common/Material.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/Transform.h>
@@ -88,7 +90,9 @@
 
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractMarker.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 
+#include <OpenSim/Simulation/Model/MuscleGroup.h>
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
@@ -267,8 +271,12 @@ using namespace OpenSim;
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/Property.h>
+%template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
+%include <OpenSim/Common/PropertyGroup.h>
+%template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
 %include <OpenSim/Common/PropertySet.h>
 %include <OpenSim/Common/Object.h>
+%include <OpenSim/Common/ObjectGroup.h>
 %include <OpenSim/Common/Material.h>
 %include <OpenSim/Common/VisibleProperties.h>
 %include <OpenSim/Common/Transform.h>
@@ -370,6 +378,7 @@ using namespace OpenSim;
 
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
 
+%include <OpenSim/Simulation/Model/MuscleGroup.h>
 %include <OpenSim/Simulation/Model/MusclePoint.h>
 %include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 %template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;

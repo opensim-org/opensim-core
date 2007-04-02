@@ -261,11 +261,146 @@ remove(const string &aName)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Clear this property set of all properties.
+ * Clear this property set of all properties and groups.
  */
 void PropertySet::
 clear()
 {
+	// Remove all the properties.
 	_array.setSize(0);
 	_array.trim();
+
+	// Remove all the groups.
+	_propertyGroups.setSize(0);
+	_propertyGroups.trim();
+}
+
+//_____________________________________________________________________________
+/**
+ * Add an empty group to the set, if it is not already in there.
+ */
+PropertyGroup* PropertySet::
+addGroup(string aGroupName)
+{
+	PropertyGroup* group = _propertyGroups.get(aGroupName);
+	if (group == NULL) {
+		group = new PropertyGroup(aGroupName);
+	   _propertyGroups.append(group);
+	}
+
+	return group;
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a property to a group. The group will be created if it does not already
+ * exist, but the property must already be in the PropertySet for it to be
+ * added to the group.
+ */
+void PropertySet::
+addPropertyToGroup(std::string aGroupName, std::string aPropertyName)
+{
+	Property* prop = _array.get(aPropertyName);
+	if (prop)
+	{
+		PropertyGroup* group = _propertyGroups.get(aGroupName);
+		if (group == NULL)
+			group = addGroup(aGroupName);
+		group->addProperty(prop);
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a property to a group. The group and the property must already be in the
+ * PropertySet.
+ */
+void PropertySet::
+addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName)
+{
+	// Make sure the group and property are in the PropertySet before adding the
+	// property to the group.
+	Property* prop = _array.get(aPropertyName);
+	if (prop && aGroup)
+	{
+		int i;
+		for (i = 0; i < _propertyGroups.getSize(); i++) {
+			if (_propertyGroups.get(i) == aGroup) {
+				aGroup->addProperty(prop);
+			}
+		}
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a property to a group. The group and the property must already be in the
+ * PropertySet.
+ */
+void PropertySet::
+addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty)
+{
+	// Make sure the group and property are in the PropertySet before adding the
+	// property to the group.
+	int index = _array.getIndex(aProperty);
+	if (index >= 0 && aGroup)
+	{
+		int i;
+		for (i = 0; i < _propertyGroups.getSize(); i++) {
+			if (_propertyGroups.get(i) == aGroup) {
+				aGroup->addProperty(_array[index]);
+			}
+		}
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a property to a group. The group will be created if it does not already
+ * exist, but the property must already be in the PropertySet for it to be
+ * added to the group.
+ */
+void PropertySet::
+addPropertyToGroup(std::string aGroupName, Property* aProperty)
+{
+	int index = _array.getIndex(aProperty);
+	if (index >= 0)
+	{
+		PropertyGroup* group = _propertyGroups.get(aGroupName);
+		if (group == NULL)
+			group = addGroup(aGroupName);
+		group->addProperty(aProperty);
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the group containing the passed-in property.
+ */
+PropertyGroup* PropertySet::
+getGroupContaining(Property* aProperty)
+{
+	int i;
+	for (i = 0; i < _propertyGroups.getSize(); i++) {
+	   if (_propertyGroups[i]->getPropertyIndex(aProperty) >= 0)
+		   return _propertyGroups.get(i);
+	}
+
+	return NULL;
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the index of the group containing the passed-in property.
+ */
+int PropertySet::
+getGroupIndexContaining(Property* aProperty)
+{
+	int i;
+	for (i = 0; i < _propertyGroups.getSize(); i++) {
+	   if (_propertyGroups.get(i)->getPropertyIndex(aProperty) >= 0)
+		   return i;
+	}
+
+	return -1;
 }

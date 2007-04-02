@@ -133,7 +133,7 @@ void MuscleWrap::setupProperties()
  *
  * @param aEngine dynamics engine containing this SimmBody.
  */
-void MuscleWrap::setup(AbstractDynamicsEngine* aEngine)
+void MuscleWrap::setup(AbstractDynamicsEngine* aEngine, AbstractMuscle* aMuscle)
 {
 	int i;
 	const BodySet* bodySet = aEngine->getBodySet();
@@ -142,11 +142,18 @@ void MuscleWrap::setup(AbstractDynamicsEngine* aEngine)
 		AbstractWrapObject* wo = bodySet->get(i)->getWrapObject(getWrapObjectName());
 		if (wo) {
 			_wrapObject = wo;
+			_wrapPoints[0].setBody(*bodySet->get(i));
 			_wrapPoints[0].setWrapObject(wo);
+			_wrapPoints[1].setBody(*bodySet->get(i));
 			_wrapPoints[1].setWrapObject(wo);
 			break;
 		}
 	}
+
+	// setup() must be called after setBody() because it requires
+	// that _bodyName already be assigned.
+	_wrapPoints[0].setup(aEngine->getModel(), aMuscle);
+	_wrapPoints[1].setup(aEngine->getModel(), aMuscle);
 
 	if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
 		_method = hybrid;

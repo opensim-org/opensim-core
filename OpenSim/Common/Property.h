@@ -169,28 +169,28 @@ public:
 	// so that all classes derived from Property will not have to implement each method.
 	// Bool
 	virtual void setValue(bool aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual bool& getValueBool() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const bool& getValueBool() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual bool& getValueBool() { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	virtual const bool& getValueBool() const { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Int
 	virtual void setValue(int aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual int& getValueInt() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const int& getValueInt() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual int& getValueInt() { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	virtual const int& getValueInt() const { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Dbl
 	virtual void setValue(double aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual double& getValueDbl() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const double& getValueDbl() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual double& getValueDbl() { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	virtual const double& getValueDbl() const { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Str
 	virtual void setValue(const std::string &aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual std::string& getValueStr() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const std::string& getValueStr() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual std::string& getValueStr() { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	virtual const std::string& getValueStr() const { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Obj
 	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
 	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.

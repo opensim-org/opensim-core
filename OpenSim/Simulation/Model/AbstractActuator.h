@@ -147,6 +147,8 @@ public:
 	virtual VisibleObject* getDisplayer() const { return NULL; }
 	// Update the geometry attached to the actuator. Use inertial frame.
 	virtual void updateGeometry();
+	OPENSIM_DECLARE_DERIVED(AbstractActuator, Object);
+
 protected:
 	// FORCE
 	void setAppliesForce(bool aTrueFalse) { _appliesForce = aTrueFalse; }

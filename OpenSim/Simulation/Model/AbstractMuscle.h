@@ -124,10 +124,18 @@ public:
 
 	const Array<std::string>* getGroupNames() const { return &_groupNames; }
 
+	//=============================================================================
 	// SCALING
+	//=============================================================================
 	virtual void preScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void postScale(const ScaleSet& aScaleSet);
+
+	//=============================================================================
+	// UTILITY
+	//=============================================================================
+	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
+	void deleteAttachmentPoint(int aIndex);
 
 	//=============================================================================
 	// COMPUTATIONS

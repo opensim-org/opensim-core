@@ -47,6 +47,7 @@ namespace OpenSim {
 
 class AbstractWrapObject;
 class AbstractDynamicsEngine;
+class AbstractMuscle;
 
 //=============================================================================
 //=============================================================================
@@ -106,7 +107,7 @@ public:
 #endif
    void copyData(const MuscleWrap& aMuscleWrap);
 
-	virtual void setup(AbstractDynamicsEngine* aEngine);
+	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractMuscle* aMuscle);
 
 	int getStartPoint() const { return _range[0]; }
 	int getEndPoint() const { return _range[1]; }

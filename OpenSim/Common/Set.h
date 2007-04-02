@@ -37,6 +37,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
+#include "ObjectGroup.h"
 #include "PropertyObjArray.h"
 
 namespace OpenSim { 
@@ -62,10 +63,12 @@ protected:
 // PROPERTIES
 /** Array of pointers to objects. */
 PropertyObjArray _propObjects;
+/** Array of pointers to object groups. */
+PropertyObjArray _propObjectGroups;
 
 // REFERENCES
 ArrayPtrs<T> &_objects;
-
+ArrayPtrs<ObjectGroup> _objectGroups;
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // METHODS
@@ -87,7 +90,8 @@ virtual ~Set()
  */
 Set() :
 	Object(),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray())
+	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
 	setType("Set");
 	setNull();
@@ -100,7 +104,8 @@ Set() :
  */
 Set(const std::string &aFileName) :
 	Object(aFileName),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray())
+	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
 	setType("Set");
 	setNull();
@@ -114,10 +119,12 @@ Set(const std::string &aFileName) :
  */
 Set(const Set<T> &aSet) :
 	Object(aSet),
-	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray())
+	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
+	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
 	setNull();
 	_objects = aSet._objects;
+	_objectGroups = aSet._objectGroups;
 }
 //_____________________________________________________________________________
 /**
@@ -146,6 +153,7 @@ setNull()
 {
 	setupProperties();
 	_objects.setSize(0);
+	_objectGroups.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -156,6 +164,9 @@ setupProperties()
 {
 	_propObjects.setName("objects");
 	_propertySet.append(	&_propObjects );
+
+	_propObjectGroups.setName("groups");
+	_propertySet.append(	&_propObjectGroups );
 }
 
 //=============================================================================
@@ -182,6 +193,7 @@ Set<T>& operator=(const Set<T> &aSet)
 {	
 	Object::operator=(aSet);
 	_objects = aSet._objects;
+	_objectGroups = aSet._objectGroups;
 
 	return(*this);
 }
@@ -662,6 +674,29 @@ int searchBinary(const T &aObject,bool aFindFirst=false,
 	return( _objects.searchBinary(aObject,aFindFirst,aLo,aHi) );
 }
 
+//=============================================================================
+// GROUPS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Add an empty group to the set.
+ */
+void addGroup(std::string& aGroupName)
+{
+	_objectGroups.append(new ObjectGroup(aGroupName));
+}
+
+//_____________________________________________________________________________
+/**
+ * Add an object to a group.
+ */
+void addObjectToGroup(std::string& aGroupName, std::string& aObjectName)
+{
+	ObjectGroup* group = _objectGroups.get(aGroupName);
+	Object* object = _objects.get(aObjectName);
+	if (group && object)
+		group->addObject(object);
+}
 
 //=============================================================================
 };	// END class Set

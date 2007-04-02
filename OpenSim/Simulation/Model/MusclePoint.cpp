@@ -111,6 +111,7 @@ void MusclePoint::copyData(const MusclePoint &aPoint)
 	_displayer = aPoint._displayer;
 	_bodyName = aPoint._bodyName;
 	_body = aPoint._body;
+	_muscle = aPoint._muscle;
 }
 
 //_____________________________________________________________________________
@@ -122,6 +123,7 @@ void MusclePoint::setNull()
 	setType("MusclePoint");
 
 	_body = NULL;
+	_muscle = NULL;
 }
 
 //_____________________________________________________________________________
@@ -151,10 +153,11 @@ void MusclePoint::setupProperties()
  */
 void MusclePoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 {
+	_muscle = aMuscle;
+
 	// Look up the body by name in the kinematics engine and
 	// store a pointer to it.
 	_body = aModel->getDynamicsEngine().getBodySet()->get(_bodyName);
-
 	if (!_body)
 	{
 		string errorMessage = "Body " + _bodyName + " referenced in muscle " + aMuscle->getName() + " not found in model " + aModel->getName();
@@ -208,17 +211,55 @@ MusclePoint& MusclePoint::operator=(const MusclePoint &aPoint)
 	return(*this);
 }
 
+//_____________________________________________________________________________
+/**
+ * Set the body that this point is fixed to.
+ *
+ * @param aBody Reference to the body.
+ */
 void MusclePoint::setBody(AbstractBody& aBody)
 {
+	// Invalidate the path and the geometry if you're
+	// about to change the body the point is fixed to.
+	if (&aBody != _body && _muscle != NULL) {
+		_muscle->invalidatePath();
+	}
+
 	_body = &aBody;
 	_bodyName = aBody.getName();
 }
 
+//_____________________________________________________________________________
+/**
+ * Set the XYZ attachment of the point.
+ *
+ * @param aAttachment The XYZ coordinates.
+ */
 void MusclePoint::setAttachment(double aAttachment[3])
 {
 	_attachment[0] = aAttachment[0];
 	_attachment[1] = aAttachment[1];
 	_attachment[2] = aAttachment[2];
+
+	// Invalidate the path
+	_muscle->invalidatePath();
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the X, Y, or Z attachment of the point.
+ *
+ * @param aCoordIndex The coordinate to change (0=X, 1=Y, 2=Z).
+ * @param aAttachment The X, Y, or Z coordinate.
+ */
+void MusclePoint::setAttachment(int aCoordIndex, double aAttachment)
+{
+	if (aCoordIndex >= 0 && aCoordIndex <= 2) {
+		_attachment[aCoordIndex] = aAttachment;
+
+		// Invalidate the path
+		_muscle->invalidatePath();
+	}
 }
 
 //=============================================================================

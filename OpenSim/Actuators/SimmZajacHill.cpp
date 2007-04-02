@@ -159,53 +159,71 @@ void SimmZajacHill::setNull()
  */
 void SimmZajacHill::setupProperties()
 {
+	PropertyGroup* forceGroup = _propertySet.addGroup("force");
+	PropertyGroup* dynamicGroup = _propertySet.addGroup("dynamic");
+	PropertyGroup* functionsGroup = _propertySet.addGroup("functions");
+	PropertyGroup* extraGroup = _propertySet.addGroup("extra");
+
 	_timeScaleProp.setName("time_scale");
 	_timeScaleProp.setValue(0.0);
 	_propertySet.append(&_timeScaleProp);
+	_propertySet.addPropertyToGroup(dynamicGroup, &_timeScaleProp);
 
 	_activation1Prop.setName("activation1");
 	_activation1Prop.setValue(0.0);
 	_propertySet.append(&_activation1Prop);
+	_propertySet.addPropertyToGroup(extraGroup, &_activation1Prop);
 
 	_activation2Prop.setName("activation2");
 	_activation2Prop.setValue(0.0);
 	_propertySet.append(&_activation2Prop);
+	_propertySet.addPropertyToGroup(extraGroup, &_activation2Prop);
 
 	_maxIsometricForceProp.setName("max_isometric_force");
 	_maxIsometricForceProp.setValue(0.0);
 	_propertySet.append(&_maxIsometricForceProp);
+	_propertySet.addPropertyToGroup(forceGroup, &_maxIsometricForceProp);
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
 	_optimalFiberLengthProp.setValue(0.0);
 	_propertySet.append(&_optimalFiberLengthProp);
+	_propertySet.addPropertyToGroup(forceGroup, &_optimalFiberLengthProp);
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
 	_tendonSlackLengthProp.setValue(0.0);
 	_propertySet.append(&_tendonSlackLengthProp);
+	_propertySet.addPropertyToGroup(forceGroup, &_tendonSlackLengthProp);
 
 	_pennationAngleProp.setName("pennation_angle");
 	_pennationAngleProp.setValue(0.0);
 	_propertySet.append(&_pennationAngleProp);
+	_propertySet.addPropertyToGroup(forceGroup, &_pennationAngleProp);
 
 	_maxContractionVelocityProp.setName("max_contraction_velocity");
 	_maxContractionVelocityProp.setValue(0.0);
 	_propertySet.append(&_maxContractionVelocityProp);
+	_propertySet.addPropertyToGroup(dynamicGroup, &_maxContractionVelocityProp);
 
 	_dampingProp.setName("damping");
 	_dampingProp.setValue(0.0);
 	_propertySet.append(&_dampingProp);
+	_propertySet.addPropertyToGroup(dynamicGroup, &_dampingProp);
 
 	_tendonForceLengthCurveProp.setName("tendon_force_length_curve");
 	_propertySet.append(&_tendonForceLengthCurveProp);
+	_propertySet.addPropertyToGroup(functionsGroup, &_tendonForceLengthCurveProp);
 
 	_activeForceLengthCurveProp.setName("active_force_length_curve");
 	_propertySet.append(&_activeForceLengthCurveProp);
+	_propertySet.addPropertyToGroup(functionsGroup, &_activeForceLengthCurveProp);
 
 	_passiveForceLengthCurveProp.setName("passive_force_length_curve");
 	_propertySet.append(&_passiveForceLengthCurveProp);
+	_propertySet.addPropertyToGroup(functionsGroup, &_passiveForceLengthCurveProp);
 
 	_forceVelocityCurveProp.setName("force_velocity_curve");
 	_propertySet.append(&_forceVelocityCurveProp);
+	_propertySet.addPropertyToGroup(functionsGroup, &_forceVelocityCurveProp);
 }
 
 //_____________________________________________________________________________

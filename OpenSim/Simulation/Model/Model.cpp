@@ -306,11 +306,6 @@ void Model::setup()
 	_actuatorSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()]);
 	_contactSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()]);
 
-	for (i = 0; i < _actuatorSet.getSize(); i++)
-	{
-		_actuatorSet.get(i)->updateGeometry();
-	}
-
 	/* The following code should be replaced by a more robust
 	 * check for problems while creating the model.
 	 */

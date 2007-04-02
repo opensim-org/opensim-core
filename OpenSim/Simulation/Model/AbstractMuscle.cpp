@@ -163,6 +163,7 @@ void AbstractMuscle::setupProperties()
 	_muscleModelIndexProp.setName("muscle_model");
 	_muscleModelIndexProp.setValue(4);
 	_propertySet.append(&_muscleModelIndexProp);
+	_propertySet.addPropertyToGroup("dynamic", &_muscleModelIndexProp);
 }
 
 //_____________________________________________________________________________
@@ -203,7 +204,7 @@ void AbstractMuscle::setup(Model* aModel)
 		_groups.append(aModel->enterGroup(_groupNames[i]));
 
 	for (i = 0; i < _muscleWrapSet.getSize(); i++)
-		_muscleWrapSet[i]->setup(&aModel->getDynamicsEngine());
+		_muscleWrapSet[i]->setup(&aModel->getDynamicsEngine(), this);
 
 	calculatePath();
 }
@@ -322,6 +323,31 @@ AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
 }
 
 //=============================================================================
+// UTILITY
+//=============================================================================
+MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
+{
+	MusclePoint* newPoint = new MusclePoint();
+	newPoint->setBody(aBody);
+	Array<double>& location = newPoint->getAttachment();
+	location[0] = 0.1111;
+	location[1] = 0.2222;
+	location[2] = 0.3333;
+	_attachmentSet.insert(aIndex, newPoint);
+
+	invalidatePath();
+
+	return newPoint;
+}
+
+void AbstractMuscle::deleteAttachmentPoint(int aIndex)
+{
+	_attachmentSet.remove(aIndex);
+
+	invalidatePath();
+}
+
+//=============================================================================
 // SCALING
 //=============================================================================
 //_____________________________________________________________________________
@@ -375,11 +401,9 @@ void AbstractMuscle::scale(const ScaleSet& aScaleSet)
  */
 void AbstractMuscle::postScale(const ScaleSet& aScaleSet)
 {
-	// Update Geometry to reflect scaling.
+	// Recalculate the muscle path. This will also update the geometry.
 	// Done here since scale is invoked before bodies are scaled
 	// so we may not have enough info to update (e.g. wrapping, via points)
-	updateGeometry();	
-
 	calculatePath();
 }
 
@@ -462,6 +486,14 @@ void AbstractMuscle::calculatePath()
 	applyWrapObjects();
 
 	calculateLength();
+
+	// Update the geometry used to display the muscle
+	// TODO: updateGeometry() would normally be called here, but
+	// that function calls calculatePath() because it is an
+	// AbstractActuator method that can be called independently
+	// of calculatePath().
+	updateGeometrySize();
+	updateGeometryLocations();
 
 	_pathValid = true;
 }
