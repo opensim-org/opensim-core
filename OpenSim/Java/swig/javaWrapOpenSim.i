@@ -63,6 +63,7 @@
 #include <OpenSim/Analyses/GeneralizedForces.h>
 
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+#include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 #include <OpenSim/Simulation/Wrap/WrapTorus.h>
@@ -161,6 +162,18 @@ using namespace OpenSim;
      
     return( cacheId );
   }
+  // Flag to indicate if an object is pickable in the GUI
+  // Example of a non-pickable object would be a MuscleWrapPoint
+  private boolean pickable=true;
+  
+  public boolean isPickable() {
+	 return pickable;
+  }
+  
+  public void setPickable(boolean onOff) {
+	 pickable=onOff;
+  }
+  
 %}
 
 %pragma(java) jniclassclassmodifiers="public class"
@@ -343,6 +356,7 @@ using namespace OpenSim;
 %include <OpenSim/Common/ScaleSet.h>
 
 %include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+%include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
