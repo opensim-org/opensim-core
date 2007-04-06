@@ -1,4 +1,4 @@
-/*Directors %module(directors="1") opensimModel */
+%module(directors="1") opensimModel
 %module opensimModel
 %{
 #include <xercesc/util/XercesVersion.hpp>
@@ -133,7 +133,7 @@
 using namespace OpenSim;
 %}
 
-/*Directors %feature("director") OpenSim::SimtkAnimationCallback; */
+%feature("director") OpenSim::SimtkAnimationCallback;
 
 
 %rename(OpenSimObject) OpenSim::Object;

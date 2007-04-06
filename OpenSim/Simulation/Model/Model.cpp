@@ -987,6 +987,23 @@ void Model::addIntegCallback(IntegCallback *aCallback)
 	_integCallbackSet->append(aCallback);
 }
 
+//_____________________________________________________________________________
+/**
+ * Remove an integration callback from the model
+ *
+ * @param aCallback Pointer to the integration callback to remove.
+ */
+void Model::removeIntegCallback(IntegCallback *aCallback)
+{
+	// CHECK FOR NULL
+	if(aCallback==NULL) {
+		printf("Model.removeIntegCallback:  ERROR- NULL callback.\n");
+	}
+
+	// ADD
+	aCallback->setModel(0);
+	_integCallbackSet->remove(aCallback);
+}
 
 //=============================================================================
 // DERIVATIVE CALLBACKS

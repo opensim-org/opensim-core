@@ -302,6 +302,7 @@ public:
 	virtual IntegCallbackSet* getIntegCallbackSet();
 	virtual const IntegCallbackSet* getIntegCallbackSet() const;
 	virtual void addIntegCallback(IntegCallback *aCallback);
+	virtual void removeIntegCallback(IntegCallback *aCallback);
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVE CALLBACKS
