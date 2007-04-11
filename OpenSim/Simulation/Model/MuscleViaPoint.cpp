@@ -135,6 +135,52 @@ void MuscleViaPoint::setupProperties()
 
 //_____________________________________________________________________________
 /**
+ * Set the coordinate that this point is linked to.
+ *
+ * @return Whether or not this point is active.
+ */
+void MuscleViaPoint::setCoordinate(AbstractCoordinate& aCoordinate)
+{
+	if (&aCoordinate != _coordinate)
+	{
+	   _coordinate = &aCoordinate;
+	   _coordinateName = _coordinate->getName();
+		_muscle->invalidatePath();
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the range min.
+ *
+ * @param aRange range min to change to.
+ */
+void MuscleViaPoint::setRangeMin(double aMin)
+{
+	if (aMin <= _range[1])
+	{
+		_range[0] = aMin;
+		_muscle->invalidatePath();
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the range max.
+ *
+ * @param aRange range max to change to.
+ */
+void MuscleViaPoint::setRangeMax(double aMax)
+{
+	if (aMax >= _range[0])
+	{
+		_range[1] = aMax;
+		_muscle->invalidatePath();
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * Determine if this point is active by checking the value of the
  * coordinate that it is linked to.
  *

@@ -96,7 +96,10 @@ public:
 
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
+	void setCoordinate(AbstractCoordinate& aCoordinate);
 	const std::string& getCoordinateName() const { return _coordinateName; }
+	void setRangeMin(double aMin);
+	void setRangeMax(double aMax);
 
 	virtual bool isActive() const;
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
