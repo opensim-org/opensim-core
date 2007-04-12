@@ -85,6 +85,8 @@ public:
 	static const char *DEFAULT_HEADER_TOKEN;
 	static const char* DEFAULT_HEADER_SEPARATOR;
 protected:
+	static std::string simmReservedKeys[];
+
 	/** Array of StateVectors. */
 	Array<StateVector> _storage;
 	/** Token used to mark the end of the description in a file. */
@@ -124,7 +126,10 @@ private:
 	void setNull();
 	void copyData(const Storage &aStorage);
 	void parseColumnLabels(const char *aLabels);
+	bool parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColumns);
 	bool isSimmReservedToken(const std::string& aToken);
+	void postProcessSIMMMotion();
+	void exchangeTimeColumnWith(int aColumnIndex);
 public:
 
 	//--------------------------------------------------------------------------
@@ -144,6 +149,7 @@ public:
 	double getLastTime() const;
 	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
+	//int getTimeColumn(Array<double>& times) const;
 	// HEADERS, Key-Value pairs
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
@@ -159,6 +165,7 @@ public:
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
+	//int getDataColumn(int aStateIndex, Array<double>& data) const;
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;

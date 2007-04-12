@@ -60,7 +60,18 @@ const double Storage::LARGE_NEGATIVE = -1.0e-30;
 const double Storage::LARGE_POSITIVE =  1.0e-30;
 const char* Storage::DEFAULT_HEADER_TOKEN = "endheader";
 const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\n";
-
+//============================================================================
+// STATICS
+//============================================================================
+string Storage::simmReservedKeys[] = {
+								  "#",
+								  "range", "Range",
+								  "wrap", "Wrap", "WRAP",
+								  "event",
+								  "enforce_loops",
+								  "enforce_constraints",
+								  "calc_derivatives"};
+int numSimmReservedKeys=10;	// Keep this number in sync with above array size
 
 //=============================================================================
 // DESTRUCTOR
@@ -116,63 +127,13 @@ Storage::Storage(const string &aFileName) :
 		return;
 	}
 
-	// NAME
-	string line = IO::ReadLine(*fp);
-	setName(line);
-
-	// ATTRIBUTES
-	bool oldStyleDescription = false;
 	int nr=0,nc=0,nd=0;
-	streampos begin = fp->tellg();
-	bool simmHeader=false;
-	int parseErrors=0;
-	for(int i=0;i<3 || (simmHeader &&parseErrors<10);i++) {
-		line = IO::ReadLine(*fp);
-		if(line.empty() && !fp->good()) {
-			printf("Storage: ERROR- no lines in %s.\n",aFileName.c_str());
-			return;
-		}
-		size_t delim = line.find_first_of(" \t=");
-		string key = line.substr(0, delim);
-		size_t restidx = line.find_first_not_of(" \t=", delim);
-		string rest = (restidx==string::npos) ? "" : line.substr(restidx);
-		if(key=="nr" || key=="nRows" || key=="datarows") {
-			nr = atoi(rest.c_str());
-			begin = fp->tellg();
-			if (key=="datarows")	simmHeader=true;
-
-		} else if(key=="nc" || key=="nColumns" || key=="datacolumns") {
-			nc = atoi(rest.c_str());
-			begin = fp->tellg();
-			if (key=="datacolumns")	simmHeader=true;
-		} else if(key=="nd" || key=="nDescrip") {
-			nd = atoi(rest.c_str());
-			oldStyleDescription = true;
-		} else if (isSimmReservedToken(key)) {
-			_keyValueMap[key]= rest;
-		} else if (key=="units" || key=="Units" || key=="UNITS") {
-			_units = Units(rest);
-		} else if(key==DEFAULT_HEADER_TOKEN){
-			break;
-		} else 
-			parseErrors++;
-	}
-	if(parseErrors==10 || nc==0 || nr==0) {
-		printf("Storage: ERROR- failed to parse file %s.\n",aFileName.c_str());
+	if (!parseHeaders(*fp, nr, nc)){
+		printf("Storage: ERROR- failed to parse headers of file %s.\n",aFileName.c_str());
 		return;
 	}
 	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName.c_str(),nr,nc);
 
-	// DESCRIPTION
-	string descrip;
-	if(oldStyleDescription) {
-		descrip = IO::ReadCharacters(*fp,nd);
-	} else {
-		// REWIND TO START OF DESCRIPTION
-		fp->seekg(begin);
-		descrip = IO::ReadToTokenLine(*fp,_headerToken);
-	}
-	setDescription(descrip);
 
 	// IGNORE blank lines after header -- treat \r and \n as end of line chars
 	while(fp->good()) {
@@ -180,11 +141,13 @@ Storage::Storage(const string &aFileName) :
 		if(c!='\n' && c!='\r') break;
 		fp->get();
 	}
+	// Ayman: Support for oldStyleDescription dropped. 04/11/07
+
 	// COLUMN LABELS
-	if(!oldStyleDescription) {
-		getline(*fp, line);
-		parseColumnLabels(line.c_str());
-	}
+	string line;
+	getline(*fp, line);
+	parseColumnLabels(line.c_str());
+
 	// CAPACITY
 	_storage.ensureCapacity(nr);
 	_storage.setCapacityIncrement(-1);
@@ -203,6 +166,9 @@ Storage::Storage(const string &aFileName) :
 
 	// CLOSE FILE
 	delete fp;
+	// If what we read was really a sIMM motion file, adjust the data 
+	// to account for different assumptions between SIMM.mot OpenSim.sto
+	postProcessSIMMMotion();
 }
 //_____________________________________________________________________________
 /**
@@ -711,6 +677,7 @@ getTimeColumn(double *&rTimes,int aStateIndex)
 
 	return(nTimes);
 }
+
 
 //-----------------------------------------------------------------------------
 // DATA
@@ -2364,8 +2331,14 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 	fprintf(rFP,"otherdata 1\n");
 
 	// RANGE
-	fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
+	//fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
+	
+	// Other data from the map
+	MapKeysToValues::const_iterator iter;
 
+	for(iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++){
+		fprintf(rFP,"%s %s\n",iter->first, iter->second);
+	}
 	return(0);
 }
 //_____________________________________________________________________________
@@ -2475,17 +2448,23 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
 		rStorage.setColumnLabels(newColumnLabels);
 	}
 }
-
+//_____________________________________________________________________________
+/**
+ * Processing of special reserved words used by SIMM and corresponding values
+ * The keys and their corresponding values are maintained in _keyValueMap
+ */
+// Add a new Pair
 void Storage::
 addKeyValuePair(const std::string& aKey, const std::string& aValue)
 {
 	if (_keyValueMap.find(aKey)!=_keyValueMap.end()){
-		// Should we warn here?
+		// Should we warn here? or append in case of comment?
 	}
 	_keyValueMap[aKey]=aValue;
-	cout << "key, value " << aKey << ", " << aValue << endl;
+	//cout << "key, value " << aKey << ", " << aValue << endl;
 
 }
+// Lookup the value for a key
 void Storage::
 getValueForKey(const std::string& aKey, std::string& rValue) const
 {
@@ -2497,23 +2476,159 @@ getValueForKey(const std::string& aKey, std::string& rValue) const
 		rValue="";
 
 }
+// Check if the key exists
 bool Storage::hasKey(const std::string& aKey) const
 {
 	return (_keyValueMap.find(aKey)!=_keyValueMap.end());
 }
 
-static string simmReservedKeys[] = {"range", "Range", "RANGE", 
-								  "wrap", "Wrap", "WRAP",
-								  "enforce_loops",
-								  "enforce_constraints",
-								  "calc_derivatives"};
-
+//_____________________________________________________________________________
+/**
+ * Check that a Token belongs to a list of resere
+ *
+ * @returns true on success (meaningful values of rNumRows, rNumColumns)
+ */
 bool Storage::isSimmReservedToken(const std::string& aToken)
 {
-	for(int i=0; i<9; i++){
+	for(int i=0; i<numSimmReservedKeys; i++){
 		if (simmReservedKeys[i]==aToken)
 			return true;
 	}
 	return false;
 }
+//_____________________________________________________________________________
+/**
+ * parse headers of OpenSim::Storage file or SIMM motion file into a Storage object
+ * and populate rNumRows, rNumColumns
+ * a Map between some keywords and their values for SIMM compatibility
+ *
+ * @returns true on success (meaningful values of rNumRows, rNumColumns)
+ */
+bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColumns)
+{
+	bool done=false;
+	bool firstLine=true;
+	// Parse until the end of header
+	while(!done){
+		// NAME
+		string line = IO::ReadLine(aStream);
+		// Always Strip leading and trainling spaces and tabs
+		IO::TrimLeadingWhitespace(line);
+		IO::TrimTrailingWhitespace(line);
+		if(line.empty() && !aStream.good()) {
+			printf("Storage: ERROR- no more lines in storage file.\n");
+			return false;
+		}
+		if (line.length()==0)
+			continue;
 
+		// Here we have a line. Should be one of:
+		// name
+		// nRows, nr, datarows
+		// nColumns, nc, datacolumns
+		// nd, nDescrip
+		// # Comment
+		size_t delim = line.find_first_of(" \t=");
+		string key = line.substr(0, delim);
+		size_t restidx = line.find_first_not_of(" \t=", delim);
+		string rest = (restidx==string::npos) ? "" : line.substr(restidx);
+
+		if (key== "name"){
+			setName(line);
+		}
+		else if (key== "nr" || key== "nRows" || key== "datarows"){
+			rNumRows = atoi(rest.c_str());			
+		}
+		else if (key== "nc" || key== "nColumns" || key== "datacolumns"){
+			rNumColumns = atoi(rest.c_str());			
+		}
+		else if (isSimmReservedToken(key)) {
+				_keyValueMap[key]= rest;
+		} 
+		else if (key== "units") {
+				_units = Units(rest);
+		} 
+		else if(key== DEFAULT_HEADER_TOKEN){				
+			break;			
+		}
+		else if (firstLine){	// Storage file have their names without "name prefix on first line"
+			setName(line);
+		}
+		firstLine=false;
+	}
+	if(rNumColumns==0 || rNumRows==0) {
+		printf("Storage: ERROR- failed to parse header of storage file.\n");
+		return false;
+	}
+	return true;
+}
+
+void Storage::
+exchangeTimeColumnWith(int aColumnIndex)
+{
+	for(int i=0; i< _storage.getSize(); i++){
+		StateVector vec = _storage.get(i);
+		double swap = vec.getData().get(aColumnIndex);
+		double time=vec.getTime();
+		vec.setDataValue(i, time);
+		vec.setTime(swap);
+	}
+	// Now column labels
+	string swap = _columnLabels.get(0);
+	_columnLabels.set(aColumnIndex, swap);
+	_columnLabels.set(0, "time");
+
+}
+//_____________________________________________________________________________
+/**
+ * If that was a SIMM motion file postprocess it to account for
+ * lack of time column, assumption of uniform time
+ * other kinds of processing can be added here to account for calc_derivatives, ...
+ *
+ * This is all untested since all motion files we deal with so far do not exhibit this behavior.
+ */
+void Storage::postProcessSIMMMotion() 
+{
+	Array<std::string> currentLabels = getColumnLabels();
+	// If time is not first column check if it exists somewhere else and exchange
+	if (!(currentLabels.get(0)=="time")){
+		int timeColumnIndx = currentLabels.findIndex("time");
+		if (timeColumnIndx!=-1){ // Exchange column timeColumnIndx with time
+			exchangeTimeColumnWith(timeColumnIndx);
+		}
+		else {	
+			// There was no time column altogether. make one based on
+			// range (if specified) and number of entries
+			MapKeysToValues::iterator iter;
+			iter = _keyValueMap.find("range");	// Should we check "Range", "RANGE" too?
+			if (iter !=_keyValueMap.end()){
+				string rangeValue = iter->second;
+				double start, end;
+				sscanf(rangeValue.c_str(), "%f %f", &start, &end);
+				if (_storage.getSize()<2){	// Something wrong throw exception unless start==end
+					if (start !=end){
+						stringstream errorMessage;
+						errorMessage << "Error: Motion file has inconsistent headers";
+						throw (Exception(errorMessage.str()));
+					}
+					else if (_storage.getSize()==1){
+						// Prepend a Time column
+						StateVector vec = _storage.get(0);
+						vec.getData().append(0.0);
+						_columnLabels.append("time");
+						exchangeTimeColumnWith(_columnLabels.findIndex("time"));
+					}
+					else
+						throw (Exception("File has no data"));
+				}
+				else {	// time  column from range, size
+					double timeStep = (end - start)/(_storage.getSize()-1);
+					throw (Exception("Storage::postProcessSIMMMotion Not implemented yet"));
+				}
+			}
+			else {	// No time specified altogether
+					throw (Exception("Storage::postProcessSIMMMotion Not implemented yet"));
+			}
+		}
+	}
+}
