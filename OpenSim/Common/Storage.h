@@ -149,7 +149,7 @@ public:
 	double getLastTime() const;
 	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
-	//int getTimeColumn(Array<double>& times) const;
+	void getTimeColumn(Array<double>& times, const double& startTime=0.0);
 	// HEADERS, Key-Value pairs
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
@@ -165,7 +165,7 @@ public:
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
-	//int getDataColumn(int aStateIndex, Array<double>& data) const;
+	void getDataColumn(const std::string& columnName, Array<double>& data, const double& startTime=0.0);
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;
@@ -226,8 +226,7 @@ public:
 	int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
 	void pad(int aPadSize);
 	void lowpassFIR(int aOrder,double aCutoffFequency);
-	// Append rows of passed in storage to current storage at matched time
-	//void join(Storage& aStorage, double startTime, double endTime);
+	// Append rows of two storages at matched time
 	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	//--------------------------------------------------------------------------
 	// UTILITY

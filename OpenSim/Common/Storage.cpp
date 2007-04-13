@@ -677,8 +677,24 @@ getTimeColumn(double *&rTimes,int aStateIndex)
 
 	return(nTimes);
 }
+/**
+ * Get the time column starting at aTime. Return it in rTimes
+ * rTimes is preallocated by the caller.
+ */
+void Storage::
+getTimeColumn(Array<double>& rTimes, const double& aStartTime)
+{
+	if(_storage.getSize()<=0) return;
 
+	int startIndex = findIndex(aStartTime);
 
+	double *timesVec=0;
+	int size = getTimeColumn(timesVec, 0);
+
+	for(int i=startIndex; i<size; i++)
+		rTimes.append(timesVec[i]);
+	delete[] timesVec;
+}
 //-----------------------------------------------------------------------------
 // DATA
 //-----------------------------------------------------------------------------
@@ -921,6 +937,25 @@ getDataColumn(int aStateIndex,double *&rData) const
 
 	return(nData);
 }
+
+/**
+ * Get the data column starting at aTime. Return it in rData
+ * rData is preallocated by the caller.
+ */
+void Storage::
+getDataColumn(const std::string& columnName, Array<double>& rData, const double& aStartTime)
+{
+	if(_storage.getSize()<=0) return;
+
+	int startIndex = findIndex(aStartTime);
+	int colIndex = getStateIndex(columnName);
+	double *dataVec=0;
+	getDataColumn(colIndex, dataVec);
+	for(int i=startIndex; i<_storage.getSize(); i++)
+		rData.append(dataVec[i]);
+	delete[] dataVec;
+}
+
 //_____________________________________________________________________________
 /**
  * Set the data corresponding to a specified state.  This call is equivalent
