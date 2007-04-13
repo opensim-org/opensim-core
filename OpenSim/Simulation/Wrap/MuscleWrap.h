@@ -86,6 +86,7 @@ protected:
    Array<int> &_range;
 
 	AbstractWrapObject* _wrapObject;
+	AbstractMuscle* _muscle;
 
 	WrapResult _previousWrap;  // results from previous wrapping
 
@@ -110,12 +111,15 @@ public:
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractMuscle* aMuscle);
 
 	int getStartPoint() const { return _range[0]; }
+	void setStartPoint(int aIndex);
 	int getEndPoint() const { return _range[1]; }
+	void setEndPoint(int aIndex);
 	const std::string& getWrapObjectName() const { return _wrapObjectName; }
 	AbstractWrapObject* getWrapObject() const { return _wrapObject; }
 	MuscleWrapPoint& getWrapPoint(int aIndex);
 	WrapMethod getMethod() const { return _method; }
 	const std::string& getMethodName() const { return _methodName; }
+	AbstractMuscle* getMuscle() const { return _muscle; }
 
 	const WrapResult& getPreviousWrap() const { return _previousWrap; }
 	void setPreviousWrap(const WrapResult& aWrapResult);

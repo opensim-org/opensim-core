@@ -28,6 +28,7 @@
 #include "MuscleWrap.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Common/rdMath.h>
 
 //=============================================================================
@@ -138,6 +139,8 @@ void MuscleWrap::setup(AbstractDynamicsEngine* aEngine, AbstractMuscle* aMuscle)
 	int i;
 	const BodySet* bodySet = aEngine->getBodySet();
 
+	_muscle = aMuscle;
+
 	for (i = 0; i < bodySet->getSize(); i++) {
 		AbstractWrapObject* wo = bodySet->get(i)->getWrapObject(getWrapObjectName());
 		if (wo) {
@@ -217,6 +220,24 @@ MuscleWrapPoint& MuscleWrap::getWrapPoint(int aIndex)
 	return _wrapPoints[aIndex];
 }
 
+void MuscleWrap::setStartPoint(int aIndex)
+{
+	if ((aIndex != _range[0]) && (aIndex == -1 || (aIndex >= 1 && aIndex <= _range[1])))
+	{
+		_range[0] = aIndex;
+		_muscle->invalidatePath();
+	}
+}
+
+void MuscleWrap::setEndPoint(int aIndex)
+{
+	if ((aIndex != _range[1]) && (aIndex == -1 || (aIndex >= _range[0] && aIndex <= _muscle->getAttachmentSet().getSize())))
+	{
+		_range[1] = aIndex;
+		_muscle->invalidatePath();
+	}
+}
+
 void MuscleWrap::resetPreviousWrap()
 {
 	_previousWrap.startPoint = -1;
@@ -232,6 +253,7 @@ void MuscleWrap::resetPreviousWrap()
 		_previousWrap.sv[i] = rdMath::MINUS_INFINITY;
 	}
 }
+
 void MuscleWrap::setPreviousWrap(const WrapResult& aWrapResult)
 {
 	_previousWrap = aWrapResult;
