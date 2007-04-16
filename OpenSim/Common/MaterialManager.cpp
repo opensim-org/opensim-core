@@ -65,7 +65,7 @@ MaterialManager::MaterialManager()
  *
  */
 MaterialManager::MaterialManager(const string &aFileName):
-Object(aFileName)
+Object(aFileName, false)
 {
 	// NULL STATES
 	setNull();

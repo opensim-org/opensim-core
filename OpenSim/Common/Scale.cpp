@@ -24,7 +24,6 @@ _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();
-	updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**
@@ -48,7 +47,7 @@ _apply(_propApply.getValueBool())
  * Constructor of a scaleSet from a file.
  */
 Scale::Scale(const string& scaleFileName):
-Object(scaleFileName),
+Object(scaleFileName, false),
 _scaleFactors(_propScaleFactors.getValueDblArray()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())

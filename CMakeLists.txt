@@ -30,8 +30,10 @@ ENDIF(WIN32)
 
 IF(WIN32)
 	SET(SIMTK_OPENSIM_INSTALL_DIR "c:/Program Files/SimTK/OpenSim")
+	SET(SIMTK_DIR "c:/Program Files/SimTK/" CACHE STRING "Top-level directory of SimTK install")
 ELSE(WIN32)
 	SET(SIMTK_OPENSIM_INSTALL_DIR "/usr/local/SimTK/OpenSim")
+	SET(SIMTK_DIR "/usr/local/SimTK" CACHE STRING "Top-level directory of SimTK install")
 ENDIF(WIN32)
 
 IF(NOT LIBRARY_OUTPUT_PATH)
@@ -53,9 +55,21 @@ ELSE(WIN32)
 SET(XERCES_INCLUDE_DIR "")
 ENDIF(WIN32)
 
+INCLUDE_DIRECTORIES(${SIMTK_DIR}/core/include)
+
 IF(WIN32)
-	LINK_DIRECTORIES(${OpenSim_LIBRARY_DIR})
+	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib ${OpenSim_LIBRARY_DIR})
 ENDIF(WIN32)
+
+SET(USE_STATIC_SIMTK_LIBRARIES OFF CACHE BOOL "Link to static SimTK libraries (useful for debugging)")
+IF(USE_STATIC_SIMTK_LIBRARIES)
+	ADD_DEFINITIONS(-DSimTK_USE_STATIC_LIBRARIES)
+	SET(SIMTK_COMMON_LIB debug SimTKcommon_static_d optimized SimTKcommon_static)
+	SET(SIMTK_MATH_LIB debug SimTKmath_static_d optimized SimTKmath_static SimTKlapack)
+ELSE(USE_STATIC_SIMTK_LIBRARIES)
+	SET(SIMTK_COMMON_LIB debug SimTKcommon_d optimized SimTKcommon)
+	SET(SIMTK_MATH_LIB debug SimTKmath_d optimized SimTKmath SimTKlapack)
+ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
 INCLUDE (Dart)
 

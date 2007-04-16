@@ -100,14 +100,14 @@ Callback::Callback(const Callback &aCallback):
 *
 * @param aFileName File name of the document.
 */
-Callback::Callback(const std::string &aFileName):
-	Object(aFileName),
+Callback::Callback(const std::string &aFileName, bool aUpdateFromXMLNode):
+	Object(aFileName, false),
 	_on(_onProp.getValueBool()),
 	_startTime(_startTimeProp.getValueDbl()),
 	_endTime(_endTimeProp.getValueDbl())
 {
 	setNull();
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**

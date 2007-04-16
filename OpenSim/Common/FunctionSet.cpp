@@ -86,7 +86,7 @@ FunctionSet::FunctionSet() :
  * @param aFileName Name of the file.
  */
 FunctionSet::FunctionSet(const string &aFileName) :
-	Set<Function>(aFileName),
+	Set<Function>(aFileName, false),
 	_minX(_propMinX.getValueDbl()),
 	_maxX(_propMaxX.getValueDbl()),
 	_minY(_propMinX.getValueDbl()),

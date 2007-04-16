@@ -84,7 +84,7 @@ private:
 public:
 	Callback(Model *aModel=NULL);
 	Callback(const Callback &aCallback);
-	Callback(const std::string &aFileName);
+	Callback(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	virtual ~Callback();
 	virtual Object* copy() const;
 	//--------------------------------------------------------------------------

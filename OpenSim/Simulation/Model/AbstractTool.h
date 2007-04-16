@@ -88,7 +88,7 @@ protected:
 public:
 	virtual ~AbstractTool();
 	AbstractTool();
-	AbstractTool(const std::string &aFileName, Model* aGuiModel=0);
+	AbstractTool(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	AbstractTool(const AbstractTool &aObject);
 	//Object* copy() const;
 
@@ -141,7 +141,7 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
-	void loadModel();
+	void loadModel(const std::string &aToolSetupFileName);
 	void addAnalysisSetToModel();
 
 	//--------------------------------------------------------------------------

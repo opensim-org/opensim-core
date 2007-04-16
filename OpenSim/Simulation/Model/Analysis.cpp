@@ -88,13 +88,13 @@ Analysis::~Analysis()
  *
  * @param aFileName File name of the document.
  */
-Analysis::Analysis(const string &aFileName):
-IntegCallback(aFileName),
+Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
+IntegCallback(aFileName, false),
 _inDegrees(_inDegreesProp.getValueBool())
 {
 	setType("Analysis");
 	setNull();
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**

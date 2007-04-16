@@ -98,8 +98,6 @@ public:
 	double evaluate() { return _value; }
 	virtual void scaleY(double aScaleFactor) { _value *= aScaleFactor; }
 
-	virtual void updateFromXMLNode();
-
 //=============================================================================
 };	// END class Constant
 //=============================================================================

@@ -80,7 +80,7 @@ ControlSet::ControlSet() :
  * @param aFileName Name of the file.
  */
 ControlSet::ControlSet(const string &aFileName) :
-	Set<Control>(aFileName), _ptcMap(-1), _ptpMap(-1)
+	Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
 {
 	setNull();
 	updateFromXMLNode();

@@ -23,7 +23,6 @@ _min(_propMin.getValueDbl()),
 _max(_propMax.getValueDbl())
 {
 	setNull();
-	updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**

@@ -57,8 +57,8 @@ AbstractTool::AbstractTool():
  *
  * @param aFileName File name of the document.
  */
-AbstractTool::AbstractTool(const string &aFileName, Model* aGuiModel):
-	Object(aFileName),
+AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
+	Object(aFileName, false),
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
@@ -76,20 +76,7 @@ AbstractTool::AbstractTool(const string &aFileName, Model* aGuiModel):
 {
 	setType("AbstractTool");
 	setNull();
-	updateFromXMLNode();
-
-	if (aGuiModel)
-		setModel(aGuiModel);
-	else
-	{
-		// Do the maneuver to change then restore working directory 
-		// so that the parsing code behaves properly if called from a different directory.
-		string saveWorkingDirectory = IO::getCwd();
-		string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-		IO::chDir(directoryOfSetupFile);
-		loadModel();
-		IO::chDir(saveWorkingDirectory);
-	}
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 }
 
 //_____________________________________________________________________________
@@ -353,11 +340,13 @@ getAnalysisSet() const
  * this investigation.
  */
 void AbstractTool::
-loadModel()
+loadModel(const string &aToolSetupFileName)
 {
-	// If _modelLibrary is not specified, we do not try to load the model here and assume
-	// the caller/user of this investigation will take care of setting it up.
 	if (_modelFile != "") {
+		string saveWorkingDirectory = IO::getCwd();
+		string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
+		IO::chDir(directoryOfSetupFile);
+
 		cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
 		Model *model = new Model(_modelFile);
@@ -376,6 +365,8 @@ loadModel()
 		if(!model->getActuatorSet()->check())
 			throw(Exception("ERROR ActuatorSet::check() failed",__FILE__,__LINE__));
 		setModel(model);
+
+		IO::chDir(saveWorkingDirectory);
 	}
 }
 //_____________________________________________________________________________

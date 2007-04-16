@@ -72,8 +72,8 @@ ActuatorSet::ActuatorSet() :
  *
  * @param aFileName Name of the file.
  */
-ActuatorSet::ActuatorSet(const std::string &aFileName) :
-	Set<AbstractActuator>(aFileName),
+ActuatorSet::ActuatorSet(const std::string &aFileName, bool aUpdateFromXMLNode) :
+	Set<AbstractActuator>(aFileName, false),
 	_model(NULL),
 	_controlToActuator(-1), _actuatorToControl(-1),
 	_stateToActuator(-1), _actuatorToState(-1),
@@ -81,7 +81,7 @@ ActuatorSet::ActuatorSet(const std::string &aFileName) :
 {
 	setNull();
 
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 	// removeInvalidObjects();
 
 	// INDICES

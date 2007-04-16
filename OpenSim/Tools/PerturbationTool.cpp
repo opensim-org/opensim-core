@@ -94,7 +94,7 @@ PerturbationTool::PerturbationTool() :
  * @param aFileName File name of the document.
  */
 PerturbationTool::PerturbationTool(const string &aFileName):
-	AbstractTool(aFileName),
+	AbstractTool(aFileName, false),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -132,6 +132,7 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	setType("PerturbationTool");
 	setNull();
 	updateFromXMLNode();
+	loadModel(aFileName);
 	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________

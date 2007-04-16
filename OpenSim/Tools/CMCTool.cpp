@@ -109,7 +109,7 @@ CMCTool::CMCTool() :
  * @param aFileName File name of the XML document.
  */
 CMCTool::CMCTool(const string &aFileName) :
-	AbstractTool(aFileName),
+	AbstractTool(aFileName, false),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -136,6 +136,7 @@ CMCTool::CMCTool(const string &aFileName) :
 	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
+	loadModel(aFileName);
 	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________

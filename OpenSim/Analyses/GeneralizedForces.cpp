@@ -92,7 +92,8 @@ GeneralizedForces::GeneralizedForces(Model *aModel) :
  * @param aFileName File name of the document.
  */
 GeneralizedForces::
-GeneralizedForces(const std::string &aFileName)
+GeneralizedForces(const std::string &aFileName):
+	Analysis(aFileName, false)
 {
 	//setNull();
 

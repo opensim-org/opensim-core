@@ -34,6 +34,7 @@
  */
 
 #include "ActuatorSet.h"
+#include <string>
 
 
 //=============================================================================
@@ -70,7 +71,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ContactForceSet();
-	ContactForceSet(const char *aFileName);
+	ContactForceSet(const std::string &aFileName);
 	ContactForceSet(const ContactForceSet &aContactForceSet);
 
 	virtual ~ContactForceSet();

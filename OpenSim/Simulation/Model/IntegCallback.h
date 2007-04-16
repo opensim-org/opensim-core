@@ -81,7 +81,7 @@ protected:
 public:
 	IntegCallback(Model *aModel=0);
 	// Support for Object behavior
-	IntegCallback(const std::string &aFileName);
+	IntegCallback(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	IntegCallback(const IntegCallback &aIntegCallback);
 	virtual ~IntegCallback();
 	virtual Object* copy() const;

@@ -74,7 +74,7 @@ Model::Model() :
  * Constructor from an XML file
  */
 Model::Model(const string &aFileName) :
-	Object(aFileName),
+	Object(aFileName, false),
 	_fileName("Unassigned"),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),

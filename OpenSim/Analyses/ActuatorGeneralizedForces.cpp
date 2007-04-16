@@ -92,7 +92,7 @@ _actuatorNames(_propActuatorNames.getValueStrArray())
 
 ActuatorGeneralizedForces::
 ActuatorGeneralizedForces(const std::string &aFileName) :
-Analysis(aFileName),
+Analysis(aFileName, false),
 _actuatorList(NULL),
 _actuatorNames(_propActuatorNames.getValueStrArray())
 {

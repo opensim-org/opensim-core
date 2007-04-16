@@ -80,7 +80,7 @@ Actuation::Actuation(Model *aModel) :
  * @param aFileName File name of the document.
  */
 Actuation::Actuation(const std::string &aFileName):
-Analysis(aFileName)
+Analysis(aFileName, false)
 {
 	setNull();
 

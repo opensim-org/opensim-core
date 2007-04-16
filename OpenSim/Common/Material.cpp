@@ -88,7 +88,7 @@ _specularColor(_propSpecularColor.getValueDblArray())
  * @param aFileName File name of the document.
  */
 Material::Material(const string &aFileName):
-Object(aFileName),
+Object(aFileName, false),
 _translucency(_propTranslucency.getValueDbl()),
 _ambientColor(_propAmbientColor.getValueDblArray()),
 _diffuseColor(_propDiffuseColor.getValueDblArray()),

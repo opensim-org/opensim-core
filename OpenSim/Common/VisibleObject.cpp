@@ -96,7 +96,7 @@ _dependents(0)
  * @param aFileName File name of the document.
  */
 VisibleObject::VisibleObject(const string &aFileName):
-Object(aFileName),
+Object(aFileName, false),
 _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),

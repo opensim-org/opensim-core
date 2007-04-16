@@ -53,6 +53,8 @@
 
 
 using namespace OpenSim;
+using namespace std;
+
 /**
  * Destructor.
  */
@@ -75,11 +77,12 @@ ActuatorSet()
  *
  * @param aFileName Name of the file.
  */
-ContactForceSet::ContactForceSet(const char *aFileName) :
-	ActuatorSet(aFileName)
+ContactForceSet::ContactForceSet(const string &aFileName) :
+	ActuatorSet(aFileName, false)
 {
 	setNull();
 	updateFromXMLNode();
+	// TODO: Do we need to call constructMaps again here, since ActuatorSet did not call updateFromXMLNode
 }
 
 //_____________________________________________________________________________

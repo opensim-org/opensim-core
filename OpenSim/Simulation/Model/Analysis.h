@@ -86,7 +86,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	Analysis(Model *aModel=0);
-	Analysis(const std::string &aFileName);
+	Analysis(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	virtual ~Analysis();
 	Analysis(const Analysis &aObject);
 	virtual Object* copy() const;

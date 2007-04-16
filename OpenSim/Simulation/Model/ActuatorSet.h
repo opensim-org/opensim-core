@@ -94,7 +94,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ActuatorSet();
-	ActuatorSet(const std::string &aFileName);
+	ActuatorSet(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	ActuatorSet(const ActuatorSet &aActuatorSet);
 	virtual ~ActuatorSet();
 	virtual Object* copy() const;

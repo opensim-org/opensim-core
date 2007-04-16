@@ -94,7 +94,7 @@ _materialName(_propMaterialName.getValueStr())
  * @param aFileName File name of the document.
  */
 VisibleProperties::VisibleProperties(const string &aFileName):
-Object(aFileName),
+Object(aFileName, false),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _showNormals(_propShowNormals.getValueBool()),
 _showAxes(_propShowAxes.getValueBool()),

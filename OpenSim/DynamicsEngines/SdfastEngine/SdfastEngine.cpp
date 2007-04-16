@@ -105,7 +105,7 @@ SdfastEngine::SdfastEngine() :
  * Constructor from an XML Document
  */
 SdfastEngine::SdfastEngine(const string &aFileName) :
-	AbstractDynamicsEngine(aFileName),
+	AbstractDynamicsEngine(aFileName, false),
 	_modelLibraryName(_modelLibraryNameProp.getValueStr())
 {
 	setNull();

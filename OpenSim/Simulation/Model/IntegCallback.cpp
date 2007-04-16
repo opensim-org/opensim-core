@@ -90,12 +90,12 @@ Callback(aIntegCallback),
  * Constructor from an xml file
  *
  */
-IntegCallback::IntegCallback(const std::string &aFileName):
-Callback(aFileName),
+IntegCallback::IntegCallback(const std::string &aFileName, bool aUpdateFromXMLNode):
+Callback(aFileName, false),
 	_stepInterval(_stepIntervalProp.getValueInt())
 {
 	setNull();
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**

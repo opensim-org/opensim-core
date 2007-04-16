@@ -97,7 +97,7 @@ _pointName(_pointNameProp.getValueStr())
  * @param aFileName File name of the document.
  */
 PointKinematics::PointKinematics(const std::string &aFileName):
-Analysis(aFileName),
+Analysis(aFileName, false),
 _body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblArray()),

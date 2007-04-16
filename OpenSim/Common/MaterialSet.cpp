@@ -66,7 +66,7 @@ Set<Material>()
  *
  */
 MaterialSet::MaterialSet(const string &aFileName):
-Set<Material>(aFileName)
+Set<Material>(aFileName, false)
 {
 	// NULL STATES
 	setNull();

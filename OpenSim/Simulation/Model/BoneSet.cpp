@@ -43,7 +43,7 @@ BoneSet::~BoneSet(void)
  * Constructor of a BoneSet from a file.
  */
 BoneSet::BoneSet(const string& aBonesFileName) :
-	Set<VisibleObject>(aBonesFileName)
+	Set<VisibleObject>(aBonesFileName, false)
 {
 	setNull();
 	updateFromXMLNode();

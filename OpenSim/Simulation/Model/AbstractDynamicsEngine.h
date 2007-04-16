@@ -123,7 +123,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	AbstractDynamicsEngine();
-	AbstractDynamicsEngine(const std::string &aFileName);
+	AbstractDynamicsEngine(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	virtual ~AbstractDynamicsEngine();
 	virtual Object* copy() const = 0;
 	virtual void setup(Model* aModel);

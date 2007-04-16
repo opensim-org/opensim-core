@@ -106,7 +106,7 @@ Object::Object()
  *
  * @param aFileName File name of the document.
  */
-Object::Object(const string &aFileName)
+Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 {
 	// INITIALIZATION
 	setNull();
@@ -141,7 +141,7 @@ Object::Object(const string &aFileName)
 	_node = doc->getDocumentElement();
 
 	// UPDATE OBJECT
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 	//}
 	//catch(Exception &x) {
 		//x.print(cout);

@@ -84,7 +84,7 @@ SimmKinematicsEngine::SimmKinematicsEngine() :
  * Constructor from an XML Document
  */
 SimmKinematicsEngine::SimmKinematicsEngine(const string &aFileName) :
-	AbstractDynamicsEngine(aFileName),
+	AbstractDynamicsEngine(aFileName, false),
 	_path(0)
 {
 	setNull();

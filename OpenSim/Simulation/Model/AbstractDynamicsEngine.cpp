@@ -87,8 +87,8 @@ AbstractDynamicsEngine::AbstractDynamicsEngine() :
 /**
  * Constructor from an XML Document
  */
-AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName) :
-	Object(aFileName),
+AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName, bool aUpdateFromXMLNode) :
+	Object(aFileName, false),
    _gravity(_gravityProp.getValueDblArray()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
@@ -103,7 +103,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName) :
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 }
 //_____________________________________________________________________________
 /**

@@ -54,7 +54,7 @@ IKTool::IKTool() :
  * @param aFileName File name of the document.
  */
 IKTool::IKTool(const string &aFileName, Model* guiModel) :
-	AbstractTool(aFileName, guiModel),
+	AbstractTool(aFileName, false),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
@@ -62,39 +62,20 @@ IKTool::IKTool(const string &aFileName, Model* guiModel) :
 {
 	setType("IKTool");
 	setNull();
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile);
-
 	updateFromXMLNode();
 
-#if 0
-	if (_model) 
-		throw( Exception("IKTool did not expect initialized model ("+_modelLibraryProp.getName()+
-							  " property should not be set)",__FILE__,__LINE__) );
-#endif
-	if (guiModel){
+	if(guiModel) {
 		// A valid model is passed in, and is initialized (likely from GUI)
 		// In this scenario, _modelFile is ignored (probably with a warning)
 		setModel(guiModel);
-		addAnalysisSetToModel();
+	} else {
+		loadModel(aFileName);
+		if (_model && !_model->hasDynamicsEngine()) 
+			throw( Exception("No dynamics engine found for model.  Make sure the OpenSim model specified in the "+
+								  _modelFileProp.getName()+" property (currently '"+_modelFile+"') is the model containing the "+
+								  "SimmKinematicsEngine (and not the SD/Fast-based model generated using makeSDFastModel)",__FILE__,__LINE__) );
 	}
-	else {
-#if 0
-		if (_modelFile == "") 
-			throw( Exception("Model file not specified for inverse kinematics investigation",__FILE__,__LINE__) );
-		setModel(new Model(_modelFile));
-#endif
-		if (_model) {
-			if(!_model->hasDynamicsEngine()) 
-				throw( Exception("No dynamics engine found for model.  Make sure the OpenSim model specified in the "+
-									  _modelFileProp.getName()+" property (currently '"+_modelFile+"') is the model containing the "+
-									  "SimmKinematicsEngine (and not the SD/Fast-based model generated using makeSDFastModel)",__FILE__,__LINE__) );
-			_model->setup();
-			addAnalysisSetToModel();
-		}
-	}
-	IO::chDir(saveWorkingDirectory);
+	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**

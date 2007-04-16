@@ -171,7 +171,7 @@ protected:
 public:
 	virtual ~Object();
 	Object();
-	Object(const std::string &aFileName)
+	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true)
 #ifdef SWIG
 		throw(OpenSim::Exception)
 #endif

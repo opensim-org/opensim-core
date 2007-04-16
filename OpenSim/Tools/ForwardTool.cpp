@@ -60,7 +60,7 @@ ForwardTool::ForwardTool() :
  * @param aFileName File name of the document.
  */
 ForwardTool::ForwardTool(const string &aFileName) :
-	AbstractTool(aFileName),
+	AbstractTool(aFileName, false),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -73,6 +73,7 @@ ForwardTool::ForwardTool(const string &aFileName) :
 	setType("ForwardTool");
 	setNull();
 	updateFromXMLNode();
+	loadModel(aFileName);
 	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________

@@ -79,7 +79,7 @@ BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
  * @param aFileName File name of the document.
  */
 BodyKinematics::BodyKinematics(const std::string &aFileName):
-	Analysis(aFileName),
+	Analysis(aFileName, false),
 	_bodies(_bodiesProp.getValueStrArray()),
 	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
 {

@@ -59,13 +59,17 @@ using namespace std;
 Exception::
 Exception(const string &aMsg,const string &aFile,int aLine)
 {
-// make it assert false when debugging...
-//	assert(false);
 	setNull();
 
 	setMessage(aMsg);
 	_file = aFile;
 	_line = aLine;
+
+// make it assert false when debugging...
+#ifndef NDEBUG
+	print(cout);
+	assert(false);
+#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -85,7 +85,7 @@ Kinematics::Kinematics(Model *aModel) :
  * @param aFileName File name of the document.
  */
 Kinematics::Kinematics(const std::string &aFileName):
-	Analysis(aFileName),
+	Analysis(aFileName, false),
 	_coordinates(_coordinatesProp.getValueStrArray())
 {
 	setNull();

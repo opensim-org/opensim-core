@@ -74,7 +74,7 @@ AnalysisSet::AnalysisSet(Model *aModel)
  * @param aFileName Name of the file.
  */
 AnalysisSet::AnalysisSet(const string &aFileName) :
-	Set<Analysis>(aFileName)
+	Set<Analysis>(aFileName, false)
 {
 	setType("AnalysisSet");
 	setNull();
