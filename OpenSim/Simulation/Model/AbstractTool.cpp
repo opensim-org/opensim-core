@@ -77,18 +77,19 @@ AbstractTool::AbstractTool(const string &aFileName, Model* aGuiModel):
 	setType("AbstractTool");
 	setNull();
 	updateFromXMLNode();
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile);
 
 	if (aGuiModel)
 		setModel(aGuiModel);
 	else
+	{
+		// Do the maneuver to change then restore working directory 
+		// so that the parsing code behaves properly if called from a different directory.
+		string saveWorkingDirectory = IO::getCwd();
+		string directoryOfSetupFile = IO::getParentDirectory(aFileName);
+		IO::chDir(directoryOfSetupFile);
 		loadModel();
-
-	IO::chDir(saveWorkingDirectory);
+		IO::chDir(saveWorkingDirectory);
+	}
 }
 
 //_____________________________________________________________________________
