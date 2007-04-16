@@ -1222,18 +1222,22 @@ string XMLNode::
 Transcode(const XMLCh *aCh)
 {
 	char *buffer = XMLString::transcode(aCh);
-	string str(buffer);
-	delete[] buffer;
-	return str;
+	if(buffer) {
+		string str(buffer);
+		delete[] buffer;
+		return str;
+	} else return string();
 }
 
 string XMLNode::
 TranscodeAndTrim(const XMLCh *aCh)
 {
 	char *buffer = XMLString::transcode(aCh);
-	XMLString::trim(buffer);
-	string str(buffer);
-	delete[] buffer;
-	return str;
+	if(buffer) {
+		XMLString::trim(buffer);
+		string str(buffer);
+		delete[] buffer;
+		return str;
+	} else return string();
 }
 
