@@ -66,10 +66,10 @@ Exception(const string &aMsg,const string &aFile,int aLine)
 	_line = aLine;
 
 // make it assert false when debugging...
-#ifndef NDEBUG
-	print(cout);
-	assert(false);
-#endif
+//#ifndef NDEBUG
+//	print(cout);
+//	assert(false);
+//#endif
 }
 
 //-----------------------------------------------------------------------------
