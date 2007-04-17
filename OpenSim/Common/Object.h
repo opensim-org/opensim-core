@@ -262,9 +262,7 @@ public:
 	virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
 	virtual void generateXMLNode(DOMElement *aParent);
 	// Inline support
-	void setInlined(const bool aInLined, const char *aFileName=NULL);
 	bool getInlined() const;
-	void clearXMLNodes();
 	XMLDocument* getDocument() const;
 	std::string getDocumentFileName() const;
 	DOMElement* getXMLNode() const;
