@@ -96,6 +96,8 @@ public:
 	static void
 		RemoveChildren(DOMNode *aNode);
 	static void
+		RemoveElementFromParent(DOMElement *aElement, bool aRemoveWhitespaceAndComments = true);
+	static void
 		UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment);
 	static DOMText*
 		CreateDOMText(DOMDocument *aDocument, const std::string &aText);

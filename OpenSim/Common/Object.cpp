@@ -76,16 +76,9 @@ static const bool Object_DEBUG = false;
  */
 Object::~Object()
 {
-    //
-    if (_observable!=0) { delete _observable; _observable=0; }
-    if (_node != NULL) {
-        DOMElement* parent = (DOMElement*)_node->getParentNode();
-		  if (parent)
-				parent->removeChild(_node);
-		  //delete _node;        
-        _node = NULL;
-    }
-	 //if(_document!=NULL) { delete _document; _document=NULL; }
+	delete _observable;
+	if(_node) XMLNode::RemoveElementFromParent(_node);
+	//delete _document;
 }
 
 //_____________________________________________________________________________

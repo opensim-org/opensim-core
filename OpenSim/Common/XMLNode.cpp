@@ -182,6 +182,47 @@ RemoveChildren(DOMNode *aNode)
 	}
 
 }
+//_____________________________________________________________________________
+/**
+ * Remove an element from its parent, and optionally remove whitespace and comments
+ * associated with that node.
+ */
+void XMLNode::
+RemoveElementFromParent(DOMElement *aElement, bool aRemoveWhitespaceAndComments)
+{
+	if(!aElement) return;
+	DOMNode *parent = aElement->getParentNode();
+	if(parent) {
+		// sanity check
+		assert(parent->getNodeType() == DOMNode::ELEMENT_NODE || parent->getNodeType() == DOMNode::DOCUMENT_NODE);
+
+		if(aRemoveWhitespaceAndComments) {
+			// Find elements preceding and following this element
+			DOMNode *prevElement = aElement->getPreviousSibling();
+			while(prevElement && prevElement->getNodeType()!=DOMNode::ELEMENT_NODE) prevElement=prevElement->getPreviousSibling();
+			DOMNode *nextElement = aElement->getNextSibling();
+			while(nextElement && nextElement->getNodeType()!=DOMNode::ELEMENT_NODE) nextElement=nextElement->getNextSibling();
+
+			DOMNode *first, *last;
+			if(!prevElement && !nextElement) {
+				// This is the last child element of this parent -- remove all child nodes
+				first = parent->getFirstChild();
+				last = parent->getLastChild();
+			} else {
+				// This is not the only element, so we remove all nodes from previous element (or from beginning) until this element.
+				// This will get rid of any comments above this element.
+				// There should be whitespace (text node) after this element that will make things line up properly.
+				first = prevElement ? prevElement->getNextSibling() : parent->getFirstChild();
+				last = aElement;
+			}
+			DOMNode *end=last->getNextSibling(), *next=0;
+			for(DOMNode *cur=first; cur!=end; cur=next) {
+				next = cur->getNextSibling();
+				parent->removeChild(cur);
+			}
+		} else parent->removeChild(aElement);
+	}
+}
 
 void XMLNode::
 UpdateCommentNodeCorrespondingToChildElement(DOMElement *aElement,const std::string &aComment)
