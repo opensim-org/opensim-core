@@ -14,6 +14,7 @@
 namespace OpenSim { 
 
 class Model;
+class ActuatorSet;
 
 
 //=============================================================================
@@ -141,7 +142,7 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
-	void loadModel(const std::string &aToolSetupFileName);
+	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0);
 	void addAnalysisSetToModel();
 
 	//--------------------------------------------------------------------------

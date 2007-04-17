@@ -136,7 +136,7 @@ CMCTool::CMCTool(const string &aFileName) :
 	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
-	loadModel(aFileName);
+	loadModel(aFileName, &_originalActuatorSet);
 	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
@@ -754,6 +754,13 @@ void CMCTool::run()
 			cerr<<"Writing to adjusted_model.osim ...\n\n";
 			_outputModelFile = "adjusted_model.osim";
 		}
+
+		// Set the model's actuator set back to the original set.  e.g. in RRA1
+		// we load the model but replace its (muscle) actuators with torque actuators.
+		// So we need to put back the muscles before writing out the adjusted model.
+		_model->getActuatorSet()->setSize(0);
+		_model->getActuatorSet()->append(_originalActuatorSet);
+
 		_model->print(_outputModelFile);
 	}
 

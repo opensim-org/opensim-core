@@ -340,7 +340,7 @@ getAnalysisSet() const
  * this investigation.
  */
 void AbstractTool::
-loadModel(const string &aToolSetupFileName)
+loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet)
 {
 	if (_modelFile != "") {
 		string saveWorkingDirectory = IO::getCwd();
@@ -350,6 +350,8 @@ loadModel(const string &aToolSetupFileName)
 		cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
 		Model *model = new Model(_modelFile);
+
+		if(rOriginalActuatorSet) *rOriginalActuatorSet = *model->getActuatorSet();
 
 		// If replacing actuator set read in from model file, clear it here
 		if(_replaceActuatorSet) model->getActuatorSet()->setSize(0);

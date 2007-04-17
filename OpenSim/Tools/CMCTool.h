@@ -37,6 +37,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
@@ -148,6 +149,7 @@ private:
 	PropertyStr _outputModelFileProp;
 	std::string &_outputModelFile;
 
+	ActuatorSet _originalActuatorSet;
 
 //=============================================================================
 // METHODS
