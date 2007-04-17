@@ -137,9 +137,6 @@ public:
 	//--------------------------------------------------------------------------
 	// SIZE
 	int getSize() const { return(_storage.getSize()); }
-	int getNumColumns() const {
-		return ((_storage.getSize()==0)?0:_storage.get(0).getSize());
-	}
 	// STATEVECTOR
 	int getSmallestNumberOfStates() const;
 	StateVector* getStateVector(int aTimeIndex) const;
