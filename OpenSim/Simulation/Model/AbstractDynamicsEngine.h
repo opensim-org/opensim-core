@@ -316,10 +316,8 @@ public:
 	virtual void convertAnglesToQuaternions(double *aQAng, double *rQ) const = 0;
 	virtual void convertAnglesToQuaternions(Storage *rQStore) const = 0;
 
-	void convertRadiansToDegrees(Storage *rStorage) const;
-	void convertDegreesToRadians(Storage *rStorage) const;
-	void convertRadiansToDegrees(Storage& rMotionData) const;
-	void convertDegreesToRadians(Storage& rMotionData) const;
+	void convertRadiansToDegrees(Storage &rStorage) const;
+	void convertDegreesToRadians(Storage &rStorage) const;
 	void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
 	void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
 
@@ -341,8 +339,7 @@ public:
 	virtual void peteTest() const { }
 
 private:
-	void scaleRotationalDofColumns(Storage *rStorage, double factor) const;
-	void scaleRotationalDofColumns(Storage &rMotionData, double factor) const;
+	void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
 //=============================================================================
 };	// END of class AbstractDynamicsEngine
 //=============================================================================

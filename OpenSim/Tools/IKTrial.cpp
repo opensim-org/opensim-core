@@ -284,7 +284,7 @@ bool IKTrial::processTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 	if (!_outputMotionFileNameProp.getUseDefault())
 	{
 		outputStorage.setWriteSIMMHeader(true);
-		aModel.getDynamicsEngine().convertRadiansToDegrees(&outputStorage);
+		aModel.getDynamicsEngine().convertRadiansToDegrees(outputStorage);
 		outputStorage.print(_outputMotionFileName.c_str());
 	}
 

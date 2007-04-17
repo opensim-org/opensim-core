@@ -552,7 +552,7 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	}
 
 	// Convert to radians
-	convertDegreesToRadians(qStore);
+	convertDegreesToRadians(*qStore);
 
 	// Compute generalized speeds
 	GCVSplineSet tempQset(5,qStore);
@@ -581,8 +581,8 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 	rUComplete->setColumnLabels(columnLabels);
 
 	// Convert back to degrees
-	convertRadiansToDegrees(rQComplete);
-	convertRadiansToDegrees(rUComplete);
+	convertRadiansToDegrees(*rQComplete);
+	convertRadiansToDegrees(*rUComplete);
 }
 
 //=============================================================================
@@ -591,9 +591,9 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 //_____________________________________________________________________________
 /**
  */
-void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage *rStorage, double factor) const
+void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) const
 {
-	const Array<std::string>& columnLabels = rStorage->getColumnLabels();
+	const Array<std::string>& columnLabels = rStorage.getColumnLabels();
 
 	if(columnLabels.getSize() == 0)
 		throw Exception("AbstractDynamicsEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",
@@ -607,7 +607,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage *rStorage, double
 		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
 			std::string name = coordinateSet->get(i)->getName();
 			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
-				if(columnLabels[j] == name) rStorage->multiplyColumn(j-1, factor);
+				if(columnLabels[j] == name) rStorage.multiplyColumn(j-1, factor);
 		}
 	}
 
@@ -618,7 +618,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage *rStorage, double
 			std::string name = speedSet->get(i)->getName();
 			assert(name != speedSet->get(i)->getCoordinate()->getName()); // speed should have different name than coordinate (else we'll end up scaling twice)
 			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
-				if(columnLabels[j] == name) rStorage->multiplyColumn(j-1, factor);
+				if(columnLabels[j] == name) rStorage.multiplyColumn(j-1, factor);
 		}
 	}
 }
@@ -630,7 +630,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage *rStorage, double
  *
  * @param rStorage Storage object.
  */
-void AbstractDynamicsEngine::convertDegreesToRadians(Storage *rStorage) const
+void AbstractDynamicsEngine::convertDegreesToRadians(Storage &rStorage) const
 {
 	scaleRotationalDofColumns(rStorage, rdMath::DTR);
 }
@@ -642,43 +642,9 @@ void AbstractDynamicsEngine::convertDegreesToRadians(Storage *rStorage) const
  *
  * @param rStorage Storage object.
  */
-void AbstractDynamicsEngine::convertRadiansToDegrees(Storage *rStorage) const
+void AbstractDynamicsEngine::convertRadiansToDegrees(Storage &rStorage) const
 {
 	scaleRotationalDofColumns(rStorage, rdMath::RTD);
-}
-//_____________________________________________________________________________
-void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rMotionData, double factor) const
-{
-	// Loop through the coordinates in the model. For each one that is rotational,
-	// see if it has a corresponding column of data. If it does, multiply that
-	// column by the given scaling factor.
-	const CoordinateSet* coordinateSet = _model->getDynamicsEngine().getCoordinateSet();
-	for (int i = 0; i < coordinateSet->getSize(); i++) {
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
-			int index = rMotionData.getStateIndex(coordinateSet->get(i)->getName());
-			if(index >= 0) rMotionData.multiplyColumn(index, factor);
-		}
-	}
-}
-//_____________________________________________________________________________
-/**
- * Convert the rotational generalized coordinates from units of
- * degrees to units of radians for all the state-vectors in a Storage
- * object.  Coordinates are identified by column names.
- */
-void AbstractDynamicsEngine::convertDegreesToRadians(Storage &rMotionData) const
-{
-	scaleRotationalDofColumns(rMotionData, rdMath::DTR);
-}
-//_____________________________________________________________________________
-/**
- * Convert the rotational generalized coordinates from units of
- * radians to units of degrees for all the state-vectors in a Storage
- * object.  Coordinates are identified by column names.
- */
-void AbstractDynamicsEngine::convertRadiansToDegrees(Storage &rMotionData) const
-{
-	scaleRotationalDofColumns(rMotionData, rdMath::RTD);
 }
 //_____________________________________________________________________________
 /**

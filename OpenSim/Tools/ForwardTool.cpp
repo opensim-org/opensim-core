@@ -452,7 +452,7 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 	Storage *qStore=NULL;
 	Storage *uStoreTmp=NULL;
 	aModel->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
-	aModel->getDynamicsEngine().convertDegreesToRadians(qStore);
+	aModel->getDynamicsEngine().convertDegreesToRadians(*qStore);
 	// Filter
 	qStore->pad(60); 
 	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {

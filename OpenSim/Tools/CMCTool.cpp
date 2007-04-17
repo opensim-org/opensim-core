@@ -517,7 +517,7 @@ void CMCTool::run()
 	Storage *qStore=NULL;
 	Storage *uStoreTmp=NULL;
 	_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStoreTmp);
-	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
 
 	// Spline
 	cout<<"\nConstructing function set for tracking...\n\n";

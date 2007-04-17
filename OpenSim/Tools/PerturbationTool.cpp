@@ -862,9 +862,9 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	Storage uStore(_uFileName);
 
 	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
-	_model->getDynamicsEngine().convertDegreesToRadians(&qStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
 	_model->getDynamicsEngine().convertAnglesToQuaternions(&qStore);
-	_model->getDynamicsEngine().convertDegreesToRadians(&uStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(uStore);
 
 	// SCALING FUNCTIONS FOR SPRINGS
 	double dtScale=0.001;
