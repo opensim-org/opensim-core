@@ -660,7 +660,6 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	cout<<"BodyKinematics.begin: reseting storage at time "<<aT<<"."<<endl;
 	_pStore->reset(aT);
 	_vStore->reset(aT);
 	_aStore->reset(aT);

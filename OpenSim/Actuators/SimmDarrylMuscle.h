@@ -72,47 +72,47 @@ protected:
 	PropertyDbl _pennationAngleProp;
 	double &_pennationAngle;
 
-	/* Activation time constant */  
+	/** Activation time constant */  
 	PropertyDbl _activationTimeConstantProp;
 	double &_activationTimeConstant;
 
-	/* Deactivation time constant */
+	/** Deactivation time constant */
 	PropertyDbl _deactivationTimeConstantProp;
 	double &_deactivationTimeConstant;
 
-	/* max contraction velocity full activation in fiber lengths per second */
+	/** Max contraction velocity full activation in fiber lengths per second */
 	PropertyDbl _vmaxProp;
 	double &_vmax;
 
-	/* max contraction velocity at low activation */
+	/** Max contraction velocity at low activation */
 	PropertyDbl _vmax0Prop;
 	double &_vmax0;
 
-	/* Tendon strain due to maximum isometric muscle force */
+	/** Tendon strain due to maximum isometric muscle force */
 	PropertyDbl _fmaxTendonStrainProp;
 	double &_fmaxTendonStrain;
 
-	/* Passive muscle strain due to maximum isometric muscle force */
+	/** Passive muscle strain due to maximum isometric muscle force */
 	PropertyDbl _fmaxMuscleStrainProp;
 	double &_fmaxMuscleStrain;
 
-	/* Shape factor for Gaussian active muscle force-length relationship */
+	/** Shape factor for Gaussian active muscle force-length relationship */
 	PropertyDbl _kShapeActiveProp;
 	double &_kShapeActive;
 
-	/* Exponential shape factor for passive force-length relationship */
+	/** Exponential shape factor for passive force-length relationship */
 	PropertyDbl _kShapePassiveProp;
 	double &_kShapePassive;
 
-	/* Passive damping included in the force-velocity relationship */
+	/** Passive damping included in the force-velocity relationship */
 	PropertyDbl _dampingProp;
 	double &_damping;
 
-	/* Force-velocity shape factor */
+	/** Force-velocity shape factor */
 	PropertyDbl _afProp;
 	double &_af;
 
-	/* Maximum normalized lengthening force */
+	/** Maximum normalized lengthening force */
 	PropertyDbl _flenProp;
 	double &_flen;
 
@@ -150,25 +150,14 @@ public:
 #endif
    void copyData(const SimmDarrylMuscle &aMuscle);
 
-	virtual void computeStateDerivatives(double rDYDT[]);
-	virtual void computeActuation();
-
-	/* Register types to be used when reading a SimmDarrylMuscle object from xml file. */
-	static void registerTypes();
-
-	virtual void postScale(const ScaleSet& aScaleSet);
-	virtual void scale(const ScaleSet& aScaleSet);
-	virtual void setup(Model* aModel);
-
-	double calcTendonForce(double aNormTendonLength) const;
-	double calcPassiveForce(double aNormFiberLength) const;
-	double calcActiveForce(double aNormFiberLength) const;
-	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-
+	//--------------------------------------------------------------------------
+	// GET
+	//--------------------------------------------------------------------------
+	// Properties
 	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
 	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
 	virtual double getTendonSlackLength() { return _tendonSlackLength; }
-	virtual double getPennationAngle() { return _pennationAngle; }
+	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
 	virtual double getActivationTimeConstant() { return _activationTimeConstant; }
 	virtual double getDeactivationTimeConstant() { return _deactivationTimeConstant; }
 	virtual double getVmax() { return _vmax; }
@@ -180,10 +169,34 @@ public:
 	virtual double getDamping() { return _damping; }
 	virtual double getAf() { return _af; }
 	virtual double getFlen() { return _flen; }
+	// Computed quantities
+	virtual double getPennationAngle();
+	virtual double getFiberLength();
+	virtual double getNormalizedFiberLength();
+	virtual double getPassiveFiberForce();
+	virtual double getStress();
 
-	double getStress() const;
+	//--------------------------------------------------------------------------
+	// COMPUTATIONS
+	//--------------------------------------------------------------------------
+	virtual void computeStateDerivatives(double rDYDT[]);
+	virtual void computeActuation();
+	double calcTendonForce(double aNormTendonLength) const;
+	double calcPassiveForce(double aNormFiberLength) const;
+	double calcActiveForce(double aNormFiberLength) const;
+	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	double computeIsometricForce(double activation);
 
+	//--------------------------------------------------------------------------
+	// SCALE
+	//--------------------------------------------------------------------------
+	virtual void postScale(const ScaleSet& aScaleSet);
+	virtual void scale(const ScaleSet& aScaleSet);
+	virtual void setup(Model* aModel);
+
+	//--------------------------------------------------------------------------
+	// TEST
+	//--------------------------------------------------------------------------
 	virtual void peteTest() const;
 
 private:

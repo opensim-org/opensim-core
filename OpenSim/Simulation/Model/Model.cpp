@@ -1405,7 +1405,7 @@ void Model::kinTest()
 		for (double angle = 0.0 * rdMath::DTR; angle < 121.0 * rdMath::DTR; angle += 30.0 * rdMath::DTR)
 		{
 			knee_flex_r->setValue(angle);
-			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = " << ms2->getMomentArm(*knee_flex_r) << endl;
+			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = " << ms2->computeMomentArm(*knee_flex_r) << endl;
 		}
 	}
 #if 0
@@ -1419,7 +1419,7 @@ void Model::kinTest()
 		for (double angle = 0.0; angle < 91.0 * rdMath::DTR; angle += 5.0 * rdMath::DTR)
 		{
 			hip_flex_r->setValue(angle);
-			cout << "hip_flex_r = " << angle * rdMath::RTD << ", len = " << ms1->getLength() << ", ma = " << ms1->getMomentArm(*hip_flex_r) << endl;
+			cout << "hip_flex_r = " << angle * rdMath::RTD << ", len = " << ms1->getLength() << ", ma = " << ms1->computeMomentArm(*hip_flex_r) << endl;
 		}
 	}
 #endif

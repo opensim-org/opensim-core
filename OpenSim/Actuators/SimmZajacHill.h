@@ -137,23 +137,33 @@ public:
 #endif
    void copyData(const SimmZajacHill &aMuscle);
 
+	//--------------------------------------------------------------------------
+	// GET
+	//--------------------------------------------------------------------------
+	// Properties
+	const Array<std::string>* getGroupNames() const { return &_groupNames; }
+	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
+	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
+	virtual double getTendonSlackLength() { return _tendonSlackLength; }
+	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
+	virtual double getMaxContractionVelocity() { return _maxContractionVelocity; }
+	virtual double getTimeScale() { return _timeScale; }
+	virtual double getDamping() { return _damping; }
+	// Computed quantities
+	virtual double getPennationAngle();
+	virtual double getFiberLength();
+	virtual double getNormalizedFiberLength();
+	virtual double getPassiveFiberForce();
+
+	//--------------------------------------------------------------------------
+	// COMPUTATION
+	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(double rDYDT[]);
 	virtual void computeActuation();
-
-	/* Register types to be used when reading a SimmZajacHill object from xml file. */
-	static void registerTypes();
 
 	virtual void postScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void setup(Model* aModel);
-
-	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() { return _tendonSlackLength; }
-	virtual double getPennationAngle() { return _pennationAngle; }
-	virtual double getMaxContractionVelocity() { return _maxContractionVelocity; }
-	virtual double getTimeScale() { return _timeScale; }
-	virtual double getDamping() { return _damping; }
 
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual Function* getPassiveForceLengthCurve() const;

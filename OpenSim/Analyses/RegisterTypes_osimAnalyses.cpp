@@ -11,6 +11,7 @@
 #include "PointKinematics.h"
 #include "BodyKinematics.h"
 #include "ActuatorGeneralizedForces.h"
+#include "MuscleAnalysis.h"
 
 
 
@@ -26,13 +27,12 @@ static suAnalysesInstantiator instantiator;
  */
 OSIMANALYSES_API void RegisterTypes_suAnalyses()
 {
-	//cout<<"RegisterTypes_suAnalyses\n";
-
 	Object::RegisterType( Kinematics() );
 	Object::RegisterType( Actuation() );
 	Object::RegisterType( PointKinematics() );
 	Object::RegisterType( BodyKinematics() );
 	Object::RegisterType( ActuatorGeneralizedForces() );
+	Object::RegisterType( MuscleAnalysis() );
 }
 
 suAnalysesInstantiator::suAnalysesInstantiator() 

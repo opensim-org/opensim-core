@@ -111,7 +111,6 @@ public:
 	virtual ~AbstractMuscle();
 	virtual Object* copy() const = 0;
 	virtual void setup(Model *aModel);
-
 #ifndef SWIG
 	AbstractMuscle& operator=(const AbstractMuscle &aMuscle);
 #endif
@@ -122,59 +121,91 @@ public:
 	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
 
+	//--------------------------------------------------------------------------
+	// GET
+	//--------------------------------------------------------------------------
+	// Properties
 	const Array<std::string>* getGroupNames() const { return &_groupNames; }
 
-	//=============================================================================
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
+	void deleteAttachmentPoint(int aIndex);
+
+	//--------------------------------------------------------------------------
+	// COMPUTATIONS
+	//--------------------------------------------------------------------------
+	virtual double getPennationAngle() = 0;
+	virtual double getLength();
+	virtual double getTendonLength();
+	virtual double getFiberLength() = 0;
+	virtual double getNormalizedFiberLength() = 0;
+	virtual double getFiberLengthAlongTendon();
+	/*
+	virtual double getStrain();
+	virtual double getTendonStrain();
+	virtual double getFiberStrain();
+	virtual double getFiberStrainAlongTendon();
+	*/
+	virtual double getShorteningSpeed();
+	/*
+	virtual double getTendonShorteningSpeed();
+	virtual double getFiberShorteningSpeed();
+	virtual double getFiberShorteningSpeedAlongTendon();
+	*/
+	virtual double getFiberForce();
+	virtual double getActiveFiberForce();
+	virtual double getPassiveFiberForce() = 0;
+	virtual double getActiveFiberForceAlongTendon();
+	virtual double getPassiveFiberForceAlongTendon();
+	/*
+	virtual double getTendonPower();
+	virtual double getMusclePower();
+	virtual double getPassiveMusclePower();
+	virtual double getActiveMusclePower();
+	*/
+	//---------
+	virtual void computeActuation();
+	virtual double computeMomentArm(AbstractCoordinate& aCoord);
+	virtual void computeMomentArms(Array<double> &rMomentArms);
+	//virtual void computeMoments(Array<double> &rMoments);
+	void computePath();
+	void applyWrapObjects();
+	double _calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr);
+	virtual void calcLengthAfterPathComputation();
+	virtual double calcPennation(double aFiberLength, double aOptimalFiberLength,
+		double aInitialPennationAngle) const;
+	void invalidatePath() { _pathValid = false; }
+
+	//--------------------------------------------------------------------------
 	// SCALING
-	//=============================================================================
+	//--------------------------------------------------------------------------
 	virtual void preScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void postScale(const ScaleSet& aScaleSet);
 
-	//=============================================================================
-	// UTILITY
-	//=============================================================================
-	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
-	void deleteAttachmentPoint(int aIndex);
-
-	//=============================================================================
-	// COMPUTATIONS
-	//=============================================================================
-	void calculatePath();
-	void applyWrapObjects();
-	double _calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr);
-	void calculateLength();
-	double getLength();
-	virtual double getMomentArm(AbstractCoordinate& aCoord);
-	virtual double getSpeed() const;
-	double calcPennation(double aFiberLength, double aOptimalFiberLength,
-		double aInitialPennationAngle) const;
-	virtual void computeActuation();
-	void invalidatePath() { _pathValid = false; }
-
-	//=============================================================================
+	//--------------------------------------------------------------------------
 	// FORCE APPLICATION
-	//=============================================================================
+	//--------------------------------------------------------------------------
 	virtual void apply();
-
 	virtual void peteTest() const;
 
+	//--------------------------------------------------------------------------
 	// Visible Object Support
-	virtual VisibleObject* getDisplayer() const { return &_displayer; };
+	//--------------------------------------------------------------------------
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)
 	virtual void updateGeometry();
-
-	/* Register types to be used when reading an AbstractMuscle object from xml file. */
-	static void registerTypes();
+	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 
 	OPENSIM_DECLARE_DERIVED(AbstractMuscle, AbstractActuator);
+
 private:
 	void setNull();
 	void setupProperties();
 	void updateGeometrySize();
 	void updateGeometryLocations();
-	void nameAttachmentPoints(int aStartingIndex);
 //=============================================================================
 };	// END of class AbstractMuscle
 //=============================================================================
