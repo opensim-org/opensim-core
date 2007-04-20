@@ -178,6 +178,9 @@ setupSerializedMembers()
 
 void ActuatorSet::setup(Model* aModel)
 {
+	// BASE CLASS
+	Set<AbstractActuator>::setup();
+
 	_model = aModel;
 	// INDICES
 	constructMaps();
@@ -1304,3 +1307,30 @@ check() const
 	return(status);
 }
 
+//=============================================================================
+// PETETEST
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Print the actuatorset for debugging purposes.
+ */
+#include "AbstractMuscle.h"
+
+void ActuatorSet::peteTest() const
+{
+	int i;
+
+	if (_objectGroups.getSize() == 0) {
+		cout << "The actuatorSet contains no groups." << endl;
+	} else {
+	   for(i=0;i<_objectGroups.getSize();i++) {
+		   _objectGroups.get(i)->peteTest();
+	   }
+	}
+
+	for(i=0;i<getSize();i++) {
+		AbstractMuscle *ms = dynamic_cast<AbstractMuscle*>(get(i));
+		if (ms)
+			ms->peteTest();
+	}
+}

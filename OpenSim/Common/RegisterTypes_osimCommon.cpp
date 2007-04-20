@@ -17,6 +17,7 @@
 #include "NatCubicSpline.h"
 #include "Constant.h"
 #include "VisibleObject.h"
+#include "ObjectGroup.h"
 
 
 
@@ -45,5 +46,6 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( NatCubicSpline() );
 	Object::RegisterType( Constant() );
 	Object::RegisterType( VisibleObject() );
+	Object::RegisterType( ObjectGroup() );
 }
 

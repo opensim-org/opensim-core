@@ -167,63 +167,63 @@ void SimmDarrylMuscle::setupProperties()
 {
 	_maxIsometricForceProp.setName("max_isometric_force");
 	_maxIsometricForceProp.setValue(0.0);
-	_propertySet.append(&_maxIsometricForceProp);
+	_propertySet.append(&_maxIsometricForceProp, "force");
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
 	_optimalFiberLengthProp.setValue(0.0);
-	_propertySet.append(&_optimalFiberLengthProp);
+	_propertySet.append(&_optimalFiberLengthProp, "force");
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
 	_tendonSlackLengthProp.setValue(0.0);
-	_propertySet.append(&_tendonSlackLengthProp);
+	_propertySet.append(&_tendonSlackLengthProp, "force");
 
 	_pennationAngleProp.setName("pennation_angle");
 	_pennationAngleProp.setValue(0.0);
-	_propertySet.append(&_pennationAngleProp);
+	_propertySet.append(&_pennationAngleProp, "force");
 
 	_activationTimeConstantProp.setName("activation_time_constant");
 	_activationTimeConstantProp.setValue(0.0);
-	_propertySet.append(&_activationTimeConstantProp);
+	_propertySet.append(&_activationTimeConstantProp, "dynamic");
 
 	_deactivationTimeConstantProp.setName("deactivation_time_constant");
 	_deactivationTimeConstantProp.setValue(0.0);
-	_propertySet.append(&_deactivationTimeConstantProp);
+	_propertySet.append(&_deactivationTimeConstantProp, "dynamic");
 
 	_vmaxProp.setName("Vmax");
 	_vmaxProp.setValue(0.0);
-	_propertySet.append(&_vmaxProp);
+	_propertySet.append(&_vmaxProp, "dynamic");
 
 	_vmax0Prop.setName("Vmax0");
 	_vmax0Prop.setValue(0.0);
-	_propertySet.append(&_vmax0Prop);
+	_propertySet.append(&_vmax0Prop, "dynamic");
 
 	_fmaxTendonStrainProp.setName("FmaxTendonStrain");
 	_fmaxTendonStrainProp.setValue(0.0);
-	_propertySet.append(&_fmaxTendonStrainProp);
+	_propertySet.append(&_fmaxTendonStrainProp, "force");
 
 	_fmaxMuscleStrainProp.setName("FmaxMuscleStrain");
 	_fmaxMuscleStrainProp.setValue(0.0);
-	_propertySet.append(&_fmaxMuscleStrainProp);
+	_propertySet.append(&_fmaxMuscleStrainProp, "force");
 
 	_kShapeActiveProp.setName("KshapeActive");
 	_kShapeActiveProp.setValue(0.0);
-	_propertySet.append(&_kShapeActiveProp);
+	_propertySet.append(&_kShapeActiveProp, "force");
 
 	_kShapePassiveProp.setName("KshapePassive");
 	_kShapePassiveProp.setValue(0.0);
-	_propertySet.append(&_kShapePassiveProp);
+	_propertySet.append(&_kShapePassiveProp, "force");
 
 	_dampingProp.setName("damping");
 	_dampingProp.setValue(0.0);
-	_propertySet.append(&_dampingProp);
+	_propertySet.append(&_dampingProp, "dynamic");
 
 	_afProp.setName("Af");
 	_afProp.setValue(0.0);
-	_propertySet.append(&_afProp);
+	_propertySet.append(&_afProp, "force");
 
 	_flenProp.setName("Flen");
 	_flenProp.setValue(0.0);
-	_propertySet.append(&_flenProp);
+	_propertySet.append(&_flenProp, "force");
 }
 
 //_____________________________________________________________________________
@@ -822,10 +822,6 @@ void SimmDarrylMuscle::peteTest() const
 	cout << "Muscle: " << getName() << endl;
 	for (i = 0; i < _attachmentSet.getSize(); i++)
 		_attachmentSet.get(i)->peteTest();
-	cout << "   groups: ";
-	for (i = 0; i < _groupNames.getSize(); i++)
-		cout << _groupNames[i] << " ";
-	cout << endl;
 #if 0
 	cout << "   timeScale: " << _timeScale << endl;
 	cout << "   activationTimeConstant: " << _activationTimeConstant << endl;

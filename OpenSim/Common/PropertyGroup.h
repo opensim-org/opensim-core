@@ -84,10 +84,10 @@ public:
 	void clear();
 
 	bool contains(const std::string& aName) const;
-	void addProperty(Property* aProperty);
-	void removeProperty(Property* aProperty);
+	void add(Property* aProperty);
+	void remove(Property* aProperty);
 	const Array<Property*>& getProperties() const { return _properties; }
-	Property* getProperty(int aIndex);
+	Property* get(int aIndex);
 	int getPropertyIndex(Property* aProperty) const;
 
 	// NAME

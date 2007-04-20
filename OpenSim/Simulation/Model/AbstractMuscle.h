@@ -47,7 +47,6 @@
 
 namespace OpenSim {
 
-class MuscleGroup;
 class AbstractCoordinate;
 class WrapResult;
 
@@ -73,10 +72,6 @@ protected:
 	// Support for Display
 	PropertyObj _displayerProp;
 	VisibleObject &_displayer;
-
-	PropertyStrArray _groupNamesProp;
-	Array<std::string> &_groupNames;
-	Array<MuscleGroup*> _groups;
 
 	PropertyObj _muscleWrapSetProp;
 	MuscleWrapSet &_muscleWrapSet;
@@ -120,12 +115,6 @@ public:
 	int getMuscleModelIndex() const { return _muscleModelIndex; }
 	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
-
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
-	// Properties
-	const Array<std::string>* getGroupNames() const { return &_groupNames; }
 
 	//--------------------------------------------------------------------------
 	// UTILITY

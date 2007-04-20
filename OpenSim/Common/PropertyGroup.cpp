@@ -205,7 +205,7 @@ contains(const string& aName) const
  *
  */
 void PropertyGroup::
-addProperty(Property* aProperty)
+add(Property* aProperty)
 {
 	if (_properties.findIndex(aProperty) < 0)
 		_properties.append(aProperty);
@@ -217,7 +217,7 @@ addProperty(Property* aProperty)
  *
  */
 void PropertyGroup::
-removeProperty(Property* aProperty)
+remove(Property* aProperty)
 {
 	int index = getPropertyIndex(aProperty);
 	if (index >= 0)
@@ -230,7 +230,7 @@ removeProperty(Property* aProperty)
  *
  */
 Property* PropertyGroup::
-getProperty(int aIndex)
+get(int aIndex)
 {
 	if (aIndex >= 0 && aIndex < _properties.getSize())
 		return _properties.get(aIndex);

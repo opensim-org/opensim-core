@@ -93,7 +93,6 @@
 #include <OpenSim/Simulation/Model/AbstractMarker.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 
-#include <OpenSim/Simulation/Model/MuscleGroup.h>
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
@@ -392,7 +391,6 @@ using namespace OpenSim;
 
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
 
-%include <OpenSim/Simulation/Model/MuscleGroup.h>
 %include <OpenSim/Simulation/Model/MusclePoint.h>
 %include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 %template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;

@@ -121,6 +121,7 @@ public:
 #endif
 	// Append
 	virtual void append(Property *aProperty);
+	virtual void append(Property *aProperty, const std::string& aName);
 	// Remove
 	virtual void remove(const std::string &aName);
 	// Clear

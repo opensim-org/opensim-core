@@ -9,6 +9,8 @@ FILE(GLOB INCLUDE_FILES testSdfast.h dyn/*.h ${OpenSim_SOURCE_DIR}/OpenSim/Dynam
 LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation
 		debug osimAnalyses_d optimized osimAnalyses
+		debug osimActuators_d optimized osimActuators
+		debug osimSimmKinematicsEngine_d optimized osimSimmKinematicsEngine
 		debug osimSdfastEngine_d optimized osimSdfastEngine)
 
 ADD_EXECUTABLE(testSdfast ${SOURCE_FILES} ${INCLUDE_FILES})

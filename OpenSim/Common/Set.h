@@ -68,7 +68,7 @@ PropertyObjArray _propObjectGroups;
 
 // REFERENCES
 ArrayPtrs<T> &_objects;
-ArrayPtrs<ObjectGroup> _objectGroups;
+ArrayPtrs<ObjectGroup> &_objectGroups;
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // METHODS
@@ -167,6 +167,20 @@ setupProperties()
 
 	_propObjectGroups.setName("groups");
 	_propertySet.append(	&_propObjectGroups );
+}
+
+public:
+//_____________________________________________________________________________
+/**
+ * Setup groups (match group member names to set members).
+ */
+void
+setup()
+{
+	int i;
+	for (i=0; i<_objectGroups.getSize(); i++) {
+		_objectGroups.get(i)->setup((ArrayPtrs<Object>&)_objects);
+	}
 }
 
 //=============================================================================
@@ -519,6 +533,11 @@ virtual bool insert(int aIndex,T *aObject)
  */
 virtual bool remove(int aIndex)
 {
+	// remove the object from all of the groups
+	int i;
+	for (i=0; i<_objectGroups.getSize(); i++)
+		_objectGroups.get(i)->remove(_objects.get(aIndex));
+
 	return( _objects.remove(aIndex) );
 }
 //_____________________________________________________________________________
@@ -535,12 +554,18 @@ virtual bool remove(int aIndex)
  */
 virtual bool remove(const T* aObject)
 {
+	// remove the object from all of the groups
+	int i;
+	for (i=0; i<_objectGroups.getSize(); i++)
+		_objectGroups.get(i)->remove(aObject);
+
 	return( _objects.remove(aObject) );
 }
 
 virtual void clearAndDestroy()
 {
 	_objects.clearAndDestroy();
+	_objectGroups.clearAndDestroy();
 }
 
 //-----------------------------------------------------------------------------
@@ -695,7 +720,7 @@ void addObjectToGroup(std::string& aGroupName, std::string& aObjectName)
 	ObjectGroup* group = _objectGroups.get(aGroupName);
 	Object* object = _objects.get(aObjectName);
 	if (group && object)
-		group->addObject(object);
+		group->add(object);
 }
 
 //=============================================================================

@@ -39,7 +39,6 @@
 #include "ContactForceSet.h"
 #include "AbstractDynamicsEngine.h"
 #include "ActuatorSet.h"
-#include "MuscleGroup.h"
 #include <OpenSim/Common/Units.h>
 
 
@@ -104,9 +103,6 @@ private:
 	PropertyObj _contactSetProp;
 	ContactForceSet& _contactSet;
 
-	/** Muscle Groups. */
-	Set<MuscleGroup> _muscleGroups;
-
 	/** Analyses. */
 	AnalysisSet *_analysisSet;
 
@@ -160,7 +156,6 @@ public:
 		return reinterpret_cast<Model*>(this->copy()); 
 	}
 
-	MuscleGroup* enterGroup(const std::string& aName);
 	virtual void setup()
 #ifdef SWIG
 		throw(OpenSim::Exception)
@@ -206,7 +201,6 @@ public:
 	virtual int getNumCoordinates() const;
 	virtual int getNumSpeeds() const;
 	virtual int getNumActuators() const;
-	virtual int getNumMuscleGroups() const {	return _muscleGroups.getSize(); }
 	virtual int getNumContacts() const;
 	virtual int getNumAnalyses() const;
 	int getNumConfigurations() const { return getNumCoordinates() + getNumSpeeds(); }
@@ -285,10 +279,6 @@ public:
 	//--------------------------------------------------------------------------
 	ActuatorSet* getActuatorSet();
 	const ActuatorSet* getActuatorSet() const;
-	MuscleGroup* enterMuscleGroup(const std::string& aName)
-	{
-		throw Exception("enterMuscleGroup not implemented.", __FILE__, __LINE__);
-	}
 
 	//--------------------------------------------------------------------------
 	// CONTACT

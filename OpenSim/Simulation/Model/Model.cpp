@@ -176,7 +176,6 @@ void Model::copyData(const Model &aModel)
 	_forceUnitsStr = aModel._forceUnitsStr;
 	_dynamicsEngine = (AbstractDynamicsEngine*)Object::SafeCopy(aModel._dynamicsEngine);
 	_actuatorSet = aModel._actuatorSet;
-	_muscleGroups = aModel._muscleGroups;
 	_contactSet = aModel._contactSet;
 	_integCallbackSet = aModel._integCallbackSet;
 	_derivCallbackSet = aModel._derivCallbackSet;
@@ -244,8 +243,6 @@ void Model::setup()
 		IO::chDir(dirPath);
 	}
 
-	int i;
-
 	// CALLBACK SETS
 	_analysisSet = new AnalysisSet(this);
 	_integCallbackSet = new IntegCallbackSet(this);
@@ -268,27 +265,6 @@ void Model::setup()
 	}
 	else
 		_forceUnits = Units(_forceUnitsStr);
-
-	/* Muscle groups are set up with these steps:
-	 *   1. empty groups are created and named.
-	 *   2. group->setup() is called so the groups
-	 *      can store pointers to their muscles
-	 *   3. muscle->setup() is called so the muscles
-	 *      can store pointers to the groups they're in.
-	 */
-	AbstractMuscle *sm;
-	for (i = 0; i < _actuatorSet.getSize(); i++)
-	{
-		if ((sm = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(i))))
-		{
-			const Array<string>* groupNames = sm->getGroupNames();
-			for (int j = 0; j < groupNames->getSize(); j++)
-				enterGroup((*groupNames)[j]);
-		}
-	}
-
-	for (i = 0; i < _muscleGroups.getSize(); i++)
-		_muscleGroups[i]->setup(this);
 
 	if(_dynamicsEngine) 
 		_dynamicsEngine->setup(this);
@@ -899,28 +875,6 @@ const ActuatorSet* Model::getActuatorSet() const
 	return(&_actuatorSet);
 }
 
-//_____________________________________________________________________________
-/**
- * Add a muscle group to the model, or return a pointer to it if it's
- * already in the model.
- *
- * @param aName the name of the muscle group
- * @return Pointer to the muscle group
- */
-MuscleGroup* Model::enterGroup(const string& aName)
-{
-	for (int i = 0; i < _muscleGroups.getSize(); i++)
-		if (aName == _muscleGroups[i]->getName())
-			return _muscleGroups[i];
-
-	MuscleGroup* newGroup = new MuscleGroup();
-	newGroup->setName(aName);
-	_muscleGroups.append(newGroup);
-
-	return newGroup;
-}
-
-
 //=============================================================================
 // CONTACT
 //=============================================================================
@@ -1318,15 +1272,7 @@ void Model::peteTest() const
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
 	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
 
-	for (i = 0; i < _actuatorSet.getSize(); i++)
-	{
-		AbstractMuscle *ms = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(i));
-		if (ms)
-			ms->peteTest();
-	}
-
-	for (i = 0; i < _muscleGroups.getSize(); i++)
-		_muscleGroups[i]->peteTest();
+	_actuatorSet.peteTest();
 
 	getDynamicsEngine().peteTest();
 }

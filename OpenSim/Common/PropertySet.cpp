@@ -227,6 +227,21 @@ append(Property *aProperty)
 	_array.append(aProperty);
 }
 
+//_____________________________________________________________________________
+/**
+ * Append a property to the set, and put it in the specified group.
+ *
+ * @param aProperty Property to be appended.  Note that a copy is NOT made.
+ */
+void PropertySet::
+append(Property *aProperty, const string& aName)
+{
+	_array.append(aProperty);
+
+	// Add the property to the specified group, creating the group if necessary.
+	PropertyGroup* group = addGroup(aName);
+	group->add(aProperty);
+}
 
 //=============================================================================
 // REMOVE
@@ -245,6 +260,12 @@ remove(const string &aName)
 	PropertyInt prop(aName,0);
 	for(i=0;i<_array.getSize();i++) {
 		if((*_array[i]) == prop) {
+			// Found a match, so remove the property from all the groups,
+			// and then remove the property.
+			int j;
+			for (j=0; j <_propertyGroups.getSize(); j++) {
+				_propertyGroups.get(j)->remove(_array[i]);
+			}
 			_array.remove(i);
 			return;
 		}
@@ -306,7 +327,7 @@ addPropertyToGroup(std::string aGroupName, std::string aPropertyName)
 		PropertyGroup* group = _propertyGroups.get(aGroupName);
 		if (group == NULL)
 			group = addGroup(aGroupName);
-		group->addProperty(prop);
+		group->add(prop);
 	}
 }
 
@@ -326,7 +347,7 @@ addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName)
 		int i;
 		for (i = 0; i < _propertyGroups.getSize(); i++) {
 			if (_propertyGroups.get(i) == aGroup) {
-				aGroup->addProperty(prop);
+				aGroup->add(prop);
 			}
 		}
 	}
@@ -348,7 +369,7 @@ addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty)
 		int i;
 		for (i = 0; i < _propertyGroups.getSize(); i++) {
 			if (_propertyGroups.get(i) == aGroup) {
-				aGroup->addProperty(_array[index]);
+				aGroup->add(_array[index]);
 			}
 		}
 	}
@@ -369,7 +390,7 @@ addPropertyToGroup(std::string aGroupName, Property* aProperty)
 		PropertyGroup* group = _propertyGroups.get(aGroupName);
 		if (group == NULL)
 			group = addGroup(aGroupName);
-		group->addProperty(aProperty);
+		group->add(aProperty);
 	}
 }
 

@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL, *geometryDirectory = NULL;
 	int angleUnits = RADIANS;
 
-	printf("simmToOpenSim, version 0.8.0 (March 1, 2007)\n");
+	printf("simmToOpenSim, version 0.8.1 (April 20, 2007)\n");
 
    if (argc < 5)
    {
@@ -166,17 +166,17 @@ void write_xml_muscle_groups(FILE* fp, ModelStruct* ms)
 {
 	int i, j;
 
-	fprintf(fp, "\t<MuscleGroups>\n");
+	fprintf(fp, "\t<groups>\n");
 	for (i = 0; i < ms->numgroups; i++)
 	{
-		fprintf(fp, "\t\t<muscleGroup name=\"%s\">\n", ms->muscgroup[i].name);
-		fprintf(fp, "\t\t\t<muscleNames>");
+		fprintf(fp, "\t\t<ObjectGroup name=\"%s\">\n", ms->muscgroup[i].name);
+		fprintf(fp, "\t\t\t<members>");
 		for (j = 0; j < ms->muscgroup[i].number_of_muscles; j++)
 			fprintf(fp, "%s ", ms->muscle[ms->muscgroup[i].muscle_index[j]].name);
-		fprintf(fp, "</muscleNames>\n");
-		fprintf(fp, "\t\t</muscleGroup>\n");
+		fprintf(fp, "</members>\n");
+		fprintf(fp, "\t\t</ObjectGroup>\n");
 	}
-	fprintf(fp, "\t</MuscleGroups>\n");
+	fprintf(fp, "\t</groups>\n");
 }
 
 #define NEED_TO_WRITE_MUSCLE_VALUE(field) \
@@ -352,15 +352,6 @@ void write_xml_muscle(FILE* fp, ModelStruct* ms, MuscleStruct* m, const char* mu
 		fprintf(fp, "\t\t\t</force_velocity_curve>\n");
 	}
 
-	/* Groups. */
-	if (m->numgroups > 0)
-	{
-		fprintf(fp, "\t\t\t<groups>");
-		for (j = 0; j < m->numgroups; j++)
-			fprintf(fp, "%s ", ms->muscgroup[m->group[j]].name);
-		fprintf(fp, "</groups>\n");
-	}
-
 	fprintf(fp, "\t\t</%s>\n", muscleClassName);
 
 }
@@ -371,6 +362,7 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 	char muscleClassName[64];
 
 	fprintf(fp, "\t<ActuatorSet>\n");
+	write_xml_muscle_groups(fp, ms);
 	fprintf(fp, "\t<objects>\n");
 	for (i = 0; i < ms->nummuscles; i++)
 	{

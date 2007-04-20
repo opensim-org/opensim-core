@@ -27,7 +27,6 @@
 //=============================================================================
 #include "AbstractMuscle.h"
 #include "AbstractCoordinate.h"
-#include "MuscleGroup.h"
 #include "MuscleViaPoint.h"
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
@@ -59,8 +58,6 @@ AbstractMuscle::AbstractMuscle() :
 	_attachmentSet((MusclePointSet&)_attachmentSetProp.getValueObj()),
  	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL),
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
    _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
@@ -95,8 +92,6 @@ AbstractMuscle::AbstractMuscle(const AbstractMuscle &aMuscle) :
 	_attachmentSet((MusclePointSet&)_attachmentSetProp.getValueObj()),
  	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_groupNames(_groupNamesProp.getValueStrArray()),
-	_groups(NULL),
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
    _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
@@ -120,8 +115,6 @@ void AbstractMuscle::copyData(const AbstractMuscle &aMuscle)
 {
 	_attachmentSet = aMuscle._attachmentSet;
 	_displayer = aMuscle._displayer;
-	_groupNames = aMuscle._groupNames;
-	_groups = aMuscle._groups;
 	_muscleWrapSet = aMuscle._muscleWrapSet;
 	_muscleModelIndex = aMuscle._muscleModelIndex;
 	_preScaleLength = 0.0;
@@ -155,16 +148,12 @@ void AbstractMuscle::setupProperties()
 	_displayerProp.setName("display");
 	_propertySet.append(&_displayerProp);
 
-	_groupNamesProp.setName("groups");
-	_propertySet.append(&_groupNamesProp);
-
 	_muscleWrapSetProp.setName("MuscleWrapSet");
 	_propertySet.append(&_muscleWrapSetProp);
 
 	_muscleModelIndexProp.setName("muscle_model");
 	_muscleModelIndexProp.setValue(4);
-	_propertySet.append(&_muscleModelIndexProp);
-	_propertySet.addPropertyToGroup("dynamic", &_muscleModelIndexProp);
+	_propertySet.append(&_muscleModelIndexProp, "dynamic");
 }
 
 //_____________________________________________________________________________
@@ -189,10 +178,6 @@ void AbstractMuscle::setup(Model* aModel)
 	}
 
 	_displayer.setOwner(this);
-
-	_groups.setSize(0);
-	for (i = 0; i < _groupNames.getSize(); i++)
-		_groups.append(aModel->enterGroup(_groupNames[i]));
 
 	for (i = 0; i < _muscleWrapSet.getSize(); i++)
 		_muscleWrapSet[i]->setup(&aModel->getDynamicsEngine(), this);
@@ -1086,10 +1071,6 @@ void AbstractMuscle::peteTest() const
 	cout << "Muscle: " << getName() << endl;
 	for (i = 0; i < _attachmentSet.getSize(); i++)
 		_attachmentSet.get(i)->peteTest();
-	cout << "   groups: ";
-	for (i = 0; i < _groupNames.getSize(); i++)
-		cout << _groupNames[i] << " ";
-	cout << endl;
 	for (i = 0; i < _muscleWrapSet.getSize(); i++)
 		_muscleWrapSet.get(i)->peteTest();
 	cout << "   current length: " << _length << endl;

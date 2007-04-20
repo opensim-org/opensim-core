@@ -47,8 +47,6 @@
 
 namespace OpenSim {
 
-class OSIMACTUATORS_API MuscleGroup;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -141,7 +139,6 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	const Array<std::string>* getGroupNames() const { return &_groupNames; }
 	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
 	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
 	virtual double getTendonSlackLength() { return _tendonSlackLength; }

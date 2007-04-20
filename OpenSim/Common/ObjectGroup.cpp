@@ -41,9 +41,11 @@ using namespace OpenSim;
  * Default constructor.
  */
 ObjectGroup::ObjectGroup() :
-	_objects(NULL)
+   Object(),
+	_memberNames(_memberNamesProp.getValueStrArray())
 {
 	setNull();
+	setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -51,10 +53,12 @@ ObjectGroup::ObjectGroup() :
  * Constructor taking the group name but no member names.
  */
 ObjectGroup::ObjectGroup(string& aName) :
-	_objects(NULL)
+   Object(),
+	_memberNames(_memberNamesProp.getValueStrArray())
 {
 	setName(aName);
 	setNull();
+	setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -73,8 +77,9 @@ ObjectGroup::~ObjectGroup()
  */
 ObjectGroup::ObjectGroup(const ObjectGroup &aGroup) :
    Object(aGroup),
-	_objects(NULL)
+	_memberNames(_memberNamesProp.getValueStrArray())
 {
+	setupProperties();
 	copyData(aGroup);
 }
 
@@ -102,7 +107,10 @@ Object* ObjectGroup::copy() const
  */
 void ObjectGroup::copyData(const ObjectGroup &aGroup)
 {
-	_objects = aGroup._objects;
+   _memberNames = aGroup._memberNames;
+	_memberObjects = aGroup._memberObjects;
+	// because ArrayPtrs::operator= sets MemoryOwner to true
+	_memberObjects.setMemoryOwner(false);
 }
 
 //_____________________________________________________________________________
@@ -111,7 +119,20 @@ void ObjectGroup::copyData(const ObjectGroup &aGroup)
  */
 void ObjectGroup::setNull()
 {
+	_memberObjects.setSize(0);
+	_memberObjects.setMemoryOwner(false);
+
 	setType("ObjectGroup");
+}
+
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void ObjectGroup::setupProperties()
+{
+	_memberNamesProp.setName("members");
+	_propertySet.append(&_memberNamesProp);
 }
 
 //=============================================================================
@@ -142,15 +163,85 @@ ObjectGroup& ObjectGroup::operator=(const ObjectGroup &aGroup)
  */
 bool ObjectGroup::contains(const string& aName) const
 {
-	for (int i = 0; i < _objects.getSize(); i++)
-		if (_objects[i]->getName() == aName)
+	int i;
+	for (i = 0; i < _memberObjects.getSize(); i++)
+		if (_memberObjects[i]->getName() == aName)
 			return true;
 
 	return false;
 }
 
-void ObjectGroup::addObject(Object* aObject)
+//_____________________________________________________________________________
+/**
+ * Add an object to the group.
+ *
+ * @param aObject pointer to the object.
+ */
+void ObjectGroup::add(Object* aObject)
 {
-	_objects.append(aObject);
+	if (aObject != NULL) {
+		int i;
+		for (i=0; i<_memberObjects.getSize(); i++) {
+			if (aObject == _memberObjects.get(i)) {
+				// object is already a member of this group
+				return;
+			}
+		}
+
+		_memberObjects.append(aObject);
+		_memberNames.append(aObject->getName());
+	}
 }
 
+//_____________________________________________________________________________
+/**
+ * Remove an object from the group.
+ *
+ * @param aObject pointer to the object.
+ */
+void ObjectGroup::remove(const Object* aObject)
+{
+	if (aObject != NULL)
+	{
+		int i;
+		for (i=0; i<_memberObjects.getSize(); i++) {
+			if (aObject == _memberObjects.get(i)) {
+				_memberObjects.remove(i);
+				_memberNames.remove(i);
+			}
+		}
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Set up the group, after the member names have been deserialized.
+ * For each member name, if the name is the name of an object in
+ * aObject (the objects in the set that this group belongs to), then
+ * store a pointer to the object in the same index in _memberObjects
+ * as the name is in _memberNames. If the member name does not correspond
+ * to an object in aObjects, remove the name from _memberNames.
+ *
+ * @param aObjects list of objects that are in the set that this group belongs to.
+ */
+void ObjectGroup::setup(ArrayPtrs<Object>& aObjects)
+{
+	int i;
+	for (i=0; i<_memberNames.getSize();) {
+		Object* obj = aObjects.get(_memberNames.get(i));
+		if (obj != NULL) {
+			_memberObjects.insert(i, obj);
+			i++;
+		} else {
+			_memberNames.remove(i);
+		}
+	}
+}
+
+void ObjectGroup::peteTest() const
+{
+	int i;
+	cout << "Group " << getName() << ":" << endl;
+	for (i = 0; i < _memberNames.getSize(); i++)
+		cout << "  " << i+1 << " " << _memberNames.get(i) << " (obj= " << _memberObjects.get(i)->getName() << ")" << endl;
+}

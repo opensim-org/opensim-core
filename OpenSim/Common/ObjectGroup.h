@@ -31,6 +31,7 @@
 #include <string>
 #include <math.h>
 #include "osimCommonDLL.h"
+#include "PropertyStrArray.h"
 #include "ArrayPtrs.h"
 #include "Object.h"
 
@@ -61,7 +62,10 @@ class OSIMCOMMON_API ObjectGroup : public Object
 private:
 
 protected:
-	ArrayPtrs<Object> _objects;
+	PropertyStrArray _memberNamesProp;
+	Array<std::string>& _memberNames;
+
+	ArrayPtrs<Object> _memberObjects;
 
 //=============================================================================
 // METHODS
@@ -82,10 +86,17 @@ public:
    void copyData(const ObjectGroup &aGroup);
 
 	bool contains(const std::string& aName) const;
-	void addObject(Object* aObject);
+	void add(Object* aObject);
+	void remove(const Object* aObject);
+	void setup(ArrayPtrs<Object>& aObjects);
+	//int getNumMember
+
+	void peteTest() const;
 
 private:
 	void setNull();
+	void setupProperties();
+
 //=============================================================================
 };	// END of class ObjectGroup
 //=============================================================================
