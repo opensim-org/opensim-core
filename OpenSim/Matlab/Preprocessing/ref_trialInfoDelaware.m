@@ -62,6 +62,16 @@ trial.ancFile = 'slow_walking_50_1.anc';
 trial.c3dFile = 'slow_walking_50_1_smoothed.c3d';
 tInfo.slow_walking_50_1 = trial;
 
+% slow_walking_75_1
+trial.trial = 'slow_walking_75_1';
+trial.speed = 0.848;
+ictoInput = compute_ictoMatrixInput('../slow_walking_75_1/delaware3_slow_walking_75_1_grf.mot');
+trial.contactRanges = ictoInput.contactRanges;
+[trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(trial.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
+trial.ancFile = 'slow_walking_75_1.anc';
+trial.c3dFile = 'slow_walking_75_1_smoothed.c3d';
+tInfo.slow_walking_75_1 = trial;
+
 % fast_walking_1
 trial.trial = 'fast_walking_1';
 trial.speed = 2.06;

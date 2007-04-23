@@ -15,7 +15,11 @@ GLOBAL_individualprintmenus = individualprintmenus;
 [sInfo, tInfo] = ref_trialInfoDelaware;
 ref_dataFormat = ref_dataFormatDelaware;
 
-datadir = 'c:\eran\dev\simbios\data\Delaware\Subject 3\';
+if strcmp(trialname,'ss_walking1')
+    datadir = strcat('D:\programfiles\FCA\SU\Testing\delaware3_chand_temp\');
+else
+    datadir = strcat('D:\programfiles\FCA\SU\Testing\delaware3_chand_temp\',trialname,'\');
+end
 
 subject = sInfo.subject;
 ss.mass = sInfo.mass;
@@ -31,7 +35,7 @@ ss.limb = trial.limb;
 
 % joint angles
 fnames = {sprintf('%s_%s_ik.mot', subject, ss.trial)
-		  sprintf('Results/%s_%s_ik_rra_Kinematics_q.mot', subject, ss.trial)};
+		  sprintf('Results/%s_%s_RRA2_Kinematics_q.mot', subject, ss.trial)};
 fnameMeasured = sprintf('%s_%s.mot', subject, ss.trial);
 figHandleArray = 1:3;
 compare_jntanglesFromMot(subject, fnames, fnameMeasured, ss, figHandleArray, ref_dataFormatDelaware);
@@ -53,6 +57,8 @@ figHandleArray = 20:28;
 compare_muscleExcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 30:38;
 compare_muscleFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
+figHandleArray = 40:43;
+compare_actuatorFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 clear fnames fnameMeasured;
 
 if ~GLOBAL_individualprintmenus

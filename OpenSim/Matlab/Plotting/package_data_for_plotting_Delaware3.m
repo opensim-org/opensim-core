@@ -6,9 +6,9 @@ end
 
 timeFile = sprintf('%s_%s_ik.mot', subject, trial);
 grfFile = sprintf('%s_%s.mot', subject, trial);
-frcFile = sprintf('ResultsCMC/%s_Actuation_force.sto', subject);
-statesFile = sprintf('ResultsCMC/%s_states.sto', subject);
-controlsFile = sprintf('ResultsCMC/%s_controls.sto', subject);
+frcFile = sprintf('ResultsCMC/%s_%s_Actuation_force.sto', subject, trial);
+statesFile = sprintf('ResultsCMC/%s_%s_states.sto', subject, trial);
+controlsFile = sprintf('ResultsCMC/%s_%s_controls.sto', subject, trial);
 outFile = sprintf('%s_%s_%s.mot', subject, trial, suffix);
 
 output.labels = {};
@@ -33,7 +33,7 @@ time_max = min(time_max, q.data(end,1));
 
 disp(sprintf('Processing %s', frcFile'));
 q = read_motionFile(frcFile);
-notI = find_columns_by_label(q.labels, 'time|FX|FY|FZ|MX|MY|MZ|_reserve$');
+notI = find_columns_by_label(q.labels, 'time$');
 I = setdiff(1:length(q.labels), notI);
 newlabels = strcat(q.labels(I),'_frc');
 output.labels = {output.labels{:} newlabels{:}};
