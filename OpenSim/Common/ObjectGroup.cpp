@@ -163,12 +163,7 @@ ObjectGroup& ObjectGroup::operator=(const ObjectGroup &aGroup)
  */
 bool ObjectGroup::contains(const string& aName) const
 {
-	int i;
-	for (i = 0; i < _memberObjects.getSize(); i++)
-		if (_memberObjects[i]->getName() == aName)
-			return true;
-
-	return false;
+	return _memberObjects.getIndex(aName) != -1;
 }
 
 //_____________________________________________________________________________
@@ -180,13 +175,8 @@ bool ObjectGroup::contains(const string& aName) const
 void ObjectGroup::add(Object* aObject)
 {
 	if (aObject != NULL) {
-		int i;
-		for (i=0; i<_memberObjects.getSize(); i++) {
-			if (aObject == _memberObjects.get(i)) {
-				// object is already a member of this group
-				return;
-			}
-		}
+		// check if object is already a member of this group
+		if (_memberObjects.getIndex(aObject) != -1) return;
 
 		_memberObjects.append(aObject);
 		_memberNames.append(aObject->getName());
@@ -203,8 +193,7 @@ void ObjectGroup::remove(const Object* aObject)
 {
 	if (aObject != NULL)
 	{
-		int i;
-		for (i=0; i<_memberObjects.getSize(); i++) {
+		for (int i=0; i<_memberObjects.getSize(); i++) {
 			if (aObject == _memberObjects.get(i)) {
 				_memberObjects.remove(i);
 				_memberNames.remove(i);
