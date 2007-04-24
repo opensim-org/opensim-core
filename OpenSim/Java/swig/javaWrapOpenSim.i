@@ -61,6 +61,8 @@
 #include <OpenSim/Analyses/IndAcc.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/GeneralizedForces.h>
+#include <OpenSim/Analyses/MuscleAnalysis.h>
+#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
@@ -182,8 +184,8 @@ using namespace OpenSim;
 %pragma(java) jniclasscode=%{
   static {
       try{
-        System.loadLibrary("osimJavaJNI_d");		// All OpenSim classes required for GUI operation.
-        System.loadLibrary("osimSdfastEngine_d");	//to load sdfast based models
+        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
+        System.loadLibrary("osimSdfastEngine");	//to load sdfast based models
       }
       catch(UnsatisfiedLinkError e){
            TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
@@ -340,6 +342,8 @@ using namespace OpenSim;
 %include <OpenSim/Analyses/Actuation.h>
 %include <OpenSim/Analyses/IndAcc.h>
 %include <OpenSim/Analyses/GeneralizedForces.h>
+%include <OpenSim/Analyses/MuscleAnalysis.h>
+%include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 %template(ArrayBool) OpenSim::Array<bool>;
 %template(ArrayDouble) OpenSim::Array<double>;
@@ -355,7 +359,6 @@ using namespace OpenSim;
 %include <OpenSim/Common/ScaleSet.h>
 
 %include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
-%include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
@@ -392,6 +395,7 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
 
 %include <OpenSim/Simulation/Model/MusclePoint.h>
+%include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 %include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 %template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;
 %template(ArrayMusclePoint) OpenSim::Array<OpenSim::MusclePoint*>;
