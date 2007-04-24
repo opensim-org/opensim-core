@@ -1265,8 +1265,6 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 //=============================================================================
 void Model::peteTest() const
 {
-	int i;
-
 	cout << "Model " << getName() << endl;
 
 	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;

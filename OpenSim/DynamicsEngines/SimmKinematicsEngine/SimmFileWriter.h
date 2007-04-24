@@ -45,6 +45,7 @@ class AbstractMuscle;
 class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
+class ActuatorSet;
 class MarkerSet;
 
 //=============================================================================
@@ -83,7 +84,7 @@ private:
 	void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
 	bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
 	bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
-	bool writeMuscle(AbstractMuscle& aMuscle, std::ofstream& aStream) const;
+	bool writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aActuatorSet, std::ofstream& aStream) const;
 	const std::string& getGravityLabel(double aGravity[3]) const;
 //=============================================================================
 };	// END of class SimmFileWriter

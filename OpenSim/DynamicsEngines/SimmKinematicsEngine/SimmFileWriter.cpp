@@ -657,7 +657,7 @@ bool SimmFileWriter::writeMuscleFile(const string& aFileName) const
 	{
 		AbstractMuscle* muscle = dynamic_cast<AbstractMuscle*>(actuatorSet->get(i));
 		if (muscle)
-			writeMuscle(*muscle, out);
+			writeMuscle(*muscle, *actuatorSet, out);
 	}
 
    out.close();
@@ -666,15 +666,14 @@ bool SimmFileWriter::writeMuscleFile(const string& aFileName) const
 	return true;
 }
 
-bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, ofstream& aStream) const
+bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aActuatorSet, ofstream& aStream) const
 {
-	int i;
 	aStream << "beginmuscle " << aMuscle.getName() << endl;
 
 	const MusclePointSet& pts = aMuscle.getAttachmentSet();
 
 	aStream << "beginpoints" << endl;
-	for (i = 0; i < pts.getSize(); i++)
+	for (int i = 0; i < pts.getSize(); i++)
 	{
 		Array<double>& attachment = pts.get(i)->getAttachment();
 		MuscleViaPoint* mvp = dynamic_cast<MuscleViaPoint*>(pts.get(i));
@@ -695,12 +694,12 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, ofstream& aStream) con
 	}
 	aStream << "endpoints" << endl;
 
-	const Array<std::string>* groups = aMuscle.getGroupNames();
-	if (groups->getSize() > 0)
-	{
+	Array<std::string> groupNames;
+	aActuatorSet.getGroupNamesContaining(aMuscle.getName(),groupNames);
+	if(groupNames.getSize()) {
 		aStream << "begingroups" << endl;
-		for (i = 0; i < groups->getSize(); i++)
-			aStream << " " << (*groups)[i];
+		for(int i=0; i<groupNames.getSize(); i++)
+			aStream << " " << groupNames[i];
 		aStream << endl << "endgroups" << endl;
 	}
 

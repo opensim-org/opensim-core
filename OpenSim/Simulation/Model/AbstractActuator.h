@@ -160,8 +160,6 @@ public:
 	virtual double getSpeed() const { return _speed; }
 	virtual double getPower() const { return _force*_speed; }
 	virtual double getStress() const;
-	// GROUPS (for grouping sets of muscles)
-	virtual const Array<std::string>* getGroupNames() const { return NULL; }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

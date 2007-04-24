@@ -462,7 +462,17 @@ virtual int getIndex(const std::string &aName,int aStartIndex=0) const
 {
 	return( _objects.getIndex(aName,aStartIndex) );
 }
-
+//_____________________________________________________________________________
+/**
+ * Get names of groups containing a given object 
+ */
+void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> &rGroupNames) const
+{
+	rGroupNames.setSize(0);
+	for(int i=0; i<_objectGroups.getSize(); i++)
+		if(_objectGroups[i]->contains(aObjectName))
+			rGroupNames.append(_objectGroups[i]->getName());
+}
 //-----------------------------------------------------------------------------
 // APPEND
 //-----------------------------------------------------------------------------
