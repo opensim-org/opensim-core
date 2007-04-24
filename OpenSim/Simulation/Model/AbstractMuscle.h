@@ -126,6 +126,7 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual double getPennationAngle() = 0;
+	virtual double getPennationAngleAtOptimalFiberLength() = 0;
 	virtual double getLength();
 	virtual double getTendonLength();
 	virtual double getFiberLength() = 0;

@@ -710,7 +710,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
 		aStream << "tendon_slack_length " << szh->getTendonSlackLength() << endl;
-		aStream << "pennation_angle " << szh->getPennationAngle() * rdMath::RTD << endl;
+		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * rdMath::RTD << endl;
 		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
 		aStream << "timescale " << szh->getTimeScale() << endl;
 		if (!szh->getMuscleModelIndexUseDefault())
@@ -771,7 +771,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		aStream << "max_force " << sdm->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << sdm->getOptimalFiberLength() << endl;
 		aStream << "tendon_slack_length " << sdm->getTendonSlackLength() << endl;
-		aStream << "pennation_angle " << sdm->getPennationAngle() * rdMath::RTD << endl;
+		aStream << "pennation_angle " << sdm->getPennationAngleAtOptimalFiberLength() * rdMath::RTD << endl;
 		aStream << "activation_time_constant " << sdm->getActivationTimeConstant() << endl;
 		aStream << "deactivation_time_constant " << sdm->getDeactivationTimeConstant() << endl;
 		aStream << "Vmax " << sdm->getVmax() << endl;
