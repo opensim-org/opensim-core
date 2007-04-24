@@ -195,6 +195,8 @@ private:
 	void setupProperties();
 	void updateGeometrySize();
 	void updateGeometryLocations();
+	void nameAttachmentPoints(int aStartingIndex);
+
 //=============================================================================
 };	// END of class AbstractMuscle
 //=============================================================================

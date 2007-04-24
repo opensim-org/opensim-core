@@ -168,6 +168,8 @@ void AbstractMuscle::setup(Model* aModel)
 
 	AbstractActuator::setup(aModel);
 
+	nameAttachmentPoints(0);
+
 	for (i = 0; i < _attachmentSet.getSize(); i++){
 		_attachmentSet.get(i)->setup(aModel, this);
 		// Muscle points depend on the muscle itself
@@ -183,6 +185,22 @@ void AbstractMuscle::setup(Model* aModel)
 		_muscleWrapSet[i]->setup(&aModel->getDynamicsEngine(), this);
 
 	computePath();
+}
+
+//_____________________________________________________________________________
+/**
+ * Name the attachment points based on their position in the set.
+ *
+ * @param aStartingIndex the index of the first attachment point to name.
+ */
+void AbstractMuscle::nameAttachmentPoints(int aStartingIndex)
+{
+	char i, indx[5];
+	for (i = aStartingIndex; i < _attachmentSet.getSize(); i++)
+	{
+		itoa(i + 1, indx, 10);
+		_attachmentSet.get(i)->setName(getName() + "-P" + indx);
+	}
 }
 
 const Array<MusclePoint*> AbstractMuscle::getCurrentPath()
@@ -410,6 +428,9 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 	location[2] = 0.3333;
 	_attachmentSet.insert(aIndex, newPoint);
 
+	// rename the attachment points starting at this new one
+	nameAttachmentPoints(aIndex);
+
 	invalidatePath();
 
 	return newPoint;
@@ -418,6 +439,9 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 void AbstractMuscle::deleteAttachmentPoint(int aIndex)
 {
 	_attachmentSet.remove(aIndex);
+
+	// rename the attachment points starting at the deleted position
+	nameAttachmentPoints(aIndex);
 
 	invalidatePath();
 }
