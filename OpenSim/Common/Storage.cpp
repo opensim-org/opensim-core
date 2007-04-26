@@ -2342,7 +2342,9 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 	if(rFP==NULL) return(-1);
 
 	// COMMENT
-	if (aComment)
+	// NOTE: avoid writing empty comment because SIMM seems to screw up parsing
+	// of a line with only a #
+	if (aComment && aComment[0])
 		fprintf(rFP,"\n# %s\n", aComment);
 	else
 		fprintf(rFP,"\n# SIMM Motion File Header:\n");
