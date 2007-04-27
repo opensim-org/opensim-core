@@ -631,7 +631,7 @@ double SimmDarrylMuscle::calcFiberVelocity(double aActivation, double aActiveFor
  * Get the stress in this actuator.  It is calculated as the force divided
  * by the maximum isometric force (which is proportional to its area).
  */
-double SimmDarrylMuscle::getStress()
+double SimmDarrylMuscle::getStress() const
 {
 	return _force / _maxIsometricForce;
 }
