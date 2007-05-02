@@ -2374,7 +2374,7 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 	MapKeysToValues::const_iterator iter;
 
 	for(iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++){
-		fprintf(rFP,"%s %s\n",iter->first, iter->second);
+		fprintf(rFP,"%s %s\n",iter->first.c_str(), iter->second.c_str());
 	}
 	return(0);
 }
@@ -2641,7 +2641,7 @@ void Storage::postProcessSIMMMotion()
 			if (iter !=_keyValueMap.end()){
 				string rangeValue = iter->second;
 				double start, end;
-				sscanf(rangeValue.c_str(), "%f %f", &start, &end);
+				sscanf(rangeValue.c_str(), "%lf %lf", &start, &end);
 				if (_storage.getSize()<2){	// Something wrong throw exception unless start==end
 					if (start !=end){
 						stringstream errorMessage;

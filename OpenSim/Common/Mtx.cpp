@@ -34,6 +34,7 @@
 #include "osimCommonDLL.h"
 #include "rdMath.h"
 #include "Mtx.h"
+#include <string.h> // for memcpy in linux
 
 
 //=============================================================================

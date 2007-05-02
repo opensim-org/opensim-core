@@ -34,6 +34,7 @@
  */
 
 
+#include <math.h>
 #include "osimCommonDLL.h"
 
 // Need these undefined to make this work on linux

@@ -45,7 +45,6 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <ctype.h>
-#include <direct.h>
 
 #define _POSIX_ 1
 
@@ -53,8 +52,11 @@
 
 #if defined(WIN32)
    #include <time.h>
+	#include <direct.h>
 #elif defined(__linux__)
    #include <time.h>
+	#include <sys/stat.h>
+	#include <sys/types.h>
 #else
    #define _IEEE 1
    #include <nan.h>

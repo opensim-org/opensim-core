@@ -34,6 +34,7 @@
 
 // INCLUDES
 #include "Spline.h"
+#include <string.h>
 
 // DEFINES
 

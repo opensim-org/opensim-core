@@ -722,7 +722,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getActiveForceLengthCurve())))
 			{
 				aStream << "beginactiveforcelengthcurve" << endl;
-				for (i = 0; i < ncs->getNumberOfPoints(); i++)
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
 					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
 				aStream << "endactiveforcelengthcurve" << endl;
 			}
@@ -734,7 +734,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getPassiveForceLengthCurve())))
 			{
 				aStream << "beginpassiveforcelengthcurve" << endl;
-				for (i = 0; i < ncs->getNumberOfPoints(); i++)
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
 					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
 				aStream << "endpassiveforcelengthcurve" << endl;
 			}
@@ -746,7 +746,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getTendonForceLengthCurve())))
 			{
 				aStream << "begintendonforcelengthcurve" << endl;
-				for (i = 0; i < ncs->getNumberOfPoints(); i++)
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
 					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
 				aStream << "endtendonforcelengthcurve" << endl;
 			}
@@ -758,7 +758,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getForceVelocityCurve())))
 			{
 				aStream << "beginforcevelocitycurve" << endl;
-				for (i = 0; i < ncs->getNumberOfPoints(); i++)
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
 					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
 				aStream << "endforcevelocitycurve" << endl;
 			}

@@ -195,10 +195,10 @@ void AbstractMuscle::setup(Model* aModel)
  */
 void AbstractMuscle::nameAttachmentPoints(int aStartingIndex)
 {
-	char i, indx[5];
-	for (i = aStartingIndex; i < _attachmentSet.getSize(); i++)
+	char indx[5];
+	for (int i = aStartingIndex; i < _attachmentSet.getSize(); i++)
 	{
-		itoa(i + 1, indx, 10);
+		sprintf(indx,"%d",i+1);
 		_attachmentSet.get(i)->setName(getName() + "-P" + indx);
 	}
 }
@@ -373,7 +373,7 @@ double AbstractMuscle::getFiberForce()
 {
 	double force;
 	double cos_penang = cos(getPennationAngle());
-	if(abs(cos_penang) < rdMath::ZERO) {
+	if(fabs(cos_penang) < rdMath::ZERO) {
 		force = rdMath::NAN;
 	} else {
 		force = getForce() / cos_penang;

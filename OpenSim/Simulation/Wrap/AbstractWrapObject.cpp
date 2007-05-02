@@ -173,7 +173,7 @@ void AbstractWrapObject::setGeometryQuadrants(AnalyticGeometry *aGeometry) const
 	// The following code should be moved to the base class AbstractWrapObject
 	bool	quads[] = {true, true, true, true, true, true};
 
-	if (_quadrant != WrapQuadrant::allQuadrants){
+	if (_quadrant != allQuadrants){
 		// Turn off half wrap object
 		if (_wrapSign==1)
 			quads[2*_wrapAxis]=false;

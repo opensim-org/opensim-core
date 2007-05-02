@@ -8,7 +8,11 @@
 #include <iostream>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 
-#define SDFAST_DLL_API __declspec(dllexport)
+#ifndef WIN32
+	#define SDFAST_DLL_API
+#else
+	#define SDFAST_DLL_API __declspec(dllexport)
+#endif
 
 using namespace OpenSim;
 
