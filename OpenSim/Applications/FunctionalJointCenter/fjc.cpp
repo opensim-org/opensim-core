@@ -25,18 +25,20 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Simulation/SIMM/SimmModel.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/SIMM/SimmMarkerSet.h>
-#include <OpenSim/Simulation/SIMM/ScaleTool.h>
+#include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
 
 using namespace std;
@@ -355,69 +357,82 @@ int main(int argc,char **argv)
 		subjectCopy->print("test_subject.xml");
 
 		// CONSTRUCT THE MODEL
-		SimmModel *model = subject->createModel();
+		Model *model = subject->createModel();
 
 		// WRITE MODEL TO FILE
 		Object *modelCopy = model->copy();
 		modelCopy->print("gait_test.osim");
 
 		SimmPoint defaultPoint;
-		Array<bool> calculatedJointCenter(false, model->getNJ());
-		Array<SimmPoint> calculatedJointCenterPosition(defaultPoint, model->getNJ());
-		Array<double> genericModelSegmentLength(0, model->getNB());
-		Array<int> inboardJoint(-1, model->getNB()); // joint index that this body is a child of
-		Array<int> outboardJoint(-1, model->getNB()); // joint index that this body is a parent of
+		Array<bool> calculatedJointCenter(false, model->getNumJoints());
+		Array<SimmPoint> calculatedJointCenterPosition(defaultPoint, model->getNumJoints());
+		Array<double> genericModelSegmentLength(0, model->getNumBodies());
+		Array<int> inboardJoint(-1, model->getNumBodies()); // joint index that this body is a child of
+		Array<int> outboardJoint(-1, model->getNumBodies()); // joint index that this body is a parent of
 
 		MarkerData markerData(markerDataFile);
 		markerData.convertToUnits(model->getLengthUnits());
-		model->deleteUnusedMarkers(markerData.getMarkerNames());
+		model->getDynamicsEngine().deleteUnusedMarkers(markerData.getMarkerNames());
 
 		Storage markerStorage;
 		markerData.makeRdStorage(markerStorage);
 
+		BodySet *bs = model->getDynamicsEngine().getBodySet();
+		JointSet *js = model->getDynamicsEngine().getJointSet();
+		MarkerSet *ms = model->getDynamicsEngine().getMarkerSet();
+
+		ArrayPtrs<ArrayPtrs<AbstractMarker> > markersPerBody;
+		markersPerBody.setSize(model->getNumBodies());
+		for(int i=0;i<model->getNumBodies();i++) markersPerBody.set(i,new ArrayPtrs<AbstractMarker>);
+		for(int i=0; i<ms->getSize(); i++) {
+			int index = bs->getIndex(ms->get(i)->getBody());
+			if(index<0) continue;
+			markersPerBody.get(index)->append(ms->get(i));
+		}
+
 		if(verbose) {
-			std::cout << "Bodies (" << model->getNB() << "):" << std::endl;
-			for(int i=0; i<model->getNB(); i++) {
-				SimmBody *body = model->getBodies()[i];
-				std::cout << i << ": " << body->getName() << " (#markers=" << body->getNumMarkers() << ")" << std::endl;
+			std::cout << "Bodies (" << model->getNumBodies() << "):" << std::endl;
+			for(int i=0; i<model->getNumBodies(); i++) {
+				AbstractBody *body = bs->get(i);
+				std::cout << i << ": " << body->getName() << " (#markers=" << markersPerBody[i]->getSize() << ")" << std::endl;
 			}
 			std::cout << std::endl;
 		}
 
-		if(verbose) std::cout << "Joints (" << model->getNJ() << "):" << std::endl;
-		for(int i=0; i<model->getNJ(); i++) {
-			SimmJoint *joint = model->getSimmKinematicsEngine().getJoint(i);
-			SimmBody *parent = joint->getParentBody();
-			SimmBody *child = joint->getChildBody();
+		if(verbose) std::cout << "Joints (" << model->getNumJoints() << "):" << std::endl;
+		for(int i=0; i<model->getNumJoints(); i++) {
+			AbstractJoint *joint = js->get(i);
+			AbstractBody *parent = joint->getParentBody();
+			AbstractBody *child = joint->getChildBody();
 			if(verbose) std::cout << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
 
 			if (joint->getName() == "subtalar_r") {
-				parent = model->getSimmKinematicsEngine().getBody("tibia_r");
+				parent = bs->get("tibia_r");
 				if(verbose) std::cout << "[modified]" << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
 			} else if (joint->getName() == "subtalar_l") {
-				parent = model->getSimmKinematicsEngine().getBody("tibia_l");
+				parent = bs->get("tibia_l");
 				if(verbose) std::cout << "[modified]" << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
 			}
 
-			int parentIndex = model->getBodyIndex(parent->getName());
-			int childIndex = model->getBodyIndex(child->getName());
+			int parentIndex = bs->getIndex(parent->getName());
+			int childIndex = bs->getIndex(child->getName());
 			inboardJoint[childIndex] = i;
 			outboardJoint[parentIndex] = i;
 
 			double outboard[3]={0,0,0};
-			model->getSimmKinematicsEngine().convertPoint(outboard, parent, child);
+			model->getDynamicsEngine().transformPosition(*parent,outboard,*child,outboard);
 			genericModelSegmentLength[parentIndex] = Mtx::Magnitude(3,outboard);
 
 			// Need at least 3 markers to define a reference coordinate system on parent (inboard)
-			if(parent->getNumMarkers() < 3) continue;
+			if(markersPerBody.get(parentIndex)->getSize() < 3) continue;
 
 			// We'll use the *first three* markers to define the inboard frame.  Ideally we should read in some configuration
 			// file which specifies which three we trust the most (or come up with some way that makes use of all markers to define
 			// some best-fit frame.
 			Array<int> inboardMarkerIndicesInData(-1);
 			Array<int> inboardMarkersUsed(-1);
-			for(int mindex=0; mindex<parent->getNumMarkers() && inboardMarkerIndicesInData.getSize() < 3; mindex++) {
-				int index = markerData.getMarkerIndex(parent->getMarker(mindex)->getName());
+			for(int mindex=0; mindex<markersPerBody.get(parentIndex)->getSize() && inboardMarkerIndicesInData.getSize() < 3; mindex++) {
+				int index = markerData.getMarkerIndex(markersPerBody.get(parentIndex)->get(mindex)->getName());
 				if (index >= 0) {
 					inboardMarkerIndicesInData.append(index);
 					inboardMarkersUsed.append(mindex);
@@ -430,8 +445,8 @@ int main(int argc,char **argv)
 			// Figure out which outboard markers are usable (must exist in data)
 			Array<int> outboardMarkerIndicesInData(-1);
 			Array<int> outboardMarkersUsed(-1);
-			for(int mindex=0; mindex<child->getNumMarkers(); mindex++) {
-				int index = markerData.getMarkerIndex(child->getMarker(mindex)->getName());
+			for(int mindex=0; mindex<markersPerBody.get(childIndex)->getSize(); mindex++) {
+				int index = markerData.getMarkerIndex(markersPerBody.get(childIndex)->get(mindex)->getName());
 				if (index >= 0) {
 					outboardMarkerIndicesInData.append(index);
 					outboardMarkersUsed.append(mindex);
@@ -455,7 +470,7 @@ int main(int argc,char **argv)
 			bool gotCanonicalTransform = false;
 
 			for(int outboardMarkerIndex=0; outboardMarkerIndex<outboardMarkerIndicesInData.getSize(); outboardMarkerIndex++) {
-				if(verbose) std::cout << "Processing outboard marker " << child->getMarker(outboardMarkersUsed[outboardMarkerIndex])->getName() << std::endl;
+				if(verbose) std::cout << "Processing outboard marker " << markersPerBody.get(childIndex)->get(outboardMarkersUsed[outboardMarkerIndex])->getName() << std::endl;
 				Array<SimmPoint> markerTriplet(defaultPoint);
 				for(int findex=0; findex<markerData.getNumFrames(); findex++) {
 					MarkerFrame *frame = markerData.getFrame(findex);
@@ -524,10 +539,10 @@ int main(int argc,char **argv)
 
 		std::cout << std::endl;
 
-		Array<double> scaleSet(0, model->getNB());
+		Array<double> scaleSet(0, model->getNumBodies());
 
-		for(int i=0; i<model->getNB(); i++) {
-			SimmBody *body = model->getBodies()[i];
+		for(int i=0; i<model->getNumBodies(); i++) {
+			AbstractBody *body = bs->get(i);
 			std::cout << "Body " << i << ": " << body->getName() << std::endl;
 
 			if(genericModelSegmentLength[i]) {
@@ -550,8 +565,8 @@ int main(int argc,char **argv)
 				SimmPoint outb = calculatedJointCenterPosition[outboardJoint[i]];
 
 				std::cout << "  Calculated joint centers: "
-						  << model->getSimmKinematicsEngine().getJoint(inboardJoint[i])->getName()
-						  << "=" << inb << ", " << model->getSimmKinematicsEngine().getJoint(outboardJoint[i])->getName() << "=" << outb << std::endl;
+						  << js->get(inboardJoint[i])->getName()
+						  << "=" << inb << ", " << js->get(outboardJoint[i])->getName() << "=" << outb << std::endl;
 				std::cout << "  Distance between calculated joint centers = " << (outb-inb).magnitude() << std::endl;
 
 				if(genericModelSegmentLength[i]) {
@@ -562,8 +577,8 @@ int main(int argc,char **argv)
 		}
 
 		// Take some averages
-		std::cout << "FEMUR AVERAGE SCALE = " << 0.5*(scaleSet[model->getBodyIndex("femur_r")] + scaleSet[model->getBodyIndex("femur_l")]) << std::endl;
-		std::cout << "TIBIA AVERAGE SCALE = " << 0.5*(scaleSet[model->getBodyIndex("tibia_r")] + scaleSet[model->getBodyIndex("tibia_l")]) << std::endl;
+		std::cout << "FEMUR AVERAGE SCALE = " << 0.5*(scaleSet[bs->getIndex("femur_r")] + scaleSet[bs->getIndex("femur_l")]) << std::endl;
+		std::cout << "TIBIA AVERAGE SCALE = " << 0.5*(scaleSet[bs->getIndex("tibia_r")] + scaleSet[bs->getIndex("tibia_l")]) << std::endl;
 
 	// HANDLE ANY EXCEPTIONS
 	} catch(Exception &x) {
