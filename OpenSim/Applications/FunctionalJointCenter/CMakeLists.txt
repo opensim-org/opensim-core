@@ -8,7 +8,9 @@ FILE(GLOB INCLUDE_FILES *.h)
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
 		debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation
-		debug osimSQP_d optimized osimSQP)
+		debug osimTools_d optimized osimTools
+		debug osimSQP_d optimized osimSQP
+		${SIMTK_COMMON_LIB})
 
 ADD_EXECUTABLE(fjc ${SOURCE_FILES} ${INCLUDE_FILES})
 

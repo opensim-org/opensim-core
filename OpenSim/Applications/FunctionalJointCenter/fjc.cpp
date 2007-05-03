@@ -40,203 +40,38 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
+#include <SimTKCommon.h>
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+using SimTK::Vec4;
+using SimTK::Mat33;
+using SimTK::Mat44;
 
 static void PrintUsage(ostream &aOStream);
 
-//###########################################################################
-// class MyMatrix4
-//###########################################################################
-class MyMatrix4
+static Vec3 transform(const Mat44 &mat, const Vec3 &vec)
 {
-private:
-	double x[16];
-
-public:
-	MyMatrix4()
-	{
-		for(int i=0; i<16; i++) x[i] = 0;
-	}
-
-	MyMatrix4(const MyMatrix4 &aMatrix)
-	{
-		(*this) = aMatrix;
-	}
-
-	double& operator()(int i, int j) { return x[i+4*j]; }
-	double operator()(int i, int j) const { return x[i+4*j]; }
-
-	MyMatrix4& operator=(const MyMatrix4 &aMatrix)
-	{
-		for(int i=0; i<16; i++) x[i] = aMatrix.x[i];
-		return *this;
-	}
-
-	MyMatrix4 operator*(const MyMatrix4 &aMatrix) const
-	{
-		MyMatrix4 result;
-		for(int i=0; i<4; i++)
-			for(int j=0; j<4; j++) 
-				for(int k=0; k<4; k++)
-					result(i,j) += (*this)(i,k) * aMatrix(k,j);
-		return result;
-	}
-
-	SimmPoint transformPoint(const SimmPoint &aPoint) const
-	{
-		SimmPoint result;
-		for(int i=0; i<3; i++) {
-			for(int j=0; j<3; j++) result[i] += (*this)(i,j)*aPoint[j];
-			result[i] += (*this)(i,3);
-		}
-		return result;
-	}
-
-	SimmPoint transformVector(const SimmPoint &aVector) const
-	{
-		SimmPoint result;
-		for(int i=0; i<3; i++) {
-			for(int j=0; j<3; j++) result[i] += (*this)(i,j)*aVector[j];
-		}
-		return result;
-	}
-
-	void invert()
-	{
-		Mtx::Invert(4, x, x);
-	}
-
-	MyMatrix4 inverse()
-	{
-		MyMatrix4 result;
-		Mtx::Invert(4, x, result.x);
-		return result;
-	}
-
-};
-
-ostream& operator<<(ostream& os, const MyMatrix4& matrix)
-{
-	for(int i=0; i<4; i++) {
-		for(int j=0; j<4; j++)
-			os << matrix(i,j) << " ";
-		os << std::endl;
-	}
-	return os;
-}
-
-class MyMatrix3
-{
-private:
-	double x[9];
-
-public:
-	MyMatrix3()
-	{
-		for(int i=0; i<9; i++) x[i] = 0;
-	}
-
-	MyMatrix3(const MyMatrix3 &aMatrix)
-	{
-		(*this) = aMatrix;
-	}
-
-	double& operator()(int i, int j) { return x[i+3*j]; }
-	double operator()(int i, int j) const { return x[i+3*j]; }
-
-	MyMatrix3 &operator+=(const MyMatrix3 &aMatrix)
-	{
-		for(int i=0; i<9; i++) x[i] += aMatrix.x[i];
-		return *this;
-	}
-
-	MyMatrix3 operator-(const MyMatrix3 &aMatrix) const
-	{
-		MyMatrix3 result;
-		for(int i=0; i<9; i++) result.x[i] = x[i] - aMatrix.x[i];
-		return result;
-	}
-
-	MyMatrix3& operator=(const MyMatrix3 &aMatrix)
-	{
-		for(int i=0; i<9; i++) x[i] = aMatrix.x[i];
-		return *this;
-	}
-
-	MyMatrix3 operator*(const MyMatrix3 &aMatrix) const
-	{
-		MyMatrix3 result;
-		for(int i=0; i<3; i++)
-			for(int j=0; j<3; j++) 
-				for(int k=0; k<3; k++)
-					result(i,j) += (*this)(i,k) * aMatrix(k,j);
-		return result;
-	}
-
-	SimmPoint operator*(const SimmPoint &aPoint) const
-	{
-		SimmPoint result;
-		for(int i=0; i<3; i++) {
-			for(int j=0; j<3; j++) result[i] += (*this)(i,j)*aPoint[j];
-		}
-		return result;
-	}
-
-	void invert()
-	{
-		Mtx::Invert(3, x, x);
-	}
-
-	MyMatrix3 inverse()
-	{
-		MyMatrix3 result;
-		Mtx::Invert(3, x, result.x);
-		return result;
-	}
-
-	static MyMatrix3 Identity() 
-	{
-		MyMatrix3 result;
-		result(0,0)=result(1,1)=result(2,2)=1;
-		return result;
-	}
-
-	static MyMatrix3 OuterProduct(const SimmPoint &aPoint1, const SimmPoint &aPoint2)
-	{
-		MyMatrix3 result;
-		for(int i=0; i<3; i++)
-			for(int j=0; j<3; j++)
-				result(i,j) = aPoint1[i]*aPoint2[j];
-		return result;
-	}
-};
-
-ostream& operator<<(ostream& os, const MyMatrix3& matrix)
-{
-	for(int i=0; i<3; i++) {
-		for(int j=0; j<3; j++)
-			os << matrix(i,j) << " ";
-		os << std::endl;
-	}
-	return os;
+	Vec4 vec4(vec[0], vec[1], vec[2], 1.0);
+	vec4 = mat * vec4;
+	return Vec3(vec4[0], vec4[1], vec4[2]);
 }
 
 //###########################################################################
 // Helper functions
 //###########################################################################
 
-static void defineCoordinateSystem(const SimmPoint &a, const SimmPoint &b, const SimmPoint &c, MyMatrix4 &transformIntoCS)
+static void defineCoordinateSystem(const Vec3 &a, const Vec3 &b, const Vec3 &c, Mat44 &transformIntoCS)
 {
-	SimmPoint ab = b - a, ac = c - a;
-	SimmPoint origin = a + ((SimmPoint::DotProduct(ab, ac)/ab.magnitudeSquared()) * ab);
-	SimmPoint xaxis = SimmPoint::CrossProduct(ab, ac).normalized();
-	SimmPoint yaxis = (c-origin).normalized();
-	SimmPoint zaxis = SimmPoint::CrossProduct(xaxis, yaxis);
+	Vec3 ab = b - a, ac = c - a;
+	Vec3 origin = a + (dot(ab, ac)/ab.normSqr() * ab);
+	Vec3 xaxis = unitVec(cross(ab, ac)); //.normalized();
+	Vec3 yaxis = unitVec(c-origin); //.normalized();
+	Vec3 zaxis = cross(xaxis, yaxis);
 
 	// matrix to be multiplied by column vector on right
-	MyMatrix4 matrix;
+	Mat44 matrix;
 	for(int i=0; i<3; i++) {
 		matrix(i,0) = xaxis[i];
 		matrix(i,1) = yaxis[i];
@@ -246,41 +81,40 @@ static void defineCoordinateSystem(const SimmPoint &a, const SimmPoint &b, const
 	}
 	matrix(3,3) = 1;
 
-	transformIntoCS = matrix;
-	transformIntoCS.invert();
+	transformIntoCS = matrix.invert();
 }
 
-static void instantaneousRotationAxis(const SimmPoint &a, const SimmPoint &b, const SimmPoint &c, SimmPoint &axis, SimmPoint &point)
+static void instantaneousRotationAxis(const Vec3 &a, const Vec3 &b, const Vec3 &c, Vec3 &axis, Vec3 &point)
 {
-	SimmPoint ab = b-a, bc = c-b;
-	axis = SimmPoint::CrossProduct(ab, bc).normalized();
+	Vec3 ab = b-a, bc = c-b;
+	axis = unitVec(cross(ab, bc));
 
-	MyMatrix3 matrix;
-	SimmPoint rhs;
+	Mat33 matrix;
+	Vec3 rhs;
 	for(int i=0; i<3; i++) {
 		matrix(0,i) = ab[i];
 		matrix(1,i) = bc[i];
 		matrix(2,i) = axis[i];
 	}
-	rhs[0] = SimmPoint::DotProduct(ab, 0.5 * (a+b));
-	rhs[1] = SimmPoint::DotProduct(bc, 0.5 * (b+c));
-	rhs[2] = SimmPoint::DotProduct(axis, b);
+	rhs[0] = dot(ab, 0.5 * (a+b));
+	rhs[1] = dot(bc, 0.5 * (b+c));
+	rhs[2] = dot(axis, b);
 
-	point = matrix.inverse() * rhs;
+	point = matrix.invert() * rhs;
 }
 
 // This can use a more efficient symmetric solver if we support symmetric matrices
-static SimmPoint bestFitIntersectionPoint(const Array<SimmPoint> &linePoints, const Array<SimmPoint> &lineDirections)
+static Vec3 bestFitIntersectionPoint(const Array<Vec3> &linePoints, const Array<Vec3> &lineDirections)
 {
-	SimmPoint rhs;
-	MyMatrix3 A;
+	Vec3 rhs(0);
+	Mat33 A(0);
 	for(int i=0; i<linePoints.getSize(); i++) {
-		SimmPoint di = lineDirections[i].normalized();
-		MyMatrix3 Ai = MyMatrix3::Identity() - MyMatrix3::OuterProduct(di,di);
+		Vec3 di = unitVec(lineDirections[i]);
+		Mat33 Ai = Mat33(1) - di * ~di;
 		rhs += Ai * linePoints[i];
 		A += Ai;
 	}
-	return A.inverse() * rhs;
+	return A.invert() * rhs;
 }
 
 //###########################################################################
@@ -350,6 +184,7 @@ int main(int argc,char **argv)
 
 	try {
 		std::string markerDataFile = "delaware3_ss_walking1.trc";
+		//std::string markerDataFile = "subject01_walk1.trc";
 
 		// CONSTRUCT SUBJECT INSTANCE
 		ScaleTool *subject = new ScaleTool(inName);
@@ -363,9 +198,9 @@ int main(int argc,char **argv)
 		Object *modelCopy = model->copy();
 		modelCopy->print("gait_test.osim");
 
-		SimmPoint defaultPoint;
+		Vec3 defaultPoint(0);
+		Array<Vec3> calculatedJointCenterPosition(defaultPoint, model->getNumJoints());
 		Array<bool> calculatedJointCenter(false, model->getNumJoints());
-		Array<SimmPoint> calculatedJointCenterPosition(defaultPoint, model->getNumJoints());
 		Array<double> genericModelSegmentLength(0, model->getNumBodies());
 		Array<int> inboardJoint(-1, model->getNumBodies()); // joint index that this body is a child of
 		Array<int> outboardJoint(-1, model->getNumBodies()); // joint index that this body is a parent of
@@ -381,6 +216,7 @@ int main(int argc,char **argv)
 		JointSet *js = model->getDynamicsEngine().getJointSet();
 		MarkerSet *ms = model->getDynamicsEngine().getMarkerSet();
 
+		// Get list of markers on each body
 		ArrayPtrs<ArrayPtrs<AbstractMarker> > markersPerBody;
 		markersPerBody.setSize(model->getNumBodies());
 		for(int i=0;i<model->getNumBodies();i++) markersPerBody.set(i,new ArrayPtrs<AbstractMarker>);
@@ -406,6 +242,7 @@ int main(int argc,char **argv)
 			AbstractBody *child = joint->getChildBody();
 			if(verbose) std::cout << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
 
+			// Make tibia be parent of calcn
 			if (joint->getName() == "subtalar_r") {
 				parent = bs->get("tibia_r");
 				if(verbose) std::cout << "[modified]" << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
@@ -456,8 +293,8 @@ int main(int argc,char **argv)
 			// Need at least one outboard marker
 			if(outboardMarkerIndicesInData.getSize() == 0) continue;
 
-			Array<SimmPoint> rotationPoints(defaultPoint);
-			Array<SimmPoint> rotationAxes(defaultPoint);
+			Array<Vec3> rotationPoints(defaultPoint);
+			Array<Vec3> rotationAxes(defaultPoint);
 
 			// criteria for point triplet
 			double minimumDistanceSquared = 0.04 * 0.04;
@@ -466,56 +303,55 @@ int main(int argc,char **argv)
 			//double minimumDistanceSquared = 0;
 			//double maximumCosine = 1;
 
-			MyMatrix4 canonicalWorldTransform;
+			Mat44 canonicalWorldTransform;
 			bool gotCanonicalTransform = false;
 
 			for(int outboardMarkerIndex=0; outboardMarkerIndex<outboardMarkerIndicesInData.getSize(); outboardMarkerIndex++) {
 				if(verbose) std::cout << "Processing outboard marker " << markersPerBody.get(childIndex)->get(outboardMarkersUsed[outboardMarkerIndex])->getName() << std::endl;
-				Array<SimmPoint> markerTriplet(defaultPoint);
+				Array<Vec3> markerTriplet(defaultPoint);
 				for(int findex=0; findex<markerData.getNumFrames(); findex++) {
 					MarkerFrame *frame = markerData.getFrame(findex);
 				
 					// Construct transform into inboard body frame	
-					SimmPoint markerLocations[3];
-					for(int j=0; j<3; j++) {
-						markerLocations[j] = frame->getMarker(inboardMarkerIndicesInData[j]);
-					}
-					MyMatrix4 transformIntoInboardCS;
+					Vec3 markerLocations[3];
+					for(int j=0; j<3; j++)
+						markerLocations[j] = Vec3(frame->getMarker(inboardMarkerIndicesInData[j]).get());
+					Mat44 transformIntoInboardCS;
 					defineCoordinateSystem(markerLocations[0], markerLocations[1], markerLocations[2], transformIntoInboardCS);
 
 					if(!gotCanonicalTransform) {
-						canonicalWorldTransform = transformIntoInboardCS.inverse();
+						canonicalWorldTransform = transformIntoInboardCS.invert();
 						gotCanonicalTransform = true;
 					}
 		
 					// Find outboard point in inboard body frame	
-					SimmPoint outboardMarkerPosition = frame->getMarker(outboardMarkerIndicesInData[outboardMarkerIndex]);
-					SimmPoint position = transformIntoInboardCS.transformPoint(outboardMarkerPosition);
+					Vec3 outboardMarkerPosition = Vec3(frame->getMarker(outboardMarkerIndicesInData[outboardMarkerIndex]).get());
+					Vec3 position = transform(transformIntoInboardCS, outboardMarkerPosition);
 
 					// Construct triplet of points
 					if (markerTriplet.getSize() == 0) {
 						markerTriplet.append(position);
 					} else if (markerTriplet.getSize() == 1) {
-						if ((position - markerTriplet[0]).magnitudeSquared() > minimumDistanceSquared) {
+						if ((position - markerTriplet[0]).normSqr() > minimumDistanceSquared) {
 							markerTriplet.append(position);
 						}
 					} else {
 						assert(markerTriplet.getSize() == 2);
-						SimmPoint bc = (position - markerTriplet[1]);
-						double bcMagSqr = bc.magnitudeSquared();
+						Vec3 bc = (position - markerTriplet[1]);
+						double bcMagSqr = bc.normSqr();
 						if (bcMagSqr > minimumDistanceSquared) {
-							SimmPoint ac = (position - markerTriplet[0]);
-							double acMagSqr = ac.magnitudeSquared();
+							Vec3 ac = (position - markerTriplet[0]);
+							double acMagSqr = ac.normSqr();
 							if (acMagSqr > minimumDistanceSquared) {
-								SimmPoint ab = (markerTriplet[1] - markerTriplet[0]).normalized();
+								Vec3 ab = unitVec(markerTriplet[1] - markerTriplet[0]);
 								bc /= sqrt(bcMagSqr);
 								ac /= sqrt(acMagSqr);
-								if (SimmPoint::DotProduct(bc, ac) < maximumCosine &&
-									SimmPoint::DotProduct(ab, bc) < maximumCosine &&
-									SimmPoint::DotProduct(ab, ac) < maximumCosine) {
+								if (dot(bc, ac) < maximumCosine &&
+									dot(ab, bc) < maximumCosine &&
+									dot(ab, ac) < maximumCosine) {
 
 									// We have a valid triplet, so we can calculate axis of rotation
-									SimmPoint rotationAxis, rotationPoint;
+									Vec3 rotationAxis, rotationPoint;
 									instantaneousRotationAxis(markerTriplet[0], markerTriplet[1], position, rotationAxis, rotationPoint);
 									rotationAxes.append(rotationAxis);
 									rotationPoints.append(rotationPoint);
@@ -532,7 +368,7 @@ int main(int argc,char **argv)
 			if(rotationPoints.getSize()) {
 				// Calculate best fit intersection point for all of the computed axes of rotation
 				calculatedJointCenter[i] = true;
-				calculatedJointCenterPosition[i] = canonicalWorldTransform.transformPoint(bestFitIntersectionPoint(rotationPoints, rotationAxes));
+				calculatedJointCenterPosition[i] = transform(canonicalWorldTransform,bestFitIntersectionPoint(rotationPoints, rotationAxes));
 				if(verbose) std::cout << "Calculated rotation center = " << calculatedJointCenterPosition[i] << " (" << rotationPoints.getSize() << " samples)" << std::endl;
 			}
 		}
@@ -561,16 +397,16 @@ int main(int argc,char **argv)
 				if(verbose) std::cout << "  Did not calculate outboard joint center" << std::endl;
 				continue;
 			} else {
-				SimmPoint inb = calculatedJointCenterPosition[inboardJoint[i]];
-				SimmPoint outb = calculatedJointCenterPosition[outboardJoint[i]];
+				Vec3 inb = calculatedJointCenterPosition[inboardJoint[i]];
+				Vec3 outb = calculatedJointCenterPosition[outboardJoint[i]];
 
 				std::cout << "  Calculated joint centers: "
 						  << js->get(inboardJoint[i])->getName()
 						  << "=" << inb << ", " << js->get(outboardJoint[i])->getName() << "=" << outb << std::endl;
-				std::cout << "  Distance between calculated joint centers = " << (outb-inb).magnitude() << std::endl;
+				std::cout << "  Distance between calculated joint centers = " << (outb-inb).norm() << std::endl;
 
 				if(genericModelSegmentLength[i]) {
-					scaleSet[i] = (outb-inb).magnitude()/genericModelSegmentLength[i];
+					scaleSet[i] = (outb-inb).norm()/genericModelSegmentLength[i];
 					std::cout << "  SCALE = " << scaleSet[i] << std::endl;
 				}
 			}
