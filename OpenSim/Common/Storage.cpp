@@ -59,7 +59,7 @@ using namespace std;
 const double Storage::LARGE_NEGATIVE = -1.0e-30;
 const double Storage::LARGE_POSITIVE =  1.0e-30;
 const char* Storage::DEFAULT_HEADER_TOKEN = "endheader";
-const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\n";
+const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\r\n";
 //============================================================================
 // STATICS
 //============================================================================
