@@ -2368,7 +2368,7 @@ writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
 	fprintf(rFP,"otherdata 1\n");
 
 	// RANGE
-	//fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
+	fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
 	
 	// Other data from the map
 	MapKeysToValues::const_iterator iter;
