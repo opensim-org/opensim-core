@@ -30,7 +30,6 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -48,6 +47,8 @@ using SimTK::Vec3;
 using SimTK::Vec4;
 using SimTK::Mat33;
 using SimTK::Mat44;
+
+typedef std::map<std::string, std::string, std::less<std::string> > StringMap;
 
 static void PrintUsage(ostream &aOStream);
 
@@ -130,7 +131,7 @@ static Vec3 bestFitIntersectionPoint(const Array<Vec3> &linePoints, const Array<
 */
 int main(int argc,char **argv)
 {
-	bool verbose = false;
+	bool verbose = true;
 
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
@@ -183,8 +184,8 @@ int main(int argc,char **argv)
 
 
 	try {
-		std::string markerDataFile = "delaware3_ss_walking1.trc";
-		//std::string markerDataFile = "subject01_walk1.trc";
+		//std::string markerDataFile = "delaware3_ss_walking1.trc";
+		std::string markerDataFile = "subject01_walk1.trc";
 
 		// CONSTRUCT SUBJECT INSTANCE
 		ScaleTool *subject = new ScaleTool(inName);
@@ -216,14 +217,26 @@ int main(int argc,char **argv)
 		JointSet *js = model->getDynamicsEngine().getJointSet();
 		MarkerSet *ms = model->getDynamicsEngine().getMarkerSet();
 
+		StringMap mapMarkersToAdditionalBodies;
+		mapMarkersToAdditionalBodies["R.Acromium"] = "humerus_r";
+		mapMarkersToAdditionalBodies["L.Acromium"] = "humerus_l";
+		mapMarkersToAdditionalBodies["R.Elbow"] = "radius_r";
+		mapMarkersToAdditionalBodies["L.Elbow"] = "radius_l";
+
 		// Get list of markers on each body
 		ArrayPtrs<ArrayPtrs<AbstractMarker> > markersPerBody;
 		markersPerBody.setSize(model->getNumBodies());
 		for(int i=0;i<model->getNumBodies();i++) markersPerBody.set(i,new ArrayPtrs<AbstractMarker>);
 		for(int i=0; i<ms->getSize(); i++) {
-			int index = bs->getIndex(ms->get(i)->getBody());
-			if(index<0) continue;
-			markersPerBody.get(index)->append(ms->get(i));
+			AbstractMarker *marker = ms->get(i);
+			int index = bs->getIndex(marker->getBody());
+			if(index >= 0) markersPerBody.get(index)->append(marker);
+			if(mapMarkersToAdditionalBodies.find(marker->getName()) != mapMarkersToAdditionalBodies.end()) {
+				std::string additionalBody = mapMarkersToAdditionalBodies[marker->getName()];
+				std::cout << "Also adding '" << marker->getName() << "' to body '" << additionalBody << "'" << std::endl;
+				index = bs->getIndex(additionalBody);
+				if(index >= 0) markersPerBody.get(index)->append(marker);
+			}
 		}
 
 		if(verbose) {
@@ -235,6 +248,12 @@ int main(int argc,char **argv)
 			std::cout << std::endl;
 		}
 
+		StringMap remapParentBody;
+		remapParentBody["subtalar_r"] = "tibia_r";
+		remapParentBody["subtalar_l"] = "tibia_l";
+		remapParentBody["radioulnar_r"] = "humerus_r";
+		remapParentBody["radioulnar_l"] = "humerus_l";
+
 		if(verbose) std::cout << "Joints (" << model->getNumJoints() << "):" << std::endl;
 		for(int i=0; i<model->getNumJoints(); i++) {
 			AbstractJoint *joint = js->get(i);
@@ -243,22 +262,21 @@ int main(int argc,char **argv)
 			if(verbose) std::cout << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
 
 			// Make tibia be parent of calcn
-			if (joint->getName() == "subtalar_r") {
-				parent = bs->get("tibia_r");
+			if(remapParentBody.find(joint->getName()) != remapParentBody.end()) {
+				parent = bs->get(remapParentBody[joint->getName()]);
 				if(verbose) std::cout << "[modified]" << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
-			} else if (joint->getName() == "subtalar_l") {
-				parent = bs->get("tibia_l");
-				if(verbose) std::cout << "[modified]" << i << ": " << joint->getName() << " (parent=" << parent->getName() << ", child=" << child->getName() << ")" << std::endl;
-			}
+			} 
 
 			int parentIndex = bs->getIndex(parent->getName());
 			int childIndex = bs->getIndex(child->getName());
 			inboardJoint[childIndex] = i;
 			outboardJoint[parentIndex] = i;
 
+			// Compute length of parent segment (the distance from the parent segment's inboard joint to outboard joint) 
+			// by finding the length of the vector to the child's origin in the parent frame
 			double outboard[3]={0,0,0};
-			model->getDynamicsEngine().transformPosition(*parent,outboard,*child,outboard);
-			genericModelSegmentLength[parentIndex] = Mtx::Magnitude(3,outboard);
+			model->getDynamicsEngine().transformPosition(*child,outboard,*parent,outboard);
+			genericModelSegmentLength[parentIndex] = Vec3(outboard).norm();
 
 			// Need at least 3 markers to define a reference coordinate system on parent (inboard)
 			if(markersPerBody.get(parentIndex)->getSize() < 3) continue;
@@ -283,6 +301,8 @@ int main(int argc,char **argv)
 			Array<int> outboardMarkerIndicesInData(-1);
 			Array<int> outboardMarkersUsed(-1);
 			for(int mindex=0; mindex<markersPerBody.get(childIndex)->getSize(); mindex++) {
+				// if marker actually attached to a different body than the child... we won't use it
+				if(markersPerBody.get(childIndex)->get(mindex)->getBody() != child) continue;
 				int index = markerData.getMarkerIndex(markersPerBody.get(childIndex)->get(mindex)->getName());
 				if (index >= 0) {
 					outboardMarkerIndicesInData.append(index);
@@ -412,9 +432,17 @@ int main(int argc,char **argv)
 			}
 		}
 
-		// Take some averages
-		std::cout << "FEMUR AVERAGE SCALE = " << 0.5*(scaleSet[bs->getIndex("femur_r")] + scaleSet[bs->getIndex("femur_l")]) << std::endl;
-		std::cout << "TIBIA AVERAGE SCALE = " << 0.5*(scaleSet[bs->getIndex("tibia_r")] + scaleSet[bs->getIndex("tibia_l")]) << std::endl;
+		// Take averages of both sides
+		for(int i=0; i<bs->getSize(); i++) {
+			std::string name = bs->get(i)->getName();
+			if(scaleSet[bs->getIndex(name)] == 0) continue;
+			if(name.substr(name.length()-2) == "_r") {
+				std::string basename = name.substr(0,name.length()-2);
+				std::string lname = basename + "_l";
+				if(scaleSet[bs->getIndex(lname)] == 0) continue;
+				std::cout << "AVERAGE (" << basename << ") = " << 0.5*(scaleSet[bs->getIndex(name)] + scaleSet[bs->getIndex(lname)]) << std::endl;
+			}
+		}
 
 	// HANDLE ANY EXCEPTIONS
 	} catch(Exception &x) {
