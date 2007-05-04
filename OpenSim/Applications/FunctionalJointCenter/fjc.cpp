@@ -226,7 +226,10 @@ int main(int argc,char **argv)
 		// Get list of markers on each body
 		ArrayPtrs<ArrayPtrs<AbstractMarker> > markersPerBody;
 		markersPerBody.setSize(model->getNumBodies());
-		for(int i=0;i<model->getNumBodies();i++) markersPerBody.set(i,new ArrayPtrs<AbstractMarker>);
+		for(int i=0;i<model->getNumBodies();i++) {
+			markersPerBody.set(i,new ArrayPtrs<AbstractMarker>);
+			markersPerBody[i]->setMemoryOwner(false);
+		}
 		for(int i=0; i<ms->getSize(); i++) {
 			AbstractMarker *marker = ms->get(i);
 			int index = bs->getIndex(marker->getBody());
