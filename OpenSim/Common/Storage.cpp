@@ -2571,7 +2571,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 		string rest = (restidx==string::npos) ? "" : line.substr(restidx);
 
 		if (key== "name"){
-			setName(line);
+			setName(rest);
 		}
 		else if (key== "nr" || key== "nRows" || key== "datarows"){
 			rNumRows = atoi(rest.c_str());			
