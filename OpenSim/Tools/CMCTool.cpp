@@ -501,7 +501,7 @@ void CMCTool::run()
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
 	desiredKinStore.pad(60);
-	desiredKinStore.print("desiredKinmatics_padded.sto");
+	desiredKinStore.print("desiredKinematics_padded.sto");
 	if(_lowpassCutoffFrequency>=0) {
 		int order = 50;
 		cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
