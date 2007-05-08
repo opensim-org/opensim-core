@@ -471,6 +471,16 @@ void CMCTool::run()
 	// USE PIPELINE ACTUATORS?
 	_model->printDetailedInfo(cout);
 
+	// CHECK PROPERTIES FOR ERRORS/INCONSISTENCIES
+	if(_adjustCOMToReduceResiduals) {
+		if(_adjustedCOMBody == "")
+			throw Exception("CMCTool: ERROR- "+_adjustCOMToReduceResidualsProp.getName()+" set to true but "+
+								 _adjustedCOMBodyProp.getName()+" not set",__FILE__,__LINE__);
+		else if(!_model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody))
+			throw Exception("CMCTool: ERROR- Body '"+_adjustedCOMBody+"' specified in "+
+								 _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
+	}
+
 	// OUTPUT DIRECTORY
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
@@ -749,8 +759,8 @@ void CMCTool::run()
 	if(_adjustCOMToReduceResiduals) {
 		if(_outputModelFile=="") {
 			cerr<<"Warning: A name for the output model was not set.\n";
-			cerr<<"Specify a value for the property,"<<_outputModelFileProp.getName();
-			cerr<<", in the setup file.\n";
+			cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
+			cerr<<" in the setup file.\n";
 			cerr<<"Writing to adjusted_model.osim ...\n\n";
 			_outputModelFile = "adjusted_model.osim";
 		}
