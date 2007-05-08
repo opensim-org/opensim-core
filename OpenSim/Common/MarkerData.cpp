@@ -114,6 +114,9 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
    int frameNum, coordsRead;
    double time, coords[3];
 
+	if (aFileName.empty())
+		throw Exception("MarkerData.readTRCFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
+
    in.open(aFileName.c_str());
 
 	if (!in.good())
