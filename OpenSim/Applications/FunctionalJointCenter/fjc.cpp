@@ -60,6 +60,88 @@ static Vec3 transform(const Mat44 &mat, const Vec3 &vec)
 }
 
 //###########################################################################
+// Class to store the properties
+//###########################################################################
+
+class FunctionalJointCenterTool : public Object
+{
+public:
+	PropertyObj _genericModelMakerProp;
+	GenericModelMaker &_genericModelMaker;
+
+	/* In degrees */
+	PropertyDbl _minimumAngleProp;
+	double &_minimumAngle;
+
+	PropertyDbl _minimumDistanceProp;
+	double &_minimumDistance;
+
+	PropertyStr _markerFileProp;
+	string &_markerFile;
+
+	FunctionalJointCenterTool(const string &aFileName) :
+		Object(aFileName, false),
+		_genericModelMakerProp(PropertyObj("", GenericModelMaker())),
+		_genericModelMaker((GenericModelMaker&)_genericModelMakerProp.getValueObj()),
+		_minimumAngle(_minimumAngleProp.getValueDbl()),
+		_minimumDistance(_minimumDistanceProp.getValueDbl()),
+		_markerFile(_markerFileProp.getValueStr())
+	{
+		Object::RegisterType(GenericModelMaker());
+		GenericModelMaker::registerTypes();
+
+		setType("FunctionalJointCenterTool");
+		_minimumAngle = 0;
+		_minimumDistance = 0;
+		_markerFile = "";
+
+		setupProperties();
+
+		updateFromXMLNode();
+	}
+
+	void setupProperties()
+	{
+		_genericModelMakerProp.setName("GenericModelMaker");
+		_propertySet.append(&_genericModelMakerProp);
+
+		_minimumAngleProp.setName("minimum_angle");
+		_propertySet.append(&_minimumAngleProp);
+
+		_minimumDistanceProp.setName("minimum_distance");
+		_propertySet.append(&_minimumDistanceProp);
+
+		_markerFileProp.setName("marker_file");
+		_propertySet.append(&_markerFileProp);
+	}
+
+	Model* createModel()
+	{
+		cout << "Processing subject " << getName() << endl;
+
+		/* Make the generic model. */
+		if (!_genericModelMakerProp.getUseDefault())
+		{
+			Model *model = _genericModelMaker.processModel("");
+			if (model==0)
+			{
+				cout << "===ERROR===: Unable to load generic model." << endl;
+				return 0;
+			}
+			else
+				return model;
+		} else {
+			cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
+		}
+		return 0;
+	}
+
+	double getMinimumDistance() { return _minimumDistance; }
+	double getMinimumAngle() { return _minimumAngle; }
+	string getMarkerFile() { return _markerFile; }
+};
+
+//###########################################################################
 // Helper functions
 //###########################################################################
 
@@ -160,18 +242,7 @@ int main(int argc,char **argv)
 						return(0);
 					}
 					inName = argv[i+1];
-					break;
-
-				// Print a default setup file
-				} else if((option=="-PrintSetup")||(option=="-PS")) {
-					ScaleTool *subject = new ScaleTool();
-					subject->setName("default");
-					// Add in useful objects that may need to be instantiated
-					Object::setSerializeAllDefaults(true);
-					subject->print("default_subject.xml");
-					Object::setSerializeAllDefaults(false);
-					cout << "Created file default_subject.xml with default setup" << endl;
-					return(0);
+					i++;
 
 				// Unrecognized
 				} else {
@@ -184,20 +255,10 @@ int main(int argc,char **argv)
 
 
 	try {
-		//std::string markerDataFile = "delaware3_ss_walking1.trc";
-		std::string markerDataFile = "subject01_walk1.trc";
-
-		// CONSTRUCT SUBJECT INSTANCE
-		ScaleTool *subject = new ScaleTool(inName);
-		Object *subjectCopy = subject->copy();
-		subjectCopy->print("test_subject.xml");
+		FunctionalJointCenterTool *tool = new FunctionalJointCenterTool(inName);
 
 		// CONSTRUCT THE MODEL
-		Model *model = subject->createModel();
-
-		// WRITE MODEL TO FILE
-		Object *modelCopy = model->copy();
-		modelCopy->print("gait_test.osim");
+		Model *model = tool->createModel();
 
 		Vec3 defaultPoint(0);
 		Array<Vec3> calculatedJointCenterPosition(defaultPoint, model->getNumJoints());
@@ -206,7 +267,7 @@ int main(int argc,char **argv)
 		Array<int> inboardJoint(-1, model->getNumBodies()); // joint index that this body is a child of
 		Array<int> outboardJoint(-1, model->getNumBodies()); // joint index that this body is a parent of
 
-		MarkerData markerData(markerDataFile);
+		MarkerData markerData(tool->getMarkerFile());
 		markerData.convertToUnits(model->getLengthUnits());
 		model->getDynamicsEngine().deleteUnusedMarkers(markerData.getMarkerNames());
 
@@ -320,11 +381,9 @@ int main(int argc,char **argv)
 			Array<Vec3> rotationAxes(defaultPoint);
 
 			// criteria for point triplet
-			double minimumDistanceSquared = 0.04 * 0.04;
-			double maximumCosine = cos(10 * rdMath::DTR);
-			// no criteria to begin with
-			//double minimumDistanceSquared = 0;
-			//double maximumCosine = 1;
+			double minimumDistanceSquared = tool->getMinimumDistance() * tool->getMinimumDistance();
+			double maximumCosine = cos(tool->getMinimumAngle() * rdMath::DTR);
+			std::cout << "Criteria: min distance = " << tool->getMinimumDistance() << ", min angle = " << tool->getMinimumAngle() << " deg" << std::endl;
 
 			Mat44 canonicalWorldTransform;
 			bool gotCanonicalTransform = false;
@@ -443,7 +502,8 @@ int main(int argc,char **argv)
 				std::string basename = name.substr(0,name.length()-2);
 				std::string lname = basename + "_l";
 				if(scaleSet[bs->getIndex(lname)] == 0) continue;
-				std::cout << "AVERAGE (" << basename << ") = " << 0.5*(scaleSet[bs->getIndex(name)] + scaleSet[bs->getIndex(lname)]) << std::endl;
+				std::cout << "AVERAGE (" << basename << ") = " << 0.5*(scaleSet[bs->getIndex(name)] + scaleSet[bs->getIndex(lname)])
+							 << ",    (range = " << fabs(scaleSet[bs->getIndex(name)]-scaleSet[bs->getIndex(lname)]) << ")" << std::endl;
 			}
 		}
 
@@ -464,7 +524,5 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"Option            Argument      Action / Notes\n";
 	aOStream<<"------            --------      --------------\n";
 	aOStream<<"-Help, -H                       Print the command-line options for fjc.exe.\n";
-	aOStream<<"-PrintSetup, -PS                Generates a template Setup file to customize scaling\n";
-	aOStream<<"-Setup, -S        SetupFile     Specify an xml setup file that specifies an OpenSim model,\n";
-	aOStream<<"                                a marker file, and scaling parameters.\n";
+	aOStream<<"-Setup, -S        SetupFile     Specify an xml setup file\n";
 }
