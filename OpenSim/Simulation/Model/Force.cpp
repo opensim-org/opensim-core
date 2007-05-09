@@ -128,6 +128,25 @@ copy() const
 	return(act);
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy the contents of the passed-in object to this Force, as long as the
+ * object is a Force.
+ *
+ * @param aObject The Force to copy.
+ */
+void Force::
+copy(const Object& aObject)
+{
+   const Force* force = dynamic_cast<const Force*>(&aObject);
+   if (force) {
+      *this = *force;
+	} else {
+	   throw Exception("Force::copy() called with object (name = "+
+			aObject.getName()+", type = "+aObject.getType()+").", __FILE__,__LINE__);
+	}
+}
+
 
 //=============================================================================
 // CONSTRUCTION

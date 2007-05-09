@@ -106,6 +106,7 @@ public:
 	Torque(const Torque &aTorque);
 	virtual ~Torque();
 	virtual Object* copy() const;
+   virtual void copy(const Object& aObject);
 private:
 	void setNull();
 	void setupProperties();

@@ -139,6 +139,19 @@ void SimmZajacHill::copyData(const SimmZajacHill &aMuscle)
 	_forceVelocityCurve = (Function*)Object::SafeCopy(aMuscle._forceVelocityCurve);
 }
 
+void SimmZajacHill::copy(const Object& aObject)
+{
+	//if (aObject.isKindOf("SimmZajacHill")) {
+		//*this = *((const SimmZajacHill*)(&aObject));
+   const SimmZajacHill* muscle = dynamic_cast<const SimmZajacHill*>(&aObject);
+   if (muscle) {
+      *this = *muscle;
+	} else {
+	   throw Exception("SimmZajacHill::copy() called with object (name = "+
+			aObject.getName()+", type = "+aObject.getType()+").", __FILE__,__LINE__);
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Set the data members of this SimmZajacHill to their null values.

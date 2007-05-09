@@ -222,7 +222,7 @@ MuscleWrapPoint& MuscleWrap::getWrapPoint(int aIndex)
 
 void MuscleWrap::setStartPoint(int aIndex)
 {
-	if ((aIndex != _range[0]) && (aIndex == -1 || (aIndex >= 1 && aIndex <= _range[1])))
+	if ((aIndex != _range[0]) && (aIndex == -1 || _range[1] == -1 || (aIndex >= 1 && aIndex <= _range[1])))
 	{
 		_range[0] = aIndex;
 		_muscle->invalidatePath();
@@ -231,7 +231,7 @@ void MuscleWrap::setStartPoint(int aIndex)
 
 void MuscleWrap::setEndPoint(int aIndex)
 {
-	if ((aIndex != _range[1]) && (aIndex == -1 || (aIndex >= _range[0] && aIndex <= _muscle->getAttachmentSet().getSize())))
+	if ((aIndex != _range[1]) && (aIndex == -1 || _range[0] == -1 || (aIndex >= _range[0] && aIndex <= _muscle->getAttachmentSet().getSize())))
 	{
 		_range[1] = aIndex;
 		_muscle->invalidatePath();
@@ -257,6 +257,26 @@ void MuscleWrap::resetPreviousWrap()
 void MuscleWrap::setPreviousWrap(const WrapResult& aWrapResult)
 {
 	_previousWrap = aWrapResult;
+}
+
+void MuscleWrap::setWrapObject(AbstractWrapObject& aWrapObject)
+{
+	_wrapObject = &aWrapObject;
+	_wrapObjectName = aWrapObject.getName();
+}
+
+void MuscleWrap::setMethod(WrapMethod aMethod)
+{
+	if (aMethod == WrapMethod::axial) {
+		_method = WrapMethod::axial;
+		_methodName = "axial";
+	} else if (aMethod == WrapMethod::midpoint) {
+		_method = WrapMethod::midpoint;
+		_methodName = "midpoint";
+	} else if (aMethod == WrapMethod::hybrid) {
+		_method = WrapMethod::hybrid;
+		_methodName = "hybrid";
+	}
 }
 
 //=============================================================================

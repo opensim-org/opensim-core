@@ -142,6 +142,7 @@ public:
 	SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle);
 	virtual ~SimmDarrylMuscle();
 	virtual Object* copy() const;
+	virtual void copy(const Object& aObject);
 
 #ifndef SWIG
 	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);
@@ -196,6 +197,8 @@ public:
 	// TEST
 	//--------------------------------------------------------------------------
 	virtual void peteTest() const;
+
+	OPENSIM_DECLARE_DERIVED(SimmDarrylMuscle, AbstractActuator);
 
 private:
 	void setNull();

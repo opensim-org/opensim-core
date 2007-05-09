@@ -104,6 +104,17 @@ SimmDarrylMuscle::SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle) :
 	copyData(aMuscle);
 }
 
+void SimmDarrylMuscle::copy(const Object& aObject)
+{
+   const SimmDarrylMuscle* muscle = dynamic_cast<const SimmDarrylMuscle*>(&aObject);
+   if (muscle) {
+      *this = *muscle;
+	} else {
+	   throw Exception("SimmDarrylMuscle::copy() called with object (name = "+
+			aObject.getName()+", type = "+aObject.getType()+").", __FILE__,__LINE__);
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Copy this muscle point and return a pointer to the copy.

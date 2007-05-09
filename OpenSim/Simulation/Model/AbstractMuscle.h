@@ -49,6 +49,7 @@ namespace OpenSim {
 
 class AbstractCoordinate;
 class WrapResult;
+class AbstractWrapObject;
 
 //=============================================================================
 //=============================================================================
@@ -121,6 +122,10 @@ public:
 	//--------------------------------------------------------------------------
 	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
 	void deleteAttachmentPoint(int aIndex);
+	void addMuscleWrap(AbstractWrapObject& aWrapObject);
+	void moveUpMuscleWrap(int aIndex);
+	void moveDownMuscleWrap(int aIndex);
+	void deleteMuscleWrap(int aIndex);
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -197,6 +202,7 @@ private:
 	void updateGeometrySize();
 	void updateGeometryLocations();
 	void nameAttachmentPoints(int aStartingIndex);
+   void placeNewAttachment(Array<double>& aOffset, int aIndex, AbstractBody& aBody);
 
 //=============================================================================
 };	// END of class AbstractMuscle

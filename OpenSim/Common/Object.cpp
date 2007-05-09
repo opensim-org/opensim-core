@@ -265,7 +265,20 @@ copy(DOMElement *aElement) const
 
 	return(object);
 }
-//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Replace the contents of this object with a copy of another object. This
+ * function does not create a new object. Object::copy() should be overridden
+ * by every concrete class that intends to copy itself this way.
+ *
+ * @param aObject The object to copy from.
+ */
+void Object::
+copy(const Object& aObject)
+{
+	throw Exception("copy(const Object& aObject) not defined for object (name = "+getName()+", type = "+getType()+").");
+}
+ //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________

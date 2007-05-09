@@ -319,6 +319,17 @@ bool AbstractDynamicsEngine::setGravity(double aGrav[3])
 //=============================================================================
 // BODY INFORMATION
 //=============================================================================
+AbstractWrapObject* AbstractDynamicsEngine::getWrapObject(const string& aName) const
+{
+	for (int i = 0; i < _bodySet.getSize(); i++) {
+		AbstractWrapObject* wrap = _bodySet.get(i)->getWrapObject(aName);
+		if (wrap != NULL)
+			return wrap;
+	}
+
+	return NULL;
+}
+
 //--------------------------------------------------------------------------
 // MARKERS
 //--------------------------------------------------------------------------

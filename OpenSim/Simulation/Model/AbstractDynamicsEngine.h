@@ -56,6 +56,7 @@ class AbstractMarker;
 class MarkerSet;
 class Transform;
 class Storage;
+class AbstractWrapObject;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -166,6 +167,7 @@ public:
 	virtual const BodySet* getBodySet() const { return &_bodySet; }
 	virtual AbstractBody& getGroundBody() const = 0;
 	virtual AbstractBody* getLeafBody(AbstractJoint* aJoint) const { return NULL; }
+	virtual AbstractWrapObject* getWrapObject(const std::string& aName) const;
 
 	//--------------------------------------------------------------------------
 	// JOINTS

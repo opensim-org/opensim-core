@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Model name="Dynamic Mocap Model">
+<Model name="Muscle Editor Test Model">
 	<defaults>
 		<SimmZajacHill name="defaultmuscle">
 			<pennation_angle>0.000000000000</pennation_angle>
@@ -74,8 +74,54 @@
 	<force_units>N</force_units>
 	<length_units>m</length_units>
 	<ActuatorSet>
+	<groups>
+		<ObjectGroup name="right">
+			<members>TFL_r add_brev_r add_long_r add_mag1_r add_mag2_r add_mag3_r bi_fem_lh_r bi_fem_sh_r ext_dig_r ext_hal_r flex_dig_r flex_hal_r gas_lat_r gas_med_r gemellus_r glut_max1_r glut_max2_r glut_max3_r glut_med1_r glut_med2_r glut_med3_r glut_min1_r glut_min2_r glut_min3_r gracilis_r iliacus_r pat_lig_r pectineus_r per_brev_r per_long_r per_tert_r piri_r psoas_r quad_fem_r rectus_fem_r sartorius_r semimem_r semiten_r soleus_r test_muscle tib_ant_r tib_post_r vas_int_r vas_lat_r vas_med_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="leg_r">
+			<members>TFL_r add_brev_r add_long_r add_mag1_r add_mag2_r add_mag3_r bi_fem_lh_r bi_fem_sh_r ext_dig_r ext_hal_r flex_dig_r flex_hal_r gas_lat_r gas_med_r gemellus_r glut_max1_r glut_max2_r glut_max3_r glut_med1_r glut_med2_r glut_med3_r glut_min1_r glut_min2_r glut_min3_r gracilis_r iliacus_r pat_lig_r pectineus_r per_brev_r per_long_r per_tert_r piri_r psoas_r quad_fem_r rectus_fem_r sartorius_r semimem_r semiten_r soleus_r test_muscle tib_ant_r tib_post_r vas_int_r vas_lat_r vas_med_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="hip_r">
+			<members>TFL_r add_brev_r add_long_r add_mag1_r add_mag2_r add_mag3_r bi_fem_lh_r gemellus_r glut_max1_r glut_max2_r glut_max3_r glut_med1_r glut_med2_r glut_med3_r glut_min1_r glut_min2_r glut_min3_r gracilis_r iliacus_r pectineus_r piri_r psoas_r quad_fem_r rectus_fem_r sartorius_r semimem_r semiten_r test_muscle </members>
+		</ObjectGroup>
+		<ObjectGroup name="knee_r">
+			<members>bi_fem_lh_r bi_fem_sh_r gas_lat_r gas_med_r gracilis_r pat_lig_r rectus_fem_r sartorius_r semimem_r semiten_r test_muscle vas_int_r vas_lat_r vas_med_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="ankle_r">
+			<members>ext_dig_r ext_hal_r flex_dig_r flex_hal_r gas_lat_r gas_med_r per_brev_r per_long_r per_tert_r soleus_r tib_ant_r tib_post_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="left">
+			<members>TFL_l add_brev_l add_long_l add_mag1_l add_mag2_l add_mag3_l bi_fem_lh_l bi_fem_sh_l ext_dig_l ext_hal_l flex_dig_l flex_hal_l gas_lat_l gas_med_l gemellus_l glut_max1_l glut_max2_l glut_max3_l glut_med1_l glut_med2_l glut_med3_l glut_min1_l glut_min2_l glut_min3_l gracilis_l iliacus_l pat_lig_l pectineus_l per_brev_l per_long_l per_tert_l piri_l psoas_l quad_fem_l rectus_fem_l sartorius_l semimem_l semiten_l soleus_l tib_ant_l tib_post_l vas_int_l vas_lat_l vas_med_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="leg_l">
+			<members>TFL_l add_brev_l add_long_l add_mag1_l add_mag2_l add_mag3_l bi_fem_lh_l bi_fem_sh_l ext_dig_l ext_hal_l flex_dig_l flex_hal_l gas_lat_l gas_med_l gemellus_l glut_max1_l glut_max2_l glut_max3_l glut_med1_l glut_med2_l glut_med3_l glut_min1_l glut_min2_l glut_min3_l gracilis_l iliacus_l pat_lig_l pectineus_l per_brev_l per_long_l per_tert_l piri_l psoas_l quad_fem_l rectus_fem_l sartorius_l semimem_l semiten_l soleus_l tib_ant_l tib_post_l vas_int_l vas_lat_l vas_med_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="hip_l">
+			<members>TFL_l add_brev_l add_long_l add_mag1_l add_mag2_l add_mag3_l bi_fem_lh_l bi_fem_sh_l gemellus_l glut_max1_l glut_max2_l glut_max3_l glut_med1_l glut_med2_l glut_med3_l glut_min1_l glut_min2_l glut_min3_l gracilis_l iliacus_l pectineus_l piri_l psoas_l quad_fem_l rectus_fem_l sartorius_l semimem_l semiten_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="knee_l">
+			<members>bi_fem_lh_l bi_fem_sh_l gas_lat_l gas_med_l gracilis_l pat_lig_l rectus_fem_l sartorius_l semimem_l semiten_l vas_int_l vas_lat_l vas_med_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="ankle_l">
+			<members>ext_dig_l ext_hal_l flex_dig_l flex_hal_l gas_lat_l gas_med_l per_brev_l per_long_l per_tert_l soleus_l tib_ant_l tib_post_l </members>
+		</ObjectGroup>
+	</groups>
 	<objects>
-		<SimmZajacHill name="rectus_fem_r">
+		<Force name="just_a_force">
+			<optimal_force> 100.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+		<Torque name="look_a_torque">
+			<optimal_force> 80.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+		</Torque>
+		<SimmZajacHill name="test_muscle">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -102,15 +148,17 @@
 			<MuscleWrapSet>
 			<objects>
 				<MuscleWrap>
-					<wrap_object> pelvis_cyl </wrap_object>
-				</MuscleWrap>
-				<MuscleWrap>
 					<wrap_object> femur_ell </wrap_object>
 					<method> hybrid </method>
 				</MuscleWrap>
+				<MuscleWrap>
+					<wrap_object> femur_cyl </wrap_object>
+				</MuscleWrap>
+				<MuscleWrap>
+					<wrap_object> femur_sph </wrap_object>
+				</MuscleWrap>
 			</objects>
 			</MuscleWrapSet>
-			<groups>right leg_r hip_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max1_r">
 			<MusclePointSet>
@@ -138,7 +186,6 @@
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max2_r">
 			<MusclePointSet>
@@ -166,7 +213,6 @@
 			<tendon_slack_length>0.127000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max3_r">
 			<MusclePointSet>
@@ -194,7 +240,6 @@
 			<tendon_slack_length>0.114000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med1_r">
 			<MusclePointSet>
@@ -214,7 +259,6 @@
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med2_r">
 			<MusclePointSet>
@@ -234,7 +278,6 @@
 			<tendon_slack_length>0.037000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med3_r">
 			<MusclePointSet>
@@ -254,7 +297,6 @@
 			<tendon_slack_length>0.053000000000</tendon_slack_length>
 			<pennation_angle>0.331612557879</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min1_r">
 			<MusclePointSet>
@@ -274,7 +316,6 @@
 			<tendon_slack_length>0.016000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min2_r">
 			<MusclePointSet>
@@ -294,7 +335,6 @@
 			<tendon_slack_length>0.026000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min3_r">
 			<MusclePointSet>
@@ -314,7 +354,6 @@
 			<tendon_slack_length>0.051000000000</tendon_slack_length>
 			<pennation_angle>0.366519142919</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_long_r">
 			<MusclePointSet>
@@ -334,7 +373,6 @@
 			<tendon_slack_length>0.110500000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_brev_r">
 			<MusclePointSet>
@@ -354,7 +392,6 @@
 			<tendon_slack_length>0.013000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag1_r">
 			<MusclePointSet>
@@ -374,7 +411,6 @@
 			<tendon_slack_length>0.060000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag2_r">
 			<MusclePointSet>
@@ -394,7 +430,6 @@
 			<tendon_slack_length>0.130000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag3_r">
 			<MusclePointSet>
@@ -414,7 +449,6 @@
 			<tendon_slack_length>0.260000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="pectineus_r">
 			<MusclePointSet>
@@ -434,7 +468,6 @@
 			<tendon_slack_length>0.001000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="iliacus_r">
 			<MusclePointSet>
@@ -462,7 +495,6 @@
 			<tendon_slack_length>0.090000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="psoas_r">
 			<MusclePointSet>
@@ -490,7 +522,6 @@
 			<tendon_slack_length>0.113000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="quad_fem_r">
 			<MusclePointSet>
@@ -510,7 +541,6 @@
 			<tendon_slack_length>0.024000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gemellus_r">
 			<MusclePointSet>
@@ -530,7 +560,6 @@
 			<tendon_slack_length>0.039000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="piri_r">
 			<MusclePointSet>
@@ -554,7 +583,6 @@
 			<tendon_slack_length>0.106000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="TFL_r">
 			<MusclePointSet>
@@ -582,7 +610,6 @@
 			<tendon_slack_length>0.425000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gracilis_r">
 			<MusclePointSet>
@@ -606,7 +633,6 @@
 			<tendon_slack_length>0.140000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="semimem_r">
 			<MusclePointSet>
@@ -626,7 +652,6 @@
 			<tendon_slack_length>0.359000000000</tendon_slack_length>
 			<pennation_angle>0.261799387799</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="semiten_r">
 			<MusclePointSet>
@@ -654,7 +679,6 @@
 			<tendon_slack_length>0.262000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="bi_fem_lh_r">
 			<MusclePointSet>
@@ -674,7 +698,6 @@
 			<tendon_slack_length>0.341000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="bi_fem_sh_r">
 			<MusclePointSet>
@@ -694,7 +717,6 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.401425727959</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="sartorius_r">
 			<MusclePointSet>
@@ -726,7 +748,31 @@
 			<tendon_slack_length>0.040000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r hip_r knee_r </groups>
+		</SimmZajacHill>
+		<SimmZajacHill name="rectus_fem_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.038800000000 -0.047400000000 0.091800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.033400000000 -0.403000000000 0.001900000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_flex_r</coordinate>
+					<range>1.459967919293 2.617993877991</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.012100000000 0.043700000000 -0.001000000000</location>
+					<body>patella_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>779.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.346000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>4</muscle_model>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_med_r">
 			<MusclePointSet>
@@ -762,7 +808,6 @@
 			<tendon_slack_length>0.126000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_int_r">
 			<MusclePointSet>
@@ -792,7 +837,6 @@
 			<tendon_slack_length>0.136000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_lat_r">
 			<MusclePointSet>
@@ -828,7 +872,6 @@
 			<tendon_slack_length>0.157000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="pat_lig_r">
 			<MusclePointSet>
@@ -848,7 +891,6 @@
 			<tendon_slack_length>0.005000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gas_med_r">
 			<MusclePointSet>
@@ -878,7 +920,6 @@
 			<tendon_slack_length>0.408000000000</tendon_slack_length>
 			<pennation_angle>0.296705972839</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gas_lat_r">
 			<MusclePointSet>
@@ -908,7 +949,6 @@
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r knee_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="soleus_r">
 			<MusclePointSet>
@@ -928,7 +968,6 @@
 			<tendon_slack_length>0.268000000000</tendon_slack_length>
 			<pennation_angle>0.436332312999</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="tib_post_r">
 			<MusclePointSet>
@@ -956,7 +995,6 @@
 			<tendon_slack_length>0.310000000000</tendon_slack_length>
 			<pennation_angle>0.209439510239</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="tib_ant_r">
 			<MusclePointSet>
@@ -980,7 +1018,6 @@
 			<tendon_slack_length>0.223000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="ext_dig_r">
 			<MusclePointSet>
@@ -1016,7 +1053,6 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="ext_hal_r">
 			<MusclePointSet>
@@ -1056,7 +1092,6 @@
 			<tendon_slack_length>0.305000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="flex_dig_r">
 			<MusclePointSet>
@@ -1100,7 +1135,6 @@
 			<tendon_slack_length>0.400000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="flex_hal_r">
 			<MusclePointSet>
@@ -1140,7 +1174,6 @@
 			<tendon_slack_length>0.380000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_brev_r">
 			<MusclePointSet>
@@ -1172,7 +1205,6 @@
 			<tendon_slack_length>0.161000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_long_r">
 			<MusclePointSet>
@@ -1212,7 +1244,6 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_tert_r">
 			<MusclePointSet>
@@ -1236,7 +1267,6 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.226892802759</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>right leg_r ankle_r </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max1_l">
 			<MusclePointSet>
@@ -1264,7 +1294,6 @@
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max2_l">
 			<MusclePointSet>
@@ -1292,7 +1321,6 @@
 			<tendon_slack_length>0.127000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_max3_l">
 			<MusclePointSet>
@@ -1320,7 +1348,6 @@
 			<tendon_slack_length>0.114000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med1_l">
 			<MusclePointSet>
@@ -1340,7 +1367,6 @@
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med2_l">
 			<MusclePointSet>
@@ -1360,7 +1386,6 @@
 			<tendon_slack_length>0.037000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_med3_l">
 			<MusclePointSet>
@@ -1380,7 +1405,6 @@
 			<tendon_slack_length>0.053000000000</tendon_slack_length>
 			<pennation_angle>0.331612557879</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min1_l">
 			<MusclePointSet>
@@ -1400,7 +1424,6 @@
 			<tendon_slack_length>0.016000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min2_l">
 			<MusclePointSet>
@@ -1420,7 +1443,6 @@
 			<tendon_slack_length>0.026000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="glut_min3_l">
 			<MusclePointSet>
@@ -1440,7 +1462,6 @@
 			<tendon_slack_length>0.051000000000</tendon_slack_length>
 			<pennation_angle>0.366519142919</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_long_l">
 			<MusclePointSet>
@@ -1460,7 +1481,6 @@
 			<tendon_slack_length>0.110500000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_brev_l">
 			<MusclePointSet>
@@ -1480,7 +1500,6 @@
 			<tendon_slack_length>0.013000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag1_l">
 			<MusclePointSet>
@@ -1500,7 +1519,6 @@
 			<tendon_slack_length>0.060000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag2_l">
 			<MusclePointSet>
@@ -1520,7 +1538,6 @@
 			<tendon_slack_length>0.130000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="add_mag3_l">
 			<MusclePointSet>
@@ -1540,7 +1557,6 @@
 			<tendon_slack_length>0.260000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="pectineus_l">
 			<MusclePointSet>
@@ -1560,7 +1576,6 @@
 			<tendon_slack_length>0.001000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="iliacus_l">
 			<MusclePointSet>
@@ -1588,7 +1603,6 @@
 			<tendon_slack_length>0.090000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="psoas_l">
 			<MusclePointSet>
@@ -1616,7 +1630,6 @@
 			<tendon_slack_length>0.113000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="quad_fem_l">
 			<MusclePointSet>
@@ -1636,7 +1649,6 @@
 			<tendon_slack_length>0.024000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gemellus_l">
 			<MusclePointSet>
@@ -1656,7 +1668,6 @@
 			<tendon_slack_length>0.039000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="piri_l">
 			<MusclePointSet>
@@ -1680,7 +1691,6 @@
 			<tendon_slack_length>0.106000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="TFL_l">
 			<MusclePointSet>
@@ -1708,7 +1718,6 @@
 			<tendon_slack_length>0.425000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gracilis_l">
 			<MusclePointSet>
@@ -1732,7 +1741,6 @@
 			<tendon_slack_length>0.140000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="semimem_l">
 			<MusclePointSet>
@@ -1752,7 +1760,6 @@
 			<tendon_slack_length>0.359000000000</tendon_slack_length>
 			<pennation_angle>0.261799387799</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="semiten_l">
 			<MusclePointSet>
@@ -1780,7 +1787,6 @@
 			<tendon_slack_length>0.262000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="bi_fem_lh_l">
 			<MusclePointSet>
@@ -1800,7 +1806,6 @@
 			<tendon_slack_length>0.341000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="bi_fem_sh_l">
 			<MusclePointSet>
@@ -1820,7 +1825,6 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.401425727959</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="sartorius_l">
 			<MusclePointSet>
@@ -1852,7 +1856,6 @@
 			<tendon_slack_length>0.040000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="rectus_fem_l">
 			<MusclePointSet>
@@ -1878,7 +1881,6 @@
 			<tendon_slack_length>0.346000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l hip_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_med_l">
 			<MusclePointSet>
@@ -1914,7 +1916,6 @@
 			<tendon_slack_length>0.126000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_int_l">
 			<MusclePointSet>
@@ -1944,7 +1945,6 @@
 			<tendon_slack_length>0.136000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="vas_lat_l">
 			<MusclePointSet>
@@ -1980,7 +1980,6 @@
 			<tendon_slack_length>0.157000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="pat_lig_l">
 			<MusclePointSet>
@@ -2000,7 +1999,6 @@
 			<tendon_slack_length>0.005000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gas_med_l">
 			<MusclePointSet>
@@ -2030,7 +2028,6 @@
 			<tendon_slack_length>0.408000000000</tendon_slack_length>
 			<pennation_angle>0.296705972839</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="gas_lat_l">
 			<MusclePointSet>
@@ -2060,7 +2057,6 @@
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l knee_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="soleus_l">
 			<MusclePointSet>
@@ -2080,7 +2076,6 @@
 			<tendon_slack_length>0.268000000000</tendon_slack_length>
 			<pennation_angle>0.436332312999</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="tib_post_l">
 			<MusclePointSet>
@@ -2108,7 +2103,6 @@
 			<tendon_slack_length>0.310000000000</tendon_slack_length>
 			<pennation_angle>0.209439510239</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="tib_ant_l">
 			<MusclePointSet>
@@ -2132,7 +2126,6 @@
 			<tendon_slack_length>0.223000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="ext_dig_l">
 			<MusclePointSet>
@@ -2168,7 +2161,6 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="ext_hal_l">
 			<MusclePointSet>
@@ -2208,7 +2200,6 @@
 			<tendon_slack_length>0.305000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="flex_dig_l">
 			<MusclePointSet>
@@ -2252,7 +2243,6 @@
 			<tendon_slack_length>0.400000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="flex_hal_l">
 			<MusclePointSet>
@@ -2292,7 +2282,6 @@
 			<tendon_slack_length>0.380000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_brev_l">
 			<MusclePointSet>
@@ -2324,7 +2313,6 @@
 			<tendon_slack_length>0.161000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_long_l">
 			<MusclePointSet>
@@ -2364,7 +2352,6 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 		<SimmZajacHill name="per_tert_l">
 			<MusclePointSet>
@@ -2388,7 +2375,6 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.226892802759</pennation_angle>
 			<muscle_model>4</muscle_model>
-			<groups>left leg_l ankle_l </groups>
 		</SimmZajacHill>
 	</objects>
 	</ActuatorSet>
@@ -3395,6 +3381,32 @@
 					<mass>0.000000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
 					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<WrapObjectSet>
+					<objects>
+						<WrapEllipsoid name="femur_ell">
+							<dimensions> 0.03000000 0.08000000 0.03000000 </dimensions>
+							<active> true </active>
+							<xyz_body_rotation> 0.00000000 0.00000000 0.00000000 </xyz_body_rotation>
+							<translation> -0.01730000 -0.08750000 0.78950000 </translation>
+							<quadrant> x </quadrant>
+						</WrapEllipsoid>
+						<WrapCylinder name="femur_cyl">
+							<radius> 0.03000000 </radius>
+							<length> 0.12000000 </length>
+							<active> true </active>
+							<xyz_body_rotation> -1.64305296 -0.02426008 -0.02042035 </xyz_body_rotation>
+							<translation> 0.00510000 -0.08030000 0.61640000 </translation>
+							<quadrant> x </quadrant>
+						</WrapCylinder>
+						<WrapSphere name="femur_sph">
+							<radius> 0.04000000 </radius>
+							<active> true </active>
+							<xyz_body_rotation> -0.01902409 -0.09599311 -0.02722714 </xyz_body_rotation>
+							<translation> 0.04270000 -0.08580000 0.70800000 </translation>
+							<quadrant> -x </quadrant>
+						</WrapSphere>
+					</objects>
+					</WrapObjectSet>
 				</SimmBody>
 				<SimmBody name="pelvis">
 					<mass>8.377500000000</mass>
@@ -3403,23 +3415,6 @@
 					<VisibleObject name="">
 						<geometry_files> pelvis_rv.vtp pelvis_lv.vtp sacrumv.vtp </geometry_files>
 					</VisibleObject>
-					<WrapObjectSet>
-					<objects>
-						<WrapCylinder name="pelvis_cyl">
-							<radius> 0.05000000 </radius>
-							<length> 0.10000000 </length>
-							<active> true </active>
-							<xyz_body_rotation> -3.07265215 -0.20437806 0.02740167 </xyz_body_rotation>
-							<translation> -0.05460000 -0.14280000 0.08710000 </translation>
-						</WrapCylinder>
-						<WrapEllipsoid name="femur_ell">
-							<dimensions> 0.06000000 0.10000000 0.07000000 </dimensions>
-							<active> true </active>
-							<xyz_body_rotation> -1.62786859 -1.32138878 -0.16824974 </xyz_body_rotation>
-							<translation> -0.05830000 -0.35550000 0.07830000 </translation>
-						</WrapEllipsoid>
-					</objects>
-					</WrapObjectSet>
 				</SimmBody>
 				<SimmBody name="torso">
 					<mass>24.217500000000</mass>
@@ -4184,7 +4179,7 @@
 					</max_restraint_function>
 				</SimmCoordinate>
 				<SimmCoordinate name="knee_flex_r">
-					<range>-0.174532925199 2.097395102393</range>
+					<range>-0.174532925199 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
 					<tolerance>0.000000000000</tolerance>
 					<stiffness>0.200000000000</stiffness>

@@ -116,8 +116,10 @@ public:
 	void setEndPoint(int aIndex);
 	const std::string& getWrapObjectName() const { return _wrapObjectName; }
 	AbstractWrapObject* getWrapObject() const { return _wrapObject; }
+	void setWrapObject(AbstractWrapObject& aWrapObject);
 	MuscleWrapPoint& getWrapPoint(int aIndex);
 	WrapMethod getMethod() const { return _method; }
+	void setMethod(WrapMethod aMethod);
 	const std::string& getMethodName() const { return _methodName; }
 	AbstractMuscle* getMuscle() const { return _muscle; }
 

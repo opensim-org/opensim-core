@@ -19,6 +19,7 @@ public:
     virtual ~SwigDirector_SimtkAnimationCallback();
     virtual OpenSim::Object *copy() const;
     virtual OpenSim::Object *copy(DOMElement *aNode) const;
+    virtual void copy(OpenSim::Object const &aObject);
     virtual OpenSim::VisibleObject *getDisplayer();
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
@@ -34,10 +35,10 @@ public:
     virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);
 public:
     bool swig_overrides(int n) {
-      return (n < 18 ? swig_override[n] : false);
+      return (n < 19 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[18];
+    bool swig_override[19];
 };
 
 

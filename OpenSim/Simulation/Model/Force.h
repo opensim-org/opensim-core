@@ -121,6 +121,7 @@ public:
 	Force(const Force &aForce);
 	virtual ~Force();
 	virtual Object* copy() const;
+   virtual void copy(const Object& aObject);
 private:
 	void setNull();
 	void setupProperties();
