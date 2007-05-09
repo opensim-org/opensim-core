@@ -23,6 +23,7 @@
  */
 
 #include "JointSet.h"
+#include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -86,3 +87,15 @@ JointSet& JointSet::operator=(const JointSet &aJointSet)
 	return (*this);
 }
 #endif
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Scale joint set by a set of scale factors
+ */
+void JointSet::scale(const ScaleSet& aScaleSet)
+{
+	for(int i=0; i<getSize(); i++) get(i)->scale(aScaleSet);
+}

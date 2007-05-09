@@ -250,21 +250,7 @@ AbstractDynamicsEngine& AbstractDynamicsEngine::operator=(const AbstractDynamics
  */
 bool AbstractDynamicsEngine::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
 {
-	int i, j;
-
-	for (i = 0; i < _bodySet.getSize(); i++)
-	{
-		for (j = 0; j < aScaleSet.getSize(); j++)
-		{
-			Scale *aScale = aScaleSet.get(j);
-			if (_bodySet.get(i)->getName() == aScale->getSegmentName())
-			{
-				Array<double> scaleFactors(1.0, 3);
-				aScale->getScaleFactors(scaleFactors);
-				_bodySet.get(i)->scale(scaleFactors, !aPreserveMassDist);	
-			}
-		}
-	}
+	_bodySet.scale(aScaleSet, !aPreserveMassDist);
 
 	// Now that the masses of the individual bodies have
 	// been scaled (if aPreserveMassDist == false), get the
@@ -277,14 +263,13 @@ bool AbstractDynamicsEngine::scale(const ScaleSet& aScaleSet, double aFinalMass,
 		if (mass > 0.0)
 		{
 			double factor = aFinalMass / mass;
-			for (i = 0; i < _bodySet.getSize(); i++)
+			for (int i = 0; i < _bodySet.getSize(); i++)
 				_bodySet.get(i)->scaleMass(factor);
 		}
 	}
 
 	// Now scale the joints.
-	for (i = 0; i < _jointSet.getSize(); i++)
-		_jointSet.get(i)->scale(aScaleSet);
+	_jointSet.scale(aScaleSet);
 
 	// Now scale the markers.
 	_markerSet.scale(aScaleSet);
