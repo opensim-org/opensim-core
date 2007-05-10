@@ -307,6 +307,14 @@ using namespace OpenSim;
 %template(SetActuators) OpenSim::Set<OpenSim::AbstractActuator>;
 %include <OpenSim/Simulation/Model/ActuatorSet.h>
 %include <OpenSim/Simulation/Model/ContactForceSet.h>
+%include <OpenSim/Simulation/Model/Callback.h>
+%template(SetCallback) OpenSim::Set<OpenSim::Callback>;
+%include <OpenSim/Simulation/Model/CallbackSet.h>
+%include <OpenSim/Simulation/Model/IntegCallback.h>
+%template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
+%include <OpenSim/Simulation/Model/Analysis.h>
+%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%include <OpenSim/Simulation/Model/AnalysisSet.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
 %include <OpenSim/Simulation/Control/Control.h>
@@ -321,14 +329,6 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Integrator/RKF.h>
 %include <OpenSim/Simulation/Integrator/IntegRKF.h>
 %include <OpenSim/Simulation/Manager/Manager.h>
-%include <OpenSim/Simulation/Model/Callback.h>
-%template(SetCallback) OpenSim::Set<OpenSim::Callback>;
-%include <OpenSim/Simulation/Model/CallbackSet.h>
-%include <OpenSim/Simulation/Model/IntegCallback.h>
-%template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
-%include <OpenSim/Simulation/Model/Analysis.h>
-%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
-%include <OpenSim/Simulation/Model/AnalysisSet.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
 %include <OpenSim/Analyses/osimAnalysesDLL.h>
 %include <OpenSim/Tools/osimToolsDLL.h>
