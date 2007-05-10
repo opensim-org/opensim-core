@@ -545,15 +545,15 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 	}
 
 	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
+	if (!(EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
 		 EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
-		 return;
-
-	// Location in parent
-	double scaledLocationInParent[3];
-	for(int i=0; i<3; i++) scaledLocationInParent[i] = scaleFactors[i] * _locationInParent[i];
-	setLocationInParent(scaledLocationInParent);
+		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))) 
+	{
+		// Location in parent
+		double scaledLocationInParent[3];
+		for(int i=0; i<3; i++) scaledLocationInParent[i] = scaleFactors[i] * _locationInParent[i];
+		setLocationInParent(scaledLocationInParent);
+	}
 
 
 	// SCALING TO DO WITH THE CHILD BODY -----
@@ -568,15 +568,15 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 	}
 
 	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
+	if (!(EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
 		 EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
-		 return;
-
-	// Location in child
-	double scaledLocationInChild[3];
-	for(int i=0; i<3; i++) scaledLocationInChild[i] = scaleFactors[i] * _locationInChild[i];
-	setLocationInChild(scaledLocationInChild);
+		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0)))
+	{
+		// Location in child
+		double scaledLocationInChild[3];
+		for(int i=0; i<3; i++) scaledLocationInChild[i] = scaleFactors[i] * _locationInChild[i];
+		setLocationInChild(scaledLocationInChild);
+	}
 }
 
 void SdfastJoint::peteTest()
