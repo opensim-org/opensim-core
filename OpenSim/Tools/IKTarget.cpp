@@ -177,6 +177,11 @@ int IKTarget::computePerformance(double *x, double *p)
 		if (worstCoordinate >= 0)
 			cout << ", worst coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << " (" << maxCoordinateError << ")";
 		cout << endl;
+		setErrorReportingQuantities(
+			maxMarkerError, 
+			(worstMarker<0)?"":_markers[worstMarker]->marker->getName(),
+			maxCoordinateError, 
+			(worstCoordinate<0)?"":_unprescribedWeightedQs[worstCoordinate]->coord->getName());
 	}
 
 	*p = totalErrorSquared;
@@ -504,4 +509,13 @@ void IKTarget::getOutputMarkerNames(Array<string>& aNameArray)
 	aNameArray.setSize(_markers.getSize());
 	for (int i = 0; i < _markers.getSize(); i++)
 		aNameArray[i] = _markers[i]->marker->getName();
+}
+
+void IKTarget::setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
+									const double& aCoordinateError, const std::string& aCoordinateName)
+{
+	_worstMarkerError=aMarkerError;
+	_nameOfWorstMarker=aMarkerName;
+	_worstCoordinateError=aCoordinateError;
+	_nameOfWorstCoordinate=aCoordinateName;
 }

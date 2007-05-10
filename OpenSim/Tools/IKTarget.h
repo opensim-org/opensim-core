@@ -108,13 +108,19 @@ private:
 	// The coordinates that are prescribed
 	Array<coordinateInfo*> _prescribedQs;
 
+	double	_worstMarkerError;
+	std::string	_nameOfWorstMarker;
+	double	_worstCoordinateError;
+	std::string _nameOfWorstCoordinate;
+
 //==============================================================================
 // METHODS
 //==============================================================================
 private:
 	void buildMarkerMap(const Array<std::string>& aNameArray);
 	void buildCoordinateMap(const Array<std::string>& aNameArray);
-
+	void setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
+									const double& aCoordinateError, const std::string& aCoordinateName);
 public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
@@ -151,6 +157,13 @@ public:
 	// CONSTRAINTS
 	int computeConstraint(double *x,int i,double *c);
 	int computeConstraintGradient(double *x,int i,double *dcdx);
+	//--------------------------------------------------------------------------
+	// DEBUG & REPORTING SUPPORT FOR GUI
+	//--------------------------------------------------------------------------
+	const double& getWorstMarkerError() const { return _worstMarkerError; };
+	const double& getWorstCoordinateError() const { return _worstCoordinateError; };
+	const std::string& getNameOfWorstMarker() const { return _nameOfWorstMarker; };
+	const std::string& getNameOfWorstCoordinate() const { return _nameOfWorstCoordinate; };
 };
 
 } // namespace OpenSim
