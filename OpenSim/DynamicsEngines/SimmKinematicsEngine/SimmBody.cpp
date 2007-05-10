@@ -293,18 +293,16 @@ void SimmBody::addBone(VisibleObject* aBone)
  */
 void SimmBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
 {
-	int i;
+	double displayerScaleFactors[3];
+	getDisplayer()->getScaleFactors(displayerScaleFactors);
 
-	double oldScaleFactors[3];
-	getDisplayer()->getScaleFactors(oldScaleFactors);
-
-	for (i = 0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		_massCenter[i] *= aScaleFactors[i];
-		oldScaleFactors[i] *= aScaleFactors[i];
+		displayerScaleFactors[i] *= aScaleFactors[i];
 	}
 	// Update scale factors for displayer
-	getDisplayer()->setScaleFactors(aScaleFactors.get());
+	getDisplayer()->setScaleFactors(displayerScaleFactors);
 
 	scaleInertialProperties(aScaleFactors, aScaleMass);
 
