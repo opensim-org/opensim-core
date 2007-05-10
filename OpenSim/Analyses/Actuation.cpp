@@ -197,14 +197,18 @@ allocateStorage()
 	// ACCELERATIONS
 	_forceStore = new Storage(1000,"ActuatorForces");
 	_forceStore->setDescription(getDescription());
-
+	// Keep references o all storages in a list for uniform access from GUI
+	_storageList.append(_forceStore);
+	_storageList.setMemoryOwner(false);
 	// VELOCITIES
 	_speedStore = new Storage(1000,"ActuatorSpeeds");
 	_speedStore->setDescription(getDescription());
+	_storageList.append(_speedStore);
 
 	// POSITIONS
 	_powerStore = new Storage(1000,"ActuatorPowers");
 	_powerStore->setDescription(getDescription());
+	_storageList.append(_powerStore);
 }
 
 //-----------------------------------------------------------------------------
