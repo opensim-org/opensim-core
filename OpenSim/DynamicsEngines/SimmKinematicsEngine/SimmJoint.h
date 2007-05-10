@@ -98,6 +98,7 @@ public:
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const;
 	virtual bool hasXYZAxes() const;
 	virtual void scale(const ScaleSet& aScaleSet);
+	virtual void scale(const Array<double> &aScaleFactors);
 
 	virtual void peteTest();
 

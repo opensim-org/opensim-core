@@ -342,16 +342,15 @@ bool SimmJoint::hasXYZAxes() const
  *
  * @param aScaleSet set of XYZ scale factors for the bodies.
  */
-void SimmJoint::scale(const ScaleSet& aScaleSet)
+void SimmJoint::scale(const ScaleSet &aScaleSet)
 {
-	int i;
 	Array<double> scaleFactors(1.0, 3);
 
 	// Joint kinematics are scaled by the scale factors for the
 	// parent body, so get those body's factors
 	const string& parentName = getParentBody()->getName();
 
-	for (i = 0; i < aScaleSet.getSize(); i++)
+	for (int i = 0; i < aScaleSet.getSize(); i++)
 	{
 		Scale *aScale = aScaleSet.get(i);
 		if (aScale->getSegmentName() == parentName)
@@ -361,10 +360,20 @@ void SimmJoint::scale(const ScaleSet& aScaleSet)
 		}
 	}
 
+	scale(scaleFactors);
+}
+//_____________________________________________________________________________
+/**
+ * Scale a joint based on XYZ scale factors for the parent body.
+ *
+ * @param aScaleSet set of XYZ scale factors for the parent body.
+ */
+void SimmJoint::scale(const Array<double> &aScaleFactors)
+{
 	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
+	if (EQUAL_WITHIN_ERROR(aScaleFactors[0], 1.0) &&
+		 EQUAL_WITHIN_ERROR(aScaleFactors[1], 1.0) &&
+		 EQUAL_WITHIN_ERROR(aScaleFactors[2], 1.0))
 		 return;
 
 	// Scaling will happen, so invalidate the transforms.
@@ -375,7 +384,7 @@ void SimmJoint::scale(const ScaleSet& aScaleSet)
 	 * also assumes that if the function has 3 or more points, it should be
 	 * scaled.
 	 */
-   for (i = 0; i < _dofSet.getSize(); i++)
+   for (int i = 0; i < _dofSet.getSize(); i++)
    {
 		if (_dofSet.get(i)->getMotionType() == AbstractDof::Translational)
 		{
@@ -390,7 +399,7 @@ void SimmJoint::scale(const ScaleSet& aScaleSet)
 				 */
 				Constant* cons = dynamic_cast<Constant*>(function);
 				if (cons)
-					cons->setValue(transDof->getValue() * scaleFactors[axis]);
+					cons->setValue(transDof->getValue() * aScaleFactors[axis]);
 			}
 			else
 			{
@@ -412,7 +421,7 @@ void SimmJoint::scale(const ScaleSet& aScaleSet)
 				}
 
 				if (scaleIt)
-					function->scaleY(scaleFactors[axis]);
+					function->scaleY(aScaleFactors[axis]);
 			}
 		}
 	}
