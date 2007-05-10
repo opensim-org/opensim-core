@@ -733,6 +733,21 @@ void addObjectToGroup(std::string& aGroupName, std::string& aObjectName)
 		group->add(object);
 }
 
+//_____________________________________________________________________________
+/**
+ * Get names of all groups
+ */
+void getGroupNames(Array<std::string> &rGroupNames) const
+{
+	rGroupNames.setSize(0);
+	for(int i=0; i<_objectGroups.getSize(); i++)
+		rGroupNames.append(_objectGroups[i]->getName());
+}
+
+const ObjectGroup* getObjectGroup(const std::string& aGroupName) const
+{
+	return _objectGroups.get(aGroupName);
+}
 //=============================================================================
 };	// END class Set
 
