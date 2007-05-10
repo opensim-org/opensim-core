@@ -41,6 +41,8 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <SimTKCommon.h>
 
+#define DEBUG
+
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -131,7 +133,7 @@ public:
 			else
 				return model;
 		} else {
-			cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
+			cout << "FunctionalJointCenterTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
 		}
 		return 0;
 	}
@@ -452,6 +454,17 @@ int main(int argc,char **argv)
 				calculatedJointCenter[i] = true;
 				calculatedJointCenterPosition[i] = transform(canonicalWorldTransform,bestFitIntersectionPoint(rotationPoints, rotationAxes));
 				if(verbose) std::cout << "Calculated rotation center = " << calculatedJointCenterPosition[i] << " (" << rotationPoints.getSize() << " samples)" << std::endl;
+
+#ifdef DEBUG
+				char name[256];
+				string trcNoExt = IO::GetFileNameFromURI(tool->getMarkerFile());
+				IO::RemoveSuffix(trcNoExt,4);
+				sprintf(name,"%s_%s_%.2f_%.2f.axes", trcNoExt.c_str(), joint->getName().c_str(), tool->getMinimumDistance(), tool->getMinimumAngle());
+				ofstream out(name);
+				for(int j=0;j<rotationPoints.getSize();j++) 
+					out << rotationPoints[j][0] << " " << rotationPoints[j][1] << " " << rotationPoints[j][2] << " "
+						 << rotationAxes[j][0] << " " << rotationAxes[j][1] << " " << rotationAxes[j][2] << endl;
+#endif
 			}
 		}
 
