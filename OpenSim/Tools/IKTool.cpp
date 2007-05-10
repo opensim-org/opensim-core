@@ -62,7 +62,11 @@ IKTool::IKTool(const string &aFileName, Model* guiModel) :
 {
 	setType("IKTool");
 	setNull();
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	IO::chDir(directoryOfSetupFile);
 	updateFromXMLNode();
+	IO::chDir(saveWorkingDirectory);
 
 	if(guiModel) {
 		// A valid model is passed in, and is initialized (likely from GUI)
