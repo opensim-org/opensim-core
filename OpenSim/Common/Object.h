@@ -370,7 +370,7 @@ public:
 	{ 
 		return (strcmp("Object",type)==0);
 	} 
-	virtual bool isA(const char *type) 
+	virtual bool isA(const char *type) const
 	{ 
 		return this->isKindOf(type); 
 	} 
@@ -393,7 +393,7 @@ public:
       } \
     return Parent::isKindOf(type); \
   } \
-  virtual bool isA(const char *type) \
+  virtual bool isA(const char *type) const \
   { \
     return this->thisClass::isKindOf(type); \
   } \
