@@ -1,5 +1,5 @@
 IF(OPENSIM_MINIMAL_BUILD)
-	SUBDIRS(Forward Perturb Scale IK MakeSDFastModel CMCGait)
+	SUBDIRS(Analyze Forward Perturb Scale IK MakeSDFastModel CMCGait)
 ELSE(OPENSIM_MINIMAL_BUILD)
-	SUBDIRS(Forward Perturb Scale IK MakeSDFastModel testSdfast CMCGait)
+	SUBDIRS(Analyze Forward Perturb Scale IK MakeSDFastModel testSdfast CMCGait)
 ENDIF(OPENSIM_MINIMAL_BUILD)
