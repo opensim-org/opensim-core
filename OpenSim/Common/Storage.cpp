@@ -835,6 +835,7 @@ getDataAtTime(double aT,int aN,double **rData) const
 
 	// CHECK FOR i AT END POINTS
 	int i1=i,i2=i+1;
+
 	if(i2==_storage.getSize()) {
 		i1--;  if(i1<0) i1=0;
 		i2--;  if(i2<0) i2=0;
@@ -871,6 +872,8 @@ getDataAtTime(double aT,int aN,double **rData) const
 	} else {
 		pct = num/den;
 	}
+
+
 	for(i=0;i<ns;i++) {
 		if(pct==0.0) {
 			y[i] = y1[i];
@@ -1064,9 +1067,13 @@ reset(double aTime)
  * @return Size of the storage after the append.
  */
 int Storage::
-append(const StateVector &aStateVector)
+append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 {
-	_storage.append(aStateVector);
+	// TODO: use some tolerance when checking for duplicate time?
+	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==aStateVector.getTime())
+		_storage.getLast() = aStateVector;
+	else
+		_storage.append(aStateVector);
 	return(_storage.getSize());
 }
 //_____________________________________________________________________________
@@ -1095,14 +1102,18 @@ append(const Array<StateVector> &aStorage)
  * @return Index of the first empty storage element.
  */
 int Storage::
-append(double aT,int aN,const double *aY)
+append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 {
 	if(aY==NULL) return(_storage.getSize());
 	if(aN<=0) return(_storage.getSize());
 
 	// APPEND
 	StateVector vec(aT,aN,aY);
-	_storage.append(vec);
+	// TODO: use some tolerance when checking for duplicate time?
+	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==vec.getTime())
+		_storage.getLast() = vec;
+	else
+		_storage.append(vec);
 
 	return(_storage.getSize());
 }

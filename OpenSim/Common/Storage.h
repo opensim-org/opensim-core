@@ -187,9 +187,9 @@ public:
 	//--------------------------------------------------------------------------
 	// STORAGE
 	//--------------------------------------------------------------------------
-	virtual int append(const StateVector &aVec);
+	virtual int append(const StateVector &aVec, bool aCheckForDuplicateTime=true);
 	virtual int append(const Array<StateVector> &aArray);
-	virtual int append(double aT,int aN,const double *aY);
+	virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
 	virtual int store(int aStep,double aT,int aN,const double *aY);
 
 	//--------------------------------------------------------------------------
