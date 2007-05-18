@@ -113,6 +113,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
+	OPENSIM_DECLARE_DERIVED(JointMoment, AbstractActuator);
+
 //=============================================================================
 };	// END of class JointMoment
 

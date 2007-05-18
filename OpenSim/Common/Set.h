@@ -714,6 +714,15 @@ int searchBinary(const T &aObject,bool aFindFirst=false,
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Get the number of groups.
+ */
+int getNumGroups() const
+{
+	return _objectGroups.getSize();
+}
+
+//_____________________________________________________________________________
+/**
  * Add an empty group to the set.
  */
 void addGroup(std::string& aGroupName)
@@ -744,10 +753,24 @@ void getGroupNames(Array<std::string> &rGroupNames) const
 		rGroupNames.append(_objectGroups[i]->getName());
 }
 
-const ObjectGroup* getObjectGroup(const std::string& aGroupName) const
+//_____________________________________________________________________________
+/**
+ * Get a group by name.
+ */
+const ObjectGroup* getGroup(const std::string& aGroupName) const
 {
 	return _objectGroups.get(aGroupName);
 }
+
+//_____________________________________________________________________________
+/**
+ * Get a group by index.
+ */
+const ObjectGroup* getGroup(int aIndex) const
+{
+	return _objectGroups.get(aIndex);
+}
+
 //=============================================================================
 };	// END class Set
 

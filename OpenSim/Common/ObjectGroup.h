@@ -89,7 +89,6 @@ public:
 	void add(Object* aObject);
 	void remove(const Object* aObject);
 	void setup(ArrayPtrs<Object>& aObjects);
-	//int getNumMember
 	const ArrayPtrs<Object>& getMembers() const
 	{
 		return _memberObjects;

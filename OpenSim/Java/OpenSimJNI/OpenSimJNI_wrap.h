@@ -28,7 +28,7 @@ public:
     virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
     virtual void generateXMLNode(DOMElement *aParent);
     virtual void update(OpenSim::Object const &aObject, Event &aEvent);
-    virtual bool isA(char const *type);
+    virtual bool isA(char const *type) const;
     virtual void setModel(OpenSim::Model *arg0);
     virtual int begin(int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);
     virtual int step(double *aXPrev, double *aYPrev, int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);

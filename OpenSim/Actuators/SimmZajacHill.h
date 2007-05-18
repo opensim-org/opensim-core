@@ -129,7 +129,6 @@ public:
 	SimmZajacHill(const SimmZajacHill &aMuscle);
 	virtual ~SimmZajacHill();
 	virtual Object* copy() const;
-   virtual void copy(const Object& aObject);
 
 #ifndef SWIG
 	SimmZajacHill& operator=(const SimmZajacHill &aMuscle);
@@ -177,7 +176,7 @@ public:
 
 	virtual void peteTest() const;
 
-	OPENSIM_DECLARE_DERIVED(SimmZajacHill, Object);
+	OPENSIM_DECLARE_DERIVED(SimmZajacHill, AbstractActuator);
 
 private:
 	void setNull();

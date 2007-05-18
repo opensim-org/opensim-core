@@ -142,7 +142,6 @@ public:
 	SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle);
 	virtual ~SimmDarrylMuscle();
 	virtual Object* copy() const;
-	virtual void copy(const Object& aObject);
 
 #ifndef SWIG
 	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);

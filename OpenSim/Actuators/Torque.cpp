@@ -123,24 +123,6 @@ copy() const
 	return(act);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy the contents of the passed-in object to this Torque, as long as the
- * object is a Torque.
- *
- * @param aObject The Torque to copy.
- */
-void Torque::
-copy(const Object& aObject)
-{
-   const Torque* torque = dynamic_cast<const Torque*>(&aObject);
-   if (torque) {
-      *this = *torque;
-	} else {
-	   throw Exception("Torque::copy() called with object (name = "+
-			aObject.getName()+", type = "+aObject.getType()+").", __FILE__,__LINE__);
-	}
-}
 
 //=============================================================================
 // CONSTRUCTION

@@ -138,6 +138,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
+	OPENSIM_DECLARE_DERIVED(GeneralizedForce, AbstractActuator);
+
 //=============================================================================
 };	// END of class GeneralizedForce
 

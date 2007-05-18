@@ -42,6 +42,12 @@
 #include <OpenSim/Common/VectorFunction.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 
+#ifdef SWIG
+	#ifdef OSIMACTUATORS_API
+		#undef OSIMACTUATORS_API
+		#define OSIMACTUATORS_API
+	#endif
+#endif
 
 //=============================================================================
 //=============================================================================
@@ -106,7 +112,6 @@ public:
 	Torque(const Torque &aTorque);
 	virtual ~Torque();
 	virtual Object* copy() const;
-   virtual void copy(const Object& aObject);
 private:
 	void setNull();
 	void setupProperties();
@@ -116,7 +121,9 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	Torque& operator=(const Torque &aTorque);
+#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -161,6 +168,8 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
+
+	OPENSIM_DECLARE_DERIVED(Torque, AbstractActuator);
 
 //=============================================================================
 };	// END of class Torque

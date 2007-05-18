@@ -217,6 +217,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
+	OPENSIM_DECLARE_DERIVED(ContactForce, AbstractActuator);
+
 //=============================================================================
 };	// END of class ContactForce
 

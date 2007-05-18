@@ -137,6 +137,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
+	OPENSIM_DECLARE_DERIVED(SetPoint, AbstractActuator);
+
 //=============================================================================
 };	// END of class SetPoint
 

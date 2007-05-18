@@ -92,6 +92,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void computeActuation();
 
+	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, AbstractActuator);
+
 //=============================================================================
 };	// END of class SpringGeneralizedForce
 

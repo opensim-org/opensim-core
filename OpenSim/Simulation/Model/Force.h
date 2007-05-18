@@ -121,7 +121,6 @@ public:
 	Force(const Force &aForce);
 	virtual ~Force();
 	virtual Object* copy() const;
-   virtual void copy(const Object& aObject);
 private:
 	void setNull();
 	void setupProperties();
@@ -131,7 +130,9 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	Force& operator=(const Force &aForce);
+#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -196,6 +197,8 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	void computeLineOfAction(double aLineOfAction[3]) const;
+
+	OPENSIM_DECLARE_DERIVED(Force, AbstractActuator);
 
 //=============================================================================
 };	// END of class Force

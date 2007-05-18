@@ -103,8 +103,11 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
 #include <OpenSim/Common/Units.h>
 
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Actuators/Torque.h>
+#include <OpenSim/Actuators/GeneralizedForce.h>
 #include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include <OpenSim/Actuators/SimmZajacHill.h>
 
@@ -184,8 +187,8 @@ using namespace OpenSim;
 %pragma(java) jniclasscode=%{
   static {
       try{
-        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
-        System.loadLibrary("osimSdfastEngine");	//to load sdfast based models
+        System.loadLibrary("osimJavaJNI_d");		// All OpenSim classes required for GUI operation.
+        System.loadLibrary("osimSdfastEngine_d");	//to load sdfast based models
       }
       catch(UnsatisfiedLinkError e){
            TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
@@ -401,8 +404,11 @@ using namespace OpenSim;
 %template(ArrayMusclePoint) OpenSim::Array<OpenSim::MusclePoint*>;
 %include <OpenSim/Simulation/Model/MusclePointSet.h>
 
-%include <OpenSim/Simulation/Model/AbstractMuscle.h>
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Simulation/Model/AbstractMuscle.h>
+%include <OpenSim/Simulation/Model/Force.h>
+%include <OpenSim/Actuators/Torque.h>
+%include <OpenSim/Actuators/GeneralizedForce.h>
 %include <OpenSim/Actuators/SimmDarrylMuscle.h>
 %include <OpenSim/Actuators/SimmZajacHill.h>
 

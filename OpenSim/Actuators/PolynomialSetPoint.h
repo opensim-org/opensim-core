@@ -142,6 +142,8 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
+	OPENSIM_DECLARE_DERIVED(PolynomialSetPoint, AbstractActuator);
+
 //=============================================================================
 };	// END of class PolynomialSetPoint
 

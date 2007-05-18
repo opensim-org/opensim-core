@@ -400,7 +400,17 @@ public:
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
-  } 
+  } \
+  virtual void copy(const Object &aObject) \
+  { \
+	  if (aObject.isA(#thisClass)) { \
+		  *this = *((const thisClass*)(&aObject)); \
+     } else { \
+	  throw Exception(std::string(#thisClass)+"::copy() called with object (name = "+ \
+              aObject.getName()+", type = "+aObject.getType()+").", \
+              __FILE__,__LINE__); \
+     } \
+  }
 
 
 }; //namespace
