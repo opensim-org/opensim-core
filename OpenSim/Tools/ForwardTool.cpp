@@ -395,6 +395,18 @@ void ForwardTool::run()
 		_model->setInitialStates(&yi[0]);
 	}
 
+	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
+	if(_solveForEquilibriumForAuxiliaryStates) {
+		cout<<"\n\n------ Before Equilibrium -------------\n";
+		cout<<yi;
+		cout<<"\n\n-----------------------------------\n";
+		_model->computeEquilibriumForAuxiliaryStates(&yi[0]);
+		cout<<"\n\n------ After Equlilibrium  --------\n";
+		cout<<yi;
+		cout<<"\n\n-----------------------------------\n";
+		_model->setInitialStates(&yi[0]);
+	}
+
 	// INTEGRATE
 	cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
 	manager.integrate();

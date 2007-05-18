@@ -156,6 +156,7 @@ public:
 	// COMPUTATION
 	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(double rDYDT[]);
+	virtual void computeEquilibrium();
 	virtual void computeActuation();
 
 	virtual void postScale(const ScaleSet& aScaleSet);

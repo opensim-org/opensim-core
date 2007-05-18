@@ -371,6 +371,20 @@ void SimmZajacHill::computeStateDerivatives(double rDYDT[])
 
 //_____________________________________________________________________________
 /**
+ * Compute the equilibrium states.  This method computes a fiber length
+ * for the muscle that is consistent with the muscle's activation level.
+ *
+ * @param rDYDT the state derivatives are returned here.
+ */
+void SimmZajacHill::computeEquilibrium()
+{
+	double force = computeIsometricForce(_activation);
+
+	cout<<getName()<<": isometric force = "<<force<<endl;
+}
+
+//_____________________________________________________________________________
+/**
  * Compute the actuation for the muscle. This function assumes
  * that computeDerivatives has already been called.
  */

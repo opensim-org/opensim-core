@@ -1248,6 +1248,26 @@ computeStateDerivatives(double rDY[])
 
 //_____________________________________________________________________________
 /**
+ * Compute a set of equlibirium states. Based on each actuator's curent set of
+ * states, each actuator alters those states to satisfy some notion of
+ * equilibrium. Each actuator is in charge of what it considers to be
+ * equilibirum. For example, given a muscle activation, compute muscle fiber
+ * length that is consistent with that activation level.
+ */
+void ActuatorSet::
+computeEquilibrium()
+{
+	int i;
+	int size = getSize();
+	AbstractActuator *act;
+	for(i=0;i<size;i++) {
+		act = get(i);
+		if(act!=NULL) act->computeEquilibrium();
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * Update the pseudostates of all actuators.  Pseudostates are quantities
  * that are not integrated but that depend on the time history of a
  * simulation (e.g., spring set points).

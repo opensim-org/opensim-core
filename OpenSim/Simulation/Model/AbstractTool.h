@@ -62,6 +62,11 @@ protected:
 	/** Final time for the investigation. */
 	PropertyDbl _tfProp;
 	double &_tf;
+	/** A flag used to specify whether or not equilibrium is solved for for
+	the auxiliary states.  This often needs to be done auxiliary sates whose
+	starting values are unknown (e.g., muscle fiber lengths). */
+	OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
+	bool &_solveForEquilibriumForAuxiliaryStates;
 	/** Maximum number of steps for the integrator. */
 	PropertyInt _maxStepsProp;
 	int &_maxSteps;

@@ -313,6 +313,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void computeDerivatives(double rDYDT[]);
 	virtual void computeAuxiliaryDerivatives(double rDYDT[]);
+	virtual void computeEquilibriumForAuxiliaryStates(double rY[]);
 
 	//--------------------------------------------------------------------------
 	// OPERATIONS

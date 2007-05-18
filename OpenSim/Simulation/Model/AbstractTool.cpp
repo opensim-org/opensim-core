@@ -38,6 +38,7 @@ AbstractTool::AbstractTool():
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
 	_tf(_tfProp.getValueDbl()),
+	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
@@ -67,6 +68,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
 	_tf(_tfProp.getValueDbl()),
+	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
@@ -125,6 +127,7 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
 	_tf(_tfProp.getValueDbl()),
+	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
@@ -153,6 +156,7 @@ setNull()
 	_outputPrecision = 8;
 	_ti = 0.0;
 	_tf = 1.0;
+	_solveForEquilibriumForAuxiliaryStates = false;
 	_maxSteps = 20000;
 	_maxDT = 1.0;
 	_errorTolerance = 1.0e-3;
@@ -209,6 +213,11 @@ void AbstractTool::setupProperties()
 	_propertySet.append( &_tfProp );
 
 	comment = "Maximum number of integrator steps.";
+	_solveForEquilibriumForAuxiliaryStatesProp.setComment(comment);
+	_solveForEquilibriumForAuxiliaryStatesProp.setName("solve_for_equilibrium_for_auxiliary_states");
+	_propertySet.append( &_solveForEquilibriumForAuxiliaryStatesProp );
+
+	comment = "Maximum number of integrator steps.";
 	_maxStepsProp.setComment(comment);
 	_maxStepsProp.setName("maximum_number_of_integrator_steps");
 	_propertySet.append( &_maxStepsProp );
@@ -261,6 +270,7 @@ operator=(const AbstractTool &aTool)
 	_outputPrecision = aTool._outputPrecision;
 	_ti = aTool._ti;
 	_tf = aTool._tf;
+	_solveForEquilibriumForAuxiliaryStates = aTool._solveForEquilibriumForAuxiliaryStates;
 	_maxSteps = aTool._maxSteps;
 	_errorTolerance = aTool._errorTolerance;
 	_fineTolerance = aTool._fineTolerance;

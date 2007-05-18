@@ -189,6 +189,7 @@ public:
 	void promoteControlsToStates(const double aX[],double aDT);
 	void computeActuation();
 	void computeStateDerivatives(double rDY[]);
+	void computeEquilibrium();
 	void updatePseudoStates();
 
 	//--------------------------------------------------------------------------

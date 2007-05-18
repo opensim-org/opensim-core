@@ -1094,6 +1094,38 @@ void Model::computeAuxiliaryDerivatives(double rDYDT[])
 	int iCtx = _actuatorSet.getNumStates();
 	_contactSet.computeStateDerivatives(&rDYDT[iCtx]);
 }
+//_____________________________________________________________________________
+/**
+ * Compute values for the auxiliary states (i.e., states other than the
+ * generalized coordinates and speeds) that are in quasi-static equilibrium.
+ * The auxiliary states usually belong to the actuators (e.g., muscle
+ * activation and muscle fiber length).  The equilibrium computations
+ * are passed on to the owner of the the states.
+ *
+ * This methods is useful for computing initial conditions for a simulation
+ * or for computing torque-angle curves, for example.
+ *
+ * @param rY Array of states. The values sent in are used as the initial
+ * guess for equilibrium. The values returned are those that satisfy
+ * equilibrium.
+ */
+void Model::
+computeEquilibriumForAuxiliaryStates(double rY[])
+{
+	// SET STATES
+	setStates(rY);
+
+	// COMPUTE ACTUATION AND CONTACT
+	_actuatorSet.computeActuation();
+	_contactSet.computeContact();
+
+	// COMPUTE EQUILIBRIUM STATES
+	_actuatorSet.computeEquilibrium();
+	//_contactSet.computeEquilibirum();
+
+	// GET STATES
+	getStates(rY);
+}
 
 
 //==========================================================================

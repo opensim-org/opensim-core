@@ -167,6 +167,7 @@ public:
 	virtual void promoteControlsToStates(const double aX[],double aDT) { }
 	virtual void computeActuation() = 0;
 	virtual void computeStateDerivatives(double rDYDT[]) { }
+	virtual void computeEquilibrium() { }
 	virtual void updatePseudoStates() { }
 
 	//--------------------------------------------------------------------------
