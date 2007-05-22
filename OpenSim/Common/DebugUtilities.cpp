@@ -28,6 +28,7 @@
 */
 #include "DebugUtilities.h"
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
@@ -43,6 +44,25 @@ void Fatal_Error(const char *msg, const char *function, const char *file, unsign
 	throw std::runtime_error(string_stream.str());
 	assert(false);
 	exit(1);
+}
+
+void AddEnvironmentVariablesFromFile(const std::string &aFileName)
+{
+	if(aFileName.empty()) return;
+	std::ifstream input(aFileName.c_str());
+	std::string line;
+	// Take any line that starts with "export" and set the environment variable that follows
+	while (getline(input,line)) {
+		if(line.find("export") != std::string::npos) {
+			std::string env=line.substr(7);
+			std::cout << "Setting environment '" << env << "'" << std::endl;
+#ifdef WIN32
+			_putenv(env.c_str());
+#else
+			putenv(env.c_str());
+#endif
+		}
+	}
 }
 
 }

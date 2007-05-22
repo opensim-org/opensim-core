@@ -29,6 +29,7 @@
 * POSSIBILITY OF SUCH DAMAGE. 
 */
 #include "osimCommonDLL.h"
+#include <string>
 
 #ifdef WIN32
 #define OPENSIM_NORETURN(declaration) __declspec(noreturn) declaration
@@ -46,6 +47,8 @@ namespace OpenSim {
 namespace DebugUtilities {
 
 OPENSIM_NORETURN(OSIMCOMMON_API void Fatal_Error(const char *msg, const char *function, const char *file, unsigned int line));
+
+OSIMCOMMON_API void AddEnvironmentVariablesFromFile(const std::string &aFileName);
 
 }
 }
