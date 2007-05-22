@@ -6,6 +6,7 @@
 //=============================================================================
 #include "PerturbationTool.h"
 #include "ForwardTool.h"
+#include <time.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -688,6 +689,15 @@ void PerturbationTool::run()
 
 	IO::makeDir(getResultsDir());
 
+	time_t startTime,finishTime,iterationTime;
+	time(&startTime);
+	iterationTime = startTime;
+	struct tm *localTime = localtime(&startTime);
+	double elapsedTime;
+	cout<<"================================================================\n";
+	cout<<"Start time = "<<asctime(localTime);
+	cout<<"================================================================\n";
+
 	//********************************************************************
 	// LOOP
 	//********************************************************************
@@ -842,9 +852,27 @@ void PerturbationTool::run()
 			sprintf(fileName,"%s/%s_%s_deltaA_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),values_name[i].c_str(),_pertWindow,_pertDF);
 			values_deltaAStorage[i]->print(fileName);
 		}
+
+		time(&finishTime);
+		elapsedTime = difftime(finishTime,iterationTime);
+		iterationTime = finishTime;
+		cout<<"Iteration finished (took " << elapsedTime << " seconds)\n";
+
 	} // end time loop
 	//***************************************************************************
 	IO::chDir(saveWorkingDirectory);
+
+	cout<<"\n\n=================================================================\n";
+	cout<<"PerturbationTool finished\n";
+	cout<<"=================================================================\n";
+	localTime = localtime(&startTime);
+	cout<<"Start time   = "<<asctime(localTime);
+	time(&finishTime);
+	localTime = localtime(&finishTime);
+	cout<<"Finish time  = "<<asctime(localTime);
+	elapsedTime = difftime(finishTime,startTime);
+	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
+	cout<<"================================================================\n\n\n";
 }
 
 
