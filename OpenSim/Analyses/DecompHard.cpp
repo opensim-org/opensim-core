@@ -15,7 +15,6 @@
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/Springs.h>
-#include <OpenSim/SQP/rdSQP.h>
 #include <OpenSim/Simulation/Model/PointConstraint.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "DecompTarget.h"
