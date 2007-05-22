@@ -282,8 +282,10 @@ computeActuation(double aT,double *aX,double *aY)
 			AbstractActuator *act=as->get(i);
 			_forces[i] = act->getForce();
 		}
+		// Important to not check for duplicate time stamps in append (hence the "false" flag),
+		// to ensure that every state vector gets appended (which is assumed by this class)
 		_unperturbedForceStorage->append(
-			aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces);
+			aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces,false);
 	}	
 
 	// COMPUTE PERTURBED FORCE
