@@ -762,7 +762,7 @@ void PerturbationTool::run()
 		perturbation->setOn(true);
 		perturbation->getUnperturbedForceStorage()->reset(); 
 		perturbation->setRecordUnperturbedForces(true);
-		cout<<"\nUnperturbed integration 2 to record forces and kinematics\n";
+		cout<<"\nUnperturbed integration 2 to record forces and kinematics" << endl;
 		manager.integrate();
 		perturbation->setRecordUnperturbedForces(false);
 
