@@ -641,8 +641,8 @@ void CMCTool::run()
 			optimizer->useNumericalJacobian(false);
 			optimizer->setLimitedMemoryHistory(500); // works well for our small systems
 			optimizer->setAdvancedBoolOption("warm_start",true);
-			optimizer->setAdvancedRealOption("obj_scaling_factor",0.1);
-			optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",0.1);
+			optimizer->setAdvancedRealOption("obj_scaling_factor",1);
+			optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",1);
 		}	
 	} else {
 		// Optimizer settings

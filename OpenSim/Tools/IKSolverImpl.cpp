@@ -136,8 +136,8 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		optimizerSimTK->useNumericalJacobian(false);
 		optimizerSimTK->setLimitedMemoryHistory(500); // works well for our small systems
 		optimizerSimTK->setAdvancedBoolOption("warm_start",true);
-		optimizerSimTK->setAdvancedRealOption("obj_scaling_factor",0.1);
-		optimizerSimTK->setAdvancedRealOption("nlp_scaling_max_gradient",0.1);
+		optimizerSimTK->setAdvancedRealOption("obj_scaling_factor",1);
+		optimizerSimTK->setAdvancedRealOption("nlp_scaling_max_gradient",1);
 	}
 
 	for (int index = startFrame; index <= endFrame; index++)
