@@ -39,7 +39,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "rdOptimizationTarget.h"
+#include <iostream>
 
+#define USE_CONSTRAINT_CACHE
 
 //=============================================================================
 // EXPORTED STATIC CONSTANTS
@@ -75,6 +77,7 @@ rdOptimizationTarget(int aNX)
 
 	// SET NUMBER OF CONTROLS
 	setNumControls(aNX);
+	if(aNX>0) setNumParameters(aNX); // OptimizerSystem
 }
 
 
@@ -91,9 +94,7 @@ rdOptimizationTarget(int aNX)
 void rdOptimizationTarget::
 setNull()
 {
-	_nEval = 0;
 	_nx = 0;
-	_np = 1;
 	_nineqn = 0;
 	_nineq = 0;
 	_neqn = 0;
@@ -135,7 +136,7 @@ setNumControls(int aNX)
  * @return Number of controls.
  */
 int rdOptimizationTarget::
-getNumControls()
+getNumControls() const
 {
 	return(_nx);
 }
@@ -202,41 +203,10 @@ getDXArray()
 {
 	return(_dx);
 }
-//------------------------------------------------------------------------------
-// EVALUATIONS
-//------------------------------------------------------------------------------
-//______________________________________________________________________________
-/**
- * Get the number of evaluations.
- */
-void rdOptimizationTarget::
-setNEvaluations(int aN)
-{
-	_nEval = aN;
-}
-//______________________________________________________________________________
-/**
- * Get the number of evaluations.
- */
-int rdOptimizationTarget::
-getNEvaluations()
-{
-	return(_nEval);
-}
 
 //------------------------------------------------------------------------------
 // PERFORMANCE
 //------------------------------------------------------------------------------
-///______________________________________________________________________________
-/**
- * Get the number of performance criteria.
- */
-int rdOptimizationTarget::
-getNumContacts()
-{
-	return(_np);
-}
-
 //------------------------------------------------------------------------------
 // TOTAL CONSTRAINTS
 //------------------------------------------------------------------------------
@@ -245,7 +215,7 @@ getNumContacts()
  * Get the total number of constraints.
  */
 int rdOptimizationTarget::
-getNC()
+getNC() const
 {
 	return(_nineq+_neq);
 }
@@ -257,7 +227,7 @@ getNC()
  * Get the total number of inequality constraints.
  */
 int rdOptimizationTarget::
-getNCInequality()
+getNCInequality() const
 {
 	return(_nineq);
 }
@@ -266,7 +236,7 @@ getNCInequality()
  * Get the number of nonlinear inequality constraints.
  */
 int rdOptimizationTarget::
-getNCInequalityNonlinear()
+getNCInequalityNonlinear() const
 {
 	return(_nineqn);
 }
@@ -275,7 +245,7 @@ getNCInequalityNonlinear()
  * Get the number of linear inequality constraints.
  */
 int rdOptimizationTarget::
-getNCInequalityLinear()
+getNCInequalityLinear() const
 {
 	return(_nineq-_nineqn);
 }
@@ -287,7 +257,7 @@ getNCInequalityLinear()
  * Get the total number of equality constraints.
  */
 int rdOptimizationTarget::
-getNCEquality()
+getNCEquality() const
 {
 	return(_neq);
 }
@@ -296,7 +266,7 @@ getNCEquality()
  * Get the number of nonlinear equality constraints.
  */
 int rdOptimizationTarget::
-getNCEqualityNonlinear()
+getNCEqualityNonlinear() const
 {
 	return(_neqn);
 }
@@ -305,7 +275,7 @@ getNCEqualityNonlinear()
  * Get the number of linear equality constraints.
  */
 int rdOptimizationTarget::
-getNCEqualityLinear()
+getNCEqualityLinear() const
 {
 	return(_neq-_neqn);
 }
@@ -341,4 +311,89 @@ validatePerturbationSize(double &aSize)
 		printf("\tResetting dx=%le.\n",SMALLDX);
 		aSize = SMALLDX;
 	}
+}
+//______________________________________________________________________________
+/**
+ */
+void rdOptimizationTarget::
+printPerformance(double *x)
+{
+	double p;
+	objectiveFunc(SimTK::Vector(_nx,x,true),true,p);
+	std::cout << "total error = " << p << std::endl;
+}
+//==============================================================================
+// CONSTRAINT CACHING SUPPORT
+//==============================================================================
+void rdOptimizationTarget::
+clearCache()
+{
+#ifdef USE_CONSTRAINT_CACHE
+	int nx=getNumControls();
+	int nc=getNC();
+	_cachedConstraintJacobian.resize(nc,nx);
+	_cachedConstraint.resize(nc);
+	_cachedConstraintJacobianParameters.resize(0);
+	_cachedConstraintParameters.resize(0);
+#endif
+}
+int rdOptimizationTarget::
+computeConstraint(const SimTK::Vector &x, const bool new_coefficients, double &c, int ic) const
+{
+	int nx=getNumControls();
+	int nc=getNC();
+	int status = 0;
+#ifdef USE_CONSTRAINT_CACHE
+	bool cached_value_available = false;
+	if(_cachedConstraintParameters.size()) {
+		cached_value_available = true;
+		for(int i=0; i<nx; i++) 
+			if(x[i] != _cachedConstraintParameters[i]) {
+				cached_value_available = false;
+				break;
+			}
+	}
+
+	if(!cached_value_available) {
+		status = constraintFunc(x,new_coefficients,_cachedConstraint);
+		_cachedConstraintParameters.resize(nx);
+		_cachedConstraintParameters = x;
+	} 
+	c = _cachedConstraint[ic];
+#else
+	SimTK::Vector allc(nc);
+	status = constraintFunc(x,new_coefficients,allc);
+	c=allc[ic];
+#endif
+	return status;
+}
+int rdOptimizationTarget::
+computeConstraintGradient(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &dcdx, int ic) const
+{
+	int nx=getNumControls();
+	int nc=getNC();
+	int status = 0;
+#ifdef USE_CONSTRAINT_CACHE
+	bool cached_value_available = false;
+	if(_cachedConstraintJacobianParameters.size()) {
+		cached_value_available = true;
+		for(int i=0; i<nx; i++) 
+			if(x[i] != _cachedConstraintJacobianParameters[i]) {
+				cached_value_available = false;
+				break;
+			}
+	}
+
+	if(!cached_value_available) {
+		status = constraintJacobian(x,new_coefficients,_cachedConstraintJacobian);
+		_cachedConstraintJacobianParameters.resize(nx);
+		_cachedConstraintJacobianParameters = x;
+	} 
+	for(int col=0;col<nx;col++) dcdx[col]=_cachedConstraintJacobian(ic,col);
+#else
+	SimTK::Matrix jacobian(nc,nx);
+	status = constraintJacobian(x,new_coefficients,jacobian);
+	for(int col=0;col<nx;col++) dcdx[col]=jacobian(ic,col);
+#endif
+	return status;
 }

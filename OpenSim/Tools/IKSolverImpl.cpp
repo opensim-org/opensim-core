@@ -7,6 +7,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <SimTKMath.h>
+#include <simmath/Optimizer.h>
 #include "IKSolverImpl.h"
 #include "IKTarget.h"
 
@@ -14,6 +16,8 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Optimizer;
+using SimTK::Vector;
 //______________________________________________________________________________
 /**
  * An implementation of the IKSolverInterface specific to simm classes/dynamicsEngine.
@@ -37,17 +41,6 @@ IKSolverInterface(aOptimizationTarget)
  */
 void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData)
 {
-	int i;
-
-	// Instantiate the optimizer
-	rdFSQP *optimizer = new rdFSQP(&_ikTarget);
-
-	// Set optimization convergence criteria/tolerance
-	// Enable some Debugging here if needed
-	optimizer->setPrintLevel(0);
-	optimizer->setConvergenceCriterion(1.0E-4);	// Error in markers of .01
-	optimizer->setMaxIterations(1000);
-
 	/* Get names for unprescribed Qs (ones that will be solved). */
 	Array<string> unprescribedCoordinateNames;
    _ikTarget.getUnprescribedCoordinateNames(unprescribedCoordinateNames);
@@ -62,15 +55,15 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 
 	Array<string> resultColumnLabels;
 	resultColumnLabels.append("time");
-	for (i = 0; i < unprescribedCoordinateNames.getSize(); i++)
+	for (int i = 0; i < unprescribedCoordinateNames.getSize(); i++)
 		resultColumnLabels.append(unprescribedCoordinateNames[i]);
 
-	for (i = 0; i < prescribedCoordinateNames.getSize(); i++)
+	for (int i = 0; i < prescribedCoordinateNames.getSize(); i++)
 		resultColumnLabels.append(prescribedCoordinateNames[i]);
 
 	// Include markers for visual verification in SIMM
 	if (aIKOptions.getIncludeMarkers()) {
-		for (i = 0; i < markerNames.getSize(); i++) {
+		for (int i = 0; i < markerNames.getSize(); i++) {
 			resultColumnLabels.append(markerNames[i] + "_px");
 			resultColumnLabels.append(markerNames[i] + "_py");
 			resultColumnLabels.append(markerNames[i] + "_pz");
@@ -86,20 +79,11 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 
 	outputData.setColumnLabels(resultColumnLabels);
 
-	// Set the lower and upper bounds on the unprescribed Q array
-	// TODO: shouldn't have to search for coordinates by name
-	AbstractDynamicsEngine &eng = _ikTarget.getModel().getDynamicsEngine();
-	for (int i = 0; i < unprescribedCoordinateNames.getSize(); i++)
-	{
-		AbstractCoordinate* coord = eng.getCoordinateSet()->get(unprescribedCoordinateNames[i]);
-		optimizer->setLowerBound(i, coord->getRangeMin());
-		optimizer->setUpperBound(i, coord->getRangeMax());
-	}
-
 	// Main loop to set initial conditions and solve snapshots
 	// At every step we use experimental data as a starting guess 
-	Array<double> unprescribedQGuess(0.0, unprescribedCoordinateNames.getSize());	// Initial guess and work array
-	Array<double> unprescribedQSol(0.0, unprescribedCoordinateNames.getSize());	// Solution array
+	int numParameters = unprescribedCoordinateNames.getSize();
+	Array<double> unprescribedQGuess(0.0, numParameters);	// Initial guess and work array
+	Array<double> unprescribedQSol(0.0, numParameters);	// Solution array
 	Array<double> experimentalMarkerLocations(0.0, markerNames.getSize() * 3);
 
 	int startFrame = 0, endFrame = 1;
@@ -114,6 +98,48 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		cout << "Solving frames " << startFrame + 1 << " to " << endFrame + 1 << " (time = " <<
 		aIKOptions.getStartTime() << " to " << aIKOptions.getEndTime() << ")" << endl;
 
+	// Gather lower and upper bounds
+	Vector lowerBounds(numParameters), upperBounds(numParameters);
+	// Set the lower and upper bounds on the unprescribed Q array
+	// TODO: shouldn't have to search for coordinates by name
+	AbstractDynamicsEngine &eng = _ikTarget.getModel().getDynamicsEngine();
+	for (int i = 0; i < numParameters; i++)
+	{
+		AbstractCoordinate* coord = eng.getCoordinateSet()->get(unprescribedCoordinateNames[i]);
+		lowerBounds[i] = coord->getRangeMin();
+		upperBounds[i] = coord->getRangeMax();
+	}
+	_ikTarget.setParameterLimits(lowerBounds,upperBounds);
+
+	rdFSQP *optimizerFSQP = 0;
+	Optimizer *optimizerSimTK = 0;
+
+	bool useOptimizerSystem = getenv("USE_OPTIMIZER_SYSTEM") && atoi(getenv("USE_OPTIMIZER_SYSTEM"));
+	int printLevel = 0;
+	double convergenceCriterion = 1e-4;
+	int maxIterations = 1000;
+
+	if(!useOptimizerSystem) {
+		// Regular optimization
+		optimizerFSQP = new rdFSQP(&_ikTarget);
+		optimizerFSQP->setPrintLevel(printLevel);
+		optimizerFSQP->setConvergenceCriterion(convergenceCriterion);	// Error in markers of .01
+		optimizerFSQP->setMaxIterations(maxIterations);
+	} else {
+		optimizerSimTK = new Optimizer(_ikTarget, SimTK::InteriorPoint);
+		optimizerSimTK->setDiagnosticsLevel(printLevel);
+		optimizerSimTK->setConvergenceTolerance(convergenceCriterion);
+		optimizerSimTK->setMaxIterations(maxIterations);
+
+		// Some IPOPT-specific settings
+		optimizerSimTK->useNumericalGradient(false); // Use our own central difference approximations
+		optimizerSimTK->useNumericalJacobian(false);
+		optimizerSimTK->setLimitedMemoryHistory(500); // works well for our small systems
+		optimizerSimTK->setAdvancedBoolOption("warm_start",true);
+		optimizerSimTK->setAdvancedRealOption("obj_scaling_factor",0.1);
+		optimizerSimTK->setAdvancedRealOption("nlp_scaling_max_gradient",0.1);
+	}
+
 	for (int index = startFrame; index <= endFrame; index++)
 	{
 		// Get time associated with index
@@ -123,7 +149,14 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		_ikTarget.prepareToSolve(index, &unprescribedQGuess[0]);
 
 		// Invoke optimization mechanism to solve for Qs
-		int optimizerReturn = optimizer->computeOptimalControls(&unprescribedQGuess[0], &unprescribedQSol[0]);
+		int optimizerReturn = 0;
+		if(optimizerFSQP) {
+			optimizerReturn = optimizerFSQP->computeOptimalControls(&unprescribedQGuess[0], &unprescribedQSol[0]);
+		} else {
+			Vector results(numParameters, &unprescribedQGuess[0]); // initialize with initial guess
+			optimizerSimTK->optimize(results);
+			for(int i=0;i<numParameters;i++) unprescribedQSol[i]=results[i];
+		}
 
 		/* Output variables include unprescribed (solved) Qs... */
 		Array<double> qsAndMarkersArray = unprescribedQSol;
@@ -144,7 +177,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		inputData.getTime(index, currentTime);
 		cout << "Frame " << index + 1 << " (t=" << currentTime << "):\t";
 		if(optimizerReturn != 0) cout << " Optimizer returned = " << optimizerReturn << endl;
-		else _ikTarget.printPerformance();
+		_ikTarget.printPerformance(&unprescribedQSol[0]);
 
 		// INTEGRATION CALLBACKS
 		// TODO: pass callback a reasonable "dt" value
@@ -169,7 +202,8 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		outputData.append(*nextDataRow);
 	}
 
-	delete optimizer;
+	delete optimizerFSQP;
+	delete optimizerSimTK;
 }
 //______________________________________________________________________________
 /**
@@ -179,7 +213,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 void IKSolverImpl::collectUserData(const Array<string> &inputColumnLabels,
 											  const Array<string> &resultColumnLabels,
 											  Array<string> &userColumnLabels,
-											  Array<int>& userDataColumnIndices)
+									   Array<int>& userDataColumnIndices)
 {
 	// Find columns that are none of the above to append them to the end of the list
 	for(int i=0; i< inputColumnLabels.getSize(); i++){

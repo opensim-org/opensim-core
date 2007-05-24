@@ -41,7 +41,11 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Real;
+using SimTK::Vector;
+using SimTK::Matrix;
 
+#define USE_LINEAR_CONSTRAINT_MATRIX
 
 //==============================================================================
 // DESTRUCTOR & CONSTRUCTIOR(S)
@@ -62,18 +66,10 @@ rdActuatorForceTargetFast::~rdActuatorForceTargetFast()
  */
 rdActuatorForceTargetFast::
 rdActuatorForceTargetFast(int aNX,rdCMC *aController):
-	rdOptimizationTarget(aNX),
-	_modelControls(0.0), _y(0.0), _dydt(0.0), _dqdt(0.0), _dudt(0.0),
-	_recipAreaSquared(0.0)
+	rdOptimizationTarget(aNX), _controller(aController)
 {
-	setNull();
-
-	// CONTROLLER
-	_controller = aController;
-
 	// NUMBER OF CONTROLS
-	_nx = aNX;
-	if(_nx<=0) {
+	if(getNumControls()<=0) {
 		throw(Exception("rdActuatorForceTargetFast: ERROR- no controls.\n"));
 	}
 
@@ -97,17 +93,12 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	_recipAreaSquared.setSize(na);
 
 	// PARSE TASK SET FOR NUMBER OF CONSTRAINTS
-	int i,j,n;
-	rdCMC_Task *task;
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
-	int size = taskSet->getSize();
-	int nConstraints;
-	for(nConstraints=i=0;i<size;i++) {
-		task = taskSet->get(i);
+	int nConstraints = 0;
+	for(int i=0;i<taskSet->getSize();i++) {
+		rdCMC_Task *task = taskSet->get(i);
 		if(task==NULL) continue;
-
-		n = task->getNumTaskFunctions();
-		for(j=0;j<n;j++) {
+		for(int j=0;j<task->getNumTaskFunctions();j++) {
 			if(task->getActive(j)) nConstraints++;
 		}
 	}
@@ -119,13 +110,17 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	_neqn = 0;
 	_neq = nConstraints;
 
+	// OptimizerSystem
+	setNumConstraints(nConstraints);
+	setNumEqualityConstraints(nConstraints);
+
 	// DERIVATIVE PERTURBATION SIZES;
 	setDX(1.0e-6);
 
 	// COMPUTE ACTUATOR AREAS
 	Array<double> f(1.0,_nx);
 	ActuatorSet *actuatorSet = model->getActuatorSet();
-	for(i=0;i<na;i++) {
+	for(int i=0;i<na;i++) {
 		actuatorSet->get(i)->setForce(f[i]);
 		_recipAreaSquared[i] = actuatorSet->get(i)->getStress();
 		_recipAreaSquared[i] *= _recipAreaSquared[i];
@@ -136,16 +131,34 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 //==============================================================================
 // CONSTRUCTION AND DESTRUCTION
 //==============================================================================
-//______________________________________________________________________________
-/**
- * Set all member variables to their NULL values.
- */
-void rdActuatorForceTargetFast::
-setNull()
+bool rdActuatorForceTargetFast::
+prepareToOptimize(double *x)
 {
-	_controller = NULL;
-}
+#ifdef USE_LINEAR_CONSTRAINT_MATRIX
+	Model *model = _controller->getModel();
+	int nf = model->getNumActuators();
+	int nc = _neq;
 
+	_constraintMatrix.resize(nc,nf);
+	_constraintVector.resize(nc);
+
+	Vector f(nf), c(nc);
+
+	// Build linear constraint matrix and constant constraint vector
+	f = 0;
+	computeConstraintVector(f, _constraintVector);
+
+	for(int j=0; j<nf; j++) {
+		f[j] = 1;
+		computeConstraintVector(f, c);
+		for(int i=0; i<nc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
+		f[j] = 0;
+	}
+#endif
+
+	// return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
+	return false;
+}
 
 //==============================================================================
 // SET AND GET
@@ -156,70 +169,25 @@ setNull()
 // PERFORMANCE AND CONSTRAINTS
 //==============================================================================
 //------------------------------------------------------------------------------
-// PERFORMANCE AND CONSTRAINTS
-//------------------------------------------------------------------------------
-//______________________________________________________________________________
-/**
- * Compute performance and the constraints given x.
- * Note - used by paramopt.
- *
- * @param x Array of controls.
- * @param p Value of the performance criterion.
- * @param c Array of constraint values.
- * @return Status (normal termination = 0, error < 0).
- */
-int rdActuatorForceTargetFast::
-compute(double *x,double *p,double *c)
-{
-	int status = 0;
-	return(status);
-}
-//______________________________________________________________________________
-/**
- * Compute the gradients of the performance and the constraints given x.
- * The array dx is an array of perturbation sizes which can be used to
- * compute the gradients numerically.
- *
- * Note- used by paramopt.
- *
- * @param dx Array of perturbations for numerical derivatives.
- * @param x Array of controls.
- * @param dpdx Derivative of the performance criterion with respect to
- * the controls.
- * @param dcdx Matrix of derivatives of the constraints with respect
- * to the controls.
- * @return Status (normal termination = 0, error < 0).
- */
-int rdActuatorForceTargetFast::
-computeGradients(double *dx,double *x,double *dpdx,double *dcdx)
-{
-	int status = 0;
-	return(status);
-}
-
-
-
-//------------------------------------------------------------------------------
 // PERFORMANCE
 //------------------------------------------------------------------------------
 //______________________________________________________________________________
 /**
  * Compute performance given x.
  *
- * @param aF Array of controls.
+ * @param aF Vector of controls.
  * @param rP Value of the performance criterion.
  * @return Status (normal termination = 0, error < 0).
  */
 int rdActuatorForceTargetFast::
-computePerformance(double *aX,double *rP)
+objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	int i;
 	int nx = getNumControls();
-	double p;
-	for(p=0.0,i=0;i<nx;i++) {
-		p += _recipAreaSquared[i] * aX[i] * aX[i];
+	double p = 0;
+	for(int i=0;i<nx;i++) {
+		p += _recipAreaSquared[i] * aF[i] * aF[i];
 	}
-	*rP = p;
+	rP = p;
 
 	return(0);
 }
@@ -227,17 +195,16 @@ computePerformance(double *aX,double *rP)
 /**
  * Compute the gradient of performance given x.
  *
- * @param x Array of controls.
+ * @param x Vector of controls.
  * @param dpdx Derivatives of performance with respect to the controls.
  * @return Status (normal termination = 0, error < 0).
  */
 int rdActuatorForceTargetFast::
-computePerformanceGradient(double *x,double *dpdx)
+gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-	int i;
 	int nx = getNumControls();
-	for(i=0;i<nx;i++) {
-		dpdx[i] = 2.0 * _recipAreaSquared[i] * x[i];
+	for(int i=0;i<nx;i++) {
+		gradient[i] = 2.0 * _recipAreaSquared[i] * x[i];
 	}
 
 	return(0);
@@ -257,10 +224,29 @@ computePerformanceGradient(double *x,double *dpdx)
  * @return Status (normal termination = 0, error < 0).
  */
 int rdActuatorForceTargetFast::
-computeConstraint(double *x,int ic,double *c)
+constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &constraints) const
 {
-	int i;
+#ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
+	// Evaluate constraint function for all constraints and pick the appropriate component
+	computeConstraintVector(x,constraints);
+
+#else
+
+	// Use precomputed constraint matrix
+	constraints = _constraintMatrix * x + _constraintVector;
+
+#endif
+
+	return(0);
+}
+//______________________________________________________________________________
+/**
+ * Compute all constraints given x.
+ */
+void rdActuatorForceTargetFast::
+computeConstraintVector(const Vector &x,Vector &c) const
+{
 	Model *model = _controller->getModel();
 	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
 
@@ -279,7 +265,7 @@ computeConstraint(double *x,int ic,double *c)
 	int nf = model->getNumActuators();
 	model->getDerivCallbackSet()->computeActuation(t,&_modelControls[0],&_y[0]);
 	ActuatorSet *actuatorSet = model->getActuatorSet();
-	for(i=0;i<nf;i++) {
+	for(int i=0;i<nf;i++) {
 		actuatorSet->get(i)->setForce(x[i]);
 	}
 	model->getActuatorSet()->apply();
@@ -300,38 +286,8 @@ computeConstraint(double *x,int ic,double *c)
 	Array<double> &a = taskSet->getAccelerations();
 
 	// CONSTRAINTS
-	i = ic - 1;
-	*c = w[i]*(aDes[i]-a[i]);
-	//cout<<"Constraint: ic="<<ic<<" i="<<i<<" *c="<<*c<<endl;
-
-/*
-	// SET
-	_model->setConfiguration(&_q[0],&_u[0]);
-
-	// ACTUATION
-	_model->computeActuation();
-	int i,nx=getNX();
-	for(i=0;i<nx;i++) {
-		_model->setActuatorForce(i,x[i]);
-	}
-	_model->applyActuatorForces();
-
-	// CONTACT
-	_model->computeContact();
-	_model->applyContactForces();
-
-	// COMPUTE ACCELERATIONS
-	_model->computeAccelerations(&_dqdt[0],&_dudt[0]);
-
-	// EVALUATE CONSTRAINTS
-	int j,nu = _model->getNU();
-	for(i=j=0;i<nu;i++) {
-		if(_constrained[i]) {
-			c[j] = _dudt[i] - _dudtDesired[i];
-		}
-	}
-*/
-	return(0);
+	for(int i=0; i<_neq; i++)
+		c[i]=w[i]*(aDes[i]-a[i]);
 }
 //______________________________________________________________________________
 /**
@@ -343,10 +299,19 @@ computeConstraint(double *x,int ic,double *c)
  * @return Status (normal termination = 0, error < 0).
  */
 int rdActuatorForceTargetFast::
-computeConstraintGradient(double *x,int ic,double *dcdx)
+constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::Matrix &jac) const
 {
-	// COMPUTE GRADIENT
-	rdFSQP::CentralDifferencesConstraint(this,_dx,x,ic,dcdx);
-	return(0);
-}
+#ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
+	// Compute gradient using callbacks to constraintFunc
+	rdFSQP::CentralDifferencesConstraint(this,_dx,x,jac);
+
+#else
+
+	// Use precomputed constraint matrix (works if constraint is linear)
+	jac = _constraintMatrix;
+
+#endif
+
+	return 0;
+}

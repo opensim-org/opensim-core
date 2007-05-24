@@ -38,7 +38,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Mtx.h>
 #include "osimSQPDLL.h"
 #include "rdOptimizationTarget.h"
 
@@ -62,7 +61,7 @@ private:
 
 	// CONTROLS
 	int _nx;
-	double *_xtmp,*_dx;
+	double *_xtmp;
 
 	// PERFORMANCE AND CONSTRAINTS
 	int _status;
@@ -91,6 +90,16 @@ private:
 	double _firstAlpha;
 	double _alpha[4];
 
+	/** Print level. */
+	int _printLevel;
+	/** Lower bounds on controls. */
+	double *_bl;
+	/** Upper bounds on controls. */
+	double *_bu;
+
+	bool _useTransferFunctionForBounds;	
+	double *_xbounded;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -99,7 +108,6 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	virtual ~rdSQP();
-	static void Delete(void *aPtr);
 	rdSQP(rdOptimizationTarget *aTarget);
 
 	//--------------------------------------------------------------------------
@@ -107,16 +115,27 @@ public:
 	//--------------------------------------------------------------------------
 	void setMaxIterations(int aMaxIter);
 	int getMaxIterations();
-	void setConvergenceCriterion(double aMaxIter);
+	void setConvergenceCriterion(double aEPS);
 	double getConvergenceCriterion();
 	void setMaxEvaluations(int aMaxEval);
 	int getMaxEvaluations();
-	void setLineConvergenceCriterion(double aMaxIter);
+	void setLineConvergenceCriterion(double aEPS);
 	double getLineConvergenceCriterion();
 	void setMinAlpha(double aMin);
 	double getMinAlpha();
 	void setMaxAlpha(double aMax);
 	double getMaxAlpha();
+	void setPrintLevel(int aLevel);
+	int getPrintLevel();
+	void setLowerBound(double aLower);
+	void setLowerBound(int aIndex,double aLower);
+	void setLowerBound(double aLower[]);
+	double* getLowerBound();
+	void setUpperBound(double aUpper);
+	void setUpperBound(int aIndex,double aUpper);
+	void setUpperBound(double aUpper[]);
+	double* getUpperBound();
+	void setUseTransferFunctionForBounds(bool aTrueFalse);
 
 
 	//--------------------------------------------------------------------------
@@ -127,7 +146,7 @@ public:
 	//--------------------------------------------------------------------------
 	// DERIVATIVES
 	//--------------------------------------------------------------------------
-	static int
+	int
 	CentralDifferences(rdOptimizationTarget *aTarget,
 	 double *dx,double *x,double *dpdx,double *dcdx);
 
@@ -143,6 +162,12 @@ public:
 	// LINE SEARCH
 	//--------------------------------------------------------------------------
 	int lineSearch(double *x,double *dx,double *mu,double *xnew);
+
+	//--------------------------------------------------------------------------
+	// BOUNDED/UNBOUNDED TRANSFER FUNCTIONS
+	//--------------------------------------------------------------------------
+	void xBound(double *xunbounded, double *xbounded);
+	void xUnbound(double *xbounded, double *xunbounded);
 
 //=============================================================================
 };	// END class rdSQP

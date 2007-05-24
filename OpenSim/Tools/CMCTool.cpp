@@ -621,22 +621,44 @@ void CMCTool::run()
 	} else {
 		target = new rdActuatorForceTarget(na,&controller);
 	}
-	controller.setOptimizationTarget(target);
-	controller.setCheckTargetTime(true);
 	target->setDX(_optimizerDX);
+
+	controller.setOptimizationTarget(target);
+
+	bool useOptimizerSystem = getenv("USE_OPTIMIZER_SYSTEM") && atoi(getenv("USE_OPTIMIZER_SYSTEM"));
+	if(useOptimizerSystem) {
+		SimTK::Optimizer *optimizer = controller.getSimTKOptimizer();
+		if(optimizer) {
+			cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
+			optimizer->setDiagnosticsLevel(_printLevel);
+			cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
+			optimizer->setConvergenceTolerance(_convergenceCriterion);
+			cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
+			optimizer->setMaxIterations(_maxIterations);
+
+			// Some IPOPT-specific settings
+			optimizer->useNumericalGradient(false); // Use our own central difference approximations
+			optimizer->useNumericalJacobian(false);
+			optimizer->setLimitedMemoryHistory(500); // works well for our small systems
+			optimizer->setAdvancedBoolOption("warm_start",true);
+			optimizer->setAdvancedRealOption("obj_scaling_factor",0.1);
+			optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",0.1);
+		}	
+	} else {
+		// Optimizer settings
+		rdFSQP *sqp = controller.getOptimizer();
+		cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
+		sqp->setPrintLevel(_printLevel);
+		cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
+		sqp->setConvergenceCriterion(_convergenceCriterion);
+		cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
+		sqp->setMaxIterations(_maxIterations);
+	}
+
+	controller.setCheckTargetTime(true);
 
 	// Reflexes
 	controller.setUseReflexes(_useReflexes);
-
-	// Optimizer settings
-	rdFSQP *sqp = controller.getOptimizer();
-	cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
-	sqp->setPrintLevel(_printLevel);
-	cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-	sqp->setConvergenceCriterion(_convergenceCriterion);
-	cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
-	sqp->setMaxIterations(_maxIterations);
-	
 
 	// ---- SIMULATION ----
 	// Manager

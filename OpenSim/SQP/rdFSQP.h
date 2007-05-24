@@ -13,6 +13,7 @@
 #include <ostream>
 #include "osimSQPDLL.h"
 #include "rdOptimizationTarget.h"
+#include <SimTKcommon.h>
 
 
 //=============================================================================
@@ -60,10 +61,6 @@ private:
 	int *_mesh;
 
 	// ALLOCATIONS
-	/** Lower bounds on controls. */
-	double *_bl;
-	/** Upper bounds on controls. */
-	double *_bu;
 	/** Controls. */
 	double *_x;
 	/** Array of performance criteria. */
@@ -122,14 +119,11 @@ public:
 	// DERIVATIVES
 	//--------------------------------------------------------------------------
 	static int
-		CentralDifferences(rdOptimizationTarget *aTarget,
-		double *dx,double *x,double *dpdx,double *dcdx);
+		CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
+		double *dx,const SimTK::Vector &x,SimTK::Matrix &jacobian);
 	static int
-		CentralDifferences(rdOptimizationTarget *aTarget,
-		double *dx,double *x,double *dpdx);
-	static int
-		CentralDifferencesConstraint(rdOptimizationTarget *aTarget,
-		double *dx,double *x,int ic,double *dcdx);
+		CentralDifferences(const rdOptimizationTarget *aTarget,
+		double *dx,const SimTK::Vector &x,SimTK::Vector &dpdx);
 
 	//--------------------------------------------------------------------------
 	// STATIC FUNCTIONS USED AS INPUT TO cfsqp()

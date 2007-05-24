@@ -45,16 +45,16 @@
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/SQP/rdOptimizationTarget.h>
-#include <OpenSim/SQP/rdSQP.h>
 #include <OpenSim/SQP/rdFSQP.h>
+#include <simmath/Optimizer.h>
 #include "rdCMC.h"
 #include "rdCMC_Joint.h"
 #include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"
 
-
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vector;
 
 
 //=============================================================================
@@ -66,7 +66,8 @@ using namespace OpenSim;
  */
 rdCMC::~rdCMC()
 {
-
+	delete _sqp;
+	delete _optimizer;
 }
 //_____________________________________________________________________________
 /**
@@ -113,6 +114,7 @@ void rdCMC::
 setNull()
 {
 	_sqp = NULL;
+	_optimizer = NULL;
 	_target = NULL;
 	_taskSet = NULL;
 	_dt = 0.0;
@@ -201,11 +203,23 @@ setOptimizationTarget(rdOptimizationTarget *aTarget)
 	// NEW TARGET
 	_target = aTarget;
 
-	// CONSTRUCT THE OPTIMIZER
-	if(_sqp==NULL) {
-		_sqp = new rdFSQP(_target);
+	if(getenv("USE_OPTIMIZER_SYSTEM") && atoi(getenv("USE_OPTIMIZER_SYSTEM"))) {
+
+		// CONSTRUCT THE OPTIMIZER
+		delete _optimizer;
+		std::cout << "Initializing SimTK optimizer" << std::endl;
+		_optimizer = new SimTK::Optimizer(*_target, SimTK::InteriorPoint);
+
 	} else {
-		_sqp->setTarget(_target);
+
+		// CONSTRUCT THE OPTIMIZER
+		if(_sqp==NULL) {
+			std::cout << "Initializing FSQP optimizer" << std::endl;
+			_sqp = new rdFSQP(_target);
+		} else {
+			_sqp->setTarget(_target);
+		}
+
 	}
 
 	return(prev);
@@ -235,6 +249,12 @@ rdFSQP* rdCMC::
 getOptimizer() const
 {
 	return(_sqp);
+}
+
+SimTK::Optimizer* rdCMC::
+getSimTKOptimizer() const
+{
+	return _optimizer;
 }
 
 //-----------------------------------------------------------------------------
@@ -853,27 +873,55 @@ computeControls(double &rDT,double aT,const double *aY,
 
 
 	// SOLVE STATIC OPTIMIZATION FOR DESIRED ACTUATOR FORCES
-	_f.setSize(N);
+	SimTK::Vector lowerBounds(N), upperBounds(N);
 	for(i=0;i<N;i++) {
 		if(fmin[i]<fmax[i]) {
-			_sqp->setLowerBound(i,fmin[i]);
-			_sqp->setUpperBound(i,fmax[i]);
+			lowerBounds[i] = fmin[i];
+			upperBounds[i] = fmax[i];
 		} else {
-			_sqp->setLowerBound(i,fmax[i]);
-			_sqp->setUpperBound(i,fmin[i]);
+			lowerBounds[i] = fmax[i];
+			upperBounds[i] = fmin[i];
 		}
-
 	}
 
-	// OPTIMIZER ERROR TRAP
-	int inform=1,optTrys=0,optTryLimit=3;
-	for(inform=1;inform>0;optTrys++) {
+	_target->setParameterLimits(lowerBounds, upperBounds);
 
-		inform = _sqp->computeOptimalControls(&_f[0],&_f[0]);
-		_sqp->PrintInform(inform,cout);
+	// OPTIMIZER ERROR TRAP
+	_f.setSize(N);
+	bool success=false;
+	const int optTryLimit=3;
+	for(int optTrys=0;!success;optTrys++) {
+
+		if(!_target->prepareToOptimize(&_f[0])) {
+			// No direct solution, need to run optimizer
+			if(_sqp) {
+				// rdFSQP optimizer
+				int inform = _sqp->computeOptimalControls(&_f[0],&_f[0]);
+				_sqp->PrintInform(inform,cout);
+				success=(inform==0 || inform==3 || inform==4 || inform==8);
+			} else if(_optimizer) {
+				// SimTK::Optimizer
+				Vector results(N,&_f[0]);
+				double optresult;
+				success=true;
+				try {
+					optresult = _optimizer->optimize(results);
+				}
+				catch (...) {
+					cout << "OPTIMIZATION FAILED..." << endl;
+					success=false;
+				}
+				for(int i=0;i<N;i++) _f[i]=results[i];
+			}
+		} else {
+			// Got a direct solution, don't need to run optimizer
+			success=true;
+		}
+
+		_target->printPerformance(&_f[0]);
 
 		// Solution
-		if((inform==0)||(inform==3)||(inform==4)||(inform==8)) {
+		if(success) {
 			break;
 
 		// Too many trys

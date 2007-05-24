@@ -60,6 +60,9 @@ _markers(NULL)
 	buildMarkerMap(aExperimentalDataStorage.getColumnLabels());
 	buildCoordinateMap(aExperimentalDataStorage.getColumnLabels());
 
+	//
+	// rdOptimizationTarget stuff
+	//
 	/** Number of controls -- also allocates _dx. */
 	setNumControls(_unprescribedQs.getSize());
 	/** Number of performance criteria. */
@@ -68,11 +71,15 @@ _markers(NULL)
 	_nineqn=0;
 	/** Number of inequality constraints. */
 	// Every Q has min and max
-	_nineq=0; // Set min & max on optiimizer 2*model->getNumCoordinates();
+	_nineq=0;
 	/** Number of nonlinear equality constraints. */
 	_neqn=0;
 	/** Number of equality constraints. */
 	_neq=0;
+
+	// OptimizerSystem stuff
+	setNumParameters(_unprescribedQs.getSize());
+	setNumConstraints(0);
 
 	for (int i = 0; i < _nx; i++)
 		_dx[i] = _perturbation;
@@ -101,7 +108,7 @@ IKTarget::
  * Compute objective function (sum of squared errors in marker positions) using
  * current values (x) for controls. Value of error is returned in p
  */
-int IKTarget::computePerformance(double *x, double *p)
+int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, SimTK::Real &f) const
 {
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
@@ -184,7 +191,7 @@ int IKTarget::computePerformance(double *x, double *p)
 			(worstCoordinate<0)?"":_unprescribedWeightedQs[worstCoordinate]->coord->getName());
 	}
 
-	*p = totalErrorSquared;
+	f = totalErrorSquared;
 
 	return 0;
 }
@@ -193,8 +200,7 @@ int IKTarget::computePerformance(double *x, double *p)
 /**
  * Compute derivative of objective function using finite differences
  */
-int IKTarget::
-computePerformanceGradient(double *x,double *dpdx)
+int IKTarget::gradientFunc(const SimTK::Vector &x, const bool new_parameters, SimTK::Vector &dpdx) const
 {
 	calcDerivs=true;
 	int status = rdFSQP::CentralDifferences(this,_dx,x,dpdx);
@@ -202,15 +208,6 @@ computePerformanceGradient(double *x,double *dpdx)
 
 	return (status);
 }
-
-//_____________________________________________________________________________
-/**
- * Default implementation for methods unused by the optimizer for this problem
- */
-int IKTarget::compute(double *x,double *p,double *c){ return (0);};
-int IKTarget::computeGradients(double *dx,double *x,double *dpdx,double *dcdx){return (0);};
-int IKTarget::computeConstraint(double *x,int i,double *c){return (0);};
-int IKTarget::computeConstraintGradient(double *x,int i,double *dcdx){return (0);};
 
 //=============================================================================
 // Helper methods for book keeping
@@ -447,13 +444,11 @@ void IKTarget::printTasks() const
 //_____________________________________________________________________________
 /**
  */
-void IKTarget::printPerformance()
+void IKTarget::printPerformance(double *x)
 {
 	_printPerformanceValues = true;
-	double *qs=new double[_nx];
-	for(int i=0;i<_nx;i++) qs[i]=_unprescribedQs[i]->coord->getValue();
 	double p;
-	computePerformance(qs,&p);
+	objectiveFunc(SimTK::Vector(_nx,x,true),true,p);
 	_printPerformanceValues=false;
 }
 
@@ -512,7 +507,7 @@ void IKTarget::getOutputMarkerNames(Array<string>& aNameArray)
 }
 
 void IKTarget::setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
-									const double& aCoordinateError, const std::string& aCoordinateName)
+									const double& aCoordinateError, const std::string& aCoordinateName) const
 {
 	_worstMarkerError=aMarkerError;
 	_nameOfWorstMarker=aMarkerName;

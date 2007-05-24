@@ -31,6 +31,7 @@
 
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Array.h>
+#include <SimTKmath.h>
 class OpenSim::rdCMC;
 
 namespace OpenSim {
@@ -84,6 +85,17 @@ private:
 	/** Weight used to scale the stress term of objective function. **/
 	double _stressTermWeight;
 
+	SimTK::Matrix _performanceGradientMatrix;
+	SimTK::Vector _performanceGradientVector;
+	SimTK::Matrix _accelPerformanceMatrix, _forcePerformanceMatrix;
+	SimTK::Vector _accelPerformanceVector, _forcePerformanceVector;
+
+	double *_lapackA;
+	double *_lapackB;
+	double *_lapackSingularValues;
+	int _lapackLWork;
+	double *_lapackWork;
+
 //==============================================================================
 // METHODS
 //==============================================================================
@@ -93,27 +105,19 @@ public:
 	//---------------------------------------------------------------------------
 	virtual ~rdActuatorForceTarget();
 	rdActuatorForceTarget(int aNX,rdCMC *aController);
-private:
-	void setNull();
 
-	//---------------------------------------------------------------------------
-	// SET AND GET
-	//---------------------------------------------------------------------------
 public:
 	void setStressTermWeight(double aWeight);
+	bool prepareToOptimize(double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
-	// PERFORMANCE AND CONSTRAINTS
-	int compute(double *x,double *p,double *c);
-	int computeGradients(double *dx,double *x,double *dpdx,double *dcdx);
-	// PERFORMANCE
-	int computePerformance(double *x,double *p);
-	int computePerformanceGradient(double *x,double *dpdx);
-	// CONSTRAINTS
-	int computeConstraint(double *x,int i,double *c);
-	int computeConstraintGradient(double *x,int i,double *dcdx);
+   int objectiveFunc(const SimTK::Vector &aF, const bool new_coefficients, SimTK::Real& rP) const;
+   int gradientFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &gradient ) const;
+
+private:
+	void computePerformanceVectors(const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 };	// END class rdActuatorForceTarget

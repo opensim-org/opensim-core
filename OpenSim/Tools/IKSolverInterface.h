@@ -49,7 +49,7 @@ public:
 	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData) 
 	{
 		std::cout<< "Error, IKSolverInterface::solveFrames() - not implemented.\n";
-	};
+	}
 
 };
 

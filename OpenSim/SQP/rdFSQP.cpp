@@ -20,6 +20,8 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vector;
+using SimTK::Matrix;
 
 //=============================================================================
 // EXPORTED STATIC CONSTANTS
@@ -36,8 +38,6 @@ using namespace std;
 rdFSQP::
 ~rdFSQP()
 {
-	if(_bl!=NULL) { delete []_bl;  _bl=NULL; }
-	if(_bu!=NULL) { delete []_bu;  _bu=NULL; }
 	if(_x!=NULL) { delete []_x;  _x=NULL; }
 	if(_mesh!=NULL) { delete []_mesh;  _mesh=NULL; }
 	if(_p!=NULL) { delete []_p;  _p=NULL; }
@@ -98,8 +98,6 @@ setNull()
 	_ncsrn = 0;
 	_nfsr = 0;
 	_mesh = NULL;
-	_bl = NULL;
-	_bu = NULL;
 	_x = NULL;
 	_p = NULL;
 	_c = NULL;
@@ -154,16 +152,6 @@ setTarget(rdOptimizationTarget *aTarget)
 	// LAGRANGE MULTIPLIERS
 	if(_lambda!=NULL) delete[] _lambda;
 	_lambda = new double[nx+lenp+lenc];
-
-	// SET DEFAULT BOUNDS
-	if(_bl!=NULL) delete[] _bl;
-	if(_bu!=NULL) delete[] _bu;
-	_bl = new double[nx];
-	_bu = new double[nx];
-	for(i=0;i<nx;i++) {
-		_bl[i] = -_infinity;
-		_bu[i] =  _infinity;
-	}
 
 	return(prev);
 }
@@ -325,112 +313,6 @@ getNonlinearEqualityConstraintTolerance()
 	return(_epseqn);
 }
 
-//-----------------------------------------------------------------------------
-// LOWER BOUND
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set a lower bound on the controls.
- *
- * @param aLower Lower bound for all controls.
- */
-void rdFSQP::
-setLowerBound(double aLower)
-{
-	for(int i=0;i<_target->getNumControls();i++)  _bl[i] = aLower;
-}
-//_____________________________________________________________________________
-/**
- * Set the lower bound for a specified control.
- *
- * @param aIndex Index of the control.
- * @param aLower Lower bound.
- */
-void rdFSQP::
-setLowerBound(int aIndex,double aLower)
-{
-	if(aIndex<0) return;
-	if(aIndex>=_target->getNumControls()) return;
-	_bl[aIndex] = aLower;
-}
-//_____________________________________________________________________________
-/**
- * Set lower bounds on the controls.
- *
- * @param aLower Array of lower bounds.  The size of aLower should be at
- * least the number of controls.
- */
-void rdFSQP::
-setLowerBound(double aLower[])
-{
-	for(int i=0;i<_target->getNumControls();i++)  _bl[i] = aLower[i];
-}
-//_____________________________________________________________________________
-/**
- * Get lower bounds on the controls.
- * Note that the address is returned and not a copy;
- *
- * @return Pointer the the array of lower bounds.
- */
-double* rdFSQP::
-getLowerBound()
-{
-	return(_bl);
-}
-
-//-----------------------------------------------------------------------------
-// UPPER BOUND
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set a upper bound on the controls.
- *
- * @param aUpper Upper bound for all controls.
- */
-void rdFSQP::
-setUpperBound(double aUpper)
-{
-	for(int i=0;i<_target->getNumControls();i++)  _bu[i] = aUpper;
-}
-//_____________________________________________________________________________
-/**
- * Set the upper bound for a specified control.
- *
- * @param aIndex Index of the control.
- * @param aLower Upper bound.
- */
-void rdFSQP::
-setUpperBound(int aIndex,double aUpper)
-{
-	if(aIndex<0) return;
-	if(aIndex>=_target->getNumControls()) return;
-	_bu[aIndex] = aUpper;
-}
-//_____________________________________________________________________________
-/**
- * Set upper bounds on the controls.
- *
- * @param aUpper Array of upper bounds.  The size of aUpper should be at
- * least the the number of controls
- */
-void rdFSQP::
-setUpperBound(double aUpper[])
-{
-	for(int i=0;i<_target->getNumControls();i++)  _bu[i] = aUpper[i];
-}
-//_____________________________________________________________________________
-/**
- * Get upper bounds on the controls.
- * Note that the address is returned and not a copy;
- *
- * @return Pointer to the array of upper bounds.
- */
-double* rdFSQP::
-getUpperBound()
-{
-	return(_bu);
-}
-
 
 //=============================================================================
 // COMPUTE OPTIMAL CONTROLS
@@ -453,6 +335,20 @@ getUpperBound()
 int rdFSQP::
 computeOptimalControls(const double *xin,double *xout)
 {
+	int nx = _target->getNumControls();
+
+	double *bl, *bu;
+	if(_target->getHasLimits()) {
+		_target->getParameterLimits(&bl,&bu);
+	} else {
+		bl = new double[nx];
+		bu = new double[nx];
+		for(int i=0; i<nx; i++) {
+			bl[i] = -_infinity;
+			bu[i] =  _infinity;
+		}
+	}
+
 	//printf("\nrdFSQP.computeOptimalControls: ...\n");
 
 	// CHECK CONTROL POINTERS
@@ -466,16 +362,24 @@ computeOptimalControls(const double *xin,double *xout)
 	// SET THE CLIENT DATA TO THIS TARGET
 	void *cd = _target;
 
+	// Clear cache before starting optimization (used to speed up constraint computations)
+	_target->clearCache();
+
 	// OPTIMIZE
 	cfsqp(_target->getNumControls(),_target->getNumContacts(),_nfsr,
 		_target->getNCInequalityNonlinear(),_target->getNCInequality(),
 		_target->getNCEqualityNonlinear(),_target->getNCEquality(),
 		_ncsrl,_ncsrn,_mesh,
 		_mode,_printLevel,_maxIter,&_inform,_infinity,_eps,_epseqn,_udelta,
-		_bl,_bu,_x,_p,_c,_lambda,pFunc,cFunc,dpdxFunc,dcdxFunc,cd);
+		bl,bu,_x,_p,_c,_lambda,pFunc,cFunc,dpdxFunc,dcdxFunc,cd);
 
 	// SET OUTPUT X
 	for(i=0;i<_target->getNumControls();i++)  xout[i] = _x[i];
+
+	if(!_target->getHasLimits()) {
+		delete[] bl;
+		delete[] bu;
+	}
 
 	return(_inform);
 }
@@ -484,80 +388,6 @@ computeOptimalControls(const double *xin,double *xout)
 //=============================================================================
 // STATIC DERIVATIVES
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Compute derivatives of performance and constraints with respect to the
- * controls by central differences.  Note that the gradient arrays should
- * be allocated as dpdx[nx] and dcdx[nc][nx].
- *
- * @param dx An array of control perturbation values.
- * @param x Values of the controls at time t.
- * @param dpdx The derivatives of the performance criterion.
- * @param dcdx The derivatives of the constraints.
- *
- * @return -1 if an error is encountered, 0 otherwize.
- */
-int rdFSQP::
-CentralDifferences(rdOptimizationTarget *aTarget,
-	double *dx,double *x,double *dpdx,double *dcdx)
-{
-	if(aTarget==NULL) return(-1);
-
-	// CONTROLS
-	int i;
-	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
-	double *xp = new double[nx];  if(xp==NULL) return(-1);
-	for(i=0;i<nx;i++) xp[i]=x[i];
-
-	// PERFORMANCE AND CONSTRAINTS
-	double pf,pb;
-	double *cf=NULL,*cb=NULL;
-	int nc = aTarget->getNC();
-	if(nc>0) {
-		cf = new double[nc];  if(cf==NULL) return(-1);
-		cb = new double[nc];  if(cb==NULL) return(-1);
-	}
-
-	// INITIALIZE STATUS
-	int status = -1;
-
-	// LOOP OVER CONTROLS
-	int j,I;
-	double rdx;
-	for(i=0;i<nx;i++) {
-
-		rdx = 0.5 / dx[i];
-
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->compute(xp,&pf,cf);
-		if(status<0) return(status);
-
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->compute(xp,&pb,cb);
-		if(status<0) return(status);
-
-		// DERIVATIVES OF PERFORMANCE
-		dpdx[i] = rdx*(pf-pb);
-
-		// DERIVATIVES OF CONSTRAINTS
-		for(j=0;j<nc;j++) {
-			I = Mtx::ComputeIndex(j,nx,i);
-			dcdx[I] = rdx*(cf[j]-cb[j]);
-		}
-
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
-
-	// CLEANUP
-	if(xp!=NULL) { delete []xp;  xp=NULL; }
-	if(cf!=NULL) { delete []cf;  cf=NULL; }
-	if(cb!=NULL) { delete []cb;  cb=NULL; }
-
-	return(status);
-}
 //_____________________________________________________________________________
 /**
  * Compute derivatives of a constraint with respect to the
@@ -571,44 +401,39 @@ CentralDifferences(rdOptimizationTarget *aTarget,
  * @return -1 if an error is encountered, 0 otherwize.
  */
 int rdFSQP::
-CentralDifferencesConstraint(rdOptimizationTarget *aTarget,
-	double *dx,double *x,int ic,double *dcdx)
+CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
+	double *dx,const Vector &x,Matrix &jacobian)
 {
 	if(aTarget==NULL) return(-1);
-	if(x==NULL) return(-1);
-	if(dcdx==NULL) return(-1);
 
 	// INITIALIZE CONTROLS
-	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
+	int nx = aTarget->getNumControls(); if(nx<=0) return(-1);
+	int nc = aTarget->getNC(); if(nc<=0) return(-1);
+	Vector xp=x;
+	Vector cf(nc),cb(nc);
 
 	// INITIALIZE STATUS
 	int status = -1;
 
 	// LOOP OVER CONTROLS
-	int i;
-	double rdx;
-	double xSave,cb,cf;
-	for(i=0;i<nx;i++) {
-
-		rdx = 0.5 / dx[i];
-
-		// SAVE ORIGINAL CONTROL VALUE
-		xSave = x[i];
-
-		// PERTURB BACKWARD
-		x[i] -= dx[i];
-		status = aTarget->computeConstraint(x,ic,&cb);
-		if(status<0) return(status);
-		x[i] = xSave;
+	for(int i=0;i<nx;i++) {
 
 		// PERTURB FORWARD
-		x[i] += dx[i];
-		status = aTarget->computeConstraint(x,ic,&cf);
+		xp[i] = x[i] + dx[i];
+		status = aTarget->constraintFunc(xp,true,cf);
 		if(status<0) return(status);
-		x[i] = xSave;
+
+		// PERTURB BACKWARD
+		xp[i] = x[i] - dx[i];
+		status = aTarget->constraintFunc(xp,true,cb);
+		if(status<0) return(status);
 
 		// DERIVATIVES OF CONSTRAINTS
-		dcdx[i] = rdx*(cf-cb);
+		double rdx = 0.5 / dx[i];
+		for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
+
+		// RESTORE CONTROLS
+		xp[i] = x[i];
 	}
 
 	return(status);
@@ -626,16 +451,14 @@ CentralDifferencesConstraint(rdOptimizationTarget *aTarget,
  * @return -1 if an error is encountered, 0 otherwize.
  */
 int rdFSQP::
-CentralDifferences(rdOptimizationTarget *aTarget,
-	double *dx,double *x,double *dpdx)
+CentralDifferences(const rdOptimizationTarget *aTarget,
+	double *dx,const Vector &x,Vector &dpdx)
 {
 	if(aTarget==NULL) return(-1);
 
 	// CONTROLS
-	int i;
 	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
-	double *xp = new double[nx];  if(xp==NULL) return(-1);
-	for(i=0;i<nx;i++) xp[i]=x[i];
+	Vector xp=x;
 
 	// PERFORMANCE
 	double pf,pb;
@@ -644,34 +467,28 @@ CentralDifferences(rdOptimizationTarget *aTarget,
 	int status = -1;
 
 	// LOOP OVER CONTROLS
-	double rdx;
-	for(i=0;i<nx;i++) {
-
-		rdx = 0.5 / dx[i];
+	for(int i=0;i<nx;i++) {
 
 		// PERTURB FORWARD
 		xp[i] = x[i] + dx[i];
-		status = aTarget->computePerformance(xp,&pf);
+		status = aTarget->objectiveFunc(xp,true,pf);
 		if(status<0) return(status);
 
 		// PERTURB BACKWARD
 		xp[i] = x[i] - dx[i];
-		status = aTarget->computePerformance(xp,&pb);
+		status = aTarget->objectiveFunc(xp,true,pb);
 		if(status<0) return(status);
 
 		// DERIVATIVES OF PERFORMANCE
+		double rdx = 0.5 / dx[i];
 		dpdx[i] = rdx*(pf-pb);
 
 		// RESTORE CONTROLS
 		xp[i] = x[i];
 	}
 
-	// CLEANUP
-	if(xp!=NULL) { delete []xp;  xp=NULL; }
-
 	return(status);
 }
-
 
 //=============================================================================
 // STATIC PERFORMANCE AND CONSTRAINT EVALUATIONS
@@ -691,7 +508,8 @@ pFunc(int nparam,int j,double *x,double *p,void *cd)
 	}
 
 	// COMPUTE
-	target->computePerformance(x,p);
+	int nx=target->getNumControls();
+	target->objectiveFunc(Vector(nx,x,true),true,*p);
 }
 //______________________________________________________________________________
 /**
@@ -709,7 +527,8 @@ dpdxFunc(int nparam,int j,double *x,double *dpdx,
 	}
 
 	// COMPUTE
-	target->computePerformanceGradient(x,dpdx);
+	int nx=target->getNumControls();
+	target->gradientFunc(Vector(nx,x,true),true,Vector(nx,dpdx,true));
 }
 
 //______________________________________________________________________________
@@ -726,8 +545,9 @@ cFunc(int nparam,int j,double *x,double *c,void *cd)
 		return;
 	}
 
-	// COMPUTE
-	target->computeConstraint(x,j,c);
+	// COMPUTE - this calls a wrapper that handles caching for faster constraint computation
+	int nx=target->getNumControls();
+	target->computeConstraint(Vector(nx,x,true),true,*c,j-1);
 }
 //______________________________________________________________________________
 /**
@@ -745,8 +565,10 @@ dcdxFunc(int nparam,int j,double *x,double *dcdx,
 		return;
 	}
 
-	// COMPUTE
-	target->computeConstraintGradient(x,j,dcdx);
+	// COMPUTE - this calls a wrapper that handles caching for faster constraint computation
+	int nx=target->getNumControls();
+	int nc=target->getNC();
+	target->computeConstraintGradient(Vector(nx,x,true),true,Vector(nx,dcdx,true),j-1);
 }
 
 //=============================================================================
@@ -789,26 +611,26 @@ PrintInform(int aInform,ostream &aOStream)
 			aOStream<<"rdFSQP(5): Failure of the QP solver in attempting to construct d0.\n";
 			break;
 		case(6):
-			aOStream<<"rdSQP(6): Failure of the QP solver in attempting to construct d1.\n";
+			aOStream<<"rdFSQP(6): Failure of the QP solver in attempting to construct d1.\n";
 			break;
 		case(7):
-			aOStream<<"rdSQP(7): Input data are not consistent.  Set the print level";
+			aOStream<<"rdFSQP(7): Input data are not consistent.  Set the print level";
 			aOStream<<" greater than 0 for more information.\n";
 			break;
 		case(8):
-			aOStream<<"rdSQP(8): The new iterate is numerically equivalent to ";
+			aOStream<<"rdFSQP(8): The new iterate is numerically equivalent to ";
 			aOStream<<"the previous iterate,\n";
 			aOStream<<"though the stopping criterion is not yet satisfied. ";
 			aOStream<<"Relaxing the stopping criterion\n";
 			aOStream<<"shouldsolve this problem.\n";
 			break;
 		case(9):
-			aOStream<<"rdSQP(9): One of the penalty parameters exceeded ";
+			aOStream<<"rdFSQP(9): One of the penalty parameters exceeded ";
 			aOStream<<"the largest allowed bound.\n";
 			aOStream<<"The algorithm is having trouble satisfying a non-linear ";
 			aOStream<<"equality constraint.\n";
 			break;
 		default:
-			aOStream<<"rdSQP("<<aInform<<"): Unrecognized inform value.\n";
+			aOStream<<"rdFSQP("<<aInform<<"): Unrecognized inform value.\n";
 	}
 }

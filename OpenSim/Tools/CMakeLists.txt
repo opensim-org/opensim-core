@@ -36,7 +36,8 @@ LINK_LIBRARIES(
 	debug osimActuators_d optimized osimActuators
 	debug osimAnalyses_d optimized osimAnalyses
 	debug osimSimmKinematicsEngine_d optimized osimSimmKinematicsEngine
-	debug osimSQP_d optimized osimSQP)
+	debug osimSQP_d optimized osimSQP
+	${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB})
 				
 LINK_DIRECTORIES( ${OpenSim_LIBS_DIR}/${RDI_ARCH} )
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 

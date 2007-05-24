@@ -43,6 +43,10 @@
 	#endif
 #endif
 
+namespace SimTK {
+class Optimizer;
+}
+
 namespace OpenSim {
 
 class rdOptimizationTarget;
@@ -87,6 +91,7 @@ class OSIMTOOLS_API rdCMC : public Controller
 protected:
 	/** Optimizer. */
 	rdFSQP *_sqp;
+	SimTK::Optimizer *_optimizer;
 	/** Optimization target for computing the controls. */
 	rdOptimizationTarget *_target;
 	/** Set of cmc tasks. */
@@ -155,6 +160,7 @@ public:
 	rdCMC_TaskSet* getTaskSet() const;
 	Array<int>* getParameterList();
 	rdFSQP* getOptimizer() const;
+	SimTK::Optimizer* getSimTKOptimizer() const;
 	rdOptimizationTarget* setOptimizationTarget(rdOptimizationTarget *aTarget);
 	rdOptimizationTarget* getOptimizationTarget() const;
 	void setDT(double aDT);

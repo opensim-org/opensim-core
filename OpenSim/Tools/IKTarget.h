@@ -108,10 +108,10 @@ private:
 	// The coordinates that are prescribed
 	Array<coordinateInfo*> _prescribedQs;
 
-	double	_worstMarkerError;
-	std::string	_nameOfWorstMarker;
-	double	_worstCoordinateError;
-	std::string _nameOfWorstCoordinate;
+	mutable double	_worstMarkerError;
+	mutable std::string	_nameOfWorstMarker;
+	mutable double	_worstCoordinateError;
+	mutable std::string _nameOfWorstCoordinate;
 
 //==============================================================================
 // METHODS
@@ -120,7 +120,7 @@ private:
 	void buildMarkerMap(const Array<std::string>& aNameArray);
 	void buildCoordinateMap(const Array<std::string>& aNameArray);
 	void setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
-									const double& aCoordinateError, const std::string& aCoordinateName);
+									const double& aCoordinateError, const std::string& aCoordinateName) const;
 public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
@@ -134,7 +134,7 @@ public:
 	//---------------------------------------------------------------------------
 	void prepareToSolve(int aIndex, double* qGuess);
 	void printTasks() const;
-	void printPerformance();
+	void printPerformance(double *x);
 	//---------------------------------------------------------------------------
 	// SET AND GET
 	//---------------------------------------------------------------------------
@@ -148,15 +148,8 @@ public:
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
-	// PERFORMANCE AND CONSTRAINTS
-	int compute(double *x,double *p,double *c);
-	int computeGradients(double *dx,double *x,double *dpdx,double *dcdx);
-	// PERFORMANCE
-	int computePerformance(double *x,double *p);
-	int computePerformanceGradient(double *x,double *dpdx);
-	// CONSTRAINTS
-	int computeConstraint(double *x,int i,double *c);
-	int computeConstraintGradient(double *x,int i,double *dcdx);
+	int objectiveFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Real &f) const;
+	int gradientFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Vector &gradient) const;
 	//--------------------------------------------------------------------------
 	// DEBUG & REPORTING SUPPORT FOR GUI
 	//--------------------------------------------------------------------------

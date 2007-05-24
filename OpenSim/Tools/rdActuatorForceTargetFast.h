@@ -35,6 +35,7 @@
 //==============================================================================
 #include "osimToolsDLL.h"
 #include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <SimTKcommon.h>
 
 namespace OpenSim {
 
@@ -87,6 +88,9 @@ private:
 	/** Reciprocal of actuator area squared. */
 	Array<double> _recipAreaSquared;
 
+	SimTK::Matrix _constraintMatrix;
+	SimTK::Vector _constraintVector;
+
 //==============================================================================
 // METHODS
 //==============================================================================
@@ -96,26 +100,24 @@ public:
 	//---------------------------------------------------------------------------
 	virtual ~rdActuatorForceTargetFast();
 	rdActuatorForceTargetFast(int aNX,rdCMC *aController);
+
 private:
 	void setNull();
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
 public:
+
+	bool prepareToOptimize(double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
-	// PERFORMANCE AND CONSTRAINTS
-	int compute(double *x,double *p,double *c);
-	int computeGradients(double *dx,double *x,double *dpdx,double *dcdx);
-	// PERFORMANCE
-	int computePerformance(double *x,double *p);
-	int computePerformanceGradient(double *x,double *dpdx);
-	// CONSTRAINTS
-	int computeConstraint(double *x,int i,double *c);
-	int computeConstraintGradient(double *x,int i,double *dcdx);
+	int objectiveFunc(const SimTK::Vector &aF, const bool new_coefficients, SimTK::Real& rP) const;
+	int gradientFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &gradient) const;
+	int constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &constraints) const;
+	int constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::Matrix &jac) const;
+
+private:
+	void computeConstraintVector(const SimTK::Vector &x, SimTK::Vector &c) const;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 };	// END class rdActuatorForceTargetFast
