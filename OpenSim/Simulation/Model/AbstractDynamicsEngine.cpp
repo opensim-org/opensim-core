@@ -34,7 +34,6 @@
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include "AbstractDynamicsEngine.h"
 #include "Model.h"
 #include "AbstractBody.h"

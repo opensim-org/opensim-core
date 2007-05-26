@@ -21,7 +21,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <OpenSim/SQP/rdFSQP.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/SimmMacros.h>
@@ -60,28 +59,10 @@ _markers(NULL)
 	buildMarkerMap(aExperimentalDataStorage.getColumnLabels());
 	buildCoordinateMap(aExperimentalDataStorage.getColumnLabels());
 
-	//
-	// rdOptimizationTarget stuff
-	//
 	/** Number of controls -- also allocates _dx. */
-	setNumControls(_unprescribedQs.getSize());
-	/** Number of performance criteria. */
-	_np=1;
-	/** Number of nonlinear inequality constraints. */
-	_nineqn=0;
-	/** Number of inequality constraints. */
-	// Every Q has min and max
-	_nineq=0;
-	/** Number of nonlinear equality constraints. */
-	_neqn=0;
-	/** Number of equality constraints. */
-	_neq=0;
-
-	// OptimizerSystem stuff
 	setNumParameters(_unprescribedQs.getSize());
-	setNumConstraints(0);
 
-	for (int i = 0; i < _nx; i++)
+	for (int i = 0; i < getNumParameters(); i++)
 		_dx[i] = _perturbation;
 
 	_printPerformanceValues = false;
@@ -112,7 +93,7 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 {
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
-	for (int i = 0; i < _nx; i++)
+	for (int i = 0; i < getNumParameters(); i++)
 	{
 		_unprescribedQs[i]->coord->setValue(x[i]);
 		if (debug)
@@ -203,7 +184,7 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 int IKTarget::gradientFunc(const SimTK::Vector &x, const bool new_parameters, SimTK::Vector &dpdx) const
 {
 	calcDerivs=true;
-	int status = rdFSQP::CentralDifferences(this,_dx,x,dpdx);
+	int status = rdOptimizationTarget::CentralDifferences(this,&_dx[0],x,dpdx);
 	calcDerivs=false;
 
 	return (status);
@@ -448,7 +429,7 @@ void IKTarget::printPerformance(double *x)
 {
 	_printPerformanceValues = true;
 	double p;
-	objectiveFunc(SimTK::Vector(_nx,x,true),true,p);
+	objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
 	_printPerformanceValues=false;
 }
 

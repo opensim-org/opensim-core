@@ -90,6 +90,7 @@ CMCTool::CMCTool() :
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
 	_useFastTarget(_useFastTargetProp.getValueBool()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -124,6 +125,7 @@ CMCTool::CMCTool(const string &aFileName) :
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
 	_useFastTarget(_useFastTargetProp.getValueBool()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -192,6 +194,7 @@ CMCTool(const CMCTool &aTool) :
 	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
 	_useFastTarget(_useFastTargetProp.getValueBool()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
@@ -241,6 +244,7 @@ setNull()
 	_targetDT = 0.010;
 	_useCurvatureFilter = false;
 	_useFastTarget = true;
+	_optimizerAlgorithm = "ipopt";
 	_useReflexes = false;
 	_optimizerDX = 1.0e-4;
 	_convergenceCriterion = 1.0e-6;
@@ -345,6 +349,12 @@ void CMCTool::setupProperties()
 	_useFastTargetProp.setName("use_fast_optimization_target");
 	_propertySet.append( &_useFastTargetProp );
 
+	comment = "Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
+				 "the latter requiring the osimFSQP library.";
+	_optimizerAlgorithmProp.setComment(comment);
+	_optimizerAlgorithmProp.setName("optimizer_algorithm");
+	_propertySet.append( &_optimizerAlgorithmProp );
+
 	comment = "Perturbation size used by the optimizer to compute numerical derivatives. "
 				 "A value between 1.0e-4 and 1.0e-8 is usually approprieate.";
 	_optimizerDXProp.setComment(comment);
@@ -431,6 +441,7 @@ operator=(const CMCTool &aTool)
 	_optimizerDX = aTool._optimizerDX;
 	_convergenceCriterion = aTool._convergenceCriterion;
 	_useFastTarget = aTool._useFastTarget;
+	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 	_useReflexes = aTool._useReflexes;
 	_maxIterations = aTool._maxIterations;
 	_printLevel = aTool._printLevel;
@@ -623,36 +634,40 @@ void CMCTool::run()
 	}
 	target->setDX(_optimizerDX);
 
-	controller.setOptimizationTarget(target);
-
-	bool useOptimizerSystem = getenv("USE_OPTIMIZER_SYSTEM") && atoi(getenv("USE_OPTIMIZER_SYSTEM"));
-	if(useOptimizerSystem) {
-		SimTK::Optimizer *optimizer = controller.getSimTKOptimizer();
-		if(optimizer) {
-			cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
-			optimizer->setDiagnosticsLevel(_printLevel);
-			cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-			optimizer->setConvergenceTolerance(_convergenceCriterion);
-			cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
-			optimizer->setMaxIterations(_maxIterations);
-
-			// Some IPOPT-specific settings
-			optimizer->useNumericalGradient(false); // Use our own central difference approximations
-			optimizer->useNumericalJacobian(false);
-			optimizer->setLimitedMemoryHistory(500); // works well for our small systems
-			optimizer->setAdvancedBoolOption("warm_start",true);
-			optimizer->setAdvancedRealOption("obj_scaling_factor",1);
-			optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",1);
-		}	
+	// Pick optimizer algorithm
+	SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
+	if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
+		if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
+			std::cout << "CFSQP optimizer algorithm unavailable.  Will try to use IPOPT instead." << std::endl;
+			algorithm = SimTK::InteriorPoint;
+		} else {
+			std::cout << "Using CFSQP optimizer algorithm." << std::endl;
+			algorithm = SimTK::CFSQP;
+		}
+	} else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
+		std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+		algorithm = SimTK::InteriorPoint;
 	} else {
-		// Optimizer settings
-		rdFSQP *sqp = controller.getOptimizer();
-		cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
-		sqp->setPrintLevel(_printLevel);
-		cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-		sqp->setConvergenceCriterion(_convergenceCriterion);
-		cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
-		sqp->setMaxIterations(_maxIterations);
+		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
+	}
+
+	SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
+	controller.setOptimizationTarget(target, optimizer);
+
+	cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
+	optimizer->setDiagnosticsLevel(_printLevel);
+	cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
+	optimizer->setConvergenceTolerance(_convergenceCriterion);
+	cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
+	optimizer->setMaxIterations(_maxIterations);
+	optimizer->useNumericalGradient(false); // Use our own central difference approximations
+	optimizer->useNumericalJacobian(false);
+	if(algorithm == SimTK::InteriorPoint) {
+		// Some IPOPT-specific settings
+		optimizer->setLimitedMemoryHistory(500); // works well for our small systems
+		optimizer->setAdvancedBoolOption("warm_start",true);
+		optimizer->setAdvancedRealOption("obj_scaling_factor",1);
+		optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",100);
 	}
 
 	controller.setCheckTargetTime(true);

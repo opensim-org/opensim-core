@@ -99,6 +99,8 @@ protected:
 	PropertyStr _notesProp;
 	std::string &_notes;
 
+	std::string _optimizerAlgorithm;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -151,6 +153,8 @@ public:
 	{
 		_coordinateFileName = aFilename;
 	}
+	void setOptimizerAlgorithm(const std::string& aOptimizerAlgorithm) { _optimizerAlgorithm = aOptimizerAlgorithm; }
+	std::string getOptimizerAlgorithm() const { return _optimizerAlgorithm; }
 
 	void peteTest() const;
 

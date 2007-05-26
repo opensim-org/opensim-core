@@ -50,7 +50,6 @@ class Optimizer;
 namespace OpenSim {
 
 class rdOptimizationTarget;
-class rdFSQP;
 class VectorFunctionForActuators;
 class rdCMC_TaskSet;
 
@@ -90,7 +89,6 @@ class OSIMTOOLS_API rdCMC : public Controller
 //=============================================================================
 protected:
 	/** Optimizer. */
-	rdFSQP *_sqp;
 	SimTK::Optimizer *_optimizer;
 	/** Optimization target for computing the controls. */
 	rdOptimizationTarget *_target;
@@ -159,9 +157,8 @@ public:
 	ControlSet* getControlSet() const;
 	rdCMC_TaskSet* getTaskSet() const;
 	Array<int>* getParameterList();
-	rdFSQP* getOptimizer() const;
-	SimTK::Optimizer* getSimTKOptimizer() const;
-	rdOptimizationTarget* setOptimizationTarget(rdOptimizationTarget *aTarget);
+	SimTK::Optimizer* getOptimizer() const;
+	rdOptimizationTarget* setOptimizationTarget(rdOptimizationTarget *aTarget, SimTK::Optimizer *aOptimizer);
 	rdOptimizationTarget* getOptimizationTarget() const;
 	void setDT(double aDT);
 	double getDT() const;

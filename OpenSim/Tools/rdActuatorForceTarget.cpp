@@ -35,7 +35,6 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include "rdCMC.h"
 #include "rdActuatorForceTarget.h"
 #include "rdCMC_TaskSet.h"
@@ -76,7 +75,7 @@ rdActuatorForceTarget::rdActuatorForceTarget(int aNX,rdCMC *aController) :
 	rdOptimizationTarget(aNX), _controller(aController), _stressTermWeight(1.0)
 {
 	// NUMBER OF CONTROLS
-	if(getNumControls()<=0) {
+	if(getNumParameters()<=0) {
 		throw(Exception("rdActuatorForceTarget: ERROR- no controls.\n"));
 	}
 
@@ -94,12 +93,6 @@ rdActuatorForceTarget::rdActuatorForceTarget(int aNX,rdCMC *aController) :
 	_dydt.setSize(ny);
 	_dqdt.setSize(nq);
 	_dudt.setSize(nu);
-
-	// NUMBERS OF CONSTRAINTS
-	_nineqn = 0;
-	_nineq = 0;
-	_neqn = 0;
-	_neq = 0;
 
 	// DERIVATIVE PERTURBATION SIZES;
 	setDX(1.0e-6);
@@ -335,7 +328,7 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
 #ifndef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 
 	// Explicit computation of derivative
-	status = rdFSQP::CentralDifferences(this,_dx,x,gradient);
+	status = rdOptimizationTarget::CentralDifferences(this,&_dx[0],x,gradient);
 
 #else
 

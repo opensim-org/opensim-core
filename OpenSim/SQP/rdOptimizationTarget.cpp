@@ -41,29 +41,19 @@
 #include "rdOptimizationTarget.h"
 #include <iostream>
 
-#define USE_CONSTRAINT_CACHE
-
 //=============================================================================
 // EXPORTED STATIC CONSTANTS
 //=============================================================================
 
-
 using namespace OpenSim;
+using SimTK::Vector;
+using SimTK::Matrix;
+
 const double rdOptimizationTarget::SMALLDX = 1.0e-14;
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-rdOptimizationTarget::
-~rdOptimizationTarget()
-{
-	if(_dx!=NULL) {delete[] _dx;  _dx=NULL; }
-}
 //_____________________________________________________________________________
 /**
  * Construct an optimization target.
@@ -73,35 +63,8 @@ rdOptimizationTarget::
 rdOptimizationTarget::
 rdOptimizationTarget(int aNX)
 {
-	setNull();
-
-	// SET NUMBER OF CONTROLS
-	setNumControls(aNX);
 	if(aNX>0) setNumParameters(aNX); // OptimizerSystem
 }
-
-
-//==============================================================================
-// CONSTRUCTION
-//==============================================================================
-//------------------------------------------------------------------------------
-// NULL
-//------------------------------------------------------------------------------
-///______________________________________________________________________________
-/**
- * Set NULL values for the member variables.
- */
-void rdOptimizationTarget::
-setNull()
-{
-	_nx = 0;
-	_nineqn = 0;
-	_nineq = 0;
-	_neqn = 0;
-	_neq = 0;  // Used to be 2, and I don't know why.
-	_dx = NULL;
-}
-
 //==============================================================================
 // SET AND GET
 //==============================================================================
@@ -120,25 +83,10 @@ setNull()
  * @see setDX()
  */
 void rdOptimizationTarget::
-setNumControls(int aNX)
+setNumParameters(const int aNX)
 {
-	_nx = aNX;
-	if(_nx<0) _nx = 0;
-
-	// ALLOCATE PERTURBATION VECTOR
-	if(_dx!=NULL) delete[] _dx;
-	if(_nx>0) _dx = new double[_nx];
-}
-//______________________________________________________________________________
-/**
- * Get the number of controls.
- *
- * @return Number of controls.
- */
-int rdOptimizationTarget::
-getNumControls() const
-{
-	return(_nx);
+	OptimizerSystem::setNumParameters(aNX);
+	_dx.setSize(getNumParameters());
 }
 
 //------------------------------------------------------------------------------
@@ -151,17 +99,11 @@ getNumControls() const
 void rdOptimizationTarget::
 setDX(int aIndex,double aValue)
 {
-	// CHECK FOR NULL
-	if(_dx==NULL) return;
-
-	// CHECK INDEX
-	if(!isControlIndexValid(aIndex)) return;
-
 	// VALIDATE VALUE
 	validatePerturbationSize(aValue);
 
-	// SET VALUE
-	_dx[aIndex] = aValue;
+	// SET VALUE (use get to do bounds checking)
+	_dx.get(aIndex) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -170,14 +112,11 @@ setDX(int aIndex,double aValue)
 void rdOptimizationTarget::
 setDX(double aValue)
 {
-	// CHECK FOR NULL
-	if(_dx==NULL) return;
-
 	// VALIDATE VALUE
 	validatePerturbationSize(aValue);
 
 	// SET VALUE
-	for(int i=0;i<_nx;i++) _dx[i] = aValue;
+	for(int i=0;i<getNumParameters();i++) _dx.get(i) = aValue;
 }
 //______________________________________________________________________________
 /**
@@ -186,13 +125,7 @@ setDX(double aValue)
 double rdOptimizationTarget::
 getDX(int aIndex)
 {
-	// CHECK FOR NULL
-	if(_dx==NULL) return(0.0);
-
-	// CHECK INDEX
-	if(!isControlIndexValid(aIndex)) return(0.0);
-
-	return(_dx[aIndex]);
+	return _dx.get(aIndex);
 }
 //______________________________________________________________________________
 /**
@@ -201,103 +134,12 @@ getDX(int aIndex)
 double* rdOptimizationTarget::
 getDXArray()
 {
-	return(_dx);
+	return &_dx[0];
 }
-
-//------------------------------------------------------------------------------
-// PERFORMANCE
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// TOTAL CONSTRAINTS
-//------------------------------------------------------------------------------
-//______________________________________________________________________________
-/**
- * Get the total number of constraints.
- */
-int rdOptimizationTarget::
-getNC() const
-{
-	return(_nineq+_neq);
-}
-//------------------------------------------------------------------------------
-// INEQUALITY CONSTRAINTS
-//------------------------------------------------------------------------------
-//______________________________________________________________________________
-/**
- * Get the total number of inequality constraints.
- */
-int rdOptimizationTarget::
-getNCInequality() const
-{
-	return(_nineq);
-}
-//______________________________________________________________________________
-/**
- * Get the number of nonlinear inequality constraints.
- */
-int rdOptimizationTarget::
-getNCInequalityNonlinear() const
-{
-	return(_nineqn);
-}
-//______________________________________________________________________________
-/**
- * Get the number of linear inequality constraints.
- */
-int rdOptimizationTarget::
-getNCInequalityLinear() const
-{
-	return(_nineq-_nineqn);
-}
-//------------------------------------------------------------------------------
-// EQUALITY CONSTRAINTS
-//------------------------------------------------------------------------------
-//______________________________________________________________________________
-/**
- * Get the total number of equality constraints.
- */
-int rdOptimizationTarget::
-getNCEquality() const
-{
-	return(_neq);
-}
-//______________________________________________________________________________
-/**
- * Get the number of nonlinear equality constraints.
- */
-int rdOptimizationTarget::
-getNCEqualityNonlinear() const
-{
-	return(_neqn);
-}
-//______________________________________________________________________________
-/**
- * Get the number of linear equality constraints.
- */
-int rdOptimizationTarget::
-getNCEqualityLinear() const
-{
-	return(_neq-_neqn);
-}
-
-
 
 //==============================================================================
 // UTILITY
 //==============================================================================
-//______________________________________________________________________________
-/**
- * Is a control index valid?
- */
-bool rdOptimizationTarget::
-isControlIndexValid(int aIndex)
-{
-	if(aIndex>=_nx) {
-		printf("rdOptimizationTarget.isControlIndexValid: false.\n");
-		return(false);
-	}
-	return(true);
-}
 //______________________________________________________________________________
 /**
  * Ensure that a derivative perturbation is a valid size
@@ -319,81 +161,111 @@ void rdOptimizationTarget::
 printPerformance(double *x)
 {
 	double p;
-	objectiveFunc(SimTK::Vector(_nx,x,true),true,p);
+	objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
 	std::cout << "total error = " << p << std::endl;
 }
-//==============================================================================
-// CONSTRAINT CACHING SUPPORT
-//==============================================================================
-void rdOptimizationTarget::
-clearCache()
-{
-#ifdef USE_CONSTRAINT_CACHE
-	int nx=getNumControls();
-	int nc=getNC();
-	_cachedConstraintJacobian.resize(nc,nx);
-	_cachedConstraint.resize(nc);
-	_cachedConstraintJacobianParameters.resize(0);
-	_cachedConstraintParameters.resize(0);
-#endif
-}
+
+//=============================================================================
+// STATIC DERIVATIVES
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Compute derivatives of a constraint with respect to the
+ * controls by central differences.
+ *
+ * @param dx An array of control perturbation values.
+ * @param x Values of the controls at time t.
+ * @param ic Index of the constraint.
+ * @param dcdx The derivatives of the constraints.
+ *
+ * @return -1 if an error is encountered, 0 otherwize.
+ */
 int rdOptimizationTarget::
-computeConstraint(const SimTK::Vector &x, const bool new_coefficients, double &c, int ic) const
+CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
+	double *dx,const Vector &x,Matrix &jacobian)
 {
-	int nx=getNumControls();
-	int nc=getNC();
-	int status = 0;
-#ifdef USE_CONSTRAINT_CACHE
-	bool cached_value_available = false;
-	if(_cachedConstraintParameters.size()) {
-		cached_value_available = true;
-		for(int i=0; i<nx; i++) 
-			if(x[i] != _cachedConstraintParameters[i]) {
-				cached_value_available = false;
-				break;
-			}
+	if(aTarget==NULL) return(-1);
+
+	// INITIALIZE CONTROLS
+	int nx = aTarget->getNumParameters(); if(nx<=0) return(-1);
+	int nc = aTarget->getNumConstraints(); if(nc<=0) return(-1);
+	Vector xp=x;
+	Vector cf(nc),cb(nc);
+
+	// INITIALIZE STATUS
+	int status = -1;
+
+	// LOOP OVER CONTROLS
+	for(int i=0;i<nx;i++) {
+
+		// PERTURB FORWARD
+		xp[i] = x[i] + dx[i];
+		status = aTarget->constraintFunc(xp,true,cf);
+		if(status<0) return(status);
+
+		// PERTURB BACKWARD
+		xp[i] = x[i] - dx[i];
+		status = aTarget->constraintFunc(xp,true,cb);
+		if(status<0) return(status);
+
+		// DERIVATIVES OF CONSTRAINTS
+		double rdx = 0.5 / dx[i];
+		for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
+
+		// RESTORE CONTROLS
+		xp[i] = x[i];
 	}
 
-	if(!cached_value_available) {
-		status = constraintFunc(x,new_coefficients,_cachedConstraint);
-		_cachedConstraintParameters.resize(nx);
-		_cachedConstraintParameters = x;
-	} 
-	c = _cachedConstraint[ic];
-#else
-	SimTK::Vector allc(nc);
-	status = constraintFunc(x,new_coefficients,allc);
-	c=allc[ic];
-#endif
-	return status;
+	return(status);
 }
+//_____________________________________________________________________________
+/**
+ * Compute derivatives of performance with respect to the
+ * controls by central differences.  Note that the gradient array should
+ * be allocated as dpdx[nx].
+ *
+ * @param dx An array of control perturbation values.
+ * @param x Values of the controls at time t.
+ * @param dpdx The derivatives of the performance criterion.
+ *
+ * @return -1 if an error is encountered, 0 otherwize.
+ */
 int rdOptimizationTarget::
-computeConstraintGradient(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &dcdx, int ic) const
+CentralDifferences(const rdOptimizationTarget *aTarget,
+	double *dx,const Vector &x,Vector &dpdx)
 {
-	int nx=getNumControls();
-	int nc=getNC();
-	int status = 0;
-#ifdef USE_CONSTRAINT_CACHE
-	bool cached_value_available = false;
-	if(_cachedConstraintJacobianParameters.size()) {
-		cached_value_available = true;
-		for(int i=0; i<nx; i++) 
-			if(x[i] != _cachedConstraintJacobianParameters[i]) {
-				cached_value_available = false;
-				break;
-			}
+	if(aTarget==NULL) return(-1);
+
+	// CONTROLS
+	int nx = aTarget->getNumParameters();  if(nx<=0) return(-1);
+	Vector xp=x;
+
+	// PERFORMANCE
+	double pf,pb;
+
+	// INITIALIZE STATUS
+	int status = -1;
+
+	// LOOP OVER CONTROLS
+	for(int i=0;i<nx;i++) {
+
+		// PERTURB FORWARD
+		xp[i] = x[i] + dx[i];
+		status = aTarget->objectiveFunc(xp,true,pf);
+		if(status<0) return(status);
+
+		// PERTURB BACKWARD
+		xp[i] = x[i] - dx[i];
+		status = aTarget->objectiveFunc(xp,true,pb);
+		if(status<0) return(status);
+
+		// DERIVATIVES OF PERFORMANCE
+		double rdx = 0.5 / dx[i];
+		dpdx[i] = rdx*(pf-pb);
+
+		// RESTORE CONTROLS
+		xp[i] = x[i];
 	}
 
-	if(!cached_value_available) {
-		status = constraintJacobian(x,new_coefficients,_cachedConstraintJacobian);
-		_cachedConstraintJacobianParameters.resize(nx);
-		_cachedConstraintJacobianParameters = x;
-	} 
-	for(int col=0;col<nx;col++) dcdx[col]=_cachedConstraintJacobian(ic,col);
-#else
-	SimTK::Matrix jacobian(nc,nx);
-	status = constraintJacobian(x,new_coefficients,jacobian);
-	for(int col=0;col<nx;col++) dcdx[col]=jacobian(ic,col);
-#endif
-	return status;
+	return(status);
 }

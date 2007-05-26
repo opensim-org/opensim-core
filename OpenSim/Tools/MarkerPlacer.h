@@ -101,6 +101,10 @@ protected:
 	PropertyDbl _maxMarkerMovementProp;
 	double &_maxMarkerMovement;
 
+	/** Preferred optimizer algorithm. */
+	PropertyStr _optimizerAlgorithmProp;
+	std::string &_optimizerAlgorithm;
+
 //=============================================================================
 // METHODS
 //=============================================================================

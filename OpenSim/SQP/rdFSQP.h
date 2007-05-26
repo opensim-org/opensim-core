@@ -116,16 +116,6 @@ public:
 	int computeOptimalControls(const double *xstart,double *x);
 
 	//--------------------------------------------------------------------------
-	// DERIVATIVES
-	//--------------------------------------------------------------------------
-	static int
-		CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
-		double *dx,const SimTK::Vector &x,SimTK::Matrix &jacobian);
-	static int
-		CentralDifferences(const rdOptimizationTarget *aTarget,
-		double *dx,const SimTK::Vector &x,SimTK::Vector &dpdx);
-
-	//--------------------------------------------------------------------------
 	// STATIC FUNCTIONS USED AS INPUT TO cfsqp()
 	//--------------------------------------------------------------------------
 	static void

@@ -44,6 +44,10 @@ private:
 	PropertyObj _IKTrialSetProp;
 	IKTrialSet &_IKTrialSet;
 
+	/** Preferred optimizer algorithm. */
+	PropertyStr _optimizerAlgorithmProp;
+	std::string &_optimizerAlgorithm;
+
 //=============================================================================
 // METHODS
 //=============================================================================

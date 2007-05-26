@@ -6,6 +6,11 @@
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Common/Storage.h>
 
+namespace SimTK {
+	class Optimizer;
+	class OptimizerSystem;
+}
+
 namespace OpenSim { 
 
 class IKTrial;
@@ -58,6 +63,8 @@ private:
 	void appendUserData(Array<double>& outputRow, 
 						Array<int>& indices, 
 						StateVector* inputRow);
+
+	SimTK::Optimizer *createOptimizer(const IKTrial &aIKOptions, SimTK::OptimizerSystem &aSystem) const;
 
 };
 

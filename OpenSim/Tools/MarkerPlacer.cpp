@@ -57,7 +57,8 @@ MarkerPlacer::MarkerPlacer() :
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -89,7 +90,8 @@ MarkerPlacer::MarkerPlacer(const MarkerPlacer &aMarkerPlacer) :
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -130,6 +132,7 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 	_outputMarkerFileName = aMarkerPlacer._outputMarkerFileName;
 	_outputMotionFileName = aMarkerPlacer._outputMotionFileName;
 	_maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
+	_optimizerAlgorithm = aMarkerPlacer._optimizerAlgorithm;
 }
 
 //_____________________________________________________________________________
@@ -141,6 +144,7 @@ void MarkerPlacer::setNull()
 	setType("MarkerPlacer");
 
 	_coordinateFileName = "";
+	_optimizerAlgorithm = "ipopt";
 }
 
 //_____________________________________________________________________________
@@ -204,6 +208,11 @@ void MarkerPlacer::setupProperties()
 	_maxMarkerMovementProp.setName("max_marker_movement");
 	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
 	_propertySet.append(&_maxMarkerMovementProp);
+
+	_optimizerAlgorithmProp.setComment("Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
+		"the latter requiring the osimFSQP library.");
+	_optimizerAlgorithmProp.setName("optimizer_algorithm");
+	_propertySet.append( &_optimizerAlgorithmProp );
 }
 
 //=============================================================================
@@ -264,6 +273,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	if(_coordinateFileName != "") ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
+	ikTrial.setOptimizerAlgorithm(_optimizerAlgorithm);
 //	ikTrial.setIncludeMarkers(true);
 	if(!ikTrial.processTrialCommon(*aModel,_ikTaskSet,staticPose,outputStorage)) 
 		return false;

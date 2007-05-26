@@ -120,6 +120,9 @@ private:
 	meets them as well as it can. */
 	PropertyBool _useFastTargetProp;
 	bool &_useFastTarget;
+	/** Preferred optimizer algorithm. */
+	PropertyStr _optimizerAlgorithmProp;
+	std::string &_optimizerAlgorithm;
 	/** Perturbation size used by the optimizer to compute numerical derivatives. */
 	PropertyDbl _optimizerDXProp;
 	double &_optimizerDX;

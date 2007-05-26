@@ -636,3 +636,11 @@ TrimTrailingWhitespace(std::string &rStr)
 	string::size_type back = rStr.find_last_not_of(" \t\r\n");
 	if(back < rStr.size()-1) rStr.erase(back+1);
 }
+
+std::string IO::
+Uppercase(const std::string &aStr)
+{
+	std::string result = aStr;
+	for(int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
+	return result;
+}

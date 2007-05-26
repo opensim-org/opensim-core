@@ -34,7 +34,6 @@
 #include <iostream>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include "rdActuatorForceTargetFast.h"
 #include "rdCMC_TaskSet.h"
 #include "rdCMC.h"
@@ -69,7 +68,7 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	rdOptimizationTarget(aNX), _controller(aController)
 {
 	// NUMBER OF CONTROLS
-	if(getNumControls()<=0) {
+	if(getNumParameters()<=0) {
 		throw(Exception("rdActuatorForceTargetFast: ERROR- no controls.\n"));
 	}
 
@@ -105,20 +104,14 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 
 	// NUMBERS OF CONSTRAINTS
 	// There are only linear equality constraints.
-	_nineqn = 0;
-	_nineq = 0;
-	_neqn = 0;
-	_neq = nConstraints;
-
-	// OptimizerSystem
-	setNumConstraints(nConstraints);
 	setNumEqualityConstraints(nConstraints);
+	setNumLinearEqualityConstraints(nConstraints);
 
 	// DERIVATIVE PERTURBATION SIZES;
 	setDX(1.0e-6);
 
 	// COMPUTE ACTUATOR AREAS
-	Array<double> f(1.0,_nx);
+	Array<double> f(1.0,na);
 	ActuatorSet *actuatorSet = model->getActuatorSet();
 	for(int i=0;i<na;i++) {
 		actuatorSet->get(i)->setForce(f[i]);
@@ -137,7 +130,7 @@ prepareToOptimize(double *x)
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
 	Model *model = _controller->getModel();
 	int nf = model->getNumActuators();
-	int nc = _neq;
+	int nc = getNumConstraints();
 
 	_constraintMatrix.resize(nc,nf);
 	_constraintVector.resize(nc);
@@ -182,7 +175,7 @@ prepareToOptimize(double *x)
 int rdActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	int nx = getNumControls();
+	int nx = getNumParameters();
 	double p = 0;
 	for(int i=0;i<nx;i++) {
 		p += _recipAreaSquared[i] * aF[i] * aF[i];
@@ -202,7 +195,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int rdActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-	int nx = getNumControls();
+	int nx = getNumParameters();
 	for(int i=0;i<nx;i++) {
 		gradient[i] = 2.0 * _recipAreaSquared[i] * x[i];
 	}
@@ -286,7 +279,7 @@ computeConstraintVector(const Vector &x,Vector &c) const
 	Array<double> &a = taskSet->getAccelerations();
 
 	// CONSTRAINTS
-	for(int i=0; i<_neq; i++)
+	for(int i=0; i<getNumConstraints(); i++)
 		c[i]=w[i]*(aDes[i]-a[i]);
 }
 //______________________________________________________________________________
@@ -304,7 +297,7 @@ constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::M
 #ifndef USE_LINEAR_CONSTRAINT_MATRIX
 
 	// Compute gradient using callbacks to constraintFunc
-	rdFSQP::CentralDifferencesConstraint(this,_dx,x,jac);
+	rdOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],x,jac);
 
 #else
 

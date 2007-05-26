@@ -38,6 +38,7 @@
 // INCLUDES
 //=============================================================================
 #include "osimSQPDLL.h"
+#include <OpenSim/Common/Array.h>
 #include <simmath/Optimizer.h>
 
 //=============================================================================
@@ -59,65 +60,34 @@ public:
 	/** Smallest allowable perturbation size for computing derivatives. */
 	static const double SMALLDX;
 protected:
-	/** Number of controls. */
-	int _nx;
-	/** Number of performance criteria. */
-	int _np;
-	/** Number of nonlinear inequality constraints. */
-	int _nineqn;
-	/** Number of inequality constraints. */
-	int _nineq;
-	/** Number of nonlinear equality constraints. */
-	int _neqn;
-	/** Number of equality constraints. */
-	int _neq;
 	/** Perturbation size for computing numerical derivatives. */
-	double *_dx;
-
-private:
-	// For caching
-	mutable SimTK::Vector _cachedConstraintJacobianParameters;
-	mutable SimTK::Matrix _cachedConstraintJacobian;
-	mutable SimTK::Vector _cachedConstraintParameters;
-	mutable SimTK::Vector _cachedConstraint;
+	Array<double> _dx;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	virtual ~rdOptimizationTarget();
 	rdOptimizationTarget(int aNX=0);
-private:
-	void setNull();
 
-public:
 	// SET AND GET
-	virtual void setNumControls(int aNX);
-	int getNumControls() const;
+	void setNumParameters(const int aNX); // OptimizerSystem function
 	void setDX(double aVal);
 	void setDX(int aIndex,double aVal);
 	double getDX(int aIndex);
 	double* getDXArray();
-	int getNumContacts() { return 1; } // used to return number of performance criteria, but for now we'll assume 1
-	int getNC() const;
-	int getNCInequality() const;
-	int getNCInequalityNonlinear() const;
-	int getNCInequalityLinear() const;
-	int getNCEquality() const;
-	int getNCEqualityNonlinear() const;
-	int getNCEqualityLinear() const;
 
 	// UTILITY
-	bool isControlIndexValid(int aIndex);
 	void validatePerturbationSize(double &aSize);
 
 	virtual bool prepareToOptimize(double *x) { return false; }
 	virtual void printPerformance(double *x);
 
-	// Caching support for FSQP (since it likes to query constraints one at a time)
-	void clearCache();
-	int computeConstraint(const SimTK::Vector &x, const bool new_coefficients, double &c, int ic) const;
-	int computeConstraintGradient(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &dcdx, int ic) const;
+	static int
+		CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
+		double *dx,const SimTK::Vector &x,SimTK::Matrix &jacobian);
+	static int
+		CentralDifferences(const rdOptimizationTarget *aTarget,
+		double *dx,const SimTK::Vector &x,SimTK::Vector &dpdx);
 };
 
 }; //namespace

@@ -39,7 +39,8 @@ IKTool::IKTool() :
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
-	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
 {
 	setType("IKTool");
 	setNull();
@@ -58,7 +59,8 @@ IKTool::IKTool(const string &aFileName, Model* guiModel) :
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
-	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
 {
 	setType("IKTool");
 	setNull();
@@ -123,7 +125,8 @@ IKTool(const IKTool &aTool) :
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_IKTrialSetProp(PropertyObj("", IKTrialSet())),
-	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj())
+	_IKTrialSet((IKTrialSet&)_IKTrialSetProp.getValueObj()),
+	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
 {
 	setType("IKTool");
 	setNull();
@@ -149,6 +152,8 @@ void IKTool::
 setNull()
 {
 	setupProperties();
+
+	_optimizerAlgorithm = "ipopt";
 }
 //_____________________________________________________________________________
 /**
@@ -164,6 +169,11 @@ void IKTool::setupProperties()
 		"Each trial should get a seperate SimmIKTril block.");
 	_IKTrialSetProp.setName("IKTrialSet");
 	_propertySet.append(&_IKTrialSetProp);
+
+	_optimizerAlgorithmProp.setComment("Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
+		"the latter requiring the osimFSQP library.");
+	_optimizerAlgorithmProp.setName("optimizer_algorithm");
+	_propertySet.append( &_optimizerAlgorithmProp );
 }
 //_____________________________________________________________________________
 /**
@@ -192,6 +202,7 @@ operator=(const IKTool &aTool)
 	// MEMBER VARIABLES
 	_ikTaskSet = aTool._ikTaskSet;
 	_IKTrialSet = aTool._IKTrialSet;
+	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 
 	return(*this);
 }
@@ -221,6 +232,7 @@ void IKTool::run()
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
+		_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
 		if (_IKTrialSet.get(i)->processTrial(*_model, _ikTaskSet))
 			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
 		else

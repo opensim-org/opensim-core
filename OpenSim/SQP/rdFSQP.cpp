@@ -67,7 +67,7 @@ rdFSQP(rdOptimizationTarget *aTarget)
 	setTarget(aTarget);
 
 	// NEW MAX ITERATIONS
-	_maxIter = 4 * _target->getNumControls();
+	_maxIter = 4 * _target->getNumParameters();
 
 }
 
@@ -129,20 +129,20 @@ setTarget(rdOptimizationTarget *aTarget)
 	_target = aTarget;
 
 	// CONTROLS
-	int nx = _target->getNumControls();
+	int nx = _target->getNumParameters();
 	if(_x!=NULL) delete[] _x;
 	_x = new double[nx];
 
 	// PERFORMANCE
 	int i;
-	int lenp = _target->getNumContacts() - _nfsr;
+	int lenp = 1 - _nfsr; // _target->getNumContacts() - _nfsr;
 	for(i=0;i<_nfsr;i++)  lenp += _mesh[i];
 	if(lenp<1) lenp = 1;
 	if(_p!=NULL) delete[] _p;
 	_p = new double[lenp];
 
 	// CONSTRAINTS
-	int lenc = _target->getNC() - _ncsrl - _ncsrn;
+	int lenc = _target->getNumConstraints() - _ncsrl - _ncsrn;
 	for(i=0;i<_ncsrn;i++)  lenc += _mesh[i+_nfsr];
 	for(i=0;i<_ncsrl;i++)  lenc += _mesh[i+_nfsr+_ncsrn];
 	if(lenc<1) lenc = 1;
@@ -335,7 +335,7 @@ getNonlinearEqualityConstraintTolerance()
 int rdFSQP::
 computeOptimalControls(const double *xin,double *xout)
 {
-	int nx = _target->getNumControls();
+	int nx = _target->getNumParameters();
 
 	double *bl, *bu;
 	if(_target->getHasLimits()) {
@@ -357,24 +357,21 @@ computeOptimalControls(const double *xin,double *xout)
 
 	// SET INITIAL X
 	int i;
-	for(i=0;i<_target->getNumControls();i++)  _x[i] = xin[i];
+	for(i=0;i<_target->getNumParameters();i++)  _x[i] = xin[i];
 
 	// SET THE CLIENT DATA TO THIS TARGET
 	void *cd = _target;
 
-	// Clear cache before starting optimization (used to speed up constraint computations)
-	_target->clearCache();
-
 	// OPTIMIZE
-	cfsqp(_target->getNumControls(),_target->getNumContacts(),_nfsr,
-		_target->getNCInequalityNonlinear(),_target->getNCInequality(),
-		_target->getNCEqualityNonlinear(),_target->getNCEquality(),
+	cfsqp(_target->getNumParameters(),1,_nfsr,
+		_target->getNumNonlinearInequalityConstraints(),_target->getNumInequalityConstraints(),
+		_target->getNumNonlinearEqualityConstraints(),_target->getNumEqualityConstraints(),
 		_ncsrl,_ncsrn,_mesh,
 		_mode,_printLevel,_maxIter,&_inform,_infinity,_eps,_epseqn,_udelta,
 		bl,bu,_x,_p,_c,_lambda,pFunc,cFunc,dpdxFunc,dcdxFunc,cd);
 
 	// SET OUTPUT X
-	for(i=0;i<_target->getNumControls();i++)  xout[i] = _x[i];
+	for(i=0;i<_target->getNumParameters();i++)  xout[i] = _x[i];
 
 	if(!_target->getHasLimits()) {
 		delete[] bl;
@@ -382,112 +379,6 @@ computeOptimalControls(const double *xin,double *xout)
 	}
 
 	return(_inform);
-}
-
-
-//=============================================================================
-// STATIC DERIVATIVES
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Compute derivatives of a constraint with respect to the
- * controls by central differences.
- *
- * @param dx An array of control perturbation values.
- * @param x Values of the controls at time t.
- * @param ic Index of the constraint.
- * @param dcdx The derivatives of the constraints.
- *
- * @return -1 if an error is encountered, 0 otherwize.
- */
-int rdFSQP::
-CentralDifferencesConstraint(const rdOptimizationTarget *aTarget,
-	double *dx,const Vector &x,Matrix &jacobian)
-{
-	if(aTarget==NULL) return(-1);
-
-	// INITIALIZE CONTROLS
-	int nx = aTarget->getNumControls(); if(nx<=0) return(-1);
-	int nc = aTarget->getNC(); if(nc<=0) return(-1);
-	Vector xp=x;
-	Vector cf(nc),cb(nc);
-
-	// INITIALIZE STATUS
-	int status = -1;
-
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
-
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->constraintFunc(xp,true,cf);
-		if(status<0) return(status);
-
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->constraintFunc(xp,true,cb);
-		if(status<0) return(status);
-
-		// DERIVATIVES OF CONSTRAINTS
-		double rdx = 0.5 / dx[i];
-		for(int j=0;j<nc;j++) jacobian(j,i) = rdx*(cf[j]-cb[j]);
-
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
-
-	return(status);
-}
-//_____________________________________________________________________________
-/**
- * Compute derivatives of performance with respect to the
- * controls by central differences.  Note that the gradient array should
- * be allocated as dpdx[nx].
- *
- * @param dx An array of control perturbation values.
- * @param x Values of the controls at time t.
- * @param dpdx The derivatives of the performance criterion.
- *
- * @return -1 if an error is encountered, 0 otherwize.
- */
-int rdFSQP::
-CentralDifferences(const rdOptimizationTarget *aTarget,
-	double *dx,const Vector &x,Vector &dpdx)
-{
-	if(aTarget==NULL) return(-1);
-
-	// CONTROLS
-	int nx = aTarget->getNumControls();  if(nx<=0) return(-1);
-	Vector xp=x;
-
-	// PERFORMANCE
-	double pf,pb;
-
-	// INITIALIZE STATUS
-	int status = -1;
-
-	// LOOP OVER CONTROLS
-	for(int i=0;i<nx;i++) {
-
-		// PERTURB FORWARD
-		xp[i] = x[i] + dx[i];
-		status = aTarget->objectiveFunc(xp,true,pf);
-		if(status<0) return(status);
-
-		// PERTURB BACKWARD
-		xp[i] = x[i] - dx[i];
-		status = aTarget->objectiveFunc(xp,true,pb);
-		if(status<0) return(status);
-
-		// DERIVATIVES OF PERFORMANCE
-		double rdx = 0.5 / dx[i];
-		dpdx[i] = rdx*(pf-pb);
-
-		// RESTORE CONTROLS
-		xp[i] = x[i];
-	}
-
-	return(status);
 }
 
 //=============================================================================
@@ -508,7 +399,7 @@ pFunc(int nparam,int j,double *x,double *p,void *cd)
 	}
 
 	// COMPUTE
-	int nx=target->getNumControls();
+	int nx=target->getNumParameters();
 	target->objectiveFunc(Vector(nx,x,true),true,*p);
 }
 //______________________________________________________________________________
@@ -527,7 +418,7 @@ dpdxFunc(int nparam,int j,double *x,double *dpdx,
 	}
 
 	// COMPUTE
-	int nx=target->getNumControls();
+	int nx=target->getNumParameters();
 	target->gradientFunc(Vector(nx,x,true),true,Vector(nx,dpdx,true));
 }
 
@@ -546,8 +437,11 @@ cFunc(int nparam,int j,double *x,double *c,void *cd)
 	}
 
 	// COMPUTE - this calls a wrapper that handles caching for faster constraint computation
-	int nx=target->getNumControls();
-	target->computeConstraint(Vector(nx,x,true),true,*c,j-1);
+	int nx=target->getNumParameters();
+	int nc=target->getNumConstraints();
+	SimTK::Vector allc(nc);
+	target->constraintFunc(Vector(nx,x,true),true,allc);
+	*c=allc[j-1];
 }
 //______________________________________________________________________________
 /**
@@ -566,9 +460,11 @@ dcdxFunc(int nparam,int j,double *x,double *dcdx,
 	}
 
 	// COMPUTE - this calls a wrapper that handles caching for faster constraint computation
-	int nx=target->getNumControls();
-	int nc=target->getNC();
-	target->computeConstraintGradient(Vector(nx,x,true),true,Vector(nx,dcdx,true),j-1);
+	int nx=target->getNumParameters();
+	int nc=target->getNumConstraints();
+	SimTK::Matrix jacobian(nc,nx);
+	target->constraintJacobian(Vector(nx,x,true),true,jacobian);
+	for(int col=0;col<nx;col++) dcdx[col]=jacobian(j-1,col);
 }
 
 //=============================================================================

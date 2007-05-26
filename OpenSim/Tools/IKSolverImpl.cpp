@@ -1,6 +1,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/SQP/rdFSQP.h>
 #include "IKTrial.h"
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
@@ -111,34 +112,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	}
 	_ikTarget.setParameterLimits(lowerBounds,upperBounds);
 
-	rdFSQP *optimizerFSQP = 0;
-	Optimizer *optimizerSimTK = 0;
-
-	bool useOptimizerSystem = getenv("USE_OPTIMIZER_SYSTEM") && atoi(getenv("USE_OPTIMIZER_SYSTEM"));
-	int printLevel = 0;
-	double convergenceCriterion = 1e-4;
-	int maxIterations = 1000;
-
-	if(!useOptimizerSystem) {
-		// Regular optimization
-		optimizerFSQP = new rdFSQP(&_ikTarget);
-		optimizerFSQP->setPrintLevel(printLevel);
-		optimizerFSQP->setConvergenceCriterion(convergenceCriterion);	// Error in markers of .01
-		optimizerFSQP->setMaxIterations(maxIterations);
-	} else {
-		optimizerSimTK = new Optimizer(_ikTarget, SimTK::InteriorPoint);
-		optimizerSimTK->setDiagnosticsLevel(printLevel);
-		optimizerSimTK->setConvergenceTolerance(convergenceCriterion);
-		optimizerSimTK->setMaxIterations(maxIterations);
-
-		// Some IPOPT-specific settings
-		optimizerSimTK->useNumericalGradient(false); // Use our own central difference approximations
-		optimizerSimTK->useNumericalJacobian(false);
-		optimizerSimTK->setLimitedMemoryHistory(500); // works well for our small systems
-		optimizerSimTK->setAdvancedBoolOption("warm_start",true);
-		optimizerSimTK->setAdvancedRealOption("obj_scaling_factor",1);
-		optimizerSimTK->setAdvancedRealOption("nlp_scaling_max_gradient",1);
-	}
+	Optimizer *optimizer = createOptimizer(aIKOptions, _ikTarget);
 
 	for (int index = startFrame; index <= endFrame; index++)
 	{
@@ -149,14 +123,15 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		_ikTarget.prepareToSolve(index, &unprescribedQGuess[0]);
 
 		// Invoke optimization mechanism to solve for Qs
-		int optimizerReturn = 0;
-		if(optimizerFSQP) {
-			optimizerReturn = optimizerFSQP->computeOptimalControls(&unprescribedQGuess[0], &unprescribedQSol[0]);
-		} else {
-			Vector results(numParameters, &unprescribedQGuess[0]); // initialize with initial guess
-			optimizerSimTK->optimize(results);
-			for(int i=0;i<numParameters;i++) unprescribedQSol[i]=results[i];
+		Vector results(numParameters, &unprescribedQGuess[0]); // initialize with initial guess
+		try {
+			optimizer->optimize(results);
 		}
+		catch (const SimTK::Exception::Base &ex) {
+			cout << ex.getMessage() << endl;
+			cout << "OPTIMIZATION FAILED..." << endl;
+		}
+		for(int i=0;i<numParameters;i++) unprescribedQSol[i]=results[i];
 
 		/* Output variables include unprescribed (solved) Qs... */
 		Array<double> qsAndMarkersArray = unprescribedQSol;
@@ -176,7 +151,6 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		double currentTime;
 		inputData.getTime(index, currentTime);
 		cout << "Frame " << index + 1 << " (t=" << currentTime << "):\t";
-		if(optimizerReturn != 0) cout << " Optimizer returned = " << optimizerReturn << endl;
 		_ikTarget.printPerformance(&unprescribedQSol[0]);
 
 		// INTEGRATION CALLBACKS
@@ -202,8 +176,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		outputData.append(*nextDataRow);
 	}
 
-	delete optimizerFSQP;
-	delete optimizerSimTK;
+	delete optimizer;
 }
 //______________________________________________________________________________
 /**
@@ -240,4 +213,44 @@ void IKSolverImpl::appendUserData(Array<double>& outputRow, Array<int>& indices,
 		inputRow->getDataValue(index, userValue);
 		outputRow.append(userValue);
 	}
+}
+//______________________________________________________________________________
+/**
+ */
+SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK::OptimizerSystem &aSystem) const
+{
+	// Pick optimizer algorithm
+	SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
+	if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "CFSQP") {
+		if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
+			std::cout << "CFSQP optimizer algorithm unavailable.  Will try to use IPOPT instead." << std::endl;
+			algorithm = SimTK::InteriorPoint;
+		} else {
+			std::cout << "Using CFSQP optimizer algorithm." << std::endl;
+			algorithm = SimTK::CFSQP;
+		}
+	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "IPOPT") {
+		std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+		algorithm = SimTK::InteriorPoint;
+	} else {
+		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);
+	}
+
+	SimTK::Optimizer *optimizer = new SimTK::Optimizer(aSystem, algorithm);
+
+	optimizer->setDiagnosticsLevel(0);
+	optimizer->setConvergenceTolerance(1e-4);
+	optimizer->setMaxIterations(1000);
+	optimizer->useNumericalGradient(false); // Use our own central difference approximations
+	optimizer->useNumericalJacobian(false);
+
+	if(algorithm == SimTK::InteriorPoint) {
+		// Some IPOPT-specific settings
+		optimizer->setLimitedMemoryHistory(500); // works well for our small systems
+		optimizer->setAdvancedBoolOption("warm_start",true);
+		optimizer->setAdvancedRealOption("obj_scaling_factor",1);
+		optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",1);
+	}
+
+	return optimizer;
 }
