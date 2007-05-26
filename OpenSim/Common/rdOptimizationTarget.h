@@ -37,8 +37,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimSQPDLL.h"
-#include <OpenSim/Common/Array.h>
+#include "osimCommonDLL.h"
+#include "Array.h"
 #include <simmath/Optimizer.h>
 
 //=============================================================================
@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class OSIMSQP_API rdOptimizationTarget : public SimTK::OptimizerSystem
+class OSIMCOMMON_API rdOptimizationTarget : public SimTK::OptimizerSystem
 {
 //=============================================================================
 // DATA

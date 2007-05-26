@@ -50,7 +50,6 @@
 #include <OpenSim/Analyses/Kinematics.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include "rdCMC.h"
 #include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"

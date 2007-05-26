@@ -34,7 +34,7 @@
 // INCLUDES
 //==============================================================================
 #include "osimToolsDLL.h"
-#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/Common/rdOptimizationTarget.h>
 #include <SimTKcommon.h>
 
 namespace OpenSim {

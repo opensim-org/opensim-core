@@ -7,8 +7,7 @@ FILE(GLOB INCLUDE_FILES ../Simm*.h ../../../Subject/Simm*.h)
 
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
 		debug osimCommon_d optimized osimCommon
-		debug osimSimulation_d optimized osimSimulation
-		debug osimSQP_d optimized osimSQP)
+		debug osimSimulation_d optimized osimSimulation)
 
 # SET(EXECUTABLE_OUTPUT_PATH ${OpenSim_SOURCE_DIR}/OpenSim/Applications/IK/test)
 

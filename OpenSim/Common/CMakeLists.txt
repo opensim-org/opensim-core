@@ -29,7 +29,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2)
+LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
+					${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB})
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

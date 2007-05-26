@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "osimToolsDLL.h"
-#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/Common/rdOptimizationTarget.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/Model.h>

@@ -2,7 +2,6 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/SQP/rdFSQP.h>
 #include "IKTrial.h"
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/Model.h>

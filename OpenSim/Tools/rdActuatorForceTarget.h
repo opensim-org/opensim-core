@@ -31,7 +31,7 @@
 
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/Common/rdOptimizationTarget.h>
 #include <SimTKmath.h>
 class OpenSim::rdCMC;
 

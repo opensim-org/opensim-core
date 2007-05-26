@@ -44,7 +44,7 @@
 #include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/SQP/rdOptimizationTarget.h>
+#include <OpenSim/Common/rdOptimizationTarget.h>
 #include <simmath/Optimizer.h>
 #include "rdCMC.h"
 #include "rdCMC_Joint.h"
