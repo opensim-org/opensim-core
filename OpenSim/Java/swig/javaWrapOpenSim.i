@@ -128,8 +128,6 @@
 
 #include <OpenSim/Tools/IKTool.h>
 #include <OpenSim/Tools/IKSolverImpl.h>
-#include <OpenSim/SQP/osimSQPDLL.h>
-#include <OpenSim/SQP/rdOptimizationTarget.h>
 
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ScaleTool.h>
@@ -187,8 +185,8 @@ using namespace OpenSim;
 %pragma(java) jniclasscode=%{
   static {
       try{
-        System.loadLibrary("osimJavaJNI_d");		// All OpenSim classes required for GUI operation.
-        System.loadLibrary("osimSdfastEngine_d");	//to load sdfast based models
+        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
+        System.loadLibrary("osimSdfastEngine");	//to load sdfast based models
       }
       catch(UnsatisfiedLinkError e){
            TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
@@ -436,7 +434,5 @@ using namespace OpenSim;
 %template(SetMeasurements) OpenSim::Set<OpenSim::Measurement>;
 %include <OpenSim/Tools/MeasurementSet.h>
 %include <OpenSim/Tools/IKSolverImpl.h>
-%include <OpenSim/SQP/osimSQPDLL.h>
-%include <OpenSim/SQP/rdOptimizationTarget.h>
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/ScaleTool.h>
