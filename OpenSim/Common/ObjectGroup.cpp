@@ -52,7 +52,7 @@ ObjectGroup::ObjectGroup() :
 /**
  * Constructor taking the group name but no member names.
  */
-ObjectGroup::ObjectGroup(string& aName) :
+ObjectGroup::ObjectGroup(const string& aName) :
    Object(),
 	_memberNames(_memberNamesProp.getValueStrArray())
 {

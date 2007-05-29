@@ -75,7 +75,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ObjectGroup();
-	ObjectGroup(std::string& aName);
+	ObjectGroup(const std::string& aName);
 	ObjectGroup(const ObjectGroup &aGroup);
 	virtual ~ObjectGroup();
 	virtual Object* copy() const;

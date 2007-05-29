@@ -725,16 +725,37 @@ int getNumGroups() const
 /**
  * Add an empty group to the set.
  */
-void addGroup(std::string& aGroupName)
+void addGroup(const std::string& aGroupName)
 {
 	_objectGroups.append(new ObjectGroup(aGroupName));
 }
 
 //_____________________________________________________________________________
 /**
+ * Remove a group from the set. Elements are not removed.
+ */
+void removeGroup(const std::string& aGroupName)
+{
+	_objectGroups.remove(_objectGroups.get(aGroupName));
+}
+
+//_____________________________________________________________________________
+/**
+ * Rename a group.
+ * 
+ */
+void renameGroup(const std::string& oldGroupName, const std::string& newGroupName)
+{
+	ObjectGroup* grp=_objectGroups.get(oldGroupName);
+	//TODO This should check for duplicates and throw an exception if duplicate
+	grp->setName(newGroupName);
+}
+
+//_____________________________________________________________________________
+/**
  * Add an object to a group.
  */
-void addObjectToGroup(std::string& aGroupName, std::string& aObjectName)
+void addObjectToGroup(const std::string& aGroupName, const std::string& aObjectName)
 {
 	ObjectGroup* group = _objectGroups.get(aGroupName);
 	Object* object = _objects.get(aObjectName);
@@ -761,7 +782,6 @@ const ObjectGroup* getGroup(const std::string& aGroupName) const
 {
 	return _objectGroups.get(aGroupName);
 }
-
 //_____________________________________________________________________________
 /**
  * Get a group by index.
