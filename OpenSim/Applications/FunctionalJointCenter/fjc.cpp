@@ -151,8 +151,8 @@ static void defineCoordinateSystem(const Vec3 &a, const Vec3 &b, const Vec3 &c, 
 {
 	Vec3 ab = b - a, ac = c - a;
 	Vec3 origin = a + (dot(ab, ac)/ab.normSqr() * ab);
-	Vec3 xaxis = unitVec(cross(ab, ac)); //.normalized();
-	Vec3 yaxis = unitVec(c-origin); //.normalized();
+	Vec3 xaxis = cross(ab, ac).normalize();
+	Vec3 yaxis = (c-origin).normalize();
 	Vec3 zaxis = cross(xaxis, yaxis);
 
 	// matrix to be multiplied by column vector on right
@@ -172,7 +172,7 @@ static void defineCoordinateSystem(const Vec3 &a, const Vec3 &b, const Vec3 &c, 
 static void instantaneousRotationAxis(const Vec3 &a, const Vec3 &b, const Vec3 &c, Vec3 &axis, Vec3 &point)
 {
 	Vec3 ab = b-a, bc = c-b;
-	axis = unitVec(cross(ab, bc));
+	axis = cross(ab, bc).normalize();
 
 	Mat33 matrix;
 	Vec3 rhs;
@@ -194,7 +194,7 @@ static Vec3 bestFitIntersectionPoint(const Array<Vec3> &linePoints, const Array<
 	Vec3 rhs(0);
 	Mat33 A(0);
 	for(int i=0; i<linePoints.getSize(); i++) {
-		Vec3 di = unitVec(lineDirections[i]);
+		Vec3 di = lineDirections[i].normalize();
 		Mat33 Ai = Mat33(1) - di * ~di;
 		rhs += Ai * linePoints[i];
 		A += Ai;
@@ -427,7 +427,7 @@ int main(int argc,char **argv)
 							Vec3 ac = (position - markerTriplet[0]);
 							double acMagSqr = ac.normSqr();
 							if (acMagSqr > minimumDistanceSquared) {
-								Vec3 ab = unitVec(markerTriplet[1] - markerTriplet[0]);
+								Vec3 ab = (markerTriplet[1] - markerTriplet[0]).normalize();
 								bc /= sqrt(bcMagSqr);
 								ac /= sqrt(acMagSqr);
 								if (dot(bc, ac) < maximumCosine &&
