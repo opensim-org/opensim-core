@@ -73,9 +73,35 @@ ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
 INCLUDE (Dart)
 
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
+SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of BioComputation")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "9")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+IF(WIN32 AND NOT UNIX)
+   # There is a bug in NSI that does not handle full unix paths properly. Make
+   # sure there is at least one set of four (4) backlasshes.
+   # SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}\\\\OpenSimSplash.bmp")
+   # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\simmToOpenSim.exe")
+   SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY}OpenSimPlatform")
+   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.simtk.org/home/opensim")
+   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.simtk.org/home/opensim")
+   SET(CPACK_NSIS_CONTACT "aymanh@simtk.org")
+   SET(CPACK_NSIS_MODIFY_PATH ON)
+ELSE(WIN32 AND NOT UNIX)
+   SET(CPACK_STRIP_FILES "bin/MyExecutable")
+   SET(CPACK_SOURCE_STRIP_FILES "")
+ENDIF(WIN32 AND NOT UNIX)
+# SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
+
+INCLUDE (CPack)
+
 #
 # Build the documentation
 #
 
 #-----------------------------------------------------------------------------
-SUBDIRS(Vendors OpenSim)
+SUBDIRS(Vendors OpenSim Documentation)

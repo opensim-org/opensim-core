@@ -57,7 +57,7 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
 )
 
 ## install stuff
-INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /lib osim${KIT})
+INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 
 FOREACH(dir ${SIMULATION_SUBDIRS})
     FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
