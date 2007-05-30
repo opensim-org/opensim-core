@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 
 IF(OPENSIM_MINIMAL_BUILD)
-	SUBDIRS(MotionAnalysis)
+	SUBDIRS(CFSQP MotionAnalysis)
 ELSE(OPENSIM_MINIMAL_BUILD)
-	SUBDIRS(MotionAnalysis ${XERCES_DIR_NAME})
+	SUBDIRS(CFSQP MotionAnalysis ${XERCES_DIR_NAME})
 ENDIF(OPENSIM_MINIMAL_BUILD)

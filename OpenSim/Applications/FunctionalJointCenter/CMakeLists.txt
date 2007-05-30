@@ -14,7 +14,7 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 ADD_EXECUTABLE(fjc ${SOURCE_FILES} ${INCLUDE_FILES})
 
 
-INSTALL_TARGETS(/bin/ fjc)
+#INSTALL_TARGETS(/bin/ fjc)
 
 #
 # Testing
