@@ -71,6 +71,14 @@ ELSE(USE_STATIC_SIMTK_LIBRARIES)
 	SET(SIMTK_MATH_LIB debug SimTKmath_d optimized SimTKmath SimTKlapack)
 ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
+# We don't really want to copy the version of lapack we're using because that may be specific to our machine, so we take the generic lapack version (i.e. generic pentium 32 bit single proc)
+IF(WIN32)
+INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.dll ${SIMTK_DIR}/core/lib/SimTKmath.dll ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.dll)
+INSTALL_FILES(/lib/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.lib ${SIMTK_DIR}/core/lib/SimTKmath.lib ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.lib)
+ELSE(WIN32)
+INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/libSimTKcommon.so ${SIMTK_DIR}/core/lib/libSimTKmath.so ${SIMTK_DIR}/core/lib/generic_lapack/libSimTKlapack.so)
+ENDIF(WIN32)
+
 INCLUDE (Dart)
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
