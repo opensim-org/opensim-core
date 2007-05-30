@@ -376,13 +376,14 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 
 	// Pseudo States
 	int nyp = _model->getNumPseudoStates();
-	if(nyp <= 0) return;
-	if(_pseudoStatesFileName=="") {
-		string msg = "AnalyzeTool.initializeFromFiles: A pseudo states file must be specified.";
-		throw Exception(msg,__FILE__,__LINE__);
+	if(nyp > 0) {
+		if(_pseudoStatesFileName=="") {
+			string msg = "AnalyzeTool.initializeFromFiles: A pseudo states file must be specified.";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
+		cout<<"\nLoading states from file "<<_pseudoStatesFileName<<".\n";
+		_pseudoStore = new Storage(_pseudoStatesFileName);
 	}
-	cout<<"\nLoading states from file "<<_pseudoStatesFileName<<".\n";
-	_pseudoStore = new Storage(_pseudoStatesFileName);
 
 	// External Loads
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
