@@ -182,7 +182,7 @@ allocateStorage()
 	_normalizedFiberLengthStore = new Storage(1000,"NormalizedFiberLength");
 	_storageList.append(_normalizedFiberLengthStore );
 
-	_tendonLengthStore = new Storage(1000,"FiberLength");
+	_tendonLengthStore = new Storage(1000,"TendonLength");
 	_storageList.append(_tendonLengthStore );
 
 	_forceStore = new Storage(1000,"Force");
