@@ -87,11 +87,11 @@ public:
 	// CALLBACKS
 	//--------------------------------------------------------------------------
 	virtual int
-		step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,void *aClientData=NULL);
+		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 	virtual int
 		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,void *aClientData=NULL)
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL)
 	{
 		_currentTime=aDT;
 		return 0;

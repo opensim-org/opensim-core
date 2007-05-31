@@ -544,12 +544,12 @@ processAfterStep(int step,double &dt,double t,double y[])
 	// INTEGRATION CALLBACKS
 	IntegCallbackSet *callbackSet = _model->getIntegCallbackSet();
 	if(callbackSet!=NULL)
-		callbackSet->step(&_xPrev[0],&_yPrev[0],step,_dtPrev,t,&_x[0],y);
+		callbackSet->step(&_xPrev[0],&_yPrev[0],NULL,step,_dtPrev,t,&_x[0],y);
 
 	// ANALYSES
 	AnalysisSet *analysisSet = _model->getAnalysisSet();
 	if(analysisSet!=NULL)
-		analysisSet->step(&_xPrev[0],&_yPrev[0],step,_dtPrev,t,&_x[0],y);
+		analysisSet->step(&_xPrev[0],&_yPrev[0],NULL,step,_dtPrev,t,&_x[0],y);
 
 	// STORE PSEUDOSTATES
 	int nyp = _model->getNumPseudoStates();

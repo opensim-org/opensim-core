@@ -152,8 +152,8 @@ public:
 	// CALLBACKS
 	//--------------------------------------------------------------------------
 	virtual int
-		begin(int aStep,double aDT,double aT,double *aX,double *aY,
-		void *aClientData=NULL);
+		begin(int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 
 //=============================================================================
 };	// END of class DecompTaylor

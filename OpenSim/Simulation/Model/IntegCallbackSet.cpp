@@ -158,17 +158,19 @@ getIntegCallback(int aIndex) const
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives
  * @param aClientData General use pointer for sending in client data.
  */
 void IntegCallbackSet::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,void *aClientData)
+begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
 	int i;
 	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
 		callback = getIntegCallback(i);
 		if(callback == NULL) continue;
-		callback->begin(aStep,aDT,aT,aX,aY,aClientData);
+		callback->begin(aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
 	}
 }
 //_____________________________________________________________________________
@@ -179,23 +181,26 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,void *aClientData)
  *
  * @param aXPrev Control values at the previous time step.
  * @param aYPrev State values at the previous time step.
+ * @param aYPPrev Pseudo state values at the previous time step.
  * @param aStep Number of integrations steps that have been completed.
  * @param aDT Size of the time step that WAS just completed.
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  */
 void IntegCallbackSet::
-step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
-	double *aX,double *aY,void *aClientData)
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
 	int i;
 	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
 		callback = getIntegCallback(i);
 		if(callback == NULL) continue;
-		callback->step(aXPrev,aYPrev,aStep,aDT,aT,aX,aY,aClientData);
+		callback->step(aXPrev,aYPrev,aYPPrev,aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
 	}
 }
 //_____________________________________________________________________________
@@ -209,17 +214,19 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  */
 void IntegCallbackSet::
-end(int aStep,double aDT,double aT,double *aX,double *aY,void *aClientData)
+end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
 	int i;
 	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
 		callback = getIntegCallback(i);
 		if(callback == NULL) continue;
-		callback->end(aStep,aDT,aT,aX,aY,aClientData);
+		callback->end(aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
 	}
 }
 

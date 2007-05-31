@@ -218,12 +218,14 @@ getStepInterval() const
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int IntegCallback::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,
+begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 	void *aClientData)
 {
 	//printf("IntegCallback.begin: %s.\n",getName());
@@ -238,18 +240,21 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  *
  * @param aXPrev Control values at the previous time step.
  * @param aYPrev State values at the previous time step.
+ * @param aYPPrev Pseudo state values at the previous time step.
  * @param aStep Number of integrations steps that have been completed.
  * @param aDT Size of the time step that WAS just completed.
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int IntegCallback::
-step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
-	double *aX,double *aY,void *aClientData)
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
 	//printf("IntegCallback.step: %s.\n",getName());
 	return (0);
@@ -266,12 +271,14 @@ step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int IntegCallback::
-end(int aStep,double aDT,double aT,double *aX,double *aY,
+end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 	 void *aClientData)
 {
 	//printf("IntegCallback.end: %s.\n",getName());

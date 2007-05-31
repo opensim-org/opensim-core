@@ -615,12 +615,14 @@ getUseNullDecomposition()
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int DecompNoComp::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,
+begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 		void *aClientData)
 {
 	if(!proceed()) return(0);
@@ -644,18 +646,21 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  *
  * @param aXPrev Controls at the beginining of the current time step.
  * @param aYPrev States at the beginning of the current time step.
+ * @param aYPPrev Pseudo states at the beginning of the current time step.
  * @param aStep Step number of the integration.
  * @param aDT Size of the time step that was just taken.
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int DecompNoComp::
-step(double *aXPrev,double *aYPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,
+step(double *aXPrev,double *aYPrev,double *aYPPrev,
+	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 	void *aClientData)
 {
 	if(!proceed(aStep)) return(0);
@@ -681,12 +686,14 @@ step(double *aXPrev,double *aYPrev,
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int DecompNoComp::
-end(int aStep,double aDT,double aT,double *aX,double *aY,
+end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 		void *aClientData)
 {
 	if(!proceed()) return(0);

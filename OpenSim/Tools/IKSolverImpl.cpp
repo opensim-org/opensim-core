@@ -157,13 +157,13 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		double emptyX, emptyY;
 		IntegCallbackSet *callbackSet = _ikTarget.getModel().getIntegCallbackSet();
 		if(callbackSet!=NULL)
-			callbackSet->step(&emptyX,&emptyY,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
+			callbackSet->step(&emptyX,&emptyY,NULL,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
 
 		// ANALYSES
 		// TODO: pass callback a reasonable "dt" value
 		AnalysisSet *analysisSet = _ikTarget.getModel().getAnalysisSet();
 		if(analysisSet!=NULL)
-			analysisSet->step(&emptyX,&emptyY,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
+			analysisSet->step(&emptyX,&emptyY,NULL,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
 
 		// Append user data to qsAndMarkersArray
 		Array<double> dataRow(qsAndMarkersArray);

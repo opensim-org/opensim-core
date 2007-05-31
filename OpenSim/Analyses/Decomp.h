@@ -154,15 +154,14 @@ public:
 	// ANALYSIS
 	//--------------------------------------------------------------------------
 	virtual int
-		begin(int aStep,double aDT,double aT,double *aX,double *aY,
-		void *aClientData=NULL);
+		begin(int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 	virtual int
-		step(double *aXPrev,double *aYPrev,
-		int aStep,double aDT,double aT,double *aX,double *aY,
-		void *aClientData=NULL);
+		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 	virtual int
-		end(int aStep,double aDT,double aT,double *aX,double *aY,
-		void *aClientData=NULL);
+		end(int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 
 	//--------------------------------------------------------------------------
 	// IO

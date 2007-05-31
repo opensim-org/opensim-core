@@ -567,6 +567,8 @@ void AnalyzeTool::run()
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 
+	GCVSplineSet statesSplineSet(5,_statesStore);
+
 	// PERFORM THE ANALYSES
 	double tPrev=0.0,t=0.0,dt=0.0;
 	int nx = _model->getNumControls();
@@ -575,6 +577,7 @@ void AnalyzeTool::run()
 	Array<double> xPrev(0.0,nx),x(0.0,nx);
 	Array<double> yPrev(0.0,nx),y(0.0,ny);
 	Array<double> pPrev(0.0,np),p(0.0,np);
+	Array<double> dydt(0.0,ny);
 	for(int i=iInitial;i<=iFinal;i++) {
 		
 		// Data
@@ -586,17 +589,19 @@ void AnalyzeTool::run()
 			dt = t - tPrev;
 		}
 
+		statesSplineSet.evaluate(dydt,1,t);
+
 		// Begin
 		if(i==iInitial) {
-			analysisSet->begin(iInitial,dt,t,&x[0],&y[0]);
+			analysisSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// End
 		} else if(i==iFinal) {
-			analysisSet->end(iFinal,dt,t,&x[0],&y[0]);
+			analysisSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// Step
 		} else {
-			analysisSet->step(&xPrev[0],&yPrev[0],i,dt,t,&x[0],&y[0]);
+			analysisSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 		}
 
 		// ASSIGN PREV

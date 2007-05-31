@@ -263,7 +263,7 @@ getIntegrationWindow() const
  * At the beginning of an integration, initialize the decomposition.
  */
 int DecompTaylor::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,
+begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 	void *aClientData)
 {
 	if(_model==NULL) return(0);

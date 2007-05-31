@@ -196,6 +196,7 @@ setModel(Model *aModel)
 
 	delete _uSet; _uSet = NULL;
 	if(_model) {
+#if 0
 //		if(_model->getActuatorSet()->getNumStates() > 0 || _model->getContactSet()->getNumStates() > 0)
 //			throw Exception("InverseDynamics analysis can't deal with models that have ActuatorSet/ContactSet with states",__FILE__,__LINE__);
 
@@ -207,6 +208,7 @@ setModel(Model *aModel)
 		_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStore);
 		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
 		_uSet = new GCVSplineSet(5,uStore);
+#endif
 
 		std::cout << "Creating map to accelerations" << std::endl;
 		_accelerationIndices.setSize(0);
@@ -312,12 +314,14 @@ computeAcceleration(double aT,double *aX,double *aY,double *aF,double *rAccel) c
  * Record the kinematics.
  */
 int InverseDynamics::
-record(double aT,double *aX,double *aY)
+record(double aT,double *aX,double *aY,double *aDYDT)
 {
 	if(!_model) return -1;
+	if(!aDYDT) throw Exception("InverseDynamics: ERROR- Needs state derivatives.",__FILE__,__LINE__);
 
 	int nf = _model->getNumActuators();
 	int nacc = _accelerationIndices.getSize();
+	int nq = _model->getNumCoordinates();
 
 	// Build linear constraint matrix and constant constraint vector
 	SimTK::Vector f(nf), c(nacc);
@@ -332,7 +336,8 @@ record(double aT,double *aX,double *aY)
 	}
 
 	for(int i=0; i<nacc; i++) {
-		double targetAcceleration = _uSet->evaluate(_accelerationIndices[i], 1, aT);
+//		double targetAcceleration = _uSet->evaluate(_accelerationIndices[i], 1, aT);
+		double targetAcceleration = aDYDT[nq+_accelerationIndices[i]];
 		_constraintVector[i] = targetAcceleration - _constraintVector[i];
 	}
 
@@ -361,12 +366,14 @@ record(double aT,double *aX,double *aY)
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,
+begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 		void *aClientData)
 {
 	if(!proceed()) return(0);
@@ -377,7 +384,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
 	// RECORD
 	int status = 0;
 	if(_storage->getSize()<=0) {
-		status = record(aT,aX,aY);
+		status = record(aT,aX,aY,aDYDT);
 	}
 
 	return(status);
@@ -397,23 +404,26 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,
  *
  * @param aXPrev Controls at the beginining of the current time step.
  * @param aYPrev States at the beginning of the current time step.
+ * @param aYPPrev Pseudo states at the beginning of the current time step.
  * @param aStep Step number of the integration.
  * @param aDT Size of the time step that was just taken.
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-step(double *aXPrev,double *aYPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,
+step(double *aXPrev,double *aYPrev,double *aYPPrev,
+	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 	void *aClientData)
 {
 	if(!proceed(aStep)) return(0);
 
-	record(aT,aX,aY);
+	record(aT,aX,aY,aDYDT);
 
 	return(0);
 }
@@ -434,17 +444,19 @@ step(double *aXPrev,double *aYPrev,
  * @param aT Current time in the integration.
  * @param aX Current control values.
  * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-end(int aStep,double aDT,double aT,double *aX,double *aY,
+end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
 		void *aClientData)
 {
 	if(!proceed()) return(0);
 
-	record(aT,aX,aY);
+	record(aT,aX,aY,aDYDT);
 
 	return(0);
 }
