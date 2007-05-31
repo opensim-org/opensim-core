@@ -61,6 +61,7 @@ int main(int argc,char **argv)
 	string headerName = unassigned;
 	string modelLibraryName = unassigned;
 	string sourceName = unassigned;
+	string parametersName = unassigned;
 	string simModelName = unassigned;
 	string folderName = ".";
 	string option = "";
@@ -88,14 +89,15 @@ int main(int argc,char **argv)
 				else if((option=="-SD")||(option=="-SystemDescription")) {
 					sdfastName = argv[++i];
 				}
-#if 0
 				else if((option=="-FF")||(option=="-ForwardFile")) {
 					sourceName = argv[++i];
 				}
 				else if((option=="-MH")||(option=="-ModelHeader")) {
 					headerName = argv[++i];
 				}
-#endif
+				else if((option=="-PF")||(option=="-ParametersFile")) {
+					parametersName = argv[++i];
+				}
 				else if((option=="-ML")||(option=="-ModelLibrary")) {
 					modelLibraryName = argv[++i];
 				}
@@ -135,6 +137,9 @@ int main(int argc,char **argv)
 			if (headerName != unassigned)
 				sfw.writeModelHeaderFile(headerName);
 
+			if (parametersName != unassigned)
+				sfw.writeSimulationParametersFile(parametersName);
+
 			if (simModelName != unassigned) {
 				if(modelLibraryName == unassigned)
 					std::cerr << "WARNING: Generating an SDFast-based OpenSim model with no model library (-ML/-ModelLibrary not specified)." << std::endl;
@@ -163,10 +168,9 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 	aOStream<<"-Help, -H                                  Print the command-line options for "<<progName<<".\n";
 	aOStream<<"-InputModel, -IM          ModelFile        Input SimmKinematicsEngine model file (XML format).\n";
 	aOStream<<"-SystemDescription, -SD   FileName         Output SDFast system description file (model.sd in SIMM)\n";
-#if 0
 	aOStream<<"-ForwardFile, -FF         FileName         Output forward dynamics C file (sdfor.c in SIMM)\n";
 	aOStream<<"-ModelHeader, -MH         FileName         Output model header file (model.h in SIMM)\n";
-#endif
+	aOStream<<"-ParametersFile, -PF      FileName         Output Parameters file (params.txt in SIMM)\n";
 	aOStream<<"-ModelLibrary, -ML        FileName         The compiled SD/Fast model for computing the dynamics for this model\n";
 	aOStream<<"-OuputModel, -OM          ModelFile        Output SDfastEngine model file (XML format).\n";
 	aOStream<<"-Directory, -D            DirectoryName    Directory into which to write output.\n";

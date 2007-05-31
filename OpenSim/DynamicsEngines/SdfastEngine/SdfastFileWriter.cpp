@@ -1168,8 +1168,6 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
    if (!constraintsExist)
       return;
 
-#if 0
-	// NO LONGER NEED TO HARDCODE VALUES INTO sdfor.c FILE BECAUSE VALUES WILL BE SET USING setJointConstraintFunctions
 	out << "/* The following spline-function data points are copied directly from the" << endl;
    out << " * SIMM joints file." << endl << " */" << endl << endl;
 
@@ -1180,6 +1178,8 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
       {
 			if (jointInfo->dofs[j].modelDof->getCoordinate() != NULL && jointInfo->dofs[j].constrained)
 			{
+				double scaleX = (jointInfo->dofs[j].modelDof->getCoordinate()->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
+				double scaleY = (jointInfo->dofs[j].modelDof->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
 				Function* func = jointInfo->dofs[j].modelDof->getFunction();
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 				if (cubicSpline)
@@ -1187,7 +1187,7 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
 					out << "static double " << jointInfo->dofs[j].name << "_data[][2] =" << endl << "{" << endl;
 					for (int k = 0; k < cubicSpline->getNumberOfPoints(); k++)
 					{
-						out << "{" << cubicSpline->getX()[k] << ", " << cubicSpline->getY()[k] << "}";
+						out << "{" << cubicSpline->getX()[k] * scaleX << ", " << cubicSpline->getY()[k] * scaleY << "}";
 						if (k == cubicSpline->getNumberOfPoints() - 1)
 							out << endl << "};" << endl << endl;
 						else
@@ -1197,7 +1197,6 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
 			}
 		}
    }
-#endif
 
 	for (i = 0; i < _jointOrder.getSize(); i++)
 	{
@@ -1332,7 +1331,7 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
    
    out << "void init_qs(void)\n{\n\n   int i;" << endl << endl;
    
-   out << "   sdm.q = (dpQStruct*)simm_malloc(sdm.nq*sizeof(dpQStruct));" << endl;
+   out << "   sdm->q = (dpQStruct*)simm_malloc(sdm->nq*sizeof(dpQStruct));" << endl;
    
 	for (int i = 0; i < _numQs; i++)
 	{
@@ -1341,73 +1340,74 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
 		{
 			const AbstractCoordinate* coord = dof->modelDof->getCoordinate();
 			CoordinateInfo* coordInfo = getCoordinateInfo(coord);
+			double conversion = dof->modelDof->getMotionType() == AbstractDof::Rotational ? RTOD : 1;
 
-			out << "   mstrcpy(&sdm.q[" << dof->name << "].name,\"" << dof->name << "\");" << endl;
+			out << "   mstrcpy(&sdm->q[" << dof->name << "].name,\"" << dof->name << "\");" << endl;
 			if (dof->fixed)
 			{
-				out << "   sdm.q[" << dof->name << "].type = dpFixedQ;" << endl;
+				out << "   sdm->q[" << dof->name << "].type = dpFixedQ;" << endl;
 			}
 			else if (!dof->constrained)
 			{
 				/* Locked gencoords are modeled as fixed Qs (as of SIMM 4.1.1). */
 				if (coord && coord->getLocked())
-					out << "   sdm.q[" << dof->name << "].type = dpFixedQ;" << endl;
+					out << "   sdm->q[" << dof->name << "].type = dpFixedQ;" << endl;
 				else
-					out << "   sdm.q[" << dof->name << "].type = dpUnconstrainedQ;" << endl;
+					out << "   sdm->q[" << dof->name << "].type = dpUnconstrainedQ;" << endl;
 			}
 			else
 			{
-				out << "   sdm.q[" << dof->name << "].type = dpConstrainedQ;" << endl;
+				out << "   sdm->q[" << dof->name << "].type = dpConstrainedQ;" << endl;
 			}
-			out << "   sdm.q[" << dof->name << "].joint = " << joint->name << ";" << endl;
-			out << "   sdm.q[" << dof->name << "].axis = " << dof->axis << ";" << endl;
-			out << "   // initial_value will now be set using setCoordinateInitialValues" << endl;
-			out << "   // sdm.q[" << dof->name << "].initial_value = " << dof->initialValue << ";" << endl;
-			out << "   sdm.q[" << dof->name << "].initial_velocity = 0.0;" << endl;
+			out << "   sdm->q[" << dof->name << "].joint = " << joint->name << ";" << endl;
+			out << "   sdm->q[" << dof->name << "].axis = " << dof->axis << ";" << endl;
+			out << "   sdm->q[" << dof->name << "].conversion = " << conversion << ";" << endl;
+			out << "   sdm->q[" << dof->name << "].initial_value = " << dof->initialValue * conversion << ";" << endl;
+			out << "   sdm->q[" << dof->name << "].initial_velocity = 0.0;" << endl;
 			if (!dof->constrained && !dof->fixed)
 			{
-				out << "   sdm.q[" << dof->name << "].range_start = " << dof->modelDof->getCoordinate()->getRangeMin() << ";" << endl;
-				out << "   sdm.q[" << dof->name << "].range_end = " << dof->modelDof->getCoordinate()->getRangeMax() << ";" << endl;
+				out << "   sdm->q[" << dof->name << "].range_start = " << dof->modelDof->getCoordinate()->getRangeMin() * conversion << ";" << endl;
+				out << "   sdm->q[" << dof->name << "].range_end = " << dof->modelDof->getCoordinate()->getRangeMax() * conversion  << ";" << endl;
 			}
 			else
 			{
-				out << "   sdm.q[" << dof->name << "].range_start = -99999.9;" << endl;
-				out << "   sdm.q[" << dof->name << "].range_end = 99999.9;" << endl;
+				out << "   sdm->q[" << dof->name << "].range_start = -99999.9;" << endl;
+				out << "   sdm->q[" << dof->name << "].range_end = 99999.9;" << endl;
 			}
 			if (dof->constrained || dof->fixed)
 			{
-				out << "   sdm.q[" << dof->name << "].restraint_func = NULL;" << endl;
-				out << "   sdm.q[" << dof->name << "].min_restraint_func = NULL;" << endl;
-				out << "   sdm.q[" << dof->name << "].max_restraint_func = NULL;" << endl;
-				out << "   sdm.q[" << dof->name << "].function_active = dpNo;" << endl;
+				out << "   sdm->q[" << dof->name << "].restraint_func = NULL;" << endl;
+				out << "   sdm->q[" << dof->name << "].min_restraint_func = NULL;" << endl;
+				out << "   sdm->q[" << dof->name << "].max_restraint_func = NULL;" << endl;
+				out << "   sdm->q[" << dof->name << "].function_active = dpNo;" << endl;
 			}
 			else if (coordInfo)
 			{
 				if (coordInfo->restraintFuncNum != -1)
 				{
-					out << "   sdm.q[" << dof->name << "].restraint_func = &q_restraint_func[" <<
+					out << "   sdm->q[" << dof->name << "].restraint_func = &q_restraint_func[" <<
 						    coordInfo->restraintFuncNum << "];" << endl;
-					out << "   sdm.q[" << dof->name << "].min_restraint_func = NULL;" << endl;
-					out << "   sdm.q[" << dof->name << "].max_restraint_func = NULL;" << endl;
+					out << "   sdm->q[" << dof->name << "].min_restraint_func = NULL;" << endl;
+					out << "   sdm->q[" << dof->name << "].max_restraint_func = NULL;" << endl;
 					if (coord->isRestraintActive())
-						out << "   sdm.q[" << dof->name << "].function_active = dpYes;" << endl;
+						out << "   sdm->q[" << dof->name << "].function_active = dpYes;" << endl;
 					else
-						out << "   sdm.q[" << dof->name << "].function_active = dpNo;" << endl;
+						out << "   sdm->q[" << dof->name << "].function_active = dpNo;" << endl;
 				}
 				else
 				{
-					out << "   sdm.q[" << dof->name << "].restraint_func = NULL;" << endl;
+					out << "   sdm->q[" << dof->name << "].restraint_func = NULL;" << endl;
 					if (coordInfo->minRestraintFuncNum == -1)
-						out << "   sdm.q[" << dof->name << "].min_restraint_func = NULL;" << endl;
+						out << "   sdm->q[" << dof->name << "].min_restraint_func = NULL;" << endl;
 					else
-						out << "   sdm.q[" << dof->name << "].min_restraint_func = &q_restraint_func[" <<
+						out << "   sdm->q[" << dof->name << "].min_restraint_func = &q_restraint_func[" <<
 						       coordInfo->minRestraintFuncNum << "];" << endl;
 					if (coordInfo->maxRestraintFuncNum == -1)
-						out << "   sdm.q[" << dof->name << "].max_restraint_func = NULL;" << endl;
+						out << "   sdm->q[" << dof->name << "].max_restraint_func = NULL;" << endl;
 					else
-						out << "   sdm.q[" << dof->name << "].max_restraint_func = &q_restraint_func[" <<
+						out << "   sdm->q[" << dof->name << "].max_restraint_func = &q_restraint_func[" <<
 						       coordInfo->maxRestraintFuncNum << "];" << endl;
-					out << "   sdm.q[" << dof->name << "].function_active = dpNo;" << endl;
+					out << "   sdm->q[" << dof->name << "].function_active = dpNo;" << endl;
 				}
 			}
 			if (dof->constrained)
@@ -1415,46 +1415,108 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
 				DofInfo* indDof = findUnconstrainedSdfastDof(coord);
 				if (indDof)
 				{
-					out << "   sdm.q[" << dof->name << "].constraint_func = &" << dof->name << "_func;" << endl;
-					out << "   sdm.q[" << dof->name << "].constraint_num = " << dof->constraintName << ";" << endl;
-					out << "   sdm.q[" << dof->name << "].q_ind = " << indDof->name << ";" << endl;
+					out << "   sdm->q[" << dof->name << "].constraint_func = &" << dof->name << "_func;" << endl;
+					out << "   sdm->q[" << dof->name << "].constraint_num = " << dof->constraintName << ";" << endl;
+					out << "   sdm->q[" << dof->name << "].q_ind = " << indDof->name << ";" << endl;
 				}
 			}
 			else
 			{
-				out << "   sdm.q[" << dof->name << "].constraint_func = NULL;" << endl;
-				out << "   sdm.q[" << dof->name << "].constraint_num = -1;" << endl;
-				out << "   sdm.q[" << dof->name << "].q_ind = -1;" << endl;
+				out << "   sdm->q[" << dof->name << "].constraint_func = NULL;" << endl;
+				out << "   sdm->q[" << dof->name << "].constraint_num = -1;" << endl;
+				out << "   sdm->q[" << dof->name << "].q_ind = -1;" << endl;
 			}
 			if (dof->fixed || dof->constrained)
 			{
-				out << "   sdm.q[" << dof->name << "].output = dpNo;" << endl;
-				out << "   sdm.q[" << dof->name << "].pd_stiffness = 0.0;" << endl;
+				out << "   sdm->q[" << dof->name << "].output = dpNo;" << endl;
+				out << "   sdm->q[" << dof->name << "].pd_stiffness = 0.0;" << endl;
 			}
 			else
 			{
-				out << "   sdm.q[" << dof->name << "].output = dpYes;" << endl;
-				out << "   sdm.q[" << dof->name << "].pd_stiffness = " << "0.0" /*coord->getPDStiffness() TODO */ << ";" << endl;
+				out << "   sdm->q[" << dof->name << "].output = dpYes;" << endl;
+				out << "   sdm->q[" << dof->name << "].pd_stiffness = " << "0.0" /*coord->getPDStiffness() TODO */ << ";" << endl;
 			}
-			out << "   sdm.q[" << dof->name << "].torque = 0.0;" << endl;
+			out << "   sdm->q[" << dof->name << "].torque = 0.0;" << endl;
 			out << "" << endl;
 		}
    }
    
-   out << "   for (i=0, sdm.num_gencoords=0; i<sdm.nq; i++)" << endl;
-   out << "      if (sdm.q[i].type == dpUnconstrainedQ)" << endl;
-   out << "         sdm.num_gencoords++;" << endl << endl;
+   out << "   for (i=0, sdm->num_gencoords=0; i<sdm->nq; i++)" << endl;
+   out << "      if (sdm->q[i].type == dpUnconstrainedQ)" << endl;
+   out << "         sdm->num_gencoords++;" << endl << endl;
    
    out << "   check_for_sderror(\"INIT_QS\");" << endl;
    
    out << "}" << endl << endl << endl;
 }
 
+void SdfastFileWriter::writeSdfastInitCode(ofstream& out)
+{
+	out << "/* INIT_SEGMENTS: this routine should be called before" << endl;
+	out << " * read_muscles() because it does two things that need to" << endl;
+	out << " * be done before you read in the muscles. First, it assigns" << endl;
+	out << " * numbers to the body segments in your model. These body" << endl;
+	out << " * numbers should match the numbers in the \"_info\" file" << endl;
+	out << " * that SD/FAST makes. Thus when you read in the muscle" << endl;
+	out << " * attachment points, the segment name listed for each point" << endl;
+	out << " * is converted into an SD/FAST body segment number." << endl;
+	out << " * Second, this routine records the positions of the mass" << endl;
+	out << " * centers of each body segment. These are the coordinates of" << endl;
+	out << " * the mass centers with respect to the origins of the SIMM" << endl;
+	out << " * bone file. When you read in a muscle attachment point, the" << endl;
+	out << " * mass center coordinates are subtracted from it, so that the" << endl;
+	out << " * muscle point is now w.r.t. the mass center of the body" << endl;
+	out << " * segment, as SD/FAST expects." << endl;
+	out << " * Note that you cannot use the #defined segment numbers as indices" << endl;
+	out << " * into the sdm->body_segment[] array because they start at -1." << endl;
+	out << " */" << endl << endl;
+
+	out << "void init_segments(void)\n{" << endl << endl;
+
+	out << "   int i, j;" << endl;
+	out << "   sdm->body_segment = (dpBodyStruct*)simm_malloc(sdm->num_body_segments*sizeof(dpBodyStruct));" << endl << endl;
+
+	/* Go thru the list of bodies. First write the code to enter the name
+	 * in the SDModel structure. Then call several SD/FAST routines to get the
+	 * mass, inertia, and mass_center coordinates from SD/FAST and store them in
+	 * the SDModel structure.
+	 */
+	for (int i = 0; i < _sdfastBodies.getSize(); i++)
+	{
+		SdfastBodyInfo &body = _sdfastBodies.get(i);
+
+		out << "   mstrcpy(&sdm->body_segment[" << body.name << "+1].name,\"" << body.name << "\");" << endl;
+		if (i == 0)
+		{
+			out << "   sdm->body_segment[" << body.name << "+1].output = dpNo;" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass = 0.0;" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[0] = " << body.massCenter[0] << ";" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[1] = " << body.massCenter[1] << ";" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[2] = " << body.massCenter[2] << ";" << endl;
+			out << "   for (i=0; i<3; i++)" << endl;
+			out << "      for (j=0; j<3; j++)" << endl;
+			out << "         sdm->body_segment[" << body.name << "+1].inertia[i][j] = 0.0;" << endl;
+		}
+		else
+		{
+			out << "   sdm->body_segment[" << body.name << "+1].output = dpYes;" << endl;
+			out << "   sdgetmass(" << body.name << ", &(sdm->body_segment[" << body.name << "+1].mass));" << endl;
+			out << "   sdgetiner(" << body.name << ", sdm->body_segment[" << body.name << "+1].inertia);" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[0] = " << body.massCenter[0] << ";" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[1] = " << body.massCenter[1] << ";" << endl;
+			out << "   sdm->body_segment[" << body.name << "+1].mass_center[2] = " << body.massCenter[2] << ";" << endl;
+		}
+		out << "   sdm->body_segment[" << body.name << "+1].contactable = dpNo;" << endl;
+		out << "" << endl;
+	}
+
+	out <<  "   mstrcpy(&sdm->name, \"" << _model->getName() << "\");" << endl << endl;
+	out <<  "   check_for_sderror(\"INIT_SEGMENTS\");" << endl << endl;
+	out <<  "}" << endl << endl << endl;
+}
+
 void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 {
-#if 0
-	// VALUES WILL BE SET USING setJointConstraintFunctions INSTEAD OF USING THIS FUNCTION
-	
 	out << "/* INIT_JOINT_FUNCTIONS: this routine initializes the constraint functions" << endl;
 	out << " * for the joints which have user-defined constraints.\n */" << endl << endl;
 
@@ -1487,7 +1549,6 @@ void SdfastFileWriter::writeSdfastConstraintCode(ofstream& out)
 		out << "   /* There are no user-defined constraints in this model */" << endl << endl;
 
 	out << "}" << endl << endl << endl;
-#endif
 }
 
 void SdfastFileWriter::writeSdfastWrapObjects(ofstream& out)
@@ -1501,10 +1562,9 @@ void SdfastFileWriter::writeSdfastWrapObjects(ofstream& out)
 
 	//if (ms->num_wrap_objects < 1)
 	{
-		out << "   /* Wrap objects are handled by the native OpenSim code, so */" << endl;
-		out << "   /* they are not exported to the Pipeline source code. */" << endl << endl;
-		out << "  sdm.num_wrap_objects = 0;" << endl;
-		out << "  sdm.wrap_object = NULL;" << endl << endl;
+		out << "   /* There are no wrap objects in this model. */" << endl << endl;
+		out << "  sdm->num_wrap_objects = 0;" << endl;
+		out << "  sdm->wrap_object = NULL;" << endl << endl;
 		out << "}" << endl << endl;
 	}
 #if 0
@@ -1547,23 +1607,23 @@ void SdfastFileWriter::writeSdfastWrapObjects(ofstream& out)
 		}
 		fprintf(*fp,"   };\n\n");
 
-		fprintf(*fp, "   sdm.num_wrap_objects = %d;\n\n", ms->num_wrap_objects);
+		fprintf(*fp, "   sdm->num_wrap_objects = %d;\n\n", ms->num_wrap_objects);
 
-		fprintf(*fp, "   sdm.wrap_object = (dpWrapObject*)simm_malloc(sdm.num_wrap_objects * sizeof(dpWrapObject));\n\n");
+		fprintf(*fp, "   sdm->wrap_object = (dpWrapObject*)simm_malloc(sdm->num_wrap_objects * sizeof(dpWrapObject));\n\n");
 
 		fprintf(*fp, "   /* Copy the wrap objects into the sdm structure, and adjust the transforms so that they\n");
 		fprintf(*fp, "    * are relative to the mass center of the segment. Then compute the to_local_xform as the\n");
 		fprintf(*fp, "    * inverse of the from_local_xform.\n");
 		fprintf(*fp, "    */\n");
 
-		fprintf(*fp, "   for (i = 0; i < sdm.num_wrap_objects; i++)\n");
+		fprintf(*fp, "   for (i = 0; i < sdm->num_wrap_objects; i++)\n");
 		fprintf(*fp, "   {\n");
-		fprintf(*fp, "      sdm.wrap_object[i] = wrap_object[i];\n");
-		fprintf(*fp, "      mstrcpy(&sdm.wrap_object[i].name, wrap_object[i].name);\n");
-		fprintf(*fp, "      sdm.wrap_object[i].from_local_xform[3][XX] -= sdm.body_segment[sdm.wrap_object[i].segment+1].mass_center[XX];\n");
-		fprintf(*fp, "      sdm.wrap_object[i].from_local_xform[3][YY] -= sdm.body_segment[sdm.wrap_object[i].segment+1].mass_center[YY];\n");
-		fprintf(*fp, "      sdm.wrap_object[i].from_local_xform[3][ZZ] -= sdm.body_segment[sdm.wrap_object[i].segment+1].mass_center[ZZ];\n");
-		fprintf(*fp, "      invert_4x4transform(sdm.wrap_object[i].from_local_xform, sdm.wrap_object[i].to_local_xform);\n");
+		fprintf(*fp, "      sdm->wrap_object[i] = wrap_object[i];\n");
+		fprintf(*fp, "      mstrcpy(&sdm->wrap_object[i].name, wrap_object[i].name);\n");
+		fprintf(*fp, "      sdm->wrap_object[i].from_local_xform[3][XX] -= sdm->body_segment[sdm->wrap_object[i].segment+1].mass_center[XX];\n");
+		fprintf(*fp, "      sdm->wrap_object[i].from_local_xform[3][YY] -= sdm->body_segment[sdm->wrap_object[i].segment+1].mass_center[YY];\n");
+		fprintf(*fp, "      sdm->wrap_object[i].from_local_xform[3][ZZ] -= sdm->body_segment[sdm->wrap_object[i].segment+1].mass_center[ZZ];\n");
+		fprintf(*fp, "      invert_4x4transform(sdm->wrap_object[i].from_local_xform, sdm->wrap_object[i].to_local_xform);\n");
 		fprintf(*fp, "   }\n");
 
 		fprintf(*fp,"}\n\n");
@@ -1583,8 +1643,8 @@ void SdfastFileWriter::writeSdfastConstraintObjects(ofstream& out)
 	//if (ms->num_constraint_objects < 1)
 	{
 		out << "   /* There are no constraint objects in this model. */" << endl << endl;
-		out << "  sdm.num_constraint_objects = 0;" << endl;
-		out << "  sdm.constraint_object = NULL;" << endl;
+		out << "  sdm->num_constraint_objects = 0;" << endl;
+		out << "  sdm->constraint_object = NULL;" << endl;
 		out << "}" << endl << endl;
 	}
 #if 0
@@ -1663,38 +1723,38 @@ void SdfastFileWriter::writeSdfastConstraintObjects(ofstream& out)
 		}
 		fprintf(*fp,"   };\n\n");
 
-		fprintf(*fp, "   sdm.num_constraint_objects = %d;\n\n", ms->num_constraint_objects);
+		fprintf(*fp, "   sdm->num_constraint_objects = %d;\n\n", ms->num_constraint_objects);
 
-		fprintf(*fp, "   sdm.constraint_object = (dpConstraintObject*)simm_malloc(sdm.num_constraint_objects * sizeof(dpConstraintObject));\n\n");
+		fprintf(*fp, "   sdm->constraint_object = (dpConstraintObject*)simm_malloc(sdm->num_constraint_objects * sizeof(dpConstraintObject));\n\n");
 
 		fprintf(*fp, "   num_points = sizeof(constraint_points) / sizeof(dpConstraintPoint);\n");
-		fprintf(*fp, "   constraint_num = sdm.num_user_constraints - num_points;\n\n");
+		fprintf(*fp, "   constraint_num = sdm->num_user_constraints - num_points;\n\n");
 
 		fprintf(*fp, "   /* Copy the constraint objects into the sdm structure, and adjust the point offsets so that they\n");
 		fprintf(*fp, "    * are relative to the mass center of the segment. Then compute the to_local_xform as the\n");
 		fprintf(*fp, "    * inverse of the from_local_xform.\n");
 		fprintf(*fp, "    */\n");
 
-		fprintf(*fp, "   for (i = 0; i < sdm.num_constraint_objects; i++)\n");
+		fprintf(*fp, "   for (i = 0; i < sdm->num_constraint_objects; i++)\n");
 		fprintf(*fp, "   {\n");
-		fprintf(*fp, "      sdm.constraint_object[i] = constraint_object[i];\n");
-		fprintf(*fp, "      mstrcpy(&sdm.constraint_object[i].name, constraint_object[i].name);\n");
-		fprintf(*fp, "      sdm.constraint_object[i].from_local_xform[3][XX] -= sdm.body_segment[sdm.constraint_object[i].segment+1].mass_center[XX];\n");
-		fprintf(*fp, "      sdm.constraint_object[i].from_local_xform[3][YY] -= sdm.body_segment[sdm.constraint_object[i].segment+1].mass_center[YY];\n");
-		fprintf(*fp, "      sdm.constraint_object[i].from_local_xform[3][ZZ] -= sdm.body_segment[sdm.constraint_object[i].segment+1].mass_center[ZZ];\n");
-		fprintf(*fp, "      invert_4x4transform(sdm.constraint_object[i].from_local_xform, sdm.constraint_object[i].to_local_xform);\n");
-		fprintf(*fp, "      sdm.constraint_object[i].points = (dpConstraintPoint*)simm_malloc(sdm.constraint_object[i].numPoints * sizeof(dpConstraintPoint));\n");
-		fprintf(*fp, "      index = sdm.constraint_object[i].ptIndex;\n");
-		fprintf(*fp, "      for (j = 0; j < sdm.constraint_object[i].numPoints; j++)\n");
+		fprintf(*fp, "      sdm->constraint_object[i] = constraint_object[i];\n");
+		fprintf(*fp, "      mstrcpy(&sdm->constraint_object[i].name, constraint_object[i].name);\n");
+		fprintf(*fp, "      sdm->constraint_object[i].from_local_xform[3][XX] -= sdm->body_segment[sdm->constraint_object[i].segment+1].mass_center[XX];\n");
+		fprintf(*fp, "      sdm->constraint_object[i].from_local_xform[3][YY] -= sdm->body_segment[sdm->constraint_object[i].segment+1].mass_center[YY];\n");
+		fprintf(*fp, "      sdm->constraint_object[i].from_local_xform[3][ZZ] -= sdm->body_segment[sdm->constraint_object[i].segment+1].mass_center[ZZ];\n");
+		fprintf(*fp, "      invert_4x4transform(sdm->constraint_object[i].from_local_xform, sdm->constraint_object[i].to_local_xform);\n");
+		fprintf(*fp, "      sdm->constraint_object[i].points = (dpConstraintPoint*)simm_malloc(sdm->constraint_object[i].numPoints * sizeof(dpConstraintPoint));\n");
+		fprintf(*fp, "      index = sdm->constraint_object[i].ptIndex;\n");
+		fprintf(*fp, "      for (j = 0; j < sdm->constraint_object[i].numPoints; j++)\n");
 		fprintf(*fp, "      {\n");
 		fprintf(*fp, "         /* adjust the offset to be w.r.t. the mass center, rather than the origin. */\n");
 		fprintf(*fp, "         sdm_seg_index = constraint_points[index].segment + 1;\n");
-		fprintf(*fp, "         sdvsub(constraint_points[index].offset, sdm.body_segment[sdm_seg_index].mass_center,\n");
-		fprintf(*fp, "            sdm.constraint_object[i].points[j].offset);\n");
-		fprintf(*fp, "         sdm.constraint_object[i].points[j].segment = constraint_points[index].segment;\n");
-		fprintf(*fp, "         sdm.constraint_object[i].points[j].weight = constraint_points[index].weight;\n");
-		fprintf(*fp, "         mstrcpy(&sdm.constraint_object[i].points[j].name, constraint_points[index].name);\n");
-		fprintf(*fp, "         sdm.constraint_object[i].points[j].constraint_num = constraint_num++;\n");
+		fprintf(*fp, "         sdvsub(constraint_points[index].offset, sdm->body_segment[sdm_seg_index].mass_center,\n");
+		fprintf(*fp, "            sdm->constraint_object[i].points[j].offset);\n");
+		fprintf(*fp, "         sdm->constraint_object[i].points[j].segment = constraint_points[index].segment;\n");
+		fprintf(*fp, "         sdm->constraint_object[i].points[j].weight = constraint_points[index].weight;\n");
+		fprintf(*fp, "         mstrcpy(&sdm->constraint_object[i].points[j].name, constraint_points[index].name);\n");
+		fprintf(*fp, "         sdm->constraint_object[i].points[j].constraint_num = constraint_num++;\n");
 		fprintf(*fp, "         index++;\n");
 		fprintf(*fp, "      }\n");
 		fprintf(*fp, "   }\n");
@@ -1739,13 +1799,15 @@ void SdfastFileWriter::writeModelSourceFile(const string& aFileName, const strin
 	writeSdfastQRestraintData(out);
 
 	out << "\n\n/**************** GLOBAL VARIABLES (used in only a few files) *****************/" << endl;
-	out << "extern dpModelStruct sdm;" << endl << endl << endl;
+	out << "extern dpModelStruct* sdm;" << endl << endl << endl;
 
 	out << "/*************** EXTERNED VARIABLES (declared in another file) ****************/" << endl << endl << endl << endl;
 
 	out << "/*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/" << endl << endl << endl;
 
 	writeSdfastQInitCode(out);
+
+	writeSdfastInitCode(out);
 
 	writeSdfastQRestraintFunctions(out);
 
@@ -1754,6 +1816,227 @@ void SdfastFileWriter::writeModelSourceFile(const string& aFileName, const strin
 	writeSdfastWrapObjects(out);
 
 	writeSdfastConstraintObjects(out);
+
+	out.close();
+}
+
+void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, const string& aMuscleFileName,
+																     const string& aBonePath, const string& aKineticsFile,
+																     const string& aOutputMotionFile)
+{
+	int i;
+	ofstream out;
+
+	if (!_initialized)
+		initialize();
+
+	out.open(aFileName.c_str());
+	out.setf(ios::fixed);
+	out.precision(10);
+
+	out << "# PARAMS.TXT" << endl;
+	out << "# Dynamics Pipeline parameters file generated by NMBLTS" << endl;
+	out << "# for use with the stand-alone version of a dynamic simulation." << endl;
+	out << "# Created " << getCurrentTimeString() << endl;
+	out << "# Name of original SIMM model: " << _model->getName() << endl;
+	out << "#" << endl;
+	out << "# This file contains all of the parameters that you can specify at" << endl;
+	out << "# run-time in a dynamic simulation (stand-alone version). To change" << endl;
+	out << "# one of them, remove the '#' from the beginning of the line (which" << endl;
+	out << "# identifies the line as a comment), and change the parameter to the" << endl;
+	out << "# desired value." << endl << endl;
+
+	out << "############################# I/O Options #############################" << endl;
+	if (aMuscleFileName == "no_muscles")
+		out << "#muscle_file name_of_muscle_file" << endl;
+	else
+		out << "muscle_file " << aMuscleFileName << endl;
+
+	if (aBonePath == "no_path")
+		out << "#bone_path path_to_bone_files" << endl;
+	else
+		out << "bone_path " << aBonePath << endl;
+
+	out << "output_motion_file " << aOutputMotionFile << endl;
+
+	if (aKineticsFile == "no_kinetics")
+		out << "#kinetics_file forces.ktx" << endl;
+	else
+		out << "kinetics_file " << aKineticsFile << endl;
+
+	// It is not recommended to use kinetics files for output (use motion files instead)
+	out << "output_kinetics_file results.ktx" << endl << endl;
+
+	out << "######################## Integration Parameters #######################" << endl;
+	out << "start_time 0.0  #start time of simulation" << endl;
+	out << "end_time   1.0  #end time of simulation" << endl;
+	out << "step_size  0.01 #reporting interval for integrator" << endl << endl;
+
+	out << "######################### Segment Parameters ##########################" << endl;
+	out << "# You can specify mass properties here if you add '?' after their" << endl;
+	out << "# values in model.sd. Mass centers should only be changed by editing" << endl;
+	out << "# your SIMM joint file and re-saving the dynamics files." << endl;
+	out << "# segment_name mass value" << endl;
+	out << "# segment_name inertia I11 I12 I13 I21 I22 I23 I31 I32 I33" << endl;
+
+	for (i = 1; i < _sdfastBodies.getSize(); i++)
+	{
+		out << "#" << _sdfastBodies[i].name << " mass " << _sdfastBodies[i].mass << endl;
+		out << "#" << _sdfastBodies[i].name << " inertia " <<
+			_sdfastBodies[i].inertia[0][0] << " " <<
+			_sdfastBodies[i].inertia[0][1] << " " <<
+			_sdfastBodies[i].inertia[0][2] << " " <<
+			_sdfastBodies[i].inertia[1][0] << " " <<
+			_sdfastBodies[i].inertia[1][1] << " " <<
+			_sdfastBodies[i].inertia[1][2] << " " <<
+			_sdfastBodies[i].inertia[2][0] << " " <<
+			_sdfastBodies[i].inertia[2][1] << " " <<
+			_sdfastBodies[i].inertia[2][2] << endl;
+	}
+	out << endl;
+
+	out << "####################### Gencoord Initialization #######################" << endl;
+	out << "# gencoord_name initial_value initial_velocity" << endl;
+	out << "#" << endl;
+
+	for (i = 0; i < _numQs; i++)
+	{
+		JointInfo* joint;
+		DofInfo* dof = findNthSdfastQ(i, joint);
+		if (dof) {
+			double scale = (dof->modelDof->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
+			out << "#" << dof->name << " " << dof->initialValue * scale << " 0.0" << endl;
+		}
+	}
+	out << endl;
+
+	out << "########################### Output Options ############################" << endl;
+	out << "# this one is for output printed to the shell window" << endl;
+	out << "verbose no" << endl;
+	out << "# these are for output written to output_motion_file" << endl;
+	out << "#output_gencoord_values yes" << endl;
+	out << "output_muscle_activations yes" << endl;
+	out << "output_muscle_lengths no" << endl;
+	out << "output_muscle_forces yes" << endl;
+	out << "#output_muscle_fiber_lengths no" << endl;
+	out << "#output_muscle_fiber_velocities no" << endl;
+	out << "output_muscle_moment_arms no" << endl;
+	out << "output_muscle_joint_torques no" << endl;
+	out << "output_total_muscle_joint_torques no" << endl;
+	out << "output_joint_torques no" << endl;
+	out << "#output_corrected_joint_torques no" << endl;
+	out << "output_joint_reaction_forces no" << endl;
+	out << "output_joint_reaction_torques no" << endl;
+	out << "#output_optimized_muscle_activations no" << endl;
+	out << "output_mass_center_positions no" << endl;
+	out << "output_mass_center_velocities no" << endl;
+	out << "output_system_energy no" << endl;
+	out << "output_contact_forces no" << endl;
+	out << "output_spring_forces no" << endl;
+	out << "num_output_spring_forces 20" << endl << endl;
+
+	out << "####################### Force Matte Definitions #######################" << endl;
+	out << "# force mattes can be used to apply forces defined in the ground" << endl;
+	out << "# reference frame to some other body segment." << endl;
+	out << "# force_matte matte_name bone_file_name segment_name" << endl;
+#if 0
+   for (i = 0; i < model->numsegments; i++)
+   {
+      if (model->segment[i].forceMatte)
+      {
+         fprintf(file,"force_matte %s %s\t%s\n", model->segment[i].forceMatte->name,
+            model->segment[i].forceMatte->filename, model->segment[i].name);
+      }
+   }
+#endif
+	out << endl;
+
+	out << "##################### Contact Detection Variables #####################" << endl;
+	out << "# object object_name bone_file_name segment_name" << endl;
+	out << "# begin_group group_name object_name1 ... object_nameN end_group" << endl;
+	out << "# contact_pair object_name1 object_name2 coef_rest mu_dynamic mu_static" << endl << endl;
+#if 0
+   for (i=0; i<model->numsegments; i++)
+   {
+      for (j=0; j<model->segment[i].numContactObjects; j++)
+      {
+         fprintf(file,"object %s %s\t%s\n", model->segment[i].contactObject[j].name,
+            model->segment[i].contactObject[j].filename, model->segment[i].name);
+      }
+   }
+   for (i=0; i<model->numContactGroups; i++)
+   {
+      fprintf(file,"begin_group %s\n", model->contactGroup[i].name);
+      for (j=0; j<model->contactGroup[i].numElements; j++)
+         fprintf(file,"%s ", model->contactGroup[i].element[j]);
+      fprintf(file,"\nend_group" << endl;
+   }
+   for (i=0; i<model->numContactPairs; i++)
+   {
+      fprintf(file,"contact_pair %s %s %lf %lf %lf\n",
+         model->contactPair[i].body1,
+         model->contactPair[i].body2,
+         model->contactPair[i].restitution,
+         model->contactPair[i].mu_static,
+         model->contactPair[i].mu_dynamic);
+   }
+#endif
+
+	out << "######################## Spring-based Contacts ########################" << endl;
+	out << "# spring_floor spring_floor_name file_name segment_name" << endl;
+	out << "# spring segment_name Px Py Pz spring_floor_name friction param1 param2 param3 param4 param5 param6" << endl;
+#if 0
+   for (i=0; i<model->numsegments; i++)
+   {
+      if (model->segment[i].springFloor)
+      {
+         fprintf(file,"spring_floor %s %s %s\n", 
+            model->segment[i].springFloor->name, 
+            model->segment[i].springFloor->filename,
+            model->segment[i].name);
+      }
+      for (j=0; j<model->segment[i].numSpringPoints; j++)
+      {
+         fprintf(file,"spring %s % 10.4f % 10.4f % 10.4f "
+            "%s % 10.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f % 12.4f\n", 
+            model->segment[i].name,
+            model->segment[i].springPoint[j].point[0],
+            model->segment[i].springPoint[j].point[1],
+            model->segment[i].springPoint[j].point[2],
+            model->segment[i].springPoint[j].floorName,
+            model->segment[i].springPoint[j].friction,
+            model->segment[i].springPoint[j].param_a,
+            model->segment[i].springPoint[j].param_b,
+            model->segment[i].springPoint[j].param_c,
+            model->segment[i].springPoint[j].param_d,
+            model->segment[i].springPoint[j].param_e,
+            model->segment[i].springPoint[j].param_f);
+      }
+   }
+#endif
+	out << endl;
+
+	out << "##################### Muscle State Initialization #####################" << endl;
+	out << "# You can specify the initial values of the muscle model states for each" << endl;
+	out << "# muscle by un-commenting the appropriate line[s] below and replacing" << endl;
+	out << "# the zeros with the initial values. You must specify the state values" << endl;
+	out << "# in the order that the states are numbered in the muscle derivative" << endl;
+	out << "# function for that muscle model (in derivs.c). You can specify fewer" << endl;
+	out << "# than the total number of states in the muscle model, but the N values" << endl;
+	out << "# that you specify will be used to initialize the *first* N states in the" << endl;
+	out << "# model. If you specify more states than there are in the muscle model," << endl;
+	out << "# the extra values will be ignored." << endl;
+	out << "# muscle_name state1_init_value state2_init_value ..." << endl;
+	out << "#" << endl;
+
+	ActuatorSet* actuatorSet = _model->getActuatorSet();
+	for(int i=0; i<actuatorSet->getSize(); i++)
+	{
+		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(actuatorSet->get(i));
+		if (sm)
+			out << "#" << sm->getName() << " 0.0 0.0 0.0" << endl;
+	}
+	out << endl;
 
 	out.close();
 }
