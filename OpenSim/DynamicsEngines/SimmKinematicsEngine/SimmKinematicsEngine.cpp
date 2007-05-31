@@ -623,10 +623,11 @@ void SimmKinematicsEngine::getPosition(const AbstractBody& aBody, const double a
  * @param aBody
  * @param aPoint
  * @param rVel
+ * Ayman: Per Pete & Clay returning 0.0 for now (Kluge for 0.9 until we resolve in general way like SIMM or throw).
  */
 void SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) not yet implemented.");
+	rVel[0]=rVel[1]=rVel[2]=0.0;
 }
 
 //_____________________________________________________________________________
