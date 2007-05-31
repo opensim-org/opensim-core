@@ -169,17 +169,39 @@ void MuscleAnalysis::setModel(Model *aModel)
 void MuscleAnalysis::
 allocateStorage()
 {
+	_storageList.setMemoryOwner(false);
 	_pennationAngleStore = new Storage(1000,"PennationAngle");
+	_storageList.append(_pennationAngleStore );
+
 	_lengthStore = new Storage(1000,"Length");
+	_storageList.append(_lengthStore );
+
 	_fiberLengthStore = new Storage(1000,"FiberLength");
+	_storageList.append(_fiberLengthStore );
+
 	_normalizedFiberLengthStore = new Storage(1000,"NormalizedFiberLength");
+	_storageList.append(_normalizedFiberLengthStore );
+
 	_tendonLengthStore = new Storage(1000,"FiberLength");
+	_storageList.append(_tendonLengthStore );
+
 	_forceStore = new Storage(1000,"Force");
+	_storageList.append(_forceStore );
+
 	_fiberForceStore = new Storage(1000,"FiberForce");
+	_storageList.append(_fiberForceStore );
+
 	_activeFiberForceStore = new Storage(1000,"ActiveFiberForce");
+	_storageList.append(_activeFiberForceStore );
+
 	_passiveFiberForceStore = new Storage(1000,"PassiveFiberForce");
+	_storageList.append(_passiveFiberForceStore );
+
 	_activeFiberForceAlongTendonStore = new Storage(1000,"ActiveFiberAlongTendonForce");
+	_storageList.append(_activeFiberForceAlongTendonStore );
+
 	_passiveFiberForceAlongTendonStore = new Storage(1000,"PassiveFiberAlongTendonForce");
+	_storageList.append(_passiveFiberForceAlongTendonStore );
 
 	_lengthStore->setDescription(getDescription());
 

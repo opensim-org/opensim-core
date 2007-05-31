@@ -89,6 +89,7 @@ public:
 	AnalyzeTool();
 	AnalyzeTool(const std::string &aFileName);
 	AnalyzeTool(const AnalyzeTool &aObject);
+	AnalyzeTool(Model* aModel);
 	virtual Object* copy() const;
 private:
 	void setNull();

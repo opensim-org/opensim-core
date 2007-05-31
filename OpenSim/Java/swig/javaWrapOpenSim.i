@@ -131,6 +131,7 @@
 
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ScaleTool.h>
+#include <OpenSim/Tools/AnalyzeTool.h>
 
 using namespace OpenSim;
 %}
@@ -436,3 +437,4 @@ using namespace OpenSim;
 %include <OpenSim/Tools/IKSolverImpl.h>
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/ScaleTool.h>
+%include <OpenSim/Tools/AnalyzeTool.h>

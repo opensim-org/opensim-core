@@ -80,6 +80,33 @@ AnalyzeTool::AnalyzeTool(const string &aFileName) :
 }
 //_____________________________________________________________________________
 /**
+ * Construct with a passed in model.
+ *
+ * Typically used from the GUI where the model is readily available.
+ * This special constructor avoid many steps/generalities in th AnalyzeTool 
+ * Analyses are added to the model beforehand.
+ *
+ * @param aModel model in the GUI.
+ * 
+ */
+AnalyzeTool::AnalyzeTool(Model *aModel) :
+	AbstractTool(),
+	_controlsFileName(_controlsFileNameProp.getValueStr()),
+	_statesFileName(_statesFileNameProp.getValueStr()),
+	_pseudoStatesFileName(_pseudoStatesFileNameProp.getValueStr()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
+	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+{
+	setType("AnalyzeTool");
+	setNull();
+	setModel(aModel);
+}
+
+//_____________________________________________________________________________
+/**
  * Copy constructor.
  *
  * Copy constructors for all Tools only copy the non-XML variable
@@ -516,7 +543,9 @@ void AnalyzeTool::run()
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	string directoryOfSetupFile = ".";
+	if (_document)	// When the tool is created live from GUI it has no file/document association
+		directoryOfSetupFile=IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
 	// COMPUTE INITIAL AND FINAL INDEX
