@@ -110,6 +110,7 @@ public:
 	virtual Function* getMaxRestraintFunction() const { return NULL; }
 	virtual AbstractDof::DofType getMotionType() const = 0;
 	virtual void determineType() = 0;
+	virtual bool getConstrained() const { return false; }
 
 	virtual void peteTest() const { }
 private:

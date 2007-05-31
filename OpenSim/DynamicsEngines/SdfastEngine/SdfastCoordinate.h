@@ -202,6 +202,8 @@ public:
 	Function* getConstraintFunction() const;
 	void setConstraintFunction(const Function *function);
 
+	bool getConstrained() const { return _constraintFunction!=0; }
+
 	void setSdfastType(SdfastQType aType) { _QType = aType; }
 	int getSdfastType() const { return _QType; }
 	void setSdfastIndex(int aIndex) { _index = aIndex; }
