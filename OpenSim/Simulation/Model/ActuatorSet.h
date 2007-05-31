@@ -129,6 +129,7 @@ public:
 	bool append(AbstractActuator *aActuator);
 	bool append(ActuatorSet &aActuatorSet, bool aAllowDuplicateNames=false);
 	bool set(int aIndex, AbstractActuator *aActuator);
+	void changeActuatorType(AbstractActuator* aActuator, const std::string& aNewTypeName);
 
 	// CONTROLS
 	int getNumControls() const;

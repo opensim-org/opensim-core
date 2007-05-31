@@ -98,6 +98,54 @@ AbstractActuator::~AbstractActuator()
 {
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy-in-place from a passed-in actuator. But the passed-in actuator
+ * could be a different type, so you can't use the assignment operator.
+ */
+void AbstractActuator::copy(AbstractActuator& aActuator)
+{
+	PropertySet& toPropSet = this->getPropertySet();
+	PropertySet& fromPropSet = aActuator.getPropertySet();
+	for (int i = 0; i < toPropSet.getSize(); i++) {
+		Property* toProp = toPropSet.get(i);
+		Property* fromProp = fromPropSet.get(toProp->getName());
+		if (fromProp != NULL) {
+			Property::PropertyType fromType = fromProp->getType();
+			if (fromType == toProp->getType()) {
+				if (fromType == Property::Bool)
+					toProp->setValue(fromProp->getValueBool());
+				else if (fromType == Property::Int)
+					toProp->setValue(fromProp->getValueInt());
+				else if (fromType == Property::Flt)
+					toProp->setValue(fromProp->getValueDbl()); // TODO?
+				else if (fromType == Property::Dbl)
+					toProp->setValue(fromProp->getValueDbl());
+				else if (fromType == Property::Str)
+					toProp->setValue(fromProp->getValueStr());
+				//else if (fromType == Property::Obj)
+					//toProp->setValue(fromProp->getValueObj());
+				else if (fromType == Property::ObjPtr)
+					toProp->setValue(fromProp->getValueObjPtr());
+				else if (fromType == Property::ObjArray)
+					toProp->setValue(fromProp->getValueObjArray());
+				else if (fromType == Property::BoolArray)
+					toProp->setValue(fromProp->getValueBoolArray());
+				else if (fromType == Property::IntArray)
+					toProp->setValue(fromProp->getValueIntArray());
+				else if (fromType == Property::FltArray)
+					toProp->setValue(fromProp->getValueDblArray()); // TODO?
+				else if (fromType == Property::DblArray)
+					toProp->setValue(fromProp->getValueDblArray());
+				else if (fromType == Property::StrArray)
+					toProp->setValue(fromProp->getValueStrArray());
+				else if (fromType == Property::ObjArray)
+					toProp->setValue(fromProp->getValueObjArray());
+			}
+		}
+	}
+}
+
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================

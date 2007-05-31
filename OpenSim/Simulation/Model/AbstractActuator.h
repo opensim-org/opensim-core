@@ -94,6 +94,8 @@ public:
 	AbstractActuator(const AbstractActuator &aActuator);
 	virtual ~AbstractActuator();
 	virtual Object* copy() const = 0;
+	void copy(AbstractActuator& aActuator);
+
 private:
 	void setNull();
 

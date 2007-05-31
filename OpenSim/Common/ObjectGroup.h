@@ -95,6 +95,8 @@ public:
 	}
 	void peteTest() const;
 
+	OPENSIM_DECLARE_DERIVED(ObjectGroup, Object);
+
 private:
 	void setNull();
 	void setupProperties();

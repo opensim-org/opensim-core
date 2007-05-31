@@ -29,6 +29,8 @@
 #include <iostream>
 #include "ActuatorSet.h"
 #include "Model.h"
+#include <OpenSim/Actuators/SimmZajacHill.h>
+#include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/rdMath.h>
 
@@ -424,6 +426,31 @@ set(int aIndex,AbstractActuator *aActuator)
 	}
 
 	return(success);
+}
+
+//_____________________________________________________________________________
+/**
+ * Change the type (class) of an actuator.
+ *
+ *	@param aActuator Pointer to the actuator to change.
+ *	@param aNewType The type to change to.
+ */
+void ActuatorSet::changeActuatorType(AbstractActuator* aActuator, const string& aNewTypeName)
+{
+	if (aActuator) {
+	   int index = getIndex(aActuator);
+		if (index >= 0) {
+			Object* newObject = Object::newInstanceOfType(aNewTypeName);
+			if (newObject) {
+				AbstractActuator* newActuator = AbstractActuator::safeDownCast(newObject);
+				if (newActuator) {
+					newActuator->copy(*aActuator);
+					remove(index);
+					insert(index, newActuator);
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

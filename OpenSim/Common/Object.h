@@ -184,7 +184,7 @@ public:
 	virtual void copy(const Object& aObject);
 	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
 //	static Object* ConstructObject(DOMElement *aNode);
-	virtual VisibleObject *getDisplayer() { return 0; };
+	virtual VisibleObject *getDisplayer() const { return 0; };
 private:
 	void setNull();
 	void setupProperties();

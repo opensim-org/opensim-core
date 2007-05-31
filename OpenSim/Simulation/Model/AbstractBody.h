@@ -96,6 +96,8 @@ public:
 
 	virtual void peteTest(void) const { }
 
+	OPENSIM_DECLARE_DERIVED(AbstractBody, Object);
+
 private:
 	void setNull();
 	void setupProperties();

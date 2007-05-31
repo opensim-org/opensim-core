@@ -20,7 +20,7 @@ public:
     virtual OpenSim::Object *copy() const;
     virtual OpenSim::Object *copy(DOMElement *aNode) const;
     virtual void copy(OpenSim::Object const &aObject);
-    virtual OpenSim::VisibleObject *getDisplayer();
+    virtual OpenSim::VisibleObject *getDisplayer() const;
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
     virtual void updateDefaultObjectsFromXMLNode();
