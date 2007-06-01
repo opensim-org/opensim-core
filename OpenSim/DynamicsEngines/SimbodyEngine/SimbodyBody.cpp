@@ -1,4 +1,4 @@
-// SdfastBody.cpp
+// SimbodyBody.cpp
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -26,8 +26,8 @@
 // INCLUDES
 //=============================================================================
 #include <iostream>
-#include "SdfastBody.h"
-#include "SdfastEngine.h"
+#include "SimbodyBody.h"
+#include "SimbodyEngine.h"
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/SimmMacros.h>
 
@@ -44,25 +44,23 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SdfastBody::SdfastBody() :
+SimbodyBody::SimbodyBody() :
 	_mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_index(_indexProp.getValueInt()),
-	_SdfastEngine(NULL)
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
-	updateSdfast();
+	updateSimbody();
 }
 
 //_____________________________________________________________________________
 /**
  * Destructor.
  */
-SdfastBody::~SdfastBody()
+SimbodyBody::~SimbodyBody()
 {
 }
 
@@ -70,17 +68,15 @@ SdfastBody::~SdfastBody()
 /**
  * Copy constructor.
  *
- * @param aBody SdfastBody to be copied.
+ * @param aBody SimbodyBody to be copied.
  */
-SdfastBody::SdfastBody(const SdfastBody &aBody) :
+SimbodyBody::SimbodyBody(const SimbodyBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_index(_indexProp.getValueInt()),
-	_SdfastEngine(NULL)
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -91,17 +87,15 @@ SdfastBody::SdfastBody(const SdfastBody &aBody) :
 /**
  * Copy constructor from an AbstractBody.
  *
- * @param aBody SdfastBody to be copied.
+ * @param aBody SimbodyBody to be copied.
  */
-SdfastBody::SdfastBody(const AbstractBody &aBody) :
+SimbodyBody::SimbodyBody(const AbstractBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
    _massCenter(_massCenterProp.getValueDblArray()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj()),
-	_index(_indexProp.getValueInt()),
-	_SdfastEngine(NULL)
+   _displayer((VisibleObject&)_displayerProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -113,11 +107,11 @@ SdfastBody::SdfastBody(const AbstractBody &aBody) :
  * Copy this body and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SdfastBody.
+ * @return Pointer to a copy of this SimbodyBody.
  */
-Object* SdfastBody::copy() const
+Object* SimbodyBody::copy() const
 {
-	SdfastBody *body = new SdfastBody(*this);
+	SimbodyBody *body = new SimbodyBody(*this);
 	return(body);
 }
 
@@ -126,28 +120,28 @@ Object* SdfastBody::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SdfastBody to another.
+ * Copy data members from one SimbodyBody to another.
  *
- * @param aBody SdfastBody to be copied.
+ * @param aBody SimbodyBody to be copied.
  */
-void SdfastBody::copyData(const SdfastBody &aBody)
+void SimbodyBody::copyData(const SimbodyBody &aBody)
 {
 	_mass = aBody._mass;
 	_massCenter = aBody._massCenter;
 	_inertia = aBody._inertia;
 	_displayer = aBody._displayer;
-	_index = aBody._index;
-	_SdfastEngine = aBody._SdfastEngine;
-	updateSdfast();
+	_id = aBody._id;
+	_engine = aBody._engine;
+	updateSimbody();
 }
 
 //_____________________________________________________________________________
 /**
- * Copy data members from an AbstractBody to an SdfastBody.
+ * Copy data members from an AbstractBody to an SimbodyBody.
  *
  * @param aBody AbstractBody to be copied.
  */
-void SdfastBody::copyData(const AbstractBody &aBody)
+void SimbodyBody::copyData(const AbstractBody &aBody)
 {
 	// Mass
 	_mass = aBody.getMass();
@@ -166,24 +160,24 @@ void SdfastBody::copyData(const AbstractBody &aBody)
 	_displayer = *aBody.getDisplayer();
 
 	// Update SDFast
-	updateSdfast();
+	updateSimbody();
 }
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SdfastBody to their null values.
+ * Set the data members of this SimbodyBody to their null values.
  */
-void SdfastBody::setNull()
+void SimbodyBody::setNull()
 {
-	setType("SdfastBody");
-	_SdfastEngine = NULL;
+	setType("SimbodyBody");
+	_engine = NULL;
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SdfastBody::setupProperties()
+void SimbodyBody::setupProperties()
 {
 	double mass = 1.0;
 	_massProp.setName("mass");
@@ -202,10 +196,6 @@ void SdfastBody::setupProperties()
 
 	_displayerProp.setName("Displayer");
 	_propertySet.append(&_displayerProp);
-
-	_indexProp.setName("index");
-	_indexProp.setValue(-2);
-	_propertySet.append(&_indexProp);
 }
 
 //_____________________________________________________________________________
@@ -214,7 +204,7 @@ void SdfastBody::setupProperties()
  * changes in the properties for this body.  This method should be called,
  * for example, after updateFromXMLNode() is called.
  */
-void SdfastBody::updateSdfast()
+void SimbodyBody::updateSimbody()
 {
 	setMass(_mass);
 	setMassCenter(&_massCenter[0]);
@@ -226,18 +216,18 @@ void SdfastBody::updateSdfast()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this SdfastBody.
+ * @param aEngine dynamics engine containing this SimbodyBody.
  */
-void SdfastBody::setup(AbstractDynamicsEngine* aEngine)
+void SimbodyBody::setup(AbstractDynamicsEngine* aEngine)
 {
 	// Base class
 	AbstractBody::setup(aEngine);
 
 	_displayer.setOwner(this);
 
-	_SdfastEngine = dynamic_cast<SdfastEngine*>(aEngine);
+	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
 
-	updateSdfast();
+	updateSimbody();
 }
 
 //=============================================================================
@@ -249,7 +239,7 @@ void SdfastBody::setup(AbstractDynamicsEngine* aEngine)
  *
  * @return Reference to this object.
  */
-SdfastBody& SdfastBody::operator=(const SdfastBody &aBody)
+SimbodyBody& SimbodyBody::operator=(const SimbodyBody &aBody)
 {
 	// BASE CLASS
 	AbstractBody::operator=(aBody);
@@ -266,14 +256,11 @@ SdfastBody& SdfastBody::operator=(const SdfastBody &aBody)
 /**
  * Get the mass of the body.
  *
- * @return Mass of body from SD/FAST code.
+ * @return Mass of body from Simbody code.
  */
-double SdfastBody::getMass() const
+double SimbodyBody::getMass() const
 {
-	if(_index<0) return 0.0;
-	double mass = 0.0;
-	_SdfastEngine->_sdgetmass(_index,&mass);
-	return mass;
+	return _engine->_matter.getBodyMass(_engine->_s,_id);
 }
 //_____________________________________________________________________________
 /**
@@ -282,16 +269,14 @@ double SdfastBody::getMass() const
  * @param aMass mass of body.
  * @return Whether mass was successfully changed.
  */
-bool SdfastBody::setMass(double aMass)
+bool SimbodyBody::setMass(double aMass)
 {
-	if(_index<0) return false;
-
 	if(aMass<0.0) {
-		cerr<<"SdfastBody.setMass(): ERROR- zero or negative mass not allowed.\n";
+		cerr<<"SimbodyBody.setMass(): ERROR- zero or negative mass not allowed.\n";
 		return false;
 	}
 
-	// Check to see if the mass is different from what SDFast already has
+	// Check to see if the mass is different
 	double mass = getMass();
 	if(rdMath::IsEqual(mass,aMass,rdMath::ZERO)) return true;
 
@@ -299,9 +284,8 @@ bool SdfastBody::setMass(double aMass)
 	_mass = aMass;
 
 	// Update sdfast
-	_SdfastEngine->_sdmass(_index,aMass);
-	_SdfastEngine->_sdinit();
-	//cout<<"SdfastBody.setMass: body="<<getName()<<"  orig="<<mass<<"  new="<<_mass<<endl;
+	Q: how do I change the mass of a body?
+		_engine->_matter.getArticulatedBodyInertia(_engine->_s,_id);
 
 	return true;
 }
@@ -312,7 +296,7 @@ bool SdfastBody::setMass(double aMass)
  *
  * @param rVec XYZ coordinates of mass center are returned here.
  */
-void SdfastBody::getMassCenter(double rVec[3]) const
+void SimbodyBody::getMassCenter(double rVec[3]) const
 {
 	rVec[0] = _massCenter[0];
 	rVec[1] = _massCenter[1];
@@ -325,13 +309,13 @@ void SdfastBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SdfastBody::setMassCenter(double aVec[3])
+bool SimbodyBody::setMassCenter(double aVec[3])
 {
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];
 	_massCenter[2] = aVec[2];
 
-	SdfastEngine* engine = dynamic_cast<SdfastEngine*>(_dynamicsEngine);
+	SimbodyEngine* engine = dynamic_cast<SimbodyEngine*>(_dynamicsEngine);
 	if(engine)
 		return engine->adjustJointVectorsForNewMassCenter(this);
 	else
@@ -344,7 +328,7 @@ bool SdfastBody::setMassCenter(double aVec[3])
  *
  * @param 3x3 inertia matrix.
  */
-void SdfastBody::getInertia(double rInertia[3][3]) const
+void SimbodyBody::getInertia(double rInertia[3][3]) const
 {
 	if(_index<0) {
 		for(int i=0; i<3; i++) {
@@ -353,7 +337,7 @@ void SdfastBody::getInertia(double rInertia[3][3]) const
 			}
 		}
 	} else {
-		_SdfastEngine->_sdgetiner(_index,rInertia);
+		_engine->_sdgetiner(_index,rInertia);
 	}
 }
 //_____________________________________________________________________________
@@ -362,7 +346,7 @@ void SdfastBody::getInertia(double rInertia[3][3]) const
  *
  * @param 3x3 inertia matrix.
  */
-void SdfastBody::getInertia(Array<double> &rInertia) const
+void SimbodyBody::getInertia(Array<double> &rInertia) const
 {
 	double inertia[3][3];
 	getInertia(inertia);
@@ -379,10 +363,10 @@ void SdfastBody::getInertia(Array<double> &rInertia) const
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SdfastBody::setInertia(const Array<double>& aInertia)
+bool SimbodyBody::setInertia(const Array<double>& aInertia)
 {
 	if(aInertia.getSize()<9) {
-		cerr<<"SdfastBody.setInertia: ERROR- inertia requires 9 elements.\n";
+		cerr<<"SimbodyBody.setInertia: ERROR- inertia requires 9 elements.\n";
 		return false;
 	}
 
@@ -400,7 +384,7 @@ bool SdfastBody::setInertia(const Array<double>& aInertia)
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SdfastBody::setInertia(const double aInertia[3][3])
+bool SimbodyBody::setInertia(const double aInertia[3][3])
 {
 	if(_index<0) return false;
 
@@ -414,7 +398,7 @@ bool SdfastBody::setInertia(const double aInertia[3][3])
 	if(same==true) return true;
 
 	// Update property
-	//cout<<"SdfastBody.setInertia: body="<<getName()<<"\n\torig=";
+	//cout<<"SimbodyBody.setInertia: body="<<getName()<<"\n\torig=";
 	for(int i=0; i<3; i++) {
 		for(int j=0; j<3; j++) {
 			inertia[i][j] = aInertia[i][j]; // to remove the const'ness (I think)
@@ -422,8 +406,8 @@ bool SdfastBody::setInertia(const double aInertia[3][3])
 		}
 	}
 
-	_SdfastEngine->_sdiner(_index,inertia);
-	_SdfastEngine->_sdinit();
+	_engine->_sdiner(_index,inertia);
+	_engine->_sdinit();
 
 	return true;
 }
@@ -436,7 +420,7 @@ bool SdfastBody::setInertia(const double aInertia[3][3])
  * Add a bone to the body.
  *
  * @param aBone bone to be added.
-void SdfastBody::addBone(VisibleObject* aBone)
+void SimbodyBody::addBone(VisibleObject* aBone)
 {
 	VisibleObject* newBone = new VisibleObject(*aBone);
 
@@ -455,7 +439,7 @@ void SdfastBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SdfastBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
@@ -480,12 +464,12 @@ void SdfastBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SdfastBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
 {
 	double mass, inertia[3][3];
 
-	_SdfastEngine->_sdgetmass(_index, &mass);
-	_SdfastEngine->_sdgetiner(_index, inertia);
+	_engine->_sdgetmass(_index, &mass);
+	_engine->_sdgetiner(_index, inertia);
 
 	// Scales assuming mass stays the same
 	scaleInertiaTensor(mass, aScaleFactors, inertia);
@@ -505,12 +489,12 @@ void SdfastBody::scaleInertialProperties(const Array<double>& aScaleFactors, boo
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SdfastBody::scaleMass(double aScaleFactor)
+void SimbodyBody::scaleMass(double aScaleFactor)
 {
 	double mass, inertia[3][3];
 
-	_SdfastEngine->_sdgetmass(_index, &mass);
-	_SdfastEngine->_sdgetiner(_index, inertia);
+	_engine->_sdgetmass(_index, &mass);
+	_engine->_sdgetiner(_index, inertia);
 
 	mass *= aScaleFactor;
 	for (int i=0;i<3;i++)
@@ -536,7 +520,7 @@ void SdfastBody::scaleMass(double aScaleFactor)
  * @param aPos The point in the body frame to transform
  * @param rPos The point transformed into the SD/FAST frame
  */
-void SdfastBody::transformToSdfastFrame(const double aPos[3],double rPos[3]) const
+void SimbodyBody::transformToSimbodyFrame(const double aPos[3],double rPos[3]) const
 {
 	for(int i=0; i<3; i++)
 		rPos[i] = aPos[i] - _massCenter[i];
@@ -552,7 +536,7 @@ void SdfastBody::transformToSdfastFrame(const double aPos[3],double rPos[3]) con
  * @param aPos The point in the body frame to transform
  * @param rPos The point transformed into the SD/FAST frame
  */
-void SdfastBody::transformToSdfastFrame(const Array<double>& aPos, double rPos[3]) const
+void SimbodyBody::transformToSimbodyFrame(const Array<double>& aPos, double rPos[3]) const
 {
 	for(int i=0; i<3; i++)
 		rPos[i] = aPos[i] - _massCenter[i];
@@ -568,7 +552,7 @@ void SdfastBody::transformToSdfastFrame(const Array<double>& aPos, double rPos[3
  * @param aPos The point in the body's SD/FAST frame to transform
  * @param rPos The point transformed into the body's frame
  */
-void SdfastBody::transformFromSdfastFrame(const double aPos[3], double rPos[3]) const
+void SimbodyBody::transformFromSimbodyFrame(const double aPos[3], double rPos[3]) const
 {
 	for(int i=0; i<3; i++)
 		rPos[i] = aPos[i] + _massCenter[i];
@@ -584,13 +568,13 @@ void SdfastBody::transformFromSdfastFrame(const double aPos[3], double rPos[3]) 
  * @param aPos The point in the body's SD/FAST frame to transform
  * @param rPos The point transformed into the body's frame
  */
-void SdfastBody::transformFromSdfastFrame(const Array<double>& aPos, double rPos[3]) const
+void SimbodyBody::transformFromSimbodyFrame(const Array<double>& aPos, double rPos[3]) const
 {
 	for(int i=0; i<3; i++)
 		rPos[i] = aPos[i] + _massCenter[i];
 }
 
-void SdfastBody::peteTest() const
+void SimbodyBody::peteTest() const
 {
 	cout << "Body: " << getName() << endl;
 	cout << "   massCenter: " << _massCenter << endl;

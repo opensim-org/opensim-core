@@ -78,13 +78,21 @@ class OSIMSIMBODYENGINE_API SimbodyEngine  : public AbstractDynamicsEngine
 // DATA
 //=============================================================================
 protected:
+	/** Ground frame. */
+	static const SimTK::Transform GroundFrame;
 	/** Body number used for ground. */
 	static const int GROUND;
 	/** Body used for ground or the inertial frame. */
 	AbstractBody* _groundBody;
 
+	/** Multibody system. */
+	SimTK::MultibodySystem _system;
+
 	/** Matter subsystem. */
 	SimTK::SimbodyMatterSubsystem _matter;
+
+	/** Uniform gravity subsystem. */
+	SimTK::UniformGravitySubsystem _gravity;
 
 	/** States of the Simbody model.  At a minimum, it contains the
 	generalized coordinates (q) and generalized speeds (u). */
@@ -121,8 +129,10 @@ public:
 	virtual void setup(Model* aModel);
 
 	//--------------------------------------------------------------------------
-   // GET/SET
+	// GRAVITY
 	//--------------------------------------------------------------------------
+	virtual bool setGravity(double aGrav[3]);
+	virtual void getGravity(double rGrav[3]) const;
 
 	//--------------------------------------------------------------------------
    // ADDING COMPONENTS
@@ -137,7 +147,9 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
-	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) { return NULL; }
+	virtual AbstractDof*
+		findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
+		AbstractJoint*& rJoint) { return NULL; }
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
@@ -155,9 +167,11 @@ public:
 	double* getDerivatives();
 
 	//--------------------------------------------------------------------------
-	// GRAVITY
+	// ASSEMBLING THE MODEL
 	//--------------------------------------------------------------------------
-	virtual bool setGravity(double aGrav[3]);
+	virtual int
+		assemble(double aTime,double *rState,int *aLock,double aTol,
+		int aMaxevals,int *rFcnt,int *rErr) { return 0; };
 
 	//--------------------------------------------------------------------------
 	// BODY INFORMATION
@@ -222,6 +236,20 @@ public:
 	virtual double getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const;
 	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const;
 	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const;
+
+	//--------------------------------------------------------------------------
+	// CONSTRAINTS
+	//--------------------------------------------------------------------------
+	virtual void computeConstrainedCoordinates(double *rQ) const {};
+
+	//--------------------------------------------------------------------------
+	// EQUATIONS OF MOTION
+	//--------------------------------------------------------------------------
+	virtual void formMassMatrix(double *rI) {};
+	virtual void formEulerTransform(const AbstractBody &aBody, double *rE) const {};
+	virtual void formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody=NULL) const {};
+	virtual void formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody=NULL) const {};
+	virtual void formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody=NULL) const {};
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVES

@@ -1,45 +1,45 @@
-// RegisterTypes_SdfastEngine.cpp
+// RegisterTypes_SimbodyEngine.cpp
 // author: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <string>
 #include <iostream>
 #include <OpenSim/Common/Object.h>
-#include "RegisterTypes_osimSdfastEngine.h"
-#include "SdfastEngine.h"
-#include "SdfastBody.h"
-#include "SdfastJoint.h"
-#include "SdfastCoordinate.h"
-#include "SdfastSpeed.h"
+#include "RegisterTypes_osimSimbodyEngine.h"
+#include "SimbodyEngine.h"
+#include "SimbodyBody.h"
+#include "SimbodyJoint.h"
+#include "SimbodyCoordinate.h"
+#include "SimbodySpeed.h"
 
 using namespace std;
 using namespace OpenSim;
 
-static osimSdfastEngineInstantiator instantiator; 
+static osimSimbodyEngineInstantiator instantiator; 
 
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
  * the rdSimulation library.
  */
-OSIMSDFASTENGINE_API void RegisterTypes_SdfastEngine()
+OSIMSIMBODYENGINE_API void RegisterTypes_SimbodyEngine()
 {
-	cout<<"RegisterTypes_SdfastEngine\n";
+	cout<<"RegisterTypes_SimbodyEngine\n";
 
-	Object::RegisterType( SdfastEngine() );
-	Object::RegisterType( SdfastBody() );
-	Object::RegisterType( SdfastJoint() );
-	Object::RegisterType( SdfastCoordinate() );
-	Object::RegisterType( SdfastSpeed() );
+	Object::RegisterType( SimbodyEngine() );
+	Object::RegisterType( SimbodyBody() );
+	Object::RegisterType( SimbodyJoint() );
+	Object::RegisterType( SimbodyCoordinate() );
+	Object::RegisterType( SimbodySpeed() );
 }
 
-osimSdfastEngineInstantiator::osimSdfastEngineInstantiator() 
+osimSimbodyEngineInstantiator::osimSimbodyEngineInstantiator() 
 { 
         registerDllClasses(); 
 } 
     
-void osimSdfastEngineInstantiator::registerDllClasses() 
+void osimSimbodyEngineInstantiator::registerDllClasses() 
 { 
-        RegisterTypes_SdfastEngine(); 
+        RegisterTypes_SimbodyEngine(); 
 } 
     

@@ -83,7 +83,8 @@ SimbodyEngine::SimbodyEngine(const string &aFileName) :
 	setNull();
 	setupProperties();
 	updateFromXMLNode();
-	//build(); 
+
+	// BUILD THE SIMBODY MODEL
 }
 
 //_____________________________________________________________________________
@@ -132,15 +133,26 @@ Object* SimbodyEngine::copy() const
  */
 void SimbodyEngine::constructPendulum()
 {
-	float length = 1.0;
+	// Parameters
+	double length = 1.0;
 	double mass = 1.0;
+	double g[] = { 0.0, -9.8, 0.0 };
 
-	SimTK::Transform groundFrame;
-	SimTK::Transform baseFrame;
-	SimTK::Transform jointFrame( Vec3(-length/2,0,0) );
+	// Add pendulum mass to matter subsystem
+	const Vec3 massLocation(0, -length/2, 0);
+	const Vec3 jointLocation(0, length/2, 0);
+	MassProperties massProps(mass, massLocation, mass*Inertia::pointMassAt(massLocation));
+	const BodyId body = _matter.addRigidBody(massProps,jointLocation,GroundId,GroundFrame,Mobilizer::Pin());
 
-	MassProperties massProps(mass, Vec3(length/2,0,0), Inertia(Vec3(length/2,0,0),mass)+Inertia(1e-6,1e-6,1e-6));
+	// Put subsystems into system
+	_system.setMatterSubsystem(_matter);
+	_system.addForceSubsystem(_gravity);
 
+	// Realize the state
+	_system.realize(_s);
+
+	// Set gravity
+	setGravity(g);
 }
 
 
@@ -320,7 +332,7 @@ void SimbodyEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) 
 //--------------------------------------------------------------------------
 // CONFIGURATION
 //--------------------------------------------------------------------------
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Set the configuration (cooridnates and speeds) of the model.
  *
@@ -328,16 +340,10 @@ void SimbodyEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) 
  */
 void SimbodyEngine::setConfiguration(const double aY[])
 {
-	// TODO: use Observer mechanism
-	int i;
-	ActuatorSet* act = getModel()->getActuatorSet();
-	for (i=0; i<act->getSize(); i++) {
-		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
-		if (sm)
-			sm->invalidatePath();
-	}
+	int nq = getNumCoordinates();
+	setConfiguration(aY,&aY[nq]);
 }
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the configuration (cooridnates and speeds) of the model.
  *
@@ -345,10 +351,11 @@ void SimbodyEngine::setConfiguration(const double aY[])
  */
 void SimbodyEngine::getConfiguration(double rY[]) const
 {
-
+	int nq = getNumCoordinates();
+	getConfiguration(rY,&rY[nq]);
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Set the configuration (cooridnates and speeds) of the model.
  *
@@ -357,18 +364,27 @@ void SimbodyEngine::getConfiguration(double rY[]) const
  */
 void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
 {
+	// SET Qs
+	int nq = getNumCoordinates();
+	Vector q(nq,aQ,true);
+	_matter.setQ(_s,q);
 
+	// SET Us
+	int nu = getNumSpeeds();
+	Vector u(nu,aU,true);
+	_matter.setU(_s,u);
 
+	// MARK ACTUATOR PATHS AS INVALID
 	// TODO: use Observer mechanism
-	int i;
+	// TODO: dynamic cast is slow, make invalidate a general method
 	ActuatorSet* act = getModel()->getActuatorSet();
-	for (i=0; i<act->getSize(); i++) {
-		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
-		if (sm)
-			sm->invalidatePath();
+	int size = act->getSize();
+	for(int i=0; i<size; i++) {
+		AbstractMuscle* m = dynamic_cast<AbstractMuscle*>(act->get(i));
+		if(m) m->invalidatePath();
 	}
 }
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the configuration (cooridnates and speeds) of the model.
  *
@@ -377,10 +393,11 @@ void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
  */
 void SimbodyEngine::getConfiguration(double rQ[],double rU[]) const
 {
-
+	getCoordinates(rQ);
+	getSpeeds(rU);
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the values of the generalized coordinates.
  *
@@ -388,9 +405,12 @@ void SimbodyEngine::getConfiguration(double rQ[],double rU[]) const
  */
 void SimbodyEngine::getCoordinates(double rQ[]) const
 {
+	int nq = getNumCoordinates();
+	Vector q(nq,rQ,true);
+	q = _matter.getQ(_s);
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the values of the generalized speeds.
  *
@@ -398,25 +418,31 @@ void SimbodyEngine::getCoordinates(double rQ[]) const
  */
 void SimbodyEngine::getSpeeds(double rU[]) const
 {
+	int nu = getNumSpeeds();
+	Vector u(nu,rU,true);
+	u = _matter.getU(_s);
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the last-computed values of the accelerations of the generalized
  * coordinates.  For the values to be valid, the method
- * computeAccelerations() must have been called.
+ * computeDerivatives() must have been called.
  *
  * @param rDUDT Array to be filled with values of the accelerations of the
  * generalized coordinates.  The length of rDUDT should be at least as large
  * as the value returned by getNumSpeeds().
- * @see computeAccelerations()
+ * @see computeDerivatives()
  * @see getAcceleration(int aIndex)
  * @see getAcceleration(const char* aName);
  */
 void SimbodyEngine::getAccelerations(double rDUDT[]) const
 {
+	int nu = getNumSpeeds();
+	Vector dudt(nu,rDUDT,true);
+	dudt = _matter.getUDot(_s);
 }
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Extract the generalized coordinates and speeds from a combined array of
  * the coordinates and speeds.  This is only a utility method.  The
@@ -428,6 +454,11 @@ void SimbodyEngine::getAccelerations(double rDUDT[]) const
  */
 void SimbodyEngine::extractConfiguration(const double aY[],double rQ[],double rU[]) const
 {
+	int nq = getNumCoordinates();
+	memcpy(rQ,aY,nq*sizeof(double));
+
+	int nu = getNumSpeeds();
+	memcpy(rU,&aY[nq],nu*sizeof(double));
 }
 
 //_____________________________________________________________________________
@@ -444,19 +475,35 @@ void SimbodyEngine::applyDefaultConfiguration()
 //--------------------------------------------------------------------------
 // GRAVITY
 //--------------------------------------------------------------------------
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
- * Set the gravity vector in the gloabl frame (and calls down to SD/Fast to
- * update its gravity vector)
+ * Set the gravity vector in the gloabl frame.
  *
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
 bool SimbodyEngine::setGravity(double aGrav[3])
 {
-
+	_gravity.setGravity(_s,Vec3(aGrav[0],aGrav[1],aGrav[2]));
 	return true;
 }
+//done_____________________________________________________________________________
+/**
+ * Get the gravity vector in the gloabl frame.
+ *
+ * @param aGrav the XYZ gravity vector
+ * @return Whether or not the gravity vector was successfully set.
+ */
+void SimbodyEngine::getGravity(double aGrav[3]) const
+{
+	// TODO:  Is there a better way to do this?
+	Vec3 g;
+	g = _gravity.getGravity(_s);
+	aGrav[0] = g[0];
+	aGrav[1] = g[1];
+	aGrav[2] = g[2];
+}
+
 
 //--------------------------------------------------------------------------
 // BODY INFORMATION
@@ -1135,7 +1182,24 @@ void SimbodyEngine::computeReactions(double rForces[][3], double rTorques[][3]) 
  */
 void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
 {
+	//_s.updTime() = t;
 
+	// COMPUTE ACCELERATIONS
+	try {
+		_system.realize(_s,Stage::Acceleration);
+	} catch(...) {
+		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives.\n\n";
+		return;
+	}
+	Vector qdot = _s.getQDot();
+	Vector udot = _s.getUDot();
+
+	// ASSIGN THEM (MAYBE SLOW BUT CORRECT
+	int nq = _s.getNQ();
+	for(int i=0;i<nq;i++) dqdt[i] = qdot[i];
+
+	int nu = _s.getNU();
+	for(int i=0;i<nu;i++) dudt[i] = udot[i];
 }
 
 

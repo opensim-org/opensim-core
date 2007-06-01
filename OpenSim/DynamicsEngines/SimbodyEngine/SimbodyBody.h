@@ -37,6 +37,7 @@
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
+#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
@@ -76,12 +77,11 @@ protected:
 	PropertyObj _displayerProp;
 	VisibleObject &_displayer;
 
-	/** Index of this body in the SD/FAST code. */
-	PropertyInt _indexProp;
-	int &_index;
+	/** ID for the body in Simbody. */
+	SimTK::BodyId _id;
 
 	/** Pointer to the SimbodyEngine that contains this body. */
-	SimbodyEngine* _SimbodyEngine;
+	SimbodyEngine* _engine;
 
 //=============================================================================
 // METHODS
@@ -115,8 +115,6 @@ public:
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
 
-	void setSimbodyIndex(int aIndex) { _index = aIndex; }
-	int getSimbodyIndex() const { return _index; }
 	void transformToSimbodyFrame(const double aPos[3], double rPos[3]) const;
 	void transformToSimbodyFrame(const Array<double>& aPos, double rPos[3]) const;
 	void transformFromSimbodyFrame(const double aPos[3], double rPos[3]) const;

@@ -1,4 +1,4 @@
-// osimSdfastEngineDLL.cpp
+// osimSimbodyEngineDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c) 2005, Stanford University. All rights reserved. 
@@ -35,7 +35,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimSdfastEngineDLL.h"
+#include "osimSimbodyEngineDLL.h"
 #include <iostream>
 
 using namespace std;
@@ -46,7 +46,7 @@ using namespace std;
 static void Plugin_Attach()
 {
 	cout<<"\n-------------------------------------------------------\n";
-	cout<<"Library SdfastEngine...\n";
+	cout<<"Library SimbodyEngine...\n";
 	cout<<"-------------------------------------------------------\n\n";
 }
 
