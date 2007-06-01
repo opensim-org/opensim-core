@@ -42,10 +42,13 @@ AnalyzeTool::AnalyzeTool() :
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_pseudoStatesFileName(_pseudoStatesFileNameProp.getValueStr()),
+	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
+	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("AnalyzeTool");
@@ -65,10 +68,13 @@ AnalyzeTool::AnalyzeTool(const string &aFileName) :
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_pseudoStatesFileName(_pseudoStatesFileNameProp.getValueStr()),
+	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
+	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("AnalyzeTool");
@@ -94,10 +100,13 @@ AnalyzeTool::AnalyzeTool(Model *aModel) :
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_pseudoStatesFileName(_pseudoStatesFileNameProp.getValueStr()),
+	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
+	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("AnalyzeTool");
@@ -147,10 +156,13 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_pseudoStatesFileName(_pseudoStatesFileNameProp.getValueStr()),
+	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
+	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
+	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("AnalyzeTool");
@@ -181,10 +193,13 @@ setNull()
 	_controlsFileName = "";
 	_statesFileName = "";
 	_pseudoStatesFileName = "";
+	_coordinatesFileName = "";
+	_speedsFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
 	_externalLoadsBody1 = "";
 	_externalLoadsBody2 = "";
+	_lowpassCutoffFrequency = -1.0;
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 
 	_controlSet = NULL;
@@ -224,6 +239,25 @@ void AnalyzeTool::setupProperties()
 	_pseudoStatesFileNameProp.setComment(comment);
 	_pseudoStatesFileNameProp.setName("pseudo_states_file");
 	_propertySet.append( &_pseudoStatesFileNameProp );
+
+	comment = "Motion file (.mot) or storage file (.sto) containing the time history of the generalized coordinates for the model. "
+				 "These can be specified in place of the states file.";
+	_coordinatesFileNameProp.setComment(comment);
+	_coordinatesFileNameProp.setName("coordinates_file");
+	_propertySet.append( &_coordinatesFileNameProp );
+
+	comment = "Storage file (.sto) containing the time history of the generalized speeds for the model. "
+				 "If coordinates_file is used in place of states_file, these can be optionally set as well to give the speeds. "
+				 "If not specified, speeds will be computed from coordinates by differentiation.";
+	_speedsFileNameProp.setComment(comment);
+	_speedsFileNameProp.setName("speeds_file");
+	_propertySet.append( &_speedsFileNameProp );
+
+	comment = "Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). ";
+				 "A negative value results in no filtering. The default value is -1.0, so no filtering.";
+	_lowpassCutoffFrequencyProp.setComment(comment);
+	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
+	_propertySet.append( &_lowpassCutoffFrequencyProp );
 
 	comment = "Motion file (.mot) or storage file (.sto) containing any external loads applied to the model.";
 	_externalLoadsFileNameProp.setComment(comment);
@@ -276,10 +310,13 @@ operator=(const AnalyzeTool &aTool)
 	_controlsFileName = aTool._controlsFileName;
 	_statesFileName = aTool._statesFileName;
 	_pseudoStatesFileName = aTool._pseudoStatesFileName;
+	_coordinatesFileName = aTool._coordinatesFileName;
+	_speedsFileName = aTool._speedsFileName;
 	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
 	_externalLoadsBody1Prop = aTool._externalLoadsBody1Prop;
 	_externalLoadsBody2Prop = aTool._externalLoadsBody2Prop;
+	_lowpassCutoffFrequency= aTool._lowpassCutoffFrequency;
 	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
 	_controlSet = aTool._controlSet;
 	_statesStore = aTool._statesStore;
@@ -314,6 +351,44 @@ ControlSet* AnalyzeTool::
 getControlSet()
 {
 	return _controlSet;
+}
+
+//_____________________________________________________________________________
+/**
+ * aUStore is optional.
+ * Assumes coordinates and speeds are already in radians.
+ * Fills in zeros for actuator and contact set states.
+ */
+void AnalyzeTool::
+setStatesStorageFromCoordinatesAndSpeeds(const Storage *aQStore, const Storage *aUStore)
+{
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int ny = _model->getNumStates();
+
+	if(aQStore->getSmallestNumberOfStates() != nq)
+		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- Coordinates storage does not have correct number of coordinates.",__FILE__,__LINE__);
+	if(aUStore) {
+		if(aUStore->getSmallestNumberOfStates() != nu)
+			throw Exception("AnalyzeTool.initializeFromFiles: ERROR- Speeds storage does not have correct number of coordinates.",__FILE__,__LINE__);
+		if(aQStore->getSize() != aUStore->getSize())
+			throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
+	}
+
+	Array<string> stateNames;
+	stateNames.append("time");
+	_model->getStateNames(stateNames);
+
+	_statesStore = new Storage(512,"states");
+	_statesStore->setColumnLabels(stateNames);
+	Array<double> y(0.0,ny);
+	for(int index=0; index<aQStore->getSize(); index++) {
+		double t;
+		aQStore->getTime(index,t);
+		aQStore->getData(index,nq,&y[0]);
+		if(aUStore) aUStore->getData(index,nu,&y[nq]);
+		_statesStore->append(t,ny,&y[0]);
+	}
 }
 
 //_____________________________________________________________________________
@@ -385,13 +460,42 @@ getPseudoStatesStorage()
 void AnalyzeTool::
 loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 {
-	// States
-	if(_statesFileName=="") {
-		string msg = "AnalyzeTool.initializeFromFiles: A states file must be specified.";
-		throw Exception(msg,__FILE__,__LINE__);
+	if(_statesFileName!="") {
+		if(_coordinatesFileName!="") cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
+		if(_speedsFileName!="") cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
+		cout<<"\nLoading states from file "<<_statesFileName<<".\n";
+		_statesStore = new Storage(_statesFileName);
+	} else {
+		if(_coordinatesFileName=="") 
+			throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
+
+		cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<".\n";
+		Storage coordinatesStore(_coordinatesFileName);
+
+		if(_lowpassCutoffFrequency>=0) {
+			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"...\n\n";
+			coordinatesStore.pad(60);
+			coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
+		}
+
+		Storage *qStore=NULL, *uStore=NULL;
+		_model->getDynamicsEngine().formCompleteStorages(coordinatesStore,qStore,uStore);
+
+		if(_speedsFileName!="") {
+			delete uStore;
+			cout<<"\nLoading speeds from file "<<_speedsFileName<<".\n";
+			uStore = new Storage(_speedsFileName);
+		}
+
+		_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
+		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+
+		setStatesStorageFromCoordinatesAndSpeeds(qStore, uStore);
+
+		delete qStore;
+		delete uStore;
 	}
-	cout<<"\nLoading states from file "<<_statesFileName<<".\n";
-	_statesStore = new Storage(_statesFileName);
+
 	cout<<"Found "<<_statesStore->getSize()<<" state vectors with time stamps ranging\n";
 	cout<<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<".\n";
 
@@ -567,6 +671,7 @@ void AnalyzeTool::run()
 		throw Exception(msg,__FILE__,__LINE__);
 	}
 
+	// TODO: some sort of filtering or something to make derivatives smoother?
 	GCVSplineSet statesSplineSet(5,_statesStore);
 
 	// PERFORM THE ANALYSES

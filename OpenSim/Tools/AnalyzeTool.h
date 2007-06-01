@@ -47,6 +47,12 @@ private:
 	/** Name of the pseudo-states file. */
 	PropertyStr _pseudoStatesFileNameProp;
 	std::string &_pseudoStatesFileName;
+	/** Name of the coordinates file. */
+	PropertyStr _coordinatesFileNameProp;
+	std::string &_coordinatesFileName;
+	/** Name of the speeds file. */
+	PropertyStr _speedsFileNameProp;
+	std::string &_speedsFileName;
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;
@@ -62,6 +68,9 @@ private:
 	applied (e.g., the body name for the left foot). */
 	OpenSim::PropertyStr _externalLoadsBody2Prop;
 	std::string &_externalLoadsBody2;
+	/** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
+	PropertyDbl _lowpassCutoffFrequencyProp;
+	double &_lowpassCutoffFrequency;
 	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
 	to the external loads. A negative value results in no filtering.
 	The default value is -1.0, so no filtering. */
@@ -111,6 +120,7 @@ public:
 	void setControlSet(ControlSet *aSet);
 	ControlSet* getControlSet();
 	void setStatesStorage(Storage *aStore);
+	void setStatesStorageFromCoordinatesAndSpeeds(const Storage *aQStore, const Storage *aUStore);
 	Storage* getStatesStorage();
 	void setPseudoStatesStorage(Storage *aStore);
 	Storage* getPseudoStatesStorage();
@@ -118,6 +128,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITIES
 	//--------------------------------------------------------------------------
+	void setStatesStorageFromCoordinatesAndSpeedsFiles();
 	void loadControlsStatesPseudoStatesExternalLoadsFromFiles();
 	void verifyControlsStatesPseudoStates();
 	double getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Array<double> &rP);
