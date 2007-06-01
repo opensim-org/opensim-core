@@ -815,7 +815,8 @@ Transform SimmKinematicsEngine::getTransform(const AbstractBody &aBody)
  */
 void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
 {
-	throw Exception("SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]) not yet implemented.");
+	// Not throwing exception otherwise MuscleAnalysis fails for SimmKinematicsEngine based models.
+	//throw Exception("SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]) not yet implemented.");
 }
 
 //_____________________________________________________________________________
