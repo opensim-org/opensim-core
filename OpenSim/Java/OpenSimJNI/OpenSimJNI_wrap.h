@@ -30,15 +30,15 @@ public:
     virtual void update(OpenSim::Object const &aObject, Event &aEvent);
     virtual bool isA(char const *type) const;
     virtual void setModel(OpenSim::Model *arg0);
-    virtual int begin(int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);
-    virtual int step(double *aXPrev, double *aYPrev, int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);
-    virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, void *aClientData = NULL);
+    virtual int begin(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
+    virtual int step(double *aXPrev, double *aYPrev, double *aYPPrev, int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
+    virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
 public:
     bool swig_overrides(int n) {
-      return (n < 19 ? swig_override[n] : false);
+      return (n < 25 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[19];
+    bool swig_override[25];
 };
 
 

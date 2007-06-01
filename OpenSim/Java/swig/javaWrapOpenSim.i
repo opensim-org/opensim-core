@@ -133,6 +133,8 @@
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 
+#include <OpenSim/Tools/AnalyzeTool.h>
+
 using namespace OpenSim;
 %}
 

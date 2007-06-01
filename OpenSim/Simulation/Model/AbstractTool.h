@@ -135,6 +135,14 @@ public:
 	{
 		return _tf;
 	}
+	void setStartTime(const double aStartTime)
+	{
+		_ti=aStartTime;
+	}
+	void setFinalTime(const double aFinalTime)
+	{
+		_tf=aFinalTime;
+	}
 	// Model xml file
 	const std::string& getModelFilename()
 	{

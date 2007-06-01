@@ -163,8 +163,8 @@ getCurrentTime() const
  * @param aClientData General use pointer for sending in client data.
  */
 int SimtkAnimationCallback::
-step(double *aXPrev,double *aYPrev,int aStep,double aDT,double aT,
-	double *aX,double *aY,void *aClientData)
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
 	if((aStep% getStepInterval())!=0)
 		return (0);
