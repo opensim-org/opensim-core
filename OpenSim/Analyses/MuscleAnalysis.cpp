@@ -14,6 +14,7 @@
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include "MuscleAnalysis.h"
+#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 
 
 
@@ -376,7 +377,17 @@ record(double aT,double *aX,double *aY)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
+	// COMPUTE DERIVATIVES
+	// ----------------------------------
+	// SET
+	_model->set(aT,aX,aY);
+	_model->getDerivCallbackSet()->set(aT,aX,aY);
+
+	// ACTUATION
 	_model->getActuatorSet()->computeActuation();
+	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
+	_model->getActuatorSet()->apply();
+	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// TIME NORMALIZATION
 	double tReal = aT * _model->getTimeNormConstant();
