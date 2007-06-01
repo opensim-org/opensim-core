@@ -21,7 +21,6 @@
 namespace OpenSim { 
 
 class Model;
-class GCVSplineSet;
 
 class OSIMANALYSES_API InverseDynamics : public Analysis 
 {
@@ -41,8 +40,6 @@ protected:
 	SimTK::Matrix _constraintMatrix;
 	SimTK::Vector _constraintVector;
 	SimTK::Vector _lapackWork;
-
-	GCVSplineSet *_uSet;
 
 //=============================================================================
 // METHODS

@@ -10,7 +10,6 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
@@ -103,7 +102,6 @@ setNull()
 
 	// OTHER VARIABLES
 	_storage = NULL;
-	_uSet = NULL;
 
 	setType("InverseDynamics");
 	setName("InverseDynamics");
@@ -194,29 +192,12 @@ setModel(Model *aModel)
 	deleteStorage();
 	allocateStorage();
 
-	delete _uSet; _uSet = NULL;
 	if(_model) {
-#if 0
-//		if(_model->getActuatorSet()->getNumStates() > 0 || _model->getContactSet()->getNumStates() > 0)
-//			throw Exception("InverseDynamics analysis can't deal with models that have ActuatorSet/ContactSet with states",__FILE__,__LINE__);
-
-		//TODO: FIX THIS!! MAKE IT GENERAL!
-		//
-		// Total hack/hardcoded for now
-		Storage desiredKinStore("Results.baseline/subject01_walk1_RRA1_Kinematics_q.sto");
-		Storage *qStore=NULL, *uStore=NULL;
-		_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStore);
-		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
-		_uSet = new GCVSplineSet(5,uStore);
-#endif
-
-		std::cout << "Creating map to accelerations" << std::endl;
 		_accelerationIndices.setSize(0);
 		SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
 		for(int i=0; i<speedSet->getSize(); i++) {
 			AbstractCoordinate *coord = speedSet->get(i)->getCoordinate();
 			if(!coord->getLocked() && !coord->getConstrained()) {
-				std::cout << speedSet->get(i)->getCoordinate()->getName() << std::endl;
 				_accelerationIndices.append(i);
 			}
 		}
@@ -336,7 +317,6 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	}
 
 	for(int i=0; i<nacc; i++) {
-//		double targetAcceleration = _uSet->evaluate(_accelerationIndices[i], 1, aT);
 		double targetAcceleration = aDYDT[nq+_accelerationIndices[i]];
 		_constraintVector[i] = targetAcceleration - _constraintVector[i];
 	}
