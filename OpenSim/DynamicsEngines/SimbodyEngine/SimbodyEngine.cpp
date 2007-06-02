@@ -245,10 +245,7 @@ void SimbodyEngine::registerTypes()
  */
 void SimbodyEngine::addBody(SimbodyBody* aBody)
 {
-	/* This function assumes that ground is the first body
-	 * added, so the indices start at -1.
-	 */
-	aBody->setSimbodyIndex(_bodySet.getSize() - 1);
+	// TODO:  Fill in Simbody stuff
 	_bodySet.append(aBody);
 }
 
@@ -260,8 +257,7 @@ void SimbodyEngine::addBody(SimbodyBody* aBody)
  */
 void SimbodyEngine::addJoint(SimbodyJoint* aJoint)
 {
-	aJoint->setup(this);
-	aJoint->setSimbodyIndex(_jointSet.getSize());
+	// TODO: Fill in Simbody stuff
 	_jointSet.append(aJoint);
 }
 
@@ -273,8 +269,7 @@ void SimbodyEngine::addJoint(SimbodyJoint* aJoint)
  */
 void SimbodyEngine::addCoordinate(SimbodyCoordinate* aCoord)
 {
-	aCoord->setup(this);
-	aCoord->setSimbodyIndex(_coordinateSet.getSize());
+	// TODO: Fill in Simbody stuff
 	_coordinateSet.append(aCoord);
 }
 
@@ -286,8 +281,7 @@ void SimbodyEngine::addCoordinate(SimbodyCoordinate* aCoord)
  */
 void SimbodyEngine::addSpeed(SimbodySpeed* aSpeed)
 {
-	aSpeed->setup(this);
-	aSpeed->setSimbodyIndex(_speedSet.getSize());
+	// TODO: Fill in Simbody stuff
 	_speedSet.append(aSpeed);
 }
 

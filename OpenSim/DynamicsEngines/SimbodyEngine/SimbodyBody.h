@@ -1,6 +1,5 @@
 #ifndef __SimbodyBody_h__
 #define __SimbodyBody_h__
-
 // SimbodyBody.h
 // Author: Frank C. Anderson
 /*
@@ -114,13 +113,6 @@ public:
 	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true);
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
-
-	void transformToSimbodyFrame(const double aPos[3], double rPos[3]) const;
-	void transformToSimbodyFrame(const Array<double>& aPos, double rPos[3]) const;
-	void transformFromSimbodyFrame(const double aPos[3], double rPos[3]) const;
-	void transformFromSimbodyFrame(const Array<double>& aPos, double rPos[3]) const;
-
-	virtual void peteTest() const;
 
 private:
 	void setNull();

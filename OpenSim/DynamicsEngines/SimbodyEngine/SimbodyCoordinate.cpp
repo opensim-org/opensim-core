@@ -1,5 +1,5 @@
-// SdfastCoordinate.cpp
-// Author: Peter Loan
+// SimbodyCoordinate.cpp
+// Author: Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -26,16 +26,17 @@
 // INCLUDES
 //=============================================================================
 #include "SimbodyCoordinate.h"
-#include "SdfastEngine.h"
+#include "SimbodyEngine.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
-#include <OpenSim/Common/SimmIO.h>
-#include <OpenSim/Common/SimmMacros.h>
+//#include <OpenSim/Common/SimmIO.h>
+//#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
+using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -45,7 +46,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SdfastCoordinate::SdfastCoordinate() :
+SimbodyCoordinate::SimbodyCoordinate() :
    _defaultValue(_defaultValueProp.getValueDbl()),
    _initialValue(_initialValueProp.getValueDbl()),
    _tolerance(_toleranceProp.getValueDbl()),
@@ -59,12 +60,7 @@ SdfastCoordinate::SdfastCoordinate() :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
-	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
-	_index(_indexProp.getValueInt()),
-	_joint(_jointProp.getValueInt()),
-	_axis(_axisProp.getValueInt()),
-	_SdfastEngine(NULL)
+	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -74,7 +70,7 @@ SdfastCoordinate::SdfastCoordinate() :
 /**
  * Destructor.
  */
-SdfastCoordinate::~SdfastCoordinate()
+SimbodyCoordinate::~SimbodyCoordinate()
 {
 }
 
@@ -82,9 +78,9 @@ SdfastCoordinate::~SdfastCoordinate()
 /**
  * Copy constructor.
  *
- * @param aCoordinate SdfastCoordinate to be copied.
+ * @param aCoordinate SimbodyCoordinate to be copied.
  */
-SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
+SimbodyCoordinate::SimbodyCoordinate(const SimbodyCoordinate &aCoordinate) :
    AbstractCoordinate(aCoordinate),
 	_defaultValue(_defaultValueProp.getValueDbl()),
    _initialValue(_initialValueProp.getValueDbl()),
@@ -99,12 +95,7 @@ SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
-	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
-	_index(_indexProp.getValueInt()),
-	_joint(_jointProp.getValueInt()),
-	_axis(_axisProp.getValueInt()),
-	_SdfastEngine(NULL)
+	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -115,9 +106,9 @@ SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
 /**
  * Copy constructor from an AbstractCoordinate.
  *
- * @param aCoordinate SdfastCoordinate to be copied.
+ * @param aCoordinate SimbodyCoordinate to be copied.
  */
-SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
+SimbodyCoordinate::SimbodyCoordinate(const AbstractCoordinate &aCoordinate) :
    AbstractCoordinate(aCoordinate),
 	_defaultValue(_defaultValueProp.getValueDbl()),
    _initialValue(_initialValueProp.getValueDbl()),
@@ -132,12 +123,7 @@ SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
 	_minRestraintFunction(_minRestraintFunctionProp.getValueObjPtrRef()),
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
-	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
-	_index(_indexProp.getValueInt()),
-	_joint(_jointProp.getValueInt()),
-	_axis(_axisProp.getValueInt()),
-	_SdfastEngine(NULL)
+	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -149,11 +135,11 @@ SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
  * Copy this coordinate and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SdfastCoordinate.
+ * @return Pointer to a copy of this SimbodyCoordinate.
  */
-Object* SdfastCoordinate::copy() const
+Object* SimbodyCoordinate::copy() const
 {
-	SdfastCoordinate *gc = new SdfastCoordinate(*this);
+	SimbodyCoordinate *gc = new SimbodyCoordinate(*this);
 	return(gc);
 }
 
@@ -162,11 +148,11 @@ Object* SdfastCoordinate::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SdfastCoordinate to another.
+ * Copy data members from one SimbodyCoordinate to another.
  *
- * @param aCoordinate SdfastCoordinate to be copied.
+ * @param aCoordinate SimbodyCoordinate to be copied.
  */
-void SdfastCoordinate::copyData(const SdfastCoordinate &aCoordinate)
+void SimbodyCoordinate::copyData(const SimbodyCoordinate &aCoordinate)
 {
 	_defaultValue = aCoordinate.getDefaultValue();
 	_initialValue = aCoordinate.getDefaultValue();
@@ -181,20 +167,16 @@ void SdfastCoordinate::copyData(const SdfastCoordinate &aCoordinate)
 	_maxRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._maxRestraintFunction);
 	_restraintActive = aCoordinate._restraintActive;
 	_constraintFunction = (Function*)Object::SafeCopy(aCoordinate._constraintFunction);
-	_index = aCoordinate._index;
-	_joint = aCoordinate._joint;
-	_axis = aCoordinate._axis;
-	_SdfastEngine = aCoordinate._SdfastEngine;
-	_motionType = aCoordinate._motionType;
+	_engine = aCoordinate._engine;
 }
 
 //_____________________________________________________________________________
 /**
- * Copy data members from an AbstractCoordinate to an SdfastCoordinate.
+ * Copy data members from an AbstractCoordinate to an SimbodyCoordinate.
  *
  * @param aCoordinate AbstractCoordinate to be copied.
  */
-void SdfastCoordinate::copyData(const AbstractCoordinate &aCoordinate)
+void SimbodyCoordinate::copyData(const AbstractCoordinate &aCoordinate)
 {
 	_defaultValue = aCoordinate.getDefaultValue();
 	_initialValue = aCoordinate.getDefaultValue();
@@ -214,18 +196,19 @@ void SdfastCoordinate::copyData(const AbstractCoordinate &aCoordinate)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SdfastCoordinate to their null values.
+ * Set the data members of this SimbodyCoordinate to their null values.
  */
-void SdfastCoordinate::setNull(void)
+void SimbodyCoordinate::setNull(void)
 {
-	setType("SdfastCoordinate");
+	setType("SimbodyCoordinate");
+	_motionType = AbstractDof::Rotational;
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SdfastCoordinate::setupProperties(void)
+void SimbodyCoordinate::setupProperties(void)
 {
 	_defaultValueProp.setName("default_value");
 	_defaultValueProp.setValue(0.0);
@@ -259,19 +242,6 @@ void SdfastCoordinate::setupProperties(void)
 	_lockedProp.setValue(false);
 	_propertySet.append(&_lockedProp);
 
-	_QTypeProp.setName("q_type");
-	_QTypeProp.setValue(dpUnconstrained);
-	_propertySet.append(&_QTypeProp);
-
-	_indexProp.setName("index");
-	_propertySet.append(&_indexProp);
-
-	_jointProp.setName("joint");
-	_propertySet.append(&_jointProp);
-
-	_axisProp.setName("axis");
-	_propertySet.append(&_axisProp);
-
 	_restraintFunctionProp.setName("restraint_function");
 	_propertySet.append(&_restraintFunctionProp);
 
@@ -287,7 +257,6 @@ void SdfastCoordinate::setupProperties(void)
 
 	_constraintFunctionProp.setName("constraint_function");
 	_propertySet.append(&_constraintFunctionProp);
-
 }
 
 //_____________________________________________________________________________
@@ -295,14 +264,14 @@ void SdfastCoordinate::setupProperties(void)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this SdfastCoordinate.
+ * @param aEngine dynamics engine containing this SimbodyCoordinate.
  */
-void SdfastCoordinate::setup(AbstractDynamicsEngine* aEngine)
+void SimbodyCoordinate::setup(AbstractDynamicsEngine* aEngine)
 {
 	// Base class
 	AbstractCoordinate::setup(aEngine);
 
-	_SdfastEngine = dynamic_cast<SdfastEngine*>(aEngine);
+	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
 
 	// Make sure the range is min to max.
 	if (_range[1] < _range[0]){
@@ -320,10 +289,10 @@ void SdfastCoordinate::setup(AbstractDynamicsEngine* aEngine)
 #if 0
 	// This code no longer works, now that the coordinate set
 	// has been moved into AbstractDynamicsEngine. This is because
-	// SdfastCoordinate::setup() is called before the state
+	// SimbodyCoordinate::setup() is called before the state
 	// vector has been created, so setValue() will do nothing.
 	// I think this is OK, though, because the states are
-	// initialized later by SdfastEngine::initializeState(),
+	// initialized later by SimbodyEngine::initializeState(),
 	// after the state vector has been created.
 
 	// If the user specified a default value, set the
@@ -349,7 +318,7 @@ void SdfastCoordinate::setup(AbstractDynamicsEngine* aEngine)
  *
  * @return Reference to this object.
  */
-SdfastCoordinate& SdfastCoordinate::operator=(const SdfastCoordinate &aCoordinate)
+SimbodyCoordinate& SimbodyCoordinate::operator=(const SimbodyCoordinate &aCoordinate)
 {
 	// BASE CLASS
 	AbstractCoordinate::operator=(aCoordinate);
@@ -364,36 +333,18 @@ SdfastCoordinate& SdfastCoordinate::operator=(const SdfastCoordinate &aCoordinat
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Determine whether a coordinate is rotational or translational.
- *
- */
-void SdfastCoordinate::determineType()
-{
-	int info[50], slider[6];
-
-	_SdfastEngine->_sdjnt(getJointIndex(), info, slider);
-
-	if (slider[getAxisIndex()] == 0)
-		_motionType = AbstractDof::Rotational;
-	else
-		_motionType = AbstractDof::Translational;
-}
-
-//_____________________________________________________________________________
-/**
  * Update an existing coordinate with parameter values from a
  * new one, but only for the parameters that were explicitly
  * specified in the XML node.
  *
  * @param aCoordinate coordinate to update from
  */
-void SdfastCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
+void SimbodyCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
 {
 	if (!aCoordinate.getValueUseDefault())
 		setValue(aCoordinate.getValue());
 
-	if (!aCoordinate.getRangeUseDefault())
-	{
+	if (!aCoordinate.getRangeUseDefault()) {
 		setRangeMin(aCoordinate.getRangeMin());
 		setRangeMax(aCoordinate.getRangeMax());
 	}
@@ -432,53 +383,30 @@ void SdfastCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinat
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the value.
  *
  * @return The current value of the coordinate.
  */
-double SdfastCoordinate::getValue() const
+double SimbodyCoordinate::getValue() const
 {
-	double* y = _SdfastEngine->getConfiguration();
-	return y[_index];
+	return _engine->_system.getMatterSubsystem().getMobilizerQ(_engine->_s,_bodyId,_mobilityIndex);
 }
-
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Set the value.
  *
  * @param aValue value to change to.
  * @return Whether or not the value was changed.
  */
-bool SdfastCoordinate::setValue(double aValue)
+bool SimbodyCoordinate::setValue(double aValue)
 {
 	if (_locked) {
 		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
 		return false;
 	}
-
-	double* y = _SdfastEngine->getConfiguration();
-	if(y) {
-		if (DABS(aValue - y[_index]) > _tolerance) {
-			y[_index] = aValue;
-		}
-		_SdfastEngine->setConfiguration(y);
-	}
-
-#if 1
-	// When interacting with the model via the GUI (or calling a function like
-	// kinTest(), you need to execute the following code after changing a
-	// coordinate value. But you don't want to call this code if you're
-	// running a dynamic simulation. Maybe the solution is to leave this
-	// code active, and only call setValue() when you're not running a
-	// dynamic simulation (the simulation would call setConfiguration()).
-	_locked = true;
-	_SdfastEngine->assemble();
-	_locked = false;
-	_SdfastEngine->_sdstate(_SdfastEngine->getModel()->getTime(), y, &y[_SdfastEngine->getNumCoordinates()]);
-#endif
-
+	_engine->_system.getMatterSubsystem().setMobilizerQ(_engine->_s,_bodyId,_mobilityIndex,aValue);
 	return true;
 }
 
@@ -489,7 +417,7 @@ bool SdfastCoordinate::setValue(double aValue)
  * @param aRange range min and man to change to.
  * @return Whether or not the range was changed.
  */
-bool SdfastCoordinate::setRange(double aRange[2])
+bool SimbodyCoordinate::setRange(double aRange[2])
 {
 	if (aRange[1] >= aRange[0]) {
 		_range[0] = aRange[0];
@@ -507,7 +435,7 @@ bool SdfastCoordinate::setRange(double aRange[2])
  * @param aRange range min to change to.
  * @return Whether or not the range min was changed.
  */
-bool SdfastCoordinate::setRangeMin(double aMin)
+bool SimbodyCoordinate::setRangeMin(double aMin)
 {
 	if (aMin <= _range[1]) {
 		_range[0] = aMin;
@@ -524,7 +452,7 @@ bool SdfastCoordinate::setRangeMin(double aMin)
  * @param aRange range max to change to.
  * @return Whether or not the range max was changed.
  */
-bool SdfastCoordinate::setRangeMax(double aMax)
+bool SimbodyCoordinate::setRangeMax(double aMax)
 {
 	if (aMax >= _range[0]) {
 		_range[1] = aMax;
@@ -541,7 +469,7 @@ bool SdfastCoordinate::setRangeMax(double aMax)
  * @param aDefaultValue default value to change to.
  * @return Whether or not the default value was changed.
  */
-bool SdfastCoordinate::setDefaultValue(double aDefaultValue)
+bool SimbodyCoordinate::setDefaultValue(double aDefaultValue)
 {
 	if (aDefaultValue >= _range[0] && aDefaultValue <= _range[1]) {
 		_defaultValue = aDefaultValue;
@@ -555,7 +483,7 @@ bool SdfastCoordinate::setDefaultValue(double aDefaultValue)
 /**
  * Set the initial value.  Used to initialize the initial_value field in sdm.q
  */
-void SdfastCoordinate::setInitialValue(double aInitialValue)
+void SimbodyCoordinate::setInitialValue(double aInitialValue)
 {
 	_initialValue = aInitialValue;
 }
@@ -567,7 +495,7 @@ void SdfastCoordinate::setInitialValue(double aInitialValue)
  * @param aTolerance tolerance to change to.
  * @return Whether or not the tolerance was changed.
  */
-bool SdfastCoordinate::setTolerance(double aTolerance)
+bool SimbodyCoordinate::setTolerance(double aTolerance)
 {
 	if (aTolerance >= 0.0) {
 		_tolerance = aTolerance;
@@ -584,7 +512,7 @@ bool SdfastCoordinate::setTolerance(double aTolerance)
  * @param aStiffness stiffness to change to.
  * @return Whether or not the stiffness was changed.
  */
-bool SdfastCoordinate::setStiffness(double aStiffness)
+bool SimbodyCoordinate::setStiffness(double aStiffness)
 {
 	if (aStiffness >= 0.0)
 	{
@@ -601,7 +529,7 @@ bool SdfastCoordinate::setStiffness(double aStiffness)
  *
  * @param rKeys names of the keys are returned here.
  */
-void SdfastCoordinate::getKeys(string rKeys[]) const
+void SimbodyCoordinate::getKeys(string rKeys[]) const
 {
 	for (int i = 0; i < _keys.getSize(); i++)
 		rKeys[i] = _keys[i];
@@ -613,7 +541,7 @@ void SdfastCoordinate::getKeys(string rKeys[]) const
  *
  * @return Pointer to the restraint function.
  */
-Function* SdfastCoordinate::getRestraintFunction() const
+Function* SimbodyCoordinate::getRestraintFunction() const
 {
 	return _restraintFunction;
 }
@@ -625,7 +553,7 @@ Function* SdfastCoordinate::getRestraintFunction() const
  *
  * @return Pointer to the min restraint function.
  */
-Function* SdfastCoordinate::getMinRestraintFunction(void) const
+Function* SimbodyCoordinate::getMinRestraintFunction(void) const
 {
 	return _minRestraintFunction;
 }
@@ -637,7 +565,7 @@ Function* SdfastCoordinate::getMinRestraintFunction(void) const
  *
  * @return Pointer to the max restraint function.
  */
-Function* SdfastCoordinate::getMaxRestraintFunction(void) const
+Function* SimbodyCoordinate::getMaxRestraintFunction(void) const
 {
 	return _maxRestraintFunction;
 }
@@ -648,7 +576,7 @@ Function* SdfastCoordinate::getMaxRestraintFunction(void) const
  *
  * @return Pointer to the constraint function.
  */
-Function* SdfastCoordinate::getConstraintFunction() const
+Function* SimbodyCoordinate::getConstraintFunction() const
 {
 	return _constraintFunction;
 }
@@ -657,28 +585,7 @@ Function* SdfastCoordinate::getConstraintFunction() const
 /**
  * Set the constraint function.
  */
-void SdfastCoordinate::setConstraintFunction(const Function *function)
+void SimbodyCoordinate::setConstraintFunction(const Function *function)
 {
 	_constraintFunction = (Function*)function->copy();
 }
-
-void SdfastCoordinate::peteTest(void) const
-{
-	cout << "Coordinate: " << getName() << endl;
-	cout << "   default_value: " << _defaultValue << endl;
-	cout << "   tolerance: " << _tolerance << endl;
-	cout << "   stiffness: " << _stiffness << endl;
-	cout << "   range: " << _range << endl;
-	cout << "   keys: " << _keys << endl;
-	cout << "   clamped: " << ((_clamped) ? ("true") : ("false")) << endl;
-	cout << "   locked: " << ((_locked) ? ("true") : ("false")) << endl;
-	cout << "   index: " << _index << endl;
-	cout << "   joint: " << _joint << endl;
-	cout << "   axis: " << _axis << endl;
-	if (_restraintFunction) cout << "   restraintFunction: " << *_restraintFunction << endl;
-	if (_minRestraintFunction) cout << "   minRestraintFunction: " << *_minRestraintFunction << endl;
-	if (_maxRestraintFunction) cout << "   maxRestraintFunction: " << *_maxRestraintFunction << endl;
-	cout << "   restraintActive: " << ((_restraintActive) ? ("true") : ("false")) << endl;
-	if (_constraintFunction) cout << "   constraintFunction: " << *_constraintFunction << endl;
-}
-

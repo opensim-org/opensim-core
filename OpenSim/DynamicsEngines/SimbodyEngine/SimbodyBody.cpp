@@ -1,5 +1,5 @@
 // SimbodyBody.cpp
-// Author: Peter Loan
+// Author: Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -35,6 +35,7 @@
 // STATICS
 //=============================================================================
 using namespace std;
+using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -200,7 +201,7 @@ void SimbodyBody::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Update the underlying SDFast parameters, such as mass, to reflect any
+ * Update the underlying Simbody parameters, such as mass, to reflect any
  * changes in the properties for this body.  This method should be called,
  * for example, after updateFromXMLNode() is called.
  */
@@ -252,7 +253,7 @@ SimbodyBody& SimbodyBody::operator=(const SimbodyBody &aBody)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the mass of the body.
  *
@@ -271,26 +272,26 @@ double SimbodyBody::getMass() const
  */
 bool SimbodyBody::setMass(double aMass)
 {
+	// Q: how do I change the mass of a body?
+	// A: Not yet implemented.  The only way to do it is to rebuild
+	// the entire model.
+	cerr<<"SimbodyBody.setMass: not yet implemented.\n";
+
 	if(aMass<0.0) {
 		cerr<<"SimbodyBody.setMass(): ERROR- zero or negative mass not allowed.\n";
 		return false;
 	}
 
-	// Check to see if the mass is different
-	double mass = getMass();
-	if(rdMath::IsEqual(mass,aMass,rdMath::ZERO)) return true;
+	// Update Simbody
+
 
 	// Update property
 	_mass = aMass;
 
-	// Update sdfast
-	Q: how do I change the mass of a body?
-		_engine->_matter.getArticulatedBodyInertia(_engine->_s,_id);
-
 	return true;
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the mass center of the body.
  *
@@ -298,9 +299,10 @@ bool SimbodyBody::setMass(double aMass)
  */
 void SimbodyBody::getMassCenter(double rVec[3]) const
 {
-	rVec[0] = _massCenter[0];
-	rVec[1] = _massCenter[1];
-	rVec[2] = _massCenter[2];
+	Vec3 com = _engine->_matter.getBodyMassCenterStation(_engine->_s,_id);
+	rVec[0] = com[0];
+	rVec[1] = com[1];
+	rVec[2] = com[2];
 }
 //_____________________________________________________________________________
 /**
@@ -311,18 +313,23 @@ void SimbodyBody::getMassCenter(double rVec[3]) const
  */
 bool SimbodyBody::setMassCenter(double aVec[3])
 {
+	cerr<<"SimbodyBody.setMassCenter: not yet implemented.\n";
+	return false;
+
+	// Update Simbody
+
+	// Update property
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];
 	_massCenter[2] = aVec[2];
 
-	SimbodyEngine* engine = dynamic_cast<SimbodyEngine*>(_dynamicsEngine);
-	if(engine)
-		return engine->adjustJointVectorsForNewMassCenter(this);
-	else
-		return false;
+	// Adjust joint vectors?  Probably not needed.
+	//engine->adjustJointVectorsForNewMassCenter(this);
+
+	return true;
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the inertia matrix of the body.
  *
@@ -330,17 +337,19 @@ bool SimbodyBody::setMassCenter(double aVec[3])
  */
 void SimbodyBody::getInertia(double rInertia[3][3]) const
 {
-	if(_index<0) {
-		for(int i=0; i<3; i++) {
-			for(int j=0; j<3; j++) {
-				rInertia[i][j] = 0;
-			}
-		}
-	} else {
-		_engine->_sdgetiner(_index,rInertia);
-	}
+	Inertia inertia = _engine->_matter.getBodyInertiaAboutBodyOrigin(_engine->_s,_id);
+	Vec3 moments = inertia.getMoments();
+	Vec3 products = inertia.getProducts();
+
+	// TODO:  Verify that I have the order of the products correct.
+	rInertia[0][0] = moments[0];
+	rInertia[1][1] = moments[1];
+	rInertia[2][2] = moments[2];
+	rInertia[0][1] = rInertia[1][0] = products[0];
+	rInertia[0][2] = rInertia[2][0] = products[1];
+	rInertia[1][2] = rInertia[2][1] = products[2];
 }
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the inertia matrix of the body.
  *
@@ -365,17 +374,8 @@ void SimbodyBody::getInertia(Array<double> &rInertia) const
  */
 bool SimbodyBody::setInertia(const Array<double>& aInertia)
 {
-	if(aInertia.getSize()<9) {
-		cerr<<"SimbodyBody.setInertia: ERROR- inertia requires 9 elements.\n";
-		return false;
-	}
-
-	double inertia[3][3];
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			inertia[i][j] = aInertia[3*i+j];
-
-	return setInertia(inertia);
+	cerr<<"SimbodyBody.setInertia: not yet implemented.\n";
+	return false;
 }
 //_____________________________________________________________________________
 /**
@@ -386,30 +386,8 @@ bool SimbodyBody::setInertia(const Array<double>& aInertia)
  */
 bool SimbodyBody::setInertia(const double aInertia[3][3])
 {
-	if(_index<0) return false;
-
-	// Check to see if the inertia is different from what SDFast already has
-	bool same = true;
-	double inertia[3][3];
-	getInertia(inertia);
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			if(!rdMath::IsEqual(inertia[i][j],aInertia[i][j],rdMath::ZERO)) same = false;
-	if(same==true) return true;
-
-	// Update property
-	//cout<<"SimbodyBody.setInertia: body="<<getName()<<"\n\torig=";
-	for(int i=0; i<3; i++) {
-		for(int j=0; j<3; j++) {
-			inertia[i][j] = aInertia[i][j]; // to remove the const'ness (I think)
-			_inertia[i*3+j] = aInertia[i][j]; // set local member
-		}
-	}
-
-	_engine->_sdiner(_index,inertia);
-	_engine->_sdinit();
-
-	return true;
+	cerr<<"SimbodyBody.setInertia: not yet implemented.\n";
+	return false;
 }
 
 //=============================================================================
@@ -466,15 +444,14 @@ void SimbodyBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
  */
 void SimbodyBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
 {
-	double mass, inertia[3][3];
-
-	_engine->_sdgetmass(_index, &mass);
-	_engine->_sdgetiner(_index, inertia);
+	cerr<<"SimbodyBody.scaleInertialProperties: not yet implemented.\n";
+	return;
 
 	// Scales assuming mass stays the same
+	double mass, inertia[3][3];
 	scaleInertiaTensor(mass, aScaleFactors, inertia);
 
-	// Update properties and SDFast
+	// Set new values
 	setInertia(inertia);
 
 	// Scales mass
@@ -491,10 +468,10 @@ void SimbodyBody::scaleInertialProperties(const Array<double>& aScaleFactors, bo
  */
 void SimbodyBody::scaleMass(double aScaleFactor)
 {
-	double mass, inertia[3][3];
+	cerr<<"SimbodyBody.scaleMass: not yet implemented.\n";
+	return;
 
-	_engine->_sdgetmass(_index, &mass);
-	_engine->_sdgetiner(_index, inertia);
+	double mass, inertia[3][3];
 
 	mass *= aScaleFactor;
 	for (int i=0;i<3;i++)
@@ -510,72 +487,3 @@ void SimbodyBody::scaleMass(double aScaleFactor)
 //=============================================================================
 // UTILITY
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Transform a point from the body's frame to the body's SD/FAST frame.
- * This entails subtracting the mass center coordinates from the point
- * because the SD/FAST frame is lined up with the body frame, but has
- * its origin at the center of mass.
- *
- * @param aPos The point in the body frame to transform
- * @param rPos The point transformed into the SD/FAST frame
- */
-void SimbodyBody::transformToSimbodyFrame(const double aPos[3],double rPos[3]) const
-{
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] - _massCenter[i];
-}
-
-//_____________________________________________________________________________
-/**
- * Transform a point from the body's frame to the body's SD/FAST frame.
- * This entails subtracting the mass center coordinates from the point
- * because the SD/FAST frame is lined up with the body frame, but has
- * its origin at the center of mass.
- *
- * @param aPos The point in the body frame to transform
- * @param rPos The point transformed into the SD/FAST frame
- */
-void SimbodyBody::transformToSimbodyFrame(const Array<double>& aPos, double rPos[3]) const
-{
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] - _massCenter[i];
-}
-
-//_____________________________________________________________________________
-/**
- * Transform a point from the body's SD/FAST frame to the body's frame.
- * This entails adding the mass center coordinates to the point
- * because the SD/FAST frame is lined up with the body frame, but has
- * its origin at the center of mass.
- *
- * @param aPos The point in the body's SD/FAST frame to transform
- * @param rPos The point transformed into the body's frame
- */
-void SimbodyBody::transformFromSimbodyFrame(const double aPos[3], double rPos[3]) const
-{
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] + _massCenter[i];
-}
-
-//_____________________________________________________________________________
-/**
- * Transform a point from the body's SD/FAST frame to the body's frame.
- * This entails adding the mass center coordinates to the point
- * because the SD/FAST frame is lined up with the body frame, but has
- * its origin at the center of mass.
- *
- * @param aPos The point in the body's SD/FAST frame to transform
- * @param rPos The point transformed into the body's frame
- */
-void SimbodyBody::transformFromSimbodyFrame(const Array<double>& aPos, double rPos[3]) const
-{
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] + _massCenter[i];
-}
-
-void SimbodyBody::peteTest() const
-{
-	cout << "Body: " << getName() << endl;
-	cout << "   massCenter: " << _massCenter << endl;
-}

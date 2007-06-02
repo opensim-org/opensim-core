@@ -40,6 +40,7 @@
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
@@ -58,15 +59,6 @@ class OSIMSIMBODYENGINE_API SimbodyCoordinate : public AbstractCoordinate
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	typedef enum
-	{
-		dpUnconstrained,
-		dpConstrained,
-		dpFixed,
-		dpPrescribed
-	} SimbodyQType;
-
 protected:
 	PropertyDbl _defaultValueProp;
 	double &_defaultValue;
@@ -115,23 +107,18 @@ protected:
 	PropertyObjPtr<Function> _constraintFunctionProp;
 	Function *&_constraintFunction;
 
-	/** Type of motion of this coordinate (rotational or translationa). */
+	/** ID of the body which this coordinate serves.  */
+	SimTK::BodyId _bodyId;
+
+	/** Mobility index for this coordinate. */
+	int _mobilityIndex;
+
+	/** Motion type (rotational or translational). */
 	AbstractDof::DofType _motionType;
 
-	/** Index of this coordinate in the SD/FAST code. */
-	PropertyInt _indexProp;
-	int &_index;
-
-	/** Index of the SD/FAST joint that this coordinate is a part of. */
-	PropertyInt _jointProp;
-	int &_joint;
-
-	/** Index of the joint axis in SD/FAST that this coordinate refers to. */
-	PropertyInt _axisProp;
-	int &_axis;
-
 	/** Simbody dynamics engine that contains this coordinate. */
-	SimbodyEngine* _SimbodyEngine;
+	SimbodyEngine* _engine;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -190,17 +177,6 @@ public:
 	Function* getMaxRestraintFunction() const;
 	Function* getConstraintFunction() const;
 	void setConstraintFunction(const Function *function);
-
-	void setSimbodyType(SimbodyQType aType) { _QType = aType; }
-	int getSimbodyQType() const { return _QType; }
-	void setSimbodyIndex(int aIndex) { _index = aIndex; }
-	int getSimbodyIndex() const { return _index; }
-	void setJointIndex(int aJointIndex) { _joint = aJointIndex; }
-	int getJointIndex() const { return _joint; }
-	void setAxisIndex(int aAxisIndex) { _axis = aAxisIndex; }
-	int getAxisIndex() const { return _axis; }
-
-	virtual void peteTest() const;
 
 private:
 	void setNull();

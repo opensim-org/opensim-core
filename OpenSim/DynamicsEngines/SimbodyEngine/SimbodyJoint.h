@@ -1,6 +1,5 @@
 #ifndef __SimbodyJoint_h__
 #define __SimbodyJoint_h__
-
 // SimbodyJoint.h
 // Author: Frank C. Anderson
 /*
@@ -42,9 +41,9 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM joint.
+ * A class implementing a Simbody joint.
  *
- * @author Peter Loan
+ * @author Frank C. Anderson
  * @version 1.0
  */
 class OSIMSIMBODYENGINE_API SimbodyJoint : public AbstractJoint  
@@ -69,13 +68,8 @@ protected:
 	PropertyDblArray _locationInChildProp;
 	Array<double> &_locationInChild;
 
-	/** Index of this joint in the SD/FAST code. */
-	PropertyInt _indexProp;
-	int &_index;
-
-	/** SD/FAST name of the joint type. */
-	PropertyStr _SimbodyTypeNameProp;
-	std::string& _SimbodyTypeName;
+	/** ID of the child body that this joint connects to a parent body. */
+	SimTK::BodyId _bodyId;
 
 	/** Child body. */
    SimbodyBody *_childBody;
@@ -90,7 +84,7 @@ protected:
 	Transform _inverseTransform;
 
 	/** Simbody engine that contains this joint. */
-	SimbodyEngine* _SimbodyEngine;
+	SimbodyEngine* _engine;
 
 //=============================================================================
 // METHODS
@@ -122,8 +116,6 @@ public:
 	virtual bool hasXYZAxes() const;
 	virtual void scale(const ScaleSet& aScaleSet);
 
-	void setSimbodyIndex(int aIndex) { _index = aIndex; }
-	int getSimbodyIndex() const { return _index; }
 	void setParentBodyName(const std::string& aName);
 	void setChildBodyName(const std::string& aName);
 	void setSimbodyType(const char* aName);

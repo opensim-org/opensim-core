@@ -1,5 +1,5 @@
-// SdfastSpeed.cpp
-// Author: Peter Loan, Frank C. Anderson
+// SimbodySpeed.cpp
+// Author: Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -25,8 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "SdfastSpeed.h"
-#include "SdfastEngine.h"
+#include "SimbodySpeed.h"
+#include "SimbodyEngine.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/SimmMacros.h>
@@ -44,7 +44,7 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-SdfastSpeed::SdfastSpeed() :
+SimbodySpeed::SimbodySpeed() :
    _defaultValue(_defaultValueProp.getValueDbl()),
 	_index(_indexProp.getValueInt()),
 	_coordinateName(_coordinateNameProp.getValueStr())
@@ -57,7 +57,7 @@ SdfastSpeed::SdfastSpeed() :
 /**
  * Destructor.
  */
-SdfastSpeed::~SdfastSpeed()
+SimbodySpeed::~SimbodySpeed()
 {
 }
 
@@ -65,9 +65,9 @@ SdfastSpeed::~SdfastSpeed()
 /**
  * Copy constructor.
  *
- * @param aSpeed SdfastSpeed to be copied.
+ * @param aSpeed SimbodySpeed to be copied.
  */
-SdfastSpeed::SdfastSpeed(const SdfastSpeed &aSpeed) :
+SimbodySpeed::SimbodySpeed(const SimbodySpeed &aSpeed) :
    AbstractSpeed(aSpeed),
    _defaultValue(_defaultValueProp.getValueDbl()),
 	_index(_indexProp.getValueInt()),
@@ -82,9 +82,9 @@ SdfastSpeed::SdfastSpeed(const SdfastSpeed &aSpeed) :
 /**
  * Copy constructor from an AbstractSpeed.
  *
- * @param aSpeed SdfastSpeed to be copied.
+ * @param aSpeed SimbodySpeed to be copied.
  */
-SdfastSpeed::SdfastSpeed(const AbstractSpeed &aSpeed) :
+SimbodySpeed::SimbodySpeed(const AbstractSpeed &aSpeed) :
    AbstractSpeed(aSpeed),
    _defaultValue(_defaultValueProp.getValueDbl()),
 	_index(_indexProp.getValueInt()),
@@ -100,11 +100,11 @@ SdfastSpeed::SdfastSpeed(const AbstractSpeed &aSpeed) :
  * Copy this speed and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this SdfastSpeed.
+ * @return Pointer to a copy of this SimbodySpeed.
  */
-Object* SdfastSpeed::copy() const
+Object* SimbodySpeed::copy() const
 {
-	SdfastSpeed *gc = new SdfastSpeed(*this);
+	SimbodySpeed *gc = new SimbodySpeed(*this);
 	return(gc);
 }
 
@@ -113,25 +113,25 @@ Object* SdfastSpeed::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one SdfastSpeed to another.
+ * Copy data members from one SimbodySpeed to another.
  *
- * @param aSpeed SdfastSpeed to be copied.
+ * @param aSpeed SimbodySpeed to be copied.
  */
-void SdfastSpeed::copyData(const SdfastSpeed &aSpeed)
+void SimbodySpeed::copyData(const SimbodySpeed &aSpeed)
 {
 	_defaultValue = aSpeed.getDefaultValue();
 	_index = aSpeed._index;
 	_coordinateName = aSpeed._coordinateName;
-	_SdfastEngine = aSpeed._SdfastEngine;
+	_SimbodyEngine = aSpeed._SimbodyEngine;
 }
 
 //_____________________________________________________________________________
 /**
- * Copy data members from an AbstractSpeed to an SdfastSpeed.
+ * Copy data members from an AbstractSpeed to an SimbodySpeed.
  *
  * @param aSpeed AbstractSpeed to be copied.
  */
-void SdfastSpeed::copyData(const AbstractSpeed &aSpeed)
+void SimbodySpeed::copyData(const AbstractSpeed &aSpeed)
 {
 	_defaultValue = aSpeed.getDefaultValue();
 	_coordinate = aSpeed.getCoordinate();
@@ -143,21 +143,21 @@ void SdfastSpeed::copyData(const AbstractSpeed &aSpeed)
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this SdfastSpeed to their null values.
+ * Set the data members of this SimbodySpeed to their null values.
  */
-void SdfastSpeed::setNull(void)
+void SimbodySpeed::setNull(void)
 {
-	setType("SdfastSpeed");
+	setType("SimbodySpeed");
 
 	_coordinate = NULL;
-	_SdfastEngine = NULL;
+	_SimbodyEngine = NULL;
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void SdfastSpeed::setupProperties(void)
+void SimbodySpeed::setupProperties(void)
 {
 	_defaultValueProp.setName("default_value");
 	_defaultValueProp.setValue(0.0);
@@ -175,16 +175,16 @@ void SdfastSpeed::setupProperties(void)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this SdfastSpeed.
+ * @param aEngine dynamics engine containing this SimbodySpeed.
  */
-void SdfastSpeed::setup(AbstractDynamicsEngine* aEngine)
+void SimbodySpeed::setup(AbstractDynamicsEngine* aEngine)
 {
 	// Base class;
 	AbstractSpeed::setup(aEngine);
 
-	_SdfastEngine = dynamic_cast<SdfastEngine*>(aEngine);
+	_SimbodyEngine = dynamic_cast<SimbodyEngine*>(aEngine);
 
-	_coordinate = _SdfastEngine->getCoordinateSet()->get(_coordinateName);
+	_coordinate = _SimbodyEngine->getCoordinateSet()->get(_coordinateName);
 
 	// If the user specified a default value, set the
 	// current value to the default value.
@@ -201,7 +201,7 @@ void SdfastSpeed::setup(AbstractDynamicsEngine* aEngine)
  *
  * @return Reference to this object.
  */
-SdfastSpeed& SdfastSpeed::operator=(const SdfastSpeed &aSpeed)
+SimbodySpeed& SimbodySpeed::operator=(const SimbodySpeed &aSpeed)
 {
 	// BASE CLASS
 	AbstractSpeed::operator=(aSpeed);
@@ -222,7 +222,7 @@ SdfastSpeed& SdfastSpeed::operator=(const SdfastSpeed &aSpeed)
  * @param Pointer to the coordinate.
  * @return Whether or not the coordinate was set.
  */
-bool SdfastSpeed::setCoordinate(AbstractCoordinate *aCoordinate)
+bool SimbodySpeed::setCoordinate(AbstractCoordinate *aCoordinate)
 {
 	_coordinate = aCoordinate;
 	return true;
@@ -230,14 +230,14 @@ bool SdfastSpeed::setCoordinate(AbstractCoordinate *aCoordinate)
 //_____________________________________________________________________________
 /**
  * Set the name of the coordinate that this speed corresponds to. When creating
- * a new SdfastSpeed object, this method should be used rather than setCoordinate,
+ * a new SimbodySpeed object, this method should be used rather than setCoordinate,
  * because setup() will use _coordinateName to set _coordinate (which needs
- * to be done when deserializing SdfastSpeed objects).
+ * to be done when deserializing SimbodySpeed objects).
  *
  * @param Name of the coordinate.
  * @return Whether or not the coordinate was set.
  */
-bool SdfastSpeed::setCoordinateName(const string& aCoordName)
+bool SimbodySpeed::setCoordinateName(const string& aCoordName)
 {
 	_coordinateName = aCoordName;
 	return true;
@@ -254,7 +254,7 @@ bool SdfastSpeed::setCoordinateName(const string& aCoordName)
  * @param aDefaultValue default value to change to.
  * @return Whether or not the default value was changed.
  */
-bool SdfastSpeed::setDefaultValue(double aDefaultValue)
+bool SimbodySpeed::setDefaultValue(double aDefaultValue)
 {
 	_defaultValue = aDefaultValue;
 
@@ -272,12 +272,12 @@ bool SdfastSpeed::setDefaultValue(double aDefaultValue)
  * @param aValue value to change to.
  * @return Whether or not the value was changed.
  */
-bool SdfastSpeed::setValue(double aValue)
+bool SimbodySpeed::setValue(double aValue)
 {
-	double *y = _SdfastEngine->getConfiguration();
+	double *y = _SimbodyEngine->getConfiguration();
 	if(y) {
-		y[_SdfastEngine->getNumCoordinates() + _index] = aValue;
-		_SdfastEngine->setConfiguration(y);
+		y[_SimbodyEngine->getNumCoordinates() + _index] = aValue;
+		_SimbodyEngine->setConfiguration(y);
 	}
 	return true;
 }
@@ -288,10 +288,10 @@ bool SdfastSpeed::setValue(double aValue)
  *
  * @return The current value of the speed.
  */
-double SdfastSpeed::getValue() const
+double SimbodySpeed::getValue() const
 {
-	double* y = _SdfastEngine->getConfiguration();
-	return y[_SdfastEngine->getNumCoordinates() + _index];
+	double* y = _SimbodyEngine->getConfiguration();
+	return y[_SimbodyEngine->getNumCoordinates() + _index];
 }
 
 
@@ -306,17 +306,17 @@ double SdfastSpeed::getValue() const
  *
  * @return The current value of the acceleration.
  */
-double SdfastSpeed::getAcceleration() const
+double SimbodySpeed::getAcceleration() const
 {
-	double* dy = _SdfastEngine->getDerivatives();
-	return dy[_SdfastEngine->getNumCoordinates() + _index];
+	double* dy = _SimbodyEngine->getDerivatives();
+	return dy[_SimbodyEngine->getNumCoordinates() + _index];
 }
 
 
 //=============================================================================
 // TESTING
 //=============================================================================
-void SdfastSpeed::peteTest(void) const
+void SimbodySpeed::peteTest(void) const
 {
 	cout << "Speed: " << getName() << endl;
 	cout << "   default_value: " << _defaultValue << endl;
