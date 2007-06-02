@@ -311,7 +311,8 @@ constructStorage(int aDerivOrder,double aDX)
 			// ADVANCE X
 			if(x < getMaxX()) {
 				x += aDX;
-				if(x > getMaxX())  x = getMaxX();
+				// we shouldn't clamp against MaxX because then we would not have the regular aDX time steps as requested
+				//if(x > getMaxX())  x = getMaxX();
 
 			// FINISHED
 			} else {
