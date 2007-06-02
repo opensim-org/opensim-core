@@ -237,9 +237,8 @@ constructStorage(int aDerivOrder,double aDX)
 
 	// GET FIRST NON-NULL SPLINE
 	GCVSpline *spl;
-	int i;
 	int n = getSize();
-	for(i=0;i<n;i++) {
+	for(int i=0;i<n;i++) {
 		spl = getGCVSpline(i);
 		if(spl!=NULL) break;
 	}
@@ -271,7 +270,7 @@ constructStorage(int aDerivOrder,double aDX)
 	int len = n*(Object::NAME_LENGTH+4);
 	Array<std::string> labels;
 	labels.append("time");
-	for(i=0;i<n;i++) {
+	for(int i=0;i<n;i++) {
 		spline = getGCVSpline(i);
 		if(spline==NULL) {
 			sprintf(name,"data_%d",i);
@@ -283,73 +282,30 @@ constructStorage(int aDerivOrder,double aDX)
 	store->setColumnLabels(labels);
 
 	// SET STATES
-	double x = getMinX();
-	double *y = new double[n];
-
-	// GET ORIGINAL INDEPENDENT VARIABLES
+	Array<double> y(0.0,n);
 
 	// LOOP THROUGH THE DATA
 	// constant increments
 	if(aDX>0.0) {
-		while(x <= getMaxX()) {
-
-			// LOOP THROUGH SPLINES
-			for(i=0;i<n;i++) {
-				spline = getGCVSpline(i);
-
-				// SET Y
-				if(spline==NULL) {
-					y[i] = rdMath::NAN;
-				} else {
-					y[i] = spline->evaluate(aDerivOrder,x);
-				}
-			}
-
-			// APPEND
-			store->append(x,n,y);
-
-			// ADVANCE X
-			if(x < getMaxX()) {
-				x += aDX;
-				// we shouldn't clamp against MaxX because then we would not have the regular aDX time steps as requested
-				//if(x > getMaxX())  x = getMaxX();
-
-			// FINISHED
-			} else {
-				break;
-			}
+		for(double x=getMinX(); x<=getMaxX(); x+=aDX) {
+			evaluate(y,aDerivOrder,x);
+			store->append(x,n,&y[0]);
 		}
 
 	// original independent variable increments
 	} else {
 
-		int ix;
 		const Array<double> &xOrig = spl->getX();
-		for(ix=0;ix<nSteps;ix++) {
+		for(int ix=0;ix<nSteps;ix++) {
 
 			// ONLY WITHIN BOUNDS OF THE SET
 			if(xOrig[ix]<getMinX()) continue;
 			if(xOrig[ix]>getMaxX()) break;
 
-			// LOOP THROUGH SPLINES
-			for(i=0;i<n;i++) {
-				spline = getGCVSpline(i);
-
-				// SET Y
-				if(spline==NULL) {
-					y[i] = rdMath::NAN;
-				} else {
-					y[i] = spline->evaluate(aDerivOrder,xOrig[ix]);
-				}
-			}
-
-			// APPEND
-			store->append(xOrig[ix],n,y);
+			evaluate(y,aDerivOrder,xOrig[ix]);
+			store->append(xOrig[ix],n,&y[0]);
 		}
 	}
-
-	// CLEANUP
-	if(y!=NULL) delete[] y;
 
 	return(store);
 }
