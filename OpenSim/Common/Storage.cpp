@@ -613,6 +613,25 @@ getLastTime() const
 }
 //_____________________________________________________________________________
 /**
+ * Get the smallest time step.
+ *
+ * @return Smallest time step.  If there are less than 2 state vectors, rdMath::PLUS_INFINITY is returned.
+ */
+double Storage::
+getMinTimeStep() const
+{
+	double *time=NULL;
+	int n = getTimeColumn(time);
+	double dtmin = rdMath::PLUS_INFINITY;
+	for(int i=1; i<n; i++) {
+		double dt = time[i] - time[i-1];
+		if(dt<dtmin) dtmin = dt;
+	}
+	delete[] time;
+	return dtmin;
+}
+//_____________________________________________________________________________
+/**
  * Get the time at a specified time index for a specified state.
  *
  * @param aTimeIndex Time index (row) for which to get the time.
@@ -655,7 +674,7 @@ getTime(int aTimeIndex,double &rTime,int aStateIndex) const
  * a state does not exist for all or a subset of the stored statevectors.
  */
 int Storage::
-getTimeColumn(double *&rTimes,int aStateIndex)
+getTimeColumn(double *&rTimes,int aStateIndex) const
 {
 	if(_storage.getSize()<=0) return(0);
 
@@ -682,7 +701,7 @@ getTimeColumn(double *&rTimes,int aStateIndex)
  * rTimes is preallocated by the caller.
  */
 void Storage::
-getTimeColumn(Array<double>& rTimes, const double& aStartTime)
+getTimeColumn(Array<double>& rTimes, const double& aStartTime) const
 {
 	if(_storage.getSize()<=0) return;
 
@@ -1991,18 +2010,7 @@ pad(int aPadSize)
 void Storage::
 lowpassFIR(int aOrder,double aCutoffFrequency)
 {
-	// GET TIME COLUMN
-	double *time=NULL;
-	int n = getTimeColumn(time);
-
-	// DETERMINE MINIMUM DT
-	int i;
-	double dt, dtmin = rdMath::PLUS_INFINITY;
-	for(i=1;i<n;i++) {
-		dt = time[i] - time[i-1];
-		if(dt<dtmin) dtmin = dt;
-	}
-	delete[] time;
+	double dtmin = getMinTimeStep();
 	if(dtmin<rdMath::ZERO) {
 		cout<<"Storage.lowpassFIR: storage cannot be resampled.\n"<<endl;
 		return;
@@ -2020,7 +2028,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 	int nc = getSmallestNumberOfStates();
 	double *signal=NULL;
 	Array<double> filt(0.0,size);
-	for(i=0;i<nc;i++) {
+	for(int i=0;i<nc;i++) {
 		getDataColumn(i,signal);
 		Signal::LowpassFIR(aOrder,dtmin,aCutoffFrequency,size,signal,&filt[0]);
 		setDataColumn(i,filt);

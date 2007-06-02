@@ -144,9 +144,10 @@ public:
 	// TIME
 	double getFirstTime() const;
 	double getLastTime() const;
+	double getMinTimeStep() const;
 	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
-	int getTimeColumn(double *&rTimes,int aStateIndex=-1);
-	void getTimeColumn(Array<double>& times, const double& startTime=0.0);
+	int getTimeColumn(double *&rTimes,int aStateIndex=-1) const;
+	void getTimeColumn(Array<double>& times, const double& startTime=0.0) const;
 	// HEADERS, Key-Value pairs
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
