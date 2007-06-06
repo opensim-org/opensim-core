@@ -2618,20 +2618,25 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 	}
 	return true;
 }
-
+//_____________________________________________________________________________
+/**
+ * This function exchanges the time column (including the label) with the column
+ * at the passed in aColumnIndex. The index is zero based relative to the Data
+ */
 void Storage::
 exchangeTimeColumnWith(int aColumnIndex)
 {
+	StateVector* vec;
 	for(int i=0; i< _storage.getSize(); i++){
-		StateVector vec = _storage.get(i);
-		double swap = vec.getData().get(aColumnIndex);
-		double time=vec.getTime();
-		vec.setDataValue(i, time);
-		vec.setTime(swap);
+		vec = getStateVector(i);
+		double swap = vec->getData().get(aColumnIndex);
+		double time=vec->getTime();
+		vec->setDataValue(aColumnIndex, time);
+		vec->setTime(swap);
 	}
 	// Now column labels
 	string swap = _columnLabels.get(0);
-	_columnLabels.set(aColumnIndex, swap);
+	_columnLabels.set(aColumnIndex+1, swap);
 	_columnLabels.set(0, "time");
 
 }
@@ -2679,7 +2684,13 @@ void Storage::postProcessSIMMMotion()
 				}
 				else {	// time  column from range, size
 					double timeStep = (end - start)/(_storage.getSize()-1);
-					throw (Exception("Storage::postProcessSIMMMotion Not implemented yet"));
+					_columnLabels.append("time");
+					for(int i=0; i<_storage.getSize(); i++){
+						Array<double>& data=_storage.get(i).getData();
+						data.append(i*timeStep);
+					}
+					int timeColumnIndex=_columnLabels.findIndex("time");
+					exchangeTimeColumnWith(timeColumnIndex-1);
 				}
 			}
 			else {	// No time specified altogether
