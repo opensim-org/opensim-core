@@ -91,16 +91,7 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	_dudt.setSize(nu);
 	_recipAreaSquared.setSize(na);
 
-	// PARSE TASK SET FOR NUMBER OF CONSTRAINTS
-	rdCMC_TaskSet *taskSet = _controller->getTaskSet();
-	int nConstraints = 0;
-	for(int i=0;i<taskSet->getSize();i++) {
-		rdCMC_Task *task = taskSet->get(i);
-		if(task==NULL) continue;
-		for(int j=0;j<task->getNumTaskFunctions();j++) {
-			if(task->getActive(j)) nConstraints++;
-		}
-	}
+	int nConstraints = _controller->getTaskSet()->getNumActiveTaskFunctions();
 
 	// NUMBERS OF CONSTRAINTS
 	// There are only linear equality constraints.

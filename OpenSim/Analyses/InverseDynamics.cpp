@@ -207,6 +207,9 @@ setModel(Model *aModel)
 		int nf = _model->getNumActuators();
 		int nacc = _accelerationIndices.getSize();
 
+		if(nf < nacc) 
+			throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many actuators as there are degrees of freedom.\n"));
+
 		_constraintMatrix.resize(nacc,nf);
 		_constraintVector.resize(nacc);
 

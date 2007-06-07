@@ -111,6 +111,7 @@ public:
 	void setFunctions(FunctionSet &aFuncSet);
 	void setFunctionsForVelocity(FunctionSet &aFuncSet);
 	void setFunctionsForAcceleration(FunctionSet &aFuncSet);
+	int getNumActiveTaskFunctions() const;
 	// KINEMATICS
 	Array<double>& getTaskPositions(double aT);
 	Array<double>& getTaskVelocities(double aT);

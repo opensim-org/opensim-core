@@ -276,6 +276,28 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 }
 
 //-----------------------------------------------------------------------------
+// FUNCTION SET - QUERY
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Return number of active task functions.
+ */
+int rdCMC_TaskSet::
+getNumActiveTaskFunctions() const
+{
+	int count=0;
+	for(int i=0; i<getSize(); i++) {
+		rdCMC_Task *task=get(i);
+		if(task) {
+			for(int j=0; j<task->getNumTaskFunctions(); j++)
+				if(task->getActive(j)) count++;
+		}
+	}
+	return count;
+}
+
+
+//-----------------------------------------------------------------------------
 // FUNCTION SET - ACCELERATIONS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
