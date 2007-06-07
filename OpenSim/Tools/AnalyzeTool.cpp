@@ -12,8 +12,6 @@
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Actuators/ForceApplier.h>
-#include <OpenSim/Actuators/TorqueApplier.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -629,7 +627,7 @@ getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Arr
  */
 void AnalyzeTool::run()
 {
-	cout<<"Running investigation "<<getName()<<".\n";
+	cout<<"Running investigation "<<getName()<<"."<<endl;
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
@@ -658,7 +656,7 @@ void AnalyzeTool::run()
 	int iFinal = _statesStore->findIndex(_tf);
 	_statesStore->getTime(iInitial,ti);
 	_statesStore->getTime(iFinal,tf);
-	cout<<"\n\nExecuting the analyses from "<<ti<<" to "<<tf<<"...\n";
+	cout<<"\n\nExecuting the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
 
 	// ANALYSIS SET
 	AnalysisSet *analysisSet = _model->getAnalysisSet();

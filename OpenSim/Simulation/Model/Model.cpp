@@ -1199,10 +1199,10 @@ bool Model::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMa
  */
 void Model::printBasicInfo(std::ostream &aOStream) const
 {
-	aOStream<<"             MODEL: "<<getName()<<"\n";
-	aOStream<<"         actuators: "<<getNumActuators()<<"\n";
-	aOStream<<"          analyses: "<<getNumAnalyses()<<"\n";
-	aOStream<<"          contacts: "<<getNumContacts()<<"\n";
+	aOStream<<"             MODEL: "<<getName()<<std::endl;
+	aOStream<<"         actuators: "<<getNumActuators()<<std::endl;
+	aOStream<<"          analyses: "<<getNumAnalyses()<<std::endl;
+	aOStream<<"          contacts: "<<getNumContacts()<<std::endl;
 }
 //_____________________________________________________________________________
 /**
@@ -1214,13 +1214,13 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 {
 	//int i;
 
-	aOStream << "MODEL: " << getName() << "\n";
+	aOStream << "MODEL: " << getName() << std::endl;
 
-	aOStream << "\nANALYSES (" << getNumAnalyses() << ")\n";
+	aOStream << "\nANALYSES (" << getNumAnalyses() << ")" << std::endl;
 	for (int i = 0; i < _analysisSet->getSize(); i++)
-		aOStream << "analysis[" << i << "] = " << _analysisSet->get(i)->getName() << "\n";
+		aOStream << "analysis[" << i << "] = " << _analysisSet->get(i)->getName() << std::endl;
 
-	aOStream << "\nBODIES (" << getNumBodies() << ")\n";
+	aOStream << "\nBODIES (" << getNumBodies() << ")" << std::endl;
 	BodySet *bodySet = getDynamicsEngine().getBodySet();
 	for(int i=0; i < bodySet->getSize(); i++) {
 		AbstractBody *body = bodySet->get(i);
@@ -1234,7 +1234,7 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 		aOStream << ")"<<endl;
 	}
 
-	aOStream << "\nACTUATORS (" << getNumActuators() << ")\n";
+	aOStream << "\nACTUATORS (" << getNumActuators() << ")" << std::endl;
 	for (int i = 0; i < _actuatorSet.getSize(); i++) {
 		aOStream << "actuator[" << i << "] = " << _actuatorSet.get(i)->getName();
 		if (_actuatorSet.get(i)->getNumControls()) {
@@ -1248,7 +1248,7 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 		aOStream << std::endl;
 	}
 
-	aOStream << "\nCONTACTS (" << getNumContacts() << ")\n";
+	aOStream << "\nCONTACTS (" << getNumContacts() << ")" << std::endl;
 
 	aOStream << "numControls = " << getNumControls() << std::endl;
 	aOStream << "numStates = " << getNumStates() << std::endl;
@@ -1260,36 +1260,36 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 	int n;
 
 	/*
-	aOStream<<"MODEL: "<<getName()<<"\n";
+	aOStream<<"MODEL: "<<getName()<<std::endl;
 
 	n = getNumBodies();
-	aOStream<<"\nBODIES ("<<n<<")\n";
-	for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getBodyName(i)<<"\n";
+	aOStream<<"\nBODIES ("<<n<<")" << std::endl;
+	for(i=0;i<n;i++) aOStream<<"body["<<i<<"] = "<<getBodyName(i)<<std::endl;
 
 	n = getNQ();
-	aOStream<<"\nGENERALIZED COORDINATES ("<<n<<")\n";
-	for(i=0;i<n;i++) aOStream<<"q["<<i<<"] = "<<getCoordinateName(i)<<"\n";
+	aOStream<<"\nGENERALIZED COORDINATES ("<<n<<")" << std::endl;
+	for(i=0;i<n;i++) aOStream<<"q["<<i<<"] = "<<getCoordinateName(i)<<std::endl;
 
 	n = getNU();
-	aOStream<<"\nGENERALIZED SPEEDS ("<<n<<")\n";
-	for(i=0;i<n;i++) aOStream<<"u["<<i<<"] = "<<getSpeedName(i)<<"\n";
+	aOStream<<"\nGENERALIZED SPEEDS ("<<n<<")" << std::endl;
+	for(i=0;i<n;i++) aOStream<<"u["<<i<<"] = "<<getSpeedName(i)<<std::endl;
 
 	n = getNA();
-	aOStream<<"\nACTUATORS ("<<n<<")\n";
-	for(i=0;i<n;i++) aOStream<<"actuator["<<i<<"] = "<<getActuatorName(i)<<"\n";
+	aOStream<<"\nACTUATORS ("<<n<<")" << std::endl;
+	for(i=0;i<n;i++) aOStream<<"actuator["<<i<<"] = "<<getActuatorName(i)<<std::endl;
 
 	n = getNP();
-	aOStream<<"\nCONTACTS ("<<n<<")\n";
+	aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
 
 	n = getNYP();
-	aOStream<<"\nPSEUDO-STATES ("<<n<<")\n";
-	for(i=0;i<n;i++) aOStream<<"yp["<<i<<"] = "<<getPseudoStateName(i)<<"\n";
+	aOStream<<"\nPSEUDO-STATES ("<<n<<")" << std::endl;
+	for(i=0;i<n;i++) aOStream<<"yp["<<i<<"] = "<<getPseudoStateName(i)<<std::endl;
 */
 	n = getNumStates();
 	Array<string> stateNames("");
 	getStateNames(stateNames);
-	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")\n";
-	for(int i=0;i<n;i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<"\n";
+	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
+	for(int i=0;i<n;i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
 }
 
 //=============================================================================

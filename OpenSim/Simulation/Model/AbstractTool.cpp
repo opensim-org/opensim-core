@@ -421,7 +421,7 @@ void AbstractTool::
 printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
-	cout<<"Printing results of investigation "<<getName()<<" to "<<aDir<<".\n";
+	cout<<"Printing results of investigation "<<getName()<<" to "<<aDir<<"."<<endl;
 	IO::makeDir(aDir);
 	_model->getAnalysisSet()->printResults(aBaseName,aDir,aDT,aExtension);
 }
