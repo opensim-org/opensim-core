@@ -53,6 +53,7 @@
 namespace OpenSim { 
 
 class AbstractCoordinate;
+class ActuatorSet;
 
 class OSIMACTUATORS_API GeneralizedForce : public AbstractActuator
 {
@@ -124,6 +125,11 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual void computeActuation();
+
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	static ActuatorSet *CreateActuatorSetOfGeneralizedForcesForModel(Model *aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
 
 	//--------------------------------------------------------------------------
 	// CHECK

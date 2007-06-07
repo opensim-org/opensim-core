@@ -287,6 +287,29 @@ computeActuation()
 
 
 //=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ */
+ActuatorSet *GeneralizedForce::
+CreateActuatorSetOfGeneralizedForcesForModel(Model *aModel,double aOptimalForce,bool aIncludeLockedAndConstrainedCoordinates)
+{
+	ActuatorSet *as = new ActuatorSet();
+	CoordinateSet *cs = aModel->getDynamicsEngine().getCoordinateSet();
+	for(int i=0; i<cs->getSize(); i++) {
+		if(!aIncludeLockedAndConstrainedCoordinates && (cs->get(i)->getLocked() || cs->get(i)->getConstrained())) continue;
+		GeneralizedForce *actuator = new GeneralizedForce();
+		actuator->setQ(cs->get(i));
+		actuator->setName(cs->get(i)->getName());
+		actuator->setOptimalForce(aOptimalForce);
+		as->append(actuator);
+	}
+	as->setup(aModel);
+	return as;
+}
+
+//=============================================================================
 // APPLICATION
 //=============================================================================
 //_____________________________________________________________________________
