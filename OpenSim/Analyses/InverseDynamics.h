@@ -10,6 +10,7 @@
 // INCLUDES
 //=============================================================================
 #include "osimAnalysesDLL.h"
+#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <SimTKcommon.h>
 
@@ -21,6 +22,7 @@
 namespace OpenSim { 
 
 class Model;
+class ActuatorSet;
 
 class OSIMANALYSES_API InverseDynamics : public Analysis 
 {
@@ -30,10 +32,17 @@ class OSIMANALYSES_API InverseDynamics : public Analysis
 private:
 
 protected:
+	/** Use actuator set from model. */
+	PropertyBool _useModelActuatorSetProp;
+	bool &_useModelActuatorSet;
+
 	Storage *_storage;
 
 	Array<double> _dydt;
 	Array<int> _accelerationIndices;
+
+	bool _ownsActuatorSet;
+	ActuatorSet *_actuatorSet;
 
 	SimTK::Matrix _performanceMatrix;
 	SimTK::Vector _performanceVector;

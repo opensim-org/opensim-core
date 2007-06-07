@@ -16,6 +16,8 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Actuators/GeneralizedForce.h>
 #include <SimTKmath.h>
 #include <SimTKlapack.h>
 #include "InverseDynamics.h"
@@ -35,12 +37,14 @@ using namespace std;
 InverseDynamics::~InverseDynamics()
 {
 	deleteStorage();
+	if(_ownsActuatorSet) delete _actuatorSet;
 }
 //_____________________________________________________________________________
 /**
  */
 InverseDynamics::InverseDynamics(Model *aModel) :
-	Analysis(aModel)
+	Analysis(aModel),
+	_useModelActuatorSet(_useModelActuatorSetProp.getValueBool())
 {
 	setNull();
 
@@ -54,7 +58,8 @@ InverseDynamics::InverseDynamics(Model *aModel) :
  *
  */
 InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
-	Analysis(aInverseDynamics)
+	Analysis(aInverseDynamics),
+	_useModelActuatorSet(_useModelActuatorSetProp.getValueBool())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -101,7 +106,10 @@ setNull()
 	setupProperties();
 
 	// OTHER VARIABLES
+	_useModelActuatorSet = true;
 	_storage = NULL;
+	_ownsActuatorSet = false;
+	_actuatorSet = NULL;
 
 	setType("InverseDynamics");
 	setName("InverseDynamics");
@@ -113,6 +121,10 @@ setNull()
 void InverseDynamics::
 setupProperties()
 {
+	_useModelActuatorSetProp.setComment("If true, the model's own actuator set will be used in the inverse dynamics computation.  "
+													"Otherwise, inverse dynamics generalized forces will be computed for all unconstrained degrees of freedom.");
+	_useModelActuatorSetProp.setName("use_model_actuator_set");
+	_propertySet.append(&_useModelActuatorSetProp);
 }
 
 //=============================================================================
@@ -138,10 +150,8 @@ constructColumnLabels()
 {
 	Array<string> labels;
 	labels.append("time");
-	if(_model) {
-		ActuatorSet *ai = _model->getActuatorSet();
-		for (int i=0; i < ai->getSize(); i++) labels.append(ai->get(i)->getName());
-	}
+	if(_model) 
+		for (int i=0; i < _actuatorSet->getSize(); i++) labels.append(_actuatorSet->get(i)->getName());
 	setColumnLabels(labels);
 }
 
@@ -185,14 +195,20 @@ setModel(Model *aModel)
 {
 	Analysis::setModel(aModel);
 
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
-	deleteStorage();
-	allocateStorage();
-
 	if(_model) {
+		// Update the _actuatorSet we'll be computing inverse dynamics for
+		if(_ownsActuatorSet) delete _actuatorSet;
+		if(_useModelActuatorSet) {
+			// Set pointer to model's internal actuator set
+			_actuatorSet = _model->getActuatorSet();
+			_ownsActuatorSet = false;
+		} else {
+			// Generate an actuator set consisting of a generalized force actuator for every unconstrained degree of freedom
+			_actuatorSet = GeneralizedForce::CreateActuatorSetOfGeneralizedForcesForModel(_model,1,false);
+			_ownsActuatorSet = true;
+		}
+
+		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
 		_accelerationIndices.setSize(0);
 		SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
 		for(int i=0; i<speedSet->getSize(); i++) {
@@ -204,7 +220,7 @@ setModel(Model *aModel)
 
 		_dydt.setSize(_model->getNumCoordinates() + _model->getNumSpeeds());
 
-		int nf = _model->getNumActuators();
+		int nf = _actuatorSet->getSize();
 		int nacc = _accelerationIndices.getSize();
 
 		if(nf < nacc) 
@@ -216,8 +232,8 @@ setModel(Model *aModel)
 		_performanceMatrix.resize(nf,nf);
 		_performanceMatrix = 0;
 		for(int i=0; i<nf; i++) {
-			_model->getActuatorSet()->get(i)->setForce(1);
-			_performanceMatrix(i,i) = _model->getActuatorSet()->get(i)->getStress();
+			_actuatorSet->get(i)->setForce(1);
+			_performanceMatrix(i,i) = _actuatorSet->get(i)->getStress();
 		}
 
 		_performanceVector.resize(nf);
@@ -226,6 +242,13 @@ setModel(Model *aModel)
 		int lwork = nf + nf + nacc;
 		_lapackWork.resize(lwork);
 	}
+
+	// DESCRIPTION AND LABELS
+	constructDescription();
+	constructColumnLabels();
+
+	deleteStorage();
+	allocateStorage();
 }
 
 //-----------------------------------------------------------------------------
@@ -271,12 +294,10 @@ computeAcceleration(double aT,double *aX,double *aY,double *aF,double *rAccel) c
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
 	// ACTUATION
-	_model->getActuatorSet()->computeActuation();
-	int nf = _model->getNumActuators();
+	_actuatorSet->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	ActuatorSet *actuatorSet = _model->getActuatorSet();
-	for(int i=0;i<nf;i++) actuatorSet->get(i)->setForce(aF[i]);
-	_model->getActuatorSet()->apply();
+	for(int i=0;i<_actuatorSet->getSize();i++) _actuatorSet->get(i)->setForce(aF[i]);
+	_actuatorSet->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// CONTACT
@@ -303,7 +324,7 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	if(!_model) return -1;
 	if(!aDYDT) throw Exception("InverseDynamics: ERROR- Needs state derivatives.",__FILE__,__LINE__);
 
-	int nf = _model->getNumActuators();
+	int nf = _actuatorSet->getSize();
 	int nacc = _accelerationIndices.getSize();
 	int nq = _model->getNumCoordinates();
 
