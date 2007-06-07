@@ -29,8 +29,6 @@
 #include <iostream>
 #include "ActuatorSet.h"
 #include "Model.h"
-#include <OpenSim/Actuators/SimmZajacHill.h>
-#include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/rdMath.h>
 
