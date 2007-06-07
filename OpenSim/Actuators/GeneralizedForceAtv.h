@@ -9,10 +9,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
+#include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include "GeneralizedForce.h"
+#include <OpenSim/Simulation/Model/GeneralizedForce.h>
 
 
 //=============================================================================

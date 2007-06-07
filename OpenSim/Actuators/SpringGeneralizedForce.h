@@ -12,7 +12,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
-#include "GeneralizedForce.h"
+#include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include "osimActuatorsDLL.h"
 
 

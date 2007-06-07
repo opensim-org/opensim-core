@@ -17,7 +17,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
-#include <OpenSim/Actuators/GeneralizedForce.h>
+#include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <SimTKmath.h>
 #include <SimTKlapack.h>
 #include "InverseDynamics.h"

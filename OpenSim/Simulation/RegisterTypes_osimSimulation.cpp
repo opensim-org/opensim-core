@@ -18,6 +18,7 @@
 #include "Model/BoneSet.h"
 #include "Model/CoordinateSet.h"
 #include "Model/DofSet.h"
+#include "Model/GeneralizedForce.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/MarkerSet.h"
@@ -60,6 +61,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( ContactForceSet() );
 	Object::RegisterType( CoordinateSet() );
 	Object::RegisterType( DofSet() );
+	Object::RegisterType( GeneralizedForce() );
 	Object::RegisterType( JointSet() );
 	Object::RegisterType( Marker() );
 	Object::RegisterType( MarkerSet() );

@@ -34,10 +34,10 @@
  */
 
 
-#include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/AbstractActuator.h>
-#include <OpenSim/Simulation/Model/AbstractSpeed.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include "AbstractActuator.h"
 
 
 //=============================================================================
@@ -54,8 +54,9 @@ namespace OpenSim {
 
 class AbstractCoordinate;
 class ActuatorSet;
+class AbstractSpeed;
 
-class OSIMACTUATORS_API GeneralizedForce : public AbstractActuator
+class OSIMSIMULATION_API GeneralizedForce : public AbstractActuator
 {
 //=============================================================================
 // DATA

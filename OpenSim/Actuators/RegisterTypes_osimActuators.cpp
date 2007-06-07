@@ -7,7 +7,6 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimActuators.h"
 
-#include "GeneralizedForce.h"
 #include "GeneralizedForceAtv.h"
 #include "JointMoment.h"
 #include "LinearSetPoint.h"
@@ -31,7 +30,6 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
 	//cout<<"RegisterTypes_osimActuators\n";
 
-	Object::RegisterType( GeneralizedForce() );
 	Object::RegisterType( GeneralizedForceAtv() );
 	Object::RegisterType( JointMoment() );
 	Object::RegisterType( LinearSetPoint() );

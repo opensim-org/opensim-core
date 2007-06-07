@@ -35,13 +35,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Common/PropertyInt.h>
 #include "GeneralizedForce.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include "Model.h"
+#include "AbstractDynamicsEngine.h"
+#include "CoordinateSet.h"
+#include "SpeedSet.h"
 
 
 
