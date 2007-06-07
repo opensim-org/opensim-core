@@ -106,7 +106,7 @@
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/Force.h>
-%include <OpenSim/Simulation/Model/GeneralizedForce.h>
+#include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/Actuators/Torque.h>
 #include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include <OpenSim/Actuators/SimmZajacHill.h>
