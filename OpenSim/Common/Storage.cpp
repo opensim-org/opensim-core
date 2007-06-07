@@ -641,23 +641,23 @@ getMinTimeStep() const
  * or not there is a valid state- just get the time at aTimeIndex.  If
  * aStateIndex is non-negative, the time is returned only if there is a valid
  * state at aStateIndex.
- * @return 1 when the time was set, 0 when there was no valid state.
+ * @return true when the time was set, false when there was no valid state.
  */
-int Storage::
+bool Storage::
 getTime(int aTimeIndex,double &rTime,int aStateIndex) const
 {
-	if(aTimeIndex<0) return(0);
-	if(aTimeIndex>_storage.getSize()) return(0);
+	if(aTimeIndex<0) return false;
+	if(aTimeIndex>_storage.getSize()) return false;
 
 	// GET STATEVECTOR
 	StateVector &vec = _storage[aTimeIndex];
 
 	// CHECK FOR VALID STATE
-	if(aStateIndex >= vec.getSize()) return(0);
+	if(aStateIndex >= vec.getSize()) return false;
 
 	// ASSIGN TIME
 	rTime = vec.getTime();
-	return(1);
+	return true;
 }
 //_____________________________________________________________________________
 /**
@@ -696,19 +696,40 @@ getTimeColumn(double *&rTimes,int aStateIndex) const
 
 	return(nTimes);
 }
+int Storage::
+getTimeColumn(Array<double> &rTimes,int aStateIndex) const
+{
+	if(_storage.getSize()<=0) return(0);
+
+	rTimes.setSize(_storage.getSize());
+
+	// LOOP THROUGH STATEVECTORS
+	int i,nTimes;
+	for(i=nTimes=0;i<_storage.getSize();i++) {
+		StateVector *vec = getStateVector(i);
+		if(vec==NULL) continue;
+		if(aStateIndex >= vec->getSize()) continue;
+		rTimes[nTimes] = vec->getTime();
+		nTimes++;
+	}
+
+	rTimes.setSize(nTimes);
+
+	return(nTimes);
+}
 /**
  * Get the time column starting at aTime. Return it in rTimes
  * rTimes is preallocated by the caller.
  */
 void Storage::
-getTimeColumn(Array<double>& rTimes, const double& aStartTime) const
+getTimeColumnWithStartTime(Array<double>& rTimes,double aStartTime) const
 {
 	if(_storage.getSize()<=0) return;
 
 	int startIndex = findIndex(aStartTime);
 
 	double *timesVec=0;
-	int size = getTimeColumn(timesVec, 0);
+	int size = getTimeColumn(timesVec);
 
 	for(int i=startIndex; i<size; i++)
 		rTimes.append(timesVec[i]);
@@ -950,12 +971,31 @@ getDataColumn(int aStateIndex,double *&rData) const
 
 	// ASSIGNMENT
 	int i,nData;
-	StateVector *vec;
 	for(i=nData=0;i<n;i++) {
-		vec = getStateVector(i);
+		StateVector *vec = getStateVector(i);
 		if(vec==NULL) continue;
 		if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
 	}
+
+	return(nData);
+}
+int Storage::
+getDataColumn(int aStateIndex,Array<double> &rData) const
+{
+	int n = _storage.getSize();
+	if(n<=0) return(0);
+
+	rData.setSize(n);
+
+	// ASSIGNMENT
+	int i,nData;
+	for(i=nData=0;i<n;i++) {
+		StateVector *vec = getStateVector(i);
+		if(vec==NULL) continue;
+		if(vec->getDataValue(aStateIndex,rData[nData])) nData++;
+	}
+
+	rData.setSize(nData);
 
 	return(nData);
 }
@@ -965,7 +1005,7 @@ getDataColumn(int aStateIndex,double *&rData) const
  * rData is preallocated by the caller.
  */
 void Storage::
-getDataColumn(const std::string& columnName, Array<double>& rData, const double& aStartTime)
+getDataColumn(const std::string& columnName, Array<double>& rData, double aStartTime)
 {
 	if(_storage.getSize()<=0) return;
 
@@ -999,10 +1039,8 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 	}
 
 	// ASSIGNMENT
-	int i;
-	StateVector *vec;
-	for(i=0;i<n;i++) {
-		vec = getStateVector(i);
+	for(int i=0;i<n;i++) {
+		StateVector *vec = getStateVector(i);
 		if(vec==NULL) continue;
 		vec->setDataValue(aStateIndex,aData[i]);
 	}
@@ -1174,8 +1212,7 @@ store(int aStep,double aT,int aN,const double *aY)
 void Storage::
 shiftTime(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].shiftTime(aValue);
 	}
 }
@@ -1188,8 +1225,7 @@ shiftTime(double aValue)
 void Storage::
 scaleTime(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].scaleTime(aValue);
 	}
 }
@@ -1207,8 +1243,7 @@ scaleTime(double aValue)
 void Storage::
 add(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].add(aValue);
 	}
 }
@@ -1223,8 +1258,7 @@ add(double aValue)
 void Storage::
 add(int aN, double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].add(aN,aValue);
 	}
 }
@@ -1241,8 +1275,7 @@ add(int aN, double aValue)
 void Storage::
 add(int aN,double aY[])
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].add(aN,aY);
 	}
 }
@@ -1256,8 +1289,7 @@ add(int aN,double aY[])
 void Storage::
 add(StateVector *aStateVector)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].add(aStateVector);
 	}
 }
@@ -1276,10 +1308,9 @@ add(Storage *aStorage)
 {
 	if(aStorage==NULL) return;
 
-	int i;
 	int n,N=0,nN;
 	double t,*Y=NULL;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 
 		// GET INFO ON THIS STORAGE INSTANCE
 		n = getStateVector(i)->getSize();
@@ -1312,8 +1343,7 @@ add(Storage *aStorage)
 void Storage::
 subtract(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].subtract(aValue);
 	}
 }
@@ -1330,8 +1360,7 @@ subtract(double aValue)
 void Storage::
 subtract(int aN,double aY[])
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].subtract(aN,aY);
 	}
 }
@@ -1345,8 +1374,7 @@ subtract(int aN,double aY[])
 void Storage::
 subtract(StateVector *aStateVector)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].subtract(aStateVector);
 	}
 }
@@ -1365,10 +1393,9 @@ subtract(Storage *aStorage)
 {
 	if(aStorage==NULL) return;
 
-	int i;
 	int n,N=0,nN;
 	double t,*Y=NULL;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 
 		// GET INFO ON THIS STORAGE INSTANCE
 		n = getStateVector(i)->getSize();
@@ -1401,8 +1428,7 @@ subtract(Storage *aStorage)
 void Storage::
 multiply(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].multiply(aValue);
 	}
 }
@@ -1419,8 +1445,7 @@ multiply(double aValue)
 void Storage::
 multiply(int aN,double aY[])
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].multiply(aN,aY);
 	}
 }
@@ -1435,8 +1460,7 @@ multiply(int aN,double aY[])
 void Storage::
 multiply(StateVector *aStateVector)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].multiply(aStateVector);
 	}
 }
@@ -1455,10 +1479,9 @@ multiply(Storage *aStorage)
 {
 	if(aStorage==NULL) return;
 
-	int i;
 	int n,N=0,nN;
 	double t,*Y=NULL;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 
 		// GET INFO ON THIS STORAGE INSTANCE
 		n = getStateVector(i)->getSize();
@@ -1487,9 +1510,8 @@ multiply(Storage *aStorage)
 void Storage::
 multiplyColumn(int aIndex, double aValue)
 {
-	int i;
 	double newValue;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].getDataValue(aIndex, newValue);
 		newValue *= aValue;
 		_storage[i].setDataValue(aIndex, newValue);
@@ -1508,8 +1530,7 @@ multiplyColumn(int aIndex, double aValue)
 void Storage::
 divide(double aValue)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].divide(aValue);
 	}
 }
@@ -1525,8 +1546,7 @@ divide(double aValue)
 void Storage::
 divide(int aN,double aY[])
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].divide(aN,aY);
 	}
 }
@@ -1539,8 +1559,7 @@ divide(int aN,double aY[])
 void Storage::
 divide(StateVector *aStateVector)
 {
-	int i;
-	for(i=0;i<_storage.getSize();i++) {
+	for(int i=0;i<_storage.getSize();i++) {
 		_storage[i].divide(aStateVector);
 	}
 }
@@ -1961,31 +1980,24 @@ void Storage::
 pad(int aPadSize)
 {
 	// PAD THE TIME COLUMN
-	double *time=NULL;
-	int size = getTimeColumn(time);
-	Array<double> paddedTime(0.0);
-	paddedTime.append(size,time);
+	Array<double> paddedTime;
+	int size = getTimeColumn(paddedTime);
 	Signal::Pad(aPadSize,paddedTime);
 	int newSize = paddedTime.getSize();
 
 	// PAD EACH COLUMN
-	int i,j;
 	int nc = getSmallestNumberOfStates();
-	double *signal=NULL;
-	Array<double> paddedSignal(0.0);
+	Array<double> paddedSignal(0.0,size);
 	StateVector *vecs = new StateVector[newSize];
-	for(i=0;i<nc;i++) {
-		getDataColumn(i,signal);
-		paddedSignal.setSize(0);
-		paddedSignal.append(size,signal);
+	for(int j=0;j<newSize;j++) {
+		vecs[j].getData().setSize(nc);
+		vecs[j].setTime(paddedTime[j]);
+	}
+	for(int i=0;i<nc;i++) {
+		getDataColumn(i,paddedSignal);
 		Signal::Pad(aPadSize,paddedSignal);
-		for(j=0;j<newSize;j++) {
-			if(i==0) {
-				vecs[j].getData().setSize(nc);
-				vecs[j].setTime(paddedTime[j]);
-			}
+		for(int j=0;j<newSize;j++)
 			vecs[j].setDataValue(i,paddedSignal[j]);
-		}
 	}
 
 	// APPEND THE STATEVECTORS
@@ -1993,8 +2005,6 @@ pad(int aPadSize)
 	for(i=0;i<newSize;i++) _storage.append(vecs[i]);
 
 	// CLEANUP
-	delete time;
-	delete signal;
 	delete[] vecs;
 }
 

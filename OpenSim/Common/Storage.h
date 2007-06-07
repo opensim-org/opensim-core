@@ -145,9 +145,10 @@ public:
 	double getFirstTime() const;
 	double getLastTime() const;
 	double getMinTimeStep() const;
-	int getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
+	bool getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
 	int getTimeColumn(double *&rTimes,int aStateIndex=-1) const;
-	void getTimeColumn(Array<double>& times, const double& startTime=0.0) const;
+	int getTimeColumn(Array<double>& rTimes,int aStateIndex=-1) const;
+	void getTimeColumnWithStartTime(Array<double>& rTimes,double startTime=0.0) const;
 	// HEADERS, Key-Value pairs
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
@@ -161,9 +162,10 @@ public:
 	int getDataAtTime(double aTime,int aN,double **rData) const;
 	int getDataAtTime(double aTime,int aN,double *rData) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
+	int getDataColumn(int aStateIndex,Array<double> &rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
-	void getDataColumn(const std::string& columnName, Array<double>& data, const double& startTime=0.0);
+	void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;
