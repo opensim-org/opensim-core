@@ -103,7 +103,7 @@ public:
 	virtual double getMass() const;
 	virtual bool setMass(double aMass);
 	virtual void getMassCenter(double rVec[3]) const;
-	virtual bool setMassCenter(double aVec[3]);
+	virtual bool setMassCenter(const double aVec[3]);
 	virtual void getInertia(Array<double> &rInertia) const;
 	virtual void getInertia(double rInertia[3][3]) const;
 	virtual bool setInertia(const Array<double>& aInertia);

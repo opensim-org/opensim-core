@@ -326,7 +326,7 @@ void SdfastBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SdfastBody::setMassCenter(double aVec[3])
+bool SdfastBody::setMassCenter(const double aVec[3])
 {
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];

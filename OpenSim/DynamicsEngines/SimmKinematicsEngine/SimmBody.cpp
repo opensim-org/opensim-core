@@ -222,7 +222,7 @@ void SimmBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SimmBody::setMassCenter(double aVec[3])
+bool SimmBody::setMassCenter(const double aVec[3])
 {
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];

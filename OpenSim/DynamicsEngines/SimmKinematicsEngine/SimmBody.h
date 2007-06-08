@@ -94,7 +94,7 @@ public:
 	virtual double getMass() const { return _mass; }
 	virtual bool setMass(double aMass);
 	virtual void getMassCenter(double rVec[3]) const;
-	virtual bool setMassCenter(double aVec[3]);
+	virtual bool setMassCenter(const double aVec[3]);
 	virtual void getInertia(double rInertia[3][3]) const;
 	virtual bool setInertia(const Array<double>& aInertia);
 	virtual void scale(const Array<double>& aScaleFactors, bool aScaleMass = false);
