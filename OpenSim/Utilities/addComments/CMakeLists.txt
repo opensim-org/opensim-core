@@ -9,4 +9,6 @@ LINK_LIBRARIES(debug xerces-c_2D optimized xerces-c_2
 
 ADD_EXECUTABLE(addComments ${SOURCE_FILES} ${INCLUDE_FILES})
 
+SET_TARGET_PROPERTIES(addComments PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Utilities - addComments")
+
 INSTALL_TARGETS(/bin/ addComments)

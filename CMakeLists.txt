@@ -2,6 +2,14 @@ PROJECT (OpenSim)
 
 SET(OPENSIM_MINIMAL_BUILD ON CACHE BOOL "Minimal build (only build essential libraries and excutables)")
 
+# EXCLUDE_IF_MINIMAL_BUILD is a variable we set up which can be included in a SET_TARGET_PROPERTIES command for those
+# targets that you only want built by default in non-minimal build settings
+IF(OPENSIM_MINIMAL_BUILD)
+SET(EXCLUDE_IF_MINIMAL_BUILD EXCLUDE_FROM_DEFAULT_BUILD on)
+ELSE(OPENSIM_MINIMAL_BUILD)
+SET(EXCLUDE_IF_MINIMAL_BUILD)
+ENDIF(OPENSIM_MINIMAL_BUILD)
+
 # Uncomment to make the linux Makefiles print the compile/link commands they are executing
 #SET(CMAKE_VERBOSE_MAKEFILE ON)
 

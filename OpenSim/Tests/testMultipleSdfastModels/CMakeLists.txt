@@ -5,4 +5,7 @@ LINK_LIBRARIES(debug osimTools_d optimized osimTools)
 
 ADD_EXECUTABLE(testMultipleSdfastModels ${SOURCE_FILES} ${INCLUDE_FILES})
 
-#INSTALL_TARGETS(/bin/ testMultipleSdfastModels)
+SET_TARGET_PROPERTIES(testMultipleSdfastModels PROPERTIES
+	${EXCLUDE_IF_MINIMAL_BUILD}
+	PROJECT_LABEL "Tests - testMultipleSdfastModels"
+)

@@ -1,3 +1,5 @@
+SET(APPNAME makeSDFastModel)
+
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 						  ${OpenSim_SOURCE_DIR}/Vendors
 						  ${XERCES_INCLUDE_DIR})
@@ -7,7 +9,9 @@ LINK_LIBRARIES(
 	debug osimSimulation_d optimized osimSimulation
 	debug osimSdfastEngine_d optimized osimSdfastEngine)
 
-ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp)
+ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
+INSTALL_TARGETS(/bin/ ${APPNAME})
+SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
 
 ##GET_TARGET_PROPERTY(buildLocation makeSDFastModel LOCATION)
 ##IF (${buildLocation} MATCHES ".+Debug.+")
@@ -20,4 +24,3 @@ ADD_EXECUTABLE(makeSDFastModel makeSDFastModel.cpp)
 ##    ${EXECUTABLE_OUTPUT_PATH}/Debug/makeSDFastModel.exe
 ##    ${buildLocation}/../makeSDFastModel_d.exe
 ##)
-INSTALL_TARGETS(/bin/ makeSDFastModel)

@@ -1,3 +1,5 @@
+SET(APPNAME perturb)
+
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 						  ${OpenSim_SOURCE_DIR}/Vendors
 						  ${XERCES_INCLUDE_DIR})
@@ -5,6 +7,6 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 # cmake should automatically figure out what other libraries are needed
 LINK_LIBRARIES(debug osimTools_d optimized osimTools)
 
-ADD_EXECUTABLE(perturb perturb.cpp)
-
-INSTALL_TARGETS(/bin/ perturb)
+ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
+INSTALL_TARGETS(/bin/ ${APPNAME})
+SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")

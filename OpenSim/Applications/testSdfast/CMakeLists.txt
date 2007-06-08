@@ -15,6 +15,8 @@ LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 
 ADD_EXECUTABLE(testSdfast ${SOURCE_FILES} ${INCLUDE_FILES})
 
+SET_TARGET_PROPERTIES(testSdfast PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testSdast")
+
 ##GET_TARGET_PROPERTY(buildLocation testSdfast LOCATION)
 ##IF (${buildLocation} MATCHES ".+Debug.+")
 ##	MESSAGE(STATUS "Will Copy")

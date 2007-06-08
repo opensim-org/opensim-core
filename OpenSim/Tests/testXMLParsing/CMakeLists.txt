@@ -5,4 +5,7 @@ LINK_LIBRARIES(debug osimTools_d optimized osimTools)
 
 ADD_EXECUTABLE(testXMLParsing ${SOURCE_FILES} ${INCLUDE_FILES})
 
-#INSTALL_TARGETS(/bin/ testXMLParsing)
+SET_TARGET_PROPERTIES(testXMLParsing PROPERTIES
+	${EXCLUDE_IF_MINIMAL_BUILD}
+	PROJECT_LABEL "Tests - testXMLParsing"
+)

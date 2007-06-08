@@ -1,3 +1,5 @@
+SET(APPNAME analyze)
+
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 						  ${OpenSim_SOURCE_DIR}/Vendors
 						  ${XERCES_INCLUDE_DIR})
@@ -5,9 +7,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 # cmake should automatically figure out what other libraries are needed
 LINK_LIBRARIES(debug osimTools_d optimized osimTools)
 
-ADD_EXECUTABLE(analyze analyze.cpp)
-        
-INSTALL_TARGETS(/bin/ analyze)
+ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
+INSTALL_TARGETS(/bin/ ${APPNAME})
+SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
+
 #
 # Testing
 #
@@ -24,7 +27,3 @@ IF (EXECUTABLE_OUTPUT_PATH)
 ELSE (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH .)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
-
-IF(NOT OPENSIM_MINIMAL_BUILD)
-
-ENDIF(NOT OPENSIM_MINIMAL_BUILD)
