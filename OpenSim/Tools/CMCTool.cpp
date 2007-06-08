@@ -38,6 +38,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
 #include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
@@ -791,6 +792,11 @@ void CMCTool::run()
 		residualFile.close();
 	}
 
+	// Tell integration callbacks we're done so the GUI knows what to do.
+	IntegCallbackSet* callbacks = _model->getIntegCallbackSet();
+	if (callbacks!=0)
+		callbacks->end(0,0.0,0.0,0,0);
+
 	// Write new model file
 	if(_adjustCOMToReduceResiduals) {
 		if(_outputModelFile=="") {
@@ -1111,4 +1117,19 @@ constructRRAControlSet(ControlSet *aControlConstraints)
 
 	return(rraControlSet);
 #endif
+}
+
+//_____________________________________________________________________________
+/**
+ * Get a pointer to the Storage object holding forces. This's a utility routine used 
+ * by the SimTrack GUI primarily to get access to residuals while running RRA.
+ *
+ * User-beware, the storage will get out of scope and potentially get deleted when the 
+ * analysis is done, so no assumptions about the lifetime of the returned storage object 
+ * outside the owning analysis should be made.
+ */
+Storage* CMCTool::getForceStorage(){
+		Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
+		if(actuation==NULL) return 0;
+		return actuation->getForceStorage();
 }

@@ -192,6 +192,8 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
+	Storage *getForceStorage();
+
 #ifndef SWIG
 	ControlSet*
 		constructRRAControlSet(ControlSet *aControlConstraints);

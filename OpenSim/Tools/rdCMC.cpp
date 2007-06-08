@@ -39,6 +39,7 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/RootSolver.h>
+#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
 #include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
@@ -461,6 +462,7 @@ computeInitialStates(double &rTI,double *rYI)
 
 	// TURN ANALYSES OFF
 	_model->getAnalysisSet()->setOn(false);
+	_model->getIntegCallbackSet()->setOn(false);
 
 	// COPY OF STARTING INITIAL STATES
 	for(i=0;i<ny;i++) yi[i] = rYI[i];
@@ -562,6 +564,7 @@ computeInitialStates(double &rTI,double *rYI)
 	// CLEANUP
 	setTargetDT(oldTargetDT);
 	_model->getAnalysisSet()->setOn(true);
+	_model->getIntegCallbackSet()->setOn(true);
 }
 
 
@@ -680,6 +683,7 @@ computeControls(double &rDT,double aT,const double *aY,
 
 	// TURN ANALYSES OFF
 	_model->getAnalysisSet()->setOn(false);
+	_model->getIntegCallbackSet()->setOn(false);
 
 	// TIME STUFF
 	//BUG? _tf = aT + _targetDT;
@@ -953,6 +957,7 @@ computeControls(double &rDT,double aT,const double *aY,
 	//_model->set(aT,&x[0],aY);
 
 	_model->getAnalysisSet()->setOn(true);
+	_model->getIntegCallbackSet()->setOn(true);
 }
 
 //_____________________________________________________________________________
