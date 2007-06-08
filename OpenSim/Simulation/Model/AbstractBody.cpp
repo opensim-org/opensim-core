@@ -110,9 +110,7 @@ void AbstractBody::setNull()
 void AbstractBody::setup(AbstractDynamicsEngine* aEngine)
 {
 	_dynamicsEngine = aEngine;
-
-	int i;
-	for (i = 0; i < _wrapObjectSet.getSize(); i++)
+	for(int i=0; i<_wrapObjectSet.getSize(); i++)
 		_wrapObjectSet.get(i)->setup(aEngine, this);
 }
 
