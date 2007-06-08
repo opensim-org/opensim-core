@@ -216,7 +216,9 @@ public:
 	//--------------------------------------------------------------------------
 	// ASSEMBLING THE MODEL
 	//--------------------------------------------------------------------------
-	virtual int assemble(double aTime, double *rState, int *aLock, double aTol, int aMaxevals, int *rFcnt, int *rErr) = 0;
+	virtual int
+		assemble(double aTime,double *rState,int *aLock,double aTol,
+		int aMaxevals,int *rFcnt,int *rErr) = 0;
 
 	//--------------------------------------------------------------------------
 	// SCALING
