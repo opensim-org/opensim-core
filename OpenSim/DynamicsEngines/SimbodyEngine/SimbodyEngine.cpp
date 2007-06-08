@@ -151,7 +151,6 @@ void SimbodyEngine::constructPendulum()
 	_system.addForceSubsystem(_gravity);
 
 	// Realize the state
-	_system.get
 	_system.realize(_s);
 
 	// Set gravity
