@@ -55,8 +55,9 @@ SimbodyJoint::SimbodyJoint() :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_locationInParent(_locationInParentProp.getValueDblArray()),
 	_locationInChild(_locationInChildProp.getValueDblArray()),
-	_childBody(NULL),
-	_parentBody(NULL)
+	_dofSetProp(PropertyObj("", DofSet())),
+	_dofSet((DofSet&)_dofSetProp.getValueObj())
+
 {
 	setNull();
 	setupProperties();
@@ -82,8 +83,8 @@ SimbodyJoint::SimbodyJoint(const SimbodyJoint &aJoint) :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_locationInParent(_locationInParentProp.getValueDblArray()),
 	_locationInChild(_locationInChildProp.getValueDblArray()),
-	_childBody(NULL),
-	_parentBody(NULL)
+	_dofSetProp(PropertyObj("", DofSet())),
+	_dofSet((DofSet&)_dofSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();

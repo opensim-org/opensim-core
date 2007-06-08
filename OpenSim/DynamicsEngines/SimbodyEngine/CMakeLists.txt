@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors
 			 ${XERCES_INCLUDE_DIR})
 
-LINK_LIBRARIES( osimCommon osimSimulation )
+LINK_LIBRARIES( osimCommon osimSimulation SimTKsimbody )
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 ADD_DEFINITIONS("-DOSIM${UKIT}_EXPORTS")

@@ -33,6 +33,7 @@
 #include <OpenSim/Common/Transform.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
 #include "SimbodyBody.h"
 #include "SimbodyCoordinate.h"
 
@@ -67,6 +68,11 @@ protected:
 	(i.e., the body reference frame coincides with the joint).  */
 	PropertyDblArray _locationInChildProp;
 	Array<double> &_locationInChild;
+
+	/** Set of degrees of freedom.  These specify the six degrees of freedom
+	between the parent body and child body. */
+	PropertyObj _dofSetProp;
+	DofSet &_dofSet;
 
 	/** ID of the child body that this joint connects to a parent body. */
 	SimTK::BodyId _bodyId;

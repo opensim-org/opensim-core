@@ -1,5 +1,5 @@
 // SimbodyEngine.cpp
-// Authors: Frank C. Anderson, Ayman Habib, and Peter Loan
+// Authors: Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -50,6 +50,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
+const SimTK::Transform SimbodyEngine::GroundFrame;
 const int SimbodyEngine::GROUND = -1;
 
 static char simbodyGroundName[] = "ground";
@@ -58,6 +59,15 @@ static char simbodyGroundName[] = "ground";
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Destructor.
+ */
+
+SimbodyEngine::~SimbodyEngine()
+{
+	cout<<"Destroying SimbodyEngine."<<endl;
+}
 //_____________________________________________________________________________
 /**
  * Default constructor.  This constructor constructs a dynamic model of a
@@ -87,14 +97,6 @@ SimbodyEngine::SimbodyEngine(const string &aFileName) :
 	// BUILD THE SIMBODY MODEL
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-
-SimbodyEngine::~SimbodyEngine()
-{
-}
 
 //_____________________________________________________________________________
 /**
@@ -142,17 +144,54 @@ void SimbodyEngine::constructPendulum()
 	const Vec3 massLocation(0, -length/2, 0);
 	const Vec3 jointLocation(0, length/2, 0);
 	MassProperties massProps(mass, massLocation, mass*Inertia::pointMassAt(massLocation));
-	const BodyId body = _matter.addRigidBody(massProps,jointLocation,GroundId,GroundFrame,Mobilizer::Pin());
+	const BodyId bodyId = _matter.addRigidBody(massProps,jointLocation,GroundId,GroundFrame,Mobilizer::Pin());
 
 	// Put subsystems into system
 	_system.setMatterSubsystem(_matter);
 	_system.addForceSubsystem(_gravity);
 
 	// Realize the state
+	_system.get
 	_system.realize(_s);
 
 	// Set gravity
 	setGravity(g);
+
+	// Realize the state
+	//_system.realize(_s,Stage::Model);
+	//_system.realize(_s,Stage::Position);
+	//_system.realize(_s,Stage::Velocity);
+	//_system.realize(_s,Stage::Dynamics);
+
+	// CONSTRUCT CORRESPONDING OPENSIM OBJECTS
+	// Body
+	SimbodyBody *body = new SimbodyBody();
+	body->_engine = this;
+	body->_id = bodyId;
+	body->setMass(mass);
+	body->setMassCenter(&jointLocation[0]);
+	Array<double> inertia(0.0,9);
+	body->getInertia(inertia);
+	body->setInertia(inertia);
+	body->setup(this);
+	_bodySet.append(body);
+
+	// Coordinate
+	SimbodyCoordinate *coordinate = new SimbodyCoordinate();
+	coordinate->_engine = this;
+	coordinate->_bodyId = bodyId;
+	coordinate->_mobilityIndex = 0;
+	coordinate->setup(this);
+	_coordinateSet.append(coordinate);
+
+	// Speed
+	SimbodySpeed *speed = new SimbodySpeed();
+	speed->_engine = this;
+	speed->_bodyId = bodyId;
+	speed->_mobilityIndex = 0;
+	speed->setup(this);
+	_speedSet.append(speed);
+
 }
 
 
@@ -608,7 +647,7 @@ double SimbodyEngine::getMass() const
  */
 void SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
 {
-	throw Exception("SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) not yet implemented.");
+	throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -621,7 +660,7 @@ void SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]
  */
 void SimbodyEngine::getSystemInertia(double *rM, double *rCOM, double *rI) const
 {
-	throw Exception("SimbodyEngine::getSystemInertia(double *rM, double *rCOM, double *rI) not yet implemented.");
+	throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
 }
 
 //--------------------------------------------------------------------------
@@ -835,6 +874,10 @@ void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3]
 {
 	const SimbodyBody* body = (const SimbodyBody*)&aBody;
 
+	Vec3 point,force;
+	point.getAs(aPoint);
+	force.getAs(aForce);
+	//_matter.addInStationForce(_s,body->_id,point,force);
 }
 
 //_____________________________________________________________________________

@@ -78,10 +78,12 @@ class OSIMSIMBODYENGINE_API SimbodyEngine  : public AbstractDynamicsEngine
 // DATA
 //=============================================================================
 protected:
-	/** Ground frame. */
+	/** Ground frame used by Simbody. */
 	static const SimTK::Transform GroundFrame;
+
 	/** Body number used for ground. */
 	static const int GROUND;
+
 	/** Body used for ground or the inertial frame. */
 	AbstractBody* _groundBody;
 
@@ -291,6 +293,7 @@ private:
 
 	friend class SimbodyBody;
 	friend class SimbodyCoordinate;
+	friend class SimbodySpeed;
 	friend class SimbodyJoint;
 
 //=============================================================================

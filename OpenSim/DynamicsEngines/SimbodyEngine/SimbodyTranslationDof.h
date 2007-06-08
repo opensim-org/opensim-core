@@ -1,8 +1,8 @@
-#ifndef __SimbodySpeed_h__
-#define __SimbodySpeed_h__
+#ifndef __SimbodyTranslationDof_h__
+#define __SimbodyTranslationDof_h__
 
-// SimbodySpeed.h
-// Author: Frank C. Anderson
+// SimbodyTranslationDof.h
+// Author: Peter Loan, Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -25,55 +25,46 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 // INCLUDE
 #include <iostream>
 #include <string>
 #include <math.h>
 #include "osimSimbodyEngineDLL.h"
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/AbstractSpeed.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 #include <SimTKsimbody.h>
 
 namespace OpenSim {
 
-class SimbodyEngine;
+#define TX_NAME "tx"
+#define TY_NAME "ty"
+#define TZ_NAME "tz"
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an SD/FAST speed.
+ * A class expressing a translational DOF.
  *
- * @author Peter Loan
+ * @author Peter Loan, Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMBODYENGINE_API SimbodySpeed : public AbstractSpeed  
+class OSIMSIMBODYENGINE_API SimbodyTranslationDof : public AbstractDof  
 {
+public:
+	enum AxisIndex
+	{
+		xTranslation = 0,
+		yTranslation,
+		zTranslation
+	};
+
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	PropertyDbl _defaultValueProp;
-	double &_defaultValue;
-
-	/** Name of coordinate that this speed corresponds to (if any). */
-	PropertyStr _coordinateNameProp;
-	std::string &_coordinateName;
-
-	/** Simbody coordinate that this speed corresponds to (if any). */
-	AbstractCoordinate *_coordinate;
-
-	/** ID of the body which this speed serves.  */
-	SimTK::BodyId _bodyId;
-
-	/** Mobility index for this speed. */
-	int _mobilityIndex;
-
-	/** Simbody engine that contains this speed. */
-	SimbodyEngine *_engine;
+	double _axis[3];
+	AxisIndex _axisIndex;
 
 //=============================================================================
 // METHODS
@@ -82,43 +73,37 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimbodySpeed();
-	SimbodySpeed(const SimbodySpeed &aSpeed);
-	SimbodySpeed(const AbstractSpeed &aSpeed);
-	virtual ~SimbodySpeed();
+	SimbodyTranslationDof();
+	SimbodyTranslationDof(const SimbodyTranslationDof &aDof);
+	virtual ~SimbodyTranslationDof();
 	virtual Object* copy() const;
+	virtual void updateFromXMLNode();
 
-	SimbodySpeed& operator=(const SimbodySpeed &aSpeed);
-	void copyData(const SimbodySpeed &aSpeed);
-	void copyData(const AbstractSpeed &aSpeed);
+#ifndef SWIG
+	SimbodyTranslationDof& operator=(const SimbodyTranslationDof &aDof);
+#endif
+   void copyData(const SimbodyTranslationDof &aDof);
 
-	void setup(AbstractDynamicsEngine* aEngine);
+	virtual void getAxis(double rAxis[3]) const;
+	virtual const double* getAxisPtr() const { return &_axis[0]; }
+	virtual double getValue();
+	virtual DofType getMotionType() const { return Translational; }
+	void getTranslation(double rVec[4]);
+	AxisIndex getAxisIndex() const { return _axisIndex; }
 
-	virtual AbstractCoordinate* getCoordinate() const { return _coordinate; }
-	virtual bool setCoordinate(AbstractCoordinate *aCoordinate);
-	virtual bool setCoordinateName(const std::string& aCoordName);
+	virtual void peteTest();
 
-	virtual double getDefaultValue() const { return _defaultValue; }
-	virtual bool setDefaultValue(double aDefaultValue);
-	virtual bool getDefaultValueUseDefault() const { return _defaultValueProp.getUseDefault(); }
-	virtual bool getValueUseDefault() const { return true; }
-
-	virtual double getValue() const;
-	virtual bool setValue(double aValue);
-	virtual double getAcceleration() const;
+protected:
 
 private:
 	void setNull();
-	void setupProperties();
-	friend class SimbodyEngine;
-
 //=============================================================================
-};	// END of class SimbodySpeed
+};	// END of class SimbodyTranslationDof
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimbodySpeed_h__
+#endif // __SimbodyTranslationDof_h__
 
 

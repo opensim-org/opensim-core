@@ -9,6 +9,8 @@
 #include "SimbodyEngine.h"
 #include "SimbodyBody.h"
 #include "SimbodyJoint.h"
+#include "SimbodyRotationDof.h"
+#include "SimbodyTranslationDof.h"
 #include "SimbodyCoordinate.h"
 #include "SimbodySpeed.h"
 
@@ -26,11 +28,13 @@ OSIMSIMBODYENGINE_API void RegisterTypes_SimbodyEngine()
 {
 	cout<<"RegisterTypes_SimbodyEngine\n";
 
-	Object::RegisterType( SimbodyEngine() );
-	Object::RegisterType( SimbodyBody() );
-	Object::RegisterType( SimbodyJoint() );
-	Object::RegisterType( SimbodyCoordinate() );
-	Object::RegisterType( SimbodySpeed() );
+	//Object::RegisterType( SimbodyEngine() );
+	//Object::RegisterType( SimbodyBody() );
+	//Object::RegisterType( SimbodyJoint() );
+	//Object::RegisterType( SimbodyRotationDof() );
+	//Object::RegisterType( SimbodyTranslationDof() );
+	//Object::RegisterType( SimbodyCoordinate() );
+	//Object::RegisterType( SimbodySpeed() );
 }
 
 osimSimbodyEngineInstantiator::osimSimbodyEngineInstantiator() 

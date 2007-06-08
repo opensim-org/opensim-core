@@ -89,22 +89,20 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
+	virtual ~SimbodyBody();
 	SimbodyBody();
 	SimbodyBody(const SimbodyBody &aBody);
 	SimbodyBody(const AbstractBody &aBody);
-	virtual ~SimbodyBody();
 	virtual Object* copy() const;
-
 	SimbodyBody& operator=(const SimbodyBody &aBody);
 	void copyData(const SimbodyBody &aBody);
 	void copyData(const AbstractBody &aBody);
-
 	void setup(AbstractDynamicsEngine* aEngine);
 
 	virtual double getMass() const;
 	virtual bool setMass(double aMass);
 	virtual void getMassCenter(double rVec[3]) const;
-	virtual bool setMassCenter(double aVec[3]);
+	virtual bool setMassCenter(const double aVec[3]);
 	virtual void getInertia(Array<double> &rInertia) const;
 	virtual void getInertia(double rInertia[3][3]) const;
 	virtual bool setInertia(const Array<double>& aInertia);
@@ -118,6 +116,8 @@ private:
 	void setNull();
 	void setupProperties();
 	void updateSimbody();
+	friend class SimbodyEngine;
+
 //=============================================================================
 };	// END of class SimbodyBody
 //=============================================================================

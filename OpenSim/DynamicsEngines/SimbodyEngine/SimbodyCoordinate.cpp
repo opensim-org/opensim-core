@@ -286,26 +286,6 @@ void SimbodyCoordinate::setup(AbstractDynamicsEngine* aEngine)
 	else if (_defaultValue > _range[1])
 		_defaultValue = _range[1];
 
-#if 0
-	// This code no longer works, now that the coordinate set
-	// has been moved into AbstractDynamicsEngine. This is because
-	// SimbodyCoordinate::setup() is called before the state
-	// vector has been created, so setValue() will do nothing.
-	// I think this is OK, though, because the states are
-	// initialized later by SimbodyEngine::initializeState(),
-	// after the state vector has been created.
-
-	// If the user specified a default value, set the
-	// current value to the default value, whether or not
-	// the coordinate is locked.
-	if (!_defaultValueProp.getUseDefault()) {
-		bool lockedState = getLocked();
-		setLocked(false);
-		setValue(_defaultValue);
-		setLocked(lockedState);
-	}
-#endif
-
 	determineType();
 }
 
@@ -391,7 +371,7 @@ void SimbodyCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordina
  */
 double SimbodyCoordinate::getValue() const
 {
-	return _engine->_system.getMatterSubsystem().getMobilizerQ(_engine->_s,_bodyId,_mobilityIndex);
+	return _engine->_matter.getMobilizerQ(_engine->_s,_bodyId,_mobilityIndex);
 }
 //done_____________________________________________________________________________
 /**
@@ -403,10 +383,11 @@ double SimbodyCoordinate::getValue() const
 bool SimbodyCoordinate::setValue(double aValue)
 {
 	if (_locked) {
-		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+		cout<<"SimbodyCoordinate.setValue: WARN- coordinate "<<getName();
+		cout<<" is locked. Unable to change its value." << endl;
 		return false;
 	}
-	_engine->_system.getMatterSubsystem().setMobilizerQ(_engine->_s,_bodyId,_mobilityIndex,aValue);
+	_engine->_matter.setMobilizerQ(_engine->_s,_bodyId,_mobilityIndex,aValue);
 	return true;
 }
 
@@ -589,3 +570,36 @@ void SimbodyCoordinate::setConstraintFunction(const Function *function)
 {
 	_constraintFunction = (Function*)function->copy();
 }
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * This function tries to determine whether the coordinate is primarily rotational
+ * or translational. This information is needed for two reasons:
+ * 1. to know how big to set the step size for the arrow buttons on the slider for
+ *    that gencoord in the Model Viewer (0.001 for translations, 1.0 for rotations).
+ * 2. to know how to interpret the moment arm values w.r.t. that coordinate. If the
+ *    coordinate maps directly to a rotational dof, then the coordinate's units need to
+ *    be treated as degrees, and thus converted to radians when calculating moment arms.
+ *    If the coordinate maps directly to a translational dof, then its units are meters
+ *    and no conversion is needed. If the gencoord maps directly to a dof of each type,
+ *    then it really is an abstract quantity, and interpreting the moment arm in
+ *    real-world units is problematic. So just find the first dof that maps directly
+ *    to it and go with that one.
+ * To determine whether a coordinate is rotational or translational, find the first
+ * dof that maps directly to the coordinate (has a function with two points and slope
+ * equal to 1.0 or -1.0 and passes through zero). If there is no such function, then
+ * just look at the dofs that the coordinate is used in. If they are all translational,
+ * then the gencoord is translational. If one or more is rotational, then the coordinate
+ * is rotational.
+ */
+void SimbodyCoordinate::determineType()
+{
+	// TODO: For now, I'm just setting the type to rotational.  However, when
+	// the Simbody classes are really finished, this will have to return
+	// something that makes sense.
+	_motionType = AbstractDof::Translational;
+}
+

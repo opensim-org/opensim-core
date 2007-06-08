@@ -221,13 +221,9 @@ void SimbodyBody::updateSimbody()
  */
 void SimbodyBody::setup(AbstractDynamicsEngine* aEngine)
 {
-	// Base class
 	AbstractBody::setup(aEngine);
-
 	_displayer.setOwner(this);
-
 	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
-
 	updateSimbody();
 }
 
@@ -272,18 +268,14 @@ double SimbodyBody::getMass() const
  */
 bool SimbodyBody::setMass(double aMass)
 {
-	// Q: how do I change the mass of a body?
-	// A: Not yet implemented.  The only way to do it is to rebuild
-	// the entire model.
-	cerr<<"SimbodyBody.setMass: not yet implemented.\n";
-
 	if(aMass<0.0) {
 		cerr<<"SimbodyBody.setMass(): ERROR- zero or negative mass not allowed.\n";
 		return false;
 	}
 
-	// Update Simbody
-
+	// TODO: Update Simbody mass
+	// This is not currently supported except by rebuilding the entire Simbody model.
+	cerr<<"SimbodyBody.setMass: updating Simbody not yet implemented.\n";
 
 	// Update property
 	_mass = aMass;
@@ -311,20 +303,15 @@ void SimbodyBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SimbodyBody::setMassCenter(double aVec[3])
+bool SimbodyBody::setMassCenter(const double aVec[3])
 {
-	cerr<<"SimbodyBody.setMassCenter: not yet implemented.\n";
-	return false;
-
-	// Update Simbody
+	// TODO: Update Simbody
+	cerr<<"SimbodyBody.setMassCenter: updating Simbody not yet implemented.\n";
 
 	// Update property
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];
 	_massCenter[2] = aVec[2];
-
-	// Adjust joint vectors?  Probably not needed.
-	//engine->adjustJointVectorsForNewMassCenter(this);
 
 	return true;
 }
@@ -337,17 +324,21 @@ bool SimbodyBody::setMassCenter(double aVec[3])
  */
 void SimbodyBody::getInertia(double rInertia[3][3]) const
 {
-	Inertia inertia = _engine->_matter.getBodyInertiaAboutBodyOrigin(_engine->_s,_id);
-	Vec3 moments = inertia.getMoments();
-	Vec3 products = inertia.getProducts();
+	try {
+		Inertia inertia = _engine->_matter.getBodyInertiaAboutBodyOrigin(_engine->_s,_id);
+		Vec3 moments = inertia.getMoments();
+		Vec3 products = inertia.getProducts();
 
-	// TODO:  Verify that I have the order of the products correct.
-	rInertia[0][0] = moments[0];
-	rInertia[1][1] = moments[1];
-	rInertia[2][2] = moments[2];
-	rInertia[0][1] = rInertia[1][0] = products[0];
-	rInertia[0][2] = rInertia[2][0] = products[1];
-	rInertia[1][2] = rInertia[2][1] = products[2];
+		// TODO:  Verify that I have the order of the products correct.
+		rInertia[0][0] = moments[0];
+		rInertia[1][1] = moments[1];
+		rInertia[2][2] = moments[2];
+		rInertia[0][1] = rInertia[1][0] = products[0];
+		rInertia[0][2] = rInertia[2][0] = products[1];
+		rInertia[1][2] = rInertia[2][1] = products[2];
+	} catch(const exception& e) {
+		printf("EXCEPTION THROWN: %s\n", e.what());
+	}
 }
 //done_____________________________________________________________________________
 /**
@@ -359,11 +350,7 @@ void SimbodyBody::getInertia(Array<double> &rInertia) const
 {
 	double inertia[3][3];
 	getInertia(inertia);
-	for(int i=0; i<3; i++) {
-		for(int j=0; j<3; j++) {
-			rInertia[i*3+j] = inertia[i][j];
-		}
-	}
+	memcpy(&rInertia[0],&inertia[0][0],9*sizeof(double));
 }
 //_____________________________________________________________________________
 /**
@@ -374,8 +361,13 @@ void SimbodyBody::getInertia(Array<double> &rInertia) const
  */
 bool SimbodyBody::setInertia(const Array<double>& aInertia)
 {
-	cerr<<"SimbodyBody.setInertia: not yet implemented.\n";
-	return false;
+	// TODO: update Simbody inertial properties.
+	cerr<<"SimbodyBody.setInertia: updating Simbody not yet implemented.\n";
+
+	// Property
+	_inertia = aInertia;
+
+	return true;
 }
 //_____________________________________________________________________________
 /**
@@ -386,8 +378,14 @@ bool SimbodyBody::setInertia(const Array<double>& aInertia)
  */
 bool SimbodyBody::setInertia(const double aInertia[3][3])
 {
-	cerr<<"SimbodyBody.setInertia: not yet implemented.\n";
-	return false;
+	// Simbody
+	// TODO: update Simbody
+	cerr<<"SimbodyBody.setInertia: updating Simbody not yet implemented.\n";
+
+	// Property
+	memcpy(&_inertia[0],&aInertia[0][0],9*sizeof(double));
+
+	return true;
 }
 
 //=============================================================================

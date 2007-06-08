@@ -1,8 +1,8 @@
-#ifndef __SimbodySpeed_h__
-#define __SimbodySpeed_h__
+#ifndef __SimbodyRotationDof_h__
+#define __SimbodyRotationDof_h__
 
-// SimbodySpeed.h
-// Author: Frank C. Anderson
+// SimbodyRotationDof.h
+// Author: Peter Loan, Frank C. Anderson
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -25,55 +25,35 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
 // INCLUDE
 #include <iostream>
-#include <string>
 #include <math.h>
 #include "osimSimbodyEngineDLL.h"
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/AbstractSpeed.h>
+#include <OpenSim/Simulation/Model/AbstractDof.h>
 #include <SimTKsimbody.h>
 
 namespace OpenSim {
 
-class SimbodyEngine;
-
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an SD/FAST speed.
+ * A class expressing a rotational DOF.
  *
- * @author Peter Loan
+ * @author Peter Loan, Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMBODYENGINE_API SimbodySpeed : public AbstractSpeed  
+class OSIMSIMBODYENGINE_API SimbodyRotationDof : public AbstractDof  
 {
+
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	PropertyDbl _defaultValueProp;
-	double &_defaultValue;
-
-	/** Name of coordinate that this speed corresponds to (if any). */
-	PropertyStr _coordinateNameProp;
-	std::string &_coordinateName;
-
-	/** Simbody coordinate that this speed corresponds to (if any). */
-	AbstractCoordinate *_coordinate;
-
-	/** ID of the body which this speed serves.  */
-	SimTK::BodyId _bodyId;
-
-	/** Mobility index for this speed. */
-	int _mobilityIndex;
-
-	/** Simbody engine that contains this speed. */
-	SimbodyEngine *_engine;
+	PropertyDblArray _axisProp;
+	Array<double> &_axis;
 
 //=============================================================================
 // METHODS
@@ -82,43 +62,36 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimbodySpeed();
-	SimbodySpeed(const SimbodySpeed &aSpeed);
-	SimbodySpeed(const AbstractSpeed &aSpeed);
-	virtual ~SimbodySpeed();
+	SimbodyRotationDof();
+	SimbodyRotationDof(const SimbodyRotationDof &aDof);
+	virtual ~SimbodyRotationDof();
 	virtual Object* copy() const;
 
-	SimbodySpeed& operator=(const SimbodySpeed &aSpeed);
-	void copyData(const SimbodySpeed &aSpeed);
-	void copyData(const AbstractSpeed &aSpeed);
+#ifndef SWIG
+	SimbodyRotationDof& operator=(const SimbodyRotationDof &aDof);
+#endif
+   void copyData(const SimbodyRotationDof &aDof);
 
-	void setup(AbstractDynamicsEngine* aEngine);
+	virtual void getAxis(double rAxis[3]) const;
+	const Array<double>& getAxis() const { return _axis; }
+	virtual const double* getAxisPtr() const { return &_axis[0]; }
+	virtual double getValue();
+	virtual DofType getMotionType() const { return Rotational; }
 
-	virtual AbstractCoordinate* getCoordinate() const { return _coordinate; }
-	virtual bool setCoordinate(AbstractCoordinate *aCoordinate);
-	virtual bool setCoordinateName(const std::string& aCoordName);
+	virtual void peteTest();
 
-	virtual double getDefaultValue() const { return _defaultValue; }
-	virtual bool setDefaultValue(double aDefaultValue);
-	virtual bool getDefaultValueUseDefault() const { return _defaultValueProp.getUseDefault(); }
-	virtual bool getValueUseDefault() const { return true; }
-
-	virtual double getValue() const;
-	virtual bool setValue(double aValue);
-	virtual double getAcceleration() const;
+protected:
 
 private:
 	void setNull();
 	void setupProperties();
-	friend class SimbodyEngine;
-
 //=============================================================================
-};	// END of class SimbodySpeed
+};	// END of class SimbodyRotationDof
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimbodySpeed_h__
+#endif // __SimbodyRotationDof_h__
 
 

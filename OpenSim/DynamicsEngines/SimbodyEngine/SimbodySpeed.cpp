@@ -46,7 +46,6 @@ using namespace OpenSim;
  */
 SimbodySpeed::SimbodySpeed() :
    _defaultValue(_defaultValueProp.getValueDbl()),
-	_index(_indexProp.getValueInt()),
 	_coordinateName(_coordinateNameProp.getValueStr())
 {
 	setNull();
@@ -70,7 +69,6 @@ SimbodySpeed::~SimbodySpeed()
 SimbodySpeed::SimbodySpeed(const SimbodySpeed &aSpeed) :
    AbstractSpeed(aSpeed),
    _defaultValue(_defaultValueProp.getValueDbl()),
-	_index(_indexProp.getValueInt()),
 	_coordinateName(_coordinateNameProp.getValueStr())
 {
 	setNull();
@@ -87,7 +85,6 @@ SimbodySpeed::SimbodySpeed(const SimbodySpeed &aSpeed) :
 SimbodySpeed::SimbodySpeed(const AbstractSpeed &aSpeed) :
    AbstractSpeed(aSpeed),
    _defaultValue(_defaultValueProp.getValueDbl()),
-	_index(_indexProp.getValueInt()),
 	_coordinateName(_coordinateNameProp.getValueStr())
 {
 	setNull();
@@ -120,9 +117,8 @@ Object* SimbodySpeed::copy() const
 void SimbodySpeed::copyData(const SimbodySpeed &aSpeed)
 {
 	_defaultValue = aSpeed.getDefaultValue();
-	_index = aSpeed._index;
 	_coordinateName = aSpeed._coordinateName;
-	_SimbodyEngine = aSpeed._SimbodyEngine;
+	_engine = aSpeed._engine;
 }
 
 //_____________________________________________________________________________
@@ -150,7 +146,9 @@ void SimbodySpeed::setNull(void)
 	setType("SimbodySpeed");
 
 	_coordinate = NULL;
-	_SimbodyEngine = NULL;
+	_engine = NULL;
+	_mobilityIndex = -1;
+	_engine = NULL;
 }
 
 //_____________________________________________________________________________
@@ -162,9 +160,6 @@ void SimbodySpeed::setupProperties(void)
 	_defaultValueProp.setName("default_value");
 	_defaultValueProp.setValue(0.0);
 	_propertySet.append(&_defaultValueProp);
-
-	_indexProp.setName("index");
-	_propertySet.append(&_indexProp);
 
 	_coordinateNameProp.setName("coordinate");
 	_propertySet.append(&_coordinateNameProp);
@@ -182,9 +177,9 @@ void SimbodySpeed::setup(AbstractDynamicsEngine* aEngine)
 	// Base class;
 	AbstractSpeed::setup(aEngine);
 
-	_SimbodyEngine = dynamic_cast<SimbodyEngine*>(aEngine);
+	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
 
-	_coordinate = _SimbodyEngine->getCoordinateSet()->get(_coordinateName);
+	_coordinate = _engine->getCoordinateSet()->get(_coordinateName);
 
 	// If the user specified a default value, set the
 	// current value to the default value.
@@ -265,7 +260,7 @@ bool SimbodySpeed::setDefaultValue(double aDefaultValue)
 //=============================================================================
 // VALUE
 //=============================================================================
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Set the value.
  *
@@ -274,15 +269,11 @@ bool SimbodySpeed::setDefaultValue(double aDefaultValue)
  */
 bool SimbodySpeed::setValue(double aValue)
 {
-	double *y = _SimbodyEngine->getConfiguration();
-	if(y) {
-		y[_SimbodyEngine->getNumCoordinates() + _index] = aValue;
-		_SimbodyEngine->setConfiguration(y);
-	}
+	_engine->_matter.setMobilizerU(_engine->_s,_bodyId,_mobilityIndex,aValue);
 	return true;
 }
 
-//_____________________________________________________________________________
+//done_____________________________________________________________________________
 /**
  * Get the value.
  *
@@ -290,10 +281,9 @@ bool SimbodySpeed::setValue(double aValue)
  */
 double SimbodySpeed::getValue() const
 {
-	double* y = _SimbodyEngine->getConfiguration();
-	return y[_SimbodyEngine->getNumCoordinates() + _index];
-}
+	return _engine->_matter.getMobilizerU(_engine->_s,_bodyId,_mobilityIndex);
 
+}
 
 //=============================================================================
 // ACCELERATION
@@ -308,18 +298,6 @@ double SimbodySpeed::getValue() const
  */
 double SimbodySpeed::getAcceleration() const
 {
-	double* dy = _SimbodyEngine->getDerivatives();
-	return dy[_SimbodyEngine->getNumCoordinates() + _index];
-}
-
-
-//=============================================================================
-// TESTING
-//=============================================================================
-void SimbodySpeed::peteTest(void) const
-{
-	cout << "Speed: " << getName() << endl;
-	cout << "   default_value: " << _defaultValue << endl;
-	cout << "   index: " << _index << endl;
+	return 0; //(not implemented) _engine->_matter.getMobilizerUDot(_engine->_s,_bodyId,_mobilityIndex);
 }
 
