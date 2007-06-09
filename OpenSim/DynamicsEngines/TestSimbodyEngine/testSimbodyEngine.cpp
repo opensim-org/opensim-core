@@ -29,8 +29,8 @@ int main()
 {
 	// STEP 1
 	// Set output precision
-	IO::SetPrecision(8);
-	IO::SetDigitsPad(-1);
+	//IO::SetPrecision(8);
+	//IO::SetDigitsPad(-1);
 
 	// STEP 2
 	// Construct the actuator set, contact set, and control set.
@@ -43,8 +43,6 @@ int main()
 	// about the model.  The model is build as a dynamically linked library
 	// (rdBlock.dll on Windows).
 	SimbodyEngine *pendulum = new SimbodyEngine();
-	delete pendulum;
-	exit(0);
 	Model *model = new Model;
 	model->setDynamicsEngine(*pendulum);
 	model->setup();
