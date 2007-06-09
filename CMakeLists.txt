@@ -102,8 +102,8 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CP
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
    # sure there is at least one set of four (4) backlasshes.
-   # SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}\\\\OpenSimSplash.bmp")
-   # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\simmToOpenSim.exe")
+   # SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\OpenSimIcon.bmp")
+   # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\OpenSim.exe")
    SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY}OpenSimPlatform")
    SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.simtk.org/home/opensim")
    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.simtk.org/home/opensim")
@@ -113,7 +113,7 @@ ELSE(WIN32 AND NOT UNIX)
    SET(CPACK_STRIP_FILES "bin/MyExecutable")
    SET(CPACK_SOURCE_STRIP_FILES "")
 ENDIF(WIN32 AND NOT UNIX)
-# SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
+SET(CPACK_PACKAGE_EXECUTABLES "OpenSim" "OpenSim")
 
 INCLUDE (CPack)
 
