@@ -41,6 +41,7 @@
 #include "SimbodyCoordinate.h"
 #include "SimbodyJoint.h"
 #include "SimbodySpeed.h"
+#include "SimbodyForceAccumulator.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMBODYENGINE_API
@@ -70,7 +71,6 @@ class Transform;
  * @authors Frank C. Anderson
  * @version 1.0
  */
-
 class OSIMSIMBODYENGINE_API SimbodyEngine  : public AbstractDynamicsEngine
 {
 
@@ -95,6 +95,12 @@ protected:
 
 	/** Uniform gravity subsystem. */
 	SimTK::UniformGravitySubsystem _gravity;
+
+	/** User-force subsystem. */
+	SimTK::GeneralForceElements _userForceElements;
+
+	/** Force accumulator. */
+	SimbodyForceAccumulator *_forceAccumulator;
 
 	/** States of the Simbody model.  At a minimum, it contains the
 	generalized coordinates (q) and generalized speeds (u). */

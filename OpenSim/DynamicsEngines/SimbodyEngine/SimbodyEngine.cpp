@@ -63,7 +63,6 @@ static char simbodyGroundName[] = "ground";
 /**
  * Destructor.
  */
-
 SimbodyEngine::~SimbodyEngine()
 {
 	cout<<"Destroying SimbodyEngine."<<endl;
@@ -145,22 +144,19 @@ void SimbodyEngine::constructPendulum()
 	const Vec3 jointLocation(0, length/2, 0);
 	MassProperties massProps(mass, massLocation, mass*Inertia::pointMassAt(massLocation));
 	const BodyId bodyId = _matter.addRigidBody(massProps,jointLocation,GroundId,GroundFrame,Mobilizer::Pin());
-
+	
 	// Put subsystems into system
 	_system.setMatterSubsystem(_matter);
 	_system.addForceSubsystem(_gravity);
+	_system.addForceSubsystem(_userForceElements);
+	_forceAccumulator = new SimbodyForceAccumulator();
+	_userForceElements.addUserForce(_forceAccumulator);
 
 	// Realize the state
-	_system.realize(_s);
+	_system.realize(_s,Stage::Velocity);
 
-	// Set gravity
+	// Gravity
 	setGravity(g);
-
-	// Realize the state
-	//_system.realize(_s,Stage::Model);
-	//_system.realize(_s,Stage::Position);
-	//_system.realize(_s,Stage::Velocity);
-	//_system.realize(_s,Stage::Dynamics);
 
 	// CONSTRUCT CORRESPONDING OPENSIM OBJECTS
 	// Body
@@ -872,11 +868,10 @@ OpenSim::Transform SimbodyEngine::getTransform(const AbstractBody &aBody)
 void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
 {
 	const SimbodyBody* body = (const SimbodyBody*)&aBody;
-
 	Vec3 point,force;
-	point.getAs(aPoint);
-	force.getAs(aForce);
-	//_matter.addInStationForce(_s,body->_id,point,force);
+	point = aPoint;
+	force = aForce;
+	_forceAccumulator->accumulateStationForce(_matter,_s,body->_id,point,force);
 }
 
 //_____________________________________________________________________________
