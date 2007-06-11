@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// File:     SimbodyForceAccumulator.cpp
+// File:     SimbodyOpenSimUserForces.cpp
 // Parent:   GeneralForceElements
 // Purpose:  Accumulates and applies all the actuator and contact forces in OpenSim.
 // Author:   Frank C. Anderson
@@ -32,7 +32,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include "SimbodyForceAccumulator.h"
+#include "SimbodyOpenSimUserForces.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -54,40 +54,9 @@ using namespace SimTK;
  * @param aMatterSubsystem Matter subsystem for which and to which actuator
  * forces are to be applied.
  */
-SimbodyForceAccumulator::SimbodyForceAccumulator()
+SimbodyOpenSimUserForces::SimbodyOpenSimUserForces()
 {
 }
-//_____________________________________________________________________________
-/**
- * Finish setting up anything that wasn't possible at the time of
- * construction.
- */
-void SimbodyForceAccumulator::
-resize(const SimbodyMatterSubsystem& aMatter)
-{
-	int nb = aMatter.getNBodies();
-	int nm = aMatter.getNMobilities();
-	_bodyForces.resize(nb);
-	_mobilityForces.resize(nm);
-}
-
-
-//=============================================================================
-// RESET
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Reset the vectors of accumulated forces, torques, and generalized forces,
- * meaning set all of them equal to zero.
- */
-void
-SimbodyForceAccumulator::
-reset()
-{
-	_bodyForces.setToZero();
-	_mobilityForces = 0.0;
-}
-
 
 //=============================================================================
 // ACCUMULATE
@@ -109,12 +78,10 @@ reset()
  * body.
  */
 void
-SimbodyForceAccumulator::
+SimbodyOpenSimUserForces::
 accumulateStationForce(const SimbodyMatterSubsystem& aMatter,State& aState,
 	BodyId aBodyId,const Vec3& aStation,const SimTK::Vec3& aForce)
 {
-	resize(aMatter);
-	aMatter.addInStationForce(aState,aBodyId,aStation,aForce,_bodyForces);
 }
 //_____________________________________________________________________________
 /**
@@ -131,37 +98,11 @@ accumulateStationForce(const SimbodyMatterSubsystem& aMatter,State& aState,
  * body.
  */
 void
-SimbodyForceAccumulator::
+SimbodyOpenSimUserForces::
 accumulateBodyTorque(const SimbodyMatterSubsystem& aMatter,
 	State& aState,BodyId aBodyId,const SimTK::Vec3& aTorque)
 {
-	resize(aMatter);
-	aMatter.addInBodyTorque(aState,aBodyId,aTorque,_bodyForces);
 }
-//_____________________________________________________________________________
-/**
- * Accumulate a generalized force to be applied to the Simbody multibody system.
- * The force is added to (accumulated in) a vector of generalized forces that
- * will be applied to the matter subsystem when the calc() method is
- * called.  This method does not affect the multibody system until the calc()
- * method is called.  Note that the calc method is not called by you, but is
- * initiated when the multibody system is realized at the Dynamics stage.
- *
- * @param aState Current state of the Simbody multibody system.
- * @param aBodyId Id of the body to which to apply the force.
- * @param aAxis Axis index of the generalized force.
- * @param aTorque Generalized forces to be applied to the specified
- * generalized coordinate.
- */
-void
-SimbodyForceAccumulator::
-accumulateGeneralizedForce(const SimbodyMatterSubsystem& aMatter,
-	State& aState,BodyId aBodyId,int aAxis,SimTK::Real& aForce)
-{
-	resize(aMatter);
-	aMatter.addInMobilityForce(aState,aBodyId,aAxis,aForce,_mobilityForces);
-}
-
 
 //=============================================================================
 // CALC
@@ -178,19 +119,19 @@ accumulateGeneralizedForce(const SimbodyMatterSubsystem& aMatter,
  * @param mobilityForces Array of generalized forces.
  * @param pe For forces with a potential energy?
  */
-void SimbodyForceAccumulator::
+void SimbodyOpenSimUserForces::
 calc(const SimTK::MatterSubsystem& matter,const SimTK::State& state,
 	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
 	SimTK::Vector& mobilityForces,SimTK::Real& pe) const
 {
-	cout<<"SimbodyForceAccumulator.calc: forces coming in..."<<endl;
+	cout<<"SimbodyOpenSimUserForces.calc: forces coming in..."<<endl;
 	cout<<_bodyForces<<endl;
 	cout<<_mobilityForces<<endl;
 
-	bodyForces += _bodyForces;
-	mobilityForces += _mobilityForces;
+	bodyForces += _engine->getBodyForces();
+	mobilityForces += _engine->getMobilityForces();
 
-	cout<<"SimbodyForceAccumulator.calc: forces going out..."<<endl;
+	cout<<"SimbodyOpenSimUserForces.calc: forces going out..."<<endl;
 	cout<<_bodyForces<<endl;
 	cout<<_mobilityForces<<endl;
 }

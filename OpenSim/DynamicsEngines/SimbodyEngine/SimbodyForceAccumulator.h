@@ -1,7 +1,7 @@
-#ifndef __SimbodyForceAccumulator_h__
-#define __SimbodyForceAccumulator_h__
+#ifndef __SimbodyOpenSimUserForces_h__
+#define __SimbodyOpenSimUserForces_h__
 //-----------------------------------------------------------------------------
-// File:     SimbodyAccumulatorForceSubsystem.h
+// File:     SimbodyOpenSimUserForces.h
 // Parent:   GeneralForceElements
 // Purpose:  Accumulates and applies all the actuator and contact forces in OpenSim.
 // Author:   Frank C. Anderson
@@ -39,59 +39,38 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A force subsystem for accumulating and applying OpenSim actuator
- * forces to an underlying Simbody multibody system.
+ * A class for applying forces accumulated in OpenSim to an underlying
+ * Simbody multibody system.  The accumulated forces are obtained
+ * from the SimbodyEngine class.
  *
  * @authors Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMBODYENGINE_API SimbodyForceAccumulator :
+class OSIMSIMBODYENGINE_API SimbodyOpenSimUserForces :
 	public SimTK::GeneralForceElements::UserForce 
 {
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-	/** Vector of spatial vectors containing the forces and torques applied to
-	each of the bodies in the matter subsystem. */
-	SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
-
-	/** Vector of mobility forces applied to each of the generalized
-	coordinates in the matter subsystem. */
-	SimTK::Vector _mobilityForces;
-
+	OpenSim::SimbodyEngine *_engine;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
 	// CONSTRUCTION AND DESTRUCTION
-	explicit SimbodyForceAccumulator();
-	SimTK::GeneralForceElements::UserForce* clone() const { return new SimbodyForceAccumulator(*this); }
-
-	// RESET & RESIZE
-	void resize(const SimTK::SimbodyMatterSubsystem& aMatter);
-	void reset();
-
-	// ACCUMULATE
-	void accumulateStationForce(const SimTK::SimbodyMatterSubsystem& aMatter,
-		SimTK::State &aState,SimTK::BodyId aBodyId,
-		const SimTK::Vec3& aStation,const SimTK::Vec3& aForce);
-	void accumulateBodyTorque(const SimTK::SimbodyMatterSubsystem& aMatter,
-		SimTK::State &aState,SimTK::BodyId aBodyId,
-		const SimTK::Vec3& aTorque);
-	void accumulateGeneralizedForce(const SimTK::SimbodyMatterSubsystem& aMatter,
-		SimTK::State& aState,SimTK::BodyId aBodyId,int aAxis,SimTK::Real& aForce);
+	explicit SimbodyOpenSimUserForces();
+	SimTK::GeneralForceElements::UserForce* clone() const { return new SimbodyOpenSimUserForces(*this); }
 
    // CALC (Called by Simbody)
 	void calc(const SimTK::MatterSubsystem& matter,const SimTK::State& state,
 		SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
-		SimTK::Vector& mobilityForces,SimTK::Real& pe) const;
-   
+		SimTK::Vector& mobilityForces,SimTK::Real& pe) const;   
 };
 
 //-----------------------------------------------------------------------------
-#endif // __SimbodyForceAccumulator_h__
+#endif // __SimbodyOpenSimUserForces_h__
 //-----------------------------------------------------------------------------
 
 } // end of namespace OpenSim
