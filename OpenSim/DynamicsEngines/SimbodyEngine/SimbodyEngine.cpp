@@ -871,7 +871,7 @@ void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3]
 	Vec3 point,force;
 	point = aPoint;
 	force = aForce;
-	_forceAccumulator->accumulateStationForce(_matter,_s,body->_id,point,force);
+	_matter.addInStationForce(_s,body->_id,point,force,_bodyForces);
 }
 
 //_____________________________________________________________________________
@@ -886,7 +886,7 @@ void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3]
 void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3])
 {
 	for(int i=0; i<aN; i++) {
-		applyForce(*aBodies[i], aPoints[i], aForces[i]);
+		applyForce(*aBodies[i],aPoints[i],aForces[i]);
 	}
 }
 
@@ -901,9 +901,6 @@ void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const dou
  */
 void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces)
 {
-	// Check that the input vectors have been defined.
-	if (!aBodies || !aPoints || !aForces)  return;
-
 	int I;
 	for(int i=0; i<aN; i++) {
 		I = Mtx::ComputeIndex(i, 3, 0);
@@ -986,13 +983,11 @@ void SimbodyEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], 
  */
 void SimbodyEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3])
 {
-	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
-
-	if(b) {
-
-	}
+	const SimbodyBody* b = (SimbodyBody*)&aBody;
+	Vec3 torque;
+	torque = aTorque;
+	_matter.addInBodyTorque(_s,b->_id,torque,_bodyForces);
 }
-
 //_____________________________________________________________________________
 /**
  * Apply a set of torques expressed in the inertial frame to a set of bodies.
@@ -1098,16 +1093,22 @@ void SimbodyEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[],
  * Apply a generalized force to a generalized coordinate.
  * Note that depending on the axis type the generalized force can be a
  * torque or a force.
- * @param aU Generalized coordinate.
- * @param aF Applied force.
+ *
+ * Internally, the force is accumulated in a private vector using the
+ * appropriate "addIn" method of Simbody.  The accumulated forces are
+ * applied to the matter subsystem through the SimbodyOpenSimUserForces class.
+ * This method does not affect the multibody system until the
+ * SimbodyUserForce::calc() method is called.  Note that the calc() method
+ * is not called by you, but by the underlying Simbody multibody system when
+ * it is realized at the Dynamics stage.
+ *
+ * @param aQ Generalized coordinate.
+ * @param aF Applied generalized force.
  */
-void SimbodyEngine::applyGeneralizedForce(const AbstractCoordinate &aU, double aF)
+void SimbodyEngine::applyGeneralizedForce(const AbstractCoordinate &aQ, double aForce)
 {
-	const SimbodyCoordinate *c = dynamic_cast<const SimbodyCoordinate*>(&aU);
-
-	if(c) {
-
-	}
+	const SimbodyCoordinate *q = (SimbodyCoordinate*) &aQ;
+	_matter.addInMobilityForce(_s,q->_bodyId,q->_mobilityIndex,aForce,_mobilityForces);
 }
 
 //_____________________________________________________________________________
@@ -1687,3 +1688,36 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 	if(rDirCos==NULL) return;
 
 }
+
+
+//--- Private Utility Methods Below Here ---
+
+//=============================================================================
+// RESIZE & RESET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Finish setting up anything that wasn't possible at the time of
+ * construction.
+ */
+void SimbodyEngine::
+resize(const SimbodyMatterSubsystem& aMatter)
+{
+	int nb = aMatter.getNBodies();
+	int nm = aMatter.getNMobilities();
+	_bodyForces.resize(nb);
+	_mobilityForces.resize(nm);
+}
+//_____________________________________________________________________________
+/**
+ * Reset the vectors of accumulated forces, torques, and generalized forces,
+ * meaning set all of them equal to zero.
+ */
+void
+SimbodyEngine::
+reset()
+{
+	_bodyForces.setToZero();
+	_mobilityForces = 0.0;
+}
+

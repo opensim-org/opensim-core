@@ -106,6 +106,18 @@ protected:
 	generalized coordinates (q) and generalized speeds (u). */
 	SimTK::State _s;
 
+	/** Vector of spatial vectors containing the accumulated forces
+	and torques that are to be applied to each of the bodies in the
+	matter subsystem.  Forces and torques are accumulated in this
+	vector when the applyForce()/applyTorque() methods are called. */
+	SimTK::Vector_<SimTK::SpatialVec> _bodyForces;
+
+	/** Vector of mobility forces containing the accumulated generalized
+	coordinates that are to be applied to the matter subsystem.  The forces
+	are accumulated in this vector when the applyGeneralizedForce() methods
+	are called. */
+	SimTK::Vector _mobilityForces;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -128,7 +140,6 @@ private:
 	void setupProperties();
 	void copyData(const SimbodyEngine &aEngine);
 	void constructPendulum();
-
 	AbstractBody* identifyGroundBody();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
 
@@ -296,11 +307,16 @@ public:
 
 
 private:
-
 	friend class SimbodyBody;
 	friend class SimbodyCoordinate;
 	friend class SimbodySpeed;
 	friend class SimbodyJoint;
+
+	// INTERFACE TO THE SIMBODY FORCE SUBSYSTEM
+	void resize(const SimTK::SimbodyMatterSubsystem& aMatter);
+	void reset();
+	const SimTK::Vector_<SimTK::SpatialVec>& getBodyForces() { return _bodyForces; }
+	const SimTK::Vector& getMobilityForces() { return _mobilityForces; }
 
 //=============================================================================
 };	// END of class SimbodyEngine
