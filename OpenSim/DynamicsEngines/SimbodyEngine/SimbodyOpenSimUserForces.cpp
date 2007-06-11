@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------------
 // File:     SimbodyOpenSimUserForces.cpp
-// Parent:   GeneralForceElements
-// Purpose:  Accumulates and applies all the actuator and contact forces in OpenSim.
+// Purpose:  Applying all the accumulated actuator and contact forces in OpenSim.
 // Author:   Frank C. Anderson
 //-----------------------------------------------------------------------------
 /*
@@ -54,55 +53,11 @@ using namespace SimTK;
  * @param aMatterSubsystem Matter subsystem for which and to which actuator
  * forces are to be applied.
  */
-SimbodyOpenSimUserForces::SimbodyOpenSimUserForces()
+SimbodyOpenSimUserForces::SimbodyOpenSimUserForces(SimbodyEngine *aEngine)
 {
+	_engine = aEngine;
 }
 
-//=============================================================================
-// ACCUMULATE
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Accumulate a body force to be applied to the Simbody multibody system.
- * The force is added to (accumulated in) a vector of body forces that
- * will be applied to the matter subsystem when the calc() method is
- * called.  This method does not affect the multibody system until the calc()
- * method is called.  Note that the calc method is not called by you, but is
- * initiated when the multibody system is realized at the Dynamics stage.
- *
- * @param aState Current state of the Simbody multibody system.
- * @param aBodyId Id of the body to which to apply the force.
- * @param aStation Location on the body, expressed in the local body frame,
- * where the force is to be applied.
- * @param aForce Force, expressed in the global frame, to be applied to the
- * body.
- */
-void
-SimbodyOpenSimUserForces::
-accumulateStationForce(const SimbodyMatterSubsystem& aMatter,State& aState,
-	BodyId aBodyId,const Vec3& aStation,const SimTK::Vec3& aForce)
-{
-}
-//_____________________________________________________________________________
-/**
- * Accumulate a body torque to be applied to the Simbody multibody system.
- * The torque is added to (accumulated in) a vector of body torques that
- * will be applied to the matter subsystem when the calc() method is
- * called.  This method does not affect the multibody system until the calc()
- * method is called.  Note that the calc method is not called by you, but is
- * initiated when the multibody system is realized at the Dynamics stage.
- *
- * @param aState Current state of the Simbody multibody system.
- * @param aBodyId Id of the body to which to apply the force.
- * @param aTorque Torque, expressed in the global frame, to be applied to the
- * body.
- */
-void
-SimbodyOpenSimUserForces::
-accumulateBodyTorque(const SimbodyMatterSubsystem& aMatter,
-	State& aState,BodyId aBodyId,const SimTK::Vec3& aTorque)
-{
-}
 
 //=============================================================================
 // CALC
@@ -125,13 +80,13 @@ calc(const SimTK::MatterSubsystem& matter,const SimTK::State& state,
 	SimTK::Vector& mobilityForces,SimTK::Real& pe) const
 {
 	cout<<"SimbodyOpenSimUserForces.calc: forces coming in..."<<endl;
-	cout<<_bodyForces<<endl;
-	cout<<_mobilityForces<<endl;
+	cout<<_engine->getBodyForces()<<endl;
+	cout<<_engine->getMobilityForces()<<endl;
 
 	bodyForces += _engine->getBodyForces();
 	mobilityForces += _engine->getMobilityForces();
 
 	cout<<"SimbodyOpenSimUserForces.calc: forces going out..."<<endl;
-	cout<<_bodyForces<<endl;
-	cout<<_mobilityForces<<endl;
+	cout<<_engine->getBodyForces()<<endl;
+	cout<<_engine->getMobilityForces()<<endl;
 }

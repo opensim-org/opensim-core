@@ -2,8 +2,7 @@
 #define __SimbodyOpenSimUserForces_h__
 //-----------------------------------------------------------------------------
 // File:     SimbodyOpenSimUserForces.h
-// Parent:   GeneralForceElements
-// Purpose:  Accumulates and applies all the actuator and contact forces in OpenSim.
+// Purpose:  Applying all the accumulated actuator and contact forces in OpenSim.
 // Author:   Frank C. Anderson
 //-----------------------------------------------------------------------------
 /*
@@ -33,6 +32,7 @@
 #include <string>
 #include "osimSimbodyEngineDLL.h"
 #include <SimTKsimbody.h>
+#include "SimbodyEngine.h"
 
 namespace OpenSim {
 
@@ -53,14 +53,14 @@ class OSIMSIMBODYENGINE_API SimbodyOpenSimUserForces :
 // DATA
 //=============================================================================
 private:
-	OpenSim::SimbodyEngine *_engine;
+	SimbodyEngine *_engine;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
 	// CONSTRUCTION AND DESTRUCTION
-	explicit SimbodyOpenSimUserForces();
+	explicit SimbodyOpenSimUserForces(SimbodyEngine *aEngine);
 	SimTK::GeneralForceElements::UserForce* clone() const { return new SimbodyOpenSimUserForces(*this); }
 
    // CALC (Called by Simbody)

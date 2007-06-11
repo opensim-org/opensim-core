@@ -41,7 +41,6 @@
 #include "SimbodyCoordinate.h"
 #include "SimbodyJoint.h"
 #include "SimbodySpeed.h"
-#include "SimbodyForceAccumulator.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMBODYENGINE_API
@@ -98,9 +97,6 @@ protected:
 
 	/** User-force subsystem. */
 	SimTK::GeneralForceElements _userForceElements;
-
-	/** Force accumulator. */
-	SimbodyForceAccumulator *_forceAccumulator;
 
 	/** States of the Simbody model.  At a minimum, it contains the
 	generalized coordinates (q) and generalized speeds (u). */
@@ -166,8 +162,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
-	virtual AbstractDof*
-		findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
+	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
 		AbstractJoint*& rJoint) { return NULL; }
 
 	//--------------------------------------------------------------------------
@@ -305,18 +300,17 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
+	// INTERFACE TO THE SIMBODY FORCE SUBSYSTEM
+	void resizeBodyAndMobilityForceVectors();
+	void resetBodyAndMobilityForceVectors();
+	const SimTK::Vector_<SimTK::SpatialVec>& getBodyForces() { return _bodyForces; }
+	const SimTK::Vector& getMobilityForces() { return _mobilityForces; }
 
 private:
 	friend class SimbodyBody;
 	friend class SimbodyCoordinate;
 	friend class SimbodySpeed;
 	friend class SimbodyJoint;
-
-	// INTERFACE TO THE SIMBODY FORCE SUBSYSTEM
-	void resize(const SimTK::SimbodyMatterSubsystem& aMatter);
-	void reset();
-	const SimTK::Vector_<SimTK::SpatialVec>& getBodyForces() { return _bodyForces; }
-	const SimTK::Vector& getMobilityForces() { return _mobilityForces; }
 
 //=============================================================================
 };	// END of class SimbodyEngine

@@ -33,7 +33,6 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include "SimbodyEngine.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
@@ -41,6 +40,8 @@
 #include <OpenSim/Simulation/Model/AbstractDof.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include "SimbodyEngine.h"
+#include "SimbodyOpenSimUserForces.h"
 
 
 //=============================================================================
@@ -149,11 +150,15 @@ void SimbodyEngine::constructPendulum()
 	_system.setMatterSubsystem(_matter);
 	_system.addForceSubsystem(_gravity);
 	_system.addForceSubsystem(_userForceElements);
-	_forceAccumulator = new SimbodyForceAccumulator();
-	_userForceElements.addUserForce(_forceAccumulator);
+	SimbodyOpenSimUserForces *osimForces = new SimbodyOpenSimUserForces(this);
+	_userForceElements.addUserForce(osimForces);
 
 	// Realize the state
 	_system.realize(_s,Stage::Velocity);
+
+	// RESIZE AND RESET BODY AND MOBILITY FORCE VECTORS
+	resizeBodyAndMobilityForceVectors();
+	resetBodyAndMobilityForceVectors();
 
 	// Gravity
 	setGravity(g);
@@ -1701,10 +1706,10 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
  * construction.
  */
 void SimbodyEngine::
-resize(const SimbodyMatterSubsystem& aMatter)
+resizeBodyAndMobilityForceVectors()
 {
-	int nb = aMatter.getNBodies();
-	int nm = aMatter.getNMobilities();
+	int nb = _matter.getNBodies();
+	int nm = _matter.getNMobilities();
 	_bodyForces.resize(nb);
 	_mobilityForces.resize(nm);
 }
@@ -1715,7 +1720,7 @@ resize(const SimbodyMatterSubsystem& aMatter)
  */
 void
 SimbodyEngine::
-reset()
+resetBodyAndMobilityForceVectors()
 {
 	_bodyForces.setToZero();
 	_mobilityForces = 0.0;
