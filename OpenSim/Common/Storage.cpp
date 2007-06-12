@@ -35,6 +35,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <sstream>
+#include <iostream>
 #include "rdMath.h"
 #include "IO.h"
 #include "Signal.h"
@@ -123,16 +124,16 @@ Storage::Storage(const string &aFileName) :
 	// OPEN FILE
 	ifstream *fp = IO::OpenInputFile(aFileName);
 	if(fp==NULL) {
-		printf("Storage: ERROR- failed to open file %s.\n",aFileName.c_str());
+		cout << "Storage: ERROR- failed to open file " << aFileName << "." << endl;
 		return;
 	}
 
 	int nr=0,nc=0,nd=0;
 	if (!parseHeaders(*fp, nr, nc)){
-		printf("Storage: ERROR- failed to parse headers of file %s.\n",aFileName.c_str());
+		cout << "Storage: ERROR- failed to parse headers of file " << aFileName << "." << endl;
 		return;
 	}
-	printf("Storage: file=%s (nr=%d nc=%d)\n",aFileName.c_str(),nr,nc);
+	cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
 
 
 	// IGNORE blank lines after header -- treat \r and \n as end of line chars
@@ -1034,7 +1035,7 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 {
 	int n = _storage.getSize();
 	if(n!=aData.getSize()) {
-		cout<<"Storage.setDataColumn: ERR- sizes don't match.\n";
+		cout<<"Storage.setDataColumn: ERR- sizes don't match." << endl;
 		return;
 	}
 
@@ -1627,8 +1628,8 @@ computeAverage(int aN,double *aAve) const
 	double ti = getFirstTime();
 	double tf = getLastTime();
 	if(tf<=ti) {
-		printf("Storage.computeAverage: ERROR- time interval invalid.\n");
-		printf("\tfirstTime=%lf  lastTime=%lf\n",ti,tf);
+		cout << "Storage.computeAverage: ERROR- time interval invalid." << endl
+			  << "\tfirstTime=" << ti << "  lastTime=" << tf << endl;
 		return(0);
 	}
 	double dt_recip = 1.0 / (tf-ti);
@@ -1679,13 +1680,13 @@ integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 {
 	// CHECK THAT THERE ARE STATES STORED
 	if(_storage.getSize()<=0) {
-		printf("Storage.integrate: ERROR- no stored states.\n");
+		cout << "Storage.integrate: ERROR- no stored states." << endl;
 		return(0);
 	}
 
 	// CHECK INDICES
 	if(aI1>=aI2) {
-		printf("Storage.integrate:  ERROR- aI1 >= aI2.\n");
+		cout << "Storage.integrate:  ERROR- aI1 >= aI2." << endl;
 		return(0);
 	}
 
@@ -1693,7 +1694,7 @@ integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const
 	int n = getSmallestNumberOfStates();
 	if(n>aN) n = aN;
 	if(n<=0) {
-		printf("Storage.computeArea: ERROR- no stored states\n");
+		cout << "Storage.computeArea: ERROR- no stored states" << endl;
 		return(0);
 	}
 
@@ -1754,15 +1755,14 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 {
 	// CHECK THAT THERE ARE STATES STORED
 	if(_storage.getSize()<=0) {
-		printf("Storage.integrate: ERROR- no stored states.\n");
+		cout << "Storage.integrate: ERROR- no stored states." << endl;
 		return(0);
 	}
 
 	// CHECK INITIAL AND FINAL TIMES
 	if(aTI>=aTF) {
-		printf("Storage.integrate:  ERROR- bad time range.\n");
-		printf("\tInitial time (%lf) is not smaller than final time (%lf)\n",
-		 aTI,aTF);
+		cout << "Storage.integrate:  ERROR- bad time range." << endl
+			  << "\tInitial time (" << aTI << ") is not smaller than final time (" << aTF << ")" << endl;
 		return(0);
 	}
 
@@ -1770,9 +1770,9 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 	double fstT = getFirstTime();
 	double lstT = getLastTime();
 	if((aTI<fstT)||(aTI>lstT)||(aTF<fstT)||(aTF>lstT)) {
-		printf("Storage.integrate: ERROR- bad time range.\n");
-		printf("\tThe specified range (%lf to %lf) is not covered by\n",aTI,aTF);
-		printf("\ttime range of the stored states (%lf to %lf).\n",fstT,lstT);
+		cout << "Storage.integrate: ERROR- bad time range." << endl
+			  << "\tThe specified range (" << aTI << " to " << aTF << ") is not covered by" << endl
+			  << "\ttime range of the stored states (" << fstT << " to " << lstT << ")." << endl;
 		return(0);
 	}
 
@@ -1783,7 +1783,7 @@ integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const
 	int n = getSmallestNumberOfStates();
 	if(n>aN) n = aN;
 	if(n<=0) {
-		printf("Storage.integrate: ERROR- no stored states\n");
+		cout << "Storage.integrate: ERROR- no stored states" << endl;
 		return(0);
 	}
 
@@ -2022,7 +2022,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 {
 	double dtmin = getMinTimeStep();
 	if(dtmin<rdMath::ZERO) {
-		cout<<"Storage.lowpassFIR: storage cannot be resampled.\n"<<endl;
+		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
 		return;
 	}
 
@@ -2030,7 +2030,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 	resample(dtmin,5);
 	int size = getSize();
 	if(size<(2*aOrder)) {
-		cout<<"Storage.lowpassFIR: too few data points to filter.\n";
+		cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
 		return;
 	}
 
@@ -2076,7 +2076,7 @@ findIndex(int aI,double aT) const
 	if(getStateVector(aI)->getTime()>aT) aI=0;
 
 	// SEARCH
-	//printf("Storage.findIndex: starting at %d,",aI);
+	//cout << "Storage.findIndex: starting at " << aI << endl;
 	int i;
 	for(i=aI;i<_storage.getSize();i++) {
 		if(aT<getStateVector(i)->getTime()) break;
@@ -2150,7 +2150,7 @@ resample(const double aDT, const int aDegree)
 void Storage::
 print() const
 {
-	cout<<"\nStorage.print:  "<<getName()<<"."<<endl;;  
+	cout<<"\nStorage.print:  "<<getName()<<"."<<endl;
 	for(int i=0;i<_storage.getSize();i++) {
 		getStateVector(i)->print();
 	}
@@ -2183,8 +2183,8 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 	int n=0,nTotal=0;
 	n = writeHeader(fp);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&): failed to\n");
-		printf(" write header to file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&): failed to" << endl
+			  << " write header to file " << aFileName << endl;
 		return(false);
 	}
 
@@ -2192,8 +2192,8 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 	if(_writeSIMMHeader) {
 		n = writeSIMMHeader(fp, -1, aComment.c_str());
 		if(n<0) {
-			printf("Storage.print(const string&,const string&): failed to\n");
-			printf(" write SIMM header to file %s\n",aFileName.c_str());
+			cout << "Storage.print(const string&,const string&): failed to" << endl
+				  << " write SIMM header to file " << aFileName << endl;
 			return(false);
 		}
 	}
@@ -2201,16 +2201,16 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 	// WRITE THE DESCRIPTION
 	n = writeDescription(fp);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&): failed to\n");
-		printf(" write description to file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&): failed to" << endl
+			  << " write description to file " << aFileName << endl;
 		return(false);
 	}
 
 	// WRITE THE COLUMN LABELS
 	n = writeColumnLabels(fp);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&): failed to\n");
-		printf(" write column labels to file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&): failed to" << endl
+			  << " write column labels to file " << aFileName << endl;
 		return(false);
 	}
 
@@ -2218,8 +2218,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 	for(int i=0;i<_storage.getSize();i++) {
 		n = getStateVector(i)->print(fp);
 		if(n<0) {
-			printf("Storage.print(const string&,const string&): error printing to %s",
-			 aFileName.c_str());
+			cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
 			return(false);
 		}
 		nTotal += n;		
@@ -2263,8 +2262,8 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	int n,nTotal=0;
 	n = writeHeader(fp,aDT);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&,double): failed to\n");
-		printf(" write header of file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&,double): failed to" << endl
+			  << " write header of file " << aFileName << endl;
 		return(n);
 	}
 
@@ -2272,8 +2271,8 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	if(_writeSIMMHeader) {
 		n = writeSIMMHeader(fp,aDT);
 		if(n<0) {
-			printf("Storage.print(const string&,const string&): failed to\n");
-			printf(" write SIMM header to file %s\n",aFileName.c_str());
+			cout << "Storage.print(const string&,const string&): failed to" << endl
+				  << " write SIMM header to file " << aFileName << endl;
 			return(n);
 		}
 	}
@@ -2281,16 +2280,16 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	// WRITE THE DESCRIPTION
 	n = writeDescription(fp);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&): failed to\n");
-		printf(" write description to file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&): failed to" << endl
+			  << " write description to file " << aFileName << endl;
 		return(n);
 	}
 
 	// WRITE THE COLUMN LABELS
 	n = writeColumnLabels(fp);
 	if(n<0) {
-		printf("Storage.print(const string&,const string&): failed to\n");
-		printf(" write column labels to file %s\n",aFileName.c_str());
+		cout << "Storage.print(const string&,const string&): failed to" << endl
+			  << " write column labels to file " << aFileName << endl;
 		return(n);
 	}
 
@@ -2307,8 +2306,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 		// PRINT
 		n = vec.print(fp);
 		if(n<0) {
-			printf("Storage.print(const string&,const string&): error printing to %s",
-			 aFileName.c_str());
+			cout << "Storage.print(const string&,const string&): error printing to " << aFileName;
 			return(n);
 		}
 		nTotal += n;		
@@ -2582,7 +2580,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 		IO::TrimLeadingWhitespace(line);
 		IO::TrimTrailingWhitespace(line);
 		if(line.empty() && !aStream.good()) {
-			printf("Storage: ERROR- no more lines in storage file.\n");
+			cout << "Storage: ERROR- no more lines in storage file." << endl;
 			return false;
 		}
 		if (line.length()==0)
@@ -2623,7 +2621,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 		firstLine=false;
 	}
 	if(rNumColumns==0 || rNumRows==0) {
-		printf("Storage: ERROR- failed to parse header of storage file.\n");
+		cout << "Storage: ERROR- failed to parse header of storage file." << endl;
 		return false;
 	}
 	return true;
