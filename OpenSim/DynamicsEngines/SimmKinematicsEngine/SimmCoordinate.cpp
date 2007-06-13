@@ -435,7 +435,7 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
 bool SimmCoordinate::setValue(double aValue)
 {
 	// Check if value in range
-	if (aValue >= _range[0] && aValue <= _range[1])
+	if (aValue >= _range[0] && aValue <= _range[1] || !_clamped)
 	{
 		// Check if the value is sufficiently different
 		if (DABS(aValue - _value) > _tolerance)
