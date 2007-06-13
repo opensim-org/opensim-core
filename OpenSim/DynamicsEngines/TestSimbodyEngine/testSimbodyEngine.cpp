@@ -13,6 +13,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 
 
@@ -48,6 +49,23 @@ int main()
 	model->setup();
 	model->printDetailedInfo(cout);
 
+	// ADD GENERALIZED FORCE(S)
+	int index = 0;
+	// 1
+	GeneralizedForce *gf = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
+	gf->setName("one");
+	gf->setModel(model);
+	gf->setOptimalForce(100);
+	model->getActuatorSet()->append(gf);
+	// 2
+	gf = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
+	gf->setName("two");
+	gf->setModel(model);
+	gf->setOptimalForce(100);
+	model->getActuatorSet()->append(gf);
+	// Setup model
+	model->setup();
+
 	// STEP 4
 	// Alter the initial states if desired.
 	// Initial states would normally be specified in a file
@@ -58,7 +76,7 @@ int main()
 
 	// STEP 5
 	// Set the acceleration due to gravity.
-	double g[] = { 0.0, -9.81, 0.0 };
+	double g[] = { 0.0, 0.0, 0.0 };
 	model->setGravity(g);
 
 	// STEP 6
@@ -67,7 +85,7 @@ int main()
 	// without altering the simulation.
 	// stepInterval specifies how frequently analyses will record info,
 	// every four integration steps in this case.
-	int stepInterval = 4;
+	int stepInterval = 1;
 	// Kinematics
 	Kinematics *kin = new Kinematics(model);
 	kin->setStepInterval(stepInterval);
@@ -88,6 +106,12 @@ int main()
 	// The manager takes care of a variety of low-level initializations.
 	ModelIntegrand *integrand = new ModelIntegrand(model);
 	//integrand->setControlSet(controlSet);
+	int nx = integrand->getControlSet()->getSize();
+	cout<<"NumControls = "<<nx<<endl;
+	for(int i=0;i<nx;i++) {
+		Control *x = integrand->getControlSet()->get(i);
+		if(x) x->setControlValue(0,1.0);
+	}
 	Manager manager(integrand);
 
 	// STEP 8
@@ -108,7 +132,7 @@ int main()
 	int maxSteps = 20000;
 	IntegRKF *integ = manager.getIntegrator();
 	integ->setMaximumNumberOfSteps(maxSteps);
-	integ->setMaxDT(1.0e-2);
+	integ->setMaxDT(1.0e-1);
 	integ->setTolerance(1.0e-7);
 	integ->setFineTolerance(5.0e-9);
 
