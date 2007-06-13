@@ -11,6 +11,8 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include "AnalysisSet.h"
+#include "Model.h"
+
 namespace OpenSim { 
 
 class Model;
@@ -46,10 +48,14 @@ protected:
 	model. */
 	PropertyStrArray _actuatorSetFilesProp;
 	Array<std::string> &_actuatorSetFiles;
+   /** Whether the contact set included in the model file is replaced
+   (if true) or appended to (if false) with actuator sets read in from file */
+   PropertyBool _replaceContactForceSetProp;
+   bool &_replaceContactForceSet;
 	/** Name of the xml file used to construct a contact force set for the
 	model. */
-	PropertyStr _contactForceSetFileProp;
-	std::string &_contactForceSetFile;
+	PropertyStrArray _contactForceSetFilesProp;
+	Array<std::string> &_contactForceSetFiles;
 	/** Directory used for writing results. */
 	PropertyStr _resultsDirProp;
 	std::string &_resultsDir;
@@ -155,7 +161,7 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
-	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0);
+	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void addAnalysisSetToModel();
 
 	//--------------------------------------------------------------------------

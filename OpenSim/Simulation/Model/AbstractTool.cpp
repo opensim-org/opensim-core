@@ -7,7 +7,6 @@
 //=============================================================================
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
-#include "Model.h"
 
 
 
@@ -33,7 +32,8 @@ AbstractTool::AbstractTool():
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
-	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
+   _replaceContactForceSet(_replaceContactForceSetProp.getValueBool()),
+	_contactForceSetFiles(_contactForceSetFilesProp.getValueStrArray()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -63,7 +63,8 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
-	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
+   _replaceContactForceSet(_replaceContactForceSetProp.getValueBool()),
+	_contactForceSetFiles(_contactForceSetFilesProp.getValueStrArray()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -122,7 +123,8 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
 	_modelFile(_modelFileProp.getValueStr()),
 	_replaceActuatorSet(_replaceActuatorSetProp.getValueBool()),
 	_actuatorSetFiles(_actuatorSetFilesProp.getValueStrArray()),
-	_contactForceSetFile(_contactForceSetFileProp.getValueStr()),
+   _replaceContactForceSet(_replaceContactForceSetProp.getValueBool()),
+	_contactForceSetFiles(_contactForceSetFilesProp.getValueStrArray()),
 	_resultsDir(_resultsDirProp.getValueStr()),
 	_outputPrecision(_outputPrecisionProp.getValueInt()),
 	_ti(_tiProp.getValueDbl()),
@@ -151,7 +153,7 @@ setNull()
 	_model = NULL;
 	_modelFile = "";
 	_replaceActuatorSet = true;
-	_contactForceSetFile = "";
+   _replaceContactForceSet = true;
 	_resultsDir = "./";
 	_outputPrecision = 8;
 	_ti = 0.0;
@@ -187,10 +189,16 @@ void AbstractTool::setupProperties()
 	_actuatorSetFilesProp.setName("actuator_set_files");
 	_propertySet.append( &_actuatorSetFilesProp );
 
-	comment = "Name of the xml file used to construct a contact set for the model.";
-	_contactForceSetFileProp.setComment(comment);
-	_contactForceSetFileProp.setName("contact_force_set_file");
-	_propertySet.append( &_contactForceSetFileProp );
+   comment = "Replace the model's contact force set with sets specified in "
+             "<contact_force_set_files>? If false, contact force set is appended to.";
+   _replaceContactForceSetProp.setComment(comment);
+   _replaceContactForceSetProp.setName("replace_contact_force_set");
+   _propertySet.append( &_replaceContactForceSetProp );
+
+	comment = "List of xml files used to construct a contact set for the model.";
+	_contactForceSetFilesProp.setComment(comment);
+	_contactForceSetFilesProp.setName("contact_force_set_files");
+	_propertySet.append( &_contactForceSetFilesProp );
 
 	comment = "Directory used for writing results.";
 	_resultsDirProp.setComment(comment);
@@ -264,7 +272,7 @@ operator=(const AbstractTool &aTool)
 
 	_modelFile = aTool._modelFile;
 	_actuatorSetFiles = aTool._actuatorSetFiles;
-	_contactForceSetFile = aTool._contactForceSetFile;
+	_contactForceSetFiles = aTool._contactForceSetFiles;
 	_resultsDir = aTool._resultsDir;
 
 	_outputPrecision = aTool._outputPrecision;
@@ -350,7 +358,7 @@ getAnalysisSet() const
  * this investigation.
  */
 void AbstractTool::
-loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet)
+loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet, ContactForceSet *rOriginalContactForceSet)
 {
 	if (_modelFile != "") {
 		string saveWorkingDirectory = IO::getCwd();
@@ -372,6 +380,21 @@ loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet)
 			ActuatorSet *actuatorSet=new ActuatorSet(_actuatorSetFiles[i]);
 			model->getActuatorSet()->append(*actuatorSet);
 		}
+
+      if(rOriginalContactForceSet) *rOriginalContactForceSet = *model->getContactSet();
+
+      // If replacing contact force set read in from model file, clear it here
+      if(_replaceContactForceSet) model->getContactSet()->setSize(0);
+
+      // Load contact force set
+      for(int i=0;i<_contactForceSetFiles.getSize();i++) {
+         cout<<"Adding contact force set from "<<_contactForceSetFiles[i]<<endl;
+         ContactForceSet *contactForceSet=new ContactForceSet(_contactForceSetFiles[i]);
+         for(int j=0;j<contactForceSet->getSize();j++) {
+            // TODO - implement ContactForceSet::append(ContactForceSet&), like ActuatorSet::append(ActuatorSet&), so this for loop becomes one line like for actuatorSet above. (CTJ)
+            model->getContactSet()->append((ContactForce*)contactForceSet->get(j));
+         }
+      }
 
 		model->setup();
 		if(!model->getActuatorSet()->check())
