@@ -137,7 +137,7 @@ void SimbodyEngine::constructPendulum()
 {
 	// Parameters
 	double length = 1.0;
-	double mass = 1.0;
+	double mass = 2.0;
 	double g[] = { 0.0, -9.8, 0.0 };
 
 	// Add pendulum mass to matter subsystem
@@ -181,6 +181,7 @@ void SimbodyEngine::constructPendulum()
 	coordinate->_engine = this;
 	coordinate->_bodyId = bodyId;
 	coordinate->_mobilityIndex = 0;
+	coordinate->setName("PendulumAxis");
 	coordinate->setup(this);
 	_coordinateSet.append(coordinate);
 
@@ -189,6 +190,7 @@ void SimbodyEngine::constructPendulum()
 	speed->_engine = this;
 	speed->_bodyId = bodyId;
 	speed->_mobilityIndex = 0;
+	speed->setName(AbstractSpeed::getSpeedName(coordinate->getName()));
 	speed->setup(this);
 	_speedSet.append(speed);
 
@@ -397,6 +399,9 @@ void SimbodyEngine::getConfiguration(double rY[]) const
  */
 void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
 {
+	// RESET ACCUMULATED FORCES
+	resetBodyAndMobilityForceVectors();
+
 	// SET Qs
 	int nq = getNumCoordinates();
 	Vector q(nq,aQ,true);

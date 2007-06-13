@@ -252,7 +252,6 @@ bool SimbodySpeed::setCoordinateName(const string& aCoordName)
 bool SimbodySpeed::setDefaultValue(double aDefaultValue)
 {
 	_defaultValue = aDefaultValue;
-
 	return true;
 }
 
@@ -269,6 +268,7 @@ bool SimbodySpeed::setDefaultValue(double aDefaultValue)
  */
 bool SimbodySpeed::setValue(double aValue)
 {
+	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter.setMobilizerU(_engine->_s,_bodyId,_mobilityIndex,aValue);
 	return true;
 }

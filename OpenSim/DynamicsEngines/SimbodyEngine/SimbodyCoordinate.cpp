@@ -387,6 +387,7 @@ bool SimbodyCoordinate::setValue(double aValue)
 		cout<<" is locked. Unable to change its value." << endl;
 		return false;
 	}
+	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter.setMobilizerQ(_engine->_s,_bodyId,_mobilityIndex,aValue);
 	return true;
 }
