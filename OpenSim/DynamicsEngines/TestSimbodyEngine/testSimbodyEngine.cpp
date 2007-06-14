@@ -8,12 +8,14 @@
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 
 
@@ -47,24 +49,40 @@ int main()
 	Model *model = new Model;
 	model->setDynamicsEngine(*pendulum);
 	model->setup();
-	model->printDetailedInfo(cout);
 
-	// ADD GENERALIZED FORCE(S)
+	// ADD FORCE(S)
 	int index = 0;
-	// 1
-	GeneralizedForce *gf = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
-	gf->setName("one");
-	gf->setModel(model);
-	gf->setOptimalForce(100);
-	model->getActuatorSet()->append(gf);
-	// 2
-	gf = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
-	gf->setName("two");
-	gf->setModel(model);
-	gf->setOptimalForce(100);
-	model->getActuatorSet()->append(gf);
+	// Gen. Force 1
+	GeneralizedForce *gf1 = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
+	gf1->setName("gf2");
+	gf1->setModel(model);
+	gf1->setOptimalForce(15);
+	// Gen. Force 2
+	GeneralizedForce *gf2 = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
+	gf2->setName("gf2");
+	gf2->setModel(model);
+	gf2->setOptimalForce(20);
+	// Force 3
+	Force *f1 = new Force("ground","pendulum");
+	OpenSim::Array<double> down(0.0,3);  down[1] = 1.0;
+	f1->setName("f1");
+	f1->setForceDirectionA(&down[0]);
+	OpenSim::Array<double> massCenter(0.0,3);
+	model->getDynamicsEngine().getBodySet()->get("pendulum")->getMassCenter(&massCenter[0]);
+	cout<<"mass center = "<<massCenter<<endl;
+	f1->setPointB(&massCenter[0]);
+	f1->setOptimalForce(20);
+	f1->setModel(model);
+	// Add to model
+	model->getActuatorSet()->append(gf1);
+	//model->getActuatorSet()->append(gf2);
+	model->getActuatorSet()->append(f1);
+
 	// Setup model
 	model->setup();
+	OpenSim::Array<double> inertia(0.0,9);
+	model->getDynamicsEngine().getBodySet()->get("ground")->setInertia(inertia);
+	model->printDetailedInfo(cout);
 
 	// STEP 4
 	// Alter the initial states if desired.
