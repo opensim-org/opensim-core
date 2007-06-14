@@ -52,8 +52,6 @@ using namespace OpenSim;
 using namespace SimTK;
 
 const SimTK::Transform SimbodyEngine::GroundFrame;
-const int SimbodyEngine::GROUND = -1;
-
 static char simbodyGroundName[] = "ground";
 
 
@@ -165,12 +163,14 @@ void SimbodyEngine::constructPendulum()
 
 	// CONSTRUCT CORRESPONDING OPENSIM OBJECTS
 	// Body
+	createGroundBodyIfNecessary();
 	SimbodyBody *body = new SimbodyBody();
+	body->setName("pendulum");
 	body->_engine = this;
 	body->_id = bodyId;
 	body->setMass(mass);
 	body->setMassCenter(&jointLocation[0]);
-	Array<double> inertia(0.0,9);
+	OpenSim::Array<double> inertia(0.0,9);
 	body->getInertia(inertia);
 	body->setInertia(inertia);
 	body->setup(this);
@@ -217,8 +217,47 @@ void SimbodyEngine::setNull()
 	setType("SimbodyEngine");
 	_groundBody = NULL;
 }
+//_____________________________________________________________________________
+/**
+ * Create a ground body if necessary.
+ */
+void SimbodyEngine::
+createGroundBodyIfNecessary()
+{
+	// See if the ground body already exists.
+	// The ground body is assumed to have the name simbodyGroundName.
+	int size = _bodySet.getSize();
+	SimbodyBody *ground=NULL;
+	for(int i=0; i<size; i++) {
+		SimbodyBody *body = (SimbodyBody*)_bodySet.get(i);
+		if(body->getName() == simbodyGroundName) ground = body;
+	}
 
+	// If the ground body doesn't exist create it
+	// and append it to the body set.
+	if(ground==NULL) {
+		ground = new SimbodyBody();
+		_bodySet.append(ground);
+	}
 
+	// Set member variables
+	ground->setName(simbodyGroundName);
+	// Mass
+	ground->setMass(0.0);
+	// Mass center
+	OpenSim::Array<double> massCenter(0.0,3);
+	ground->setMassCenter(&massCenter[0]);
+	// Inertia
+	OpenSim::Array<double> inertia(0.0,9);
+	ground->setInertia(inertia);
+	// Simbody id
+	ground->_id = SimTK::GroundId;
+	// Engine
+	ground->_engine = this;
+
+	// Set member variable and append to body set.
+	_groundBody = ground;
+}
 //_____________________________________________________________________________
 /**
  * Perform some set up functions that happen after the
@@ -229,7 +268,7 @@ void SimbodyEngine::setNull()
 void SimbodyEngine::setup(Model* aModel)
 {
 	AbstractDynamicsEngine::setup(aModel);
-	_groundBody = identifyGroundBody();
+	createGroundBodyIfNecessary();
 }
 
 //=============================================================================
@@ -249,6 +288,7 @@ SimbodyEngine& SimbodyEngine::operator=(const SimbodyEngine &aEngine)
 
 	return(*this);
 }
+
 
 //=============================================================================
 // TYPE REGISTRATION
@@ -412,6 +452,9 @@ void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
 	Vector u(nu,aU,true);
 	_matter.setU(_s,u);
 
+	// REALIZE AT THE VELOCITY STAGE
+	_system.realize(_s,Stage::Velocity);
+
 	// MARK ACTUATOR PATHS AS INVALID
 	// TODO: use Observer mechanism
 	// TODO: dynamic cast is slow, make invalidate a general method
@@ -556,40 +599,6 @@ AbstractBody& SimbodyEngine::getGroundBody() const
 {
 	assert(_groundBody);
 	return *_groundBody;
-}
-//_____________________________________________________________________________
-/**
- * Get the SD/FAST index of the body that is being used as ground.
- *
- * @return the index
- */
-int SimbodyEngine::getGroundBodyIndex() const
-{
-	// Should probably call getGroundBody(), dynamic cast it to an SimbodyBody,
-	// and then get its index, but we know it should always be -1.
-	return GROUND;
-}
-//_____________________________________________________________________________
-/**
- * Determine which body should be treated as the ground body.
- *
- * @return Pointer to the ground body.
- */
-AbstractBody* SimbodyEngine::identifyGroundBody()
-{
-	// The ground body is the one that is named simmGroundName.
-	for(int i=0; i<_bodySet.getSize(); i++) {
-		if(_bodySet.get(i)->getName() == simbodyGroundName)
-			return _bodySet.get(i);
-	}
-
-	// If that name is not found, then the first body is selected as ground.
-	if(_bodySet.getSize()>0) {
-		int j = 0;
-		return _bodySet.get(j);
-	}
-
-	return NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -928,11 +937,14 @@ void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const dou
  */
 void SimbodyEngine::applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
 {
-	const SimbodyBody* body = dynamic_cast<const SimbodyBody*>(&aBody);
+	const SimbodyBody* body = (const SimbodyBody*)&aBody;
 
-	if(body) {
-
-	}
+	// Transform force vector into ground frame
+	Vec3 forceInB;
+	forceInB = aForce;
+	Vec3 forceInG;
+	forceInG = _matter.expressBodyVectorInGround(_s,body->_id,forceInB);
+	applyForce(aBody,aPoint,&forceInG[0]);
 }
 
 //_____________________________________________________________________________
@@ -1259,16 +1271,14 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const
 {
-	for(int i=0; i<3; i++)  rVec[i] = aVec[i];
-
+	memcpy(rVec,aVec,3*sizeof(double));
 	if(&aBodyFrom == &aBodyTo) return;
-
-	const SimbodyBody* b1 = dynamic_cast<const SimbodyBody*>(&aBodyFrom);
-	const SimbodyBody* b2 = dynamic_cast<const SimbodyBody*>(&aBodyTo);
-
-	if(b1 && b2) {
-
-	}
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
+	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
+	Vec3 vFrom,vTo;
+	vFrom = aVec;
+	vTo = _matter.expressBodyVectorInBody(_s,bFrom->_id,vFrom,bTo->_id);
+	memcpy(rVec,&vTo[0],3*sizeof(double));
 }
 
 //_____________________________________________________________________________
@@ -1282,16 +1292,7 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aVec, const AbstractBody &aBodyTo, OpenSim::Array<double>& rVec) const
 {
-	for(int i=0; i<3; i++)  rVec[i] = aVec[i];
-
-	if(&aBodyFrom == &aBodyTo) return;
-
-	const SimbodyBody* b1 = dynamic_cast<const SimbodyBody*>(&aBodyFrom);
-	const SimbodyBody* b2 = dynamic_cast<const SimbodyBody*>(&aBodyTo);
-
-	if (b1 && b2) {
-
-	}
+	transform(aBodyFrom,&aVec[0],aBodyTo,&rVec[0]);
 }
 
 //_____________________________________________________________________________

@@ -1,7 +1,7 @@
 // SimbodyBody.cpp
 // Author: Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -346,7 +346,7 @@ void SimbodyBody::getInertia(double rInertia[3][3]) const
  *
  * @param 3x3 inertia matrix.
  */
-void SimbodyBody::getInertia(Array<double> &rInertia) const
+void SimbodyBody::getInertia(OpenSim::Array<double> &rInertia) const
 {
 	double inertia[3][3];
 	getInertia(inertia);
@@ -359,7 +359,7 @@ void SimbodyBody::getInertia(Array<double> &rInertia) const
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SimbodyBody::setInertia(const Array<double>& aInertia)
+bool SimbodyBody::setInertia(const OpenSim::Array<double>& aInertia)
 {
 	// TODO: update Simbody inertial properties.
 	cerr<<"SimbodyBody.setInertia: updating Simbody not yet implemented.\n";
@@ -415,7 +415,7 @@ void SimbodyBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SimbodyBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
@@ -440,7 +440,7 @@ void SimbodyBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SimbodyBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
 {
 	cerr<<"SimbodyBody.scaleInertialProperties: not yet implemented.\n";
 	return;

@@ -80,10 +80,7 @@ protected:
 	/** Ground frame used by Simbody. */
 	static const SimTK::Transform GroundFrame;
 
-	/** Body number used for ground. */
-	static const int GROUND;
-
-	/** Body used for ground or the inertial frame. */
+	/** Body used for ground, the inertial frame. */
 	AbstractBody* _groundBody;
 
 	/** Multibody system. */
@@ -136,7 +133,7 @@ private:
 	void setupProperties();
 	void copyData(const SimbodyEngine &aEngine);
 	void constructPendulum();
-	AbstractBody* identifyGroundBody();
+	void createGroundBodyIfNecessary();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
 
 public:
@@ -191,7 +188,6 @@ public:
 	// BODY INFORMATION
 	//--------------------------------------------------------------------------
 	virtual AbstractBody& getGroundBody() const;
-	int getGroundBodyIndex() const;
 	virtual AbstractBody* getLeafBody(AbstractJoint* aJoint) const { return NULL; }
 	bool adjustJointVectorsForNewMassCenter(SimbodyBody* aBody);
 
