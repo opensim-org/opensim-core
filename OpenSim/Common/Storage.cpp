@@ -945,6 +945,12 @@ getDataAtTime(double aT,int aN,double *rData) const
 	if(rData==NULL) return(0);
 	else return getDataAtTime(aT,aN,&rData);
 }
+int Storage::
+getDataAtTime(double aT,int aN,Array<double> &rData) const
+{
+	double *data=&rData[0];
+	return getDataAtTime(aT,aN,&data);
+}
 //_____________________________________________________________________________
 /**
  * Get the data corresponding to a specified state.  This call is equivalent

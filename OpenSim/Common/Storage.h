@@ -161,6 +161,7 @@ public:
 	int getData(int aTimeIndex,int aN,double *rData) const;
 	int getDataAtTime(double aTime,int aN,double **rData) const;
 	int getDataAtTime(double aTime,int aN,double *rData) const;
+	int getDataAtTime(double aTime,int aN,Array<double> &rData) const;
 	int getDataColumn(int aStateIndex,double *&rData) const;
 	int getDataColumn(int aStateIndex,Array<double> &rData) const;
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
