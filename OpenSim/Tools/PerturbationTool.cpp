@@ -80,7 +80,8 @@ PerturbationTool::PerturbationTool() :
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setType("PerturbationTool");
 	setNull();
@@ -128,7 +129,8 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setType("PerturbationTool");
 	setNull();
@@ -207,7 +209,8 @@ PerturbationTool(const PerturbationTool &aTool):
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setNull();
 	*this = aTool;
@@ -259,6 +262,10 @@ setNull()
 	_externalLoadsBody1 = "";
 	_externalLoadsBody2 = "";
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
+	_outputDetailedResults = false;
+
+	rLin = lLin = 0;
+	rTrq = lTrq = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -442,6 +449,12 @@ void PerturbationTool::setupProperties()
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
+
+	comment = "Output detailed results including spring forces during each forward integration used for perturbation "
+			    "(that's one forward integration for each perturbed actuator for each time interval).";
+	_outputDetailedResultsProp.setComment(comment);
+	_outputDetailedResultsProp.setName("output_detailed_results");
+	_propertySet.append( &_outputDetailedResultsProp );
 }
 
 
@@ -683,7 +696,7 @@ void PerturbationTool::run()
 	// From now on we'll only need the last state vectors recorded in these analyses, so we
 	// set their step interval to a large number to avoid them computing and writing their
 	// data at the (many) individual integration steps.
-	if(kin) kin->setStepInterval(1000000);
+	if(kin && !_outputDetailedResults) kin->setStepInterval(1000000);
 	if(bodyKin) bodyKin->setStepInterval(1000000);
 	actuation->setStepInterval(1000000);
 
@@ -785,14 +798,17 @@ void PerturbationTool::run()
 		for (int m=0;m<nperturb;m++)	{
 			_model->getDerivCallbackSet()->resetCallbacks();
 			perturbation->reset(); 
+			string actuatorName;
 			if(m<actuators.getSize()) {
 				AbstractActuator *act = actuators.get(m);
+				actuatorName = act->getName();
 				// Set up pertubation callback
 				cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 				perturbation->setActuator(act); 
 				perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
 			} else {
 				cout<<"\nGravity perturbation"<<endl;
+				actuatorName = "gravity";
 				perturbation->setActuator(0); 
 				double grav[3];
 				for(int i=0;i<3;i++) grav[i]=original_gravity[i];
@@ -830,6 +846,30 @@ void PerturbationTool::run()
 
 				cout << values_name[i] << ": perturbed="<<perturbed<<"  unperturbed="<<unperturbed<<"  diff="<<perturbed-unperturbed
 					  <<"  dAdF="<<dAdF<<"  deltaA="<<unperturbedForces[m]*dAdF<<endl;
+			}
+
+			if(_outputDetailedResults) {
+				// Spring forces
+				if(rLin) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_rLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					rLin->getAppliedForceStorage()->print(fileName);
+				}
+				if(lLin) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_lLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					lLin->getAppliedForceStorage()->print(fileName);
+				}
+				if(rTrq) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_rTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					rTrq->getAppliedTorqueStorage()->print(fileName);
+				}
+				if(lTrq) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_lTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					lTrq->getAppliedTorqueStorage()->print(fileName);
+				}
+				if(kin) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_Kinematics_q.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					kin->getPositionStorage()->print(fileName);
+				}
 			}
 		} //end muscle loop
 
@@ -957,38 +997,42 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 
 	// LINEAR
 	// right
-	LinearSpring *rLin = new LinearSpring(_model,rightFootBody);
+	rLin = new LinearSpring(_model,rightFootBody);
 	// Use the same foot-frame COP positions as the GRF force applier
 	rLin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
 	rLin->computeTargetFunctions(&qStore,&uStore);
 	rLin->setKValue(&_kLin[0]);
 	rLin->setBValue(&_bLin[0]);
 	rLin->setScaleFunction(rScaleTranslationalSpline);
+	if(_outputDetailedResults) rLin->setRecordAppliedLoads(true);
 	_model->addDerivCallback(rLin);
 	// left linear
-	LinearSpring *lLin = new LinearSpring(_model,leftFootBody);
+	lLin = new LinearSpring(_model,leftFootBody);
 	// Use the same foot-frame COP positions as the GRF force applier
 	lLin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
 	lLin->computeTargetFunctions(&qStore,&uStore);
 	lLin->setKValue(&_kLin[0]);
 	lLin->setBValue(&_bLin[0]);
 	lLin->setScaleFunction(lScaleTranslationalSpline);
+	if(_outputDetailedResults) lLin->setRecordAppliedLoads(true);
 	_model->addDerivCallback(lLin);
 
 	// TORSIONAL
 	// right
-	TorsionalSpring *rTrq = new TorsionalSpring(_model,rightFootBody);
+	rTrq = new TorsionalSpring(_model,rightFootBody);
 	rTrq->computeTargetFunctions(&qStore,&uStore);
 	rTrq->setKValue(&_kTor[0]);
 	rTrq->setBValue(&_bTor[0]);
 	rTrq->setScaleFunction(rScaleTorsionalSpline);
+	if(_outputDetailedResults) rTrq->setRecordAppliedLoads(true);
 	_model->addDerivCallback(rTrq);
 	// left
-	TorsionalSpring *lTrq = new TorsionalSpring(_model,leftFootBody);
+	lTrq = new TorsionalSpring(_model,leftFootBody);
 	lTrq->computeTargetFunctions(&qStore,&uStore);
 	lTrq->setKValue(&_kTor[0]);
 	lTrq->setBValue(&_bTor[0]);
 	lTrq->setScaleFunction(lScaleTorsionalSpline);
+	if(_outputDetailedResults) lTrq->setRecordAppliedLoads(true);
 	_model->addDerivCallback(lTrq);
 
 	Array<string> labels;

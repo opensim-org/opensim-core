@@ -86,6 +86,8 @@ public:
 	Storage* getAppliedTorqueStorage();
 	void setStorageCapacityIncrements(int aIncrement);
 
+	virtual void reset(); 
+
 	void setInputTorquesInGlobalFrame(bool aTrueFalse);
 	bool getInputTorquesInGlobalFrame() const;
 	

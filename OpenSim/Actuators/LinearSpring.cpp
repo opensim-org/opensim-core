@@ -65,7 +65,6 @@ setNull()
 	_scaleFactor = 1.0;
 	_k[0] = _k[1] = _k[2] = 0.0;
 	_b[0] = _b[1] = _b[2] = 0.0;
-	_storeForces = false;
 }
 
 //=============================================================================
@@ -241,33 +240,6 @@ getScaleFactor()
 	return(_scaleFactor);
 }
 
-//-----------------------------------------------------------------------------
-// STORE FORCES
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set whether or not to store the applied forces.
- *
- * @param aTrueFalse If true, store the forces.  If false, do not store
- * the forces.
- */
-void LinearSpring::
-setStoreForces(bool aTrueFalse)
-{
-	_storeForces = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Set whether or not to store the applied forces.
- *
- * @return Whether or not the applied forces are being stored.
- */
-bool LinearSpring::
-getStoreForces()
-{
-	return(_storeForces);
-}
-
 
 //=============================================================================
 // UTILITY
@@ -441,7 +413,7 @@ applyActuation(double aT,double *aX,double *aY)
 		setForce(force);
 		_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
 
-		if(_storeForces) _appliedForceStore->append(aT,3,_force);
+		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 	}	
 }
 

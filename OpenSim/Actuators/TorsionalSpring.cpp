@@ -63,7 +63,6 @@ setNull()
 	_b[0] = _b[1] = _b[2] = 0.0;
 	_scaleFunction = NULL;
 	_scaleFactor = 1.0;
-	_storeTorques = false;
 }
 
 //=============================================================================
@@ -232,33 +231,6 @@ getScaleFactor()
 	return(_scaleFactor);
 }
 
-//-----------------------------------------------------------------------------
-// STORE TORQUES
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set whether or not to store the applied torques.
- *
- * @param aTrueFalse If true, store the torques.  If false, do not store
- * the torques.
- */
-void TorsionalSpring::
-setStoreTorques(bool aTrueFalse)
-{
-	_storeTorques = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Set whether or not to store the applied torques.
- *
- * @return Whether or not the applied torques are being stored.
- */
-bool TorsionalSpring::
-getStoreTorques()
-{
-	return(_storeTorques);
-}
-
 
 //=============================================================================
 // UTILITY
@@ -407,7 +379,7 @@ applyActuation(double aT,double *aX,double *aY)
 		// Apply torque to body
 		setTorque(torque);
 		_model->getDynamicsEngine().applyTorque(*_body,_torque);
-		if(_storeTorques) _appliedTorqueStore->append(aT,3,_torque);
+		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
 
 	}	
 }

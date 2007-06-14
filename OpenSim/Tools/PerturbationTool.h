@@ -22,6 +22,8 @@
 namespace OpenSim { 
 
 class ForceApplier;
+class LinearSpring;
+class TorsionalSpring;
 
 //=============================================================================
 //=============================================================================
@@ -143,6 +145,13 @@ private:
 	The default value is -1.0, so no filtering. */
 	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
+
+	/** If true, it will write spring forces and possibly the resulting kinematics from each forward integration for perturbation. */
+	OpenSim::PropertyBool _outputDetailedResultsProp;
+	bool &_outputDetailedResults;
+
+	LinearSpring *rLin, *lLin;
+	TorsionalSpring *rTrq, *lTrq;
 
 //=============================================================================
 // METHODS
