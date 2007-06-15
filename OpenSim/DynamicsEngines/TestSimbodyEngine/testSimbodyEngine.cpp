@@ -62,19 +62,19 @@ int main()
 	gf2->setName("gf2");
 	gf2->setModel(model);
 	gf2->setOptimalForce(20);
-	// Force 3
-	Force *f1 = new Force("ground","pendulum");
-	OpenSim::Array<double> down(0.0,3);  down[1] = 1.0;
+	// Force 1
+	Force *f1 = new Force("pendulum","ground");
+	OpenSim::Array<double> directionA(0.0,3);  directionA[0] = 1.0;
 	f1->setName("f1");
-	f1->setForceDirectionA(&down[0]);
+	f1->setForceDirectionA(&directionA[0]);
 	OpenSim::Array<double> massCenter(0.0,3);
 	model->getDynamicsEngine().getBodySet()->get("pendulum")->getMassCenter(&massCenter[0]);
 	cout<<"mass center = "<<massCenter<<endl;
 	f1->setPointB(&massCenter[0]);
-	f1->setOptimalForce(20);
+	f1->setOptimalForce(30.210);
 	f1->setModel(model);
 	// Add to model
-	model->getActuatorSet()->append(gf1);
+	//model->getActuatorSet()->append(gf1);
 	//model->getActuatorSet()->append(gf2);
 	model->getActuatorSet()->append(f1);
 
@@ -94,7 +94,7 @@ int main()
 
 	// STEP 5
 	// Set the acceleration due to gravity.
-	double g[] = { 0.0, 0.0, 0.0 };
+	double g[] = { 0.0, -10.0, 0.0 };
 	model->setGravity(g);
 
 	// STEP 6
@@ -137,7 +137,7 @@ int main()
 	// In this case, the initial and final times are set based on
 	// the range of times over which the controls are available.
 	//Control *control;
-	double ti=0.0,tf=4.0;
+	double ti=0.0,tf=10.0;
 	//control = controlSet.get("ti");
 	//if(control!=NULL) ti = control->getControlValue();
 	//control = controlSet.get("tf");
