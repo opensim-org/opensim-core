@@ -59,7 +59,7 @@ class OSIMACTUATORS_API LinearSetPoint : public SetPoint
 	// PROPERTIES
 	/** Constant stiffness in the normal direction. */
 	PropertyDbl _propKNP;
-	/** Constant viscosity in the normal direction. */\
+	/** Constant viscosity in the normal direction. */
 	PropertyDbl _propKNV;
 
 	// REFERENCES
