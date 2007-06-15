@@ -143,7 +143,7 @@ public:
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 
 	// Visible Object Support
-	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry() {};
 
 	virtual void peteTest() const;

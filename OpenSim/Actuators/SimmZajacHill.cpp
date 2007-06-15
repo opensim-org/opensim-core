@@ -229,8 +229,70 @@ void SimmZajacHill::setup(Model* aModel)
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
-	computeIsometricForce(_activation);
-	//_fiberLength = 1.4*_optimalFiberLength;
+	computeEquilibrium();
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy the property values from another actuator, which may not be
+ * a SimmZajacHill.
+ *
+ * @param aActuator Actuator to copy property values from.
+ */
+void SimmZajacHill::copyPropertyValues(AbstractActuator& aActuator)
+{
+	AbstractMuscle::copyPropertyValues(aActuator);
+
+	const Property* prop = aActuator.getPropertySet().contains("time_scale");
+	if (prop) _timeScaleProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("activation1");
+	if (prop) _activation1Prop.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("activation2");
+	if (prop) _activation2Prop.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("max_isometric_force");
+	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
+	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("tendon_slack_length");
+	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("pennation_angle");
+	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("max_contraction_velocity");
+	if (prop) _maxContractionVelocityProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("damping");
+	if (prop) _dampingProp.setValue(prop->getValueDbl());
+
+	Property* prop2 = aActuator.getPropertySet().contains("tendon_force_length_curve");
+	if (prop2) {
+	   Object* obj = prop2->getValueObjPtr();
+		if (obj) _tendonForceLengthCurveProp.setValue(obj);
+	}
+
+	prop2 = aActuator.getPropertySet().contains("active_force_length_curve");
+	if (prop2) {
+	   Object* obj = prop2->getValueObjPtr();
+		if (obj) _activeForceLengthCurveProp.setValue(obj);
+	}
+
+	prop2 = aActuator.getPropertySet().contains("passive_force_length_curve");
+	if (prop2) {
+	   Object* obj = prop2->getValueObjPtr();
+		if (obj) _passiveForceLengthCurveProp.setValue(obj);
+	}
+
+	prop2 = aActuator.getPropertySet().contains("force_velocity_curve");
+	if (prop2) {
+	   Object* obj = prop2->getValueObjPtr();
+		if (obj) _forceVelocityCurveProp.setValue(obj);
+	}
 }
 
 //=============================================================================
@@ -373,14 +435,13 @@ void SimmZajacHill::computeStateDerivatives(double rDYDT[])
 /**
  * Compute the equilibrium states.  This method computes a fiber length
  * for the muscle that is consistent with the muscle's activation level.
- *
- * @param rDYDT the state derivatives are returned here.
  */
 void SimmZajacHill::computeEquilibrium()
 {
 	double force = computeIsometricForce(_activation);
 
-	cout<<getName()<<": isometric force = "<<force<<endl;
+	//cout<<getName()<<": isometric force = "<<force<<endl;
+	//cout<<getName()<<": fiber length = "<<_fiberLength<<endl;
 }
 
 //_____________________________________________________________________________
@@ -774,7 +835,7 @@ double SimmZajacHill::computeIsometricForce(double aActivation)
    return tendon_force;
 }
 
-void SimmZajacHill::peteTest() const
+void SimmZajacHill::peteTest()
 {
 	AbstractMuscle::peteTest();
 
@@ -791,5 +852,4 @@ void SimmZajacHill::peteTest() const
 	if (_activeForceLengthCurve) cout << "   activeForceLengthCurve: " << *_activeForceLengthCurve << endl;
 	if (_passiveForceLengthCurve) cout << "   passiveForceLengthCurve: " << *_passiveForceLengthCurve << endl;
 	if (_forceVelocityCurve) cout << "   forceVelocityCurve: " << *_forceVelocityCurve << endl;
-	cout << "   current length: " << _length << endl;
 }

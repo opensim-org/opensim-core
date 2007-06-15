@@ -284,16 +284,13 @@ void AbstractMuscle::updateGeometryLocations()
 //_____________________________________________________________________________
 /**
  * Update the geometric representation of the muscle.
- * The resulting geometry is maintained at the VisibleObject layer
+ * The resulting geometry is maintained at the VisibleObject layer.
+ * This function should not be made public. It is called internally
+ * by computePath() only when the path has changed.
  * 
  */
 void AbstractMuscle::updateGeometry()
 {
-	// Setup has been invoked already on muscle points so they are
-	// in the right location, xform to global frame and create connectors
-	// _allGeometry array already has the lastest geometry, should not need
-	// to invalidate unless something changed (e.g. a viaPoint changed state).
-	computePath();
 	updateGeometrySize();
 	updateGeometryLocations();
 }
@@ -502,14 +499,29 @@ void AbstractMuscle::placeNewAttachment(Array<double>& aOffset, int aIndex, Abst
  *
  * @param aIndex The index of the point to delete
  */
-void AbstractMuscle::deleteAttachmentPoint(int aIndex)
+bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
 {
-	_attachmentSet.remove(aIndex);
+	// An attachment point can be deleted only if there would remain
+	// at least two other fixed points.
+	int numOtherFixedPoints = 0;
+	for (int i = 0; i < _attachmentSet.getSize(); i++) {
+		if (i != aIndex) {
+			if (!_attachmentSet.get(i)->isA("MuscleViaPoint"))
+				numOtherFixedPoints++;
+		}
+	}
 
-	// rename the attachment points starting at the deleted position
-	nameAttachmentPoints(aIndex);
+	if (numOtherFixedPoints >= 2) {
+		_attachmentSet.remove(aIndex);
 
-	invalidatePath();
+		// rename the attachment points starting at the deleted position
+		nameAttachmentPoints(aIndex);
+
+		invalidatePath();
+		return true;
+	}
+
+	return false;
 }
 
 //_____________________________________________________________________________
@@ -721,13 +733,8 @@ void AbstractMuscle::computePath()
 
 	calcLengthAfterPathComputation();
 
-	// Update the geometry used to display the muscle
-	// TODO: updateGeometry() would normally be called here, but
-	// that function calls computePath() because it is an
-	// AbstractActuator method that can be called independently
-	// of computePath().
-	updateGeometrySize();
-	updateGeometryLocations();
+	// Update the geometry used to display the muscle.
+	updateGeometry();
 
 	_pathValid = true;
 }
@@ -1218,14 +1225,23 @@ void AbstractMuscle::apply()
 	}
 }
 
+//_____________________________________________________________________________
+/**
+ * Update the visible object used to represent the muscle.
+ */
+void AbstractMuscle::updateDisplayer()
+{
+	computePath();
+}
+
 //=============================================================================
 // TESTING
 //=============================================================================
-void AbstractMuscle::peteTest() const
+void AbstractMuscle::peteTest()
 {
 	int i;
 
-	cout << "Muscle: " << getName() << endl;
+	cout << getType() << ": " << getName() << endl;
 	for (i = 0; i < _attachmentSet.getSize(); i++)
 		_attachmentSet.get(i)->peteTest();
 	for (i = 0; i < _muscleWrapSet.getSize(); i++)

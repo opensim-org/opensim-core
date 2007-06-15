@@ -86,7 +86,7 @@ public:
 	virtual void scale(const Array<double>& aScaleFactors) = 0;
 	virtual void setup(AbstractDynamicsEngine *aEngine) = 0;
 	virtual void removeSelfFromDisplay() = 0;
-	virtual VisibleObject* getDisplayer() { return NULL; }
+	virtual VisibleObject* getDisplayer() const { return NULL; }
 	virtual void updateGeometry() = 0;
 	virtual void peteTest() const { }
 

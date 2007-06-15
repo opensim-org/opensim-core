@@ -200,16 +200,18 @@ public:
 	{
 		return AnalyticSphere::createSphere(0.1);
 	}
-	// updateGeometry is the method used to update geometry that can change (e.g. muscles
-	// changing geometry during motion.
-	// Clients/subclasses should not override this method unless their geometry is changing.
-	// This call forces the "recomputation" of geometry aside from display implications.
 
-	virtual void updateGeometry() {};
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
 	void setupProperties();
+
+	// updateGeometry is the method used to update geometry that can change (e.g. muscles
+	// changing geometry during motion).
+	// Clients/subclasses should not override this method unless their geometry is changing.
+	// This call forces the "recomputation" of geometry aside from display implications.
+protected:
+	virtual void updateGeometry() {};
 
 //=============================================================================
 };	// END of class VisibleObject

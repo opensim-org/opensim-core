@@ -210,6 +210,40 @@ get(const string &aName) const
 	string msg = "PropertySet.get: No property named " + aName;
 	throw Exception(msg,__FILE__,__LINE__);
 }
+//_____________________________________________________________________________
+/**
+ * If the set contains a property with the specified name, return it.
+ *
+ * @param aName Name of the property to get.
+ * @return Pointer to the property.
+ */
+const Property* PropertySet::
+contains(const string& aName) const
+{
+	int i;
+	PropertyInt prop(aName,0);
+	for(i=0;i<_array.getSize();i++) {
+		if((*_array[i]) == prop) return(_array[i]);
+	}
+	return NULL;
+}
+//_____________________________________________________________________________
+/**
+ * If the set contains a property with the specified name, return it.
+ *
+ * @param aName Name of the property to get.
+ * @return Pointer to the property.
+ */
+Property* PropertySet::
+contains(const string& aName)
+{
+	int i;
+	PropertyInt prop(aName,0);
+	for(i=0;i<_array.getSize();i++) {
+		if((*_array[i]) == prop) return(_array[i]);
+	}
+	return NULL;
+}
 
 
 //=============================================================================

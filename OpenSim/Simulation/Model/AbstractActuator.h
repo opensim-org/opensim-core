@@ -94,7 +94,7 @@ public:
 	AbstractActuator(const AbstractActuator &aActuator);
 	virtual ~AbstractActuator();
 	virtual Object* copy() const = 0;
-	void copy(AbstractActuator& aActuator);
+	virtual void copyPropertyValues(AbstractActuator& aActuator) { }
 
 private:
 	void setNull();
@@ -147,13 +147,14 @@ public:
 	virtual void getPseudoStates(double rY[]) const;
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return NULL; }
-	// Update the geometry attached to the actuator. Use inertial frame.
-	virtual void updateGeometry();
+	virtual void updateDisplayer() { }
 	OPENSIM_DECLARE_DERIVED(AbstractActuator, Object);
 
 protected:
 	// FORCE
 	void setAppliesForce(bool aTrueFalse) { _appliesForce = aTrueFalse; }
+	// Update the geometry attached to the actuator. Use inertial frame.
+	virtual void updateGeometry();
 
 public:
 	bool getAppliesForce() const { return _appliesForce; }

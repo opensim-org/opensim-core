@@ -119,6 +119,8 @@ public:
 #ifndef SWIG
 	virtual const Property* get(const std::string &aName) const;
 #endif
+	virtual const Property* contains(const std::string& aName) const;
+	virtual Property* contains(const std::string& aName);
 	// Append
 	virtual void append(Property *aProperty);
 	virtual void append(Property *aProperty, const std::string& aName);

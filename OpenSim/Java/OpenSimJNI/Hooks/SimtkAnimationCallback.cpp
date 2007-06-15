@@ -174,9 +174,7 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
 	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
 	getTransformsFromKinematicsEngine(*_model);
 	// update muscle geometry
-	ActuatorSet* actSet = _model->getActuatorSet();
-	for(int i=0; i < actSet->getSize(); i++)
-		actSet->get(i)->updateGeometry();
+	_model->getActuatorSet()->updateDisplayers();
 	//mutex_end(0);
 	return (0);
 }

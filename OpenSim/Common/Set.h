@@ -572,6 +572,29 @@ virtual bool remove(const T* aObject)
 	return( _objects.remove(aObject) );
 }
 
+//_____________________________________________________________________________
+/**
+ * Replace an object in the array with another object.
+ * The object is deleted when it is removed.
+ * The new object is added to all of the groups that the old object was in.
+ *
+ * @param aIndex Index of the object to replace.
+ * @param aObject The new object to replace the one one.
+ * @return True if the replacement was successful, false otherwise.
+ */
+virtual bool replace(int aIndex, T* aObject)
+{
+	if (aObject != NULL && aIndex >= 0 && aIndex < _objects.getSize())
+	{
+		for (int i = 0; i < _objectGroups.getSize(); i++)
+			_objectGroups.get(i)->replace(_objects.get(aIndex), aObject);
+		_objects.remove(aIndex);
+		return _objects.insert(aIndex, aObject);
+	}
+
+	return false;
+}
+
 virtual void clearAndDestroy()
 {
 	_objects.clearAndDestroy();

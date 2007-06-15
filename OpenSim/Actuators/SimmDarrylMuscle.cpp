@@ -243,8 +243,64 @@ void SimmDarrylMuscle::setup(Model* aModel)
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
-	computeIsometricForce(_activation);
-	//_fiberLength = 1.4*_optimalFiberLength;
+	computeEquilibrium();
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy the property values from another actuator, which may not be
+ * a SimmDarrylMuscle.
+ *
+ * @param aActuator Actuator to copy property values from.
+ */
+void SimmDarrylMuscle::copyPropertyValues(AbstractActuator& aActuator)
+{
+	AbstractMuscle::copyPropertyValues(aActuator);
+
+	const Property* prop = aActuator.getPropertySet().contains("max_isometric_force");
+	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
+	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("tendon_slack_length");
+	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("pennation_angle");
+	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("activation_time_constant");
+	if (prop) _activationTimeConstantProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("deactivation_time_constant");
+	if (prop) _deactivationTimeConstantProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("Vmax");
+	if (prop) _vmaxProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("Vmax0");
+	if (prop) _vmax0Prop.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("FmaxTendonStrain");
+	if (prop) _fmaxTendonStrainProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("FmaxMuscleStrain");
+	if (prop) _fmaxMuscleStrainProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("KshapeActive");
+	if (prop) _kShapeActiveProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("KshapePassive");
+	if (prop) _kShapePassiveProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("damping");
+	if (prop) _dampingProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("Af");
+	if (prop) _afProp.setValue(prop->getValueDbl());
+
+	prop = aActuator.getPropertySet().contains("Flen");
+	if (prop) _flenProp.setValue(prop->getValueDbl());
 }
 
 //=============================================================================
@@ -385,6 +441,19 @@ void SimmDarrylMuscle::computeStateDerivatives(double rDYDT[])
 
 	rDYDT[STATE_ACTIVATION] = _activationDeriv;
 	rDYDT[STATE_FIBER_LENGTH] = _fiberLengthDeriv;
+}
+
+//_____________________________________________________________________________
+/**
+ * Compute the equilibrium states.  This method computes a fiber length
+ * for the muscle that is consistent with the muscle's activation level.
+ */
+void SimmDarrylMuscle::computeEquilibrium()
+{
+	double force = computeIsometricForce(_activation);
+
+	//cout<<getName()<<": isometric force = "<<force<<endl;
+	//cout<<getName()<<": fiber length = "<<_fiberLength<<endl;
 }
 
 //_____________________________________________________________________________
@@ -815,23 +884,23 @@ double SimmDarrylMuscle::computeIsometricForce(double aActivation)
    return tendon_force;
 }
 
-void SimmDarrylMuscle::peteTest() const
+void SimmDarrylMuscle::peteTest()
 {
-	int i;
+	AbstractMuscle::peteTest();
 
-	cout << "Muscle: " << getName() << endl;
-	for (i = 0; i < _attachmentSet.getSize(); i++)
-		_attachmentSet.get(i)->peteTest();
-#if 0
-	cout << "   timeScale: " << _timeScale << endl;
 	cout << "   activationTimeConstant: " << _activationTimeConstant << endl;
 	cout << "   deactivationTimeConstant: " << _deactivationTimeConstant << endl;
 	cout << "   maxIsometricForce: " << _maxIsometricForce << endl;
 	cout << "   optimalFiberLength: " << _optimalFiberLength << endl;
 	cout << "   tendonSlackLength: " << _tendonSlackLength << endl;
 	cout << "   pennationAngle: " << _pennationAngle << endl;
-	cout << "   maxContractionVelocityFullAct: " << _maxContractionVelocityFullAct << endl;
-	cout << "   maxContractionVelocityLowAct: " << _maxContractionVelocityLowAct << endl;
-	cout << "   current length: " << getLength() << endl;
-#endif
+	cout << "   _vmax: " << _vmax << endl;
+	cout << "   vmax0: " << _vmax0 << endl;
+	cout << "   fmaxTendonStrain: " << _fmaxTendonStrain << endl;
+	cout << "   fmaxMuscleStrain: " << _fmaxMuscleStrain << endl;
+	cout << "   kShapeActive: " << _kShapeActive << endl;
+	cout << "   kShapePassive: " << _kShapePassive << endl;
+	cout << "   damping: " << _damping << endl;
+	cout << "   af: " << _af << endl;
+	cout << "   flen: " << _flen << endl;
 }

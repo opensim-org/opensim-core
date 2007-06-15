@@ -147,6 +147,7 @@ public:
 	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);
 #endif
    void copyData(const SimmDarrylMuscle &aMuscle);
+	virtual void copyPropertyValues(AbstractActuator& aActuator);
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -178,6 +179,7 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(double rDYDT[]);
+	virtual void computeEquilibrium();
 	virtual void computeActuation();
 	double calcTendonForce(double aNormTendonLength) const;
 	double calcPassiveForce(double aNormFiberLength) const;
@@ -195,7 +197,7 @@ public:
 	//--------------------------------------------------------------------------
 	// TEST
 	//--------------------------------------------------------------------------
-	virtual void peteTest() const;
+	virtual void peteTest();
 
 	OPENSIM_DECLARE_DERIVED(SimmDarrylMuscle, AbstractActuator);
 

@@ -134,6 +134,7 @@ public:
 	SimmZajacHill& operator=(const SimmZajacHill &aMuscle);
 #endif
    void copyData(const SimmZajacHill &aMuscle);
+	virtual void copyPropertyValues(AbstractActuator& aActuator);
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -175,7 +176,7 @@ public:
 	double getStress() const;
 	double computeIsometricForce(double activation);
 
-	virtual void peteTest() const;
+	virtual void peteTest();
 
 	OPENSIM_DECLARE_DERIVED(SimmZajacHill, AbstractActuator);
 

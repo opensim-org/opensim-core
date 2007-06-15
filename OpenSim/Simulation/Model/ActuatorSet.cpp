@@ -29,6 +29,10 @@
 #include <iostream>
 #include "ActuatorSet.h"
 #include "Model.h"
+#include "AbstractMuscle.h"
+#include "Force.h"
+#include <OpenSim/Actuators/Torque.h>
+#include "GeneralizedForce.h"
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/rdMath.h>
 
@@ -191,12 +195,12 @@ void ActuatorSet::setup(Model* aModel)
 /**
  * Update the geometry of the muscles based on coordinate changes
  */
-void ActuatorSet::updateGeometry()
+void ActuatorSet::updateDisplayers()
 {
 	int i;
 	for (i = 0; i < getSize(); i++) {
 		AbstractActuator* act = get(i);
-		act->updateGeometry();
+		act->updateDisplayer();
 	}
 }
 
@@ -433,20 +437,83 @@ set(int aIndex,AbstractActuator *aActuator)
  *	@param aActuator Pointer to the actuator to change.
  *	@param aNewType The type to change to.
  */
-void ActuatorSet::changeActuatorType(AbstractActuator* aActuator, const string& aNewTypeName)
+AbstractActuator* ActuatorSet::changeActuatorType(AbstractActuator* aActuator, const string& aNewTypeName)
 {
-	if (aActuator) {
+	AbstractActuator* newActuator = NULL;
+
+	if (aActuator != NULL) {
 	   int index = getIndex(aActuator);
 		if (index >= 0) {
 			Object* newObject = Object::newInstanceOfType(aNewTypeName);
 			if (newObject) {
-				AbstractActuator* newActuator = AbstractActuator::safeDownCast(newObject);
+				newActuator = AbstractActuator::safeDownCast(newObject);
 				if (newActuator) {
-					newActuator->copy(*aActuator);
-					remove(index);
-					insert(index, newActuator);
+				   copyActuator(aActuator, newActuator);
+					// newActuator's type will usually written over by aActuator's type,
+					// so set it back here.
+					newActuator->setType(aNewTypeName);
+					replaceActuator(aActuator, newActuator);
 				}
 			}
+		}
+	}
+
+	return newActuator;
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy an actuator's data members from another actuator, which may be of a
+ * different type.
+ *
+ *	@param aFrom Actuator to copy from.
+ *	@param aTo Actuator to copy to.
+ */
+void ActuatorSet::copyActuator(AbstractActuator* aFrom, AbstractActuator* aTo)
+{
+	// If both actuators are AbstractMuscles, Forces, Torques, or GeneralizedForces,
+	// then use the appropriate lower-level assignment operator.
+	AbstractMuscle* fromMuscle = AbstractMuscle::safeDownCast(aFrom);
+	AbstractMuscle* toMuscle = AbstractMuscle::safeDownCast(aTo);
+	Force* fromForce = Force::safeDownCast(aFrom);
+	Force* toForce = Force::safeDownCast(aTo);
+	//Torque* fromTorque = Torque::safeDownCast(aFrom);
+	//Torque* toTorque = Torque::safeDownCast(aTo);
+	GeneralizedForce* fromGenForce = GeneralizedForce::safeDownCast(aFrom);
+	GeneralizedForce* toGenForce = GeneralizedForce::safeDownCast(aTo);
+
+	if (fromMuscle && toMuscle) {
+		*toMuscle = *fromMuscle;
+	} else if (fromForce && toForce) {
+		*toForce = *fromForce;
+	//} else if (fromTorque && toTorque) {
+	//	*toTorque = *fromTorque;
+	} else if (fromGenForce && toGenForce) {
+		*toGenForce = *fromGenForce;
+	}
+
+	// This function tries to copy even more of the actuator by looking
+	// for properties with the same name in the two actuators.
+	aTo->copyPropertyValues(*aFrom);
+}
+
+//_____________________________________________________________________________
+/**
+ * Replace an actuator in the set with another actuaror. The new one is made a
+ * member of all the same groups as the old one, and is inserted in the same
+ * place the old one occupied.
+ *
+ *	@param aOldActuator Actuator to remove.
+ *	@param aNewActuator Actuator to add.
+ */
+void ActuatorSet::replaceActuator(AbstractActuator* aOldActuator, AbstractActuator* aNewActuator)
+{
+	if (aOldActuator != NULL && aNewActuator != NULL) {
+	   int index = getIndex(aOldActuator);
+		if (index >= 0) {
+			replace(index, aNewActuator);
+			aNewActuator->setup(getModel());
+			constructMaps();
 		}
 	}
 }
@@ -1361,7 +1428,7 @@ check() const
  */
 #include "AbstractMuscle.h"
 
-void ActuatorSet::peteTest() const
+void ActuatorSet::peteTest()
 {
 	int i;
 
@@ -1375,7 +1442,12 @@ void ActuatorSet::peteTest() const
 
 	for(i=0;i<getSize();i++) {
 		AbstractMuscle *ms = dynamic_cast<AbstractMuscle*>(get(i));
-		if (ms)
+		if (ms) {
 			ms->peteTest();
+			AbstractActuator *act = changeActuatorType(ms, "SimmDarrylMuscle");
+			ms = dynamic_cast<AbstractMuscle*>(act);
+			if (ms)
+				ms->peteTest();
+		}
 	}
 }

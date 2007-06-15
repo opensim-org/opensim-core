@@ -118,7 +118,7 @@ public:
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 
 	// Visible Object Support
-	virtual VisibleObject* getDisplayer() { return &_displayer; };
+	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry();
 
 	virtual void peteTest() const;

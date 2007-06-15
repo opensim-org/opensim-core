@@ -204,6 +204,29 @@ void ObjectGroup::remove(const Object* aObject)
 
 //_____________________________________________________________________________
 /**
+ * Replace an object in the group with another object.
+ *
+ * @param aOldObject pointer to the old object.
+ * @param aNewObject pointer to the new object.
+ */
+void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
+{
+	if (aOldObject != NULL && aNewObject != NULL)
+	{
+		for (int i=0; i<_memberObjects.getSize(); i++) {
+			if (aOldObject == _memberObjects.get(i)) {
+				_memberObjects.remove(i);
+				_memberNames.remove(i);
+				_memberObjects.insert(i, aNewObject);
+				_memberNames.insert(i, aNewObject->getName());
+				break;
+			}
+		}
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * Set up the group, after the member names have been deserialized.
  * For each member name, if the name is the name of an object in
  * aObject (the objects in the set that this group belongs to), then

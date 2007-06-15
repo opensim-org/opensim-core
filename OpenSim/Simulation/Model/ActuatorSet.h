@@ -102,7 +102,8 @@ public:
 private:
 	void setNull();
 	void setupSerializedMembers();
-	
+	void copyActuator(AbstractActuator* aFrom, AbstractActuator* aTo);
+
 	void constructMap(const Array<int> &numValuesPerActuator, Array<int> &rActuatorToValue, Array<int> &rValueToActuator);
 	void constructMaps();
 
@@ -118,7 +119,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	void setup(Model* aModel);
-	void updateGeometry();
+	void updateDisplayers();
 
 	// MODEL
 	void setModel(Model *aModel);
@@ -129,7 +130,8 @@ public:
 	bool append(AbstractActuator *aActuator);
 	bool append(ActuatorSet &aActuatorSet, bool aAllowDuplicateNames=false);
 	bool set(int aIndex, AbstractActuator *aActuator);
-	void changeActuatorType(AbstractActuator* aActuator, const std::string& aNewTypeName);
+	AbstractActuator* changeActuatorType(AbstractActuator* aActuator, const std::string& aNewTypeName);
+	void replaceActuator(AbstractActuator* aOldActuator, AbstractActuator* aNewActuator);
 
 	// CONTROLS
 	int getNumControls() const;
@@ -203,7 +205,7 @@ public:
 	//--------------------------------------------------------------------------
 	bool check() const;
 
-   void peteTest() const;
+   void peteTest();
 
 //=============================================================================
 };	// END of class ActuatorSet

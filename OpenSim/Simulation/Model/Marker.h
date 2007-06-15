@@ -119,7 +119,7 @@ public:
 	virtual void setup(AbstractDynamicsEngine* aEngine);
 	virtual void updateGeometry();
 
-	virtual VisibleObject* getDisplayer() { return &_displayer; }
+	virtual VisibleObject* getDisplayer() const { return &_displayer; }
 	virtual void removeSelfFromDisplay();
 	const bool isVirtual()
 	{

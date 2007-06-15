@@ -88,6 +88,7 @@ public:
 	bool contains(const std::string& aName) const;
 	void add(Object* aObject);
 	void remove(const Object* aObject);
+	void replace(const Object* aOldObject, Object* aNewObject);
 	void setup(ArrayPtrs<Object>& aObjects);
 	const ArrayPtrs<Object>& getMembers() const
 	{

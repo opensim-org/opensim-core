@@ -121,7 +121,7 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
-	void deleteAttachmentPoint(int aIndex);
+	bool deleteAttachmentPoint(int aIndex);
 	void addMuscleWrap(AbstractWrapObject& aWrapObject);
 	void moveUpMuscleWrap(int aIndex);
 	void moveDownMuscleWrap(int aIndex);
@@ -184,15 +184,13 @@ public:
 	// FORCE APPLICATION
 	//--------------------------------------------------------------------------
 	virtual void apply();
-	virtual void peteTest() const;
+	virtual void peteTest();
 
 	//--------------------------------------------------------------------------
 	// Visible Object Support
 	//--------------------------------------------------------------------------
-	// Update the geometry attached to the muscle (location of muscle points and connecting segments
-	//  all in global/interial frame)
-	virtual void updateGeometry();
-	virtual VisibleObject* getDisplayer() const { return &_displayer; };
+	virtual VisibleObject* getDisplayer() const { return &_displayer; }
+	virtual void updateDisplayer();
 
 	OPENSIM_DECLARE_DERIVED(AbstractMuscle, AbstractActuator);
 
@@ -203,6 +201,11 @@ private:
 	void updateGeometryLocations();
 	void nameAttachmentPoints(int aStartingIndex);
    void placeNewAttachment(Array<double>& aOffset, int aIndex, AbstractBody& aBody);
+
+protected:
+	// Update the geometry attached to the muscle (location of muscle points and connecting segments
+	//  all in global/interial frame)
+	virtual void updateGeometry();
 
 //=============================================================================
 };	// END of class AbstractMuscle

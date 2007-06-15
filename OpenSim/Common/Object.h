@@ -208,9 +208,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-protected:
-	void setType(const std::string &aType);
 public:
+	void setType(const std::string &aType);
 	const std::string& getType() const;
 	void setName(const std::string &aName);
 	const std::string& getName() const;
