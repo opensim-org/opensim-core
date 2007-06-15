@@ -79,14 +79,14 @@ calc(const SimTK::MatterSubsystem& matter,const SimTK::State& state,
 	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
 	SimTK::Vector& mobilityForces,SimTK::Real& pe) const
 {
-	cout<<"SimbodyOpenSimUserForces.calc: forces coming in..."<<endl;
-	cout<<_engine->getBodyForces()<<endl;
-	cout<<_engine->getMobilityForces()<<endl;
+	//cout<<"SimbodyOpenSimUserForces.calc: forces coming in..."<<endl;
+	//cout<<_engine->getBodyForces()<<endl;
+	//cout<<_engine->getMobilityForces()<<endl;
 
 	bodyForces += _engine->getBodyForces();
 	mobilityForces += _engine->getMobilityForces();
 
-	cout<<"SimbodyOpenSimUserForces.calc: forces going out..."<<endl;
-	cout<<_engine->getBodyForces()<<endl;
-	cout<<_engine->getMobilityForces()<<endl;
+	//cout<<"SimbodyOpenSimUserForces.calc: forces going out..."<<endl;
+	//cout<<_engine->getBodyForces()<<endl;
+	//cout<<_engine->getMobilityForces()<<endl;
 }
