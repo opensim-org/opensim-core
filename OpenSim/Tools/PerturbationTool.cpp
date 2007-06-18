@@ -514,18 +514,23 @@ void PerturbationTool::run()
 	// Gather actuators to perturb
 	ActuatorSet *as = _model->getActuatorSet();
 	ArrayPtrs<AbstractActuator> actuators;
+	Array<int> mapPerturbedActuatorsToAllActuators;
 	actuators.setMemoryOwner(false);
 	actuators.setSize(_actuatorsToPerturb.getSize());
 	for(int i=0; i<_actuatorsToPerturb.getSize(); i++) {
 		if(_actuatorsToPerturb[i] == "all") {
 			actuators.setSize(as->getSize());
-			for(int j=0;j<as->getSize();j++) actuators.set(j,as->get(j));
+			for(int j=0;j<as->getSize();j++) {
+				actuators.set(j,as->get(j));
+				mapPerturbedActuatorsToAllActuators.append(j);
+			}
 			break;
 		}
 		int index = as->getIndex(_actuatorsToPerturb[i]);
 		if(index<0) throw Exception("PerturbationTool: ERR- Could not find actuator '"+_actuatorsToPerturb[i]+
 										    "' (listed in "+_actuatorsToPerturbProp.getName()+") in model's actuator set.",__FILE__,__LINE__);
 		actuators.set(i,as->get(index));
+		mapPerturbedActuatorsToAllActuators.append(index);
 	}
 
 	if(_actuatorsToPerturb.getSize() == 0 && !_perturbGravity)
@@ -790,7 +795,10 @@ void PerturbationTool::run()
 		}
 
 		// Unperturbed forces
-		Array<double> unperturbedForces = actuation->getForceStorage()->getStateVector(0)->getData(); // at BEGINNING of timestep
+		Array<double> &unperturbedForcesAll = actuation->getForceStorage()->getStateVector(0)->getData(); // at BEGINNING of timestep
+		// Unperturbed forces for only the subset of actuators we care about
+		Array<double> unperturbedForces(0,actuators.getSize());
+		for(int m=0;m<actuators.getSize();m++) unperturbedForces[m]=unperturbedForcesAll[mapPerturbedActuatorsToAllActuators[m]];
 		// include unperturbed gravity value if doing gravity perturbation
 		if(_perturbGravity) unperturbedForces.append(original_gravity[gravity_axis]);
 
@@ -820,7 +828,7 @@ void PerturbationTool::run()
  			manager.integrate();
 
 			if(m<actuators.getSize()) {
-				cout << "actuator:\t"<<m<<"\tforce:\t"<<unperturbedForces[m]<<endl;
+				cout << "actuator:\t"<<m<<"\tunperturbed force:\t"<<unperturbedForces[m]<<endl;
 			} else {
 				cout << "gravity original:\t"<<unperturbedForces[m]<<endl;
 				// undo gravity perturbation
