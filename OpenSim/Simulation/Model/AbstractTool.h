@@ -11,12 +11,12 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include "AnalysisSet.h"
-#include "Model.h"
 
 namespace OpenSim { 
 
 class Model;
 class ActuatorSet;
+class ContactForceSet;
 
 
 //=============================================================================

@@ -7,6 +7,7 @@
 //=============================================================================
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
+#include "Model.h"
 
 
 
