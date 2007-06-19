@@ -2,9 +2,9 @@
 #define __AbstractDof_h__
 
 // AbstractDof.h
-// Author: Peter Loan
+// Author: Peter Loan, Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2006-2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -24,7 +24,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 
 // INCLUDE
 #include <iostream>
@@ -77,10 +76,10 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
+public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-public:
 	AbstractDof();
 	AbstractDof(const AbstractDof &aDof);
 	virtual ~AbstractDof();
@@ -90,12 +89,15 @@ public:
 	AbstractDof& operator=(const AbstractDof &aDof);
 #endif
    void copyData(const AbstractDof &aDof);
-
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractJoint* aJoint);
+
+	// GET & SET
+	virtual void setCoordinateName(const std::string &aName);
+	virtual DofType getMotionType() const = 0;
+	virtual void setAxis(const double axis[3]) = 0;
 	virtual void getAxis(double axis[3]) const = 0;
 	virtual const double* getAxisPtr(void) const = 0;
 	virtual double getValue() = 0;
-	virtual DofType getMotionType() const = 0;
 	virtual const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	virtual Function* getFunction() const;
 

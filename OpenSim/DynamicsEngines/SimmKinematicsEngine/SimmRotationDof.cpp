@@ -143,6 +143,18 @@ SimmRotationDof& SimmRotationDof::operator=(const SimmRotationDof &aDof)
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Set the rotation axis.
+ *
+ * @param aAxis Rranslation axis.
+ */
+void SimmRotationDof::setAxis(const double aAxis[3])
+{
+	_axis[0] = aAxis[0];
+	_axis[1] = aAxis[1];
+	_axis[2] = aAxis[2];
+}
+//_____________________________________________________________________________
+/**
  * Get the rotation axis.
  *
  * @param rAxis the rotation axis is returned here.

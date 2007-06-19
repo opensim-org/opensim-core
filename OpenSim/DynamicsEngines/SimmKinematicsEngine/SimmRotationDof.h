@@ -2,9 +2,9 @@
 #define __SimmRotationDof_h__
 
 // SimmRotationDof.h
-// Author: Peter Loan
+// Author: Peter Loan, Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2006-2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -71,6 +71,7 @@ public:
 #endif
    void copyData(const SimmRotationDof &aDof);
 
+	virtual void setAxis(const double aAxis[3]);
 	virtual void getAxis(double rAxis[3]) const;
 	const Array<double>& getAxis() const { return _axis; }
 	virtual const double* getAxisPtr() const { return &_axis[0]; }

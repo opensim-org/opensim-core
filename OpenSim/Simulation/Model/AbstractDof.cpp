@@ -164,6 +164,18 @@ AbstractDof& AbstractDof::operator=(const AbstractDof &aDof)
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Set the name of the generalized coordinate that controls this degree
+ * of freedom.
+ *
+ * @param aName Name of the generalized coordinate.
+ */
+void AbstractDof::
+setCoordinateName(const string& aName)
+{
+	_coordinateName = aName;
+}
+//_____________________________________________________________________________
+/**
  * Utility function to return the function that this dof uses.
  * NULL is returned if the dof is a constant.
  *

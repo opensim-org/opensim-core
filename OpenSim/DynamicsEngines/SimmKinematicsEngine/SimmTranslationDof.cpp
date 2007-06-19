@@ -171,18 +171,27 @@ double SimmTranslationDof::getValue()
 
 //_____________________________________________________________________________
 /**
+ * Set the translation axis.
+ *
+ * @param aAxis Translation axis.
+ */
+void SimmTranslationDof::setAxis(const double aAxis[3])
+{
+	_axis[0] = aAxis[0];
+	_axis[1] = aAxis[1];
+	_axis[2] = aAxis[2];
+}
+//_____________________________________________________________________________
+/**
  * Get the translation axis.
  *
  * @param rAxis the translation axis is returned here.
  */
 void SimmTranslationDof::getAxis(double rAxis[3]) const
 {
-	if (rAxis != NULL)
-	{
-		rAxis[0] = _axis[0];
-		rAxis[1] = _axis[1];
-		rAxis[2] = _axis[2];
-	}
+	rAxis[0] = _axis[0];
+	rAxis[1] = _axis[1];
+	rAxis[2] = _axis[2];
 }
 
 //_____________________________________________________________________________
