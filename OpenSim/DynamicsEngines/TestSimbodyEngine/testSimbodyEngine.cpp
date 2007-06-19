@@ -162,6 +162,8 @@ int main()
 	// STEP 11
 	// Print the analysis results.
 	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
+	model->print("pendulum.osim");
+
 
 	// DELETE MODEL
 	delete model;
