@@ -51,6 +51,7 @@
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 
 #include <OpenSim/Java/OpenSimJNI/Hooks/SimtkAnimationCallback.h>
+#include <OpenSim/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
 #include <OpenSim/Tools/osimToolsDLL.h>
 #include <OpenSim/Tools/ForwardTool.h>
@@ -139,6 +140,7 @@ using namespace OpenSim;
 %}
 
 %feature("director") OpenSim::SimtkAnimationCallback;
+%feature("director") OpenSim::SimtkLogCallback;
 
 
 %rename(OpenSimObject) OpenSim::Object;
@@ -340,6 +342,7 @@ using namespace OpenSim;
 %include <OpenSim/Tools/PerturbationTool.h>
 
 %include <OpenSim/Java/OpenSimJNI/Hooks/SimtkAnimationCallback.h>
+%include <OpenSim/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
 %include <OpenSim/Analyses/osimAnalysesDLL.h>
 %include <OpenSim/Analyses/Kinematics.h>

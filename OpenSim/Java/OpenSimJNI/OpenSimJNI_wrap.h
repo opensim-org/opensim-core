@@ -41,5 +41,19 @@ protected:
     bool swig_override[25];
 };
 
+class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {
+
+public:
+    void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
+    SwigDirector_SimtkLogCallback(JNIEnv *jenv);
+    virtual void log(std::string const &str);
+public:
+    bool swig_overrides(int n) {
+      return (n < 1 ? swig_override[n] : false);
+    }
+protected:
+    bool swig_override[1];
+};
+
 
 #endif

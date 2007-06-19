@@ -17,6 +17,7 @@ ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim
 SET_TARGET_PROPERTIES(JavaWrap PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD on)
 
 FILE(GLOB SOURCE_FILES ${swig_generated_file_fullname} Hooks/*.cpp)
+FILE(GLOB INCLUDE_FILES ${swig_generated_file_fullname} Hooks/*.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
@@ -30,7 +31,7 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 LINK_LIBRARIES( osimCommon osimSimulation osimAnalyses osimTools
 		debug xerces-c_2D optimized  xerces-c_2)
 
-ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES}) 
+ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
