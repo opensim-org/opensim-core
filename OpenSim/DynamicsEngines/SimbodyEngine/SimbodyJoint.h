@@ -1,9 +1,9 @@
 #ifndef __SimbodyJoint_h__
 #define __SimbodyJoint_h__
 // SimbodyJoint.h
-// Author: Frank C. Anderson
+// Author: Frank C. Anderson, Peter Loan
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -44,7 +44,7 @@ namespace OpenSim {
 /**
  * A class implementing a Simbody joint.
  *
- * @author Frank C. Anderson
+ * @author Frank C. Anderson, Peter Loan
  * @version 1.0
  */
 class OSIMSIMBODYENGINE_API SimbodyJoint : public AbstractJoint  
@@ -83,10 +83,12 @@ protected:
 	/** Parent body. */
    SimbodyBody *_parentBody;
 
-	/** Forward transform. */
+	/** Transform for expressing a vector given in the child frame in
+	the parent fram. */
 	Transform _forwardTransform;
 
-	/** Inverse transforms. */
+	/** Transform for expressing a vector given in the parent frame in
+	the child frame. */
 	Transform _inverseTransform;
 
 	/** Simbody engine that contains this joint. */
@@ -95,45 +97,43 @@ protected:
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
+	// CONSTRUCTION
 	SimbodyJoint();
 	SimbodyJoint(const SimbodyJoint &aJoint);
 	virtual ~SimbodyJoint();
 	virtual Object* copy() const;
-
 	void setup(AbstractDynamicsEngine* aEngine);
-
 	SimbodyJoint& operator=(const SimbodyJoint &aJoint);
 	void copyData(const SimbodyJoint &aJoint);
 
-	virtual DofSet* getDofSet() const { return NULL; }
+	// GET & SET
+	void setParentBodyName(const std::string& aName);
+	void setChildBodyName(const std::string& aName);
 	virtual SimbodyBody* getChildBody() const { return _childBody; }
 	virtual SimbodyBody* getParentBody() const { return _parentBody; }
+	virtual DofSet* getDofSet() const { return &_dofSet; }
 	virtual void setLocationInParent(const double aLocation[3]);
 	virtual void getLocationInParent(double rLocation[3]) const;
 	virtual void setLocationInChild(const double aLocation[3]);
 	virtual void getLocationInChild(double rLocation[3]) const;
 	virtual const Transform& getForwardTransform();
 	virtual const Transform& getInverseTransform();
-	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const { return false; }
-	virtual bool hasXYZAxes() const;
+
+	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
 
-	void setParentBodyName(const std::string& aName);
-	void setChildBodyName(const std::string& aName);
-	void setSimbodyType(const char* aName);
+	// UTILITY
 	bool isTreeJoint() const;
-
-	virtual void peteTest();
+	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const { return false; }
+	virtual bool hasXYZAxes() const;
 
 private:
 	void setNull();
 	void setupProperties();
 	void calcTransforms();
 	void updateSimbody();
+	friend class SimbodyEngine;
 
 //=============================================================================
 };	// END of class SimbodyJoint

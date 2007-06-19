@@ -4,7 +4,7 @@
 // SimbodyTranslationDof.h
 // Author: Peter Loan, Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -52,8 +52,7 @@ namespace OpenSim {
 class OSIMSIMBODYENGINE_API SimbodyTranslationDof : public AbstractDof  
 {
 public:
-	enum AxisIndex
-	{
+	enum AxisIndex {
 		xTranslation = 0,
 		yTranslation,
 		zTranslation
@@ -84,14 +83,13 @@ public:
 #endif
    void copyData(const SimbodyTranslationDof &aDof);
 
+	virtual void setAxis(const	double axis[3]);
 	virtual void getAxis(double rAxis[3]) const;
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
 	virtual DofType getMotionType() const { return Translational; }
 	void getTranslation(double rVec[4]);
 	AxisIndex getAxisIndex() const { return _axisIndex; }
-
-	virtual void peteTest();
 
 protected:
 

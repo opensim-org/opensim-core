@@ -3,7 +3,7 @@
 // SimbodyEngine.h
 // Authors: Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -65,7 +65,8 @@ class Transform;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing the SimTK Simbody dynamics engine.
+ * A wrapper class to use the SimTK Simbody dynamics engine as the underlying
+ * engine for OpenSim.
  *
  * @authors Frank C. Anderson
  * @version 1.0
@@ -90,7 +91,7 @@ protected:
 	SimTK::SimbodyMatterSubsystem _matter;
 
 	/** Uniform gravity subsystem. */
-	SimTK::UniformGravitySubsystem _gravity;
+	SimTK::UniformGravitySubsystem _gravitySubsystem;
 
 	/** User-force subsystem. */
 	SimTK::GeneralForceElements _userForceElements;

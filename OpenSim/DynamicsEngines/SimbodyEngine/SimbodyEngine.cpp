@@ -1,7 +1,7 @@
 // SimbodyEngine.cpp
 // Authors: Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -42,6 +42,8 @@
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include "SimbodyEngine.h"
 #include "SimbodyOpenSimUserForces.h"
+#include "SimbodyTranslationDof.h"
+#include "SimbodyRotationDof.h"
 
 
 //=============================================================================
@@ -146,7 +148,7 @@ void SimbodyEngine::constructPendulum()
 	
 	// Put subsystems into system
 	_system.setMatterSubsystem(_matter);
-	_system.addForceSubsystem(_gravity);
+	_system.addForceSubsystem(_gravitySubsystem);
 	_system.addForceSubsystem(_userForceElements);
 	SimbodyOpenSimUserForces *osimForces = new SimbodyOpenSimUserForces(this);
 	_userForceElements.addUserForce(osimForces);
@@ -191,9 +193,25 @@ void SimbodyEngine::constructPendulum()
 	speed->_bodyId = bodyId;
 	speed->_mobilityIndex = 0;
 	speed->setName(AbstractSpeed::getSpeedName(coordinate->getName()));
+	speed->setCoordinateName(coordinate->getName());
 	speed->setup(this);
 	_speedSet.append(speed);
 
+	// Joint
+	SimbodyJoint *joint = new SimbodyJoint();
+	joint->_engine = this;
+	joint->setParentBodyName(simbodyGroundName);
+	joint->setChildBodyName("pendulum");
+	OpenSim::Array<double> jointLocationInParent(0.0,3);
+	joint->setLocationInParent(&jointLocationInParent[0]);
+	joint->setLocationInChild(&jointLocation[0]);
+	DofSet *dofSet = joint->getDofSet();
+	SimbodyRotationDof *dof = new SimbodyRotationDof();
+	dof->setCoordinateName("PendulumAxis");
+	OpenSim::Array<double> zAxis(0.0,3);  zAxis[2] = 1.0;
+	dof->setAxis(&zAxis[0]);
+	dofSet->append(dof);
+	_jointSet.append(joint);
 }
 
 
@@ -565,7 +583,8 @@ void SimbodyEngine::applyDefaultConfiguration()
  */
 bool SimbodyEngine::setGravity(double aGrav[3])
 {
-	_gravity.setGravity(_s,Vec3(aGrav[0],aGrav[1],aGrav[2]));
+	_gravitySubsystem.setGravity(_s,Vec3(aGrav[0],aGrav[1],aGrav[2]));
+	AbstractDynamicsEngine::setGravity(aGrav);
 	return true;
 }
 //done_____________________________________________________________________________
@@ -579,7 +598,7 @@ void SimbodyEngine::getGravity(double aGrav[3]) const
 {
 	// TODO:  Is there a better way to do this?
 	Vec3 g;
-	g = _gravity.getGravity(_s);
+	g = _gravitySubsystem.getGravity(_s);
 	aGrav[0] = g[0];
 	aGrav[1] = g[1];
 	aGrav[2] = g[2];

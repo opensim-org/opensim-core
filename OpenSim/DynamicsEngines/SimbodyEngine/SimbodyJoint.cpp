@@ -1,7 +1,7 @@
 // SimbodyJoint.cpp
-// Author: Peter Loan
+// Author: Frank C. Anderson, Peter Loan
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -180,19 +180,16 @@ void SimbodyJoint::setup(AbstractDynamicsEngine* aEngine)
 	// Base class
 	AbstractJoint::setup(aEngine);
 
-	/* Look up the parent and child bodies by name in the
-	 * dynamics engine and store pointers to them.
-	 */
+	// Look up the parent and child bodies by name in the
+	// dynamics engine and store pointers to them.
 	_parentBody = dynamic_cast<SimbodyBody*>(aEngine->getBodySet()->get(_bodies[0]));
-	if (!_parentBody)
-	{
+	if (!_parentBody) {
 		errorMessage += "Invalid parent body (" + _bodies[0] + ") specified in joint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
 
 	_childBody = dynamic_cast<SimbodyBody*>(aEngine->getBodySet()->get(_bodies[1]));
-	if (!_childBody)
-	{
+	if (!_childBody) {
 		errorMessage += "Invalid child body (" + _bodies[0] + ") specified in joint " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
@@ -232,8 +229,9 @@ SimbodyJoint& SimbodyJoint::operator=(const SimbodyJoint &aJoint)
  */
 void SimbodyJoint::setLocationInParent(const double aLocation[3])
 {
+	// Update Simbody
 	if(_parentBody!=NULL) {
-
+		// TODO:  Find out what needs to be done to update Simbody.
 	}
 
 	// Update property
@@ -263,7 +261,7 @@ void SimbodyJoint::getLocationInParent(double rLocation[3]) const
 void SimbodyJoint::setLocationInChild(const double aLocation[3])
 {
 	if(_childBody!=NULL) {
-
+		// TODO:  Find out what needs to be done to update Simbody.
 	}
 
 	// UPDATE PROPERTY
@@ -279,7 +277,6 @@ void SimbodyJoint::getLocationInChild(double rLocation[3]) const
 {
 	Mtx::Assign(1,3,&_locationInChild[0],rLocation);
 }
-
 
 
 //_____________________________________________________________________________
@@ -405,10 +402,3 @@ void SimbodyJoint::scale(const ScaleSet& aScaleSet)
 	setLocationInChild(scaledLocationInChild);
 }
 
-void SimbodyJoint::peteTest()
-{
-	cout << "Joint: " << getName() << endl;
-	cout << "   bodies: " << _bodies << endl;
-
-	_forwardTransform.printMatrix();
-}

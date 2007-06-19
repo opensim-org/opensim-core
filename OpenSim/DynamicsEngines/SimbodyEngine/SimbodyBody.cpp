@@ -207,9 +207,9 @@ void SimbodyBody::setupProperties()
  */
 void SimbodyBody::updateSimbody()
 {
-	setMass(_mass);
-	setMassCenter(&_massCenter[0]);
-	setInertia(_inertia);
+	//setMass(_mass);
+	//setMassCenter(&_massCenter[0]);
+	//setInertia(_inertia);
 }
 
 //_____________________________________________________________________________

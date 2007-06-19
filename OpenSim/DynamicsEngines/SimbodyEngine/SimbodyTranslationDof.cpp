@@ -158,32 +158,43 @@ SimbodyTranslationDof& SimbodyTranslationDof::operator=(const SimbodyTranslation
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Set the translation axis.
+ *
+ * @param aAxis Translation axis.
+ */
+void SimbodyTranslationDof::
+setAxis(const double aAxis[3])
+{
+	_axis[0] = aAxis[0];
+	_axis[1] = aAxis[1];
+	_axis[2] = aAxis[2];
+}
+//_____________________________________________________________________________
+/**
+ * Get the translation axis.
+ *
+ * @param rAxis Translation axis.
+ */
+void SimbodyTranslationDof::
+getAxis(double rAxis[3]) const
+{
+	rAxis[0] = _axis[0];
+	rAxis[1] = _axis[1];
+	rAxis[2] = _axis[2];
+}
+
+//_____________________________________________________________________________
+/**
  * Get the current value of the translation dof
  *
  * @return The current value of the dof.
  */
 double SimbodyTranslationDof::getValue()
 {
-	if (_coordinate)
+	if(_coordinate)
 		return _function->evaluate(0, _coordinate->getValue(), 0.0, 0.0);
 	else
 		return _function->evaluate(0, 0.0, 0.0, 0.0);
-}
-
-//_____________________________________________________________________________
-/**
- * Get the translation axis.
- *
- * @param rAxis the translation axis is returned here.
- */
-void SimbodyTranslationDof::getAxis(double rAxis[3]) const
-{
-	if (rAxis != NULL)
-	{
-		rAxis[0] = _axis[0];
-		rAxis[1] = _axis[1];
-		rAxis[2] = _axis[2];
-	}
 }
 
 //_____________________________________________________________________________
@@ -202,6 +213,7 @@ void SimbodyTranslationDof::getTranslation(double rVec[4])
 	rVec[3] = 1.0;
 }
 
+/*
 void SimbodyTranslationDof::peteTest()
 {
 	cout << "TranslationDof: " << getName() << endl;
@@ -212,3 +224,4 @@ void SimbodyTranslationDof::peteTest()
 	cout << "   coordinate: " << _coordinateName << endl;
 	if (_function) cout << "   function: " << *_function << endl;
 }
+*/

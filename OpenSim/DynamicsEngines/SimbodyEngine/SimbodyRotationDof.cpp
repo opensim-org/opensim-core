@@ -1,7 +1,7 @@
 // SimbodyRotationDof.cpp
 // Author: Peter Loan, Frank C. Anderson
 /*
- * Copyright (c) 2006, Stanford University. All rights reserved. 
+ * Copyright (c) 2006-2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including 
@@ -144,11 +144,25 @@ SimbodyRotationDof& SimbodyRotationDof::operator=(const SimbodyRotationDof &aDof
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Set the rotation axis.
+ *
+ * @param aAxis Rotation axis.
+ */
+void SimbodyRotationDof::
+setAxis(const double aAxis[3])
+{
+	_axis[0] = aAxis[0];
+	_axis[1] = aAxis[1];
+	_axis[2] = aAxis[2];
+}
+//_____________________________________________________________________________
+/**
  * Get the rotation axis.
  *
  * @param rAxis the rotation axis is returned here.
  */
-void SimbodyRotationDof::getAxis(double rAxis[3]) const
+void SimbodyRotationDof::
+getAxis(double rAxis[3]) const
 {
 	rAxis[0] = _axis[0];
 	rAxis[1] = _axis[1];
