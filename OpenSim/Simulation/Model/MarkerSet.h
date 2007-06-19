@@ -59,6 +59,7 @@ public:
 	MarkerSet(const std::string& aMarkersFileName);
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
+	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

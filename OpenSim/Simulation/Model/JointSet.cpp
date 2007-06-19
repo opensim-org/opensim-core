@@ -71,6 +71,20 @@ void JointSet::setNull()
 	setType("JointSet");
 }
 
+/**
+ * Post construction initialization.
+ */
+void JointSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	// Base class
+	Set<AbstractJoint>::setup();
+
+	// Do members
+	for (int i = 0; i < getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

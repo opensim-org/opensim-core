@@ -70,6 +70,20 @@ void SpeedSet::setNull()
 	setType("SpeedSet");
 }
 
+/**
+ * Post construction initialization.
+ */
+void SpeedSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	// Base class
+	Set<AbstractSpeed>::setup();
+
+	// Do members
+	for (int i = 0; i < getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

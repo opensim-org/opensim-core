@@ -57,6 +57,7 @@ public:
 	BodySet();
 	BodySet(const BodySet& aAbsBodySet);
 	~BodySet(void);
+	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -67,6 +68,7 @@ public:
 	// UTILITIES
 	//--------------------------------------------------------------------------
 	void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
+
 //=============================================================================
 };	// END of class BodySet
 //=============================================================================

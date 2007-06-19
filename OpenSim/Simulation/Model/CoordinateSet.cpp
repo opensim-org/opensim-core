@@ -69,6 +69,19 @@ void CoordinateSet::setNull()
 {
 	setType("CoordinateSet");
 }
+/**
+ * Post construction initialization.
+ */
+void CoordinateSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	// Base class
+	Set<AbstractCoordinate>::setup();
+
+	// Do members
+	for (int i = 0; i < getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+
+}
 
 //=============================================================================
 // OPERATORS

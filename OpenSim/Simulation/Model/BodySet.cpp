@@ -71,6 +71,19 @@ void BodySet::setNull()
 	setType("BodySet");
 }
 
+/**
+ * Post construction initialization.
+ */
+void BodySet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	// Base class
+	Set<AbstractBody>::setup();
+
+	// Do members
+	for (int i = 0; i < getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+
+}
 //=============================================================================
 // OPERATORS
 //=============================================================================

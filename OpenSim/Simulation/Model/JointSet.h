@@ -48,6 +48,7 @@ public:
 	JointSet();
 	JointSet(const JointSet& aJointSet);
 	~JointSet(void);
+	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

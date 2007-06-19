@@ -82,6 +82,20 @@ void MarkerSet::setNull()
 	setType("MarkerSet");
 }
 
+/**
+ * Post construction initialization.
+ */
+void MarkerSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	// Base class
+	Set<AbstractMarker>::setup();
+
+	// Do members
+	for (int i = 0; i < getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

@@ -48,6 +48,7 @@ public:
 	CoordinateSet();
 	CoordinateSet(const CoordinateSet& aCoordinateSet);
 	~CoordinateSet(void);
+	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

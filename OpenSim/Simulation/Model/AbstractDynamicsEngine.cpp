@@ -163,25 +163,18 @@ void AbstractDynamicsEngine::setNull()
  * Perform set up functions after model has been deserialized or copied.
  *
  * @param aModel model containing this dynamics engine.
+ * 
+ * Moved setup calls inside the sets to handle groups properly. -Ayman 6/07
  */
 void AbstractDynamicsEngine::setup(Model* aModel)
 {
 	_model = aModel;
 
-	for (int i = 0; i < _bodySet.getSize(); i++)
-		_bodySet.get(i)->setup(this);
-
-	for (int i = 0; i < _coordinateSet.getSize(); i++)
-		_coordinateSet.get(i)->setup(this);
-
-	for (int i = 0; i < _speedSet.getSize(); i++)
-		_speedSet.get(i)->setup(this);
-
-	for (int i = 0; i < _jointSet.getSize(); i++)
-		_jointSet.get(i)->setup(this);
-
-	for (int i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->setup(this);
+	_bodySet.setup(this);
+	_coordinateSet.setup(this);
+	_speedSet.setup(this);
+	_jointSet.setup(this);
+	_markerSet.setup(this);
 }
 //_____________________________________________________________________________
 /**

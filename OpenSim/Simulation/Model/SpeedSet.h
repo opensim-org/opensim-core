@@ -48,6 +48,7 @@ public:
 	SpeedSet();
 	SpeedSet(const SpeedSet& aSpeedSet);
 	~SpeedSet(void);
+	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
