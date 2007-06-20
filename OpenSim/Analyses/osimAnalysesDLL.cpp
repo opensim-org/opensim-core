@@ -46,14 +46,16 @@ BOOL APIENTRY DllMain( HANDLE hModule,
    switch (ul_reason_for_call)
    {
       case DLL_PROCESS_ATTACH:
-      case DLL_THREAD_ATTACH:
          Plugin_Attach();
          break;
 
       case DLL_PROCESS_DETACH:
-      case DLL_THREAD_DETACH:
          Plugin_Detach();
          break;
+
+      case DLL_THREAD_ATTACH:
+      case DLL_THREAD_DETACH:
+			break;
     }
 
     return TRUE;
