@@ -79,7 +79,7 @@ public:
 	virtual void setModel(Model *aModel);
 	void setStorageCapacityIncrements(int aIncrement);
 	const ArrayPtrs<Storage>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
-
+	void setMuscles(Array<std::string>& aMuscles);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

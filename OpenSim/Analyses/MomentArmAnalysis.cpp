@@ -15,6 +15,7 @@
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "MomentArmAnalysis.h"
+#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 
 
 
@@ -164,8 +165,12 @@ allocateStorage()
 {
 	if(_model==NULL) return;
 
+	_momentArmStorageArray.setSize(0);
 	// COLUMN LABELS
 	constructColumnLabels();
+
+	_storageList.setMemoryOwner(false);
+	_storageList.setSize(0);
 
 	// POPULATE MUSCLE LIST FOR "all"
 	_muscleList = _muscleListProp.getValueStrArray();
@@ -183,10 +188,11 @@ allocateStorage()
 	// CREATE STORAGES
 	string name;
 	Storage *store;
-	for(int i=0;i<size;i++) {
-		name = "MomentArm_" + _muscleList[i];
+	for(int i=0;i<_muscleList.getSize();i++) {
+		name = "MomentArm(" + _muscleList[i]+")";
 		store = new Storage(1000,name);
 		store->setColumnLabels(getColumnLabels());
+		_storageList.append(store);
 		_momentArmStorageArray.append(store);
 	}
 }
@@ -239,6 +245,22 @@ setStorageCapacityIncrements(int aIncrement)
 		_momentArmStorageArray[i]->setCapacityIncrement(aIncrement);
 	}
 }
+//_____________________________________________________________________________
+/**
+ * Set the list of muscles to analyze.
+ *
+ * @param aMuscles is the array of names of muscles to analyze.
+ */
+void MomentArmAnalysis::
+setMuscles(Array<std::string>& aMuscles)
+{
+	_muscleListProp.getValueStrArray().setSize(aMuscles.getSize());
+	
+	for(int i=0; i<aMuscles.getSize(); i++){
+		_muscleListProp.getValueStrArray().get(i)=aMuscles.get(i);
+	}
+	allocateStorage();
+}
 
 
 //=============================================================================
@@ -254,7 +276,17 @@ record(double aT,double *aX,double *aY)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
+	// COMPUTE DERIVATIVES
+	// ----------------------------------
+	// SET
+	_model->set(aT,aX,aY);
+	_model->getDerivCallbackSet()->set(aT,aX,aY);
+
+	// ACTUATION
 	_model->getActuatorSet()->computeActuation();
+	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
+	_model->getActuatorSet()->apply();
+	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
 	// TIME NORMALIZATION
 	double tReal = aT * _model->getTimeNormConstant();
@@ -317,7 +349,8 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 	if(!proceed()) return(0);
 
 	// ALLOCATE STORAGE
-	allocateStorage();
+	if (_momentArmStorageArray.getSize()==0)
+		allocateStorage();
 
 	// RESET STORAGE
 	int size = _momentArmStorageArray.getSize();
