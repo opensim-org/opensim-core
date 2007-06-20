@@ -16,6 +16,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "ForwardTool.h"
+#include <OpenSim/Analyses/MuscleAnalysis.h>
+#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -110,6 +112,23 @@ AnalyzeTool::AnalyzeTool(Model *aModel) :
 	setType("AnalyzeTool");
 	setNull();
 	setModel(aModel);
+	// By default add a muscleAnalysis and a MomentArmAnalysis and turn them off if they
+	// they have not been included already
+	AnalysisSet *analysisSet = aModel->getAnalysisSet();
+	if(analysisSet==NULL) {
+		string msg = "AnalysisTool.constructor: ERROR- no analyses have been set.";
+		throw Exception(msg,__FILE__,__LINE__);
+	}
+	if (analysisSet->getIndex("MuscleAnalysis")==-1){
+		MuscleAnalysis* muscleAnalysis = new MuscleAnalysis(aModel);
+		muscleAnalysis->setOn(false);
+		aModel->addAnalysis(muscleAnalysis);
+	}
+	if (analysisSet->getIndex("MomentArmAnalysis")==-1){
+		MomentArmAnalysis* momentArmAnalysis = new MomentArmAnalysis(aModel);
+		momentArmAnalysis->setOn(false);
+		aModel->addAnalysis(momentArmAnalysis);
+	}
 }
 
 //_____________________________________________________________________________
@@ -704,6 +723,8 @@ void AnalyzeTool::run()
 
 		// Step
 		} else {
+			if (_solveForEquilibriumForAuxiliaryStates)
+				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 		}
 
