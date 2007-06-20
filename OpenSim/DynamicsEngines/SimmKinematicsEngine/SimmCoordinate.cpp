@@ -176,7 +176,7 @@ void SimmCoordinate::setupProperties(void)
 
 	_toleranceProp.setComment("Tolerance for a coordinate.");
 	_toleranceProp.setName("tolerance");
-	_toleranceProp.setValue(0.0);
+	_toleranceProp.setValue(1e-6);
 	_propertySet.append(&_toleranceProp);
 
 	_stiffnessProp.setComment("Stiffness of a coordinate.");
@@ -434,7 +434,12 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
  */
 bool SimmCoordinate::setValue(double aValue)
 {
-	// Check if value in range
+	// pull Value in range if it'd off by tolerance due to roundoff
+	if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+		aValue = _range[0];
+	else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+		aValue = _range[1];
+
 	if (aValue >= _range[0] && aValue <= _range[1] || !_clamped)
 	{
 		// Check if the value is sufficiently different
