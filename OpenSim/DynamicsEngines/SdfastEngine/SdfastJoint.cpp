@@ -53,10 +53,10 @@ SdfastJoint::SdfastJoint() :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_locationInParent(_locationInParentProp.getValueDblArray()),
 	_locationInChild(_locationInChildProp.getValueDblArray()),
-	_childBody(NULL),
-	_parentBody(NULL),
 	_index(_indexProp.getValueInt()),
-	_SdfastTypeName(_SdfastTypeNameProp.getValueStr())
+	_SdfastTypeName(_SdfastTypeNameProp.getValueStr()),
+	_childBody(NULL),
+	_parentBody(NULL)
 {
 	setNull();
 	setupProperties();
@@ -82,10 +82,10 @@ SdfastJoint::SdfastJoint(const SdfastJoint &aJoint) :
 	_bodies(_bodiesProp.getValueStrArray()),
 	_locationInParent(_locationInParentProp.getValueDblArray()),
 	_locationInChild(_locationInChildProp.getValueDblArray()),
-	_childBody(NULL),
-	_parentBody(NULL),
 	_index(_indexProp.getValueInt()),
-	_SdfastTypeName(_SdfastTypeNameProp.getValueStr())
+	_SdfastTypeName(_SdfastTypeNameProp.getValueStr()),
+	_childBody(NULL),
+	_parentBody(NULL)
 {
 	setNull();
 	setupProperties();

@@ -7,7 +7,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <SimTKMath.h>
+#include <SimTKmath.h>
 #include <simmath/Optimizer.h>
 #include "IKSolverImpl.h"
 #include "IKTarget.h"

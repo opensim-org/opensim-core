@@ -267,14 +267,14 @@ void MuscleWrap::setWrapObject(AbstractWrapObject& aWrapObject)
 
 void MuscleWrap::setMethod(WrapMethod aMethod)
 {
-	if (aMethod == WrapMethod::axial) {
-		_method = WrapMethod::axial;
+	if (aMethod == axial) {
+		_method = axial;
 		_methodName = "axial";
-	} else if (aMethod == WrapMethod::midpoint) {
-		_method = WrapMethod::midpoint;
+	} else if (aMethod == midpoint) {
+		_method = midpoint;
 		_methodName = "midpoint";
-	} else if (aMethod == WrapMethod::hybrid) {
-		_method = WrapMethod::hybrid;
+	} else if (aMethod == hybrid) {
+		_method = hybrid;
 		_methodName = "hybrid";
 	}
 }

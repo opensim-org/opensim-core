@@ -59,7 +59,7 @@ void AddEnvironmentVariablesFromFile(const std::string &aFileName)
 #ifdef WIN32
 			_putenv(env.c_str());
 #else
-			putenv(env.c_str());
+			putenv(const_cast<char*>(env.c_str()));
 #endif
 		}
 	}

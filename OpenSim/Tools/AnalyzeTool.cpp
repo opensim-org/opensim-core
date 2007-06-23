@@ -270,7 +270,7 @@ void AnalyzeTool::setupProperties()
 	_speedsFileNameProp.setName("speeds_file");
 	_propertySet.append( &_speedsFileNameProp );
 
-	comment = "Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). ";
+	comment = "Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). "
 				 "A negative value results in no filtering. The default value is -1.0, so no filtering.";
 	_lowpassCutoffFrequencyProp.setComment(comment);
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");

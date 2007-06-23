@@ -2008,7 +2008,7 @@ pad(int aPadSize)
 
 	// APPEND THE STATEVECTORS
 	_storage.setSize(0);
-	for(i=0;i<newSize;i++) _storage.append(vecs[i]);
+	for(int i=0;i<newSize;i++) _storage.append(vecs[i]);
 
 	// CLEANUP
 	delete[] vecs;

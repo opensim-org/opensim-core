@@ -9,6 +9,7 @@ namespace OpenSim {
 class OSIMCOMMON_API LogCallback
 {
 public:
+	virtual ~LogCallback() {}
 	virtual void log(const std::string &str) = 0;
 };
 
