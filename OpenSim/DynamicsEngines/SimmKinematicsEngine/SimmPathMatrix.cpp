@@ -183,7 +183,7 @@ void SimmPathMatrix::invalidate()
  */
 int SimmPathMatrix::hash(const AbstractBody* aFromBody, const AbstractBody* aToBody) const
 {
-	int hash_value = ((int)(intptr_t)aFromBody / cHash1 + (int)(intptr_t)aToBody) / cHash2 % _size;
+	unsigned int hash_value = ((unsigned int)(uintptr_t)aFromBody / cHash1 + (unsigned int)(uintptr_t)aToBody) / cHash2 % _size;
 
 	SimmPath* hashEntry;
 	for (int i = 0; i < _size; i++)
@@ -195,7 +195,7 @@ int SimmPathMatrix::hash(const AbstractBody* aFromBody, const AbstractBody* aToB
 			return hash_value;
 		}
 		hash_value++;
-		if (hash_value >= _size)
+		if (hash_value >= (unsigned int)_size)
 			hash_value = 0;
 	}
 
