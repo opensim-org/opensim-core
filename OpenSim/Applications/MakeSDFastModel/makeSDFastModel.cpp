@@ -121,7 +121,6 @@ int main(int argc,char **argv)
 			// Construct the model
 			Model *model = new Model(inName);
 			model->setup();
-			//model->peteTest();
 
 			// Create SdfastFileWriter object and write out selected files
 			SdfastFileWriter sfw(model, folderName);

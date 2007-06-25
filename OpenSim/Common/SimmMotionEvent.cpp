@@ -155,11 +155,3 @@ void SimmMotionEvent::setColor(double* aColor)
 	for (int i = 0; i < 3; i++)
 		_color[i] = aColor[i];
 }
-
-void SimmMotionEvent::peteTest() const
-{
-	cout << "   Event: " << getName() << endl;
-	cout << "      time: " << _time << endl;
-	cout << "      color: " << _color << endl;
-}
-

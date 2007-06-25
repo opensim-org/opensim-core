@@ -798,24 +798,3 @@ int SimmMotionData::getFrameNumberForTime(double time) const
 	else
 		return i;
 }
-
-void SimmMotionData::peteTest() const
-{
-	cout << "   MotionData: " << endl;
-	cout << "      numRows: " << _numRows << endl;
-	cout << "      numColumns: " << _numColumns << endl;
-	cout << "      fileName: " << _fileName << endl;
-	cout << "      range: " << _rangeMin << " to " << _rangeMax << endl;
-	cout << "      units: " << _units.getLabel() << endl;
-
-	int i;
-	for (i = 0; i < _numColumns; i++)
-		cout << "      column " << i << ": " << _columnNames[i].c_str() << endl;
-
-	for (i = 0; i < _numRows; i++)
-	{
-		for (int j = 0; j < _numColumns; j++)
-			cout << (_rows[i])[j] << " ";
-		cout << endl;
-	}
-}

@@ -443,31 +443,3 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 		return rdMath::NAN;
 	}
 }
-
-void ModelScaler::peteTest() const
-{
-	int i;
-	Array<double> factors(0.0);
-
-	cout << "   ModelScaler: " << getName() << endl;
-	cout << "      scaling_order: " << _scalingOrder << endl;
-	cout << "      measurements (" << _measurementSet.getSize() << "):" << endl;
-	for (i = 0; i < _measurementSet.getSize(); i++)
-		_measurementSet.get(i)->peteTest();
-	cout << "      scales (" << _scaleSet.getSize() << "):" << endl;
-	for (i = 0; i < _scaleSet.getSize(); i++)
-	{
-		_scaleSet[i]->getScaleFactors(factors);
-		cout << "      Scale:" << endl;
-		cout << "         body: " << _scaleSet[i]->getSegmentName() << endl;
-		cout << "         scale factors: " << factors << endl;
-		cout << "         apply: " << _scaleSet[i]->getApply() << endl;
-	}
-	cout << "      markerFileName: " << _markerFileName << endl;
-	cout << "      timeRange: " << _timeRange << endl;
-	cout << "      preserveMassDist: " << _preserveMassDist << endl;
-	cout << "      outputJointFile: " << _outputJointFileName << endl;
-	cout << "      outputMuscleFile: " << _outputMuscleFileName << endl;
-	cout << "      outputModelFile: " << _outputModelFileName << endl;
-	cout << "      outputScaleFile: " << _outputScaleFileName << endl;
-}

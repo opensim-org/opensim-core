@@ -144,10 +144,3 @@ MuscleWrapPoint& MuscleWrapPoint::operator=(const MuscleWrapPoint &aPoint)
 
 	return(*this);
 }
-
-void MuscleWrapPoint::peteTest() const
-{
-	cout << "   MuscleViaPoint: " << getName() << endl;
-	cout << "      point: " << getAttachment() << endl;
-	cout << "      body: " << _body->getName() << endl;
-}

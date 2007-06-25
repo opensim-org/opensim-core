@@ -136,10 +136,3 @@ BodyScale& BodyScale::operator=(const BodyScale &aBodyScale)
 
 	return(*this);
 }
-
-void BodyScale::peteTest() const
-{
-	cout << "         BodyScale: " << getName() << endl;
-	cout << "            _axes: " << _axisNames << endl;
-}
-

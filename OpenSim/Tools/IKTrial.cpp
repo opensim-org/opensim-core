@@ -306,17 +306,3 @@ void IKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFr
 	oStartFrame = aData.findIndex(0, _timeRange[0]);
 	oEndFrame = aData.findIndex(aData.getSize()-1, _timeRange[1]);
 }
-
-void IKTrial::peteTest() const
-{
-	cout << "   IKTrial: " << getName() << endl;
-	cout << "      markerFileName: " << _markerFileName << endl;
-	cout << "      coordinateFileName: " << _coordinateFileName << endl;
-	cout << "      analogFileName: " << _analogFileName << endl;
-	cout << "      timeRange: " << _timeRange << endl;
-	cout << "      kinematicsSmoothing: " << _kinematicsSmoothing << endl;
-	cout << "      groundReactionSmoothing: " << _groundReactionSmoothing << endl;
-	cout << "      includeMarkers: " << _includeMarkers << endl;
-	cout << "      outputMotionFile: " << _outputMotionFileName << endl;
-	cout << "      notes: " << _notes << endl;
-}

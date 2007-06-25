@@ -121,8 +121,6 @@ public:
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry();
 
-	virtual void peteTest() const;
-
 	OPENSIM_DECLARE_DERIVED(MusclePoint, Object);
 protected:
 

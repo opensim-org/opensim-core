@@ -82,8 +82,6 @@ public:
 	Transform& getForwardTransform();
 	Transform& getInverseTransform();
 
-	void peteTest() const;
-
 private:
 	void calcTransforms();
 

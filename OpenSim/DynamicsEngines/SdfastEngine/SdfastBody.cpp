@@ -590,9 +590,3 @@ void SdfastBody::transformFromSdfastFrame(const Array<double>& aPos, double rPos
 	for(int i=0; i<3; i++)
 		rPos[i] = aPos[i] + _massCenter[i];
 }
-
-void SdfastBody::peteTest() const
-{
-	cout << "Body: " << getName() << endl;
-	cout << "   massCenter: " << _massCenter << endl;
-}

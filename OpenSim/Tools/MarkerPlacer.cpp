@@ -371,17 +371,3 @@ void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
 
 	cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
 }
-
-void MarkerPlacer::peteTest() const
-{
-	cout << "   MarkerPlacementParams: " << getName() << endl;
-	cout << "      markerFileName: " << _markerFileName << endl;
-	cout << "      timeRange: " << _timeRange << endl;
-	cout << "      coordinateFileName: " << _coordinateFileName << endl;
-	cout << "      outputJointFile: " << _outputJointFileName << endl;
-	cout << "      outputMuscleFile: " << _outputMuscleFileName << endl;
-	cout << "      outputModelFile: " << _outputModelFileName << endl;
-	cout << "      outputMarkerFile: " << _outputMarkerFileName << endl;
-	cout << "      outputMotionFile: " << _outputMotionFileName << endl;
-	cout << "      maxMarkerMovement: " << _maxMarkerMovement << endl;
-}

@@ -133,8 +133,6 @@ public:
 	void init(Model* aModel);
 	virtual void setup(Model* aModel);
 
-	virtual void peteTest() const;
-
 	//--------------------------------------------------------------------------
    // GET/SET
 	//--------------------------------------------------------------------------

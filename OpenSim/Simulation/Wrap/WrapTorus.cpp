@@ -493,16 +493,3 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 
    resid[0] = c2 + 2.0 * u - 2.0 * cb->r * (2.0 * c4 * u + 2.0 * c3) / sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 }
-
-//=============================================================================
-// TEST
-//=============================================================================
-void WrapTorus::peteTest() const
-{
-	cout << "   Torus Wrap Object " << getName() << endl;
-
-	AbstractWrapObject::peteTest();
-
-	cout << "      inner_radius: " << _innerRadius << endl;
-	cout << "      outer_radius: " << _outerRadius << endl;
-}

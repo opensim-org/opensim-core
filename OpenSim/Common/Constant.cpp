@@ -174,10 +174,3 @@ void Constant::updateBoundingBox()
 	setMaxY(0.0);
 	setMaxZ(0.0);
 }
-
-void Constant::peteTest() const
-{
-	cout << "Constant" << endl;
-	cout << "   value: " << _value << endl;
-}
-

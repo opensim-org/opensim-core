@@ -278,11 +278,3 @@ void MusclePoint::scale(Array<double>& aScaleFactors)
 
 	updateGeometry();
 }
-
-void MusclePoint::peteTest() const
-{
-	cout << "   MusclePoint: " << getName() << endl;
-	cout << "      point: " << getAttachment() << endl;
-	if (_body)
-		cout << "      body: " << _body->getName() << endl;
-}

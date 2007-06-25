@@ -323,14 +323,3 @@ int AbstractWrapObject::wrapMuscleSegment(MusclePoint& aPoint1, MusclePoint& aPo
 
    return return_code;
 }
-
-//=============================================================================
-// TEST
-//=============================================================================
-void AbstractWrapObject::peteTest() const
-{
-	cout << "      xyz_body_rotation: " << _xyzBodyRotation[0] << " " << _xyzBodyRotation[1] << " " << _xyzBodyRotation[2] << endl;
-	cout << "      translation: " << _translation[0] << " " << _translation[1] << " " << _translation[2] << endl;
-	cout << "      active: " << _active << endl;
-	cout << "      quadrant: " << _quadrantName << endl;
-}

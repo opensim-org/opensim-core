@@ -149,8 +149,6 @@ public:
 	}
 	//std::string getParentDirectory(const std::string& fileName);
 
-	void peteTest() const;
-
 protected:
 
 private:

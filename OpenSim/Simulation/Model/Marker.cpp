@@ -411,9 +411,3 @@ void Marker::updateGeometry()
 	getDisplayer()->setTransform(position);
 
 }
-void Marker::peteTest() const
-{
-	cout << "   Marker: " << getName() << endl;
-	cout << "      location: " << _offset << endl;
-	cout << "      fixed: " << ((_fixed) ? ("true") : ("false")) << endl;
-}

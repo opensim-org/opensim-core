@@ -185,8 +185,3 @@ Function* AbstractDof::getFunction() const
 {
 	return _function;
 }
-
-void AbstractDof::peteTest(void)
-{
-	cout << "DOF base class" << endl;
-}

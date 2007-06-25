@@ -104,8 +104,6 @@ public:
 	virtual bool isActive() const;
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 
-	virtual void peteTest() const;
-
 	OPENSIM_DECLARE_DERIVED(MuscleViaPoint, MusclePoint);
 private:
 	void setNull();

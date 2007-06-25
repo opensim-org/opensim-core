@@ -100,8 +100,6 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void scale(const Array<double> &aScaleFactors);
 
-	virtual void peteTest();
-
 private:
 	void setNull();
 	void setupProperties();

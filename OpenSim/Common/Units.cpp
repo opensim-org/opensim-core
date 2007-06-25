@@ -236,9 +236,3 @@ const char* Units::getLabel() const
 			return "unknown";
 	}
 }
-
-void Units::peteTest() const
-{
-	cout << "   Units: " << getLabel() << endl;
-}
-

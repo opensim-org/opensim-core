@@ -89,9 +89,3 @@ Transform& SimmStep::getJointTransform()
 
 	return _transformCache;
 }
-
-void SimmStep::peteTest() const
-{
-	cout << "SimmStep: ";
-	cout << endl;
-}

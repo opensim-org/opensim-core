@@ -120,8 +120,6 @@ public:
 	void transformFromSdfastFrame(const double aPos[3], double rPos[3]) const;
 	void transformFromSdfastFrame(const Array<double>& aPos, double rPos[3]) const;
 
-	virtual void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

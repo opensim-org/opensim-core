@@ -835,21 +835,3 @@ double SimmZajacHill::computeIsometricForce(double aActivation)
    return tendon_force;
 }
 
-void SimmZajacHill::peteTest()
-{
-	AbstractMuscle::peteTest();
-
-	cout << "   timeScale: " << _timeScale << endl;
-	cout << "   activation1: " << _activation1 << endl;
-	cout << "   activation2: " << _activation2 << endl;
-	cout << "   maxIsometricForce: " << _maxIsometricForce << endl;
-	cout << "   optimalFiberLength: " << _optimalFiberLength << endl;
-	cout << "   tendonSlackLength: " << _tendonSlackLength << endl;
-	cout << "   pennationAngle: " << _pennationAngle << endl;
-	cout << "   maxContractionVelocity: " << _maxContractionVelocity << endl;
-	cout << "   damping: " << _damping << endl;
-	if (_tendonForceLengthCurve) cout << "   tendonForceLengthCurve: " << *_tendonForceLengthCurve << endl;
-	if (_activeForceLengthCurve) cout << "   activeForceLengthCurve: " << *_activeForceLengthCurve << endl;
-	if (_passiveForceLengthCurve) cout << "   passiveForceLengthCurve: " << *_passiveForceLengthCurve << endl;
-	if (_forceVelocityCurve) cout << "   forceVelocityCurve: " << *_forceVelocityCurve << endl;
-}

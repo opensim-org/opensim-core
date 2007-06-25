@@ -103,8 +103,6 @@ public:
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
 	void getScaleFactors(Array<double>& aScaleFactors) const;
 
-	virtual void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

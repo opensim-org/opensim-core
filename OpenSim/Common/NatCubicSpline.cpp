@@ -576,12 +576,3 @@ void NatCubicSpline::scaleY(double aScaleFactor)
 	// Recalculate the coefficients
 	calcCoefficients();
 }
-
-void NatCubicSpline::peteTest() const
-{
-	cout << "NatCubicSpline" << endl;
-	cout << "   x: " << _x << endl;
-	cout << "   y: " << _y << endl;
-	cout << "   b: " << _b << endl;
-}
-

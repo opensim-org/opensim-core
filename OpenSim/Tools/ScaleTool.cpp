@@ -344,11 +344,3 @@ Model* ScaleTool::createModel()
 	}
 	return 0;
 }
-
-void ScaleTool::peteTest() const
-{
-	cout << "   Subject: " << getName() << endl;
-	_genericModelMaker.peteTest();
-	_modelScaler.peteTest();
-	_markerPlacer.peteTest();
-}

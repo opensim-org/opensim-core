@@ -146,8 +146,6 @@ public:
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry() {};
 
-	virtual void peteTest() const;
-
 protected:
 	void setupProperties();
 	void setupQuadrant();

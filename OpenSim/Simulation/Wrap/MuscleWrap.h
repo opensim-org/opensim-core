@@ -127,8 +127,6 @@ public:
 	void setPreviousWrap(const WrapResult& aWrapResult);
 	void resetPreviousWrap();
 
-	virtual void peteTest() const;
-
 protected:
 	void setupProperties();
 

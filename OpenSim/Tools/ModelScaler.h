@@ -136,8 +136,6 @@ public:
 		return _preserveMassDist;
 	}
 
-	void peteTest() const;
-
 	/**
 	 * add a measurement
 	 */

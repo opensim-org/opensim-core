@@ -77,7 +77,6 @@ public:
 	SimmPath* getSimmPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;
 	const JointPath* getPath(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;
 	void setPath(const AbstractBody* aFromBody, const AbstractBody* aToBody, JointPath aPath);
-	void peteTest() const;
 
 private:
 	int hash(const AbstractBody* aFromBody, const AbstractBody* aToBody) const;

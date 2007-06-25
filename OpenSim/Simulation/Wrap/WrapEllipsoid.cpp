@@ -1284,15 +1284,3 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 
 	return sqrt(dx*dx + dy*dy);
 }
-
-//=============================================================================
-// TEST
-//=============================================================================
-void WrapEllipsoid::peteTest() const
-{
-	cout << "   Ellipsoid Wrap Object " << getName() << endl;
-
-	AbstractWrapObject::peteTest();
-
-	cout << "      dimensions: " << _dimensions[0] << " " << _dimensions[1] << " " << _dimensions[2] << endl;
-}

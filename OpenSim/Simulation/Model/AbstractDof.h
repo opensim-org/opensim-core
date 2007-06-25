@@ -101,8 +101,6 @@ public:
 	virtual const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	virtual Function* getFunction() const;
 
-	virtual void peteTest();
-
 private:
 	void setNull();
 	void setupProperties();

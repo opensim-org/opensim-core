@@ -179,11 +179,3 @@ double SimmRotationDof::getValue()
 	else
 		return _function->evaluate(0, 0.0, 0.0, 0.0);
 }
-
-void SimmRotationDof::peteTest()
-{
-	cout << "RotationDof: " << getName() << endl;
-	cout << "   value: " << getValue() << endl;
-	cout << "   coordinate: " << _coordinateName << endl;
-	if (_function) cout << "   function: " << *_function << endl;
-}

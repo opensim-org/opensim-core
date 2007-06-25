@@ -883,24 +883,3 @@ double SimmDarrylMuscle::computeIsometricForce(double aActivation)
 
    return tendon_force;
 }
-
-void SimmDarrylMuscle::peteTest()
-{
-	AbstractMuscle::peteTest();
-
-	cout << "   activationTimeConstant: " << _activationTimeConstant << endl;
-	cout << "   deactivationTimeConstant: " << _deactivationTimeConstant << endl;
-	cout << "   maxIsometricForce: " << _maxIsometricForce << endl;
-	cout << "   optimalFiberLength: " << _optimalFiberLength << endl;
-	cout << "   tendonSlackLength: " << _tendonSlackLength << endl;
-	cout << "   pennationAngle: " << _pennationAngle << endl;
-	cout << "   _vmax: " << _vmax << endl;
-	cout << "   vmax0: " << _vmax0 << endl;
-	cout << "   fmaxTendonStrain: " << _fmaxTendonStrain << endl;
-	cout << "   fmaxMuscleStrain: " << _fmaxMuscleStrain << endl;
-	cout << "   kShapeActive: " << _kShapeActive << endl;
-	cout << "   kShapePassive: " << _kShapePassive << endl;
-	cout << "   damping: " << _damping << endl;
-	cout << "   af: " << _af << endl;
-	cout << "   flen: " << _flen << endl;
-}

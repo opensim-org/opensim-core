@@ -78,8 +78,6 @@ public:
 	virtual double getValue();
 	virtual DofType getMotionType() const { return Rotational; }
 
-	virtual void peteTest();
-
 protected:
 
 private:

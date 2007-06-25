@@ -156,8 +156,6 @@ public:
 	void setOptimizerAlgorithm(const std::string& aOptimizerAlgorithm) { _optimizerAlgorithm = aOptimizerAlgorithm; }
 	std::string getOptimizerAlgorithm() const { return _optimizerAlgorithm; }
 
-	void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

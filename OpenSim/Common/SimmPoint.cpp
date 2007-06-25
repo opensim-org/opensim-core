@@ -204,8 +204,3 @@ bool SimmPoint::isVisible() const
 
 	return true;
 }
-
-void SimmPoint::peteTest() const
-{
-	cout << "      SimmPoint: " << _location[0] << ", " << _location[1] << ", " << _location[2] << endl;
-}

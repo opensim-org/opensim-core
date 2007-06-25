@@ -202,15 +202,3 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 		}
 	}
 }
-
-void Measurement::peteTest() const
-{
-	int i;
-
-	cout << "      Measurement: " << getName() << endl;
-	cout << "         apply: " << _apply << endl;
-	for (i = 0; i < _markerPairSet.getSize(); i++)
-		_markerPairSet[i]->peteTest();
-	for (i = 0; i < _bodyScaleSet.getSize(); i++)
-		_bodyScaleSet[i]->peteTest();
-}

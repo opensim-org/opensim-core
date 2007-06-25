@@ -1295,70 +1295,6 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 //=============================================================================
 // TEST
 //=============================================================================
-void Model::peteTest() const
-{
-	cout << "Model " << getName() << endl;
-
-	cout << "   lengthUnits: " << _lengthUnits.getLabel() << endl;
-	cout << "   forceUnits: " << _forceUnits.getLabel() << endl;
-
-	_actuatorSet.peteTest();
-
-	getDynamicsEngine().peteTest();
-}
-
-#if 0
-void Model::kinTest()
-{
-	int m1 = 0, m2 = 1;
-	AbstractMuscle* ms1;
-	AbstractMuscle* ms2;
-	AbstractCoordinate* hip_flex_r;
-	AbstractCoordinate* knee_flex_r;
-
-	hip_flex_r = getDynamicsEngine().getCoordinate("hip_flex_r");
-	knee_flex_r = getDynamicsEngine().getCoordinate("knee_flex_r");
-	ms1 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(m1));
-	ms2 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get(m2));
-
-	if (hip_flex_r && knee_flex_r && ms1 && ms2)
-	{
-		cout << "kinTest" << endl;
-
-		hip_flex_r->setValue(0.0 * rdMAth::DTR);
-		knee_flex_r->setValue(0.0 * rdMAth::DTR);
-
-		cout << hip_flex_r->getName() << " = " << hip_flex_r->getValue() << ", " << knee_flex_r->getName() << " = " << knee_flex_r->getValue() << endl;
-		cout << ms1->getName() << ": length = " << ms1->getLength() << ", ma(hip_flex_r) = " << ms1->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms1->getMomentArm(*knee_flex_r) << endl;
-		cout << ms2->getName() << ": length = " << ms2->getLength() << ", ma(hip_flex_r) = " << ms2->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms2->getMomentArm(*knee_flex_r) << endl;
-		cout << endl;
-
-		hip_flex_r->setValue(30.0 * rdMAth::DTR);
-		knee_flex_r->setValue(0.0 * rdMAth::DTR);
-
-		cout << hip_flex_r->getName() << " = " << hip_flex_r->getValue() << ", " << knee_flex_r->getName() << " = " << knee_flex_r->getValue() << endl;
-		cout << ms1->getName() << ": length = " << ms1->getLength() << ", ma(hip_flex_r) = " << ms1->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms1->getMomentArm(*knee_flex_r) << endl;
-		cout << ms2->getName() << ": length = " << ms2->getLength() << ", ma(hip_flex_r) = " << ms2->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms2->getMomentArm(*knee_flex_r) << endl;
-		cout << endl;
-
-		hip_flex_r->setValue(0.0 * rdMAth::DTR);
-		knee_flex_r->setValue(30.0 * rdMAth::DTR);
-
-		cout << hip_flex_r->getName() << " = " << hip_flex_r->getValue() << ", " << knee_flex_r->getName() << " = " << knee_flex_r->getValue() << endl;
-		cout << ms1->getName() << ": length = " << ms1->getLength() << ", ma(hip_flex_r) = " << ms1->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms1->getMomentArm(*knee_flex_r) << endl;
-		cout << ms2->getName() << ": length = " << ms2->getLength() << ", ma(hip_flex_r) = " << ms2->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms2->getMomentArm(*knee_flex_r) << endl;
-		cout << endl;
-
-		hip_flex_r->setValue(20.0 * rdMAth::DTR);
-		knee_flex_r->setValue(60.0 * rdMAth::DTR);
-
-		cout << hip_flex_r->getName() << " = " << hip_flex_r->getValue() << ", " << knee_flex_r->getName() << " = " << knee_flex_r->getValue() << endl;
-		cout << ms1->getName() << ": length = " << ms1->getLength() << ", ma(hip_flex_r) = " << ms1->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms1->getMomentArm(*knee_flex_r) << endl;
-		cout << ms2->getName() << ": length = " << ms2->getLength() << ", ma(hip_flex_r) = " << ms2->getMomentArm(*hip_flex_r) << ", ma(knee_flex_r) = " << ms2->getMomentArm(*knee_flex_r) << endl;
-		cout << endl;
-	}
-}
-#endif
 void Model::kinTest()
 {
 	AbstractMuscle* ms1;
@@ -1384,20 +1320,5 @@ void Model::kinTest()
 			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = " << ms2->computeMomentArm(*knee_flex_r) << endl;
 		}
 	}
-#if 0
-	if (hip_flex_r && knee_flex_r && ms1)
-	{
-		cout << "kinTest" << endl;
-
-		knee_flex_r->setValue(0.0);
-
-		cout << ms1->getName() << endl;
-		for (double angle = 0.0; angle < 91.0 * rdMath::DTR; angle += 5.0 * rdMath::DTR)
-		{
-			hip_flex_r->setValue(angle);
-			cout << "hip_flex_r = " << angle * rdMath::RTD << ", len = " << ms1->getLength() << ", ma = " << ms1->computeMomentArm(*hip_flex_r) << endl;
-		}
-	}
-#endif
 }
 

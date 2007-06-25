@@ -72,8 +72,6 @@ public:
 
 	const Array<std::string>& getAxisNames() const { return _axisNames; }
 
-	void peteTest() const;
-
 protected:
 
 private:

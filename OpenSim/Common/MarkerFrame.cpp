@@ -134,14 +134,3 @@ void MarkerFrame::scale(double aScaleFactor)
 			pt[j] *= aScaleFactor;
 	}
 }
-
-void MarkerFrame::peteTest() const
-{
-	cout << "      MarkerFrame " << _frameNumber << ": " << endl;
-	cout << "         numMarkers: " << _numMarkers << endl;
-	cout << "         frameTime: " << _frameTime << endl;
-	cout << "         units: " << _units.getLabel() << endl;
-
-	for (int i = 0; i < _numMarkers; i++)
-		cout << "         marker " << i << ": " << _markers[i]->get()[0] << ", " << _markers[i]->get()[1] << ", " << _markers[i]->get()[2] << endl;
-}

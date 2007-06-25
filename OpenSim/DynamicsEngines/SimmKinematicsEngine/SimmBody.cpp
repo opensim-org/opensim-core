@@ -376,19 +376,3 @@ void SimmBody::getScaleFactors(Array<double>& scales) const
 		scales[i] = scaleFactors[i];
 
 }
-
-void SimmBody::peteTest() const
-{
-	cout << "Body: " << getName() << endl;
-	cout << "   mass: " << _mass << endl;
-	cout << "   massCenter: " << _massCenter << endl;
-	cout << "   inertia: " << _inertia << endl;
-
-	if (_wrapObjectSet.getSize() > 0) {
-		int i;
-		for (i = 0; i < _wrapObjectSet.getSize(); i++)
-			_wrapObjectSet.get(i)->peteTest();
-	} else {
-		cout << "   no wrap objects" << endl;
-	}
-}

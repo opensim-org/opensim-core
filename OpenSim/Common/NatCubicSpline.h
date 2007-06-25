@@ -112,8 +112,6 @@ public:
 	virtual int getNumberOfPoints() const { return _x.getSize(); }
 	virtual void scaleY(double aScaleFactor);
 
-	void peteTest() const;
-
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------

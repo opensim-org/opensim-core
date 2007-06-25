@@ -104,8 +104,6 @@ public:
 	void setSdfastIndex(int aIndex) { _index = aIndex; }
 	int getSdfastIndex() const { return _index; }
 
-	virtual void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

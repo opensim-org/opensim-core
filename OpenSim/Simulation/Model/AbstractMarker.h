@@ -88,7 +88,6 @@ public:
 	virtual void removeSelfFromDisplay() = 0;
 	virtual VisibleObject* getDisplayer() const { return NULL; }
 	virtual void updateGeometry() = 0;
-	virtual void peteTest() const { }
 
 	OPENSIM_DECLARE_DERIVED(AbstractMarker, Object);
 

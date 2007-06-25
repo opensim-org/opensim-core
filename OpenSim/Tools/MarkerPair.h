@@ -75,8 +75,6 @@ public:
 
 	void getMarkerNames(std::string& aName1, std::string& aName2) const;
 
-	void peteTest() const;
-
 protected:
 
 private:

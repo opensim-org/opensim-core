@@ -209,14 +209,3 @@ void SimmTranslationDof::getTranslation(double rVec[4])
 	rVec[2] = _axis[2] * value;
 	rVec[3] = 1.0;
 }
-
-void SimmTranslationDof::peteTest()
-{
-	cout << "TranslationDof: " << getName() << endl;
-	double v[4];
-	getTranslation(v);
-	cout << "   trans: " << v[0] << ", " << v[1] << ", " << v[2] << endl;
-	cout << "   axisIndex: " << _axisIndex << endl;
-	cout << "   coordinate: " << _coordinateName << endl;
-	if (_function) cout << "   function: " << *_function << endl;
-}

@@ -31,6 +31,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
+#include <OpenSim/Actuators/SimmZajacHill.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -49,17 +51,21 @@ int main(int argc, char **argv)
 	Object::RegisterType(SdfastEngine());
 	SdfastEngine::registerTypes();
 
+	Object::RegisterType(SimmKinematicsEngine());
+	SimmKinematicsEngine::registerTypes();
+
+	Object::RegisterType(SimmZajacHill());
+	//SimmZajacHill::registerTypes();
+
 	try {
 			// Construct the model with the SimmKinematicsEngine
-			Model *model1 = new Model("ellWrap.xml");
+			Model *model1 = new Model("C:/SimTK/OpenSim/Utilities/simmToOpenSim/test/meTest2.osim");
 			model1->setup();
-			//model1->peteTest();
 			model1->kinTest();
 
 			// Construct the model with the SdfastEngine
 			Model *model2 = new Model("ellWrapSdfast.xml");
 			model2->setup();
-			//model2->peteTest();
 			model2->kinTest();
 
 			// Cleanup

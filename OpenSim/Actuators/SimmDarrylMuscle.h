@@ -194,11 +194,6 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void setup(Model* aModel);
 
-	//--------------------------------------------------------------------------
-	// TEST
-	//--------------------------------------------------------------------------
-	virtual void peteTest();
-
 	OPENSIM_DECLARE_DERIVED(SimmDarrylMuscle, AbstractActuator);
 
 private:

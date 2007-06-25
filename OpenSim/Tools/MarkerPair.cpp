@@ -128,10 +128,3 @@ void MarkerPair::getMarkerNames(string& aName1, string& aName2) const
 	aName1 = _markerNames[0];
 	aName2 = _markerNames[1];
 }
-
-void MarkerPair::peteTest() const
-{
-	cout << "         MarkerPair: " << getName() << endl;
-	cout << "            _markerNames: " << _markerNames << endl;
-}
-

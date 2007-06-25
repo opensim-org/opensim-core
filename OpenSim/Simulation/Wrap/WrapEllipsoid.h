@@ -94,8 +94,6 @@ public:
 	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
-	virtual void peteTest() const;
-
 	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, AbstractWrapObject);
 protected:
 	void setupProperties();

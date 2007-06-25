@@ -94,7 +94,6 @@ public:
 	{
 		return _memberObjects;
 	}
-	void peteTest() const;
 
 	OPENSIM_DECLARE_DERIVED(ObjectGroup, Object);
 

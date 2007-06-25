@@ -201,15 +201,3 @@ int SimmPathMatrix::hash(const AbstractBody* aFromBody, const AbstractBody* aToB
 
 	return -1;
 }
-
-void SimmPathMatrix::peteTest() const
-{
-	cout << "SimmPathMatrix:" << endl;
-	for (int i = 0; i < _size; i++)
-	{
-		if (_hashTable[i])
-			_hashTable[i]->peteTest();
-		else
-			cout << "slot " << i << " is empty." << endl;
-	}
-}

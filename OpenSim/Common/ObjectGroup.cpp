@@ -249,11 +249,3 @@ void ObjectGroup::setup(ArrayPtrs<Object>& aObjects)
 		}
 	}
 }
-
-void ObjectGroup::peteTest() const
-{
-	int i;
-	cout << "Group " << getName() << ":" << endl;
-	for (i = 0; i < _memberNames.getSize(); i++)
-		cout << "  " << i+1 << " " << _memberNames.get(i) << " (obj= " << _memberObjects.get(i)->getName() << ")" << endl;
-}

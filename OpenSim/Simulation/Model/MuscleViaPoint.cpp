@@ -234,12 +234,3 @@ MuscleViaPoint& MuscleViaPoint::operator=(const MuscleViaPoint &aPoint)
 
 	return(*this);
 }
-
-void MuscleViaPoint::peteTest() const
-{
-	cout << "   MuscleViaPoint: " << getName() << endl;
-	cout << "      point: " << getAttachment() << endl;
-	cout << "      body: " << _body->getName() << endl;
-	cout << "      range: " << getRange() << endl;
-	cout << "      coordinate: " << _coordinate->getName() << endl;
-}

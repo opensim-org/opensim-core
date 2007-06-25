@@ -84,8 +84,6 @@ public:
 	virtual double getValue() const = 0;
 	virtual double getAcceleration() const = 0;
 
-	virtual void peteTest() const { }
-
 	static std::string getSpeedName(const std::string &aCoordinateName);
 	static std::string getCoordinateName(const std::string &aSpeedName);
 

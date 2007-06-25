@@ -78,7 +78,6 @@ public:
 	Direction getDirection() const { return _direction; }
 	AbstractJoint* getJoint() const { return _joint; }
 	Transform& getJointTransform();
-	void peteTest() const;
 
 private:
 	void calcTransforms();

@@ -129,7 +129,6 @@ public:
 	{
 		_virtual=aTrueFalse;
 	}
-	virtual void peteTest() const;
 
 	OPENSIM_DECLARE_DERIVED(Marker, AbstractMarker);
 private:

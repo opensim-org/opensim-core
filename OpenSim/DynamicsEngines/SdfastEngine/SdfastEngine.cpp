@@ -2498,54 +2498,6 @@ void SdfastEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, 
 	memcpy(rDirCos,&dirCos[0][0],9*sizeof(double));
 }
 
-void SdfastEngine::peteTest() const
-{
-	int i;
-
-	cout << "Kinematics Engine:" << endl;
-
-	if (_bodySet.getSize() < 1)
-	{
-		cout << "no bodies" << endl;
-	}
-	else
-	{
-		for (i = 0; i < _bodySet.getSize(); i++)
-			_bodySet.get(i)->peteTest();
-	}
-
-	if (_coordinateSet.getSize() < 1)
-	{
-		cout << "no coordinates" << endl;
-	}
-	else
-	{
-		for (i = 0; i < _coordinateSet.getSize(); i++)
-			_coordinateSet.get(i)->peteTest();
-	}
-
-	if (_speedSet.getSize() < 1)
-	{
-		cout << "no speeds" << endl;
-	}
-	else
-	{
-		for (i = 0; i < _speedSet.getSize(); i++)
-			_speedSet.get(i)->peteTest();
-	}
-
-	if (_jointSet.getSize() < 1)
-	{
-		cout << "no joints" << endl;
-	}
-	else
-	{
-		for (i = 0; i < _jointSet.getSize(); i++)
-			_jointSet.get(i)->peteTest();
-	}
-
-}
-
 //=============================================================================
 // STATIC METHOD FOR CREATING THIS MODEL
 //=============================================================================

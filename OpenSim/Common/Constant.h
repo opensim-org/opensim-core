@@ -88,7 +88,6 @@ public:
 public:
 	virtual int getNumberOfPoints() const { return 0; }
 	void setValue(double aValue) { _value = aValue; }
-	virtual void peteTest() const;
 
 	//--------------------------------------------------------------------------
 	// EVALUATION

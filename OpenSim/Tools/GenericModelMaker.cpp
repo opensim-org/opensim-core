@@ -192,14 +192,3 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 
 	return model;
 }
-
-void GenericModelMaker::peteTest() const
-{
-	cout << "   GenericModel: " << getName() << endl;
-	cout << "      fileName: " << _fileName << endl;
-	cout << "      markers:" << endl;
-
-	for (int i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i)->peteTest();
-}
-

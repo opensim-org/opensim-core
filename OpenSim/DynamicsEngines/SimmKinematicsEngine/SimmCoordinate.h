@@ -163,8 +163,6 @@ public:
 	const Array<SimmPath*>& getPathList() const { return _pathList; }
 	void determineType();
 
-	virtual void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

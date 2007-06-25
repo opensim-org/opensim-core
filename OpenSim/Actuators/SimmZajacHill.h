@@ -176,8 +176,6 @@ public:
 	double getStress() const;
 	double computeIsometricForce(double activation);
 
-	virtual void peteTest();
-
 	OPENSIM_DECLARE_DERIVED(SimmZajacHill, AbstractActuator);
 
 private:

@@ -849,17 +849,3 @@ bool WrapCylinder::_adjust_tangent_point(double pt1[3],
 
 	return did_adust;
 }
-
-
-//=============================================================================
-// TEST
-//=============================================================================
-void WrapCylinder::peteTest() const
-{
-	cout << "   Cylinder Wrap Object " << getName() << endl;
-
-	AbstractWrapObject::peteTest();
-
-	cout << "      radius: " << _radius << endl;
-	cout << "      length: " << _length << endl;
-}

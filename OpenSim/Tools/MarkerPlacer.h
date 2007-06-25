@@ -242,8 +242,6 @@ public:
 		}
 	}
 
-	void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();

@@ -129,8 +129,6 @@ public:
 	void setSdfastType(const char* aName);
 	bool isTreeJoint() const;
 
-	virtual void peteTest();
-
 private:
 	void setNull();
 	void setupProperties();

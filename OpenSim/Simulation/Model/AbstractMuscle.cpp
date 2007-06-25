@@ -1233,18 +1233,3 @@ void AbstractMuscle::updateDisplayer()
 {
 	computePath();
 }
-
-//=============================================================================
-// TESTING
-//=============================================================================
-void AbstractMuscle::peteTest()
-{
-	int i;
-
-	cout << getType() << ": " << getName() << endl;
-	for (i = 0; i < _attachmentSet.getSize(); i++)
-		_attachmentSet.get(i)->peteTest();
-	for (i = 0; i < _muscleWrapSet.getSize(); i++)
-		_muscleWrapSet.get(i)->peteTest();
-	cout << "   current length: " << _length << endl;
-}

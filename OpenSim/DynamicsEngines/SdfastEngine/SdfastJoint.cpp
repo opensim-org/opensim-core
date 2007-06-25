@@ -578,11 +578,3 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 		setLocationInChild(scaledLocationInChild);
 	}
 }
-
-void SdfastJoint::peteTest()
-{
-	cout << "Joint: " << getName() << endl;
-	cout << "   bodies: " << _bodies << endl;
-
-	_forwardTransform.printMatrix();
-}

@@ -77,8 +77,6 @@ public:
 	void setColor(double* aColor);
 	const double* getColor() const { return &_color[0]; }
 
-	void peteTest() const;
-
 protected:
 
 private:

@@ -97,8 +97,6 @@ public:
 	virtual AbstractWrapObject* getWrapObject() const { return _wrapObject; }
 	void setWrapObject(AbstractWrapObject* aWrapObject) { _wrapObject = aWrapObject; }
 
-	virtual void peteTest() const;
-
 	OPENSIM_DECLARE_DERIVED(MuscleWrapPoint, MusclePoint);
 
 private:

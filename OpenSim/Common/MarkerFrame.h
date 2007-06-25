@@ -76,8 +76,6 @@ public:
 	double getFrameTime() const { return _frameTime; }
 	void scale(double aScaleFactor);
 
-	void peteTest() const;
-
 private:
 	void setNull();
 

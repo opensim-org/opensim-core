@@ -337,11 +337,6 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const = 0;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const = 0;
 
-	//--------------------------------------------------------------------------
-	// TESTS
-	//--------------------------------------------------------------------------
-	virtual void peteTest() const { }
-
 private:
 	void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
 //=============================================================================

@@ -138,11 +138,3 @@ void SimmPath::calcTransforms()
 
    _transformsValid = true;
 }
-
-void SimmPath::peteTest() const
-{
-	cout << "SimmPath from " << _from->getName() << " to " << _to->getName() << ": ";
-	for (unsigned int i = 0; i < _path.size(); i++)
-		cout << (_path[i].getDirection() == SimmStep::forward ? "+" : "-") << _path[i].getJoint()->getName() << (i < _path.size() - 1 ? " -> " : "");
-	cout << endl;
-}

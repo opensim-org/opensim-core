@@ -91,8 +91,6 @@ public:
 	virtual bool hasXYZAxes() const = 0;
 	virtual void scale(const ScaleSet& aScaleSet) = 0;
 
-	virtual void peteTest() { }
-
 private:
 	void setNull();
 

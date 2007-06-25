@@ -94,8 +94,6 @@ public:
 	AbstractWrapObject* getWrapObject(const std::string& aName) const;
 	WrapObjectSet& getWrapObjectSet() { return _wrapObjectSet; }
 
-	virtual void peteTest(void) const { }
-
 	OPENSIM_DECLARE_DERIVED(AbstractBody, Object);
 
 private:

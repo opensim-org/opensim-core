@@ -112,7 +112,6 @@ public:
 	virtual void determineType() = 0;
 	virtual bool getConstrained() const { return false; }
 
-	virtual void peteTest() const { }
 private:
 	void setNull(void);
 

@@ -634,21 +634,3 @@ Function* SimmCoordinate::getMaxRestraintFunction(void) const
 {
 	return _maxRestraintFunction;
 }
-
-void SimmCoordinate::peteTest(void) const
-{
-	cout << "Coordinate: " << getName() << endl;
-	cout << "   default_value: " << _defaultValue << endl;
-	cout << "   value: " << _value << endl;
-	cout << "   tolerance: " << _tolerance << endl;
-	cout << "   stiffness: " << _stiffness << endl;
-	cout << "   range: " << _range << endl;
-	cout << "   keys: " << _keys << endl;
-	cout << "   clamped: " << ((_clamped) ? ("true") : ("false")) << endl;
-	cout << "   locked: " << ((_locked) ? ("true") : ("false")) << endl;
-	if (_restraintFunction) cout << "   restraintFunction: " << *_restraintFunction << endl;
-	if (_minRestraintFunction) cout << "   minRestraintFunction: " << *_minRestraintFunction << endl;
-	if (_maxRestraintFunction) cout << "   maxRestraintFunction: " << *_maxRestraintFunction << endl;
-	cout << "   restraintActive: " << ((_restraintActive) ? ("true") : ("false")) << endl;
-}
-

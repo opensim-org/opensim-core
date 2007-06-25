@@ -72,7 +72,6 @@ public:
 	double* get() { return _location; }
 	void scale(double aScaleFactor);
 	bool isVisible() const;
-	void peteTest() const;
 
 private:
 	void setNull();

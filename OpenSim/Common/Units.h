@@ -82,8 +82,6 @@ public:
 	UnitType getType() const { return _type; }
 	const char* getLabel() const;
 
-	void peteTest() const;
-
 //=============================================================================
 };	// END of class Units
 //=============================================================================

@@ -777,25 +777,3 @@ int MarkerData::getMarkerIndex(const string& aName) const
 
 	return -1;
 }
-
-void MarkerData::peteTest() const
-{
-	cout << "   MarkerData: " << endl;
-	cout << "      numFrames: " << _numFrames << endl;
-	cout << "      numMarkers: " << _numMarkers << endl;
-	cout << "      firstFrameNumber: " << _firstFrameNumber << endl;
-	cout << "      dataRate: " << _dataRate << endl;
-	cout << "      cameraRate: " << _cameraRate << endl;
-	cout << "      originalDataRate: " << _originalDataRate << endl;
-	cout << "      originalStartFrame: " << _originalStartFrame << endl;
-	cout << "      originalNumFrames: " << _originalNumFrames << endl;
-	cout << "      fileName: " << _fileName << endl;
-	cout << "      units: " << _units.getLabel() << endl;
-
-	int i;
-	for (i = 0; i < _numMarkers; i++)
-		cout << "      marker " << i << ": " << _markerNames[i].c_str() << endl;
-
-	for (i = 0; i < _numFrames; i++)
-		_frames[i]->peteTest();
-}

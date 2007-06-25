@@ -278,15 +278,3 @@ void MuscleWrap::setMethod(WrapMethod aMethod)
 		_methodName = "hybrid";
 	}
 }
-
-//=============================================================================
-// TEST
-//=============================================================================
-void MuscleWrap::peteTest() const
-{
-	cout << "   Muscle Wrap " << getName() << endl;
-
-	cout << "      wrap_object: " << _wrapObjectName << endl;
-	cout << "      method: " << _methodName << endl;
-	cout << "      range: " << _range[0] << " " << _range[1] << endl;
-}

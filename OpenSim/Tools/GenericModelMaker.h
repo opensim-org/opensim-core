@@ -92,8 +92,6 @@ public:
 	/* Register types to be used when reading a GenericModelMaker object from xml file. */
 	static void registerTypes();
 
-	void peteTest() const;
-
 	/**
 	 * Get file name for generic model
 	 */

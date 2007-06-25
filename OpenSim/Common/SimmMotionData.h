@@ -115,7 +115,6 @@ public:
 		return _columnNames;
 	}
 	const char* getUnassignedColName() const { return "Unassigned"; }
-	void peteTest() const;
 
 private:
 	void setNull();

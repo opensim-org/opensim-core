@@ -311,15 +311,3 @@ double SdfastSpeed::getAcceleration() const
 	double* dy = _SdfastEngine->getDerivatives();
 	return dy[_SdfastEngine->getNumCoordinates() + _index];
 }
-
-
-//=============================================================================
-// TESTING
-//=============================================================================
-void SdfastSpeed::peteTest(void) const
-{
-	cout << "Speed: " << getName() << endl;
-	cout << "   default_value: " << _defaultValue << endl;
-	cout << "   index: " << _index << endl;
-}
-

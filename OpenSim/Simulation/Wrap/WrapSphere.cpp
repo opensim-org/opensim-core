@@ -578,15 +578,3 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
    return return_code;
 }
-
-//=============================================================================
-// TEST
-//=============================================================================
-void WrapSphere::peteTest() const
-{
-	cout << "   Sphere Wrap Object " << getName() << endl;
-
-	AbstractWrapObject::peteTest();
-
-	cout << "      radius: " << _radius << endl;
-}

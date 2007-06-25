@@ -89,7 +89,6 @@ public:
 	int getNumFrames() const { return _numFrames; }
 	double getStartFrameTime() const;
 	double getLastFrameTime() const;
-	void peteTest() const;
 
 private:
 	void readTRCFile(const std::string& aFileName, MarkerData& aSMD);

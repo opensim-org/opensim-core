@@ -91,8 +91,6 @@ public:
 	void getTranslation(double rVec[4]);
 	AxisIndex getAxisIndex() const { return _axisIndex; }
 
-	virtual void peteTest();
-
 protected:
 
 private:

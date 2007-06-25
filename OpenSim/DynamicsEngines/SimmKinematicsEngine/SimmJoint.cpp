@@ -426,20 +426,3 @@ void SimmJoint::scale(const Array<double> &aScaleFactors)
 		}
 	}
 }
-
-void SimmJoint::peteTest()
-{
-	cout << "Joint: " << getName() << endl;
-	cout << "   bodies: " << _bodies << endl;
-
-	if (_dofSet.getSize() == 0)
-		cout << "no dofs" << endl;
-	else
-	{
-		for (int i = 0; i < _dofSet.getSize(); i++)
-			_dofSet.get(i)->peteTest();
-	}
-
-	calcTransforms();
-	_forwardTransform.printMatrix();
-}

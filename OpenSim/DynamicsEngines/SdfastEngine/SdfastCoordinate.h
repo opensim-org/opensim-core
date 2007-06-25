@@ -213,8 +213,6 @@ public:
 	void setAxisIndex(int aAxisIndex) { _axis = aAxisIndex; }
 	int getAxisIndex() const { return _axis; }
 
-	virtual void peteTest() const;
-
 private:
 	void setNull();
 	void setupProperties();
