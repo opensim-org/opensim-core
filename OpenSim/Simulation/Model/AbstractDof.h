@@ -93,6 +93,7 @@ public:
 
 	// GET & SET
 	virtual void setCoordinateName(const std::string &aName);
+	virtual std::string getCoordinateName() { return _coordinateName; }
 	virtual DofType getMotionType() const = 0;
 	virtual void setAxis(const double axis[3]) = 0;
 	virtual void getAxis(double axis[3]) const = 0;
