@@ -202,13 +202,13 @@ operator=(const GeneralizedForce &aGenForce)
 /**
  * Set the generalized coordinate to which the generalized force is applied.
  *
- * @param aQ ID Pointer to the generalized coordinate.
+ * @param aQ Pointer to the generalized coordinate.
  */
 void GeneralizedForce::
 setQ(AbstractCoordinate* aQ)
 {
 	_q = aQ;
-	if (aQ)
+	if(aQ)
 		_qName = aQ->getName();
 }
 //_____________________________________________________________________________
@@ -276,7 +276,7 @@ computeActuation()
 	if(_model==NULL) return;
 
 	// SPEED
-	if (_u) _speed = _u->getValue();
+	if(_u) _speed = _u->getValue();
 
 	// FORCE
 	double force = _excitation * _optimalForce;

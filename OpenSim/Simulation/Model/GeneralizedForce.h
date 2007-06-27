@@ -72,8 +72,13 @@ protected:
 	std::string& _qName;
 	double &_optimalForce;
 
-	/** Coordinate to which the generalized force is applied. */
+	/** Corresponding generalized coordinate to which the generalized force
+	is applied. */
 	AbstractCoordinate *_q;
+
+	/** Generalized speed to which the generalized force is applied.  For a
+	generalized force to be applied, it must have both a coordinate and
+	speed. */
 	AbstractSpeed *_u;
 
 	/** Temporary work array for holding generalized speeds. */
@@ -89,7 +94,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	GeneralizedForce(std::string aQName="");
+	GeneralizedForce(std::string aCoordinateName="");
 	GeneralizedForce(const GeneralizedForce &aGenForce);
 	virtual ~GeneralizedForce();
 	virtual Object* copy() const;
