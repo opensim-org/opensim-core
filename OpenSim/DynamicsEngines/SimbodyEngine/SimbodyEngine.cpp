@@ -53,7 +53,6 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-const SimTK::Transform SimbodyEngine::GroundFrame;
 static char simbodyGroundName[] = "ground";
 
 
@@ -93,8 +92,8 @@ SimbodyEngine::SimbodyEngine(const string &aFileName) :
 	setNull();
 	setupProperties();
 	updateFromXMLNode();
-
-	// BUILD THE SIMBODY MODEL
+	setup(_model);
+	constructMultibodySystem();
 }
 
 
@@ -108,6 +107,8 @@ SimbodyEngine::SimbodyEngine(const SimbodyEngine& aEngine) :
 	setNull();
 	setupProperties();
 	copyData(aEngine);
+	//setup(_model);
+	//constructMultibodySystem();
 }
 
 //_____________________________________________________________________________
@@ -129,9 +130,111 @@ Object* SimbodyEngine::copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Construct the underlying Simbody multibody system for the model.
+ */
+void SimbodyEngine::constructMultibodySystem()
+{
+	// Get the ground body
+	createGroundBodyIfNecessary();
+	SimbodyBody *ground = (SimbodyBody*)_bodySet.get(simbodyGroundName);
+
+	// Add rigid bodies
+	// This is a recursive method that attaches ALL bodies (children,
+	// grand children, etc. to the body sent in as the argument.
+	// So, sending in the ground body will construct the entir
+	// multibody system.
+	addRigidBodies(ground);
+
+	// Put subsystems into system
+	_system.setMatterSubsystem(_matter);
+	_system.addForceSubsystem(_gravitySubsystem);
+	_system.addForceSubsystem(_userForceElements);
+	SimbodyOpenSimUserForces *osimForces = new SimbodyOpenSimUserForces(this);
+	_userForceElements.addUserForce(osimForces);
+
+	// Realize the state
+	_system.realize(_s,Stage::Velocity);
+
+	// RESIZE AND RESET BODY AND MOBILITY FORCE VECTORS
+	resizeBodyAndMobilityForceVectors();
+	resetBodyAndMobilityForceVectors();
+
+	// Gravity
+	setGravity(&_gravity[0]);
+}
+
+//_____________________________________________________________________________
+/**
+ * Construct the underlying Simbody multibody system for the model.
+ */
+void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
+{
+	// HOOK UP CHILDREN
+	int iJoint = 0;
+	SimbodyJoint *joint;
+	for(joint=getOutboardTreeJoint(aBody,iJoint);joint!=NULL;iJoint++,joint=getOutboardTreeJoint(aBody,iJoint)) {
+
+		// GET CHILD
+		string childName = joint->getChildBody()->getName();
+		SimbodyBody *child = (SimbodyBody*)_bodySet.get(childName);
+		if(child==NULL) {
+			// THROW EXCEPTION
+			cerr<<"SimbodyEngine.addRigidBodies: joint "<<joint->getName()<<" has no child."<<endl;
+		}
+
+		// INERTIAL PROPERTIES
+		double mass = child->getMass();
+		double com[3];
+		child->getMassCenter(com);
+		Vec3 massCenter;
+		massCenter = com;
+		double inertia[3][3];
+		child->getInertia(inertia);
+		SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
+		MassProperties massProps(mass,massCenter,inertiaTensor);
+
+		// GET PIN AXIS
+		Vec3 axis;
+		AbstractDof *r1 = joint->getDofSet()->get("r1");
+		if(r1!=NULL) {
+			r1->getAxis(&axis[0]);
+		}
+		UnitVec3 axisUnitVec(axis);
+
+		// CHILD TRANSFORM
+		Vec3 childTranslation;
+		joint->getLocationInChild(&childTranslation[0]);
+		SimTK::Rotation childRotation(axisUnitVec);
+		SimTK::Transform childTransform(childRotation,childTranslation);
+
+		// PARENT TRANSFORM
+		Vec3 parentTranslation;
+		joint->getLocationInParent(&parentTranslation[0]);
+		// Note- parent and child rotations are the same, so we can just use the child rotation.
+		SimTK::Transform parentTransform(childRotation,parentTranslation);
+
+		// ADD RIGID BODY
+		child->_id = _matter.addRigidBody(massProps,childTransform,aBody->_id,parentTransform,Mobilizer::Pin());
+
+		// SET IDs FOR COORDINATES AND SPEEDS
+		// Coordinate
+		string qName = r1->getCoordinateName();
+		SimbodyCoordinate *q = (SimbodyCoordinate*)_coordinateSet.get(qName);
+		q->_bodyId = child->_id;
+		q->_mobilityIndex = 0;
+		// Speed
+		string uName = AbstractSpeed::getSpeedName(qName);
+		SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
+		u->_bodyId = child->_id;
+		u->_mobilityIndex = child->_id;
+
+		// DO THE SAME FOR THE CHILD BODY
+		addRigidBodies(child);
+	}
+}
+//_____________________________________________________________________________
+/**
  * Construct a dynamic model of a simple pendulum.
- *
- * @param aEngine SimbodyEngine to be copied.
  */
 void SimbodyEngine::constructPendulum()
 {
@@ -141,6 +244,7 @@ void SimbodyEngine::constructPendulum()
 	double g[] = { 0.0, -9.8, 0.0 };
 
 	// Add pendulum mass to matter subsystem
+	SimTK::Transform GroundFrame;
 	const Vec3 massLocation(0, -length/2, 0);
 	const Vec3 jointLocation(0, length/2, 0);
 	MassProperties massProps(mass, massLocation, mass*Inertia::pointMassAt(massLocation));
@@ -167,11 +271,11 @@ void SimbodyEngine::constructPendulum()
 	// Body
 	createGroundBodyIfNecessary();
 	SimbodyBody *body = new SimbodyBody();
-	body->setName("pendulum");
+	body->setName("Pendulum");
 	body->_engine = this;
 	body->_id = bodyId;
 	body->setMass(mass);
-	body->setMassCenter(&jointLocation[0]);
+	body->setMassCenter(&massLocation[0]);
 	OpenSim::Array<double> inertia(0.0,9);
 	body->getInertia(inertia);
 	body->setInertia(inertia);
@@ -199,19 +303,21 @@ void SimbodyEngine::constructPendulum()
 
 	// Joint
 	SimbodyJoint *joint = new SimbodyJoint();
+	_jointSet.append(joint);
+	joint->setName("GroundJoint");
 	joint->_engine = this;
 	joint->setParentBodyName(simbodyGroundName);
-	joint->setChildBodyName("pendulum");
+	joint->setChildBodyName("Pendulum");
 	OpenSim::Array<double> jointLocationInParent(0.0,3);
 	joint->setLocationInParent(&jointLocationInParent[0]);
 	joint->setLocationInChild(&jointLocation[0]);
 	DofSet *dofSet = joint->getDofSet();
 	SimbodyRotationDof *dof = new SimbodyRotationDof();
+	dof->setName("r1");
 	dof->setCoordinateName("PendulumAxis");
 	OpenSim::Array<double> zAxis(0.0,3);  zAxis[2] = 1.0;
 	dof->setAxis(&zAxis[0]);
 	dofSet->append(dof);
-	_jointSet.append(joint);
 }
 
 
@@ -303,7 +409,6 @@ SimbodyEngine& SimbodyEngine::operator=(const SimbodyEngine &aEngine)
 	AbstractDynamicsEngine::operator=(aEngine);
 	copyData(aEngine);
 	//setup(aEngine._model);
-
 	return(*this);
 }
 
@@ -625,17 +730,43 @@ AbstractBody& SimbodyEngine::getGroundBody() const
  *
  * @param aBody Pointer to the body.
  */
-SimbodyJoint *SimbodyEngine::getInboardTreeJoint(SimbodyBody* aBody) const
+SimbodyJoint *SimbodyEngine::
+getInboardTreeJoint(SimbodyBody* aBody) const
 {
-	for(int i=0; i<_jointSet.getSize(); i++) {
-		SimbodyJoint *joint = dynamic_cast<SimbodyJoint*>(_jointSet[i]);
+	int nj = _jointSet.getSize();
+	for(int i=0; i<nj; i++) {
+		SimbodyJoint *joint = (SimbodyJoint*)_jointSet[i];
 		SimbodyBody *child = joint->getChildBody();
-		if((child==aBody) && joint->isTreeJoint())
-			return joint;
+		if((child==aBody) && joint->isTreeJoint())  return joint;
 	}
-	return 0;
+	return NULL;
 } 
-
+//_____________________________________________________________________________
+/**
+ * Get the first outboard tree joint for a given body starting at a specified
+ * index.  The index is modified by this method and gives the indexed location
+ * of the joint in the joint set.  The index can therefore be used to start
+ * a search for the next outboard joint in sequence.
+ *
+ * @param aBody Pointer to the body.
+ * @param rIndex Index specifying where to start in the joint set.  Upon
+ * return, rIndex is set to the index in the joint set where the joint
+ * was found.
+ * @return First outboard body.  NULL is returned if there is no
+ * such body.
+ */
+SimbodyJoint *SimbodyEngine::
+getOutboardTreeJoint(SimbodyBody* aBody,int &rIndex) const
+{
+	int nj = _jointSet.getSize();
+	while(rIndex<nj) {
+		SimbodyJoint *joint = (SimbodyJoint*)_jointSet[rIndex];
+		SimbodyBody *parent = joint->getParentBody();
+		if(parent==aBody)  return joint;
+		rIndex++;
+	}
+	return NULL;
+} 
 //_____________________________________________________________________________
 /**
  * Adjust to body-to-joint and inboard-to-joint vectors to account for the

@@ -48,6 +48,13 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 /**
+ * Destructor.
+ */
+SimbodyJoint::~SimbodyJoint()
+{
+}
+//_____________________________________________________________________________
+/**
  * Default constructor.
  */
 SimbodyJoint::SimbodyJoint() :
@@ -63,15 +70,6 @@ SimbodyJoint::SimbodyJoint() :
 	setupProperties();
 	updateSimbody();
 }
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-SimbodyJoint::~SimbodyJoint()
-{
-}
-
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -116,6 +114,7 @@ Object* SimbodyJoint::copy() const
 void SimbodyJoint::copyData(const SimbodyJoint &aJoint)
 {
 	_bodies = aJoint._bodies;
+	_dofSet = aJoint._dofSet;
 	setLocationInParent(&(aJoint._locationInParent[0]));
 	setLocationInChild(&(aJoint._locationInChild[0]));
 	_childBody = aJoint._childBody;
@@ -142,6 +141,9 @@ void SimbodyJoint::setupProperties()
 {
 	_bodiesProp.setName("bodies");
 	_propertySet.append(&_bodiesProp);
+
+	_dofSetProp.setName("DofSet");
+	_propertySet.append(&_dofSetProp);
 
 	double origin[] = {0.0, 0.0, 0.0};
 	_locationInParentProp.setName("location_in_parent");
@@ -179,6 +181,7 @@ void SimbodyJoint::setup(AbstractDynamicsEngine* aEngine)
 
 	// Base class
 	AbstractJoint::setup(aEngine);
+	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
 
 	// Look up the parent and child bodies by name in the
 	// dynamics engine and store pointers to them.
@@ -194,7 +197,10 @@ void SimbodyJoint::setup(AbstractDynamicsEngine* aEngine)
 		throw (Exception(errorMessage.c_str()));
 	}
 
-	_engine = dynamic_cast<SimbodyEngine*>(aEngine);
+	/* Set up each of the dofs. */
+	int i;
+   for (i = 0; i < _dofSet.getSize(); i++)
+		_dofSet.get(i)->setup(aEngine, this);
 }
 
 //=============================================================================

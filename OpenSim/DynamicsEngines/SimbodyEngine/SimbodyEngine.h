@@ -78,9 +78,6 @@ class OSIMSIMBODYENGINE_API SimbodyEngine  : public AbstractDynamicsEngine
 // DATA
 //=============================================================================
 protected:
-	/** Ground frame used by Simbody. */
-	static const SimTK::Transform GroundFrame;
-
 	/** Body used for ground, the inertial frame. */
 	AbstractBody* _groundBody;
 
@@ -134,8 +131,11 @@ private:
 	void setupProperties();
 	void copyData(const SimbodyEngine &aEngine);
 	void constructPendulum();
+	void constructMultibodySystem();
+	void addRigidBodies(SimbodyBody *aBody);
 	void createGroundBodyIfNecessary();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
+	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;
 
 public:
 	void init(Model* aModel);
