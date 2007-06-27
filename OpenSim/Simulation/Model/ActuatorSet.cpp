@@ -1386,9 +1386,9 @@ updatePseudoStates()
 void ActuatorSet::
 apply()
 {
-	int i;
 	AbstractActuator *act;
-	for(i=0;i<getSize();i++) {
+	int size = getSize();
+	for(int i=0;i<size;i++) {
 		act = get(i);
 		if(act!=NULL) act->apply();
 	}
@@ -1408,9 +1408,9 @@ check() const
 	bool status=true;
 
 	// LOOP THROUGH ACTUATORS
-	int i;
 	AbstractActuator *act;
-	for(i=0;i<getSize();i++) {
+	int size = getSize();
+	for(int i=0;i<size;i++) {
 		act = get(i);
 		if(act==NULL) continue;
 		if(!act->check()) status = false;
