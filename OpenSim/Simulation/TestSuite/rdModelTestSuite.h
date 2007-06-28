@@ -37,7 +37,7 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "ModelTestSuiteDLL.h"
+#include "rdModelTestSuiteDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 

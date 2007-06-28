@@ -35,14 +35,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ModelTestSuiteDLL.h"
+#include "rdModelTestSuiteDLL.h"
 #include <iostream>
 #include <string>
-#include <OpenSim/Tools/Math.h>
+//#include <OpenSim/Tools/Math.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
-#include "ModelTestSuite.h"
-#include <OpenSim/Simulation/Model/ContactForceSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include "rdModelTestSuite.h"
+
 
 
 
@@ -124,13 +127,13 @@ Test(Model *aModel)
 //__________________________________________________________________________
 /**
  * Test the various numbers of things in a model.
- *		Model::getNX()
- *		Model::getNQ()
- *		Model::getNU()
- *		Model::getNY()
- *		Model::getNB()
- *		Model::getNJ()
- *		Model::getNA()
+ *		Model::getNumControls()
+ *		Model::getNumCoordinates()
+ *		Model::getNumSpeeds()
+ *		Model::getNumStates()
+ *		Model::getNumBodies()
+ *		Model::getNumJoints()
+ *		Model::getNumActuators()
  *		Model::getNP()
  *
  * @param aModel Model on which to test the methods.
@@ -150,14 +153,14 @@ TestNumbers(Model *aModel)
 		"=======================================\n"
 		"ModelTestSuite.TestNumbers:\n");
 
-	fprintf(_outFPT,"Controls    = %d\n",aModel->getNX());
-	fprintf(_outFPT,"Coordinates = %d\n",aModel->getNQ());
-	fprintf(_outFPT,"Speeds      = %d\n",aModel->getNU());
-	fprintf(_outFPT,"States      = %d\n",aModel->getNY());
-	fprintf(_outFPT,"Bodies      = %d\n",aModel->getNB());
-	fprintf(_outFPT,"Joints      = %d\n",aModel->getNJ());
-	fprintf(_outFPT,"Actuators   = %d\n",aModel->getNA());
-	fprintf(_outFPT,"Points      = %d\n",aModel->getNP());
+	fprintf(_outFPT,"Controls    = %d\n",aModel->getNumControls());
+	fprintf(_outFPT,"Coordinates = %d\n",aModel->getNumCoordinates());
+	fprintf(_outFPT,"Speeds      = %d\n",aModel->getNumSpeeds());
+	fprintf(_outFPT,"States      = %d\n",aModel->getNumStates());
+	fprintf(_outFPT,"Bodies      = %d\n",aModel->getNumBodies());
+	fprintf(_outFPT,"Joints      = %d\n",aModel->getNumJoints());
+	fprintf(_outFPT,"Actuators   = %d\n",aModel->getNumActuators());
+	fprintf(_outFPT,"Contacts      = %d\n",aModel->getNumContacts());
 
 	fprintf(_outFPT,"\nModelTestSuite.TestNumbers: PASSED.\n"
 		"========================================"
@@ -186,6 +189,7 @@ TestNumbers(Model *aModel)
 bool ModelTestSuite::
 TestNames(Model *aModel)
 {
+	Array<string> allStateNames("");
 	if(aModel==NULL) {
 		fprintf(_outFPT,
 			"ModelTestSuite.TestNames: FAILED- NULL model pointer.\n");
@@ -201,34 +205,37 @@ TestNames(Model *aModel)
 	int i;
 
 	fprintf(_outFPT,"\n\n Body          Name\n------------------------------");
-	for (i=0;i<aModel->getNB();i++)
-		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getBodyName(i).c_str());
+	for (i=0;i<aModel->getNumBodies();i++)
+		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getDynamicsEngine().getBodySet()->get(i)->getName().c_str());
+		//fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getBodyName(i).c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 
 	fprintf(_outFPT,"\n\nCoordinate     Name\n------------------------------");
-	for (i=0;i<aModel->getNQ();i++)
-		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getCoordinateName(i).c_str());
+	for (i=0;i<aModel->getNumCoordinates();i++)
+		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getDynamicsEngine().getCoordinateSet()->get(i)->getName().c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 	fprintf(_outFPT,"\n\nSpeed          Name\n------------------------------");
-	for (i=0;i<aModel->getNU();i++)
-		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getSpeedName(i).c_str());
+	for (i=0;i<aModel->getNumSpeeds();i++)
+		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getDynamicsEngine().getSpeedSet()->get(i)->getName().c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 	fprintf(_outFPT,"\n\nActuator       Name\n------------------------------");
-	for (i=0;i<aModel->getNA();i++)
-		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getActuatorName(i).c_str());
+	for (i=0;i<aModel->getNumActuators();i++)
+		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getActuatorSet()->get(i)->getName().c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 	fprintf(_outFPT,"\n\nControl        Name\n------------------------------");
-	for (i=0;i<aModel->getNX();i++)
+	for (i=0;i<aModel->getNumControls();i++)
 		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getControlName(i).c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 	fprintf(_outFPT,"\n\nState          Name\n------------------------------");
-	for (i=0;i<aModel->getNY();i++)
-		fprintf(_outFPT,"\n%4d           '%s'",i,aModel->getStateName(i).c_str());
+	
+	aModel->getStateNames(allStateNames);
+	for (i=0;i<aModel->getNumStates();i++)
+		fprintf(_outFPT,"\n%4d           '%s'",i,allStateNames[i].c_str());
 	fprintf(_outFPT,"\n------------------------------\n");
 
 	fprintf(_outFPT,"\nModelTestSuite.TestNames: PASSED.\n"
@@ -279,16 +286,17 @@ TestStates(Model *aModel)
 		"ModelTestSuite.TestStates:\n");
 
 	int i;
+	Array<string> allStateNames("");
 
 	// Set states, controls, and time.
-	double *yi = new double[aModel->getNY()];
+	double *yi = new double[aModel->getNumStates()];
 
-	for (i=0;i<aModel->getNY();i++)
+	for (i=0;i<aModel->getNumStates();i++)
 		yi[i] = (double)i;
 
-	double *xi = new double[aModel->getNX()];
+	double *xi = new double[aModel->getNumControls()];
 
-	for (i=0;i<aModel->getNX();i++)
+	for (i=0;i<aModel->getNumControls();i++)
 		xi[i] = -(double)i;
 
 	double T = 12.3;
@@ -298,8 +306,8 @@ TestStates(Model *aModel)
 
 
 	// Get the values.
-	double *rY = new double[aModel->getNY()];
-	double *rX = new double[aModel->getNX()];
+	double *rY = new double[aModel->getNumStates()];
+	double *rX = new double[aModel->getNumControls()];
 
 	// Get the states and the controls.
 	aModel->getStates(rY);
@@ -312,16 +320,17 @@ TestStates(Model *aModel)
 	fprintf(_outFPT,"\n\nState      Value      Name\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNY();i++)
+	aModel->getStateNames(allStateNames);
+	for (i=0;i<aModel->getNumStates();i++)
 		fprintf(_outFPT,"\n%4d   %12.4e  '%s'",
-		i,rY[i],aModel->getStateName(i).c_str());
+		i,rY[i], allStateNames[i].c_str());
 
 	fprintf(_outFPT,"\n-------------------------------------\n");
 
 	fprintf(_outFPT,"\n\nControl    Value      Name\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNX();i++)
+	for (i=0;i<aModel->getNumControls();i++)
 		fprintf(_outFPT,"\n%4d   %12.4e  '%s'",
 		i,rX[i],aModel->getControlName(i).c_str());
 
@@ -341,7 +350,7 @@ TestStates(Model *aModel)
 		aModel->getTimeNormConstant());
 
 
-	for (i=0;i<aModel->getNY();i++)
+	for (i=0;i<aModel->getNumStates();i++)
 		yi[i] = (double)(i+10);
 
 	aModel->setStates(yi);
@@ -350,14 +359,14 @@ TestStates(Model *aModel)
 	fprintf(_outFPT,"\n\nState      Value      Name\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNY();i++)
+	for (i=0;i<aModel->getNumStates();i++)
 		fprintf(_outFPT,"\n%4d   %12.4e  '%s'",
-		i,rY[i],aModel->getStateName(i).c_str());
+		i,rY[i],allStateNames[i].c_str());
 
 	fprintf(_outFPT,"\n-------------------------------------\n");
 
 
-	for (i=0;i<aModel->getNX();i++)
+	for (i=0;i<aModel->getNumControls();i++)
 		xi[i] = -(double)(i+10);
 
 	aModel->setControls(xi);
@@ -366,7 +375,7 @@ TestStates(Model *aModel)
 	fprintf(_outFPT,"\n\nControl    Value      Name\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNX();i++)
+	for (i=0;i<aModel->getNumControls();i++)
 		fprintf(_outFPT,"\n%4d   %12.4e  '%s'",
 		i,rX[i],aModel->getControlName(i).c_str());
 
@@ -377,38 +386,38 @@ TestStates(Model *aModel)
 
 	fprintf(_outFPT,"\n\nConfiguration tests -----");
 
-	Array<double> rQ(0.0,aModel->getNQ());
-	aModel->getCoordinates(&rQ[0]);
-
+	Array<double> rQ(0.0,aModel->getNumCoordinates());
+	
 	fprintf(_outFPT,"\n\nCoordinate       Value\n"
 		                "-------------------------");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++){
+		rQ[i] = aModel->getDynamicsEngine().getCoordinateSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n %4d        %12.4e",i,rQ[i]);
-
+	}
 	fprintf(_outFPT,"\n-------------------------\n");
 
 
-	Array<double> rU(0.0,aModel->getNU());
-	aModel->getSpeeds(&rU[0]);
+	Array<double> rU(0.0,aModel->getNumSpeeds());
 
 	fprintf(_outFPT,"\n\nSpeed      Value\n"
 		"------------------");
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++){
+		rU[i] = aModel->getDynamicsEngine().getSpeedSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n%3d   %12.4e",i,rU[i]);
-
+	}
 	fprintf(_outFPT,"\n------------------\n");
 
 
 	fprintf(_outFPT,"\n\nExtracting configuration:");
 
-	aModel->extractConfiguration(yi,&rQ[0],&rU[0]);
+	aModel->getDynamicsEngine().extractConfiguration(yi,&rQ[0],&rU[0]);
 
 	fprintf(_outFPT,"\n\nCoordinate       Value\n"
 		                "-------------------------");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++)
 		fprintf(_outFPT,"\n %4d        %12.4e",i,rQ[i]);
 
 	fprintf(_outFPT,"\n-------------------------\n");
@@ -416,7 +425,7 @@ TestStates(Model *aModel)
 	fprintf(_outFPT,"\n\nSpeed      Value\n"
 		"------------------");
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++)
 		fprintf(_outFPT,"\n%3d   %12.4e",i,rU[i]);
 
 	fprintf(_outFPT,"\n------------------\n");
@@ -424,62 +433,57 @@ TestStates(Model *aModel)
 
 	fprintf(_outFPT,"\n\nReset states:");
 
-	for (i=0;i<aModel->getNY();i++)
+	for (i=0;i<aModel->getNumStates();i++)
 		yi[i] = (double)(i+20);
 
-	aModel->setConfiguration(yi);
-
-	aModel->getCoordinates(&rQ[0]);
+	aModel->getDynamicsEngine().setConfiguration(yi);
 
 	fprintf(_outFPT,"\n\nCoordinate       Value\n"
 		                "-------------------------");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++){
+		rQ[i] = aModel->getDynamicsEngine().getCoordinateSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n %4d        %12.4e",i,rQ[i]);
-
+	}
 	fprintf(_outFPT,"\n-------------------------\n");
 
-
-	aModel->getSpeeds(&rU[0]);
 
 	fprintf(_outFPT,"\n\nSpeed      Value\n"
 		"------------------");
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++){
+		rU[i] = aModel->getDynamicsEngine().getSpeedSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n%3d   %12.4e",i,rU[i]);
-
+	}
 	fprintf(_outFPT,"\n------------------\n");
 
 
 	fprintf(_outFPT,"\n\nReset coordinates and speeds:");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++)
 		rQ[i] = rQ[i] + 10.0;
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++)
 		rU[i] = rU[i] + 20.0;
 
-	aModel->setConfiguration(&rQ[0],&rU[0]);
-
-	aModel->getCoordinates(&rQ[0]);
+	aModel->getDynamicsEngine().setConfiguration(&rQ[0],&rU[0]);
 
 	fprintf(_outFPT,"\n\nCoordinate       Value\n"
 		                "-------------------------");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++){
+		rQ[i] = aModel->getDynamicsEngine().getCoordinateSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n %4d        %12.4e",i,rQ[i]);
-
+	}
 	fprintf(_outFPT,"\n-------------------------\n");
-
-
-	aModel->getSpeeds(&rU[0]);
 
 	fprintf(_outFPT,"\n\nSpeed      Value\n"
 		"------------------");
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++){
+		rU[i] = aModel->getDynamicsEngine().getSpeedSet()->get(i)->getValue();
 		fprintf(_outFPT,"\n%3d   %12.4e",i,rU[i]);
-
+	}
 	fprintf(_outFPT,"\n------------------\n");
 
 
@@ -532,7 +536,7 @@ TestPseudoStates(Model *aModel)
 	// INITIAL PSEUDO-STATES
 	//----------------------
 	// CURRENT
-	Array<double> ypi(0.0,aModel->getNYP());
+	Array<double> ypi(0.0,aModel->getNumPseudoStates());
 	aModel->getInitialPseudoStates(&ypi[0]);
 	cout<<"ypi:  "<<ypi<<endl;
 
@@ -541,7 +545,7 @@ TestPseudoStates(Model *aModel)
 	// PSEUDO-STATES
 	//----------------------
 	// CURRENT
-	Array<double> yp(0.0,aModel->getNYP());
+	Array<double> yp(0.0,aModel->getNumPseudoStates());
 	aModel->getPseudoStates(&yp[0]);
 	cout<<"yp:  "<<yp<<endl;
 	aModel->setPseudoStates(&ypi[0]);
@@ -580,7 +584,7 @@ TestGravity(Model *aModel)
 
 
 	// Get the states before we do anything with gravity.
-	double *rY = new double[aModel->getNY()];
+	double *rY = new double[aModel->getNumStates()];
 
 	aModel->getStates(rY);
 
@@ -671,7 +675,7 @@ TestBodies(Model *aModel)
 		"=======================================\n"
 		"ModelTestSuite.TestBodies:\n");
 
-	fprintf(_outFPT,"\nGround ID = %d",aModel->getGroundID());
+	fprintf(_outFPT,"\nGround ID = %d",aModel->getDynamicsEngine().getGroundBody());
 
 
 	int i;
@@ -680,17 +684,16 @@ TestBodies(Model *aModel)
 	fprintf(_outFPT,"\n\n Body      Mass\n"
 		"------------------");
 
-	for (i=0;i<aModel->getNB();i++)
-		fprintf(_outFPT,"\n%4d  %12.4e",i,aModel->getMass(i));
+	for (i=0;i<aModel->getNumBodies();i++)
+		fprintf(_outFPT,"\n%4d  %12.4e",i,aModel->getDynamicsEngine().getBodySet()->get(i)->getMass());
 
 	fprintf(_outFPT,"\n------------------\n");
 
 	double rI[3][3];
 
-	for (i=0;i<aModel->getNB();i++)
-	{
+	for (i=0;i<aModel->getNumBodies();i++){
 
-		aModel->getInertiaBodyLocal(i,rI);
+		aModel->getDynamicsEngine().getBodySet()->get(i)->getInertia(rI);
 
 		fprintf(_outFPT,"\nInertia Matrix for Body: %d -----",i);
 
@@ -709,7 +712,7 @@ TestBodies(Model *aModel)
 
 	double rM,rCOM[3];
 
-	aModel->getSystemInertia(&rM,rCOM,rI);
+	aModel->getDynamicsEngine().getSystemInertia(&rM,rCOM,rI);
 
 	fprintf(_outFPT,"\n\nSystem Properties:\n");
 	fprintf(_outFPT,"\nMass = %.3lf",rM);
@@ -779,15 +782,17 @@ TestKinematics(Model *aModel)
 "----------------------");
 
 	// CONFIGURATION
-	Array<double> q(0.0);  q.setSize(aModel->getNQ());
-	Array<double> u(0.0);  u.setSize(aModel->getNU());
-	aModel->setConfiguration(&q[0],&u[0]);
+	Array<double> q(0.0);  q.setSize(aModel->getNumCoordinates());
+	Array<double> u(0.0);  u.setSize(aModel->getNumSpeeds());
+	aModel->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
-	for (i=0;i<aModel->getNB();i++)
+	BodySet *bodies = aModel->getDynamicsEngine().getBodySet();
+
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rPos[3],rVel[3];
-		aModel->getPosition(i,aPoint,rPos);
-		aModel->getVelocity(i,aPoint,rVel);
+		aModel->getDynamicsEngine().getPosition(*(*bodies)[i],aPoint,rPos);
+		aModel->getDynamicsEngine().getVelocity(*(*bodies)[i],aPoint,rVel);
 
 		fprintf(_outFPT,"\n%4d   %11.3e %11.3e %11.3e %11.3e %11.3e %11.3e",
 			i,rPos[0],rPos[1],rPos[2],rVel[0],rVel[1],rVel[2]);
@@ -800,21 +805,21 @@ TestKinematics(Model *aModel)
 		"---------------------------------------------");
 
 
-	int nq = aModel->getNQ();
-	int nu = aModel->getNU();
+	int nq = aModel->getNumCoordinates();
+	int nu = aModel->getNumSpeeds();
 
 	double *dqdt = new double[nq];
 	double *dudt = new double[nu];
 
-	aModel->computeAccelerations(dqdt,dudt);
+	aModel->getDynamicsEngine().computeDerivatives(dqdt,dudt);
 
 	delete dqdt;
 	delete dudt;
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rAcc[3];
-		aModel->getAcceleration(i,aPoint,rAcc);
+		aModel->getDynamicsEngine().getAcceleration(*(*bodies)[i],aPoint,rAcc);
 
 		fprintf(_outFPT,"\n%4d   %12.4e %12.4e %12.4e",
 			i,rAcc[0],rAcc[1],rAcc[2]);
@@ -825,10 +830,10 @@ TestKinematics(Model *aModel)
 	fprintf(_outFPT,"\n\n Body       Direction Cosines (Array)\n"
 		"--------------------------------------");
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rDirCosArray[3][3];
-		aModel->getDirectionCosines(i,rDirCosArray);
+		aModel->getDynamicsEngine().getDirectionCosines(*(*bodies)[i],rDirCosArray);
 
 		fprintf(_outFPT,"\n%4d   %9.6lf  %9.6lf  %9.6lf",
 			i,rDirCosArray[0][0],rDirCosArray[0][1],rDirCosArray[0][2]);
@@ -837,7 +842,7 @@ TestKinematics(Model *aModel)
 		fprintf(_outFPT,"\n       %9.6lf  %9.6lf  %9.6lf",
 			rDirCosArray[2][0],rDirCosArray[2][1],rDirCosArray[2][2]);
 
-		if (i < (aModel->getNB()-1) ) fprintf(_outFPT,"\n");
+		if (i < (aModel->getNumBodies()-1) ) fprintf(_outFPT,"\n");
 	}
 	fprintf(_outFPT,"\n--------------------------------------\n");
 
@@ -848,9 +853,9 @@ TestKinematics(Model *aModel)
 	double *rDirCosVector;
 	rDirCosVector = new double[9];
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
-		aModel->getDirectionCosines(i,rDirCosVector);
+		aModel->getDynamicsEngine().getDirectionCosines(*(*bodies)[i],rDirCosVector);
 
 		fprintf(_outFPT,"\n%4d   %9.6lf  %9.6lf  %9.6lf",
 			i,rDirCosVector[0],rDirCosVector[1],rDirCosVector[2]);
@@ -859,7 +864,7 @@ TestKinematics(Model *aModel)
 		fprintf(_outFPT,"\n       %9.6lf  %9.6lf  %9.6lf",
 			rDirCosVector[6],rDirCosVector[7],rDirCosVector[8]);
 
-		if (i < (aModel->getNB()-1) ) fprintf(_outFPT,"\n");
+		if (i < (aModel->getNumBodies()-1) ) fprintf(_outFPT,"\n");
 	}
 	fprintf(_outFPT,"\n--------------------------------------\n");
 
@@ -870,10 +875,10 @@ TestKinematics(Model *aModel)
 		"Resultant\n"
 		"-------------------------------------------------------------");
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rAngVel[3],totalAngVel;
-		aModel->getAngularVelocity(i,rAngVel);
+		aModel->getDynamicsEngine().getAngularVelocity(*(*bodies)[i],rAngVel);
 
 		totalAngVel = sqrt(rAngVel[0]*rAngVel[0]+rAngVel[1]*rAngVel[2]+
 			rAngVel[2]*rAngVel[2]);
@@ -889,10 +894,10 @@ TestKinematics(Model *aModel)
 		"Resultant\n"
 		"-------------------------------------------------------------");
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rAngVel[3],totalAngVel;
-		aModel->getAngularVelocityBodyLocal(i,rAngVel);
+		aModel->getDynamicsEngine().getAngularVelocityBodyLocal(*(*bodies)[i],rAngVel);
 
 		totalAngVel = sqrt(rAngVel[0]*rAngVel[0]+rAngVel[1]*rAngVel[2]+
 			rAngVel[2]*rAngVel[2]);
@@ -908,10 +913,10 @@ TestKinematics(Model *aModel)
 		"Resultant\n"
 		"------------------------------------------------------------");
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rAngAcc[3],totalAngAcc;
-		aModel->getAngularAcceleration(i,rAngAcc);
+		aModel->getDynamicsEngine().getAngularAcceleration(*(*bodies)[i],rAngAcc);
 
 		totalAngAcc = sqrt(rAngAcc[0]*rAngAcc[0]+rAngAcc[1]*rAngAcc[2]+
 			rAngAcc[2]*rAngAcc[2]);
@@ -927,10 +932,10 @@ TestKinematics(Model *aModel)
 		"Resultant\n"
 		"------------------------------------------------------------");
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 		double rAngAcc[3],totalAngAcc;
-		aModel->getAngularAccelerationBodyLocal(i,rAngAcc);
+		aModel->getDynamicsEngine().getAngularAccelerationBodyLocal(*(*bodies)[i],rAngAcc);
 
 		totalAngAcc = sqrt(rAngAcc[0]*rAngAcc[0]+rAngAcc[1]*rAngAcc[2]+
 			rAngAcc[2]*rAngAcc[2]);
@@ -978,30 +983,31 @@ TestLoads(Model *aModel)
 		"ModelTestSuite.TestLoads:\n");
 
 	int i,j;
-	int nb = aModel->getNB();
-	int nu = aModel->getNU();
+	int nb = aModel->getNumBodies();
+	int nu = aModel->getNumSpeeds();
 
 	double rF;
 	double aPoint[] = { 1.0, 0.0, 0.0 };
 	double aForce[] = { 0.0, 1.0, 0.0 };
 
+	BodySet *bodies = aModel->getDynamicsEngine().getBodySet();
+	CoordinateSet *coords = aModel->getDynamicsEngine().getCoordinateSet();
+
 	for (i=0;i<nb;i++)
 	{
 		fprintf(_outFPT,"\n\nBody: %d -----",i);
 
-		aModel->applyForce(i,aPoint,aForce);
+		aModel->getDynamicsEngine().applyForce(*(*bodies)[i],aPoint,aForce);
 
 		fprintf(_outFPT,"\n\nGeneralized Speed   Force/Torque\n"
 			"--------------------------------");
 
 		for (j=0;j<nu;j++)
 		{
-			rF = aModel->getNetAppliedGeneralizedForce(j);
+			rF = aModel->getDynamicsEngine().getNetAppliedGeneralizedForce(*(*coords)[j]);
 			fprintf(_outFPT,"\n    %3d             %12.4e",j,rF);
 		}
 		fprintf(_outFPT,"\n--------------------------------\n");
-
-
 	}
 
 
@@ -1040,20 +1046,20 @@ TestDerivatives(Model *aModel)
 		"ModelTestSuite.TestDerivatives:\n");
 
 	// ALLOCATIONS
-	int nq = aModel->getNQ();
-	int nu = aModel->getNU();
+	int nq = aModel->getNumCoordinates();
+	int nu = aModel->getNumSpeeds();
 	double *dqdt = new double[nq];
 	double *dudt = new double[nu];
 
 
 	// SET STATES
-	Array<double> yi(0.0,aModel->getNY());
+	Array<double> yi(0.0,aModel->getNumStates());
 	aModel->getInitialStates(&yi[0]);
 	cout<<yi<<endl;
 	aModel->setStates(&yi[0]);
 
 	// COMPUTE ACCELERATIONS
-	aModel->computeAccelerations(dqdt,dudt);
+	aModel->getDynamicsEngine().computeDerivatives(dqdt,dudt);
 
 
 	int i;
@@ -1061,7 +1067,7 @@ TestDerivatives(Model *aModel)
 	fprintf(_outFPT,"\n\nGeneralized Coordinate    dqdt\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNQ();i++)
+	for (i=0;i<aModel->getNumCoordinates();i++)
 		fprintf(_outFPT,"\n     %4d             %12.4e",i,dqdt[i]);
 
 	fprintf(_outFPT,"\n-------------------------------------\n");
@@ -1069,7 +1075,7 @@ TestDerivatives(Model *aModel)
 	fprintf(_outFPT,"\n\nGeneralized Speed    dudt\n"
 		"-------------------------------------");
 
-	for (i=0;i<aModel->getNU();i++)
+	for (i=0;i<aModel->getNumSpeeds();i++)
 		fprintf(_outFPT,"\n   %4d          %12.4e",i,dudt[i]);
 
 	fprintf(_outFPT,"\n-------------------------------------\n");
@@ -1113,11 +1119,11 @@ TestMassMatrix(Model *aModel)
 
 	double *rI;
 
-	int nu = aModel->getNU();
+	int nu = aModel->getNumSpeeds();
 
 	rI = new double[nu*nu];
 
-	aModel->formMassMatrix(rI);
+	aModel->getDynamicsEngine().formMassMatrix(rI);
 
 	for (int i=0;i<nu;i++)
 	{
@@ -1165,8 +1171,8 @@ TestJacobian(Model *aModel)
 	int i,j,body;
 
 	// GET NUMBERS
-	int nq = aModel->getNQ();
-	int nu = aModel->getNU();
+	int nq = aModel->getNumCoordinates();
+	int nu = aModel->getNumSpeeds();
 
 	// CONSTRUCT Q's and U's
 	double *q = new double[nq];
@@ -1205,7 +1211,7 @@ TestJacobian(Model *aModel)
 	}
 
 
-	for (body=0;body<aModel->getNB();body++)
+	for (body=0;body<aModel->getNumBodies();body++)
 	{
 		fprintf(_outFPT,"\n\nBody: %d ====================\n",body);
 
@@ -1350,8 +1356,8 @@ TestJacobian(Model *aModel)
 	int i;
 
 	// GET NUMBERS
-	int nq = aModel->getNQ();
-	int nu = aModel->getNU();
+	int nq = aModel->getNumCoordinates();
+	int nu = aModel->getNumSpeeds();
 
 	// CONSTRUCT Q's and U's
 	double *q = new double[nq];
@@ -1458,13 +1464,14 @@ TestOrientationUtilities(Model *aModel)
 	int i;
 	double rDirCosStart[3][3],rDirCosOut[3][3];
 
+	BodySet *bodies = aModel->getDynamicsEngine().getBodySet();
 
-	for (i=0;i<aModel->getNB();i++)
+	for (i=0;i<aModel->getNumBodies();i++)
 	{
 
 		fprintf(_outFPT,"\n\nBody: %d  ------------------------------\n",i);
 
-		aModel->getDirectionCosines(i,rDirCosStart);
+		aModel->getDynamicsEngine().getDirectionCosines(*(*bodies)[i],rDirCosStart);
 
 		fprintf(_outFPT,"\nDirection Cosines (Start)\n"
 			"-------------------------------");
@@ -1481,7 +1488,7 @@ TestOrientationUtilities(Model *aModel)
 
 		double rQ1,rQ2,rQ3,rQ4;
 
-		aModel->convertDirectionCosinesToQuaternions(rDirCosStart,
+		aModel->getDynamicsEngine().convertDirectionCosinesToQuaternions(rDirCosStart,
 			&rQ1,&rQ2,&rQ3,&rQ4);
 
 		fprintf(_outFPT,"\n\nQuaternions\n"
@@ -1494,7 +1501,7 @@ TestOrientationUtilities(Model *aModel)
 			"------------------------\n");
 
 
-		aModel->convertQuaternionsToDirectionCosines(rQ1,rQ2,rQ3,rQ4,
+		aModel->getDynamicsEngine().convertQuaternionsToDirectionCosines(rQ1,rQ2,rQ3,rQ4,
 			rDirCosOut);
 
 		fprintf(_outFPT,"\n\nDirection Cosines\n"
@@ -1512,7 +1519,7 @@ TestOrientationUtilities(Model *aModel)
 
 		double rE1,rE2,rE3;
 
-		aModel->convertDirectionCosinesToAngles(rDirCosOut,&rE1,&rE2,&rE3);
+		aModel->getDynamicsEngine().convertDirectionCosinesToAngles(rDirCosOut,&rE1,&rE2,&rE3);
 
 		fprintf(_outFPT,"\n\nAngles\n"
 			"----------------------------------------");
@@ -1522,7 +1529,7 @@ TestOrientationUtilities(Model *aModel)
 		fprintf(_outFPT,"\n----------------------------------------\n");
 
 
-		aModel->convertAnglesToDirectionCosines(rE1,rE2,rE3,rDirCosOut);
+		aModel->getDynamicsEngine().convertAnglesToDirectionCosines(rE1,rE2,rE3,rDirCosOut);
 
 		fprintf(_outFPT,"\nDirection Cosines\n"
 			"------------------------------");
@@ -1558,8 +1565,8 @@ TestOrientationUtilities(Model *aModel)
 
 
 
-		int nu = aModel->getNU();
-		int nq = aModel->getNQ();
+		int nu = aModel->getNumSpeeds();
+		int nq = aModel->getNumCoordinates();
 
 		double *aQAng = new double[nu];
 		double *aQ = new double[nq];
@@ -1576,7 +1583,7 @@ TestOrientationUtilities(Model *aModel)
 		fprintf(_outFPT,"\n---------\n");
 
 
-		aModel->convertAnglesToQuaternions(aQAng,aQ);
+		aModel->getDynamicsEngine().convertAnglesToQuaternions(aQAng,aQ);
 
 
 		fprintf(_outFPT,"\n\nQuaternions\n----------");
@@ -1587,7 +1594,7 @@ TestOrientationUtilities(Model *aModel)
 		fprintf(_outFPT,"\n---------\n");
 
 
-		aModel->convertQuaternionsToAngles(aQ,aQAng);
+		aModel->getDynamicsEngine().convertQuaternionsToAngles(aQ,aQAng);
 
 
 		fprintf(_outFPT,"\n\nAngles (radians)\n----------");
@@ -1600,7 +1607,7 @@ TestOrientationUtilities(Model *aModel)
 
 		double *rQDeg = new double[nu];
 
-		aModel->convertRadiansToDegrees(aQAng,rQDeg);
+		aModel->getDynamicsEngine().convertRadiansToDegrees(aQAng,rQDeg);
 
 		fprintf(_outFPT,"\n\nAngles (degrees)\n----------");
 
@@ -1611,7 +1618,7 @@ TestOrientationUtilities(Model *aModel)
 
 		double *rQAng = new double[nu];
 
-		aModel->convertDegreesToRadians(rQDeg,rQAng);
+		aModel->getDynamicsEngine().convertDegreesToRadians(rQDeg,rQAng);
 
 		fprintf(_outFPT,"\n\nAngles (radians)\n----------");
 
@@ -1621,10 +1628,10 @@ TestOrientationUtilities(Model *aModel)
 		fprintf(_outFPT,"\n---------\n");
 
 
-		delete aQAng;
-		delete aQ;
-		delete rQDeg;
-		delete rQAng;
+		//delete aQAng;
+		//delete aQ;
+		//delete rQDeg;
+		//delete rQAng;
 
 	}
 

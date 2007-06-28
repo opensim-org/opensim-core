@@ -35,7 +35,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ModelTestSuiteDLL.h"
+#include "rdModelTestSuiteDLL.h"
 #include <stdio.h>
 
 
@@ -46,7 +46,7 @@
 //_____________________________________________________________________________
 
 
-using namespace OpenSim;
+//using namespace OpenSim;
 /**
  *	This routine is called when the dll is loaded I believe.
  */
