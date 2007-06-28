@@ -702,11 +702,7 @@ bool SimbodyEngine::setGravity(double aGrav[3])
 void SimbodyEngine::getGravity(double aGrav[3]) const
 {
 	// TODO:  Is there a better way to do this?
-	Vec3 g;
-	g = _gravitySubsystem.getGravity(_s);
-	aGrav[0] = g[0];
-	aGrav[1] = g[1];
-	aGrav[2] = g[2];
+	Vec3::updAs(&aGrav[0]) = _gravitySubsystem.getGravity(_s);
 }
 
 
@@ -811,7 +807,10 @@ double SimbodyEngine::getMass() const
  */
 void SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
 {
-	throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
+	*rM = _matter.calcSystemMass(_s);
+	Vec3::updAs(&rCOM[0]) = _matter.calcSystemMassCenterLocationInGround(_s);
+	Mat33::updAs(&rI[0][0]) = _matter.calcSystemCentralInertiaInGround(_s).toMat33();
+	//throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -824,7 +823,9 @@ void SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]
  */
 void SimbodyEngine::getSystemInertia(double *rM, double *rCOM, double *rI) const
 {
-	throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
+	*rM = _matter.calcSystemMass(_s);
+	Vec3::updAs(rCOM) = _matter.calcSystemMassCenterLocationInGround(_s);
+	Mat33::updAs(rI) = _matter.calcSystemCentralInertiaInGround(_s).toMat33();
 }
 
 //--------------------------------------------------------------------------
@@ -848,7 +849,12 @@ void SimbodyEngine::getPosition(const AbstractBody &aBody, const double aPoint[3
 	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rPos[0]) = _matter.locateBodyPointOnGround(_s, b->_id, Vec3::getAs(&aPoint[0]));
+	}
+	else{
+		rPos[0] = aPoint[0];
+		rPos[1] = aPoint[1];
+		rPos[2] = aPoint[2];
 	}
 }
 
@@ -870,7 +876,12 @@ void SimbodyEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3
 	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rVel[0]) = _matter.calcBodyFixedPointVelocityInGround(_s, b->_id, Vec3::getAs(&aPoint[0]));
+	}
+	else{
+		rVel[0] = 0;
+		rVel[1] = 0;
+		rVel[2] = 0;
 	}
 }
 
@@ -893,7 +904,12 @@ void SimbodyEngine::getAcceleration(const AbstractBody &aBody, const double aPoi
 	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rAcc[0]) = _matter.calcBodyFixedPointAccelerationInGround(_s, b->_id, Vec3::getAs(&aPoint[0]));
+	}
+	else{
+		rAcc[0] = 0;
+		rAcc[1] = 0;
+		rAcc[2] = 0;
 	}
 }
 
@@ -909,7 +925,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double rDirCo
 	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Mat33::updAs(&rDirCos[0][0]) = _matter.getBodyRotation(_s, b->_id).asMat33();
 	}
 }
 
@@ -926,7 +942,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirC
 	const SimbodyBody* b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Mat33::updAs(rDirCos) = _matter.getBodyRotation(_s, b->_id).asMat33();
 	}
 }
 
@@ -942,7 +958,7 @@ void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel
 	const SimbodyBody *b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rAngVel[0]) = _matter.getBodyAngularVelocity(_s, b->_id);
 	}
 }
 
@@ -958,7 +974,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, doubl
 	const SimbodyBody *b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(rAngVel) = _matter.getBodyAngularVelocity(_s, b->_id);
 	}
 }
 
@@ -975,7 +991,7 @@ void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, double rAn
 	const SimbodyBody *b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rAngAcc[0]) = _matter.getBodyAngularAcceleration(_s, b->_id);
 	}
 }
 
@@ -991,7 +1007,7 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, d
 	const SimbodyBody *b = dynamic_cast<const SimbodyBody*>(&aBody);
 
 	if(b) {
-
+		Vec3::updAs(&rAngAcc[0]) = _matter.getBodyAngularAcceleration(_s, b->_id);
 	}
 }
 
@@ -1399,10 +1415,10 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
 	Vector udot = _s.getUDot();
 
 	// ASSIGN THEM (MAYBE SLOW BUT CORRECT
-	int nq = _s.getNQ();
+	int nq = getNumCoordinates();
 	for(int i=0;i<nq;i++) dqdt[i] = qdot[i];
 
-	int nu = _s.getNU();
+	int nu = getNumSpeeds();
 	for(int i=0;i<nu;i++) dudt[i] = udot[i];
 }
 
@@ -1421,14 +1437,13 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const
 {
-	memcpy(rVec,aVec,3*sizeof(double));
+
 	if(&aBodyFrom == &aBodyTo) return;
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
-	Vec3 vFrom,vTo;
-	vFrom = aVec;
-	vTo = _matter.expressBodyVectorInBody(_s,bFrom->_id,vFrom,bTo->_id);
-	memcpy(rVec,&vTo[0],3*sizeof(double));
+
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(rVec) = _matter.expressBodyVectorInBody(_s, bFrom->_id, Vec3::getAs(aVec), bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1442,7 +1457,12 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aVec, const AbstractBody &aBodyTo, OpenSim::Array<double>& rVec) const
 {
-	transform(aBodyFrom,&aVec[0],aBodyTo,&rVec[0]);
+	if(&aBodyFrom == &aBodyTo) return;
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
+	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
+
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(&rVec[0]) = _matter.expressBodyVectorInBody(_s, bFrom->_id, Vec3::getAs(&aVec[0]), bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1455,10 +1475,14 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const OpenSim::Arra
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const AbstractBody &aBodyFrom, const double aPos[3],
-	const AbstractBody &aBodyTo, double rPos[3]) const
+transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const
 {
+	if(&aBodyFrom == &aBodyTo) return;
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
+	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(rPos) = _matter.locateBodyPointOnBody(_s, bFrom->_id, Vec3::getAs(aPos), bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1474,13 +1498,12 @@ void SimbodyEngine::
 transformPosition(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aPos,
 	const AbstractBody &aBodyTo, OpenSim::Array<double>& rPos) const
 {
-	double aPos2[3], rPos2[3];
+	if(&aBodyFrom == &aBodyTo) return;
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
+	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
-	for(int i=0; i<3; i++)  aPos2[i] = aPos[i];
-
-	transformPosition(aBodyFrom, aPos2, aBodyTo, rPos2);
-
-	for(int i=0; i<3; i++) rPos[i] = rPos2[i];
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(&rPos[0]) = _matter.locateBodyPointOnBody(_s, bFrom->_id, Vec3::getAs(&aPos[0]), bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1493,7 +1516,10 @@ transformPosition(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& a
  */
 void SimbodyEngine::transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], double rPos[3]) const
 {
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(rPos) = _matter.locateBodyPointOnGround(_s, bFrom->_id, Vec3::getAs(aPos));
 }
 
 //_____________________________________________________________________________
@@ -1508,12 +1534,10 @@ void SimbodyEngine::
 transformPosition(const AbstractBody &aBodyFrom,const OpenSim::Array<double>& aPos,
 	OpenSim::Array<double>& rPos) const
 {
-	double aPos2[3], rPos2[3];
-	for(int i = 0; i<3; i++)  aPos2[i] = aPos[i];
+	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 
-	transformPosition(aBodyFrom, aPos2, rPos2);
-
-	for(int i=0; i<3; i++)  rPos[i] = rPos2[i];
+	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
+	Vec3::updAs(&rPos[0]) = _matter.locateBodyPointOnGround(_s, bFrom->_id, Vec3::getAs(&aPos[0]));
 }
 
 //_____________________________________________________________________________
@@ -1534,9 +1558,8 @@ calcDistance(const AbstractBody& aBody1, const OpenSim::Array<double>& aPoint1,
 	const SimbodyBody* b2 = dynamic_cast<const SimbodyBody*>(&aBody2);
 
 	if(b1 && b2) {
-
+		return _matter.calcPointToPointDistance(_s, b1->_id, Vec3::getAs(&aPoint1[0]), b2->_id, Vec3::getAs(&aPoint2[0]));
 	}
-
 	return 0.0;
 }
 
@@ -1556,7 +1579,7 @@ double SimbodyEngine::calcDistance(const AbstractBody& aBody1, const double aPoi
 	const SimbodyBody* b2 = dynamic_cast<const SimbodyBody*>(&aBody2);
 
 	if(b1 && b2) {
-
+		return _matter.calcPointToPointDistance(_s, b1->_id, Vec3::getAs(aPoint1), b2->_id, Vec3::getAs(aPoint2));
 	}
 
 	return 0.0;
@@ -1572,7 +1595,10 @@ double SimbodyEngine::calcDistance(const AbstractBody& aBody1, const double aPoi
  */
 void SimbodyEngine::convertQuaternionsToAngles(double *aQ, double *rQAng) const
 {
+	Rotation R;
+	R.setToQuaternion(Quaternion(Vec4::getAs(aQ)));
 
+	Vec3::updAs(rQAng) = R.convertToBodyFixed123();
 }
 
 //_____________________________________________________________________________
@@ -1659,7 +1685,10 @@ void SimbodyEngine::convertQuaternionsToAngles(Storage *rQStore) const
  */
 void SimbodyEngine::convertAnglesToQuaternions(double *aQAng, double *rQ) const
 {
+	Rotation R;
+	R.setToBodyFixed123(Vec3::getAs(aQAng));
 
+	Vec4::updAs(rQ) = R.convertToQuaternion().asVec4();
 }
 
 //_____________________________________________________________________________
@@ -1748,7 +1777,8 @@ void SimbodyEngine::convertAnglesToQuaternions(Storage *rQStore) const
  */
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
 {
-
+	Vec3 angs(aE1, aE2, aE3);
+	Rotation (Rotation::updAs(&rDirCos[0][0])).setToBodyFixed123(angs);
 }
 
 //_____________________________________________________________________________
@@ -1762,7 +1792,8 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const
 {
 	if(rDirCos==NULL) return;
-
+	Vec3 angs(aE1, aE2, aE3);
+	Rotation (Rotation::updAs(&rDirCos[0])).setToBodyFixed123(angs);
 }
 
 //_____________________________________________________________________________
@@ -1775,7 +1806,10 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
  */
 void SimbodyEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const
 {
-
+	Vec3 ang = Rotation (Rotation::getAs(&aDirCos[0][0])).convertToBodyFixed123();
+	*rE1 = ang[0];
+	*rE2 = ang[1];
+	*rE3 = ang[2];
 }
 
 //_____________________________________________________________________________
@@ -1789,7 +1823,10 @@ void SimbodyEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double
 void SimbodyEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const
 {
 	if(!aDirCos) return;
-
+	Vec3 ang = Rotation (Rotation::getAs(aDirCos)).convertToBodyFixed123();
+	*rE1 = ang[0];
+	*rE2 = ang[1];
+	*rE3 = ang[2];
 }
 
 //_____________________________________________________________________________
@@ -1803,7 +1840,11 @@ void SimbodyEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1
  */
 void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
 {
-
+	Quaternion quat = Rotation (Rotation::getAs(&aDirCos[0][0])).convertToQuaternion();
+	*rQ1 = quat[0];
+	*rQ2 = quat[1];
+	*rQ3 = quat[2];
+	*rQ4 = quat[3];
 }
 
 //_____________________________________________________________________________
@@ -1818,7 +1859,11 @@ void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], d
 void SimbodyEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
 {
 	if(aDirCos==NULL) return;
-
+	Quaternion quat = Rotation (Rotation::getAs(aDirCos)).convertToQuaternion();
+	*rQ1 = quat[0];
+	*rQ2 = quat[1];
+	*rQ3 = quat[2];
+	*rQ4 = quat[3];
 }
 
 //_____________________________________________________________________________
@@ -1832,7 +1877,10 @@ void SimbodyEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double
  */
 void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const
 {
+	Rotation R;
+	R.setToQuaternion(Quaternion(Vec4(aQ1, aQ2, aQ3, aQ4)));
 
+	Mat33::updAs(&rDirCos[0][0]) = R.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -1847,7 +1895,10 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const
 {
 	if(rDirCos==NULL) return;
+	Rotation R;
+	R.setToQuaternion(Quaternion(Vec4(aQ1, aQ2, aQ3, aQ4)));
 
+	Mat33::updAs(rDirCos) = R.asMat33();
 }
 
 
