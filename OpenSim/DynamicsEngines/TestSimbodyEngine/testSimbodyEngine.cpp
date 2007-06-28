@@ -47,9 +47,9 @@ int main()
 	// about the model.  The model is build as a dynamically linked library
 	// (rdBlock.dll on Windows).
 	SimbodyEngine *pendulum = new SimbodyEngine();
-	Model *model = new Model;
-	model->setDynamicsEngine(*pendulum);
-	//Model *model = new Model("pendulum.osim");
+	//Model *model = new Model;
+	//model->setDynamicsEngine(*pendulum);
+	Model *model = new Model("pendulum.osim");
 	model->setup();
 
 	// ADD FORCE(S)
@@ -78,7 +78,7 @@ int main()
 	// Add to model
 	//model->getActuatorSet()->append(gf1);
 	//model->getActuatorSet()->append(gf2);
-	model->getActuatorSet()->append(f1);
+	//model->getActuatorSet()->append(f1);
 
 	// Setup model
 	model->setup();
@@ -164,7 +164,7 @@ int main()
 	// STEP 11
 	// Print the analysis results.
 	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
-	model->print("Pendulum.osim");
+	model->print("pendulum.osim");
 
 //	ModelTestSuite aModelTestSuite;
 //	aModelTestSuite.Test(model);
