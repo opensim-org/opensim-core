@@ -18,6 +18,7 @@
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 
+#include <OpenSim/Simulation/TestSuite/rdModelTestSuite.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -63,12 +64,12 @@ int main()
 	gf2->setModel(model);
 	gf2->setOptimalForce(20);
 	// Force 1
-	Force *f1 = new Force("pendulum","ground");
+	Force *f1 = new Force("Pendulum","ground");
 	OpenSim::Array<double> directionA(0.0,3);  directionA[0] = 1.0;
 	f1->setName("f1");
 	f1->setForceDirectionA(&directionA[0]);
 	OpenSim::Array<double> massCenter(0.0,3);
-	model->getDynamicsEngine().getBodySet()->get("pendulum")->getMassCenter(&massCenter[0]);
+	model->getDynamicsEngine().getBodySet()->get("Pendulum")->getMassCenter(&massCenter[0]);
 	cout<<"mass center = "<<massCenter<<endl;
 	f1->setPointB(&massCenter[0]);
 	f1->setOptimalForce(30.210);
@@ -162,11 +163,15 @@ int main()
 	// STEP 11
 	// Print the analysis results.
 	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
-	model->print("pendulum.osim");
+	model->print("Pendulum.osim");
+
+	ModelTestSuite aModelTestSuite;
+
+	aModelTestSuite.Test(model);
 
 
 	// DELETE MODEL
-	delete model;
+//	delete model;
 
 	return 0;
 }
