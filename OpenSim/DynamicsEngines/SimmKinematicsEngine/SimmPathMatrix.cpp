@@ -52,7 +52,7 @@ SimmPathMatrix::SimmPathMatrix(int size)
 	if (size > 0)
 	{
 		_size = size * size * 2;
-		_hashTable.reserve(_size);
+		_hashTable.resize(_size);
 		_factor = size;
 		for (int i = 0; i < _size; i++)
 			_hashTable[i] = NULL;
@@ -159,7 +159,7 @@ void SimmPathMatrix::initTable(int size)
 	if (size > 0)
 	{
 		_size = size * size * cSizeFactor;
-		_hashTable.reserve(_size);
+		_hashTable.resize(_size);
 		_factor = size;
 		for (int i = 0; i < _size; i++)
 			_hashTable[i] = NULL;

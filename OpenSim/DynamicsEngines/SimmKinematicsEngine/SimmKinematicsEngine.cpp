@@ -1570,7 +1570,7 @@ void SimmKinematicsEngine::computeConstrainedCoordinates(double *rQ) const
  */
 void SimmKinematicsEngine::makePaths()
 {
-   int i, j, numPathsCompleted = 0;
+   int numPathsCompleted = 0;
    int numBodies = _bodySet.getSize();
    int numPaths = numBodies*numBodies;
 
@@ -1580,16 +1580,19 @@ void SimmKinematicsEngine::makePaths()
    /* Count the trivial paths (from a body to itself) as completed */
 	numPathsCompleted += numBodies;
 
+	JointPath p;
+	p.reserve(100);
+
    /* Each joint represents two simple paths- from parent to child and from
     * child to parent. Add these paths to the list and count them as completed.
     */
-   for (i = 0; i < _jointSet.getSize(); i++)
+   for (int i = 0; i < _jointSet.getSize(); i++)
    {
-		JointPath p;
+		p.resize(0);
 		p.push_back(SimmStep(_jointSet.get(i), SimmStep::forward));
 		_path.setPath(_jointSet.get(i)->getParentBody(), _jointSet.get(i)->getChildBody(), p);
       numPathsCompleted++;
-		p.clear();
+		p.resize(0);
 		p.push_back(SimmStep(_jointSet.get(i), SimmStep::inverse));
 		_path.setPath(_jointSet.get(i)->getChildBody(), _jointSet.get(i)->getParentBody(), p);
       numPathsCompleted++;
@@ -1601,65 +1604,65 @@ void SimmKinematicsEngine::makePaths()
     */
    while (numPathsCompleted < numPaths)
    {
-      int k, oldCount = numPathsCompleted;
+      int oldCount = numPathsCompleted;
 
-      for (i = 0; i < _jointSet.getSize(); i++)
+      for (int i = 0; i < _jointSet.getSize(); i++)
       {
          const AbstractBody* bodyM = _jointSet.get(i)->getParentBody();
          const AbstractBody* bodyN = _jointSet.get(i)->getChildBody();
 
          if (bodyM == NULL || bodyN == NULL)
             continue;
-         for (j = 0; j < numBodies; j++)
-         {
-            for (k = 0; k < numBodies; k++)
-            {
-               if (j == k)
-                  continue;
-					const AbstractBody* bodyJ = _bodySet.get(j);
-					const AbstractBody* bodyK = _bodySet.get(k);
-					const JointPath* jp = _path.getPath(bodyJ, bodyK);
-					if (jp == NULL)
-						continue;
 
-               /* You've just accessed the path from j to k. If the current joint (i)
-                * can be tacked onto the end of this path without looping back to j,
-                * then create a path from j to n and see if it should be put in path[j][n].
-                * Also check to see if the reverse joint can be tacked onto the end to
-                * create a path from j to m.
-                */
-               if (bodyK == bodyM && bodyJ != bodyN)
-               {
-                  /* If path[j][n] does not yet exist, or if it is longer than the
-                   * path you're about to make, replace it with the new path.
-                   */
+			for(int j=0; j<numBodies; j++)
+			{
+				const AbstractBody* bodyJ = _bodySet.get(j);
+
+				/* You've just accessed the path from j to k. If the current joint (i)
+				 * can be tacked onto the end of this path without looping back to j,
+				 * then create a path from j to n and see if it should be put in path[j][n].
+				 * Also check to see if the reverse joint can be tacked onto the end to
+				 * create a path from j to m.
+				 */
+				if(bodyJ != bodyM && bodyJ != bodyN) {
+					//
+					// bodyJ -> bodyM -> bodyN
+					//
+					const JointPath* jp = _path.getPath(bodyJ, bodyM);
+					if(jp) {
+						/* If path[j][n] does not yet exist, or if it is longer than the
+						 * path you're about to make, replace it with the new path.
+						 */
 						const JointPath* curPath = _path.getPath(bodyJ, bodyN);
-                  if (curPath == NULL || curPath->size() > jp->size() + 1)
-                  {
-							JointPath p = *jp;
+						if (curPath == NULL || curPath->size() > jp->size() + 1)
+						{
+							p = *jp;
 							p.push_back(SimmStep(_jointSet.get(i), SimmStep::forward));
-							_path.setPath(_bodySet.get(j), bodyN, p);
-                     numPathsCompleted++;
-                  }
-               }
-               else if (bodyK == bodyN && bodyJ != bodyM)
-               {
-                  /* If path[j][m] does not yet exist, or if it is longer than the
-                   * path you're about to make, replace it with the new path.
-                   */
+							_path.setPath(bodyJ, bodyN, p);
+							numPathsCompleted++;
+						}
+					}
+	
+					//
+					// bodyJ -> bodyN -> bodyM
+					//
+					jp = _path.getPath(bodyJ, bodyN);
+					if(jp) {
+						/* If path[j][m] does not yet exist, or if it is longer than the
+						 * path you're about to make, replace it with the new path.
+						 */
 						const JointPath* curPath = _path.getPath(bodyJ, bodyM);
-                  if (curPath == NULL || curPath->size() > jp->size() + 1)
-                  {
-							JointPath p = *jp;
+						if (curPath == NULL || curPath->size() > jp->size() + 1)
+						{
+							p = *jp;
 							p.push_back(SimmStep(_jointSet.get(i), SimmStep::inverse));
 							_path.setPath(bodyJ, bodyM, p);
-                     numPathsCompleted++;
+							numPathsCompleted++;
 						}
-               }
-            }
-         }
+					}
+				}
+			}
       }
-
       /* If you did not add any paths to the list in this pass, and you still haven't completed
        * them all, there must be something wrong (e.g., a missing joint).
        */
@@ -1667,10 +1670,10 @@ void SimmKinematicsEngine::makePaths()
       {
          string name1, name2;
 			cout << "makePaths : Error - cannot find joint path between the following pairs of bodies: \n";
-         for (i = 0; i < numBodies; i++)
+         for (int i = 0; i < numBodies; i++)
          {
             name1 = _bodySet.get(i)->getName();
-            for (j = i+1; j < numBodies; j++)
+            for (int j = i+1; j < numBodies; j++)
             {
                name2 = _bodySet.get(j)->getName();
 
@@ -1724,21 +1727,17 @@ void SimmKinematicsEngine::createCoordinatePathLists()
 	{
 		for (int j = 0; j < _bodySet.getSize(); j++)
 		{
-			const JointPath* p = _path.getPath(_bodySet.get(i), _bodySet.get(j));
-			if (p && p->size() > 0)
+			SimmPath* sp = _path.getSimmPath(_bodySet.get(i), _bodySet.get(j));
+			if(!sp) continue;
+			const JointPath& p = sp->getPath();
+			for (unsigned int k = 0; k < p.size(); k++)
 			{
-				for (int c = 0; c < _coordinateSet.getSize(); c++)
-				{
-					for (unsigned int k = 0; k < p->size(); k++)
-					{
-						AbstractJoint* jnt = (*p)[k].getJoint();
-						if (jnt->isCoordinateUsed(_coordinateSet.get(c)))
-						{
-							SimmPath* sp = _path.getSimmPath(_bodySet.get(i), _bodySet.get(j));
-							if (sp)
-								_coordinateSet.get(c)->addPathToList(sp);
-							break;
-						}
+				DofSet* dofs = p[k].getJoint()->getDofSet();
+				for(int c = 0; c < dofs->getSize(); c++) {
+					SimmCoordinate* coordinate = dynamic_cast<SimmCoordinate*>(const_cast<AbstractCoordinate*>(dofs->get(c)->getCoordinate()));
+					if(coordinate) {
+						// Make sure we didn't already append this path to this coordinate (through another dof)
+						if(coordinate->getPathList().getSize()==0 || coordinate->getPathList().getLast()!=sp) coordinate->addPathToList(sp);
 					}
 				}
 			}
