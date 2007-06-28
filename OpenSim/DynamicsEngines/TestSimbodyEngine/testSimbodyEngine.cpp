@@ -18,7 +18,7 @@
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 
-#include <OpenSim/Simulation/TestSuite/rdModelTestSuite.h>
+//#include <OpenSim/Simulation/TestSuite/rdModelTestSuite.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -49,6 +49,7 @@ int main()
 	SimbodyEngine *pendulum = new SimbodyEngine();
 	Model *model = new Model;
 	model->setDynamicsEngine(*pendulum);
+	//Model *model = new Model("pendulum.osim");
 	model->setup();
 
 	// ADD FORCE(S)
@@ -165,9 +166,8 @@ int main()
 	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
 	model->print("Pendulum.osim");
 
-	ModelTestSuite aModelTestSuite;
-
-	aModelTestSuite.Test(model);
+//	ModelTestSuite aModelTestSuite;
+//	aModelTestSuite.Test(model);
 
 
 	// DELETE MODEL
