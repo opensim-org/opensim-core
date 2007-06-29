@@ -257,7 +257,8 @@ SimbodyBody& SimbodyBody::operator=(const SimbodyBody &aBody)
  */
 double SimbodyBody::getMass() const
 {
-	return _engine->_matter.getBodyMass(_engine->_s,_id);
+	return _mass;
+	//return _engine->_matter->getBodyMass(_engine->_s,_id);
 }
 //_____________________________________________________________________________
 /**
@@ -291,10 +292,11 @@ bool SimbodyBody::setMass(double aMass)
  */
 void SimbodyBody::getMassCenter(double rVec[3]) const
 {
-	Vec3 com = _engine->_matter.getBodyMassCenterStation(_engine->_s,_id);
-	rVec[0] = com[0];
-	rVec[1] = com[1];
-	rVec[2] = com[2];
+	//Vec3 com = _engine->_matter->getBodyMassCenterStation(_engine->_s,_id);
+	//rVec[0] = com[0];
+	//rVec[1] = com[1];
+	//rVec[2] = com[2];
+	memcpy(rVec,&_massCenter[0],3*sizeof(double));
 }
 //_____________________________________________________________________________
 /**
@@ -324,8 +326,9 @@ bool SimbodyBody::setMassCenter(const double aVec[3])
  */
 void SimbodyBody::getInertia(double rInertia[3][3]) const
 {
+	/*
 	try {
-		Inertia inertia = _engine->_matter.getBodyInertiaAboutBodyOrigin(_engine->_s,_id);
+		Inertia inertia = _engine->_matter->getBodyInertiaAboutBodyOrigin(_engine->_s,_id);
 		Vec3 moments = inertia.getMoments();
 		Vec3 products = inertia.getProducts();
 
@@ -339,6 +342,8 @@ void SimbodyBody::getInertia(double rInertia[3][3]) const
 	} catch(const exception& e) {
 		printf("EXCEPTION THROWN: %s\n", e.what());
 	}
+	*/
+	memcpy(&rInertia[0][0],&_inertia[0],9*sizeof(double));
 }
 //done_____________________________________________________________________________
 /**

@@ -109,7 +109,9 @@ public:
 
 	// GET & SET
 	void setParentBodyName(const std::string& aName);
+	std::string getParentBodyName();
 	void setChildBodyName(const std::string& aName);
+	std::string getChildBodyName();
 	virtual SimbodyBody* getChildBody() const { return _childBody; }
 	virtual SimbodyBody* getParentBody() const { return _parentBody; }
 	virtual DofSet* getDofSet() const { return &_dofSet; }

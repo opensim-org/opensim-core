@@ -79,23 +79,23 @@ class OSIMSIMBODYENGINE_API SimbodyEngine  : public AbstractDynamicsEngine
 //=============================================================================
 protected:
 	/** Body used for ground, the inertial frame. */
-	AbstractBody* _groundBody;
+	AbstractBody *_groundBody;
 
 	/** Multibody system. */
-	SimTK::MultibodySystem _system;
+	SimTK::MultibodySystem *_system;
 
 	/** Matter subsystem. */
-	SimTK::SimbodyMatterSubsystem _matter;
+	SimTK::SimbodyMatterSubsystem *_matter;
 
 	/** Uniform gravity subsystem. */
-	SimTK::UniformGravitySubsystem _gravitySubsystem;
+	SimTK::UniformGravitySubsystem *_gravitySubsystem;
 
 	/** User-force subsystem. */
-	SimTK::GeneralForceElements _userForceElements;
+	SimTK::GeneralForceElements *_userForceElements;
 
 	/** States of the Simbody model.  At a minimum, it contains the
 	generalized coordinates (q) and generalized speeds (u). */
-	SimTK::State _s;
+	SimTK::State *_s;
 
 	/** Vector of spatial vectors containing the accumulated forces
 	and torques that are to be applied to each of the bodies in the
@@ -130,6 +130,8 @@ private:
 	void setNull();
 	void setupProperties();
 	void copyData(const SimbodyEngine &aEngine);
+	void newSimbodyVariables();
+	void deleteSimbodyVariables();
 	void constructPendulum();
 	void constructMultibodySystem();
 	void addRigidBodies(SimbodyBody *aBody);

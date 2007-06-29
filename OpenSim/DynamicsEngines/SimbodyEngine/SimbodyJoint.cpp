@@ -311,13 +311,24 @@ const OpenSim::Transform& SimbodyJoint::getInverseTransform()
 
 //_____________________________________________________________________________
 /**
- * Set the name of the joint's parent body
+ * Set the name of the joint's parent body.
  *
  * @param Name of the parent body.
  */
 void SimbodyJoint::setParentBodyName(const string& aName)
 {
 	_bodies.set(0, aName);
+}
+//_____________________________________________________________________________
+/**
+ * Get the name of the joint's parent body.
+ *
+ * @return Name of the parent body.
+ */
+string SimbodyJoint::getParentBodyName()
+{
+	if(_bodies.getSize()<1) return "";
+	return _bodies[0];
 }
 
 //_____________________________________________________________________________
@@ -329,6 +340,17 @@ void SimbodyJoint::setParentBodyName(const string& aName)
 void SimbodyJoint::setChildBodyName(const string& aName)
 {
 	_bodies.set(1, aName);
+}
+//_____________________________________________________________________________
+/**
+ * Get the name of the joint's child body.
+ *
+ * @return Name of the child body.
+ */
+string SimbodyJoint::getChildBodyName()
+{
+	if(_bodies.getSize()<2) return "";
+	return _bodies[1];
 }
 
 

@@ -371,7 +371,7 @@ void SimbodyCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordina
  */
 double SimbodyCoordinate::getValue() const
 {
-	return _engine->_matter.getMobilizerQ(_engine->_s,_bodyId,_mobilityIndex);
+	return _engine->_matter->getMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex);
 }
 //done_____________________________________________________________________________
 /**
@@ -388,7 +388,7 @@ bool SimbodyCoordinate::setValue(double aValue)
 		return false;
 	}
 	_engine->resetBodyAndMobilityForceVectors();
-	_engine->_matter.setMobilizerQ(_engine->_s,_bodyId,_mobilityIndex,aValue);
+	_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
 	return true;
 }
 

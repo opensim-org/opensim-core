@@ -269,7 +269,7 @@ bool SimbodySpeed::setDefaultValue(double aDefaultValue)
 bool SimbodySpeed::setValue(double aValue)
 {
 	_engine->resetBodyAndMobilityForceVectors();
-	_engine->_matter.setMobilizerU(_engine->_s,_bodyId,_mobilityIndex,aValue);
+	_engine->_matter->setMobilizerU(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
 	return true;
 }
 
@@ -281,7 +281,7 @@ bool SimbodySpeed::setValue(double aValue)
  */
 double SimbodySpeed::getValue() const
 {
-	return _engine->_matter.getMobilizerU(_engine->_s,_bodyId,_mobilityIndex);
+	return _engine->_matter->getMobilizerU(*(_engine->_s),_bodyId,_mobilityIndex);
 
 }
 
@@ -298,6 +298,6 @@ double SimbodySpeed::getValue() const
  */
 double SimbodySpeed::getAcceleration() const
 {
-	return 0; //(not implemented) _engine->_matter.getMobilizerUDot(_engine->_s,_bodyId,_mobilityIndex);
+	return 0; //(not implemented) _engine->_matter->getMobilizerUDot(*(_engine->_s),_bodyId,_mobilityIndex);
 }
 

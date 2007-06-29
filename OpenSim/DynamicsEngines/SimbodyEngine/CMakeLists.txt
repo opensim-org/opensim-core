@@ -28,6 +28,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors
 			 ${XERCES_INCLUDE_DIR})
 
+SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
+
 LINK_LIBRARIES(debug osimCommon_d      optimized osimCommon
                debug osimSimulation_d  optimized osimSimulation
                debug SimTKsimbody_d    optimized SimTKsimbody )
@@ -36,5 +38,9 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 ADD_DEFINITIONS("-DOSIM${UKIT}_EXPORTS")
 
-INSTALL_TARGETS(/lib/ osim${KIT})
-INSTALL_FILES(/include/OpenSim/DynamicsEngines/SimbodyEngine .h ${INCLUDE_FILES})
+SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+   PROJECT_LABEL "Libraries - osim${KIT}"
+)
+
+INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+INSTALL_FILES(/include/OpenSim/${KIT} .h ${INCLUDE_FILES})
