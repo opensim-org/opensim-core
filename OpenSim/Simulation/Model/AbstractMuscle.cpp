@@ -228,10 +228,8 @@ void AbstractMuscle::updateGeometrySize()
 	int newNumberOfSegments=_currentPath.getSize()-1;
 	if (newNumberOfSegments <= 0)
 		return;
-	// Keep track whether any Geometry needs to be created/deleted.
-	bool segmentsChanged = (update && (newNumberOfSegments!= numberOfSegements));
 	// update geom array to have correct number of entries
-	if (!update || (update && segmentsChanged)){	
+	if (!update || (update && (newNumberOfSegments != numberOfSegements))){	
 		if (newNumberOfSegments > numberOfSegements){ // add entries
 			for(int segment = numberOfSegements; 
 						segment < newNumberOfSegments; 
@@ -267,7 +265,6 @@ void AbstractMuscle::updateGeometryLocations()
 		Array<double>& location=nextPoint->getAttachment();
 		const AbstractBody* body = nextPoint->getBody();
 		AbstractDynamicsEngine* engine = (const_cast<AbstractBody*> (body))->getDynamicsEngine();
-		Transform xform = engine->getTransform(*body);
 		if (i > 0){
 			for(int j=0; j < 3; j++)
 				previousPointGlobalLocation[j] = globalLocation[j];
@@ -276,7 +273,7 @@ void AbstractMuscle::updateGeometryLocations()
 		// Make a segment between globalLocation, previousPointGlobalLocation
 		if (i > 0){
 			// Geometry will be deleted when the object is deleted.
-			LineGeometry *g = dynamic_cast<LineGeometry *>(_displayer.getGeometry(i-1));
+			LineGeometry *g = static_cast<LineGeometry *>(_displayer.getGeometry(i-1));
 			g->setPoints(previousPointGlobalLocation, globalLocation);
 		}
 	}
