@@ -1566,10 +1566,9 @@ double SimbodyEngine::calcDistance(const AbstractBody& aBody1, const double aPoi
  */
 void SimbodyEngine::convertQuaternionsToAngles(double *aQ, double *rQAng) const
 {
-	Rotation R;
-	R.setToQuaternion(Quaternion(Vec4::getAs(aQ)));
-
-	Vec3::updAs(rQAng) = R.convertToBodyFixed123();
+	//Rotation R;
+	//R.setToQuaternion(Quaternion(Vec4::getAs(aQ)));
+	//Vec3::updAs(rQAng) = R.convertToBodyFixed123();
 }
 
 //_____________________________________________________________________________

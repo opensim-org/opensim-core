@@ -1,1 +1,1 @@
-SUBDIRS(SimmKinematicsEngine SdfastEngine)
+SUBDIRS(SimmKinematicsEngine SdfastEngine SimbodyEngine TestSimbodyEngine)
