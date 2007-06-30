@@ -5,6 +5,7 @@
 //==============================================================================
 #include <iostream>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/ContactForceSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -13,6 +14,8 @@
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/PointKinematics.h>
+#include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
@@ -49,8 +52,14 @@ int main()
 	SimbodyEngine *pendulum = new SimbodyEngine();
 	//Model *model = new Model;
 	//model->setDynamicsEngine(*pendulum);
-	Model *model = new Model("pendulum.osim");
-	model->setup();
+	Model *model;
+	try {
+		model = new Model("pendulum.osim");
+		model->setup();
+	} catch(OpenSim::Exception x) {
+		x.print(cerr);
+		return -1;
+	}
 
 	// ADD FORCE(S)
 	int index = 0;
@@ -110,10 +119,26 @@ int main()
 	Kinematics *kin = new Kinematics(model);
 	kin->setStepInterval(stepInterval);
 	model->addAnalysis(kin);
+	// Point Kinematics
+	OpenSim::Array<double> point(0.0,3);
+	BodySet *bodySet = model->getDynamicsEngine().getBodySet();
+	int nb = bodySet->getSize();
+	for(int i=0;i<nb;i++) {
+		PointKinematics *pointKin = new PointKinematics(model);
+		AbstractBody *body = bodySet->get(i);
+		pointKin->setBodyPoint(body->getName(),&point[0]);
+		pointKin->setPointName(body->getName().c_str());
+		model->addAnalysis(pointKin);
+	}
+	// Point Kinematics
+	//PointKinematics *pointKin2 = new PointKinematics(model);
+	//pointKin2->setBodyPoint("Pendulum2",&point[0]);
+	//pointKin2->setPointName("Pendulum2Frame");
+	//model->addAnalysis(pointKin2);
 	// Actuation
-	//Actuation *actuation = new Actuation(&model);
-	//actuation->setStepInterval(stepInterval);
-	//model->addAnalysis(actuation);
+	Actuation *actuation = new Actuation(model);
+	actuation->setStepInterval(stepInterval);
+	model->addAnalysis(actuation);
 	// Contact
 	//Contact *contact = new Contact(&model);
 	//contact->setStepInterval(stepInterval);
@@ -164,7 +189,7 @@ int main()
 	// STEP 11
 	// Print the analysis results.
 	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
-	model->print("pendulum.osim");
+	//model->print("pendulum.osim");
 
 //	ModelTestSuite aModelTestSuite;
 //	aModelTestSuite.Test(model);
