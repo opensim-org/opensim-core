@@ -222,11 +222,23 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		// Coordinate
 		string qName = r1->getCoordinateName();
 		SimbodyCoordinate *q = (SimbodyCoordinate*)_coordinateSet.get(qName);
+		if(q==NULL) {
+			string msg = "SimbodyEngine.addRigidBodies: ERR- coordinate ";
+			msg += qName;
+			msg += " not found in coordinate set.";
+			throw OpenSim::Exception(msg,__FILE__,__LINE__);
+		}
 		q->_bodyId = child->_id;
 		q->_mobilityIndex = 0;
 		// Speed
 		string uName = AbstractSpeed::getSpeedName(qName);
 		SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
+		if(u==NULL) {
+			string msg = "SimbodyEngine.addRigidBodies: ERR- speed ";
+			msg += uName;
+			msg += " not found in speed set.";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
 		u->_bodyId = child->_id;
 		u->_mobilityIndex = 0;
 
