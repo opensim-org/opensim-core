@@ -661,7 +661,8 @@ void AbstractMuscle::postScale(const ScaleSet& aScaleSet)
 void AbstractMuscle::computeActuation()
 {
 	double posRelative[3], velRelative[3];
-	double posStart[3], posEnd[3], velStart[3], velEnd[3];
+	double posStartInertial[3], posEndInertial[3], velStartInertial[3], velEndInertial[3];
+	double velStartLocal[3], velEndLocal[3], velStartMoving[3], velEndMoving[3];
 	MusclePoint *start, *end;
 
 	computePath();
@@ -676,15 +677,23 @@ void AbstractMuscle::computeActuation()
 		end = _currentPath[i+1];
 
 		// Find the positions and velocities in the inertial frame.
-		engine.getPosition(*(start->getBody()), start->getAttachment().get(), posStart);
-		engine.getPosition(*(end->getBody()), end->getAttachment().get(), posEnd);
-		engine.getVelocity(*(start->getBody()), start->getAttachment().get(), velStart);
-		engine.getVelocity(*(end->getBody()), end->getAttachment().get(), velEnd);
+		engine.getPosition(*(start->getBody()), start->getAttachment().get(), posStartInertial);
+		engine.getPosition(*(end->getBody()), end->getAttachment().get(), posEndInertial);
+		engine.getVelocity(*(start->getBody()), start->getAttachment().get(), velStartInertial);
+		engine.getVelocity(*(end->getBody()), end->getAttachment().get(), velEndInertial);
+
+		// The points might be moving in their local bodies' reference frames
+		// (MovingMusclePoints and possibly MuscleWrapPoints) so find their
+		// local velocities and transform them to the inertial frame.
+		start->getVelocity(velStartLocal);
+		end->getVelocity(velEndLocal);
+		engine.transform(*(start->getBody()), velStartLocal, engine.getGroundBody(), velStartMoving);
+		engine.transform(*(end->getBody()), velEndLocal, engine.getGroundBody(), velEndMoving);
 
 		// Calculate the relative positions and velocities.
 		for (int j = 0; j < 3; j++) {
-			posRelative[j] = posEnd[j] - posStart[j];
-			velRelative[j] = velEnd[j] - velStart[j];
+			posRelative[j] = posEndInertial[j] - posStartInertial[j];
+			velRelative[j] = (velEndInertial[j] + velEndMoving[j]) - (velStartInertial[j] + velStartMoving[j]);
 		}
 
 		// Normalize the vector from start to end.
@@ -719,6 +728,7 @@ void AbstractMuscle::computePath()
 	// add the fixed and active via points to the path
 	int i;
    for (i = 0; i < _attachmentSet.getSize(); i++) {
+		_attachmentSet[i]->update();
 		if (_attachmentSet[i]->isActive())
 			_currentPath.append(_attachmentSet[i]);
 	}

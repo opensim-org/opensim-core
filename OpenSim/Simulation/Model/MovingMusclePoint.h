@@ -1,7 +1,7 @@
-#ifndef __MusclePoint_h__
-#define __MusclePoint_h__
+#ifndef __MovingMusclePoint_h__
+#define __MovingMusclePoint_h__
 
-// MusclePoint.h
+// MovingMusclePoint.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
@@ -31,12 +31,12 @@
 #include <string>
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/MusclePoint.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -47,21 +47,21 @@
 
 namespace OpenSim {
 
-class AbstractBody;
+class AbstractCoordinate;
 class Model;
 class AbstractMuscle;
 class AbstractDynamicsEngine;
-class AbstractWrapObject;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM muscle point.
+ * A class implementing a moving muscle point, which is a muscle point that
+ * moves in a body's reference frame as a function of a coordinate.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API MusclePoint : public Object  
+class OSIMSIMULATION_API MovingMusclePoint : public MusclePoint  
 {
 
 //=============================================================================
@@ -70,22 +70,29 @@ class OSIMSIMULATION_API MusclePoint : public Object
 private:
 
 protected:
-   PropertyDblArray _attachmentProp;
-   Array<double> &_attachment;
+	PropertyObjPtr<Function> _XAttachmentProp;
+	Function* &_XAttachment;
 
-	PropertyStr _bodyNameProp;
-   std::string &_bodyName;
+	PropertyStr _XCoordinateNameProp;
+   std::string &_XCoordinateName;
 
-	// Support for Display
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
+	const AbstractCoordinate* _XCoordinate;
 
-	/* const*/ AbstractBody *_body; // Not const anymore since the body's displayer is not const
+	PropertyObjPtr<Function> _YAttachmentProp;
+	Function* &_YAttachment;
 
-	AbstractMuscle* _muscle; // the muscle that owns this attachment point
+	PropertyStr _YCoordinateNameProp;
+   std::string &_YCoordinateName;
 
-	/** A temporary kluge until the default mechanism is working */
-	static Geometry *_defaultGeometry;
+	const AbstractCoordinate* _YCoordinate;
+
+	PropertyObjPtr<Function> _ZAttachmentProp;
+	Function* &_ZAttachment;
+
+	PropertyStr _ZCoordinateNameProp;
+   std::string &_ZCoordinateName;
+
+	const AbstractCoordinate* _ZCoordinate;
 
 //=============================================================================
 // METHODS
@@ -94,48 +101,42 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	MusclePoint();
-	MusclePoint(const MusclePoint &aPoint);
-	virtual ~MusclePoint();
+	MovingMusclePoint();
+	MovingMusclePoint(const MovingMusclePoint &aPoint);
+	virtual ~MovingMusclePoint();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	MusclePoint& operator=(const MusclePoint &aPoint);
+	MovingMusclePoint& operator=(const MovingMusclePoint &aPoint);
 #endif
-   void copyData(const MusclePoint &aPoint);
+   void copyData(const MovingMusclePoint &aPoint);
 
-	Array<double>& getAttachment() const { return _attachment; }
-	void setAttachment(double aAttachment[3]);
-   void setAttachment(int aCoordIndex, double aAttachment);
-	const AbstractBody* getBody() const { return _body; }
-	void setBody(AbstractBody& aBody);
-	const std::string& getBodyName() const { return _bodyName; }
-	void scale(Array<double>& aScaleFactors);
-	const AbstractMuscle* getMuscle() const { return _muscle; }
+	const AbstractCoordinate* getXCoordinate() const { return _XCoordinate; }
+	const AbstractCoordinate* getYCoordinate() const { return _YCoordinate; }
+	const AbstractCoordinate* getZCoordinate() const { return _ZCoordinate; }
+	void setXCoordinate(AbstractCoordinate& aCoordinate);
+	void setYCoordinate(AbstractCoordinate& aCoordinate);
+	void setZCoordinate(AbstractCoordinate& aCoordinate);
+	const std::string& getXCoordinateName() const { return _XCoordinateName; }
+	const std::string& getYCoordinateName() const { return _YCoordinateName; }
+	const std::string& getZCoordinateName() const { return _ZCoordinateName; }
 
 	virtual bool isActive() const { return true; }
-	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
-	virtual void update() { }
+	virtual void update();
 	virtual void getVelocity(double aVelocity[3]);
 
-	// Visible Object Support
-	virtual VisibleObject* getDisplayer() const { return &_displayer; };
-	virtual void updateGeometry();
-
-	OPENSIM_DECLARE_DERIVED(MusclePoint, Object);
-protected:
-
+	OPENSIM_DECLARE_DERIVED(MovingMusclePoint, MusclePoint);
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class MusclePoint
+};	// END of class MovingMusclePoint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __MusclePoint_h__
+#endif // __MovingMusclePoint_h__
 
 

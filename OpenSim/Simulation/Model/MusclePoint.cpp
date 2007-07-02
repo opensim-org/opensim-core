@@ -262,6 +262,18 @@ void MusclePoint::setAttachment(int aCoordIndex, double aAttachment)
 	}
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the velocity of the point in the body's local reference frame.
+ *
+ * @param aVelocity The velocity.
+ */
+
+void MusclePoint::getVelocity(double aVelocity[3])
+{
+	aVelocity[0] = aVelocity[1] = aVelocity[2] = 0.0;
+}
+
 //=============================================================================
 // SCALING
 //=============================================================================
