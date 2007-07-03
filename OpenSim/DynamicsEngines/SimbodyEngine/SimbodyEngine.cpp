@@ -184,28 +184,27 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			cerr<<"SimbodyEngine.addRigidBodies: joint "<<joint->getName()<<" has no child."<<endl;
 		}
 
-		// DETERMINE NUMBER OF AXES
-		Array<AbstractDof*> r(NULL,3);
-		r[0] = joint->getDofSet()->get("r1");
-		r[1] = joint->getDofSet()->get("r2");
-		r[2] = joint->getDofSet()->get("r3");
-		int nAxes = 0;
-		for(int i=0;i<3;i++) {
-			if(r[i]!=NULL) nAxes++;
-		}
-
-		// LOOP OVER ROTATIONAL AXES
-		Vec3 axis;
+		// LOOP OVER DOFS
 		SimTK::BodyId parentId = aBody->_id;
 		SimTK::BodyId childId;
-		for(int i=0;i<nAxes;parentId=childId,i++) {
-			
+		DofSet *dofSet = joint->getDofSet();
+		int nDof = dofSet->getSize();
+		for(int i=0;i<nDof;parentId=childId,i++) {
+
+			// GET DOF
+			AbstractDof *dof = dofSet->get(i);
+			if(dof==NULL) continue;
+			string dofName = dof->getName();
+			cout<<"SimbodyEngine.addRigidBodies: creating dof "<<dofName<<" between "<<aBody->getName()<<" and "<<childName<<"."<<endl;
+			bool translation = (dofName=="tx")||(dofName=="ty")||(dofName=="tz");
+			bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
+
 			// INERTIAL PROPERTIES
 			// Only the real child body gets mass
 			double mass = 0.0;
 			double com[3] = { 0.0, 0.0, 0.0 };
 			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
-			if(i==(nAxes-1)) {
+			if(i==(nDof-1)) {
 				mass = child->getMass();
 				child->getMassCenter(com);
 				child->getInertia(inertia);
@@ -215,17 +214,24 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
 			MassProperties massProps(mass,massCenter,inertiaTensor);
 
-			// GET PIN AXIS (AXES)
-			r[i]->getAxis(&axis[0]);
-			UnitVec3 rUnitVec(axis);
+			// GET AXIS
+			Vec3 axis;
+			dof->getAxis(&axis[0]);
+			Vec3 simbodyAxis(axis);
+			if(translation) {
+				simbodyAxis[2] = -axis[0];
+				simbodyAxis[0] = -axis[1];
+				simbodyAxis[1] = -axis[2];
+			}
+			UnitVec3 unitVec(simbodyAxis);
 
 			// CHILD TRANSFORM
 			// Only the last axis gets a potentially non-zero location in the child frame.
 			Vec3 childTranslation(0,0,0);
-			if(i==(nAxes-1)) {
+			if(i==(nDof-1)) {
 				joint->getLocationInChild(&childTranslation[0]);
 			}
-			SimTK::Rotation childRotation(rUnitVec);
+			SimTK::Rotation childRotation(unitVec);
 			SimTK::Transform childTransform(childRotation,childTranslation);
 
 			// PARENT TRANSFORM
@@ -238,17 +244,25 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			SimTK::Transform parentTransform(childRotation,parentTranslation);
 
 			// ADD RIGID BODY
-			childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
+			// Translation (Slider)
+			if(translation) {
+				cout<<"slider axis = "<<unitVec<<endl;
+				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Slider());
+			// Rotation (Pin)
+			} else if(rotation) {
+				cout<<"pin axis = "<<unitVec<<endl;
+				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
+			}
 
 			// UPDATE BODY ID IN REAL CHILD BODY
 			// This is only done for the last axis
-			if(i==(nAxes-1)) {
+			if(i==(nDof-1)) {
 				child->_id = childId;
 			}
 
 			// SET IDs FOR COORDINATES AND SPEEDS
 			// Coordinate
-			string qName = r[i]->getCoordinateName();
+			string qName = dof->getCoordinateName();
 			SimbodyCoordinate *q = (SimbodyCoordinate*)_coordinateSet.get(qName);
 			if(q==NULL) {
 				string msg = "SimbodyEngine.addRigidBodies: ERR- coordinate ";

@@ -96,18 +96,18 @@ void SimbodyTranslationDof::updateFromXMLNode()
 {
 	AbstractDof::updateFromXMLNode();
 
-	if (_name == TX_NAME)
-	{
+	// X
+	if (_name == TX_NAME) {
 		_axis[0] = 1.0;
 		_axisIndex = xTranslation;
-	}
-	else if (_name == TY_NAME)
-	{
+
+	// Y
+	} else if (_name == TY_NAME) {
 		_axis[1] = 1.0;
 		_axisIndex = yTranslation;
-	}
-	else if (_name == TZ_NAME)
-	{
+
+	// Z
+	} else if (_name == TZ_NAME) {
 		_axis[2] = 1.0;
 		_axisIndex = zTranslation;
 	}
