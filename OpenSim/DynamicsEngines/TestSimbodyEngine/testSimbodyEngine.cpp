@@ -36,7 +36,7 @@ int main()
 {
 	// STEP 1
 	// Set output precision
-	//IO::SetPrecision(8);
+	IO::SetPrecision(20);
 	//IO::SetDigitsPad(-1);
 
 	// STEP 2

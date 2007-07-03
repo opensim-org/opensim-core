@@ -62,6 +62,16 @@
 								<SimbodyRotationDof name="r1">
 									<Value/>
 									<coordinate> PendulumAxis </coordinate>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</SimbodyRotationDof>
+								<SimbodyRotationDof name="r2">
+									<Value/>
+									<coordinate> PendulumAxis2 </coordinate>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</SimbodyRotationDof>
+								<SimbodyRotationDof name="r3">
+									<Value/>
+									<coordinate> PendulumAxis3 </coordinate>
 									<axis>       0.00000000       0.00000000       1.00000000 </axis>
 								</SimbodyRotationDof>
 							</objects>
@@ -91,6 +101,36 @@
 						<restraint_active> true </restraint_active>
 						<constraint_function/>
 					</SimbodyCoordinate>
+					<SimbodyCoordinate name="PendulumAxis2">
+						<default_value>       0.00000000 </default_value>
+						<initial_value>       0.00000000 </initial_value>
+						<tolerance>       0.00000000 </tolerance>
+						<stiffness>       0.00000000 </stiffness>
+						<range> -999999.90000000  999999.90000000 </range>
+						<keys> </keys>
+						<clamped> true </clamped>
+						<locked> false </locked>
+						<restraint_function/>
+						<min_restraint_function/>
+						<max_restraint_function/>
+						<restraint_active> true </restraint_active>
+						<constraint_function/>
+					</SimbodyCoordinate>
+					<SimbodyCoordinate name="PendulumAxis3">
+						<default_value>       0.00000000 </default_value>
+						<initial_value>       0.00000000 </initial_value>
+						<tolerance>       0.00000000 </tolerance>
+						<stiffness>       0.00000000 </stiffness>
+						<range> -999999.90000000  999999.90000000 </range>
+						<keys> </keys>
+						<clamped> true </clamped>
+						<locked> false </locked>
+						<restraint_function/>
+						<min_restraint_function/>
+						<max_restraint_function/>
+						<restraint_active> true </restraint_active>
+						<constraint_function/>
+					</SimbodyCoordinate>
 				</objects>
 				<groups/>
 			</CoordinateSet>
@@ -98,6 +138,14 @@
 			<SpeedSet name="">
 				<objects>
 					<SimbodySpeed name="PendulumAxis_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> PendulumAxis </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="PendulumAxis2_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> PendulumAxis </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="PendulumAxis3_u">
 						<default_value>       0.00000000 </default_value>
 						<coordinate> PendulumAxis </coordinate>
 					</SimbodySpeed>
@@ -116,7 +164,7 @@
 			<Force name="f1">
 				<body_A> Pendulum </body_A>
 				<point_A>       0.00000000       0.00000000       0.00000000 </point_A>
-				<direction_A>       1.00000000       0.00000000       0.00000000 </direction_A>
+				<direction_A>       0.00000000       0.00000000       -1.00000000 </direction_A>
 				<body_B> ground </body_B>
 				<point_B>       0.00000000      -0.50000000       0.00000000 </point_B>
 				<optimal_force>      30.21000000 </optimal_force>

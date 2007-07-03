@@ -184,63 +184,92 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			cerr<<"SimbodyEngine.addRigidBodies: joint "<<joint->getName()<<" has no child."<<endl;
 		}
 
-		// INERTIAL PROPERTIES
-		double mass = child->getMass();
-		double com[3];
-		child->getMassCenter(com);
-		Vec3 massCenter;
-		massCenter = com;
-		double inertia[3][3];
-		child->getInertia(inertia);
-		SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
-		MassProperties massProps(mass,massCenter,inertiaTensor);
+		// DETERMINE NUMBER OF AXES
+		Array<AbstractDof*> r(NULL,3);
+		r[0] = joint->getDofSet()->get("r1");
+		r[1] = joint->getDofSet()->get("r2");
+		r[2] = joint->getDofSet()->get("r3");
+		int nAxes = 0;
+		for(int i=0;i<3;i++) {
+			if(r[i]!=NULL) nAxes++;
+		}
 
-		// GET PIN AXIS
+		// LOOP OVER ROTATIONAL AXES
 		Vec3 axis;
-		AbstractDof *r1 = joint->getDofSet()->get("r1");
-		if(r1!=NULL) {
-			r1->getAxis(&axis[0]);
+		SimTK::BodyId parentId = aBody->_id;
+		SimTK::BodyId childId;
+		for(int i=0;i<nAxes;parentId=childId,i++) {
+			
+			// INERTIAL PROPERTIES
+			// Only the real child body gets mass
+			double mass = 0.0;
+			double com[3] = { 0.0, 0.0, 0.0 };
+			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
+			if(i==(nAxes-1)) {
+				mass = child->getMass();
+				child->getMassCenter(com);
+				child->getInertia(inertia);
+			}
+			Vec3 massCenter(0,0,0);
+			massCenter = com;
+			SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
+			MassProperties massProps(mass,massCenter,inertiaTensor);
+
+			// GET PIN AXIS (AXES)
+			r[i]->getAxis(&axis[0]);
+			UnitVec3 rUnitVec(axis);
+
+			// CHILD TRANSFORM
+			// Only the last axis gets a potentially non-zero location in the child frame.
+			Vec3 childTranslation(0,0,0);
+			if(i==(nAxes-1)) {
+				joint->getLocationInChild(&childTranslation[0]);
+			}
+			SimTK::Rotation childRotation(rUnitVec);
+			SimTK::Transform childTransform(childRotation,childTranslation);
+
+			// PARENT TRANSFORM
+			// Only the first axis gets a potentially non-zero location in the parent frame.
+			Vec3 parentTranslation(0,0,0);
+			if(i==0) {
+				joint->getLocationInParent(&parentTranslation[0]);
+			}
+			// Note- parent and child rotations are the same, so we can just use the child rotation.
+			SimTK::Transform parentTransform(childRotation,parentTranslation);
+
+			// ADD RIGID BODY
+			childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
+
+			// UPDATE BODY ID IN REAL CHILD BODY
+			// This is only done for the last axis
+			if(i==(nAxes-1)) {
+				child->_id = childId;
+			}
+
+			// SET IDs FOR COORDINATES AND SPEEDS
+			// Coordinate
+			string qName = r[i]->getCoordinateName();
+			SimbodyCoordinate *q = (SimbodyCoordinate*)_coordinateSet.get(qName);
+			if(q==NULL) {
+				string msg = "SimbodyEngine.addRigidBodies: ERR- coordinate ";
+				msg += qName;
+				msg += " not found in coordinate set.";
+				throw OpenSim::Exception(msg,__FILE__,__LINE__);
+			}
+			q->_bodyId = childId;
+			q->_mobilityIndex = 0;
+			// Speed
+			string uName = AbstractSpeed::getSpeedName(qName);
+			SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
+			if(u==NULL) {
+				string msg = "SimbodyEngine.addRigidBodies: ERR- speed ";
+				msg += uName;
+				msg += " not found in speed set.";
+				throw Exception(msg,__FILE__,__LINE__);
+			}
+			u->_bodyId = childId;
+			u->_mobilityIndex = 0;
 		}
-		UnitVec3 axisUnitVec(axis);
-
-		// CHILD TRANSFORM
-		Vec3 childTranslation;
-		joint->getLocationInChild(&childTranslation[0]);
-		SimTK::Rotation childRotation(axisUnitVec);
-		SimTK::Transform childTransform(childRotation,childTranslation);
-
-		// PARENT TRANSFORM
-		Vec3 parentTranslation;
-		joint->getLocationInParent(&parentTranslation[0]);
-		// Note- parent and child rotations are the same, so we can just use the child rotation.
-		SimTK::Transform parentTransform(childRotation,parentTranslation);
-
-		// ADD RIGID BODY
-		child->_id = _matter->addRigidBody(massProps,childTransform,aBody->_id,parentTransform,Mobilizer::Pin());
-
-		// SET IDs FOR COORDINATES AND SPEEDS
-		// Coordinate
-		string qName = r1->getCoordinateName();
-		SimbodyCoordinate *q = (SimbodyCoordinate*)_coordinateSet.get(qName);
-		if(q==NULL) {
-			string msg = "SimbodyEngine.addRigidBodies: ERR- coordinate ";
-			msg += qName;
-			msg += " not found in coordinate set.";
-			throw OpenSim::Exception(msg,__FILE__,__LINE__);
-		}
-		q->_bodyId = child->_id;
-		q->_mobilityIndex = 0;
-		// Speed
-		string uName = AbstractSpeed::getSpeedName(qName);
-		SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
-		if(u==NULL) {
-			string msg = "SimbodyEngine.addRigidBodies: ERR- speed ";
-			msg += uName;
-			msg += " not found in speed set.";
-			throw Exception(msg,__FILE__,__LINE__);
-		}
-		u->_bodyId = child->_id;
-		u->_mobilityIndex = 0;
 
 		// DO THE SAME FOR THE CHILD BODY
 		addRigidBodies(child);
