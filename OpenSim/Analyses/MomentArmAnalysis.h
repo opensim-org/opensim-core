@@ -104,6 +104,7 @@ public:
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
+	OPENSIM_DECLARE_DERIVED(MomentArmAnalysis,Analysis)
 //=============================================================================
 };	// END of class MomentArmAnalysis
 
