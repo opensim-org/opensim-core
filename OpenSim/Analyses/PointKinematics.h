@@ -101,7 +101,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// BODY
-	void setBodyPoint(std::string& aBody, double aPoint[3]);
+	void setBodyPoint(const std::string& aBody, double aPoint[3]);
 	void setBody(AbstractBody* aBody);
 	AbstractBody* getBody();
 	// POINT

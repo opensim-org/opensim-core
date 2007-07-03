@@ -324,7 +324,7 @@ setModel(Model *aModel)
  * @double[3] aPoint point coordinates
  */
 void PointKinematics::
-setBodyPoint(std::string& aBody, double aPoint[3])
+setBodyPoint(const std::string& aBody, double aPoint[3])
 {
 	if (_model == 0)
 		return;
@@ -341,12 +341,17 @@ setBodyPoint(std::string& aBody, double aPoint[3])
 void PointKinematics::
 setBody(AbstractBody* aBody)
 {
-	if (!aBody)
-	{
+	// CHECK
+	if (aBody==NULL) {
 		printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
 		_body = NULL;
 		return;
 	}
+
+	// SET
+	_body = aBody;
+	_bodyName = _body->getName();
+	cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
 
 	// RESET STORAGE
 	if(_aStore!=NULL) {
