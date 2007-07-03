@@ -6,6 +6,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 LINK_LIBRARIES(debug osimCommon_d osimSimulation_d osimSimbodyEngine_d osimAnalyses_d)
 
 ADD_EXECUTABLE(testSimbodyEngine testSimbodyEngine.cpp)
+
+SET_TARGET_PROPERTIES(testSimbodyEngine PROPERTIES PROJECT_LABEL "Tests - testSimbodyEngine")
         
 INSTALL_TARGETS(/bin/ testSimbodyEngine)
 #
