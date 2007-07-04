@@ -59,19 +59,33 @@
 						<bodies> ground Pendulum </bodies>
 						<DofSet name="">
 							<objects>
+								<SimbodyTranslationDof name="tx">
+									<Value/>
+									<coordinate> Pendulum_tx </coordinate>
+								</SimbodyTranslationDof>
+								<!--
+								<SimbodyTranslationDof name="ty">
+									<Value/>
+									<coordinate> Pendulum_ty </coordinate>
+								</SimbodyTranslationDof>
+								-->
+								<SimbodyTranslationDof name="tz">
+									<Value/>
+									<coordinate> Pendulum_tz </coordinate>
+								</SimbodyTranslationDof>
 								<SimbodyRotationDof name="r1">
 									<Value/>
-									<coordinate> PendulumAxis </coordinate>
+									<coordinate> Pendulum_r1 </coordinate>
 									<axis>       1.00000000       0.00000000       0.00000000 </axis>
 								</SimbodyRotationDof>
 								<SimbodyRotationDof name="r2">
 									<Value/>
-									<coordinate> PendulumAxis2 </coordinate>
+									<coordinate> Pendulum_r2 </coordinate>
 									<axis>       0.00000000       1.00000000       0.00000000 </axis>
 								</SimbodyRotationDof>
 								<SimbodyRotationDof name="r3">
 									<Value/>
-									<coordinate> PendulumAxis3 </coordinate>
+									<coordinate> Pendulum_r3 </coordinate>
 									<axis>       0.00000000       0.00000000       1.00000000 </axis>
 								</SimbodyRotationDof>
 							</objects>
@@ -86,7 +100,7 @@
 			<!--Generalized coordinates in the model.-->
 			<CoordinateSet name="">
 				<objects>
-					<SimbodyCoordinate name="PendulumAxis">
+					<SimbodyCoordinate name="Pendulum_tx">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
 						<tolerance>       0.00000000 </tolerance>
@@ -101,7 +115,8 @@
 						<restraint_active> true </restraint_active>
 						<constraint_function/>
 					</SimbodyCoordinate>
-					<SimbodyCoordinate name="PendulumAxis2">
+					<!--
+					<SimbodyCoordinate name="Pendulum_ty">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
 						<tolerance>       0.00000000 </tolerance>
@@ -116,7 +131,53 @@
 						<restraint_active> true </restraint_active>
 						<constraint_function/>
 					</SimbodyCoordinate>
-					<SimbodyCoordinate name="PendulumAxis3">
+					-->
+					<SimbodyCoordinate name="Pendulum_tz">
+						<default_value>       0.00000000 </default_value>
+						<initial_value>       0.00000000 </initial_value>
+						<tolerance>       0.00000000 </tolerance>
+						<stiffness>       0.00000000 </stiffness>
+						<range> -999999.90000000  999999.90000000 </range>
+						<keys> </keys>
+						<clamped> true </clamped>
+						<locked> false </locked>
+						<restraint_function/>
+						<min_restraint_function/>
+						<max_restraint_function/>
+						<restraint_active> true </restraint_active>
+						<constraint_function/>
+					</SimbodyCoordinate>
+					<SimbodyCoordinate name="Pendulum_r1">
+						<default_value>       0.00000000 </default_value>
+						<initial_value>       0.10000000 </initial_value>
+						<tolerance>       0.00000000 </tolerance>
+						<stiffness>       0.00000000 </stiffness>
+						<range> -999999.90000000  999999.90000000 </range>
+						<keys> </keys>
+						<clamped> true </clamped>
+						<locked> false </locked>
+						<restraint_function/>
+						<min_restraint_function/>
+						<max_restraint_function/>
+						<restraint_active> true </restraint_active>
+						<constraint_function/>
+					</SimbodyCoordinate>
+					<SimbodyCoordinate name="Pendulum_r2">
+						<default_value>       0.00000000 </default_value>
+						<initial_value>       0.00000000 </initial_value>
+						<tolerance>       0.00000000 </tolerance>
+						<stiffness>       0.00000000 </stiffness>
+						<range> -999999.90000000  999999.90000000 </range>
+						<keys> </keys>
+						<clamped> true </clamped>
+						<locked> false </locked>
+						<restraint_function/>
+						<min_restraint_function/>
+						<max_restraint_function/>
+						<restraint_active> true </restraint_active>
+						<constraint_function/>
+					</SimbodyCoordinate>
+					<SimbodyCoordinate name="Pendulum_r3">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
 						<tolerance>       0.00000000 </tolerance>
@@ -137,17 +198,31 @@
 			<!--Generalized speeds in the model.-->
 			<SpeedSet name="">
 				<objects>
-					<SimbodySpeed name="PendulumAxis_u">
+					<SimbodySpeed name="Pendulum_tx_u">
 						<default_value>       0.00000000 </default_value>
-						<coordinate> PendulumAxis </coordinate>
+						<coordinate> Pendulum_tx </coordinate>
 					</SimbodySpeed>
-					<SimbodySpeed name="PendulumAxis2_u">
+					<!--
+					<SimbodySpeed name="Pendulum_ty_u">
 						<default_value>       0.00000000 </default_value>
-						<coordinate> PendulumAxis </coordinate>
+						<coordinate> Pendulum_ty </coordinate>
 					</SimbodySpeed>
-					<SimbodySpeed name="PendulumAxis3_u">
+					-->
+					<SimbodySpeed name="Pendulum_tz_u">
 						<default_value>       0.00000000 </default_value>
-						<coordinate> PendulumAxis </coordinate>
+						<coordinate> Pendulum_tz </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="Pendulum_r1_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> Pendulum_r1 </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="Pendulum_r2_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> PendulumPin2 </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="Pendulum_r3_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> Pendulum_r3 </coordinate>
 					</SimbodySpeed>
 				</objects>
 				<groups/>
@@ -161,6 +236,7 @@
 	</DynamicsEngine>
 	<ActuatorSet name="">
 		<objects>
+		<!--
 			<Force name="f1">
 				<body_A> Pendulum </body_A>
 				<point_A>       0.00000000       0.00000000       0.00000000 </point_A>
@@ -169,6 +245,7 @@
 				<point_B>       0.00000000      -0.50000000       0.00000000 </point_B>
 				<optimal_force>      30.21000000 </optimal_force>
 			</Force>
+		-->
 		</objects>
 		<groups/>
 	</ActuatorSet>

@@ -61,6 +61,7 @@ int main()
 		return -1;
 	}
 
+	/*
 	// ADD FORCE(S)
 	int index = 0;
 	// Gen. Force 1
@@ -88,6 +89,7 @@ int main()
 	//model->getActuatorSet()->append(gf1);
 	//model->getActuatorSet()->append(gf2);
 	//model->getActuatorSet()->append(f1);
+	*/
 
 	// Setup model
 	model->setup();
@@ -96,11 +98,10 @@ int main()
 	model->printDetailedInfo(cout);
 
 	// STEP 4
-	// Alter the initial states if desired.
-	// Initial states would normally be specified in a file
+	// Set the initial states
 	OpenSim::Array<double> yi(0.0,model->getNumStates());
 	model->getInitialStates(&yi[0]);
-	yi[0] = 0.1;	// Initial angle of pendulum from vertical
+	yi[2] = 1.57;
 	model->setInitialStates(&yi[0]);
 
 	// STEP 5
@@ -164,7 +165,7 @@ int main()
 	// In this case, the initial and final times are set based on
 	// the range of times over which the controls are available.
 	//Control *control;
-	double ti=0.0,tf=10.0;
+	double ti=0.0,tf=5.0;
 	//control = controlSet.get("ti");
 	//if(control!=NULL) ti = control->getControlValue();
 	//control = controlSet.get("tf");
@@ -178,8 +179,8 @@ int main()
 	IntegRKF *integ = manager.getIntegrator();
 	integ->setMaximumNumberOfSteps(maxSteps);
 	integ->setMaxDT(1.0e-1);
-	integ->setTolerance(1.0e-7);
-	integ->setFineTolerance(5.0e-9);
+	integ->setTolerance(1.0e-3);
+	integ->setFineTolerance(5.0e-5);
 
 	// STEP 10
 	// Integrate
