@@ -200,7 +200,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
 
 			// INERTIAL PROPERTIES
-			// Only the real child body gets mass
+			// Only the real child body (i.e., the last body) gets mass
 			double mass = 0.0;
 			double com[3] = { 0.0, 0.0, 0.0 };
 			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
@@ -217,13 +217,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			// GET AXIS
 			Vec3 axis;
 			dof->getAxis(&axis[0]);
-			Vec3 simbodyAxis(axis);
-			if(translation) {
-				simbodyAxis[2] = -axis[0];
-				simbodyAxis[0] = -axis[1];
-				simbodyAxis[1] = -axis[2];
-			}
-			UnitVec3 unitVec(simbodyAxis);
+			UnitVec3 unitVec(axis);
 
 			// CHILD TRANSFORM
 			// Only the last axis gets a potentially non-zero location in the child frame.
@@ -231,7 +225,32 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			if(i==(nDof-1)) {
 				joint->getLocationInChild(&childTranslation[0]);
 			}
-			SimTK::Rotation childRotation(unitVec);
+			Rotation childRotation;
+			if(translation) {
+				/*
+				// These are the fundamental relationships, but the Rotation constructor below
+				// was private.  So, had to do it with consecutive rotations about z and x.
+				double ct = unitVec[0];
+				double st = sqrt(unitVec[1]*unitVec[1] + unitVec[2]*unitVec[2]);
+				double cp = unitVec[1];
+				double sp = unitVec[2];
+				SimTK::Rotation Rzt(ct,st,0,-st,ct,0,0,0,1);
+				SimTK::Rotation Rxp(1,0,0,0,cp,sp,0,-sp,cp);
+				*/
+				double theta = acos(unitVec[0]);
+				Rotation RzTheta = Rotation::aboutZ(theta);
+				//cout<<"theta = "<<theta<<endl;
+				//cout<<"RzTheta = "<<RzTheta<<endl;
+				double phi = acos(unitVec[1]);
+				Rotation RxPhi = Rotation::aboutX(phi);
+				//cout<<"phi = "<<phi<<endl;
+				//cout<<"RxPhi = "<<RxPhi<<endl;
+				childRotation = RxPhi * RzTheta;
+			} else if(rotation) {
+				Rotation R(unitVec);
+				childRotation = R;
+			}
+			cout<<"Rotation = "<<childRotation<<endl;
 			SimTK::Transform childTransform(childRotation,childTranslation);
 
 			// PARENT TRANSFORM
@@ -285,7 +304,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			u->_mobilityIndex = 0;
 		}
 
-		// DO THE SAME FOR THE CHILD BODY
+		// ADD RIGID BODIES TO THE CHILD BODY
 		addRigidBodies(child);
 	}
 }
