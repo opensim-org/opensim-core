@@ -87,6 +87,8 @@ public:
 	Transform();
 	// Copy constructor
 	Transform(const Transform &aTransform);
+	// Transform from a 4x4 Matrix
+	Transform(const double aMat44[4][4]);
 	// Construct a transform to rotate around an arbitrary axis with specified angle
 	Transform(const double r, const AnglePreference preference, const double axis[3]);
 	virtual ~Transform();

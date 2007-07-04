@@ -88,6 +88,15 @@ copy() const
 	return(new Transform(*this));
 }
 
+// Transform from a 4x4 Matrix
+Transform::Transform(const double aMat44[4][4])
+{
+	_translationOnly=false;
+	for(int i=0; i<4; i++)
+		for(int j=0; j<4; j++)
+			_matrix4[i][j] = aMat44[i][j];
+}
+
 // Construct a transform to rotate around an arbitrary axis with specified angle
 Transform::Transform(const double r, const AnglePreference preference, const double axis[3])
 {
