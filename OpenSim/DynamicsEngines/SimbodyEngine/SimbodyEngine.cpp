@@ -189,7 +189,9 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		SimTK::BodyId childId;
 		DofSet *dofSet = joint->getDofSet();
 		int nDof = dofSet->getSize();
-		for(int i=0;i<nDof;parentId=childId,i++) {
+		bool parentTranslationSet = false;
+		Vec3 locationInParent(0,0,0);
+		for(int i=0;i<nDof;i++) {
 
 			// GET DOF
 			AbstractDof *dof = dofSet->get(i);
@@ -198,6 +200,76 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			cout<<"SimbodyEngine.addRigidBodies: creating dof "<<dofName<<" between "<<aBody->getName()<<" and "<<childName<<"."<<endl;
 			bool translation = (dofName=="tx")||(dofName=="ty")||(dofName=="tz");
 			bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
+
+			// GET AXIS
+			Vec3 axis;
+			dof->getAxis(&axis[0]);
+			UnitVec3 unitVec(axis);
+
+			// CHILD TRANSFORM
+			// Only the last axis gets a potentially non-zero location in the child frame.
+			Vec3 childTranslation(0,0,0);
+			if(i==(nDof-1)) {
+				joint->getLocationInChild(&childTranslation[0]);
+			}
+			Rotation childRotation;
+			if(translation) {
+				double theta = acos(unitVec[0]);
+				Rotation RzTheta = Rotation::aboutZ(theta);
+				double phi = acos(unitVec[1]);
+				Rotation RxPhi = Rotation::aboutX(phi);
+				childRotation = RxPhi * RzTheta;
+			} else if(rotation) {
+				Rotation R(unitVec);
+				childRotation = R;
+			}
+			SimTK::Transform childTransform(childRotation,childTranslation);
+
+			// PARENT TRANSFORM
+			// Translation
+			Function *dofFunction;
+			if(translation) {
+				dofFunction = dof->getFunction();
+				if(dofFunction!=NULL) {
+					string functionType = dofFunction->getType();
+					// Constant
+					// This is not a real degree of freedom, but simply specifies the
+					// location of the mobilizer in the parent frame.
+					// An underlying rigid body should not be added.  The translation
+					// of the mobilizer frame in the parent body frame should just be set.
+					if(functionType=="Constant") {
+						if(dofName=="tx") {
+							locationInParent[0] = dof->getValue();
+							cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
+						} else if(dofName=="ty") {
+							locationInParent[1] = dof->getValue();
+							cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
+					} else if(dofName=="tz") {
+							locationInParent[2] = dof->getValue();
+							cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
+						}
+						continue;
+					// Custom
+					} else {
+						cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
+					}
+				}	
+			}
+			// In addition to translations being specified in tx, ty, and tz constant dofs,
+			// the location of the mobilizer in the parent frame can also be explicitly specified.
+			// If both mechanisms are used, the two are assumed to add together.
+			// Setting the location of the mobilizer frame in the parent should only happen once.
+			// The "parentTranslationSet" flag is used to make sure this is the case.
+			Vec3 parentTranslation(0,0,0);
+			if(!parentTranslationSet) {
+				joint->getLocationInParent(&parentTranslation[0]);
+				parentTranslation += locationInParent;
+				parentTranslationSet = true;
+			}
+			// Note- parent and child mobilizer frame rotations are the same,
+			// so we can just use the child rotation.
+			//cout<<"parentTranslation = "<<parentTranslation<<endl;
+			SimTK::Transform parentTransform(childRotation,parentTranslation);
 
 			// INERTIAL PROPERTIES
 			// Only the real child body (i.e., the last body) gets mass
@@ -214,54 +286,6 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
 			MassProperties massProps(mass,massCenter,inertiaTensor);
 
-			// GET AXIS
-			Vec3 axis;
-			dof->getAxis(&axis[0]);
-			UnitVec3 unitVec(axis);
-
-			// CHILD TRANSFORM
-			// Only the last axis gets a potentially non-zero location in the child frame.
-			Vec3 childTranslation(0,0,0);
-			if(i==(nDof-1)) {
-				joint->getLocationInChild(&childTranslation[0]);
-			}
-			Rotation childRotation;
-			if(translation) {
-				/*
-				// These are the fundamental relationships, but the Rotation constructor below
-				// was private.  So, had to do it with consecutive rotations about z and x.
-				double ct = unitVec[0];
-				double st = sqrt(unitVec[1]*unitVec[1] + unitVec[2]*unitVec[2]);
-				double cp = unitVec[1];
-				double sp = unitVec[2];
-				SimTK::Rotation Rzt(ct,st,0,-st,ct,0,0,0,1);
-				SimTK::Rotation Rxp(1,0,0,0,cp,sp,0,-sp,cp);
-				*/
-				double theta = acos(unitVec[0]);
-				Rotation RzTheta = Rotation::aboutZ(theta);
-				//cout<<"theta = "<<theta<<endl;
-				//cout<<"RzTheta = "<<RzTheta<<endl;
-				double phi = acos(unitVec[1]);
-				Rotation RxPhi = Rotation::aboutX(phi);
-				//cout<<"phi = "<<phi<<endl;
-				//cout<<"RxPhi = "<<RxPhi<<endl;
-				childRotation = RxPhi * RzTheta;
-			} else if(rotation) {
-				Rotation R(unitVec);
-				childRotation = R;
-			}
-			cout<<"Rotation = "<<childRotation<<endl;
-			SimTK::Transform childTransform(childRotation,childTranslation);
-
-			// PARENT TRANSFORM
-			// Only the first axis gets a potentially non-zero location in the parent frame.
-			Vec3 parentTranslation(0,0,0);
-			if(i==0) {
-				joint->getLocationInParent(&parentTranslation[0]);
-			}
-			// Note- parent and child rotations are the same, so we can just use the child rotation.
-			SimTK::Transform parentTransform(childRotation,parentTranslation);
-
 			// ADD RIGID BODY
 			// Translation (Slider)
 			if(translation) {
@@ -272,6 +296,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 				cout<<"pin axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
 			}
+			// If parentID is used farther below, this line may need to be moved to end of loop.
+			parentId = childId;
 
 			// UPDATE BODY ID IN REAL CHILD BODY
 			// This is only done for the last axis
@@ -303,6 +329,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			u->_bodyId = childId;
 			u->_mobilityIndex = 0;
 		}
+
+		// UPDATE PARENT ID
 
 		// ADD RIGID BODIES TO THE CHILD BODY
 		addRigidBodies(child);

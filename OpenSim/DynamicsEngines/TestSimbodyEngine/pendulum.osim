@@ -60,8 +60,12 @@
 						<DofSet name="">
 							<objects>
 								<SimbodyTranslationDof name="tx">
-									<Value/>
-									<coordinate> Pendulum_tx </coordinate>
+									<Value>
+										<Constant>
+											<value> 20.000000000000</value>
+										</Constant>
+									</Value>
+									<!-- <coordinate> Pendulum_tx </coordinate> -->
 								</SimbodyTranslationDof>
 								<!--
 								<SimbodyTranslationDof name="ty">
@@ -91,7 +95,7 @@
 							</objects>
 							<groups/>
 						</DofSet>
-						<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+						<location_in_parent>       20.00000000       0.00000000       0.00000000 </location_in_parent>
 						<location_in_child>       0.00000000       0.50000000       0.00000000 </location_in_child>
 					</SimbodyJoint>
 				</objects>
@@ -100,6 +104,7 @@
 			<!--Generalized coordinates in the model.-->
 			<CoordinateSet name="">
 				<objects>
+					<!--
 					<SimbodyCoordinate name="Pendulum_tx">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
@@ -115,7 +120,6 @@
 						<restraint_active> true </restraint_active>
 						<constraint_function/>
 					</SimbodyCoordinate>
-					<!--
 					<SimbodyCoordinate name="Pendulum_ty">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
@@ -198,11 +202,11 @@
 			<!--Generalized speeds in the model.-->
 			<SpeedSet name="">
 				<objects>
+					<!--
 					<SimbodySpeed name="Pendulum_tx_u">
 						<default_value>       0.00000000 </default_value>
 						<coordinate> Pendulum_tx </coordinate>
 					</SimbodySpeed>
-					<!--
 					<SimbodySpeed name="Pendulum_ty_u">
 						<default_value>       0.00000000 </default_value>
 						<coordinate> Pendulum_ty </coordinate>

@@ -101,7 +101,7 @@ int main()
 	// Set the initial states
 	OpenSim::Array<double> yi(0.0,model->getNumStates());
 	model->getInitialStates(&yi[0]);
-	yi[2] = 1.57;
+	yi[1] = 1.57;
 	model->setInitialStates(&yi[0]);
 
 	// STEP 5
