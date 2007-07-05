@@ -67,30 +67,52 @@
 									</Value>
 									<!-- <coordinate> Pendulum_tx </coordinate> -->
 								</SimbodyTranslationDof>
-								<!--
 								<SimbodyTranslationDof name="ty">
-									<Value/>
-									<coordinate> Pendulum_ty </coordinate>
+									<Value>
+										<Constant>
+											<value> 0.000000000000</value>
+										</Constant>
+									</Value>
+									<!-- <coordinate> Pendulum_ty </coordinate> -->
 								</SimbodyTranslationDof>
-								-->
 								<SimbodyTranslationDof name="tz">
-									<Value/>
 									<coordinate> Pendulum_tz </coordinate>
+									<Value>
+										<natCubicSpline>
+											<x>-1.0 0.0 1.0 </x>
+											<y>-1.0 0.0000001 1.0 </y>
+										</natCubicSpline>
+									</Value>
 								</SimbodyTranslationDof>
 								<SimbodyRotationDof name="r1">
-									<Value/>
 									<coordinate> Pendulum_r1 </coordinate>
 									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+									<Value>
+										<natCubicSpline>
+											<x>-6.283185307179 6.283185307179 </x>
+											<y>-6.283185307179 6.283185307179 </y>
+										</natCubicSpline>
+									</Value>
 								</SimbodyRotationDof>
 								<SimbodyRotationDof name="r2">
-									<Value/>
 									<coordinate> Pendulum_r2 </coordinate>
 									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+									<Value>
+										<natCubicSpline>
+											<x>-6.283185307179 6.283185307179 </x>
+											<y>-6.283185307179 6.283185307179 </y>
+										</natCubicSpline>
+									</Value>
 								</SimbodyRotationDof>
 								<SimbodyRotationDof name="r3">
-									<Value/>
 									<coordinate> Pendulum_r3 </coordinate>
 									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+									<Value>
+										<natCubicSpline>
+											<x>-6.283185307179 6.283185307179 </x>
+											<y>-6.283185307179 6.283185307179 </y>
+										</natCubicSpline>
+									</Value>
 								</SimbodyRotationDof>
 							</objects>
 							<groups/>

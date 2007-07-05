@@ -138,6 +138,7 @@ private:
 	void createGroundBodyIfNecessary();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
 	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;
+	
 
 public:
 	void init(Model* aModel);
