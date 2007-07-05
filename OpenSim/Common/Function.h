@@ -131,6 +131,15 @@ public:
 	double getMaxZ() const;
 
 	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	virtual void
+	isLinear(double aTol,
+				double aMinX,double aMaxX,double &rMX,
+				double aMinY,double aMaxY,double &rMY,
+				double aMinZ,double aMaxZ,double &rMZ);
+
+	//--------------------------------------------------------------------------
 	// EVALUATE
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox() = 0;

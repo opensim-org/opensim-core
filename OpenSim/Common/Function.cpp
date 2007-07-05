@@ -35,6 +35,7 @@
 // INCLUDES
 #include "Function.h"
 #include "PropertyDbl.h"
+#include "rdMath.h"
 
 
 using namespace OpenSim;
@@ -334,6 +335,74 @@ getMaxZ() const
 	return(_maxZ);
 }
 
+
+//=============================================================================
+// UTILITIES
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Determine if a function is approixmately linear over a region of interest.
+ * The implementation in the base class is crude and does not guarrantee that
+ * the function is linear thoughout the specified range. It uses a number of
+ * numerical evaluations to determine whether or not the slopes with respect
+ * to the independent variables are constant throughout the specified range
+ * of the function.
+ *
+ * Derived classes should implement a more conclusive method if possible.
+ *
+ * @param aTol Tolerance for being a line.  If the slope of the function
+ * is the same to within this tolerance throughout the specified range,
+ * the function is considered a line.
+ * @param aMinX Minimum of X.
+ * @param aMaxX Maximum of X.
+ * @param rMX Slope of the function wrt to X.
+ * @param aMinY Minimum of Y.
+ * @param aMaxY Maximum of Y.
+ * @param rMY Slope of the function wrt to Y.
+ * @param aMinZ Minimum of Z.
+ * @param aMaxZ Maximum of Z.
+ * @param rMZ Slope of the function wrt to Z.
+ * If the function is not a linear wrt an indpendent variable, NAN is
+ * returned for the corresponding slope.
+ */
+void Function::isLinear(double aTol,
+								double aMinX,double aMaxX,double &rMX,
+								double aMinY,double aMaxY,double &rMY,
+								double aMinZ,double aMaxZ,double &rMZ)
+{
+	double xmid = 0.5*(aMinX - aMaxX);
+	double ymid = 0.5*(aMinY - aMaxY);
+	double zmid = 0.5*(aMinZ - aMaxZ);
+	double m1,m2,m3;
+
+	// X
+	m1 = evaluate(1,aMinX,ymid,zmid);
+	m2 = evaluate(1,xmid,ymid,zmid);
+	m3 = evaluate(1,aMaxX,ymid,zmid);
+	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
+		rMX = m2;
+	} else {
+		rMX = rdMath::NAN;
+	}
+	// Y
+	m1 = evaluate(1,xmid,aMinY,zmid);
+	m2 = evaluate(1,xmid,ymid,zmid);
+	m3 = evaluate(1,xmid,aMaxY,zmid);
+	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
+		rMY = m2;
+	} else {
+		rMY = rdMath::NAN;
+	}
+	// Z
+	m1 = evaluate(1,xmid,ymid,aMinZ);
+	m2 = evaluate(1,xmid,ymid,zmid);
+	m3 = evaluate(1,xmid,ymid,aMaxZ);
+	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
+		rMZ = m2;
+	} else {
+		rMZ = rdMath::NAN;
+	}
+}
 
 //=============================================================================
 // EVALUATE
