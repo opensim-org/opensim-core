@@ -135,6 +135,7 @@ private:
 	void constructPendulum();
 	void constructMultibodySystem();
 	void addRigidBodies(SimbodyBody *aBody);
+	int findIndexOfDofThatHasLastGeneralizedCoordinate(DofSet *aDofSet);
 	void createGroundBodyIfNecessary();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
 	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;

@@ -189,6 +189,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		SimTK::BodyId childId;
 		DofSet *dofSet = joint->getDofSet();
 		int nDof = dofSet->getSize();
+		int dofIndexForLastCoordinate = findIndexOfDofThatHasLastGeneralizedCoordinate(dofSet);
+		cout<<"Dof that has last gen. coord is at index "<<dofIndexForLastCoordinate<<" in DofSet."<<endl;
 		bool parentTranslationSet = false;
 		Vec3 locationInParent(0,0,0);
 		bool custom = false;
@@ -278,7 +280,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			// CHILD TRANSFORM
 			// Only the last axis gets a potentially non-zero location in the child frame.
 			Vec3 childTranslation(0,0,0);
-			if(i==(nDof-1)) {
+			if(i==dofIndexForLastCoordinate) {
 				joint->getLocationInChild(&childTranslation[0]);
 			}
 			Rotation childRotation;
@@ -316,7 +318,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			double mass = 0.0;
 			double com[3] = { 0.0, 0.0, 0.0 };
 			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
-			if((i==(nDof-1)) || custom) {
+			if(i==dofIndexForLastCoordinate) {
 				mass = child->getMass();
 				child->getMassCenter(com);
 				child->getInertia(inertia);
@@ -325,6 +327,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			massCenter = com;
 			SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
 			MassProperties massProps(mass,massCenter,inertiaTensor);
+			cout<<"\n"<<child->getName()<<massProps<<endl;
 
 			// ADD RIGID BODY
 			// Custom
@@ -356,7 +359,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 
 			// UPDATE BODY ID IN REAL CHILD BODY
 			// This is only done for the last axis
-			if((i==(nDof-1)) || custom) {
+			if(i==dofIndexForLastCoordinate) {
 				child->_id = childId;
 			}
 
@@ -390,6 +393,46 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		// ADD RIGID BODIES TO THE CHILD BODY
 		addRigidBodies(child);
 	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Find the index of the dof that has the last generalized coordinate
+ * in the joint.  It is necessary to know this index because the child body
+ * of this coordinate gets non-zero inertial properties.
+ *
+ * @return Index of the dof that has the last generalized coordinate i
+ * the joint.
+ */
+int SimbodyEngine::
+findIndexOfDofThatHasLastGeneralizedCoordinate(DofSet *aDofSet)
+{
+	int index = 0;
+	int nDof = aDofSet->getSize();
+	for(int i=0;i<nDof;i++) {
+
+		AbstractDof *dof = aDofSet->get(i);
+		if(dof==NULL) continue;
+
+		Function *dofFunction = dof->getFunction();
+
+		// NULL
+		// If there is no dof function, the assumption is an equality with the
+		// generalized coordinate.
+		if(dofFunction==NULL) {
+			index = i;
+
+		// NOT NULL
+		} else {
+			string functionType = dofFunction->getType();
+			// Only a non-constant function gets a generalized coordinate.
+			if(functionType!="Constant") {
+				index = i;
+			}
+		}
+	}
+
+	return index;
 }
 //_____________________________________________________________________________
 /**
