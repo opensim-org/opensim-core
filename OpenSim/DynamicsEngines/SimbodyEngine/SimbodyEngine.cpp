@@ -191,6 +191,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		int nDof = dofSet->getSize();
 		bool parentTranslationSet = false;
 		Vec3 locationInParent(0,0,0);
+		bool custom = false;
+		Function *txFunction=NULL,*tyFunction=NULL;
 		for(int i=0;i<nDof;i++) {
 
 			// GET DOF
@@ -205,6 +207,73 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			Vec3 axis;
 			dof->getAxis(&axis[0]);
 			UnitVec3 unitVec(axis);
+
+			// TRAP ON TYPE OF DOF
+			// A dof can be a constant or a linear or non-linear function of a
+			// generalized coordinate.  Constants simply reflect a constant offset
+			// between the parent and child frames.  Linear implies a direct
+			// correspondence with a generalized coordinate.  Non-linear implies
+			// that a complex relationship between the dof and the generalized
+			// coordinate, and this generally requires a custom moblizer.
+			// The only custom mobilizer that is supported currently is the
+			// RotToPlanar mobilizer that represents the kinematics of the human
+			// knee or similar joints in which the child body translates wrt
+			// the parent body as a function of a joint angle.
+			Function *dofFunction = dof->getFunction();
+			if(dofFunction!=NULL) {
+				string functionType = dofFunction->getType();
+
+				// CONSTANT
+				// This is not a real degree of freedom, but simply specifies the
+				// location of the mobilizer in the parent frame.
+				// An underlying rigid body should not be added.  The translation
+				// of the mobilizer frame in the parent body frame should just be set.
+				if(functionType=="Constant") {
+					// Translation
+					if(translation) {
+						if(dofName=="tx") {
+							locationInParent[0] = dofFunction->evaluate(0,0.0);
+							cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
+						} else if(dofName=="ty") {
+							locationInParent[1] = dofFunction->evaluate(0,0.0);
+							cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
+						} else if(dofName=="tz") {
+							locationInParent[2] = dofFunction->evaluate(0,0.0);
+							cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
+						}
+
+					// Rotation
+					} else if(rotation) {
+						cout<<"Found constant rotation.  Neglecting it for now."<<endl;
+					}
+					continue;
+
+				// FUNCTION
+				} else {
+					double mx,my,mz;
+					dofFunction->isLinear(1.0e-3,-1,1,mx,-1,1,my,-1,1,mz);
+
+					// Linear (slider or pin mobilizer)
+					if(mx!=rdMath::NAN) {
+						cout<<"SimbodyEngine.addRigidBodies: dof depends linearly on its gen coord ";
+						cout<<"with a slope of "<<mx<<"."<<endl;
+
+					// Non-linear (custom mobilizer)
+					} else if(mx==rdMath::NAN) {
+						cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
+						custom = true;
+						if(dofName=="tx") {
+							txFunction = dofFunction;
+						} else if(dofName=="ty") {
+							tyFunction = dofFunction;
+						} else {
+							string msg = "SimbodyEngine.addRigidBodies: ERR- only Rot2Planar custom joints are supported.";
+							throw Exception(msg,__FILE__,__LINE__);
+						}
+						continue;
+					}
+				}
+			}	
 
 			// CHILD TRANSFORM
 			// Only the last axis gets a potentially non-zero location in the child frame.
@@ -224,60 +293,6 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 				childRotation = R;
 			}
 			SimTK::Transform childTransform(childRotation,childTranslation);
-
-			// TRAP ON TYPE OF DOF
-			// A dof can be a constant or a linear or non-linear function of a
-			// generalized coordinate.  Constants simply reflect a constant offset
-			// between the parent and child frames.  Linear implies a direct
-			// correspondence with a generalized coordinate.  Non-linear implies
-			// that a complex relationship between the dof and the generalized
-			// coordinate, and this generally requires a custom moblizer.
-			// The only custom mobilizer that is supported currently is the
-			// RotToPlanar mobilizer that represents the kinematics of the human
-			// knee or similar joints in which the child body translates wrt
-			// the parent body as a function of a joint angle.
-			Function *dofFunction = dof->getFunction();
-			if(dofFunction!=NULL) {
-				string functionType = dofFunction->getType();
-				// Constant
-				// This is not a real degree of freedom, but simply specifies the
-				// location of the mobilizer in the parent frame.
-				// An underlying rigid body should not be added.  The translation
-				// of the mobilizer frame in the parent body frame should just be set.
-				if(functionType=="Constant") {
-					// Translation
-					if(translation) {
-						if(dofName=="tx") {
-							locationInParent[0] = dof->getValue();
-							cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
-						} else if(dofName=="ty") {
-							locationInParent[1] = dof->getValue();
-							cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
-						} else if(dofName=="tz") {
-							locationInParent[2] = dof->getValue();
-							cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
-						}
-					} else if(rotation) {
-						cout<<"Found constant rotation.  Neglecting it for now."<<endl;
-					}
-					continue;
-
-				// Function of Gen. Coord.
-				} else {
-					double mx,my,mz;
-					dofFunction->isLinear(1.0e-3,-1,1,mx,-1,1,my,-1,1,mz);
-
-					// Linear (slider or pin mobilizer)
-					if(mx!=rdMath::NAN) {
-						cout<<"SimbodyEngine.addRigidBodies: dof depends linearly on its gen coord ";
-						cout<<"with a slope of "<<mx<<"."<<endl;
-
-					// Non-linear (custom mobilizer)
-					} else if(mx==rdMath::NAN) {
-						cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
-					}
-				}
-			}	
 
 			// PARENT TRANSFORM
 			// In addition to translations being specified in tx, ty, and tz constant dofs,
@@ -301,7 +316,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			double mass = 0.0;
 			double com[3] = { 0.0, 0.0, 0.0 };
 			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
-			if(i==(nDof-1)) {
+			if((i==(nDof-1)) || custom) {
 				mass = child->getMass();
 				child->getMassCenter(com);
 				child->getInertia(inertia);
@@ -312,21 +327,36 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			MassProperties massProps(mass,massCenter,inertiaTensor);
 
 			// ADD RIGID BODY
+			// Custom
+			if(custom) {
+				if(txFunction==NULL) {
+					string msg = "SimbodyEngine.addRigidBodies: ERR- function specifying tx for a Rot2Planar mobilizer is missing.";
+					throw Exception(msg,__FILE__,__LINE__);
+				}
+				if(tyFunction==NULL) {
+					string msg = "SimbodyEngine.addRigidBodies: ERR- function specifying ty for a Rot2Planar mobilizer is missing.";
+					throw Exception(msg,__FILE__,__LINE__);
+				}
+				cout<<"Making a Rot2Planar mobilizer."<<endl;
+				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Rot2Planar(txFunction,tyFunction));
+
 			// Translation (Slider)
-			if(translation) {
+			}else if(translation) {
 				cout<<"slider axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Slider());
+
 			// Rotation (Pin)
 			} else if(rotation) {
 				cout<<"pin axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
 			}
-			// If parentID is used farther below, this line may need to be moved to end of loop.
+
+			// Note- if parentID is used farther below, this line may need to be moved to end of loop.
 			parentId = childId;
 
 			// UPDATE BODY ID IN REAL CHILD BODY
 			// This is only done for the last axis
-			if(i==(nDof-1)) {
+			if((i==(nDof-1)) || custom) {
 				child->_id = childId;
 			}
 
