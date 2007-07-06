@@ -1495,14 +1495,6 @@
 						<geometry_files> tibia.vtp fibula.vtp </geometry_files>
 					</VisibleObject>
 				</SimbodyBody>
-				<SimbodyBody name="patella_r">
-					<mass>0.100000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
-					<VisibleObject name="">
-						<geometry_files> pat.vtp </geometry_files>
-					</VisibleObject>
-				</SimbodyBody>
 				<SimbodyBody name="talus_r">
 					<mass>0.100000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
@@ -1541,14 +1533,6 @@
 					<inertia>0.050400000000 0.000000000000 0.000000000000 0.000000000000 0.005100000000 0.000000000000 0.000000000000 0.000000000000 0.051100000000</inertia>
 					<VisibleObject name="">
 						<geometry_files> l_tibia.vtp l_fibula.vtp </geometry_files>
-					</VisibleObject>
-				</SimbodyBody>
-				<SimbodyBody name="patella_l">
-					<mass>0.100000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
-					<VisibleObject name="">
-						<geometry_files> l_patella.vtp </geometry_files>
 					</VisibleObject>
 				</SimbodyBody>
 				<SimbodyBody name="talus_l">
@@ -1819,6 +1803,102 @@
 				</SimbodyCoordinate>
 			</objects>
 			</CoordinateSet>
+			<SpeedSet name="">
+				<objects>
+					<SimbodySpeed name="pelvis_tx_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_tx </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="pelvis_ty_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_ty </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="pelvis_tz_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_tz </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="pelvis_tilt_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_tilt </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="pelvis_list_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_list </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="pelvis_rotation_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> pelvis_rotation </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_flexion_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_flexion_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_adduction_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_adduction_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_rotation_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_rotation_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="knee_angle_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> knee_angle_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="ankle_angle_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> ankle_angle_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="subtalar_angle_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> subtalar_angle_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="mtp_angle_r_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> mtp_angle_r </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_flexion_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_flexion_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_adduction_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_adduction_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="hip_rotation_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> hip_rotation_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="knee_angle_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> knee_angle_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="ankle_angle_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> ankle_angle_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="subtalar_angle_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> subtalar_angle_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="mtp_angle_l_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> mtp_angle_l </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="lumbar_extension_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> lumbar_extension </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="lumbar_bending_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> lumbar_bending </coordinate>
+					</SimbodySpeed>
+					<SimbodySpeed name="lumbar_rotation_u">
+						<default_value>       0.00000000 </default_value>
+						<coordinate> lumbar_rotation </coordinate>
+					</SimbodySpeed>
+				</objects>
+			</SpeedSet>
 			<JointSet>
 			<objects>
 				<SimbodyJoint name="ground_pelvis">
@@ -1979,64 +2059,6 @@
 								<natCubicSpline>
 									<x>-6.283185307179 6.283185307179 </x>
 									<y>-6.283185307179 6.283185307179 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyRotationDof>
-						<SimbodyRotationDof name="r2">
-							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
-							<Value>
-								<Constant>
-									<value>0.000000000000</value>
-								</Constant>
-							</Value>
-						</SimbodyRotationDof>
-						<SimbodyRotationDof name="r3">
-							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
-							<Value>
-								<Constant>
-									<value>0.000000000000</value>
-								</Constant>
-							</Value>
-						</SimbodyRotationDof>
-					</objects>
-					</DofSet>
-				</SimbodyJoint>
-				<SimbodyJoint name="tib_pat_r">
-					<bodies>tibia_r patella_r</bodies>
-					<DofSet>
-					<objects>
-						<SimbodyTranslationDof name="tx">
-							<coordinate>knee_angle_r</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 0.000174532925 0.000349065850 0.087266462600 2.094395102393 </x>
-									<y>0.017300000000 0.032400000000 0.038100000000 0.043000000000 0.046900000000 0.048400000000 0.049600000000 0.049600000000 0.049600000000 0.049600000000 0.049600000000 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyTranslationDof name="ty">
-							<coordinate>knee_angle_r</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.570796326795 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 0.000174532925 0.000349065850 0.087266462600 2.094395102393 </x>
-									<y>-0.021900000000 -0.020200000000 -0.020000000000 -0.020400000000 -0.021100000000 -0.021900000000 -0.022300000000 -0.022700000000 -0.022700000000 -0.022700000000 -0.022700000000 -0.022700000000 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyTranslationDof name="tz">
-							<Value>
-								<Constant>
-									<value>0.002400000000</value>
-								</Constant>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyRotationDof name="r1">
-							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
-							<coordinate>knee_angle_r</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.999972789860 -1.457524458340 -0.526391302401 0.027925268032 0.174532925199 </x>
-									<y>0.308050612977 0.308050612977 0.306305283725 0.270176968209 -0.037000980142 -0.279950812020 </y>
 								</natCubicSpline>
 							</Value>
 						</SimbodyRotationDof>
@@ -2337,64 +2359,6 @@
 					</objects>
 					</DofSet>
 				</SimbodyJoint>
-				<SimbodyJoint name="tib_pat_l">
-					<bodies>tibia_l patella_l</bodies>
-					<DofSet>
-					<objects>
-						<SimbodyTranslationDof name="tx">
-							<coordinate>knee_angle_l</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 0.000174532925 0.000349065850 0.087266462600 2.094395102393 </x>
-									<y>0.017300000000 0.032400000000 0.038100000000 0.043000000000 0.046900000000 0.048400000000 0.049600000000 0.049600000000 0.049600000000 0.049600000000 0.049600000000 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyTranslationDof name="ty">
-							<coordinate>knee_angle_l</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.570796326795 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 0.000174532925 0.000349065850 0.087266462600 2.094395102393 </x>
-									<y>-0.021900000000 -0.020200000000 -0.020000000000 -0.020400000000 -0.021100000000 -0.021900000000 -0.022300000000 -0.022700000000 -0.022700000000 -0.022700000000 -0.022700000000 -0.022700000000 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyTranslationDof name="tz">
-							<Value>
-								<Constant>
-									<value>-0.002400000000</value>
-								</Constant>
-							</Value>
-						</SimbodyTranslationDof>
-						<SimbodyRotationDof name="r1">
-							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
-							<coordinate>knee_angle_l</coordinate>
-							<Value>
-								<natCubicSpline>
-									<x>-2.094395102393 -1.999972789860 -1.457524458340 -0.526391302401 0.027925268032 0.174532925199 </x>
-									<y>0.308050612977 0.308050612977 0.306305283725 0.270176968209 -0.037000980142 -0.279950812020 </y>
-								</natCubicSpline>
-							</Value>
-						</SimbodyRotationDof>
-						<SimbodyRotationDof name="r2">
-							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
-							<Value>
-								<Constant>
-									<value>0.000000000000</value>
-								</Constant>
-							</Value>
-						</SimbodyRotationDof>
-						<SimbodyRotationDof name="r3">
-							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
-							<Value>
-								<Constant>
-									<value>0.000000000000</value>
-								</Constant>
-							</Value>
-						</SimbodyRotationDof>
-					</objects>
-					</DofSet>
-				</SimbodyJoint>
 				<SimbodyJoint name="ankle_l">
 					<bodies>tibia_l talus_l</bodies>
 					<DofSet>
@@ -2582,7 +2546,7 @@
 								</Constant>
 							</Value>
 						</SimbodyTranslationDof>
-						<SimmRotationDof name="r1">
+						<SimbodyRotationDof name="r1">
 							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
 							<coordinate>lumbar_extension</coordinate>
 							<Value>
@@ -2591,8 +2555,8 @@
 									<y>-6.283185307179 6.283185307179 </y>
 								</natCubicSpline>
 							</Value>
-						</SimmRotationDof>
-						<SimmRotationDof name="r2">
+						</SimbodyRotationDof>
+						<SimbodyRotationDof name="r2">
 							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
 							<coordinate>lumbar_bending</coordinate>
 							<Value>
@@ -2601,8 +2565,8 @@
 									<y>-6.283185307179 6.283185307179 </y>
 								</natCubicSpline>
 							</Value>
-						</SimmRotationDof>
-						<SimmRotationDof name="r3">
+						</SimbodyRotationDof>
+						<SimbodyRotationDof name="r3">
 							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
 							<coordinate>lumbar_rotation</coordinate>
 							<Value>
@@ -2611,10 +2575,10 @@
 									<y>-6.283185307179 6.283185307179 </y>
 								</natCubicSpline>
 							</Value>
-						</SimmRotationDof>
+						</SimbodyRotationDof>
 					</objects>
 					</DofSet>
-				</SimmJoint>
+				</SimbodyJoint>
 			</objects>
 			</JointSet>
 		</SimbodyEngine>

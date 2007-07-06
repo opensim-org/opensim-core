@@ -54,7 +54,7 @@ int main()
 	//model->setDynamicsEngine(*pendulum);
 	Model *model;
 	try {
-		model = new Model("pendulum.osim");
+		model = new Model("gait2354_simbody.osim");
 		model->setup();
 	} catch(OpenSim::Exception x) {
 		x.print(cerr);
@@ -101,7 +101,7 @@ int main()
 	// Set the initial states
 	OpenSim::Array<double> yi(0.0,model->getNumStates());
 	model->getInitialStates(&yi[0]);
-	yi[1] = 1.57;
+	//yi[1] = 1.57;
 	model->setInitialStates(&yi[0]);
 
 	// STEP 5
@@ -165,7 +165,7 @@ int main()
 	// In this case, the initial and final times are set based on
 	// the range of times over which the controls are available.
 	//Control *control;
-	double ti=0.0,tf=5.0;
+	double ti=0.0,tf=0.1;
 	//control = controlSet.get("ti");
 	//if(control!=NULL) ti = control->getControlValue();
 	//control = controlSet.get("tf");
