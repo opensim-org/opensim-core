@@ -3,7 +3,7 @@ nRows=99
 nColumns=4
 
 This file contains the kinematics (position, velocity, or acceleration) of
-point (0.000000, 0.000000, 0.000000) on the Pendulum of model .
+point (0.000000, 0.000000, 0.000000) on the Pendulum of model pendulum.
 
 Units are S.I. units (seconds, meters, Newtons,...)
 
