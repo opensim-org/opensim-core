@@ -31,6 +31,7 @@
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 
 //=============================================================================
@@ -271,18 +272,32 @@ void MovingMusclePoint::update()
 
 void MovingMusclePoint::getVelocity(double aVelocity[3])
 {
-	if (_XCoordinate)
-		aVelocity[0] = _XAttachment->evaluate(1, _XCoordinate->getValue(), 0.0, 0.0);
+    // Get the generalized speed associated with moving muscle point
+	double speed;
+	
+	SpeedSet *speeds = _body->getDynamicsEngine()->getSpeedSet();
+
+	if (_XCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_XCoordinateName))->getValue();
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
+		aVelocity[0] = _XAttachment->evaluate(1, _XCoordinate->getValue(), 0.0, 0.0)*speed;
+	}
 	else
 		aVelocity[0] = 0.0;
 
-	if (_YCoordinate)
-		aVelocity[1] = _YAttachment->evaluate(1, _YCoordinate->getValue(), 0.0, 0.0);
+	if (_YCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_YCoordinateName))->getValue();
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
+		aVelocity[1] = _YAttachment->evaluate(1, _YCoordinate->getValue(), 0.0, 0.0)*speed;
+	}
 	else
 		aVelocity[1] = 0.0;
 
-	if (_ZCoordinate)
+	if (_ZCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_ZCoordinateName))->getValue();
+		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
 		aVelocity[2] = _ZAttachment->evaluate(1, _ZCoordinate->getValue(), 0.0, 0.0);
+	}
 	else
 		aVelocity[2] = 0.0;
 }
