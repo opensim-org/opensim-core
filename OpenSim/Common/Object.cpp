@@ -1240,7 +1240,7 @@ getDocument() const
 string Object::
 getDocumentFileName() const
 {
-	return _document->getFileName();
+	return _document ? _document->getFileName() : "";
 }
 
 
