@@ -88,7 +88,7 @@ SimbodyEngine::SimbodyEngine() :
  * Constructor from an XML Document
  */
 SimbodyEngine::SimbodyEngine(const string &aFileName) :
-	AbstractDynamicsEngine(aFileName)
+	AbstractDynamicsEngine(aFileName,false)
 {
 	setNull();
 	setupProperties();

@@ -44,7 +44,7 @@ MarkerSet::~MarkerSet(void)
  * Constructor of a markerSet from a file.
  */
 MarkerSet::MarkerSet(const string& aMarkersFileName) :
-	Set<AbstractMarker>(aMarkersFileName)
+	Set<AbstractMarker>(aMarkersFileName, false)
 {
 	setNull();
 	updateFromXMLNode();

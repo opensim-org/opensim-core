@@ -72,7 +72,7 @@ rdSerializableObject2()
  */
 rdSerializableObject2::
 rdSerializableObject2(const string &aFileName) :
-	Object(aFileName)
+	Object(aFileName,false)
 {
 	setNull();
 	setupSerializedMembers();
