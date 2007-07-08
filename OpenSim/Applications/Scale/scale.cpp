@@ -134,7 +134,7 @@ int main(int argc,char **argv)
 		if (!subject->isDefaultModelScaler())
 		{
 			ModelScaler& scaler = subject->getModelScaler();
-			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getMass())) return 1;
+			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
 		}
 		else
 		{

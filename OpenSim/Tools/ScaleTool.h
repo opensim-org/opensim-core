@@ -104,7 +104,6 @@ public:
 #endif
 	void copyData(const ScaleTool &aSubject);
 
-	bool processModel();
 	Model* createModel();
 	/* Query the subject for different parameters */
 	GenericModelMaker& getGenericModelMaker()
@@ -122,18 +121,20 @@ public:
 		return _markerPlacer;
 	}
 
-	double getMass() const { return _mass; }
-
 	bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getUseDefault(); }
 	bool isDefaultModelScaler() { return _modelScalerProp.getUseDefault(); }
 	bool isDefaultMarkerPlacer() { return _markerPlacerProp.getUseDefault(); }
+
 	/* Register types to be used when reading a ScaleTool object from xml file. */
 	static void registerTypes();
 
 	/** Accessor methods to obtain model attributes */
-	const double& getSubjectMass() { return _mass; }
-	const double& getSubjectAge() { return _age; }
-	const double& getSubjectHeight() { return _height; }
+	double getSubjectMass() { return _mass; }
+	double getSubjectAge() { return _age; }
+	double getSubjectHeight() { return _height; }
+	void setSubjectMass(double mass) { _mass = mass; }
+	void setSubjectAge(double age) { _age = age; }
+	void setSubjectHeight(double height) { _height = height; }
 	/**
 	 * Accessor methods to set and get path to Subject. This is needed
 	 * since all file names referred to in the subject file are relative

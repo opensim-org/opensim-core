@@ -240,86 +240,6 @@ ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * This method creates a subject-specific model from a generic model plus
- * marker cloud and coordinate data files, and then processes one or more
- * IK trials using the model. It uses:
- * GenericModelMaker::processModel() to load the generic model,
- * ModelScaler::processModel() to scale the model to the subject, and
- * MarkerPlacer::processModel() to place markers on the model.
- *
- * @return Whether or not there was a fatal error in any of the steps.
- */
-bool ScaleTool::processModel()
-{
-	Model *model = NULL;
-
-	cout << "Processing subject " << getName() << endl;
-
-	/* Make the generic model. */
-	if (!_genericModelMakerProp.getUseDefault())
-	{
-		model = _genericModelMaker.processModel(_pathToSubject);
-		if (!model)
-		{
-			cout << "===ERROR===: Unable to load generic model." << endl;
-			return false;
-		}
-	}
-
-	/* Scale the generic model. */
-	if (!_modelScalerProp.getUseDefault())
-	{
-		if (_genericModelMakerProp.getUseDefault())
-		{
-			cout << "===ERROR===: To use ModelScaler, you must specify GenericModelMaker." << endl;
-			return false;
-		}
-		else
-		{
-			/* If a generic model was specified, but the model
-			 * was not created successfully, you won't make it
-			 * to this point. So here you know that model is
-			 * a proper model.
-			 */
-			if (!_modelScaler.processModel(model, _pathToSubject))
-			{
-				cout << "===ERROR===: Unable to scale generic model." << endl;
-				return false;
-			}
-		}
-	}
-
-	/* Place the markers on the scaled model. */
-	if (!_markerPlacerProp.getUseDefault())
-	{
-		if (_genericModelMakerProp.getUseDefault())
-		{
-			cout << "===ERROR===: To use MarkerPlacer, you must specify GenericModelParameters." << endl;
-			return false;
-		}
-		else
-		{
-			/* If a generic model was specified, but the model
-			 * was not created successfully, you won't make it
-			 * to this point. So here you know that model is
-			 * a proper model.
-			 */
-			if (!_markerPlacer.processModel(model, _pathToSubject))
-			{
-				cout << "===ERROR===: Unable to place markers on model." << endl;
-				return false;
-			}
-		}
-	}
-
-	/* Clean up. */
-	delete model;
-
-	return true;
-}
-
-//_____________________________________________________________________________
-/**
  * Create a generic model, using GenericModelMaker::processModel().
  *
  * @return Pointer to the Model that is created.
@@ -332,13 +252,15 @@ Model* ScaleTool::createModel()
 	if (!_genericModelMakerProp.getUseDefault())
 	{
 		Model *model = _genericModelMaker.processModel(_pathToSubject);
-		if (model==0)
+		if (!model)
 		{
 			cout << "===ERROR===: Unable to load generic model." << endl;
 			return 0;
 		}
-		else
+		else {
+			model->setName(getName());
 			return model;
+		}
 	} else {
 		cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
 	}
