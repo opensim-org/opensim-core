@@ -122,9 +122,9 @@ setNull()
 void MaterialManager::
 setupSerializedMembers()
 {
-	_propertySet.append( new PropertyObjArray("Materials") );
-	_availableMaterials = (ArrayPtrs<Material> *)
-		&_propertySet.get("Materials")->getValueObjArray();
+	PropertyObjArray<Material> *prop = new PropertyObjArray<Material>("Materials");
+	_propertySet.append(prop);
+	_availableMaterials = &prop->getValueObjArray();
 
 }
 //-----------------------------------------------------------------------------

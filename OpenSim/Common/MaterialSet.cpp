@@ -31,7 +31,6 @@
  * Author:  
  */
 
-#include "PropertyObjArray.h"
 #include "MaterialSet.h"
 #include "Material.h"
 

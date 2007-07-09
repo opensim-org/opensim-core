@@ -62,9 +62,9 @@ template<class T> class Set : public Object
 protected:
 // PROPERTIES
 /** Array of pointers to objects. */
-PropertyObjArray _propObjects;
+PropertyObjArray<T> _propObjects;
 /** Array of pointers to object groups. */
-PropertyObjArray _propObjectGroups;
+PropertyObjArray<ObjectGroup> _propObjectGroups;
 
 // REFERENCES
 ArrayPtrs<T> &_objects;

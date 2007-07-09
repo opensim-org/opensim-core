@@ -33,7 +33,6 @@
 #include "Force.h"
 #include <OpenSim/Actuators/Torque.h>
 #include "GeneralizedForce.h"
-#include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/rdMath.h>
 
 using namespace std;

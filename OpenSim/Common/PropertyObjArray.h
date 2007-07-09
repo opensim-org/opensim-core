@@ -41,24 +41,19 @@
 #include "Property.h"
 
 
-#ifdef WIN32
-template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
-#endif
-
-
 //=============================================================================
 //=============================================================================
 /**
- * Class PropertyObjArray extends class Property.  It consists of an
- * array of Objects (i.e., ArrayPtrs<Object>) and the methods for
- * accessing and modifying this array.
+ * Class PropertyObjArray extends class Property.
+ * Assumes template T is a class derived from Object.
  *
  * @version 1.0
  * @author Frank C. Anderson
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PropertyObjArray : public Property
+template<class T = Object>
+class PropertyObjArray : public Property
 {
 
 //=============================================================================
@@ -66,7 +61,7 @@ class OSIMCOMMON_API PropertyObjArray : public Property
 //=============================================================================
 private:
 	/** Array of objects. */
-	ArrayPtrs<Object> _array;
+	ArrayPtrs<T> _array;
 
 //=============================================================================
 // METHODS
@@ -75,38 +70,50 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	PropertyObjArray();
-	PropertyObjArray(const std::string &aName);
-	PropertyObjArray(const std::string &aName,const ArrayPtrs<Object> &aArray);
-	PropertyObjArray(const std::string &aName,int aSize,const Object **aArray);
-	PropertyObjArray(const PropertyObjArray &aProperty);
-	virtual Property* copy() const;
-	virtual ~PropertyObjArray() { _array.setSize(0); };
+	PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>()) 
+		: Property(Property::ObjArray, aName), _array(aArray) {}
+	PropertyObjArray(const PropertyObjArray<T> &aProperty) : Property(aProperty) { _array = aProperty._array; }
+	virtual Property* copy() const { return new PropertyObjArray<T>(*this); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	PropertyObjArray& operator=(const PropertyObjArray &aProperty);
+	PropertyObjArray& operator=(const PropertyObjArray &aProperty) {
+		Property::operator =(aProperty);
+		_array = aProperty._array;
+		return (*this);
+	}
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
+	virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
 	// TYPE
-	virtual const char* getTypeAsString() const;
-	// VALUE
-	virtual void setValue(int aSize,Object **aArray);
-	virtual void setValue(const ArrayPtrs<Object> &aArray);
-	virtual ArrayPtrs<Object>& getValueObjArray();
-	virtual const ArrayPtrs<Object>& getValueObjArray() const;
+	virtual const char* getTypeAsString() const { return "ObjArray"; }
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual const std::string &toString() { _valueString = "(Array of objects)"; return _valueString; }
+	// VALUE
+	virtual int getValueObjArraySize() const { return _array.getSize(); }
+	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
+	virtual void appendValue(Object *obj) { 
+		if(!isValidObject(obj)) throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "+obj->getType(),__FILE__,__LINE__);
+		_array.append(static_cast<T*>(obj));
+	}
+	virtual void clearObjArray() { _array.setSize(0); }
+
+	// Other members (not in Property base class)
+	void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
+	ArrayPtrs<T>& getValueObjArray() { return _array; }
+#ifndef SWIG
+	const ArrayPtrs<T>& getValueObjArray() const { return _array; }
+#endif
 
 //=============================================================================
 };	// END of class PropertyObjArray
 
-}; //namespace
+} //namespace
 //=============================================================================
 //=============================================================================
 

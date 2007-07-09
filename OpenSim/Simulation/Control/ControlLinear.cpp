@@ -36,7 +36,6 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/PropertySet.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include "ControlLinear.h"
@@ -136,7 +135,7 @@ setupProperties()
 	_propUseSteps.setValue(false);
 	_propertySet.append( &_propUseSteps );
 
-	ArrayPtrs<Object> nodes;
+	ArrayPtrs<ControlLinearNode> nodes;
 	_propXNodes.setName("x_nodes");
 	_propXNodes.setValue(nodes);
 	_propertySet.append( &_propXNodes );

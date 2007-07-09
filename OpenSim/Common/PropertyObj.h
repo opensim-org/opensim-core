@@ -88,6 +88,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
+	virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
 	// TYPE
 	virtual const char* getTypeAsString() const;
 	// VALUE

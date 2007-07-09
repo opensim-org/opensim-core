@@ -70,9 +70,9 @@ protected:
 	nodes or use step functions. */
 	PropertyBool _propUseSteps;
 	/** Array of control nodes. */
-	PropertyObjArray _propXNodes;
-	PropertyObjArray _propMinNodes;
-	PropertyObjArray _propMaxNodes;
+	PropertyObjArray<ControlLinearNode> _propXNodes;
+	PropertyObjArray<ControlLinearNode> _propMinNodes;
+	PropertyObjArray<ControlLinearNode> _propMaxNodes;
 	/** Position gain for PD follower filter. */
 	PropertyDbl _propKp;
 	/** Velocity gain for PD follower filter. */

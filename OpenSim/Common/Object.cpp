@@ -110,13 +110,16 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 		// This maybe slower than we like but definitely faster than 
 		// going all the way down to the parser to throw an exception for null document!
 		// -Ayman 8/06
-		ifstream fileExists(aFileName.c_str(), ios_base::in);
-		if (fileExists.good()==false){
+		if(aFileName.empty()) {
+			string msg =
+				"Object: ERR- Empty filename encountered.";
+			throw Exception(msg,__FILE__,__LINE__);
+		} else 
+			if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
 			string msg =
 				"Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
 			throw Exception(msg,__FILE__,__LINE__);
-		}
-		fileExists.close();	
+		}	
 	}
 
 	_document = new XMLDocument(aFileName);
@@ -693,6 +696,9 @@ updateFromXMLNode()
 {
 	if(_node==NULL) return;
 	if(_type=="Object") return;
+	if(_document && XMLNode::Transcode(_node->getTagName())!=getType()) 
+		throw XMLParsingException("XML file '"+_document->getFileName()+"' contains "+
+										  XMLNode::Transcode(_node->getTagName())+", expecting "+getType(),_node,__FILE__,__LINE__);
 
 	// NAME
 	setName(XMLNode::GetAttribute(_node,"name"));
@@ -807,7 +813,7 @@ updateFromXMLNode()
 				// CLEAR EXISTING OBJECT ARRAY
 				// Eran: Moved after elmt check above so that values set by constructor are kept if
 				// property is not specified in the xml file
-				property->getValueObjArray().setSize(0);
+				property->clearObjArray();
 			}
 
 			// Call parseFileAttribute to take care of the case where a file attribute points to
@@ -833,17 +839,16 @@ updateFromXMLNode()
 				// Initialize to default object of corresponding type (returns 0 if type not recognized)
 				Object *object = newInstanceOfType(objectType);
 				if(!object) { std::cerr << "Object type " << objectType << " not recognized" << std::endl; continue; }
+				if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
 				objectsFound++;
 
 				if(type==Property::ObjPtr) {
 					if(objectsFound > 1)
 						throw XMLParsingException("Found multiple objects under "+name+" tag, but expected only one.",objElmt,__FILE__,__LINE__);
-					else if(!property->isValidObject(object))
-						throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
 					else
 						property->setValue(object);
 				} else {
-					property->getValueObjArray().append(object);
+					property->appendValue(object);
 				}
 				InitializeObjectFromXMLNode(property, objElmt, object);
 			}
@@ -1061,10 +1066,9 @@ updateXMLNode(DOMElement *aParent)
 				// updateDefaultObjectsXMLNode calls setXMLNode(NULL) only on the top-level objects but not
 				// the descendent objects, so the descendents have stale children...
 				if(type==Property::ObjArray) {
-					ArrayPtrs<Object> &value = property->getValueObjArray();
-					for(int j=0;j<value.getSize();j++) {
-						if(createdNewParent) value.get(j)->setXMLNode(NULL); // object might have a stale child node
-						value.get(j)->updateXMLNode(elmt);
+					for(int j=0;j<property->getValueObjArraySize();j++) {
+						if(createdNewParent) property->getValueObjPtr(j)->setXMLNode(NULL); // object might have a stale child node
+						property->getValueObjPtr(j)->updateXMLNode(elmt);
 					}
 				} else {
 					Object *object = property->getValueObjPtr();

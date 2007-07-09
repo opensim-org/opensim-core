@@ -35,7 +35,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyObjArray.h>
 #include "AbstractActuator.h"
 #include "ContactForce.h"
 #include "ContactForceSet.h"

@@ -56,9 +56,14 @@ private:
 	void setNull();
 public:
 	MarkerSet();
-	MarkerSet(const std::string& aMarkersFileName);
+	MarkerSet(const std::string& aMarkersFileName)
+#ifdef SWIG
+		throw(OpenSim::Exception)
+#endif
+		;
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
+	virtual Object* copy() const;
 	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
 	//--------------------------------------------------------------------------
 	// OPERATORS

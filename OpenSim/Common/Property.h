@@ -191,17 +191,6 @@ public:
 	virtual std::string& getValueStr() { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
 	virtual const std::string& getValueStr() const { Property_PROPERTY_TYPE_MISMATCH(); }
-	// Obj
-	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
-	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
-	virtual Object& getValueObj() { Property_PROPERTY_TYPE_MISMATCH(); }
-#ifndef SWIG
-	virtual const Object& getValueObj() const { Property_PROPERTY_TYPE_MISMATCH(); }
-#endif
-	// ObjPtr
-	virtual bool isValidObject(const Object *aValue) const { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual void setValue(Object *aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual Object* getValueObjPtr() { Property_PROPERTY_TYPE_MISMATCH(); }
 	// Bool Array
 	virtual void setValue(int aSize,const bool aArray[]) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void setValue(const Array<bool> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
@@ -230,13 +219,27 @@ public:
 #ifndef SWIG
 	virtual const Array<std::string>& getValueStrArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
-	// Obj Array
-	virtual void setValue(int aSize,Object **aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual void setValue(const ArrayPtrs<Object> &aArray) { Property_PROPERTY_TYPE_MISMATCH(); }
-	virtual ArrayPtrs<Object>& getValueObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
+
+	//--------------------------------------------------------------------------
+	// Obj, ObjPtr, and ObjArray require more careful treatment
+	//--------------------------------------------------------------------------
+	virtual bool isValidObject(const Object *aValue) const { Property_PROPERTY_TYPE_MISMATCH(); }
+	// Obj
+	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
+	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.
+	virtual Object& getValueObj() { Property_PROPERTY_TYPE_MISMATCH(); }
 #ifndef SWIG
-	virtual const ArrayPtrs<Object>& getValueObjArray() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual const Object& getValueObj() const { Property_PROPERTY_TYPE_MISMATCH(); }
 #endif
+	// ObjPtr
+	virtual void setValue(Object *aValue) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Object* getValueObjPtr() { Property_PROPERTY_TYPE_MISMATCH(); }
+
+	// Obj Array
+	virtual int getValueObjArraySize() const { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual Object* getValueObjPtr(int index) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void appendValue(Object *obj) { Property_PROPERTY_TYPE_MISMATCH(); }
+	virtual void clearObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 	// USE DEFAULT
 	void setUseDefault(bool aTrueFalse);
 	bool getUseDefault() const;
