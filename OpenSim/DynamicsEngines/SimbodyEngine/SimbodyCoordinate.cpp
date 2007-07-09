@@ -389,6 +389,7 @@ bool SimbodyCoordinate::setValue(double aValue)
 	}
 	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
+	_engine->_matter->realize(*(_engine->_s),Stage::Velocity);
 	return true;
 }
 

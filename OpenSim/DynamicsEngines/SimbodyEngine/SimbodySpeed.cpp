@@ -35,6 +35,7 @@
 // STATICS
 //=============================================================================
 using namespace std;
+using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -270,6 +271,7 @@ bool SimbodySpeed::setValue(double aValue)
 {
 	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter->setMobilizerU(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
+	_engine->_matter->realize(*(_engine->_s),Stage::Velocity);
 	return true;
 }
 
