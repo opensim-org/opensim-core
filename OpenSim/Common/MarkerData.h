@@ -75,7 +75,11 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	MarkerData();
-	MarkerData(const std::string& aFileName);
+	MarkerData(const std::string& aFileName)
+#ifdef SWIG
+		throw(OpenSim::Exception)
+#endif
+		;
 	virtual ~MarkerData();
 	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
 	void averageFrames(double aThreshold = -1.0, double aStartTime = rdMath::MINUS_INFINITY, double aEndTime = rdMath::PLUS_INFINITY);
@@ -89,6 +93,8 @@ public:
 	int getNumFrames() const { return _numFrames; }
 	double getStartFrameTime() const;
 	double getLastFrameTime() const;
+	double getDataRate() const { return _dataRate; }
+	double getCameraRate() const { return _cameraRate; }
 
 private:
 	void readTRCFile(const std::string& aFileName, MarkerData& aSMD);

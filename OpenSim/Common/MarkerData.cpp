@@ -268,8 +268,9 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
    /* read "PathFileType" and path file type */
    readStringFromString(line, buffer);
    readIntegerFromString(line, &pathFileType);
-   if (pathFileType != 3 && pathFileType != 4)
+   if (buffer != "PathFileType" || (pathFileType != 3 && pathFileType != 4))
    {
+		throw Exception("MarkerData: ERR- File "+aFileName+" does not appear to be a valid TRC file",__FILE__,__LINE__);
 #if 0
       if (gUseGlobalMessages)
          gErrorBuffer += "Unknown file type " + intToString(pathFileType) + " in TRC file" + actualFileName;
