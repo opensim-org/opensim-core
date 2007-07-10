@@ -273,13 +273,8 @@ bool SimbodyBody::setMass(double aMass)
 		cerr<<"SimbodyBody.setMass(): ERROR- zero or negative mass not allowed.\n";
 		return false;
 	}
-
-	// TODO: Update Simbody mass
-	// This is not currently supported except by rebuilding the entire Simbody model.
-	cerr<<"SimbodyBody.setMass: updating Simbody not yet implemented.\n";
-
-	// Update property
 	_mass = aMass;
+	_engine->constructMultibodySystem();
 
 	return true;
 }
@@ -292,10 +287,6 @@ bool SimbodyBody::setMass(double aMass)
  */
 void SimbodyBody::getMassCenter(double rVec[3]) const
 {
-	//Vec3 com = _engine->_matter->getBodyMassCenterStation(_engine->_s,_id);
-	//rVec[0] = com[0];
-	//rVec[1] = com[1];
-	//rVec[2] = com[2];
 	memcpy(rVec,&_massCenter[0],3*sizeof(double));
 }
 //_____________________________________________________________________________
@@ -307,13 +298,10 @@ void SimbodyBody::getMassCenter(double rVec[3]) const
  */
 bool SimbodyBody::setMassCenter(const double aVec[3])
 {
-	// TODO: Update Simbody
-	cerr<<"SimbodyBody.setMassCenter: updating Simbody not yet implemented.\n";
-
-	// Update property
 	_massCenter[0] = aVec[0];
 	_massCenter[1] = aVec[1];
 	_massCenter[2] = aVec[2];
+	_engine->constructMultibodySystem();
 
 	return true;
 }
@@ -366,11 +354,8 @@ void SimbodyBody::getInertia(OpenSim::Array<double> &rInertia) const
  */
 bool SimbodyBody::setInertia(const OpenSim::Array<double>& aInertia)
 {
-	// TODO: update Simbody inertial properties.
-	cerr<<"SimbodyBody.setInertia: updating Simbody not yet implemented.\n";
-
-	// Property
 	_inertia = aInertia;
+	_engine->constructMultibodySystem();
 
 	return true;
 }
@@ -383,12 +368,8 @@ bool SimbodyBody::setInertia(const OpenSim::Array<double>& aInertia)
  */
 bool SimbodyBody::setInertia(const double aInertia[3][3])
 {
-	// Simbody
-	// TODO: update Simbody
-	cerr<<"SimbodyBody.setInertia: updating Simbody not yet implemented.\n";
-
-	// Property
 	memcpy(&_inertia[0],&aInertia[0][0],9*sizeof(double));
+	_engine->constructMultibodySystem();
 
 	return true;
 }

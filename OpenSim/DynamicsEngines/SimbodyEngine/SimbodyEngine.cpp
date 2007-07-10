@@ -479,11 +479,18 @@ void SimbodyEngine::constructPendulum()
 	body->setName("Pendulum");
 	body->_engine = this;
 	body->_id = bodyId;
-	body->setMass(mass);
-	body->setMassCenter(&massLocation[0]);
-	OpenSim::Array<double> inertia(0.0,9);
-	body->getInertia(inertia);
-	body->setInertia(inertia);
+	body->_mass = mass;
+	body->_massCenter[0] = massLocation[0];
+	body->_massCenter[1] = massLocation[1];
+	body->_massCenter[2] = massLocation[2];
+	Vec3 moments = massProps.getInertia().getMoments();
+	Vec3 products = massProps.getInertia().getProducts();
+	body->_inertia[0] = moments[0];
+	body->_inertia[4] = moments[1];
+	body->_inertia[8] = moments[2];
+	body->_inertia[1] = body->_inertia[3] = products[0];
+	body->_inertia[2] = body->_inertia[6] = products[1];
+	body->_inertia[5] = body->_inertia[7] = products[2];
 	body->setup(this);
 	_bodySet.append(body);
 
@@ -603,13 +610,13 @@ createGroundBodyIfNecessary()
 	// Set member variables
 	ground->setName(simbodyGroundName);
 	// Mass
-	ground->setMass(0.0);
+	ground->_mass = 0.0;
 	// Mass center
 	OpenSim::Array<double> massCenter(0.0,3);
-	ground->setMassCenter(&massCenter[0]);
+	ground->_massCenter = massCenter;
 	// Inertia
 	OpenSim::Array<double> inertia(0.0,9);
-	ground->setInertia(inertia);
+	ground->_inertia = inertia;
 	// Simbody id
 	ground->_id = SimTK::GroundId;
 	// Engine
