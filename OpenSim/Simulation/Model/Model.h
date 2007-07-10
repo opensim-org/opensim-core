@@ -177,6 +177,7 @@ public:
 	// FILE NAME
 	//--------------------------------------------------------------------------
 	virtual const std::string& getInputFileName() const { return _fileName; }
+	virtual void setInputFileName(const std::string& fileName) { _fileName = fileName; }
 
 	//--------------------------------------------------------------------------
 	// UNITS
