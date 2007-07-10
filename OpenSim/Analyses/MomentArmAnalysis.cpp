@@ -1,6 +1,6 @@
 // MomentArmAnalysis.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Katherine Holzbaur, Frank C. Anderson
+//	AUTHOR: Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -122,6 +122,8 @@ setNull()
 	// DEFAULT VALUES
 	_muscleListProp.getValueStrArray().setSize(1);
 	_muscleListProp.getValueStrArray().get(0) = "all";
+	_coordinateListProp.getValueStrArray().setSize(1);
+	_coordinateListProp.getValueStrArray().get(0) = "all";
 }
 
 //_____________________________________________________________________________
@@ -135,6 +137,11 @@ setupProperties()
 		" Use 'all' to perform the analysis for all muscles.");
 	_muscleListProp.setName("muscle_list");
 	_propertySet.append( &_muscleListProp );
+
+	_coordinateListProp.setComment("List of generalized coordinates for which to "
+		"perform the analysis. Use 'all' to perform the analysis for all coordinates.");
+	_coordinateListProp.setName("coordinate_list");
+	_propertySet.append( &_coordinateListProp );
 }
 
 
@@ -166,9 +173,6 @@ allocateStorage()
 	if(_model==NULL) return;
 
 	_momentArmStorageArray.setSize(0);
-	// COLUMN LABELS
-	constructColumnLabels();
-
 	_storageList.setMemoryOwner(false);
 	_storageList.setSize(0);
 
@@ -185,11 +189,25 @@ allocateStorage()
 		}
 	}
 
+	// POPULATE COORDINATE LIST FOR "all"
+	_coordinateList = _coordinateListProp.getValueStrArray();
+	size = _coordinateList.getSize();
+	if((size==1) && (_coordinateList.get(0)=="all")) {
+		_coordinateList.setSize(0);
+		CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
+		int nq = qSet->getSize();
+		for(int i=0;i<nq;i++) {
+			AbstractCoordinate *q = qSet->get(i);
+			_coordinateList.append(q->getName());
+		}
+	}
+	constructColumnLabels();
+
 	// CREATE STORAGES
 	string name;
 	Storage *store;
 	for(int i=0;i<_muscleList.getSize();i++) {
-		name = "MomentArm(" + _muscleList[i]+")";
+		name = "MomentArm_" + _muscleList[i];
 		store = new Storage(1000,name);
 		store->setColumnLabels(getColumnLabels());
 		_storageList.append(store);
@@ -207,17 +225,12 @@ allocateStorage()
 void MomentArmAnalysis::
 constructColumnLabels()
 {
-	// Make labels
-	if (_model) {
-		CoordinateSet *coordSet = _model->getDynamicsEngine().getCoordinateSet();
-		AbstractCoordinate *coord = NULL;
-		int size = coordSet->getSize();
+	if(_model) {
+		int size = _coordinateList.getSize();
 		Array<string> labels("",size+1);
-	
 		labels[0] = "time";
 		for(int i=0; i<size; i++) {
-			coord = coordSet->get(i);
-			labels[i+1] = coord->getName();
+			labels[i+1] = _coordinateList[i];
 		}
 		setColumnLabels(labels);
 	}
@@ -261,6 +274,22 @@ setMuscles(Array<std::string>& aMuscles)
 	}
 	allocateStorage();
 }
+//_____________________________________________________________________________
+/**
+ * Set the list of coordinates.
+ *
+ * @param aCoordinates Array of coordinates about which to compute moment arms.
+ */
+void MomentArmAnalysis::
+setCoordinates(Array<std::string>& aCoordinates)
+{
+	int size = aCoordinates.getSize();
+	_coordinateListProp.getValueStrArray().setSize(size);
+	for(int i=0; i<size; i++){
+		_coordinateListProp.getValueStrArray().get(i) = aCoordinates[i];
+	}
+	allocateStorage();
+}
 
 
 //=============================================================================
@@ -293,9 +322,9 @@ record(double aT,double *aX,double *aY)
 
 	// COORDINATE INFO
 	CoordinateSet *coordSet = _model->getDynamicsEngine().getCoordinateSet();
-	int nq = coordSet->getSize();
-	AbstractCoordinate *q = NULL;
+	int nq = _coordinateList.getSize();
 	Array<double> ma(0.0,nq);
+	AbstractCoordinate *q = NULL;
 
 	// LOOP OVER MUSCLES
 	ActuatorSet *actSet = _model->getActuatorSet();
@@ -310,7 +339,7 @@ record(double aT,double *aX,double *aY)
 		for(int j=0; j<nq; j++) {
 			ma[j] = 0.0;
 			if(mus!=NULL) {
-				q = coordSet->get(j);
+				q = coordSet->get(_coordinateList[j]);
 				if(q!=NULL) ma[j] = mus->computeMomentArm(*q);
 			}
 		}
@@ -465,12 +494,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 		return(0);
 	}
 
-
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {
-		string name = _momentArmStorageArray.get(i)->getName();
-		Storage::printResult(_momentArmStorageArray.get(i),name,aDir,aDT,aExtension);
-		;
+
+		string fileName = aBaseName + "_" + _momentArmStorageArray.get(i)->getName();
+		cout<<"fileName = "<<fileName<<endl;
+		Storage::printResult(_momentArmStorageArray.get(i),fileName,aDir,aDT,aExtension);
 	}
 
 	return(0);

@@ -26,7 +26,7 @@
  * A class for recording the muscle actuator information for a model
  * during a simulation.
  *
- * @author Katherine Holzbaur, Frank C. Anderson
+ * @author Frank C. Anderson
  * @version 1.0
  */
 namespace OpenSim { 
@@ -37,9 +37,11 @@ class OSIMANALYSES_API MomentArmAnalysis : public Analysis
 // DATA
 //=============================================================================
 private:
-	/** List of muscles for which to compute moment arms.  If the list
-	is left blank, moment arms are computed for all muscles. */
+	/** List of muscles for which to compute moment arms. */
 	PropertyStrArray _muscleListProp;
+
+	/** List of generalized coordinates for which to compute moment arms. */
+	PropertyStrArray _coordinateListProp;
 
 protected:
 	/** Array of storage pointers for the moment arms. */
@@ -49,6 +51,9 @@ protected:
 	in the event the user-specified muscle list is empty, which implies
 	that all muscles should be analyzed. */
 	Array<std::string> _muscleList;
+
+	/** Work array for holding the list of coordinates. */
+	Array<std::string> _coordinateList;
 
 //=============================================================================
 // METHODS
@@ -80,6 +85,7 @@ public:
 	void setStorageCapacityIncrements(int aIncrement);
 	const ArrayPtrs<Storage>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 	void setMuscles(Array<std::string>& aMuscles);
+	void setCoordinates(Array<std::string>& aCoordinates);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
