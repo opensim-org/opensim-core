@@ -29,6 +29,7 @@
 #include "SimbodyEngine.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 //#include <OpenSim/Common/SimmIO.h>
 //#include <OpenSim/Common/SimmMacros.h>
 
@@ -390,6 +391,14 @@ bool SimbodyCoordinate::setValue(double aValue)
 	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
 	_engine->_matter->realize(*(_engine->_s),Stage::Velocity);
+
+	// TODO: use Observer mechanism for _jointList, _pathList, and muscles
+	ActuatorSet* act = _engine->getModel()->getActuatorSet();
+	for(int i=0; i<act->getSize(); i++) {
+		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
+		if(sm) sm->invalidatePath();
+	}
+
 	return true;
 }
 
