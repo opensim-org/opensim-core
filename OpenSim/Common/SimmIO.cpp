@@ -288,7 +288,7 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber)
    }
    /* remove any whitespace after the string, but don't remove any tabs */
    i = findFirstNonWhiteSpace(aString);
-   if ((i > 0) && (aString[i-1] != '\t'))
+   if (i != aString.npos && (i > 0) && (aString[i-1] != '\t'))
       aString.erase(0, i);
 
    if (buffer.empty())
