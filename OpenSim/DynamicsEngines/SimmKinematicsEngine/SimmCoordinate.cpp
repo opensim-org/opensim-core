@@ -270,6 +270,7 @@ void SimmCoordinate::setup(AbstractDynamicsEngine* aEngine)
 		setLocked(lockedState);
 	}
 
+	_tolerance=1e-6;	// This should be set during construction but doesn't work due to useDefault.
 	// can't call this here now that coordinates are stored in AbstractDynamicsEngine,
 	// because this function is called before SimmKinematicsEngine::createCoordinateJointLists()
 	//determineType();
@@ -435,11 +436,12 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
 bool SimmCoordinate::setValue(double aValue)
 {
 	// pull Value in range if it'd off by tolerance due to roundoff
-	if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
-		aValue = _range[0];
-	else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
-		aValue = _range[1];
-
+	if (_clamped){
+		if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+			aValue = _range[0];
+		else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+			aValue = _range[1];
+	}
 	if (aValue >= _range[0] && aValue <= _range[1] || !_clamped)
 	{
 		// Check if the value is sufficiently different
