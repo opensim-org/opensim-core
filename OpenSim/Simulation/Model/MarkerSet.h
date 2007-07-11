@@ -56,11 +56,7 @@ private:
 	void setNull();
 public:
 	MarkerSet();
-	MarkerSet(const std::string& aMarkersFileName)
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-		;
+	MarkerSet(const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
 	virtual Object* copy() const;

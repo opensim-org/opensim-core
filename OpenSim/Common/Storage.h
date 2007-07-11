@@ -111,11 +111,7 @@ public:
 	// make this constructor explicit so you don't get implicit casting of int to Storage
 	explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
 		const std::string &aName="UNKNOWN");
-	Storage(const std::string &aFileName)
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-		;
+	Storage(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	Storage(const Storage &aStorage,bool aCopyData=true);
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");

@@ -94,7 +94,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	ScaleTool();
-	ScaleTool(const std::string &aFileName);
+	ScaleTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	ScaleTool(const ScaleTool &aSubject);
 	virtual ~ScaleTool();
 	virtual Object* copy() const;

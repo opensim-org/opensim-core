@@ -136,11 +136,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	Model();
-	Model(const std::string &aFileName)
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-	;
+	Model(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	Model(const Model& aModel);
 	virtual ~Model();
 	virtual Object* copy() const;
@@ -153,14 +149,10 @@ public:
 	 */
 	Model* clone()
 	{
-		return reinterpret_cast<Model*>(this->copy()); 
+		return static_cast<Model*>(this->copy()); 
 	}
 
-	virtual void setup()
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-		;
+	virtual void setup() SWIG_DECLARE_EXCEPTION;
 	bool builtOK() { return _builtOK; }
 
 protected:

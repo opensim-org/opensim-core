@@ -29,6 +29,13 @@
 #include <OpenSim/Common/Set.h>
 #include "Measurement.h"
 
+#ifdef SWIG
+	#ifdef OSIMTOOLS_API
+		#undef OSIMTOOLS_API
+		#define OSIMTOOLS_API
+	#endif
+#endif
+
 namespace OpenSim {
 
 //=============================================================================

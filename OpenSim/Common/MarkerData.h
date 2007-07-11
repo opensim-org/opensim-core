@@ -75,11 +75,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	MarkerData();
-	MarkerData(const std::string& aFileName)
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-		;
+	MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
 	virtual ~MarkerData();
 	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
 	void averageFrames(double aThreshold = -1.0, double aStartTime = rdMath::MINUS_INFINITY, double aEndTime = rdMath::PLUS_INFINITY);

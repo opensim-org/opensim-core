@@ -82,6 +82,9 @@ const char ObjectDEFAULT_NAME[] = "default";
 		#undef OSIMCOMMON_API
 		#define OSIMCOMMON_API
 	#endif
+	#define SWIG_DECLARE_EXCEPTION throw(OpenSim::Exception)
+#else
+	#define SWIG_DECLARE_EXCEPTION
 #endif
 
 //=============================================================================
@@ -171,11 +174,7 @@ protected:
 public:
 	virtual ~Object();
 	Object();
-	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true)
-#ifdef SWIG
-		throw(OpenSim::Exception)
-#endif
-		;
+	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 	Object(const XMLDocument *aDocument);
 	Object(DOMElement *aNode);
 	Object(const Object &aObject);
