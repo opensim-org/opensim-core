@@ -1,10 +1,10 @@
-function c3dPreProScript_Delaware2(trialname)
+function c3dPreProScript_Delaware2(subjectname, trialname)
 
 if nargin < 1
-	trialname = 'ss_walking1';
+	trialname = 'ss_walk1';
 end
 
-[sInfo, tInfo] = ref_trialInfoDelaware2(trialname);
+[sInfo, tInfo] = ref_trialInfoDelaware2(subjectname, trialname);
 
 trial = tInfo.(trialname);
 

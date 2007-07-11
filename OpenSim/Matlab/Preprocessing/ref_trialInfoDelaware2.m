@@ -1,56 +1,55 @@
-function [sInfo, tInfo] = ref_trialInfoDelaware2(trialname)
+function [sInfo, tInfo] = ref_trialInfoDelaware2(subjectname, trialname)
 
-sInfo.subject = 'delaware2';
+sInfo.subject = subjectname;
 sInfo.mass = 65.9;
+trial.trial = trialname;
+
+if ~strcmp(trialname,'ss_walk1') && ~strcmp(trialname,'vslow_walk1') && ~strcmp(trialname,'fast_walk1') && ~strcmp(trialname,'slow_walk1')
+    sprintf('trialname %s not found',trialname);
+end
+
+ictoInput = compute_ictoMatrixInput( [subjectname '_' trialname '_grf.mot'] );
+trial.contactRanges = ictoInput.contactRanges;
+[trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(ictoInput.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
+trial.ancFile = [subjectname '_' trialname '.anc'];
+trial.c3dFile = [subjectname '_' trialname '_smoothed.c3d'];
 
 % ss_walking1
-if strcmp(trialname,'ss_walking1')
-    trial.trial = 'ss_walking1';
-    trial.speed = 1.36;
-    ictoInput = compute_ictoMatrixInput('delaware2_ss_walking1_newgrfprocessing.mot');
-    trial.contactRanges = ictoInput.contactRanges;
-    [trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(ictoInput.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
-    trial.ancFile = 'SS_walking1.anc';
-    trial.c3dFile = 'SS_walking1_smoothed.c3d';
-    tInfo.ss_walking1 = trial;
+if strcmp(trialname,'ss_walk1')
+    if strcmp(subjectname,'de2')
+        trial.speed = 1.36;
+    else
+        trial.speed = 1.13;
+    end
+    tInfo.ss_walk1 = trial;
 end
 
 % slow_walking1
-if strcmp(trialname,'slow_walking1')
-    trial.trial = 'slow_walking1';
-    trial.speed = 1.02;
-    ictoInput = compute_ictoMatrixInput('delaware2_slow_walking1_newgrfprocessing.mot');
-    trial.contactRanges = ictoInput.contactRanges;
-    [trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(trial.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
-    trial.ancFile = 'slow_walking_751.anc';
-    trial.c3dFile = 'slow_walking_751_smoothed.c3d';
-    tInfo.slow_walking1 = trial;
+if strcmp(trialname,'slow_walk1')
+    if strcmp(subjectname,'de2')
+        trial.speed = 1.02;
+    else
+        trial.speed = 0.848;
+    end
+    tInfo.slow_walk1 = trial;
 end
 
 % very_slow_walking1
-if strcmp(trialname,'very_slow_walking1')
-    trial.trial = 'very_slow_walking1';
-    trial.speed = 0.680;
-    ictoInput = compute_ictoMatrixInput('delaware2_very_slow_walking1_newgrfprocessing.mot');
-    trial.contactRanges = ictoInput.contactRanges;
-    [trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(trial.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
-    trial.ancFile = 'very_slow_walking_501.anc';
-    trial.c3dFile = 'very_slow_walking_501_smoothed_trimmed.c3d';
-    tInfo.very_slow_walking1 = trial;
+if strcmp(trialname,'vslow_walk1')
+    if strcmp(subjectname,'de2')
+        trial.speed = 0.680;
+    else
+        trial.speed = 0.565;
+    end
+    tInfo.vslow_walk1 = trial;
 end
 
 % fast_walking1
-if strcmp(trialname,'fast_walking1')
-    trial.trial = 'fast_walking1';
-    trial.speed = 2.320;
-    ictoInput = compute_ictoMatrixInput('delaware2_fast_walking1_newgrfprocessing.mot');
-    trial.contactRanges = ictoInput.contactRanges;
-    [trial.ictoMatrix, trial.FP, trial.limb] = build_delaware_ictoMatrix(trial.contactRanges, ictoInput.firstICLimb, ictoInput.firstICFP);
-    trial.ancFile = 'fast_walking_2001_smoothed1.anc';
-    trial.c3dFile = 'fast_walking_2001_smoothed1.c3d';
-    tInfo.fast_walking1 = trial;
-end
-
-if ~strcmp(trialname,'ss_walking1') && ~strcmp(trialname,'very_slow_walking1') && ~strcmp(trialname,'fast_walking1') && ~strcmp(trialname,'slow_walking1')
-    sprintf('trialname %s not found',trialname);
+if strcmp(trialname,'fast_walk1')
+    if strcmp(subjectname,'de2')
+        trial.speed = 2.320;
+    else
+        trial.speed = 2.06;
+    end
+    tInfo.fast_walk1 = trial;
 end

@@ -1,10 +1,10 @@
-function script_compareDataFromMotDelaware2(trialname, individualprintmenus)
-
-if nargin < 1
-	trialname = 'ss_walking1';
-end
+function script_compareDataFromMotDelaware2(subjectname, trialname, individualprintmenus)
 
 if nargin < 2
+	trialname = 'ss_walk1';
+end
+
+if nargin < 3
 	individualprintmenus = 0;
 end
 
@@ -12,11 +12,13 @@ global GLOBAL_individualprintmenus GLOBAL_figHandles;
 GLOBAL_figHandles = [];
 GLOBAL_individualprintmenus = individualprintmenus;
 
-[sInfo, tInfo] = ref_trialInfoDelaware2(trialname); % customize for subject
+[sInfo, tInfo] = ref_trialInfoDelaware2(subjectname, trialname); % customize for subject
+trial = tInfo.(trialname);
 ref_dataFormat = ref_dataFormatDelaware;
 
 % Directory containing <subject>_<trialname>EmgEnv.mot
-datadir = strcat('D:\programfiles\FCA\SU\Testing\delaware\delaware2\',trialname,'\');
+%datadir = strcat('D:\programfiles\FCA\SU\Testing\delaware\delaware2\',trialname,'\');
+datadir = [cd '\'];
 
 subject = sInfo.subject;
 ss.mass = sInfo.mass;
