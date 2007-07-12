@@ -700,6 +700,14 @@ updateFromXMLNode()
 		throw XMLParsingException("XML file '"+_document->getFileName()+"' contains "+
 										  XMLNode::Transcode(_node->getTagName())+", expecting "+getType(),_node,__FILE__,__LINE__);
 
+	// If this is a document, temporarily change current directory to the directory of the document, so that reading
+	// non-inlined properties (using the file= attribute) works with relative directories
+	std::string savedCwd;
+	if(_document) {
+		savedCwd = IO::getCwd();
+		IO::chDir(IO::getParentDirectory(_document->getFileName()));
+	}
+
 	// NAME
 	setName(XMLNode::GetAttribute(_node,"name"));
 
@@ -860,6 +868,10 @@ updateFromXMLNode()
 			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
 			break;
 		}
+	}
+
+	if(_document) {
+		IO::chDir(savedCwd);
 	}
 }
 
@@ -1330,7 +1342,12 @@ print(const string &aFileName)
 	//	if(_node==NULL) 
 	// Check removed per Clay so that users don't have to manually call
 	// updateXMLNode for subsequent saves.  Ayman 5/07/04.
+	
+	// Temporarily change current directory so that inlined files are written to correct relative directory
+	std::string savedCwd = IO::getCwd();
+	IO::chDir(IO::getParentDirectory(aFileName));
 	updateXMLNode(NULL);
+	IO::chDir(savedCwd);
 	if(_document==NULL) return false;
 	return _document->print(aFileName);
 }
