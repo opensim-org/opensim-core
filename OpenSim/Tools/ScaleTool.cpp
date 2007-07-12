@@ -79,15 +79,8 @@ ScaleTool::ScaleTool(const string &aFileName) :
 	setNull();
 	setupProperties();
 
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory.
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(aFileName);
-	IO::chDir(directoryOfSetupFile);
-
 	updateFromXMLNode();
 
-	IO::chDir(saveWorkingDirectory);
 	_pathToSubject = IO::getParentDirectory(aFileName);
 }
 
