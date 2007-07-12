@@ -708,6 +708,8 @@ updateFromXMLNode()
 		IO::chDir(IO::getParentDirectory(_document->getFileName()));
 	}
 
+	try {
+
 	// NAME
 	setName(XMLNode::GetAttribute(_node,"name"));
 
@@ -870,9 +872,14 @@ updateFromXMLNode()
 		}
 	}
 
-	if(_document) {
-		IO::chDir(savedCwd);
+	} catch (const Exception &ex) {
+		// Important to catch exceptions here so we can restore current working directory...
+		// And then we can rethrow the exception
+		if(_document) IO::chDir(savedCwd);
+		throw(ex);
 	}
+
+	if(_document) IO::chDir(savedCwd);
 }
 
 //-----------------------------------------------------------------------------
@@ -1346,7 +1353,14 @@ print(const string &aFileName)
 	// Temporarily change current directory so that inlined files are written to correct relative directory
 	std::string savedCwd = IO::getCwd();
 	IO::chDir(IO::getParentDirectory(aFileName));
-	updateXMLNode(NULL);
+	try {
+		updateXMLNode(NULL);
+	} catch (const Exception &ex) {
+		// Important to catch exceptions here so we can restore current working directory...
+		// And then we can rethrow the exception
+		IO::chDir(savedCwd);
+		throw(ex);
+	}
 	IO::chDir(savedCwd);
 	if(_document==NULL) return false;
 	return _document->print(aFileName);
