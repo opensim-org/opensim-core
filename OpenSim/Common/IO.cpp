@@ -641,6 +641,6 @@ std::string IO::
 Uppercase(const std::string &aStr)
 {
 	std::string result = aStr;
-	for(int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
+	for(unsigned int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
 	return result;
 }
