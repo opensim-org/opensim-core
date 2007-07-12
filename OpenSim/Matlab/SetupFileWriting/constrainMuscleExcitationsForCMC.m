@@ -185,17 +185,6 @@ cmcFinalTime = str2double( char( cmcFinalTimeJavaString ) );
 if cmcInitialTime > cmcFinalTime
     error( ['CMC initial time (' num2str( cmcInitialTime ) ') is greater than CMC final time (' num2str( cmcFinalTime ) ')!'] );
 end
-%rightStanceIndices = 1:2:length( rightLimbTimes( :, 1 ) );
-%leftStanceIndices  = 1:2:length(  leftLimbTimes( :, 1 ) );
-%rightStanceStartTimes = rightLimbTimes( rightStanceIndices, 1 );
-%leftStanceStartTimes  =  leftLimbTimes(  leftStanceIndices, 1 );
-%rightIndices = find( cmcInitialTime <= rightStanceStartTimes & rightStanceStartTimes <= cmcFinalTime );
-%leftIndices  = find( cmcInitialTime <=  leftStanceStartTimes &  leftStanceStartTimes <= cmcFinalTime );
-% Transform indices in rightStanceIndices to indices in rightLimbTimes
-%rightIndices = 2 * rightIndices - 1;
-% Transform indices in  leftStanceIndices to indices in  leftLimbTimes
-%leftIndices  = 2 *  leftIndices - 1;
-%stanceStartIndicesWithinCmcTimeRange = {rightIndices, leftIndices};
 
 % Construct cell containing all actuators' off time interval sets.
 offTimeIntervalsCell = cell( length( actuatorNames ), 1 );

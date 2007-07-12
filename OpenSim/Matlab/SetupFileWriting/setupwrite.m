@@ -128,8 +128,6 @@ subjectSpecificModelFileName = [subjectName '.osim'];
 scaleOutputMotionFile = [subjectName '_static_output.mot'];
 
 % 3.1.1.2 Set scale set values.
-%femurScaleFactor = '1.11031 1.11031 1.11031';
-%tibiaScaleFactor = '0.962095 0.962095 0.962095';
 femurScaleFactor = specialSettings{ FEMURSCALEFACTOR };
 tibiaScaleFactor = specialSettings{ TIBIASCALEFACTOR };
 

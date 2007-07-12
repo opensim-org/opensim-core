@@ -43,10 +43,10 @@ numberOfRowsInLimbTimes = sizeOfLimbTimes(1);
 for currentPhaseRowNumberInLimbTimes = 1:numberOfRowsInLimbTimes
     currentPhaseStartTime = limbTimes( currentPhaseRowNumberInLimbTimes, START );
     currentPhaseEndTime   = limbTimes( currentPhaseRowNumberInLimbTimes, END   );
-    if currentPhaseStartTime <= cmcInitialTime && cmcInitialTime <= currentPhaseEndTime
+    if lessOrEqual( currentPhaseStartTime, cmcInitialTime ) && lessOrEqual( cmcInitialTime, currentPhaseEndTime )
         rowNumberContainingCmcInitialTime = currentPhaseRowNumberInLimbTimes;
     end
-    if currentPhaseStartTime <= cmcFinalTime && cmcFinalTime <= currentPhaseEndTime
+    if lessOrEqual( currentPhaseStartTime, cmcFinalTime ) && lessOrEqual( cmcFinalTime, currentPhaseEndTime )
         rowNumberContainingCmcFinalTime = currentPhaseRowNumberInLimbTimes;
     end
 end
@@ -133,7 +133,7 @@ for currentPhaseRowNumberInLimbPercents = 1:numberOfRowsInLimbPercents
         if strcmp( constraintStartPhase, 'stance' )
             t = ( constraintStartPercentage - currentPhaseStartPercentage ) / ( currentPhaseEndPercentage - currentPhaseStartPercentage );
             constraintStartTime = currentPhaseStartTime + t * ( currentPhaseEndTime - currentPhaseStartTime );
-            if currentPhaseStartTime <= constraintStartTime && constraintStartTime <= currentPhaseEndTime
+            if lessOrEqual( currentPhaseStartTime, constraintStartTime ) && lessOrEqual( constraintStartTime, currentPhaseEndTime )
                 constraintStartTimeOrNone = num2str( constraintStartTime );
             else
                 constraintStartTimeOrNone = 'none';
@@ -144,7 +144,7 @@ for currentPhaseRowNumberInLimbPercents = 1:numberOfRowsInLimbPercents
         if strcmp( constraintEndPhase, 'stance' )
             t = ( constraintEndPercentage - currentPhaseStartPercentage ) / ( currentPhaseEndPercentage - currentPhaseStartPercentage );
             constraintEndTime = currentPhaseStartTime + t * ( currentPhaseEndTime - currentPhaseStartTime );
-            if currentPhaseStartTime <= constraintEndTime && constraintEndTime <= currentPhaseEndTime
+            if lessOrEqual( currentPhaseStartTime, constraintEndTime ) && lessOrEqual( constraintEndTime, currentPhaseEndTime )
                 constraintEndTimeOrNone = num2str( constraintEndTime );
             else
                 constraintEndTimeOrNone = 'none';
@@ -158,7 +158,7 @@ for currentPhaseRowNumberInLimbPercents = 1:numberOfRowsInLimbPercents
         else % strcmp( constraintStartPhase, 'swing ' )
             t = ( constraintStartPercentage - currentPhaseStartPercentage ) / ( currentPhaseEndPercentage - currentPhaseStartPercentage );
             constraintStartTime = currentPhaseStartTime + t * ( currentPhaseEndTime - currentPhaseStartTime );
-            if currentPhaseStartTime <= constraintStartTime && constraintStartTime <= currentPhaseEndTime
+            if lessOrEqual( currentPhaseStartTime, constraintStartTime ) && lessOrEqual( constraintStartTime, currentPhaseEndTime )
                 constraintStartTimeOrNone = num2str( constraintStartTime );
             else
                 constraintStartTimeOrNone = 'none';
@@ -169,7 +169,7 @@ for currentPhaseRowNumberInLimbPercents = 1:numberOfRowsInLimbPercents
         else % strcmp( constraintEndPhase, 'swing ' )
             t = ( constraintEndPercentage - currentPhaseStartPercentage ) / ( currentPhaseEndPercentage - currentPhaseStartPercentage );
             constraintEndTime = currentPhaseStartTime + t * ( currentPhaseEndTime - currentPhaseStartTime );
-            if currentPhaseStartTime <= constraintEndTime && constraintEndTime <= currentPhaseEndTime
+            if lessOrEqual( currentPhaseStartTime, constraintEndTime ) && lessOrEqual( constraintEndTime, currentPhaseEndTime )
                 constraintEndTimeOrNone = num2str( constraintEndTime );
             else
                 constraintEndTimeOrNone = 'none';

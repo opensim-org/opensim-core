@@ -114,7 +114,19 @@ if RUN_CODE_BLOCK_4
     constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
 end
 
+% BELOW ARE THE CODE BLOCKS I'M USING FOR MY SIMULATIONS RIGHT NOW
+%
+% Guide to code block numbers:
+% 5.  de2_vslow_walk1
+% 6.  de2_ss_walk1
+% 7.  de2_fast_walk1
+% 8.  de3_vslow_walk1
+% 9.  de3_ss_walk1
+% 10. de3_fast_walk1
+
 % CODE BLOCK #5
+%
+% de2_vslow_walk1
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
@@ -180,11 +192,80 @@ if RUN_CODE_BLOCK_5
 end
 
 % CODE BLOCK #6
+%
+% de2_ss_walk1
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
 RUN_CODE_BLOCK_6 = false;
 if RUN_CODE_BLOCK_6
+    gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware_ss_auto';
+    subjectName = 'delaware2';
+    trialName = 'de2_ss_walk1';
+    subjectMass = '65.9';
+    subjectHeight = '1830.0';
+    femurScaleFactor = '1.11031 1.11031 1.11031';
+    tibiaScaleFactor = '0.962095 0.962095 0.962095';
+    fyMinControlConstraintRRA2 = '-20.0';
+    fyMaxControlConstraintRRA2 = '20.0';
+    mxMinControlConstraintRRA2 = '-50.0';
+    mxMaxControlConstraintRRA2 = '50.0';
+    myMinControlConstraintRRA2 = '-50.0';
+    myMaxControlConstraintRRA2 = '50.0';
+    mzMinControlConstraintRRA2 = '-50.0';
+    mzMaxControlConstraintRRA2 = '50.0';
+    fxOptimalForceRRA2 = '4.0';
+    fyOptimalForceRRA2 = '8.0';
+    fzOptimalForceRRA2 = '4.0';
+    mxOptimalForceRRA2 = '2.0';
+    myOptimalForceRRA2 = '2.0';
+    mzOptimalForceRRA2 = '2.0';
+    specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
+                        fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
+                        myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
+                        mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+    setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
+    initialPercent = 0;
+    finalPercent = 150;
+    inputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware_ss_auto';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto';
+    subjectName = 'delaware2';
+    trialName = 'de2_ss_walk1';
+    setSetupValuesForPercentGaitCycle( initialPercent, finalPercent, inputDirectory, outputDirectory, subjectName, trialName );
+    excitationOffRegions = { 'semimem_r'  'stance 50  swing  30 ' ; ...
+                             'semiten_r'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_r'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_r'  'swing  80  stance 50 ' ; ...
+                             'sar_r'      'stance 0   stance 100' ; ...
+                             'tfl_r'      'swing  0   swing  100' ; ...
+                             'add_mag1_r' 'stance 50  stance 100' ; ...
+                             'add_mag2_r' 'stance 50  stance 100' ; ...
+                             'add_mag3_r' 'stance 50  stance 100' ; ...
+                             'rect_fem_r' 'swing  40  swing  60 ' ; ...
+                             'semimem_l'  'stance 50  swing  30 ' ; ...
+                             'semiten_l'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_l'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_l'  'swing  80  stance 50 ' ; ...
+                             'sar_l'      'stance 0   stance 100' ; ...
+                             'tfl_l'      'swing  0   swing  100' ; ...
+                             'add_mag1_l' 'stance 50  stance 100' ; ...
+                             'add_mag2_l' 'stance 50  stance 100' ; ...
+                             'add_mag3_l' 'stance 50  stance 100' ; ...
+                             'rect_fem_l' 'swing  40  swing  60 ' };
+    outputFileName = [trialName '_CMC_ControlConstraints_Constrained.xml'];
+    constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
+end
+
+% CODE BLOCK #7
+%
+% de2_fast_walk1
+% These lines create new setup files for a trial from the gait example.
+% This code block will make all setup files and excitation constraints in a
+% new CMC control constraints file for this trial.
+RUN_CODE_BLOCK_7 = false;
+if RUN_CODE_BLOCK_7
     gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
     outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware_fast_auto';
     subjectName = 'delaware2';
@@ -242,70 +323,9 @@ if RUN_CODE_BLOCK_6
     constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
 end
 
-% CODE BLOCK #7
-% These lines create new setup files for a trial from the gait example.
-% This code block will make all setup files and excitation constraints in a
-% new CMC control constraints file for this trial.
-RUN_CODE_BLOCK_7 = false;
-if RUN_CODE_BLOCK_7
-    gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
-    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
-    subjectName = 'delaware3';
-    trialName = 'de3_fast_walk1';
-    subjectMass = '72.6';
-    subjectHeight = '1803.4';
-    femurScaleFactor = '1.14724 1.14724 1.14724';
-    tibiaScaleFactor = '0.988523 0.988523 0.988523';
-    fyMinControlConstraintRRA2 = '-50.0';
-    fyMaxControlConstraintRRA2 = '50.0';
-    mxMinControlConstraintRRA2 = '-200.0';
-    mxMaxControlConstraintRRA2 = '200.0';
-    myMinControlConstraintRRA2 = '-200.0';
-    myMaxControlConstraintRRA2 = '200.0';
-    mzMinControlConstraintRRA2 = '-200.0';
-    mzMaxControlConstraintRRA2 = '200.0';
-    fxOptimalForceRRA2 = '8.0';
-    fyOptimalForceRRA2 = '16.0';
-    fzOptimalForceRRA2 = '8.0';
-    mxOptimalForceRRA2 = '4.0';
-    myOptimalForceRRA2 = '4.0';
-    mzOptimalForceRRA2 = '4.0';
-    specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
-                        fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
-                        myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
-                        mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
-    setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
-    initialPercent = 0;
-    finalPercent = 150;
-    inputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
-    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_1.5_fast_auto';
-    subjectName = 'delaware3';
-    trialName = 'de3_fast_walk1';
-    setSetupValuesForPercentGaitCycle( initialPercent, finalPercent, inputDirectory, outputDirectory, subjectName, trialName );
-    excitationOffRegions = { 'semimem_r'  'stance 50  swing  30 ' ; ...
-                             'semiten_r'  'stance 50  swing  30 ' ; ...
-                             'bifemlh_r'  'stance 50  swing  30 ' ; ...
-                             'bifemsh_r'  'swing  80  stance 50 ' ; ...
-                             'sar_r'      'stance 0   stance 100' ; ...
-                             'tfl_r'      'swing  0   swing  100' ; ...
-                             'add_mag1_r' 'stance 50  stance 100' ; ...
-                             'add_mag2_r' 'stance 50  stance 100' ; ...
-                             'add_mag3_r' 'stance 50  stance 100' ; ...
-                             'semimem_l'  'stance 50  swing  30 ' ; ...
-                             'semiten_l'  'stance 50  swing  30 ' ; ...
-                             'bifemlh_l'  'stance 50  swing  30 ' ; ...
-                             'bifemsh_l'  'swing  80  stance 50 ' ; ...
-                             'sar_l'      'stance 0   stance 100' ; ...
-                             'tfl_l'      'swing  0   swing  100' ; ...
-                             'add_mag1_l' 'stance 50  stance 100' ; ...
-                             'add_mag2_l' 'stance 50  stance 100' ; ...
-                             'add_mag3_l' 'stance 50  stance 100' };
-    outputFileName = [trialName '_CMC_ControlConstraints_Constrained.xml'];
-    constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
-end
-
 % CODE BLOCK #8
+%
+% de3_vslow_walk1
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
@@ -366,6 +386,138 @@ if RUN_CODE_BLOCK_8
                              'add_mag2_l' 'stance 50  stance 100' ; ...
                              'add_mag3_l' 'stance 50  stance 100' ; ...
                              'rect_fem_l' 'swing  40  swing  60 ' };
+    outputFileName = [trialName '_CMC_ControlConstraints_Constrained.xml'];
+    constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
+end
+
+% CODE BLOCK #9
+%
+% de3_ss_walk1
+% These lines create new setup files for a trial from the gait example.
+% This code block will make all setup files and excitation constraints in a
+% new CMC control constraints file for this trial.
+RUN_CODE_BLOCK_9 = false;
+if RUN_CODE_BLOCK_9
+    gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_ss_auto';
+    subjectName = 'delaware3';
+    trialName = 'de3_ss_walk1';
+    subjectMass = '72.6';
+    subjectHeight = '1803.4';
+    femurScaleFactor = '1.14724 1.14724 1.14724';
+    tibiaScaleFactor = '0.988523 0.988523 0.988523';
+    fyMinControlConstraintRRA2 = '-20.0';
+    fyMaxControlConstraintRRA2 = '20.0';
+    mxMinControlConstraintRRA2 = '-50.0';
+    mxMaxControlConstraintRRA2 = '50.0';
+    myMinControlConstraintRRA2 = '-50.0';
+    myMaxControlConstraintRRA2 = '50.0';
+    mzMinControlConstraintRRA2 = '-50.0';
+    mzMaxControlConstraintRRA2 = '50.0';
+    fxOptimalForceRRA2 = '4.0';
+    fyOptimalForceRRA2 = '8.0';
+    fzOptimalForceRRA2 = '4.0';
+    mxOptimalForceRRA2 = '2.0';
+    myOptimalForceRRA2 = '2.0';
+    mzOptimalForceRRA2 = '2.0';
+    specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
+                        fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
+                        myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
+                        mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+    setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
+    initialPercent = 0;
+    finalPercent = 150;
+    inputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_ss_auto';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_1.5_ss_auto';
+    subjectName = 'delaware3';
+    trialName = 'de3_ss_walk1';
+    setSetupValuesForPercentGaitCycle( initialPercent, finalPercent, inputDirectory, outputDirectory, subjectName, trialName );
+    excitationOffRegions = { 'semimem_r'  'stance 50  swing  30 ' ; ...
+                             'semiten_r'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_r'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_r'  'swing  80  stance 50 ' ; ...
+                             'sar_r'      'stance 0   stance 100' ; ...
+                             'tfl_r'      'swing  0   swing  100' ; ...
+                             'add_mag1_r' 'stance 50  stance 100' ; ...
+                             'add_mag2_r' 'stance 50  stance 100' ; ...
+                             'add_mag3_r' 'stance 50  stance 100' ; ...
+                             'rect_fem_r' 'swing  40  swing  60 ' ; ...
+                             'semimem_l'  'stance 50  swing  30 ' ; ...
+                             'semiten_l'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_l'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_l'  'swing  80  stance 50 ' ; ...
+                             'sar_l'      'stance 0   stance 100' ; ...
+                             'tfl_l'      'swing  0   swing  100' ; ...
+                             'add_mag1_l' 'stance 50  stance 100' ; ...
+                             'add_mag2_l' 'stance 50  stance 100' ; ...
+                             'add_mag3_l' 'stance 50  stance 100' ; ...
+                             'rect_fem_l' 'swing  40  swing  60 ' };
+    outputFileName = [trialName '_CMC_ControlConstraints_Constrained.xml'];
+    constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
+end
+
+% CODE BLOCK #10
+%
+% de3_fast_walk1
+% These lines create new setup files for a trial from the gait example.
+% This code block will make all setup files and excitation constraints in a
+% new CMC control constraints file for this trial.
+RUN_CODE_BLOCK_10 = false;
+if RUN_CODE_BLOCK_10
+    gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
+    subjectName = 'delaware3';
+    trialName = 'de3_fast_walk1';
+    subjectMass = '72.6';
+    subjectHeight = '1803.4';
+    femurScaleFactor = '1.14724 1.14724 1.14724';
+    tibiaScaleFactor = '0.988523 0.988523 0.988523';
+    fyMinControlConstraintRRA2 = '-50.0';
+    fyMaxControlConstraintRRA2 = '50.0';
+    mxMinControlConstraintRRA2 = '-200.0';
+    mxMaxControlConstraintRRA2 = '200.0';
+    myMinControlConstraintRRA2 = '-200.0';
+    myMaxControlConstraintRRA2 = '200.0';
+    mzMinControlConstraintRRA2 = '-200.0';
+    mzMaxControlConstraintRRA2 = '200.0';
+    fxOptimalForceRRA2 = '8.0';
+    fyOptimalForceRRA2 = '16.0';
+    fzOptimalForceRRA2 = '8.0';
+    mxOptimalForceRRA2 = '4.0';
+    myOptimalForceRRA2 = '4.0';
+    mzOptimalForceRRA2 = '4.0';
+    specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
+                        fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
+                        myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
+                        mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+    setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
+    initialPercent = 0;
+    finalPercent = 150;
+    inputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
+    outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_1.5_fast_auto';
+    subjectName = 'delaware3';
+    trialName = 'de3_fast_walk1';
+    setSetupValuesForPercentGaitCycle( initialPercent, finalPercent, inputDirectory, outputDirectory, subjectName, trialName );
+    excitationOffRegions = { 'semimem_r'  'stance 50  swing  30 ' ; ...
+                             'semiten_r'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_r'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_r'  'swing  80  stance 50 ' ; ...
+                             'sar_r'      'stance 0   stance 100' ; ...
+                             'tfl_r'      'swing  0   swing  100' ; ...
+                             'add_mag1_r' 'stance 50  stance 100' ; ...
+                             'add_mag2_r' 'stance 50  stance 100' ; ...
+                             'add_mag3_r' 'stance 50  stance 100' ; ...
+                             'semimem_l'  'stance 50  swing  30 ' ; ...
+                             'semiten_l'  'stance 50  swing  30 ' ; ...
+                             'bifemlh_l'  'stance 50  swing  30 ' ; ...
+                             'bifemsh_l'  'swing  80  stance 50 ' ; ...
+                             'sar_l'      'stance 0   stance 100' ; ...
+                             'tfl_l'      'swing  0   swing  100' ; ...
+                             'add_mag1_l' 'stance 50  stance 100' ; ...
+                             'add_mag2_l' 'stance 50  stance 100' ; ...
+                             'add_mag3_l' 'stance 50  stance 100' };
     outputFileName = [trialName '_CMC_ControlConstraints_Constrained.xml'];
     constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory, outputFileName, trialName );
 end
