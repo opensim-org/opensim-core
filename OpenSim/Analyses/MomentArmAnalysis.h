@@ -11,8 +11,9 @@
 //=============================================================================
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include "osimAnalysesDLL.h"
-
 
 #ifdef SWIG
 	#ifdef OSIMANALYSES_API
@@ -20,6 +21,17 @@
 		#define OSIMANALYSES_API
 	#endif
 #endif
+
+
+namespace OpenSim {
+
+// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
+// ASSOCIATE GENERALIZED COORDINATE
+typedef struct {
+	AbstractCoordinate *q;
+	Storage *store;
+}  StorageCoordinatePair;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -29,8 +41,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMANALYSES_API MomentArmAnalysis : public Analysis 
 {
 //=============================================================================
@@ -43,10 +53,6 @@ private:
 	/** List of generalized coordinates for which to compute moment arms. */
 	PropertyStrArray _coordinateListProp;
 
-protected:
-	/** Array of storage pointers for the moment arms. */
-	ArrayPtrs<Storage> _momentArmStorageArray;
-
 	/** Work array for holding the list of muscles.  This is used
 	in the event the user-specified muscle list is empty, which implies
 	that all muscles should be analyzed. */
@@ -54,6 +60,12 @@ protected:
 
 	/** Work array for holding the list of coordinates. */
 	Array<std::string> _coordinateList;
+
+	/** Array of active storage and coordinate pairs. */
+	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
+
+	/** Array of active muscles. */
+	ArrayPtrs<AbstractMuscle> _muscleArray;
 
 //=============================================================================
 // METHODS
@@ -69,7 +81,8 @@ private:
 	void setNull();
 	void setupProperties();
 	void constructColumnLabels();
-	void allocateStorage();
+	void allocateStorageObjects();
+	void updateStorageObjects();
 
 public:
 	//--------------------------------------------------------------------------
@@ -83,7 +96,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void setModel(Model *aModel);
 	void setStorageCapacityIncrements(int aIncrement);
-	const ArrayPtrs<Storage>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
+	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 	void setMuscles(Array<std::string>& aMuscles);
 	void setCoordinates(Array<std::string>& aCoordinates);
 	//--------------------------------------------------------------------------
@@ -110,7 +123,8 @@ public:
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
-	OPENSIM_DECLARE_DERIVED(MomentArmAnalysis,Analysis)
+	OPENSIM_DECLARE_DERIVED(MomentArmAnalysis,Analysis)	
+
 //=============================================================================
 };	// END of class MomentArmAnalysis
 

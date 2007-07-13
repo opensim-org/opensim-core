@@ -55,8 +55,11 @@ MomentArmAnalysis::MomentArmAnalysis(Model *aModel) :
 	// CHECK MODEL
 	if(_model==NULL) return;
 
-	// LABELS
-	constructColumnLabels();
+	// NULL VALUES
+	_muscleArray.setMemoryOwner(false);
+
+	// STORAGE OBJECTS
+	allocateStorageObjects();
 }
 //_____________________________________________________________________________
 /**
@@ -71,12 +74,9 @@ MomentArmAnalysis::MomentArmAnalysis(const std::string &aFileName):
 	Analysis(aFileName, false)
 {
 	setNull();
-
-	// Serialize from XML
 	updateFromXMLNode();
-
+	allocateStorageObjects();
 }
-// Copy constrctor and virtual copy 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -86,7 +86,6 @@ MomentArmAnalysis::MomentArmAnalysis(const MomentArmAnalysis &aMomentArmAnalysis
 	Analysis(aMomentArmAnalysis)
 {
 	setNull();
-	// COPY TYPE AND NAME
 	*this = aMomentArmAnalysis;
 }
 //_____________________________________________________________________________
@@ -151,7 +150,14 @@ setupProperties()
 //--------------------------------------------------------------------------
 MomentArmAnalysis& MomentArmAnalysis::operator=(const MomentArmAnalysis &aMomentArmAnalysis)
 {
+	// BASE CLASS
 	Analysis::operator=(aMomentArmAnalysis);
+
+	// MEMBER VARIABLES
+	_muscleListProp = aMomentArmAnalysis._muscleListProp;
+	_coordinateListProp = aMomentArmAnalysis._coordinateListProp;
+	allocateStorageObjects();
+
 	return (*this);
 }
 
@@ -162,56 +168,116 @@ MomentArmAnalysis& MomentArmAnalysis::operator=(const MomentArmAnalysis &aMoment
 void MomentArmAnalysis::setModel(Model *aModel)
 {
 	Analysis::setModel(aModel);
+	allocateStorageObjects();
 }
 //_____________________________________________________________________________
 /**
- * Allocate storage for the muscle variables.
+ * Allocate storage for the moment arm data.
  */
 void MomentArmAnalysis::
-allocateStorage()
+allocateStorageObjects()
 {
 	if(_model==NULL) return;
 
-	_momentArmStorageArray.setSize(0);
-	_storageList.setMemoryOwner(false);
+	// CLEAR EXISTING ARRAYS
+	_storageList.setMemoryOwner(true);
 	_storageList.setSize(0);
+	_momentArmStorageArray.setMemoryOwner(true);
+	_momentArmStorageArray.setSize(0);
+	_muscleArray.setMemoryOwner(false);
+	_muscleArray.setSize(0);
+
+	// CREATE NEW STORAGES
+	CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
+	int nq = qSet->getSize();
+	Storage *store;
+	for(int i=0;i<nq;i++) {
+		AbstractCoordinate *q = qSet->get(i);
+		string name = getName() + "_" + q->getName();
+		store = new Storage(1000,name);
+		_storageList.append(store);
+	}
+
+	// UPDATE THE COLUMN LABELS ECT.
+	updateStorageObjects();
+}
+//_____________________________________________________________________________
+/**
+ * Update storage objects.  This is necessary if the mucle or coordinate list
+ * is changed.
+ */
+void MomentArmAnalysis::
+updateStorageObjects()
+{
+	if(_model==NULL) return;
 
 	// POPULATE MUSCLE LIST FOR "all"
+	ActuatorSet *actSet = _model->getActuatorSet();
 	_muscleList = _muscleListProp.getValueStrArray();
-	int size = _muscleList.getSize();
-	if((size==1) && (_muscleList.get(0)=="all")) {
+	int nm = _muscleList.getSize();
+	if((nm==1) && (_muscleList.get(0)=="all")) {
 		_muscleList.setSize(0);
-		ActuatorSet *actSet = _model->getActuatorSet();
 		int na = actSet->getSize();
 		for(int i=0;i<na;i++) {
 			AbstractActuator *act = actSet->get(i);
 			_muscleList.append(act->getName());
 		}
 	}
+	// POPULATE ACTIVE MUSCLE ARRAY
+	Array<string> tmpMuscleList("");
+	nm = _muscleList.getSize();
+	_muscleArray.setSize(0);
+	for(int i=0; i<nm; i++) {
+		AbstractMuscle *mus = dynamic_cast<AbstractMuscle*>( actSet->get(_muscleList[i]) );
+		if(mus!=NULL) {
+			_muscleArray.append(mus);
+			tmpMuscleList.append(mus->getName());
+		}
+	}
+	_muscleList = tmpMuscleList;
+
 
 	// POPULATE COORDINATE LIST FOR "all"
+	CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
 	_coordinateList = _coordinateListProp.getValueStrArray();
-	size = _coordinateList.getSize();
-	if((size==1) && (_coordinateList.get(0)=="all")) {
+	int nq = qSet->getSize();
+	int nActiveQ = _coordinateList.getSize();
+	if((nActiveQ==1) && (_coordinateList.get(0)=="all")) {
 		_coordinateList.setSize(0);
-		CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
-		int nq = qSet->getSize();
 		for(int i=0;i<nq;i++) {
 			AbstractCoordinate *q = qSet->get(i);
 			_coordinateList.append(q->getName());
 		}
 	}
-	constructColumnLabels();
+	// POPULATE ACTIVE MOMENT ARM ARRAY
+	Array<string> tmpCoordinateList("");
+	_momentArmStorageArray.setSize(0);
+	nActiveQ = _coordinateList.getSize();
+	for(int i=0; i<nActiveQ; i++) {
+		string name = _coordinateList[i];
+		for(int j=0; j<nq; j++) {
+			AbstractCoordinate *q = qSet->get(j);
+			if(name == q->getName()) {
+				StorageCoordinatePair *pair = new StorageCoordinatePair();
+				pair->q = q;
+				pair->store = _storageList[j];
+				_momentArmStorageArray.append(pair);
+				tmpCoordinateList.append(q->getName());
+			}
+		}
+	}
+	_coordinateList = tmpCoordinateList;
+	cout<<"Number of active moment arm storage array = "<<_momentArmStorageArray.getSize()<<endl;
 
-	// CREATE STORAGES
+
+	// CONSTRUCT AND SET COLUMN LABELS
+	constructColumnLabels();
 	string name;
 	Storage *store;
-	for(int i=0;i<_muscleList.getSize();i++) {
-		name = "MomentArm_" + _muscleList[i];
-		store = new Storage(1000,name);
+	for(int i=0;i<nq;i++) {
+		store = _storageList[i];
+		if(store==NULL) continue;
 		store->setColumnLabels(getColumnLabels());
-		_storageList.append(store);
-		_momentArmStorageArray.append(store);
 	}
 }
 
@@ -226,11 +292,11 @@ void MomentArmAnalysis::
 constructColumnLabels()
 {
 	if(_model) {
-		int size = _coordinateList.getSize();
+		int size = _muscleList.getSize();
 		Array<string> labels("",size+1);
 		labels[0] = "time";
 		for(int i=0; i<size; i++) {
-			labels[i+1] = _coordinateList[i];
+			labels[i+1] = _muscleList[i];
 		}
 		setColumnLabels(labels);
 	}
@@ -255,7 +321,7 @@ setStorageCapacityIncrements(int aIncrement)
 {
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {
-		_momentArmStorageArray[i]->setCapacityIncrement(aIncrement);
+		_momentArmStorageArray[i]->store->setCapacityIncrement(aIncrement);
 	}
 }
 //_____________________________________________________________________________
@@ -267,12 +333,12 @@ setStorageCapacityIncrements(int aIncrement)
 void MomentArmAnalysis::
 setMuscles(Array<std::string>& aMuscles)
 {
+	int size = aMuscles.getSize();
 	_muscleListProp.getValueStrArray().setSize(aMuscles.getSize());
-	
-	for(int i=0; i<aMuscles.getSize(); i++){
-		_muscleListProp.getValueStrArray().get(i)=aMuscles.get(i);
+	for(int i=0; i<size; i++){
+		_muscleListProp.getValueStrArray().get(i) = aMuscles.get(i);
 	}
-	allocateStorage();
+	updateStorageObjects();
 }
 //_____________________________________________________________________________
 /**
@@ -288,7 +354,7 @@ setCoordinates(Array<std::string>& aCoordinates)
 	for(int i=0; i<size; i++){
 		_coordinateListProp.getValueStrArray().get(i) = aCoordinates[i];
 	}
-	allocateStorage();
+	updateStorageObjects();
 }
 
 
@@ -307,43 +373,36 @@ record(double aT,double *aX,double *aY)
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
 	// COMPUTE DERIVATIVES
 	// ----------------------------------
-	// SET
+	// Set
 	_model->set(aT,aX,aY);
 	_model->getDerivCallbackSet()->set(aT,aX,aY);
 
-	// ACTUATION
+	// Actuation
 	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
 	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
-	// TIME NORMALIZATION
+	// Time normalization
 	double tReal = aT * _model->getTimeNormConstant();
+	//-----------------------------------
 
-	// COORDINATE INFO
-	CoordinateSet *coordSet = _model->getDynamicsEngine().getCoordinateSet();
-	int nq = _coordinateList.getSize();
-	Array<double> ma(0.0,nq);
+	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
 	AbstractCoordinate *q = NULL;
+	Storage *store = NULL;
+	int nq = _momentArmStorageArray.getSize();
+	int nm = _muscleArray.getSize();
+	Array<double> ma(0.0,nm);
+	for(int i=0; i<nq; i++) {
 
-	// LOOP OVER MUSCLES
-	ActuatorSet *actSet = _model->getActuatorSet();
-	int nm = _muscleList.getSize();
-	for(int i=0; i<nm; i++) {
+		q = _momentArmStorageArray[i]->q;
+		store = _momentArmStorageArray[i]->store;
 
-		// MUSCLE?
-		// Check if actuator is actually a muscle.
-		AbstractMuscle *mus = dynamic_cast<AbstractMuscle*>( actSet->get(_muscleList[i]) );
-
-		// LOOP OVER GENERALIZED COORDINATES
-		for(int j=0; j<nq; j++) {
-			ma[j] = 0.0;
-			if(mus!=NULL) {
-				q = coordSet->get(_coordinateList[j]);
-				if(q!=NULL) ma[j] = mus->computeMomentArm(*q);
-			}
+		// LOOP OVER MUSCLES
+		for(int j=0; j<nm; j++) {
+			ma[j] = _muscleArray[j]->computeMomentArm(*q);
 		}
-		_momentArmStorageArray.get(i)->append(aT,nq,&ma[0]);
+		store->append(aT,nm,&ma[0]);
 	}
 
 	return(0);
@@ -377,20 +436,16 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 {
 	if(!proceed()) return(0);
 
-	// ALLOCATE STORAGE
-	if (_momentArmStorageArray.getSize()==0)
-		allocateStorage();
-
 	// RESET STORAGE
 	int size = _momentArmStorageArray.getSize();
 	if(size<=0) return(0);
 	for(int i=0;i<size;i++) {
-		_momentArmStorageArray.get(i)->reset(aT);
+		_momentArmStorageArray.get(i)->store->reset(aT);
 	}
 
 	// RECORD
 	int status = 0;
-	if(_momentArmStorageArray.get(0)->getSize()<=0) status = record(aT,aX,aY);
+	if(_momentArmStorageArray.get(0)->store->getSize() <=0 ) status = record(aT,aX,aY);
 
 	return(status);
 }
@@ -497,9 +552,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {
 
-		string fileName = aBaseName + "_" + _momentArmStorageArray.get(i)->getName();
+		string fileName = aBaseName + "_" + _momentArmStorageArray.get(i)->store->getName();
 		cout<<"fileName = "<<fileName<<endl;
-		Storage::printResult(_momentArmStorageArray.get(i),fileName,aDir,aDT,aExtension);
+		Storage::printResult(_momentArmStorageArray.get(i)->store,fileName,aDir,aDT,aExtension);
 	}
 
 	return(0);
