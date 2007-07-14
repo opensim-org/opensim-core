@@ -61,7 +61,7 @@ GeneralizedForces::~GeneralizedForces()
 GeneralizedForces::GeneralizedForces(Model *aModel) :
 	Analysis(aModel)
 {
-	setName("GeneralizedForces");
+   setNull();
 
 	if (aModel==0)
 		return;
@@ -119,7 +119,7 @@ GeneralizedForces(const std::string &aFileName):
 GeneralizedForces::GeneralizedForces(const GeneralizedForces &aGeneralizedForces):
 Analysis(aGeneralizedForces)
 {
-	//setNull();
+	setNull();
 	// COPY TYPE AND NAME
 	*this = aGeneralizedForces;
 }
@@ -231,6 +231,33 @@ operator=(const GeneralizedForces &aGeneralizedForces)
 	// BASE CLASS
 	Analysis::operator=(aGeneralizedForces);
 	return(*this);
+}
+//_____________________________________________________________________________
+/**
+ * SetNull().
+ */
+void GeneralizedForces::
+setNull()
+{
+
+	// POINTERS
+	_dqdt = NULL;
+	_dudt = NULL;
+	_zero_aY = NULL;
+	_gravGenForces = NULL;
+	_velGenForces = NULL;
+	_actuatorGenForces = NULL;
+	_contactGenForces = NULL;
+	_gravGenForcesStore = NULL;
+	_velGenForcesStore = NULL;
+	_actuatorGenForcesStore = NULL;
+	_contactGenForcesStore = NULL;
+
+	// OTHER VARIABLES
+
+	setName("GeneralizedForces");
+	setType("GeneralizedForces");
+
 }
 
 //=============================================================================

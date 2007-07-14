@@ -64,6 +64,7 @@ public:
 	GeneralizedForces& operator=(const GeneralizedForces &aGeneralizedForces);
 #endif
 private:
+	void setNull();
 	void constructDescription();
 	void constructColumnLabels();
 	void allocateStorage();

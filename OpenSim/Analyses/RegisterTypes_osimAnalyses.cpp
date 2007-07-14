@@ -11,6 +11,7 @@
 #include "PointKinematics.h"
 #include "BodyKinematics.h"
 #include "ActuatorGeneralizedForces.h"
+#include "GeneralizedForces.h"
 #include "MuscleAnalysis.h"
 #include "MomentArmAnalysis.h"
 #include "InverseDynamics.h"
@@ -34,6 +35,7 @@ OSIMANALYSES_API void RegisterTypes_suAnalyses()
 	Object::RegisterType( PointKinematics() );
 	Object::RegisterType( BodyKinematics() );
 	Object::RegisterType( ActuatorGeneralizedForces() );
+   Object::RegisterType( GeneralizedForces() );
 	Object::RegisterType( MuscleAnalysis() );
 	Object::RegisterType( MomentArmAnalysis() );
 	Object::RegisterType( InverseDynamics() );
