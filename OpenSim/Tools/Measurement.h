@@ -59,6 +59,7 @@ namespace OpenSim {
  */
 class OSIMTOOLS_API Measurement : public Object  
 {
+	OPENSIM_DECLARE_DERIVED(Measurement,Object);
 
 //=============================================================================
 // DATA
@@ -90,9 +91,18 @@ public:
 #endif
    void copyData(const Measurement &aMeasurement);
 
+	BodyScaleSet &getBodyScaleSet() { return _bodyScaleSet; }
+
+	MarkerPairSet& getMarkerPairSet() { return _markerPairSet; }
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
 	const MarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
+
 	bool getApply() const { return _apply; }
+	void setApply(bool aApply) { 
+		_apply = aApply;
+		_applyProp.setUseDefault(false);
+	}
+
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
 	/* Register types to be used when reading a Measurement object from xml file. */

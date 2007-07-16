@@ -65,6 +65,10 @@ class  OSIMTOOLS_API ModelScaler : public Object
 private:
 
 protected:
+	// whether or not to apply scaling
+	PropertyBool _applyProp;
+	bool &_apply;
+
 	// order of the two scaling components: measurements and manual scaling
 	PropertyStrArray _scalingOrderProp;
 	Array<std::string>& _scalingOrder;
@@ -105,10 +109,6 @@ protected:
 	PropertyStr _outputScaleFileNameProp;
 	std::string &_outputScaleFileName;
 
-	// amount of allowable motion for each marker when averaging frames of the static trial
-	PropertyDbl _maxMarkerMovementProp;
-	double &_maxMarkerMovement;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -131,11 +131,6 @@ public:
 	/* Register types to be used when reading a ModelScaler object from xml file. */
 	static void registerTypes();
 
-	const bool getPreserveMassDist() const
-	{
-		return _preserveMassDist;
-	}
-
 	/**
 	 * add a measurement
 	 */
@@ -154,94 +149,82 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	MeasurementSet& getMeasurementSet() {
-		return _measurementSet;
+	bool getApply() const { return _apply; }
+	void setApply(bool aApply) { 
+		_apply = aApply; 
+		_applyProp.setUseDefault(false); 
 	}
 
+	MeasurementSet& getMeasurementSet() { return _measurementSet; }
 	void setMeasurementSet(MeasurementSet& measurementSet) {
 		_measurementSet = measurementSet;
 	}
 
-	ScaleSet& getScaleSet() {
-		return _scaleSet;
-	}
-
+	ScaleSet& getScaleSet() { return _scaleSet; }
 	void setScaleSetFile(const std::string& aScaleSetFilename) {
 		_scaleSet = ScaleSet(aScaleSetFilename);
 	}
 
-	Array<double> getTimeRange() {
-		return _timeRange;
-	}
-
+	const Array<double> &getTimeRange() const { return _timeRange; }
 	void setTimeRange(Array<double> timeRange) {
 		_timeRange = timeRange;
+		_timeRangeProp.setUseDefault(false);
 	}
 
+	bool getPreserveMassDist() const { return _preserveMassDist; }
 	void setPreserveMassDist(bool preserveMassDist) {
 		_preserveMassDist = preserveMassDist;
+		_preserveMassDistProp.setUseDefault(false);
 	}
 
-	Array<std::string> getScalingOrder() {
-		return _scalingOrder;
-	}
-
+	Array<std::string>& getScalingOrder() { return _scalingOrder; }
 	void setScalingOrder(Array<std::string>& scalingOrder) {
 		_scalingOrder = scalingOrder;
+		_scalingOrderProp.setUseDefault(false);
 	}
 
-	const std::string& getMarkerFileName() {
-		return _markerFileName;
-	}
-
+	const std::string& getMarkerFileName() const { return _markerFileName; }
 	void setMarkerFileName(const std::string& aMarkerFileName) {
 		_markerFileName = aMarkerFileName;
+		_markerFileNameProp.setUseDefault(false);
 	}
 
-	void setMaxMarkerMovement(const double aMaxMarkerMovement) {
-		_maxMarkerMovement = aMaxMarkerMovement;
-	}
-
-	double getMaxMarkerMovement() const {
-		return _maxMarkerMovement;
-	}
-
-	const std::string& getOutputJointFileName() {
-		return _outputJointFileName;
-	}
-
+	const std::string& getOutputJointFileName() const { return _outputJointFileName; }
 	void setOutputJointFileName(const std::string& outputJointFileName) {
 		_outputJointFileName = outputJointFileName;
+		_outputJointFileNameProp.setUseDefault(false);
 	}
 
-	const std::string& getOutputMuscleFileName() {
-		return _outputMuscleFileName;
-	}
-
+	const std::string& getOutputMuscleFileName() const { return _outputMuscleFileName; } 
 	void setOutputMuscleFileName(const std::string& aOutputMuscleFileName) {
 		_outputMuscleFileName = aOutputMuscleFileName;
+		_outputMuscleFileNameProp.setUseDefault(false);
 	}
 
-	const std::string& getOutputModelFileName() {
-		return _outputModelFileName;
-	}
-
+	const std::string& getOutputModelFileName() const { return _outputModelFileName; }
 	void setOutputModelFileName(const std::string& aOutputModelFileName) {
 		_outputModelFileName = aOutputModelFileName;
+		_outputModelFileNameProp.setUseDefault(false);
 	}
 
-	const std::string& getOutputScaleFileName() {
-		return _outputScaleFileName;
-	}
-
+	const std::string& getOutputScaleFileName() const { return _outputScaleFileName; }
 	void setOutputScaleFileName(const std::string& aOutputScaleFileName) {
 		_outputScaleFileName = aOutputScaleFileName;
+		_outputScaleFileNameProp.setUseDefault(false);
 	}
+
+	void clearOutputFileNames() {
+		_outputJointFileNameProp.clearValue();
+		_outputMuscleFileNameProp.clearValue();
+		_outputModelFileNameProp.clearValue();
+		_outputScaleFileNameProp.clearValue();
+	}
+
+	double computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 
 private:
 	void setNull();
 	void setupProperties();
-	double computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 	double takeModelMeasurement(const Model& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 	double takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 //=============================================================================

@@ -229,7 +229,7 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 			algorithm = SimTK::CFSQP;
 		}
 	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "IPOPT") {
-		std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+		std::cout << "Using Ipopt optimizer algorithm." << std::endl;
 		algorithm = SimTK::InteriorPoint;
 	} else {
 		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);

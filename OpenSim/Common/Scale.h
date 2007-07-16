@@ -52,6 +52,7 @@ namespace OpenSim {
 
 class OSIMCOMMON_API Scale : public Object
 {
+	OPENSIM_DECLARE_DERIVED(Scale,Object);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -96,10 +97,13 @@ public:
 	//--------------------------------------------------------------------------
 	// SET AND GET
 	//--------------------------------------------------------------------------
-	void getScaleFactors(Array<double>& aScaleFactors) const;
 	const std::string& getSegmentName() const;
 	void setSegmentName(const std::string& aSegmentName);
+
+	void getScaleFactors(Array<double>& aScaleFactors) const;
+	Array<double> &getScaleFactors() { return _scaleFactors; }
 	void setScaleFactors(Array<double>& aScaleFactors);
+
 	bool getApply(void) const { return _apply; }
 	void setApply(bool state) { _apply = state; }
 };

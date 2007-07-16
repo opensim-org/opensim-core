@@ -15,6 +15,7 @@ namespace OpenSim {
 
 class OSIMTOOLS_API IKMarkerTask : public IKTask
 {
+	OPENSIM_DECLARE_DERIVED(IKMarkerTask, IKTask);
 public:
 	IKMarkerTask();
 	IKMarkerTask(const IKMarkerTask &aIKMarkerTask);

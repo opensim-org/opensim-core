@@ -290,7 +290,7 @@ void IKTarget::buildMarkerMap(const Array<string>& aNameArray)
 	for(int i=0; i<_ikTaskSet.getSize(); i++) {
 		IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask*>(_ikTaskSet.get(i));
 
-		if(!markerTask) continue; // not a marker task
+		if(!markerTask || !markerTask->getApply()) continue; // not a marker task (or not being applied)
 
 		string markerName=markerTask->getName();
 		AbstractMarker *modelMarker = markerSet->get(markerName);
@@ -351,7 +351,7 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 	for(int i=0; i<_ikTaskSet.getSize(); i++) {
 		IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask*>(_ikTaskSet.get(i));
 
-		if(!coordTask) continue; // not a coordinate task
+		if(!coordTask || !coordTask->getApply()) continue; // not a coordinate task
 
 		string coordName = coordTask->getName();
 		int coordIndex = coordinateSet->getIndex(coordName);

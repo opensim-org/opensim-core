@@ -46,6 +46,7 @@ namespace OpenSim {
 
 class OSIMTOOLS_API MarkerPair : public Object  
 {
+OPENSIM_DECLARE_DERIVED(MarkerPair,Object);
 
 //=============================================================================
 // DATA
@@ -65,6 +66,7 @@ protected:
 public:
 	MarkerPair();
 	MarkerPair(const MarkerPair &aMarkerPair);
+	MarkerPair(const std::string &aName1, const std::string &aName2);
 	virtual ~MarkerPair();
 	virtual Object* copy() const;
 
@@ -74,6 +76,8 @@ public:
 	void copyData(const MarkerPair &aMarkerPair);
 
 	void getMarkerNames(std::string& aName1, std::string& aName2) const;
+	const std::string &getMarkerName(int i) const { return _markerNames.get(i); }
+	void setMarkerName(int i, const std::string &aName) { _markerNames.set(i,aName); }
 
 protected:
 

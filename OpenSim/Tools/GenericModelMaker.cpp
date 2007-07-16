@@ -44,8 +44,7 @@ using namespace OpenSim;
  */
 GenericModelMaker::GenericModelMaker() :
    _fileName(_fileNameProp.getValueStr()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
+	_markerSetFileName(_markerSetFileNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -68,8 +67,7 @@ GenericModelMaker::~GenericModelMaker()
 GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker) :
    Object(aGenericModelMaker),
    _fileName(_fileNameProp.getValueStr()),
-	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
+	_markerSetFileName(_markerSetFileNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -101,7 +99,7 @@ Object* GenericModelMaker::copy() const
 void GenericModelMaker::copyData(const GenericModelMaker &aGenericModelMaker)
 {
 	_fileName = aGenericModelMaker._fileName;
-	_markerSet = aGenericModelMaker._markerSet;
+	_markerSetFileName = aGenericModelMaker._markerSetFileName;
 }
 
 //_____________________________________________________________________________
@@ -123,11 +121,11 @@ void GenericModelMaker::setupProperties()
 	_fileNameProp.setName("model_file");
 	_propertySet.append(&_fileNameProp);
 
-	_markerSetProp.setComment("Set of model markers used to scale the model. "
+	_markerSetFileNameProp.setComment("Set of model markers used to scale the model. "
 		"Scaling is done based on distances between model markers compared to "
 		"the same distances between the corresponding experimental markers.");
-	_markerSetProp.setName("MarkerSet");
-	_propertySet.append(&_markerSetProp);
+	_markerSetFileNameProp.setName("marker_set_file");
+	_propertySet.append(&_markerSetFileNameProp);
 }
 
 //_____________________________________________________________________________
@@ -181,8 +179,11 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 		model = new Model(_fileName);
 		model->setup();
 
-		if (model->builtOK())
-			model->getDynamicsEngine().updateMarkerSet(_markerSet);
+		if (model->builtOK() && !_markerSetFileNameProp.getUseDefault()) {
+			cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
+			MarkerSet *markerSet = new MarkerSet(aPathToSubject + _markerSetFileName);
+			model->getDynamicsEngine().updateMarkerSet(*markerSet);
+		}
 	}
 	catch (Exception &x)
 	{

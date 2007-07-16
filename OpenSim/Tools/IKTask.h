@@ -3,6 +3,7 @@
 
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
@@ -17,6 +18,10 @@ namespace OpenSim {
 class OSIMTOOLS_API IKTask : public Object
 {
 protected:
+	// whether or not this task will be used
+	PropertyBool _applyProp;
+	bool &_apply;
+
 	PropertyDbl _weightProp;
 	double &_weight;
 
@@ -29,7 +34,11 @@ public:
 	IKTask& operator=(const IKTask &aIKTask);
 #endif
 
+	bool getApply() const { return _apply; }
+	void setApply(bool aApply) { _apply = aApply; }
+
 	double getWeight() { return _weight; }
+	void setWeight(double weight) { _weight = weight; }
 
 private:
 	void setupProperties();

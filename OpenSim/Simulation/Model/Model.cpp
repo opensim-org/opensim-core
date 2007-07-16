@@ -89,6 +89,9 @@ Model::Model(const string &aFileName) :
 	updateFromXMLNode();
 
 	_fileName = aFileName;
+
+	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;
+
 	// Throw exception if something wrong happened and we don't have a dynamics engine.
 	// likely due to pickng wrong file that has no valid OpenSim model
 	if (!hasDynamicsEngine()){
@@ -287,7 +290,7 @@ void Model::setup()
 	if(!origDirPath.empty())
 		IO::chDir(origDirPath);
 
-	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;
+	cout << "Model " << getName() << " setup completed" << endl;
 }
 //_____________________________________________________________________________
 /**

@@ -48,6 +48,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 ModelScaler::ModelScaler() :
+	_apply(_applyProp.getValueBool()),
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
 	_measurementSetProp(PropertyObj("", MeasurementSet())),
 	_measurementSet((MeasurementSet&)_measurementSetProp.getValueObj()),
@@ -59,8 +60,7 @@ ModelScaler::ModelScaler() :
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
+	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -82,6 +82,7 @@ ModelScaler::~ModelScaler()
  */
 ModelScaler::ModelScaler(const ModelScaler &aModelScaler) :
    Object(aModelScaler),
+	_apply(_applyProp.getValueBool()),
 	_scalingOrder(_scalingOrderProp.getValueStrArray()),
 	_measurementSetProp(PropertyObj("", MeasurementSet())),
 	_measurementSet((MeasurementSet&)_measurementSetProp.getValueObj()),
@@ -93,8 +94,7 @@ ModelScaler::ModelScaler(const ModelScaler &aModelScaler) :
 	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
 	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
-	_outputScaleFileName(_outputScaleFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
+	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -125,6 +125,7 @@ Object* ModelScaler::copy() const
  */
 void ModelScaler::copyData(const ModelScaler &aModelScaler)
 {
+	_apply = aModelScaler._apply;
 	_scalingOrder = aModelScaler._scalingOrder;
 	_measurementSet = aModelScaler._measurementSet;
 	_scaleSet = aModelScaler._scaleSet;
@@ -135,7 +136,6 @@ void ModelScaler::copyData(const ModelScaler &aModelScaler)
 	_outputMuscleFileName = aModelScaler._outputMuscleFileName;
 	_outputModelFileName = aModelScaler._outputModelFileName;
 	_outputScaleFileName = aModelScaler._outputScaleFileName;
-	_maxMarkerMovement = aModelScaler._maxMarkerMovement;
 }
 
 //_____________________________________________________________________________
@@ -145,6 +145,8 @@ void ModelScaler::copyData(const ModelScaler &aModelScaler)
 void ModelScaler::setNull()
 {
 	setType("ModelScaler");
+
+	_apply = true;
 }
 
 //_____________________________________________________________________________
@@ -153,6 +155,10 @@ void ModelScaler::setNull()
  */
 void ModelScaler::setupProperties()
 {
+	_applyProp.setComment("Whether or not to use the model scaler during scale");
+	_applyProp.setName("apply");
+	_propertySet.append(&_applyProp);
+
 	_scalingOrderProp.setComment("Specifies the scaling method and order. "
 		"Valid options are 'measurements', 'manualScale', singly or both in any sequence.");
 	_scalingOrderProp.setName("scaling_order");
@@ -202,12 +208,6 @@ void ModelScaler::setupProperties()
 	_outputScaleFileNameProp.setComment("Name of file to write containing the scale factors that were applied to the unscaled model (optional).");
 	_outputScaleFileNameProp.setName("output_scale_file");
 	_propertySet.append(&_outputScaleFileNameProp);
-
-	_maxMarkerMovementProp.setComment("Maximum movement a marker is allowed to move during a static trial. "
-		"A negative value, which is the default, means there is no limit.");
-	_maxMarkerMovementProp.setName("max_marker_movement");
-	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
-	_propertySet.append(&_maxMarkerMovementProp);
 }
 
 //_____________________________________________________________________________
@@ -254,6 +254,8 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  */
 bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
 {
+	if(!getApply()) return false;
+
 	int i;
 	ScaleSet theScaleSet;
 	Array<double> unity(1.0, 3);
@@ -298,7 +300,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 					if (_measurementSet.get(j)->getApply())
 					{
 						double scaleFactor = computeMeasurementScaleFactor(*aModel, markerData, *_measurementSet.get(j));
-						if (scaleFactor != rdMath::NAN) 
+						if (!rdMath::isNAN(scaleFactor))
 							_measurementSet.get(j)->applyScaleFactor(scaleFactor, theScaleSet);
 						else
 							cout << "___WARNING___: " << _measurementSet.get(j)->getName() << " measurement not used to scale " << aModel->getName() << endl;
@@ -378,13 +380,14 @@ double ModelScaler::computeMeasurementScaleFactor(const Model& aModel, const Mar
 {
 	double scaleFactor = 0;
 	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
+	if(aMeasurement.getNumMarkerPairs()==0) return rdMath::NAN;
 	for(int i=0; i<aMeasurement.getNumMarkerPairs(); i++) {
 		const MarkerPair& pair = aMeasurement.getMarkerPair(i);
 		string name1, name2;
 		pair.getMarkerNames(name1, name2);
 		double modelLength = takeModelMeasurement(aModel, name1, name2, aMeasurement.getName());
 		double experimentalLength = takeExperimentalMarkerMeasurement(aMarkerData, name1, name2, aMeasurement.getName());
-		if(modelLength == rdMath::NAN || experimentalLength == rdMath::NAN) return rdMath::NAN;
+		if(rdMath::isNAN(modelLength) || rdMath::isNAN(experimentalLength)) return rdMath::NAN;
 		cout << "\tpair " << i << " (" << name1 << ", " << name2 << "): model = " << modelLength << ", experimental = " << experimentalLength << endl;
 		scaleFactor += experimentalLength / modelLength;
 	}

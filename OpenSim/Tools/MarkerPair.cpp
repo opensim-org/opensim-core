@@ -67,8 +67,18 @@ MarkerPair::MarkerPair(const MarkerPair &aMarkerPair) :
    Object(aMarkerPair),
 	_markerNames(_markerNamesProp.getValueStrArray())
 {
-	setupProperties();
+	setNull();
 	copyData(aMarkerPair);
+}
+//_____________________________________________________________________________
+/**
+ */
+MarkerPair::MarkerPair(const std::string &aName1, const std::string &aName2) :
+	_markerNames(_markerNamesProp.getValueStrArray())
+{
+	setNull();
+	_markerNames.append(aName1);
+	_markerNames.append(aName2);
 }
 //_____________________________________________________________________________
 /**
@@ -100,7 +110,6 @@ void MarkerPair::setNull()
 {
 	setupProperties();
 	setType("MarkerPair");
-	setName("");
 }
 //_____________________________________________________________________________
 /**

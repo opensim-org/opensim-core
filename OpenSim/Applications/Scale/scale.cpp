@@ -131,24 +131,24 @@ int main(int argc,char **argv)
 
 		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
 
-		if (!subject->isDefaultModelScaler())
+		if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
 		{
 			ModelScaler& scaler = subject->getModelScaler();
 			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
 		}
 		else
 		{
-			cout << "Scaling parameters not set. Model is not scaled." << endl;
+			cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
 		}
 
-		if (!subject->isDefaultMarkerPlacer())
+		if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply())
 		{
 			MarkerPlacer& placer = subject->getMarkerPlacer();
 			if(!placer.processModel(model, subject->getPathToSubject())) return 1;
 		}
 		else
 		{
-			cout << "Marker placement parameters not set. No markers have been moved." << endl;
+			cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
 		}
 
 		delete model;

@@ -47,6 +47,7 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API BodyScale : public Object  
 {
+	OPENSIM_DECLARE_DERIVED(BodyScale,Object);
 
 //=============================================================================
 // DATA
@@ -71,6 +72,12 @@ public:
 	void copyData(const BodyScale &aBodyScale);
 
 	const Array<std::string>& getAxisNames() const { return _axisNames; }
+	Array<std::string>& getAxisNames() { return _axisNames; }
+
+	void setAxisNames(const Array<std::string> &aAxisNames) { 
+		_axisNames = aAxisNames;
+		_axisNamesProp.setUseDefault(false);
+	}
 
 protected:
 

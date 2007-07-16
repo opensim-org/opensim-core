@@ -9,6 +9,7 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/PropertySet.h>
 #include <OpenSim/Common/Object.h>
@@ -25,6 +26,8 @@
 #include <OpenSim/Common/Range.h>
 #include <OpenSim/Common/Scale.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Units.h>
+#include <OpenSim/Common/rdMath.h>
 
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
@@ -80,6 +83,9 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 
+#include <OpenSim/Simulation/Model/BodyScale.h>
+#include <OpenSim/Simulation/Model/BodyScaleSet.h>
+
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
@@ -102,7 +108,6 @@
 #include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
-#include <OpenSim/Common/Units.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
@@ -112,20 +117,25 @@
 #include <OpenSim/Actuators/SimmDarrylMuscle.h>
 #include <OpenSim/Actuators/SimmZajacHill.h>
 
-#include <OpenSim/Tools/GenericModelMaker.h>
-#include <OpenSim/Tools/ModelScaler.h>
-#include <OpenSim/Tools/MarkerPlacer.h>
 #include <OpenSim/Tools/IKTrial.h>
 #include <OpenSim/Tools/IKTrialSet.h>
 
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
 #include <OpenSim/Tools/IKTask.h>
+#include <OpenSim/Tools/IKMarkerTask.h>
+#include <OpenSim/Tools/IKCoordinateTask.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Common/MarkerData.h>
 
 #include <OpenSim/Tools/IKSolverInterface.h>
+#include <OpenSim/Tools/MarkerPair.h>
+#include <OpenSim/Tools/MarkerPairSet.h>
 #include <OpenSim/Tools/Measurement.h>
 #include <OpenSim/Tools/MeasurementSet.h>
+
+#include <OpenSim/Tools/GenericModelMaker.h>
+#include <OpenSim/Tools/ModelScaler.h>
+#include <OpenSim/Tools/MarkerPlacer.h>
 
 #include <OpenSim/Tools/IKTool.h>
 #include <OpenSim/Tools/IKSolverImpl.h>
@@ -190,8 +200,8 @@ using namespace OpenSim;
 %pragma(java) jniclasscode=%{
   static {
       try{
-        System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
-        System.loadLibrary("osimSdfastEngine");	//to load sdfast based models
+        System.loadLibrary("osimJavaJNI_d");		// All OpenSim classes required for GUI operation.
+        System.loadLibrary("osimSdfastEngine_d");	//to load sdfast based models
       }
       catch(UnsatisfiedLinkError e){
            TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
@@ -291,6 +301,7 @@ using namespace OpenSim;
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/Property.h>
+%include <OpenSim/Common/PropertyStr.h>
 %template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
@@ -307,6 +318,8 @@ using namespace OpenSim;
 %include <OpenSim/Common/MaterialSet.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/Storage.h>
+%include <OpenSim/Common/Units.h>
+%include <OpenSim/Common/rdMath.h>
 
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/AbstractActuator.h>
@@ -382,6 +395,10 @@ using namespace OpenSim;
 %template(SetBodies) OpenSim::Set<OpenSim::AbstractBody>;
 %include <OpenSim/Simulation/Model/BodySet.h>
 
+%include <OpenSim/Simulation/Model/BodyScale.h>
+%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
+%include <OpenSim/Simulation/Model/BodyScaleSet.h>
+
 %include <OpenSim/Common/Function.h>
 %include <OpenSim/Common/Constant.h>
 
@@ -419,11 +436,7 @@ using namespace OpenSim;
 %include <OpenSim/Common/SimmPoint.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
-%include <OpenSim/Common/Units.h>
 
-%include <OpenSim/Tools/GenericModelMaker.h>
-%include <OpenSim/Tools/ModelScaler.h>
-%include <OpenSim/Tools/MarkerPlacer.h>
 %include <OpenSim/Tools/IKTrial.h>
 %template(SetIKTrial) OpenSim::Set<OpenSim::IKTrial>;
 %include <OpenSim/Tools/IKTrialSet.h>
@@ -431,14 +444,22 @@ using namespace OpenSim;
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
 %include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
+%include <OpenSim/Tools/IKMarkerTask.h>
+%include <OpenSim/Tools/IKCoordinateTask.h>
 %include <OpenSim/Tools/IKTaskSet.h>
 %include <OpenSim/Common/MarkerData.h>
 
 %include <OpenSim/Tools/IKSolverInterface.h>
 %include <OpenSim/Tools/IKTool.h>
+%include <OpenSim/Tools/MarkerPair.h>
+%template(SetMarkerPairs) OpenSim::Set<OpenSim::MarkerPair>;
+%include <OpenSim/Tools/MarkerPairSet.h>
 %include <OpenSim/Tools/Measurement.h>
 %template(SetMeasurements) OpenSim::Set<OpenSim::Measurement>;
 %include <OpenSim/Tools/MeasurementSet.h>
+%include <OpenSim/Tools/GenericModelMaker.h>
+%include <OpenSim/Tools/ModelScaler.h>
+%include <OpenSim/Tools/MarkerPlacer.h>
 %include <OpenSim/Tools/IKSolverImpl.h>
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/ScaleTool.h>

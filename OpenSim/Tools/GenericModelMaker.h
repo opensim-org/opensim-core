@@ -67,8 +67,8 @@ protected:
 	PropertyStr _fileNameProp;
 	std::string &_fileName;
 
-	PropertyObj _markerSetProp;
-	MarkerSet &_markerSet;
+	PropertyStr _markerSetFileNameProp;
+	std::string &_markerSetFileName;
 
 //=============================================================================
 // METHODS
@@ -107,9 +107,15 @@ public:
 		_fileNameProp.setUseDefault(false);
 	}
 
-	MarkerSet& getMarkerSet()
+	const std::string& getMarkerSetFileName() const
 	{
-		return _markerSet;
+		return _markerSetFileName;
+	}
+
+	void setMarkerSetFileName(const std::string& aFileName)
+	{
+		_markerSetFileName = aFileName;
+		_markerSetFileNameProp.setUseDefault(false);
 	}
 
 private:

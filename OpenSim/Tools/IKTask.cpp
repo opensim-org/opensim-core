@@ -41,9 +41,11 @@ using namespace OpenSim;
  * Default constructor.
  */
 IKTask::IKTask() :
+	_apply(_applyProp.getValueBool()),
    _weight(_weightProp.getValueDbl())
 {
 	setType("IKTask");
+	_apply = true;
 	_weight = 0;
 	setupProperties();
 }
@@ -54,8 +56,10 @@ IKTask::IKTask() :
  */
 IKTask::IKTask(const IKTask &aIKTask) :
    Object(aIKTask),
+	_apply(_applyProp.getValueBool()),
    _weight(_weightProp.getValueDbl())
 {
+	_apply = aIKTask._apply;
 	_weight = aIKTask._weight;
 	setupProperties();
 }
@@ -66,6 +70,10 @@ IKTask::IKTask(const IKTask &aIKTask) :
  */
 void IKTask::setupProperties()
 {
+	_applyProp.setComment("Whether or not this task will be used during inverse kinematics solve."); 
+	_applyProp.setName("apply");
+	_propertySet.append(&_applyProp);
+
 	_weightProp.setComment("Weight given to a marker or coordinate for solving inverse kinematics problems."); 
 	_weightProp.setName("weight");
 	_propertySet.append(&_weightProp);
@@ -83,6 +91,7 @@ void IKTask::setupProperties()
 IKTask& IKTask::operator=(const IKTask &aIKTask)
 {
 	Object::operator=(aIKTask);
+	_apply = aIKTask._apply;
 	_weight = aIKTask._weight;
 	return *this;
 }

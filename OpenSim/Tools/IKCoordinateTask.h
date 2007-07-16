@@ -17,6 +17,7 @@ namespace OpenSim {
 
 class OSIMTOOLS_API IKCoordinateTask : public IKTask
 {
+	OPENSIM_DECLARE_DERIVED(IKCoordinateTask, IKTask);
 protected:
 	PropertyBool _fromFileProp;
 	bool &_fromFile;
@@ -34,8 +35,13 @@ public:
 #endif
 
 	bool getFromFile() { return _fromFile; }
+	void setFromFile(bool fromFile) { _fromFile = fromFile; }
+
 	bool getValueUseDefault() const { return _valueProp.getUseDefault(); }
+	void setValueUseDefault(bool useDefault) { _valueProp.setUseDefault(useDefault); }
+
 	double getValue() const { return _value; }
+	void setValue(double value) { _value = value; _valueProp.setUseDefault(false); }
 
 private:
 	void setupProperties();
