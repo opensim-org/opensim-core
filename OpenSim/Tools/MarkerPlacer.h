@@ -140,8 +140,8 @@ public:
 		_applyProp.setUseDefault(false); 
 	}
 
-	const std::string &getStaticPoseFilename() const { return _markerFileName; }
-	void setStaticPoseFilename(const std::string &aFileName) 
+	const std::string &getStaticPoseFileName() const { return _markerFileName; }
+	void setStaticPoseFileName(const std::string &aFileName) 
 	{
 		_markerFileName = aFileName;
 		_markerFileNameProp.setUseDefault(false);

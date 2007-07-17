@@ -57,7 +57,7 @@ private:
 public:
 	virtual ~IKTool();
 	IKTool();
-	IKTool(const std::string &aFileName, Model* guiModel=0);
+	IKTool(const std::string &aFileName, Model* guiModel=0) SWIG_DECLARE_EXCEPTION;
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
 
@@ -81,10 +81,9 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	IKTrialSet& getIKTrialSet()
-	{
-		return _IKTrialSet;
-	}
+	IKTrialSet& getIKTrialSet() { return _IKTrialSet; }
+
+	IKTaskSet& getIKTaskSet() { return _ikTaskSet; }
 
 	//--------------------------------------------------------------------------
 	// INTERFACE

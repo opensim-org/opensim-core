@@ -133,26 +133,15 @@ public:
 	bool processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage);
 
 	/*===== Set and Get ===============*/
-	std::string getMarkerDataFilename() const
-	{
-		return _markerFileName;
-	}
-	std::string getOutputMotionFilename() const
-	{
-		return _outputMotionFileName;
-	}
-	void setOutputMotionFilename(const std::string& aOutputMotionFilename)
-	{
-		_outputMotionFileName = aOutputMotionFilename;
-	}
-	const std::string& getCoordinateFileName() const
-	{
-		return _coordinateFileName;
-	}
-	void setCoordinateFileName(const std::string& aFilename)
-	{
-		_coordinateFileName = aFilename;
-	}
+	const std::string& getMarkerDataFileName() const { return _markerFileName; }
+	void setMarkerDataFileName(const std::string& aMarkerFileName) { _markerFileName = aMarkerFileName; }
+
+	const std::string& getOutputMotionFileName() const { return _outputMotionFileName; }
+	void setOutputMotionFileName(const std::string& aOutputMotionFileName) { _outputMotionFileName = aOutputMotionFileName; }
+
+	const std::string& getCoordinateFileName() const { return _coordinateFileName; }
+	void setCoordinateFileName(const std::string& aFileName) { _coordinateFileName = aFileName; }
+
 	void setOptimizerAlgorithm(const std::string& aOptimizerAlgorithm) { _optimizerAlgorithm = aOptimizerAlgorithm; }
 	std::string getOptimizerAlgorithm() const { return _optimizerAlgorithm; }
 

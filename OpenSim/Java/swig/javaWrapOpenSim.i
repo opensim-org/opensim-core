@@ -193,6 +193,10 @@ using namespace OpenSim;
   
 %}
 
+%typemap(javacode) OpenSim::MarkerData %{
+  public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
+%}
+
 %pragma(java) jniclassclassmodifiers="public class"
 
 %pragma(java) jniclassimports="import org.opensim.utils.TheApp;"
