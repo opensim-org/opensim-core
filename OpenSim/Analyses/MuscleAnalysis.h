@@ -42,14 +42,15 @@ class OSIMANALYSES_API MuscleAnalysis : public Analysis
 // DATA
 //=============================================================================
 public:
-	/** Struct for pairing moment arms and moments with their corresponding
-	generalized coordinate. */
+#ifndef SWIG
+	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
+	// ASSOCIATE GENERALIZED COORDINATE
 	typedef struct {
 		AbstractCoordinate *q;
 		Storage *momentArmStore;
 		Storage *momentStore;
 	}  StorageCoordinatePair;
-
+#endif
 private:
 
 	/** List of muscles for which to compute moment arms. */
@@ -87,10 +88,10 @@ private:
 
 	/** Work array for holding the list of coordinates. */
 	Array<std::string> _coordinateList;
-
+#ifndef SWIG
 	/** Array of active storage and coordinate pairs. */
 	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
-
+#endif
 	/** Array of active muscles. */
 	ArrayPtrs<AbstractMuscle> _muscleArray;
 
@@ -137,7 +138,8 @@ public:
 	Storage* getPassiveFiberForceAlongTendonStorage() const { return _passiveFiberForceAlongTendonStore; }
 	void setMuscles(Array<std::string>& aMuscles);
 	void setCoordinates(Array<std::string>& aCoordinates);
-	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
+
+	//const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

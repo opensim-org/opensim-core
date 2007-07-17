@@ -75,6 +75,7 @@ private:
 
 protected:
 	ArrayPtrs<Storage> _storageList;
+	bool					 _writeResultsToFiles;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -109,6 +110,7 @@ public:
 	// COLUMN LABLES
 	void setColumnLabels(const Array<std::string> &aLabels);
 	const Array<std::string> &getColumnLabels() const;
+
 #ifndef SWIG
 	// These symbols are swigged out because they are not defined and never used!
 	// STORAGE INTERVAL
@@ -116,6 +118,10 @@ public:
 	int getStorageInterval() const;
 #endif
 	virtual ArrayPtrs<Storage>& getStorageList();
+	void setWriteResultsToFiles(const bool writeToFiles)
+	{
+		_writeResultsToFiles=writeToFiles;
+	}
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

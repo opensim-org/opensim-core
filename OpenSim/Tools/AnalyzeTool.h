@@ -86,7 +86,8 @@ private:
 	/** Storage for the model pseudo states. */
 	Storage *_pseudoStore;
 
-
+	/** Whether to write result storages to files. */
+	bool _printResultFiles;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -131,7 +132,7 @@ public:
 	void loadControlsStatesPseudoStatesExternalLoadsFromFiles();
 	void verifyControlsStatesPseudoStates();
 	double getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Array<double> &rP);
-
+	void setPrintResultFiles(bool aToWrite);
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------

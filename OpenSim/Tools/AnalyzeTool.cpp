@@ -49,7 +49,8 @@ AnalyzeTool::AnalyzeTool() :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_printResultFiles(true)
 {
 	setType("AnalyzeTool");
 	setNull();
@@ -75,7 +76,8 @@ AnalyzeTool::AnalyzeTool(const string &aFileName) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_printResultFiles(true)
 {
 	setType("AnalyzeTool");
 	setNull();
@@ -107,7 +109,8 @@ AnalyzeTool::AnalyzeTool(Model *aModel) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_printResultFiles(true)
 {
 	setType("AnalyzeTool");
 	setNull();
@@ -180,7 +183,8 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	_printResultFiles(true)
 {
 	setType("AnalyzeTool");
 	setNull();
@@ -222,6 +226,8 @@ setNull()
 	_controlSet = NULL;
 	_statesStore = NULL;
 	_pseudoStore = NULL;
+
+	_printResultFiles = true;
 }
 //_____________________________________________________________________________
 /**
@@ -338,7 +344,7 @@ operator=(const AnalyzeTool &aTool)
 	_controlSet = aTool._controlSet;
 	_statesStore = aTool._statesStore;
 	_pseudoStore = aTool._pseudoStore;
-
+	_printResultFiles = aTool._printResultFiles;
 	return(*this);
 }
 
@@ -574,6 +580,7 @@ verifyControlsStatesPseudoStates()
 		}
 	}
 	// States
+	
 	int NY = _statesStore->getSmallestNumberOfStates();
 	if(NY!=ny) {
 		string msg = "AnalyzeTool.verifyControlsStatesPseudoStates: ERROR- Number of states in " + _statesFileName;
@@ -600,6 +607,16 @@ verifyControlsStatesPseudoStates()
 			"states and pseudo-states storage should be the same, but are not.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Turn On/Off writing result storages to files.
+ */
+void AnalyzeTool::
+setPrintResultFiles(bool aToWrite)
+{
+	_printResultFiles=aToWrite;
 }
 
 //_____________________________________________________________________________
@@ -715,10 +732,14 @@ void AnalyzeTool::run()
 
 		// Begin
 		if(i==iInitial) {
+			if (_solveForEquilibriumForAuxiliaryStates)
+				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// End
 		} else if(i==iFinal) {
+			if (_solveForEquilibriumForAuxiliaryStates)
+				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// Step
@@ -736,6 +757,7 @@ void AnalyzeTool::run()
 	}
 
 	// PRINT RESULTS
-	printResults(getName(),getResultsDir()); // this will create results directory if necessary
+	if (_printResultFiles)
+		printResults(getName(),getResultsDir()); // this will create results directory if necessary
 	IO::chDir(saveWorkingDirectory);
 }

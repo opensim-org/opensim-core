@@ -66,7 +66,6 @@
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/GeneralizedForces.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
@@ -312,14 +311,11 @@ using namespace OpenSim;
 %include <OpenSim/Common/PropertySet.h>
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-%include <OpenSim/Common/Material.h>
 %include <OpenSim/Common/VisibleProperties.h>
 %include <OpenSim/Common/Transform.h>
 %include <OpenSim/Common/Geometry.h>
 %include <OpenSim/Common/VisibleObject.h>
 %include <OpenSim/Common/Set.h>
-%template(SetMaterials) OpenSim::Set<OpenSim::Material>;
-%include <OpenSim/Common/MaterialSet.h>
 %include <OpenSim/Common/StateVector.h>
 %include <OpenSim/Common/Storage.h>
 %include <OpenSim/Common/Units.h>
@@ -347,10 +343,6 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Control/ControlLinear.h>
 %include <OpenSim/Simulation/Control/Controller.h>
 
-%include <OpenSim/Simulation/Integrator/Integrand.h>
-%include <OpenSim/Simulation/Model/ModelIntegrand.h>
-%include <OpenSim/Simulation/Integrator/RKF.h>
-%include <OpenSim/Simulation/Integrator/IntegRKF.h>
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
 %include <OpenSim/Analyses/osimAnalysesDLL.h>
@@ -367,7 +359,6 @@ using namespace OpenSim;
 %include <OpenSim/Analyses/IndAcc.h>
 %include <OpenSim/Analyses/GeneralizedForces.h>
 %include <OpenSim/Analyses/MuscleAnalysis.h>
-%include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 %template(ArrayBool) OpenSim::Array<bool>;
 %template(ArrayDouble) OpenSim::Array<double>;

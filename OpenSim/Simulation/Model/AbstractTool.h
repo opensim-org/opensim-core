@@ -164,6 +164,10 @@ public:
 	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void addAnalysisSetToModel();
 
+	void solveForEquilibrium(bool aSolve)
+	{
+		_solveForEquilibriumForAuxiliaryStates=aSolve;
+	}
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
