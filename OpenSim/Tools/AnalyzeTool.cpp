@@ -17,7 +17,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "ForwardTool.h"
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Analyses/MomentArmAnalysis.h>
+//#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -124,11 +124,11 @@ AnalyzeTool::AnalyzeTool(Model *aModel) :
 		muscleAnalysis->setOn(false);
 		aModel->addAnalysis(muscleAnalysis);
 	}
-	if (analysisSet->getIndex("MomentArmAnalysis")==-1){
-		MomentArmAnalysis* momentArmAnalysis = new MomentArmAnalysis(aModel);
-		momentArmAnalysis->setOn(false);
-		aModel->addAnalysis(momentArmAnalysis);
-	}
+	//if (analysisSet->getIndex("MomentArmAnalysis")==-1){
+	//	MomentArmAnalysis* momentArmAnalysis = new MomentArmAnalysis(aModel);
+	//	momentArmAnalysis->setOn(false);
+	//	aModel->addAnalysis(momentArmAnalysis);
+	//}
 }
 
 //_____________________________________________________________________________
