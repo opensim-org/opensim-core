@@ -25,12 +25,6 @@
 
 namespace OpenSim {
 
-// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
-// ASSOCIATE GENERALIZED COORDINATE
-typedef struct {
-	AbstractCoordinate *q;
-	Storage *store;
-}  StorageCoordinatePair;
 
 //=============================================================================
 //=============================================================================
@@ -47,15 +41,23 @@ class OSIMANALYSES_API MomentArmAnalysis : public Analysis
 // DATA
 //=============================================================================
 private:
-	/** List of muscles for which to compute moment arms. */
+
+	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
+	// ASSOCIATED GENERALIZED COORDINATE
+	typedef struct {
+		AbstractCoordinate *q;
+		Storage *store;
+	}  StorageCoordinatePair;
+
+	/** List of muscles for which to compute moment arms.  The key word "all" 
+	is used to indicate that the analysis should be run for all muscles. */
 	PropertyStrArray _muscleListProp;
 
 	/** List of generalized coordinates for which to compute moment arms. */
 	PropertyStrArray _coordinateListProp;
 
-	/** Work array for holding the list of muscles.  This is used
-	in the event the user-specified muscle list is empty, which implies
-	that all muscles should be analyzed. */
+	/** Work array for holding the list of muscles.  This array differs from
+	the property above in that the key work "all" e */
 	Array<std::string> _muscleList;
 
 	/** Work array for holding the list of coordinates. */

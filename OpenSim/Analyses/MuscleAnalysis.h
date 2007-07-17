@@ -12,6 +12,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 
 
 #ifdef SWIG
@@ -20,17 +21,21 @@
 		#define OSIMANALYSES_API
 	#endif
 #endif
+
+
+
+namespace OpenSim { 
+
+
 //=============================================================================
 //=============================================================================
 /**
- * A class for recording the muscle actuator information for a model
- * during a simulation.
+ * A class for recording and computting basic quantities (length, shortening
+ * velocity, tendon length, ...) for muscles during a simulation.
  *
  * @author Katherine Holzbaur, Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMANALYSES_API MuscleAnalysis : public Analysis 
 {
 //=============================================================================
@@ -38,7 +43,19 @@ class OSIMANALYSES_API MuscleAnalysis : public Analysis
 //=============================================================================
 private:
 
-protected:
+	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
+	// ASSOCIATE GENERALIZED COORDINATE
+	typedef struct {
+		AbstractCoordinate *q;
+		Storage *store;
+	}  StorageCoordinatePair;
+
+	/** List of muscles for which to compute moment arms. */
+	PropertyStrArray _muscleListProp;
+
+	/** List of generalized coordinates for which to compute moment arms. */
+	PropertyStrArray _coordinateListProp;
+
 	/** Pennation angle storage. */
 	Storage *_pennationAngleStore;
 	/** Muscle-tendon length storage. */
@@ -62,6 +79,19 @@ protected:
 	/** Passive force in the muscle fibers along tendon. */
 	Storage *_passiveFiberForceAlongTendonStore;
 
+	// FOR MOMENT ARMS ----------------
+	/** Work array for holding the list of muscles.  This array */
+	Array<std::string> _muscleList;
+
+	/** Work array for holding the list of coordinates. */
+	Array<std::string> _coordinateList;
+
+	/** Array of active storage and coordinate pairs. */
+	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
+
+	/** Array of active muscles. */
+	ArrayPtrs<AbstractMuscle> _muscleArray;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -74,10 +104,11 @@ public:
 	virtual ~MuscleAnalysis();
 private:
 	void setNull();
+	void setupProperties();
 	void constructDescription();
+	void allocateStorageObjects();
+	void updateStorageObjects();
 	void constructColumnLabels();
-	void allocateStorage();
-	void deleteStorage();
 
 public:
 	//--------------------------------------------------------------------------
@@ -102,6 +133,9 @@ public:
 	Storage* getPassiveFiberForceStorage() const { return _passiveFiberForceStore; }
 	Storage* getActiveFiberForceAlongTendonStorage() const { return _activeFiberForceAlongTendonStore; }
 	Storage* getPassiveFiberForceAlongTendonStorage() const { return _passiveFiberForceAlongTendonStore; }
+	void setMuscles(Array<std::string>& aMuscles);
+	void setCoordinates(Array<std::string>& aCoordinates);
+	const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS

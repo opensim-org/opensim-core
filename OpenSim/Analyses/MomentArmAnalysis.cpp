@@ -55,9 +55,6 @@ MomentArmAnalysis::MomentArmAnalysis(Model *aModel) :
 	// CHECK MODEL
 	if(_model==NULL) return;
 
-	// NULL VALUES
-	_muscleArray.setMemoryOwner(false);
-
 	// STORAGE OBJECTS
 	allocateStorageObjects();
 }
@@ -179,7 +176,7 @@ allocateStorageObjects()
 {
 	if(_model==NULL) return;
 
-	// CLEAR EXISTING ARRAYS
+	// CLEAR EXISTING WORK ARRAYS
 	_storageList.setMemoryOwner(true);
 	_storageList.setSize(0);
 	_momentArmStorageArray.setMemoryOwner(true);
@@ -438,7 +435,6 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 
 	// RESET STORAGE
 	int size = _momentArmStorageArray.getSize();
-	if(size<=0) return(0);
 	for(int i=0;i<size;i++) {
 		_momentArmStorageArray.get(i)->store->reset(aT);
 	}
