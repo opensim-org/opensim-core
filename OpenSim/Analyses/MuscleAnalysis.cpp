@@ -188,13 +188,20 @@ allocateStorageObjects()
 	_muscleArray.setMemoryOwner(false);
 	_muscleArray.setSize(0);
 
-	// FOR MOMENT ARMS
+	// FOR MOMENT ARMS AND MOMEMTS
 	CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
 	int nq = qSet->getSize();
 	Storage *store;
 	for(int i=0;i<nq;i++) {
 		AbstractCoordinate *q = qSet->get(i);
 		string name = "MomentArm_" + q->getName();
+		store = new Storage(1000,name);
+		store->setDescription(getDescription());
+		_storageList.append(store);
+	}
+	for(int i=0;i<nq;i++) {
+		AbstractCoordinate *q = qSet->get(i);
+		string name = "Moment_" + q->getName();
 		store = new Storage(1000,name);
 		store->setDescription(getDescription());
 		_storageList.append(store);
@@ -297,7 +304,7 @@ updateStorageObjects()
 		}
 	}
 	// POPULATE ACTIVE MOMENT ARM ARRAY
-	Array<string> tmpCoordinateList("");
+	Array<string> tmpCoordinateList("");  // For making sure the coordinates in the list really exist.
 	_momentArmStorageArray.setSize(0);
 	nActiveQ = _coordinateList.getSize();
 	for(int i=0; i<nActiveQ; i++) {
@@ -307,7 +314,8 @@ updateStorageObjects()
 			if(name == q->getName()) {
 				StorageCoordinatePair *pair = new StorageCoordinatePair();
 				pair->q = q;
-				pair->store = _storageList[j];
+				pair->momentArmStore = _storageList[j];
+				pair->momentStore = _storageList[j+nq];
 				_momentArmStorageArray.append(pair);
 				tmpCoordinateList.append(q->getName());
 			}
@@ -500,19 +508,22 @@ record(double aT,double *aX,double *aY)
 
 	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
 	AbstractCoordinate *q = NULL;
-	Storage *store = NULL;
+	Storage *maStore=NULL, *mStore=NULL;
 	int nq = _momentArmStorageArray.getSize();
-	Array<double> ma(0.0,nm);
+	Array<double> ma(0.0,nm),m(0.0,nm);
 	for(int i=0; i<nq; i++) {
 
 		q = _momentArmStorageArray[i]->q;
-		store = _momentArmStorageArray[i]->store;
+		maStore = _momentArmStorageArray[i]->momentArmStore;
+		mStore = _momentArmStorageArray[i]->momentStore;
 
 		// LOOP OVER MUSCLES
 		for(int j=0; j<nm; j++) {
 			ma[j] = _muscleArray[j]->computeMomentArm(*q);
+			m[j] = ma[j] * force[j];
 		}
-		store->append(aT,nm,&ma[0]);
+		maStore->append(aT,nm,&ma[0]);
+		mStore->append(aT,nm,&m[0]);
 	}
 
 	return(0);
@@ -676,8 +687,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {
-		string fileName = prefix + _momentArmStorageArray.get(i)->store->getName();
-		Storage::printResult(_momentArmStorageArray.get(i)->store,fileName,aDir,aDT,aExtension);
+		string fileName = prefix + _momentArmStorageArray.get(i)->momentArmStore->getName();
+		Storage::printResult(_momentArmStorageArray.get(i)->momentArmStore,fileName,aDir,aDT,aExtension);
+		fileName = prefix + _momentArmStorageArray.get(i)->momentStore->getName();
+		Storage::printResult(_momentArmStorageArray.get(i)->momentStore,fileName,aDir,aDT,aExtension);
 	}
 
 	return(0);

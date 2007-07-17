@@ -41,14 +41,16 @@ class OSIMANALYSES_API MuscleAnalysis : public Analysis
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
-	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
-	// ASSOCIATE GENERALIZED COORDINATE
+public:
+	/** Struct for pairing moment arms and moments with their corresponding
+	generalized coordinate. */
 	typedef struct {
 		AbstractCoordinate *q;
-		Storage *store;
+		Storage *momentArmStore;
+		Storage *momentStore;
 	}  StorageCoordinatePair;
+
+private:
 
 	/** List of muscles for which to compute moment arms. */
 	PropertyStrArray _muscleListProp;
@@ -79,7 +81,7 @@ private:
 	/** Passive force in the muscle fibers along tendon. */
 	Storage *_passiveFiberForceAlongTendonStore;
 
-	// FOR MOMENT ARMS ----------------
+	// FOR MOMENT ARMS AND MOMENTS----------------
 	/** Work array for holding the list of muscles.  This array */
 	Array<std::string> _muscleList;
 
