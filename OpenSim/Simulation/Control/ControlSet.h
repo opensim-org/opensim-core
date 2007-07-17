@@ -40,8 +40,6 @@
 #include <OpenSim/Common/Storage.h>
 
 
-template class OSIMSIMULATION_API OpenSim::Set<OpenSim::Control>;
-
 
 //=============================================================================
 //=============================================================================

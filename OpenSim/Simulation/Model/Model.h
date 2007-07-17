@@ -271,19 +271,25 @@ public:
 	// ACTUATORS
 	//--------------------------------------------------------------------------
 	ActuatorSet* getActuatorSet();
+#ifndef SWIG
 	const ActuatorSet* getActuatorSet() const;
+#endif
 
 	//--------------------------------------------------------------------------
 	// CONTACT
 	//--------------------------------------------------------------------------
 	ContactForceSet* getContactSet();
+#ifndef SWIG
 	const ContactForceSet* getContactSet() const;
+#endif
 
 	//--------------------------------------------------------------------------
 	// INTEGRATION CALLBACKS
 	//--------------------------------------------------------------------------
 	virtual IntegCallbackSet* getIntegCallbackSet();
+#ifndef SWIG
 	virtual const IntegCallbackSet* getIntegCallbackSet() const;
+#endif
 	virtual void addIntegCallback(IntegCallback *aCallback);
 	virtual void removeIntegCallback(IntegCallback *aCallback);
 
@@ -291,14 +297,18 @@ public:
 	// DERIVATIVE CALLBACKS
 	//--------------------------------------------------------------------------
 	virtual DerivCallbackSet *getDerivCallbackSet();
+#ifndef SWIG
 	virtual const DerivCallbackSet *getDerivCallbackSet() const;
+#endif
 	virtual void addDerivCallback(DerivCallback *aCallback);
 
 	//--------------------------------------------------------------------------
 	// ANALYSES
 	//--------------------------------------------------------------------------
 	virtual AnalysisSet* getAnalysisSet();
+#ifndef SWIG
 	virtual const AnalysisSet* getAnalysisSet() const;
+#endif
 	virtual void addAnalysis(Analysis *aAnalysis);
 
 	//--------------------------------------------------------------------------

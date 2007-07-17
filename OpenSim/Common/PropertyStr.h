@@ -80,7 +80,9 @@ public:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	PropertyStr& operator=(const PropertyStr &aProperty);
+#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET

@@ -164,7 +164,9 @@ public:
 	// BODIES
 	//--------------------------------------------------------------------------
 	virtual BodySet* getBodySet() { return &_bodySet; }
+#ifndef SWIG
 	virtual const BodySet* getBodySet() const { return &_bodySet; }
+#endif
 	virtual AbstractBody& getGroundBody() const = 0;
 	virtual AbstractBody* getLeafBody(AbstractJoint* aJoint) const { return NULL; }
 	virtual AbstractWrapObject* getWrapObject(const std::string& aName) const;
@@ -173,13 +175,17 @@ public:
 	// JOINTS
 	//--------------------------------------------------------------------------
 	virtual JointSet* getJointSet() { return &_jointSet; }
+#ifndef SWIG
 	virtual const JointSet* getJointSet() const { return &_jointSet; }
+#endif
 	
 	//--------------------------------------------------------------------------
 	// COORDINATES
 	//--------------------------------------------------------------------------
 	virtual CoordinateSet* getCoordinateSet() { return &_coordinateSet; }
+#ifndef SWIG
 	virtual const CoordinateSet* getCoordinateSet() const { return &_coordinateSet; }
+#endif
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet) = 0;
 	virtual void getUnlockedCoordinates(CoordinateSet& aUnlockedCoordinates) const = 0;
 	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) = 0;
@@ -188,13 +194,17 @@ public:
 	// SPEEDS
 	//--------------------------------------------------------------------------
 	virtual SpeedSet* getSpeedSet() { return &_speedSet; }
+#ifndef SWIG
 	virtual const SpeedSet* getSpeedSet() const { return &_speedSet; }
+#endif
 
 	//--------------------------------------------------------------------------
 	// MARKERS
 	//--------------------------------------------------------------------------
 	virtual MarkerSet* getMarkerSet() { return &_markerSet; }
+#ifndef SWIG
 	virtual const MarkerSet* getMarkerSet() const { return &_markerSet; }
+#endif
 	virtual void writeMarkerFile(const std::string& aFileName) const;
 	virtual int replaceMarkerSet(MarkerSet& aMarkerSet);
 	virtual void updateMarkerSet(MarkerSet& aMarkerSet);

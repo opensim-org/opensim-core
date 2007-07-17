@@ -68,10 +68,14 @@ public:
 	virtual ~BodyScale();
 	virtual Object* copy() const;
 
+#ifndef SWIG
 	BodyScale& operator=(const BodyScale &aBodyScale);
+#endif
 	void copyData(const BodyScale &aBodyScale);
 
+#ifndef SWIG
 	const Array<std::string>& getAxisNames() const { return _axisNames; }
+#endif
 	Array<std::string>& getAxisNames() { return _axisNames; }
 
 	void setAxisNames(const Array<std::string> &aAxisNames) { 

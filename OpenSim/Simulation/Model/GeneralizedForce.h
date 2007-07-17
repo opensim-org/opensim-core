@@ -108,7 +108,9 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	GeneralizedForce& operator=(const GeneralizedForce &aGenForce);
+#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET

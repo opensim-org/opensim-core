@@ -655,10 +655,12 @@ T* get(const std::string &aName)
 {
 	return( _objects.get(aName) );
 }
+#ifndef SWIG
 const T* get(const std::string &aName) const
 {
 	return( _objects.get(aName) );
 }
+#endif
 //_____________________________________________________________________________
 /**
  * Get names of objects in the set.

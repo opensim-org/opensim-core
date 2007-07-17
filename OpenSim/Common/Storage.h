@@ -40,8 +40,6 @@
 
 const int Storage_DEFAULT_CAPACITY = 256;
 
-template class OSIMCOMMON_API OpenSim::Array<OpenSim::StateVector>;
-
 //=============================================================================
 //=============================================================================
 /**
