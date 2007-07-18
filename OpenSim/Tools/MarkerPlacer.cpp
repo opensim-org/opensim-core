@@ -136,6 +136,7 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 	_outputMotionFileName = aMarkerPlacer._outputMotionFileName;
 	_maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
 	_optimizerAlgorithm = aMarkerPlacer._optimizerAlgorithm;
+	_printResultFiles = aMarkerPlacer._printResultFiles;
 }
 
 //_____________________________________________________________________________
@@ -149,6 +150,8 @@ void MarkerPlacer::setNull()
 	_apply = true;
 	_coordinateFileName = "";
 	_optimizerAlgorithm = "ipopt";
+
+	_printResultFiles = true;
 }
 
 //_____________________________________________________________________________
@@ -294,39 +297,41 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	 */
 	moveModelMarkersToPose(*aModel, staticPose);
 
-	/* Write output files, if names specified by the user. */
-	SimmFileWriter *sfw = new SimmFileWriter(aModel);
-	if (sfw)
-	{
-		if (!_outputJointFileNameProp.getUseDefault())
-			sfw->writeJointFile(aPathToSubject + _outputJointFileName);
+	if(_printResultFiles) {
+		/* Write output files, if names specified by the user. */
+		SimmFileWriter *sfw = new SimmFileWriter(aModel);
+		if (sfw)
+		{
+			if (!_outputJointFileNameProp.getUseDefault())
+				sfw->writeJointFile(aPathToSubject + _outputJointFileName);
 
-		if (!_outputMuscleFileNameProp.getUseDefault())
-			sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
+			if (!_outputMuscleFileNameProp.getUseDefault())
+				sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
 
-		delete sfw;
-	}
+			delete sfw;
+		}
 
-	if (!_outputModelFileNameProp.getUseDefault())
-	{
-		aModel->print(aPathToSubject + _outputModelFileName);
-		cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
-	}
+		if (!_outputModelFileNameProp.getUseDefault())
+		{
+			aModel->print(aPathToSubject + _outputModelFileName);
+			cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
+		}
 
-	if (!_outputMarkerFileNameProp.getUseDefault())
-	{
-		aModel->getDynamicsEngine().writeMarkerFile(aPathToSubject + _outputMarkerFileName);
-		cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
-	}
+		if (!_outputMarkerFileNameProp.getUseDefault())
+		{
+			aModel->getDynamicsEngine().writeMarkerFile(aPathToSubject + _outputMarkerFileName);
+			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
+		}
 
-	if (!_outputMotionFileNameProp.getUseDefault())
-	{
-		Storage motionData(outputStorage);
-		aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
-		motionData.setWriteSIMMHeader(true);
-		motionData.setName("static pose");
-		motionData.print(aPathToSubject + _outputMotionFileName, 
-			"w", "File generated from solving marker data for model "+aModel->getName());
+		if (!_outputMotionFileNameProp.getUseDefault())
+		{
+			Storage motionData(outputStorage);
+			aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
+			motionData.setWriteSIMMHeader(true);
+			motionData.setName("static pose");
+			motionData.print(aPathToSubject + _outputMotionFileName, 
+				"w", "File generated from solving marker data for model "+aModel->getName());
+		}
 	}
 
 	return true;

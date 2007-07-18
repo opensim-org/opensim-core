@@ -110,6 +110,9 @@ protected:
 	PropertyStr _optimizerAlgorithmProp;
 	std::string &_optimizerAlgorithm;
 
+	// Whether or not to write write to the designated output files (GUI will set this to false)
+	bool _printResultFiles;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -205,13 +208,7 @@ public:
 		_outputMotionFileNameProp.setUseDefault(false);
 	}
 
-	void clearOutputFileNames() {
-		_outputModelFileNameProp.clearValue();
-		_outputJointFileNameProp.clearValue();
-		_outputMuscleFileNameProp.clearValue();
-		_outputMarkerFileNameProp.clearValue();
-		_outputMotionFileNameProp.clearValue();
-	}
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 private:
 	void setNull();

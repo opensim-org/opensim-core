@@ -136,6 +136,7 @@ void ModelScaler::copyData(const ModelScaler &aModelScaler)
 	_outputMuscleFileName = aModelScaler._outputMuscleFileName;
 	_outputModelFileName = aModelScaler._outputModelFileName;
 	_outputScaleFileName = aModelScaler._outputScaleFileName;
+	_printResultFiles = aModelScaler._printResultFiles;
 }
 
 //_____________________________________________________________________________
@@ -147,6 +148,8 @@ void ModelScaler::setNull()
 	setType("ModelScaler");
 
 	_apply = true;
+
+	_printResultFiles = true;
 }
 
 //_____________________________________________________________________________
@@ -336,29 +339,31 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 		/* Now scale the model. */
 		aModel->scale(theScaleSet, aSubjectMass, _preserveMassDist);
 
-		/* Write output files, if names specified by the user. */
-		SimmFileWriter *sfw = new SimmFileWriter(aModel);
-		if (sfw)
-		{
-			if (!_outputJointFileNameProp.getUseDefault())
-				sfw->writeJointFile(_outputJointFileName);
+		if(_printResultFiles) {
+			/* Write output files, if names specified by the user. */
+			SimmFileWriter *sfw = new SimmFileWriter(aModel);
+			if (sfw)
+			{
+				if (!_outputJointFileNameProp.getUseDefault())
+					sfw->writeJointFile(_outputJointFileName);
 
-			if (!_outputMuscleFileNameProp.getUseDefault())
-				sfw->writeMuscleFile(_outputMuscleFileName);
+				if (!_outputMuscleFileNameProp.getUseDefault())
+					sfw->writeMuscleFile(_outputMuscleFileName);
 
-			delete sfw;
-		}
+				delete sfw;
+			}
 
-		if (!_outputModelFileNameProp.getUseDefault())
-		{
-			if (aModel->print(_outputModelFileName))
-				cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
-		}
+			if (!_outputModelFileNameProp.getUseDefault())
+			{
+				if (aModel->print(_outputModelFileName))
+					cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
+			}
 
-		if (!_outputScaleFileNameProp.getUseDefault())
-		{
-			if (theScaleSet.print(_outputScaleFileName))
-				cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
+			if (!_outputScaleFileNameProp.getUseDefault())
+			{
+				if (theScaleSet.print(_outputScaleFileName))
+					cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
+			}
 		}
 	}
 	catch (Exception &x)

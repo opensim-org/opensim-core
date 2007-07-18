@@ -149,6 +149,11 @@ public:
 		_pathToSubject=aPath;
 	}
 	//std::string getParentDirectory(const std::string& fileName);
+	
+	void setPrintResultFiles(bool aToWrite) { 
+		_modelScaler.setPrintResultFiles(aToWrite);
+		_markerPlacer.setPrintResultFiles(aToWrite);
+	}
 
 protected:
 

@@ -109,6 +109,9 @@ protected:
 	PropertyStr _outputScaleFileNameProp;
 	std::string &_outputScaleFileName;
 
+	// Whether or not to write write to the designated output files (GUI will set this to false)
+	bool _printResultFiles;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -213,12 +216,7 @@ public:
 		_outputScaleFileNameProp.setUseDefault(false);
 	}
 
-	void clearOutputFileNames() {
-		_outputJointFileNameProp.clearValue();
-		_outputMuscleFileNameProp.clearValue();
-		_outputModelFileNameProp.clearValue();
-		_outputScaleFileNameProp.clearValue();
-	}
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 	double computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 

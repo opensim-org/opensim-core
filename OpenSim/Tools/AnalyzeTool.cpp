@@ -183,8 +183,7 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_printResultFiles(true)
+	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
 	setType("AnalyzeTool");
 	setNull();

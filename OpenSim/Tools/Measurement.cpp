@@ -121,6 +121,11 @@ void Measurement::setNull()
  */
 void Measurement::setupProperties()
 {
+	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
+	_applyProp.setName("apply");
+	_applyProp.setValue(true);
+	_propertySet.append(&_applyProp);
+
 	_markerPairSetProp.setComment("Set of marker pairs used to determine the scale factors.");
 	_markerPairSetProp.setName("MarkerPairSet");
 	_propertySet.append(&_markerPairSetProp);
@@ -128,11 +133,6 @@ void Measurement::setupProperties()
 	_bodyScaleSetProp.setComment("Set of bodies to be scaled by this measurement.");
 	_bodyScaleSetProp.setName("BodyScaleSet");
 	_propertySet.append(&_bodyScaleSetProp);
-
-	_applyProp.setComment("Flag to turn on and off scaling for this measurement.");
-	_applyProp.setName("apply");
-	_applyProp.setValue(true);
-	_propertySet.append(&_applyProp);
 }
 
 //_____________________________________________________________________________
