@@ -2,11 +2,16 @@
 
    SIMMTOOPENSIM.C
 
-   Author: Peter Loan
+   Author: Peter Loan, Frank C. Anderson
 
    Date: November 10, 2006
 
    Description:
+	Reads in SIMM joint and muscle files and writes an OpenSim model file.
+	
+	July 17, 2007
+	Added a flag to specify whether to write SimmKinematicsEngine- or
+	SimbodyEngine-based model.
 
    Routines:
 
@@ -19,15 +24,19 @@
 #include "main.h"
 #include "wefunctions.h"
 
+
+static char EngineType[256];
+static char EngineName[256];
 ModelStruct* sMotionModel = NULL;
 char* markerSetOut = NULL;
+
 
 void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[], int angleUnits);
 int makeDir(const char aDirName[]);
 
 static void printUsage(char programName[])
 {
-	printf("Usage: %s -j joints_in [ -m muscles_in ] -x xml_out [-ms markerset_out] [-g geometry_directory] [-a degrees | radians]\n", programName);
+	printf("Usage: %s -j joints_in [ -m muscles_in] [-e simm | simbody] -x xml_out [-ms markerset_out] [-g geometry_directory] [-a degrees | radians]\n", programName);
 }
 
 int main(int argc, char* argv[])
@@ -35,6 +44,8 @@ int main(int argc, char* argv[])
    ModelStruct* ms;
 	char *jointIn = NULL, *muscleIn = NULL, *xmlOut = NULL, *geometryDirectory = NULL;
 	int angleUnits = RADIANS;
+	strcpy(EngineType,"Simm");
+	strcpy(EngineName,"SimmKinematicsEngine");
 
 	printf("simmToOpenSim, version 0.8.1 (April 20, 2007)\n");
 
@@ -57,6 +68,30 @@ int main(int argc, char* argv[])
 			else if (STRINGS_ARE_EQUAL(argv[i], "-m") || STRINGS_ARE_EQUAL(argv[i], "-M"))
 			{
 				muscleIn = argv[i+1];
+				i++; 
+			}
+			else if (STRINGS_ARE_EQUAL(argv[i], "-e") || STRINGS_ARE_EQUAL(argv[i], "-E"))
+			{
+				if (STRINGS_ARE_EQUAL(argv[i+1], "simm") || STRINGS_ARE_EQUAL(argv[i+1], "SIMM") || STRINGS_ARE_EQUAL(argv[i+1], "Simm"))
+				{
+					printf("\n\nGenerating an OpenSim model with the SIMM kinematics engine as the underlying dynamics engine.\n");
+					printf("Note that this model will not support dynamic simulations or analyses.\n");
+					printf("However, it is possible to convert this model to use SDFast as the underlying engine\n");
+					printf("once the OpenSim modelhas been generated using the utility makeSDFastModel.exe.\n\n");
+					strcpy(EngineType,"Simm");
+					strcpy(EngineName,"SimmKinematicsEngine");
+				}
+				else if (STRINGS_ARE_EQUAL(argv[i+1], "simbody") || STRINGS_ARE_EQUAL(argv[i+1], "Simbody") || STRINGS_ARE_EQUAL(argv[i+1], "SimBody") || STRINGS_ARE_EQUAL(argv[i+1], "SIMBODY"))
+				{
+					printf("\n\nGenerating an OpenSim model with Simbody as the underlying dynamics engine.\n\n");
+					strcpy(EngineType,"Simbody");
+					strcpy(EngineName,"SimbodyEngine");
+				}
+				else
+				{
+					printf("\nDynamics engine type unrecognized \"-e\" must be \"simm\" or \"simbody\".\n");
+					printf("\nProceeding assuming conversion to a model based on a SIMM kinematics engine is desired.\n");
+				}
 				i++; 
 			}
 			else if (STRINGS_ARE_EQUAL(argv[i], "-x") || STRINGS_ARE_EQUAL(argv[i], "-X"))
@@ -586,7 +621,7 @@ void write_xml_bodies(FILE* fp, ModelStruct* ms, char geometryDirectory[], int a
 	for (i = 0; i < ms->numsegments; i++)
 	{
 		SegmentStruct* ss = &ms->segment[i];
-		fprintf(fp, "\t\t\t\t<SimmBody name=\"%s\">\n", ss->name);
+		fprintf(fp, "\t\t\t\t<%sBody name=\"%s\">\n",EngineType,ss->name);
 		fprintf(fp, "\t\t\t\t\t<mass>%.12lf</mass>\n", ss->mass);
 		fprintf(fp, "\t\t\t\t\t<mass_center>%.12lf %.12lf %.12lf</mass_center>\n", ss->masscenter[0], ss->masscenter[1], ss->masscenter[2]);
 		fprintf(fp, "\t\t\t\t\t<inertia>%.12lf %.12lf %.12lf %.12lf %.12lf %.12lf %.12lf %.12lf %.12lf</inertia>\n", ss->inertia[0][0], ss->inertia[0][1], ss->inertia[0][2],
@@ -639,7 +674,7 @@ void write_xml_bodies(FILE* fp, ModelStruct* ms, char geometryDirectory[], int a
 			fprintf(fp, "\t\t\t\t\t</objects>\n");
 			fprintf(fp, "\t\t\t\t\t</WrapObjectSet>\n");
 		}
-		fprintf(fp, "\t\t\t\t</SimmBody>\n");
+		fprintf(fp, "\t\t\t\t</%sBody>\n",EngineType);
 	}
 	fprintf(fp, "\t\t\t</objects>\n");
 	fprintf(fp, "\t\t\t</BodySet>\n");
@@ -670,7 +705,7 @@ void write_xml_coordinates(FILE* fp, ModelStruct* ms, int angleUnits)
 		else
 			conv = conversion;
 
-		fprintf(fp, "\t\t\t\t<SimmCoordinate name=\"%s\">\n", ms->gencoord[i].name);
+		fprintf(fp, "\t\t\t\t<%sCoordinate name=\"%s\">\n", EngineType, ms->gencoord[i].name);
 		fprintf(fp, "\t\t\t\t\t<range>%.12lf %.12lf</range>\n", ms->gencoord[i].range.start * conv, ms->gencoord[i].range.end * conv);
 		fprintf(fp, "\t\t\t\t\t<default_value>%.12lf</default_value>\n", ms->gencoord[i].default_value * conv);
 		fprintf(fp, "\t\t\t\t\t<tolerance>%.12lf</tolerance>\n", ms->gencoord[i].tolerance);
@@ -736,10 +771,44 @@ void write_xml_coordinates(FILE* fp, ModelStruct* ms, int angleUnits)
 			fprintf(fp, "\t\t\t\t\t\t</natCubicSpline>\n");
 			fprintf(fp, "\t\t\t\t\t</max_restraint_function>\n");
 		}
-		fprintf(fp, "\t\t\t\t</SimmCoordinate>\n");
+		fprintf(fp, "\t\t\t\t</%sCoordinate>\n",EngineType);
 	}
 	fprintf(fp, "\t\t\t</objects>\n");
 	fprintf(fp, "\t\t\t</CoordinateSet>\n");
+}
+
+
+void write_xml_speeds(FILE* fp, ModelStruct* ms, int angleUnits)
+{
+	int i, j;
+	SplineFunction* sf;
+	double conversion;
+
+	if (angleUnits == RADIANS)
+		conversion = DEG_TO_RAD;
+	else
+		conversion = 1.0;
+
+	fprintf(fp, "\t\t\t<SpeedSet>\n");
+	fprintf(fp, "\t\t\t<objects>\n");
+	for (i = 0; i < ms->numgencoords; i++)
+	{
+		// If the gencoord is [primarily] translational, then do not convert its
+		// range, default_value, etc. If it's rotational, then use the passed-in
+		// conversion factor, which is either 1.0 or DEG_TO_RAD.
+		double conv;
+		if (ms->gencoord[i].type == translation_gencoord)
+			conv = 1.0;
+		else
+			conv = conversion;
+
+		fprintf(fp, "\t\t\t\t<%sSpeed name=\"%s_u\">\n", EngineType,ms->gencoord[i].name);
+		fprintf(fp, "\t\t\t\t\t<default_value> 0.0 </default_value>\n");
+		fprintf(fp, "\t\t\t\t\t<coordinate> %s </coordinate>\n",ms->gencoord[i].name);
+		fprintf(fp, "\t\t\t\t</%sCoordinate>\n",EngineType);
+	}
+	fprintf(fp, "\t\t\t</objects>\n");
+	fprintf(fp, "\t\t\t</SpeedSet>\n");
 }
 
 
@@ -758,7 +827,7 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 	for (i = 0; i < ms->numjoints; i++)
 	{
 		JointStruct* js = &ms->joint[i];
-		fprintf(fp, "\t\t\t\t<SimmJoint name=\"%s\">\n", ms->joint[i].name);
+		fprintf(fp, "\t\t\t\t<%sJoint name=\"%s\">\n",EngineType,ms->joint[i].name);
 		fprintf(fp, "\t\t\t\t\t<bodies>%s %s</bodies>\n", ms->segment[js->from].name, ms->segment[js->to].name);
 		fprintf(fp, "\t\t\t\t\t<DofSet>\n");
 		fprintf(fp, "\t\t\t\t\t<objects>\n");
@@ -770,7 +839,7 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 
 				for (k = 3; k < 6; k++)
 				{
-					fprintf(fp, "\t\t\t\t\t\t<SimmTranslationDof name=\"%s\">\n", translationNames[k-3]);
+					fprintf(fp, "\t\t\t\t\t\t<%sTranslationDof name=\"%s\">\n",EngineType,translationNames[k-3]);
 					if (js->dofs[k].type == constant_dof)
 					{
 						fprintf(fp, "\t\t\t\t\t\t\t<Value>\n");
@@ -806,7 +875,7 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 						fprintf(fp, "\t\t\t\t\t\t\t\t</natCubicSpline>\n");
 						fprintf(fp, "\t\t\t\t\t\t\t</Value>\n");
 					}
-					fprintf(fp, "\t\t\t\t\t\t</SimmTranslationDof>\n");
+					fprintf(fp, "\t\t\t\t\t\t</%sTranslationDof>\n",EngineType);
 				}
 			}
 			else // R1, R2, R3
@@ -823,7 +892,7 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 				/* Rename the rotation dofs so that they're always in the order: r1, r2, r3 in the XML file.
 				 * These names aren't needed by simTK, but they could come in handy for debugging.
 				 */
-				fprintf(fp, "\t\t\t\t\t\t<SimmRotationDof name=\"%s\">\n", getjointvarname(rotCount++));
+				fprintf(fp, "\t\t\t\t\t\t<%sRotationDof name=\"%s\">\n",EngineType,getjointvarname(rotCount++));
 				fprintf(fp, "\t\t\t\t\t\t\t<axis>%.12lf %.12lf %.12lf</axis>\n", js->parentrotaxes[axis][0], js->parentrotaxes[axis][1], js->parentrotaxes[axis][2]);
 				if (js->dofs[axis].type == constant_dof)
 				{
@@ -861,12 +930,12 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 					fprintf(fp, "\t\t\t\t\t\t\t\t</natCubicSpline>\n");
 					fprintf(fp, "\t\t\t\t\t\t\t</Value>\n");
 				}
-				fprintf(fp, "\t\t\t\t\t\t</SimmRotationDof>\n");
+				fprintf(fp, "\t\t\t\t\t\t</%sRotationDof>\n",EngineType);
 			}
 		}
 		fprintf(fp, "\t\t\t\t\t</objects>\n");
 		fprintf(fp, "\t\t\t\t\t</DofSet>\n");
-		fprintf(fp, "\t\t\t\t</SimmJoint>\n");
+		fprintf(fp, "\t\t\t\t</%sJoint>\n",EngineType);
 	}
 	fprintf(fp, "\t\t\t</objects>\n");
 	fprintf(fp, "\t\t\t</JointSet>\n");
@@ -876,14 +945,15 @@ void write_xml_joints(FILE* fp, ModelStruct* ms, int angleUnits)
 void write_xml_ke(FILE* fp, ModelStruct* ms, char geometryDirectory[], int angleUnits)
 {
 	fprintf(fp, "\t<DynamicsEngine>\n");
-	fprintf(fp, "\t\t<SimmKinematicsEngine>\n");
+	fprintf(fp, "\t\t<%s>\n",EngineName);
 	write_xml_gravity(fp, ms);
 	write_xml_markers(fp, ms);
 	write_xml_bodies(fp, ms, geometryDirectory, angleUnits);
 	write_xml_coordinates(fp, ms, angleUnits);
+	if(STRINGS_ARE_EQUAL(EngineType,"Simbody")) write_xml_speeds(fp, ms, angleUnits);
 	write_xml_joints(fp, ms, angleUnits);
 	fprintf(fp, "\t\t</SimmKinematicsEngine>\n");
-	fprintf(fp, "\t</DynamicsEngine>\n");
+	fprintf(fp, "\t</%s>\n",EngineName);
 }
 
 void write_xml_units(FILE* fp, ModelStruct* ms)
