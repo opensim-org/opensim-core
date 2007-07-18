@@ -299,7 +299,7 @@ setNull()
 	_document = NULL;
 	_node = NULL;
 	_refNode = NULL;
-	_inLined = true;
+	_inlined = true;
 	_propertySet.clear();
 	_description = "";
 
@@ -639,7 +639,7 @@ InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Ob
 	// does not keep track of XML related issues
 	DOMElement *refNode;
 	XMLDocument *childDocument;
-	bool inLinedObject = !parseFileAttribute(rObjectElement, refNode, childDocument, rObjectElement);
+	bool inlinedObject = !parseFileAttribute(rObjectElement, refNode, childDocument, rObjectElement);
 
 	aProperty->setUseDefault(false);
 
@@ -649,8 +649,8 @@ InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Ob
 	// copy method! - Eran, Feb/07
 	aObject->setXMLNode(rObjectElement);
 	// Set inlining attributes on final object
-	if (!inLinedObject){
-		aObject->_inLined = inLinedObject;
+	if (!inlinedObject){
+		aObject->_inlined = inlinedObject;
 		aObject->_refNode = refNode;
 		aObject->_document = childDocument;
 	}
@@ -949,29 +949,30 @@ updateDefaultObjectsFromXMLNode()
 void Object::
 updateXMLNode(DOMElement *aParent)
 {
-	// If object is not inlined we don't want to generate node in original document
-	// Handle not-inlined objects first.
-	if (aParent==NULL && !getInlined()) {
-		cout<<"Root node must be inlined"<<*this<<endl;
-	}
-
-	// Can we make this more efficient than recreating the node again?
-	// We can possibly check when setInlined() is invoked if we need to do it or not
-	if (!getInlined() && aParent){
-		// Create a new document and write object to it
-		string offLineFileName = getDocumentFileName();
-		if(IO::GetPrintOfflineDocuments()) {
-			// The problem is that generateChildXMLDocument makes a root which allows print
-			// to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-			// is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-			_inLined=true;
-			print(offLineFileName);
-			_inLined=false;
-		}
-		
-		if (!_refNode){
-			_refNode = XMLNode::AppendNewElementWithComment(aParent, getType(),getName());
-			XMLNode::SetAttribute(_refNode,"file",offLineFileName);
+	// Handle non-inlined object
+	if(!getInlined()) {
+		// If object is not inlined we don't want to generate node in original document
+		// Handle not-inlined objects first.
+		if (aParent==NULL) {
+			cout<<"Root node must be inlined"<<*this<<endl;
+		} else {
+			// Can we make this more efficient than recreating the node again?
+			// We can possibly check when setInlined() is invoked if we need to do it or not
+			// Create a new document and write object to it
+			string offlineFileName = getDocumentFileName();
+			if(IO::GetPrintOfflineDocuments()) {
+				// The problem is that generateChildXMLDocument makes a root which allows print
+				// to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+				// is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+				_inlined=true;
+				print(offlineFileName);
+				_inlined=false;
+			}
+			
+			if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
+			XMLNode::SetAttribute(_refNode,"file",offlineFileName);
+			XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
+			XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document
 		}
 		return;
 	}
@@ -985,9 +986,11 @@ updateXMLNode(DOMElement *aParent)
 	// CHECK THAT IT IS AN ELEMENT NODE
 	if(_node->getNodeType()!=DOMNode::ELEMENT_NODE) return;
 
-
 	// NAME
 	XMLNode::SetAttribute(_node,"name",getName());
+
+	// REMOVE ANY STALE FILE ATTRIBUTE (at this point we know we're an inlined element)
+	XMLNode::RemoveAttribute(_node,"file");
 
 	// DEFAULT OBJECTS
 	updateDefaultObjectsXMLNode(aParent);
@@ -1063,6 +1066,7 @@ updateXMLNode(DOMElement *aParent)
 				// If it's not inlined, hopefully calling updateXMLNode will be enough...
 				// (it probably won't touch the referring element, only the offline document)
 				if(object.getInlined()) object.setXMLNode(elmt);
+				else object._refNode = elmt;
 				object.updateXMLNode(_node);
 			}
 			break; }
@@ -1301,7 +1305,25 @@ generateXMLDocument()
 bool Object::
 getInlined() const
 {
-	return _inLined;
+	return _inlined;
+}
+
+void Object::
+setInlined(bool aInlined, const std::string &aFileName)
+{
+	_inlined = aInlined;
+	if(!_inlined) {
+		// In theory we might be able to re-use an existing _document node rather than deleting and re-creating one,
+		// but currently if you try that you will get "ERROR- document already has root" from AppendNewElementWithComment, called by generateXMLDocument
+		delete _document;
+		_document = new XMLDocument();
+		_document->setFileName(aFileName);
+	} else {
+		delete _document;
+		_document = NULL;
+		_refNode = NULL;
+	}
+	_node = NULL;
 }
 
 /** 

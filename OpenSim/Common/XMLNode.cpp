@@ -1180,8 +1180,8 @@ SetAttribute(DOMNode *aNode,const string &aName,const string &aValue)
 	element->setAttribute(name,value);
 
 	// CLEANUP
-	if(name!=NULL) delete[] name;
-	if(value!=NULL) delete[] value;
+	delete[] name;
+	delete[] value;
 }
 //_____________________________________________________________________________
 /**
@@ -1219,7 +1219,27 @@ GetAttribute(DOMNode *aNode,const string &aName)
 
 	return(str);
 }
+/**
+ * Remove attribute.
+ */
+void XMLNode::
+RemoveAttribute(DOMNode *aNode,const string &aName)
+{
+	if(aNode==NULL) return;
+	if(aNode->getNodeType()!=DOMNode::ELEMENT_NODE) return;
 
+	// CAST NODE
+	DOMElement *element = (DOMElement*)aNode;
+
+	// CREATE NAME
+	XMLCh *name = XMLString::transcode(aName.c_str());
+
+	// REMOVE THE ATTRIBUTE
+	if(element->hasAttribute(name)) element->removeAttribute(name);
+
+	// CLEANUP
+	delete[] name;
+}
 //=============================================================================
 // UTILITY
 //=============================================================================

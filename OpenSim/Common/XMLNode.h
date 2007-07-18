@@ -168,6 +168,8 @@ public:
 		const std::string &aValue);
 	static std::string
 		GetAttribute(DOMNode *aNode,const std::string &aName);
+	static void 
+		RemoveAttribute(DOMNode *aNode,const std::string &aName);
 
 
 //=============================================================================

@@ -161,7 +161,7 @@ protected:
 	/** XML element node. -> rdSerializable interface */
 	DOMElement *_node;
 	/** Inlined object -> rdSerializable interface */
-	bool _inLined;
+	bool _inlined;
 	/** For non inlined objects their _node and _document refer to external file
 	 * _refNode contains the type and reference to file name -> rdSerializable interface */
 	DOMElement *_refNode;
@@ -262,6 +262,7 @@ public:
 	virtual void generateXMLNode(DOMElement *aParent);
 	// Inline support
 	bool getInlined() const;
+	void setInlined(bool aInlined, const std::string &aFileName="");
 	XMLDocument* getDocument() const;
 	std::string getDocumentFileName() const;
 	DOMElement* getXMLNode() const;
