@@ -1311,19 +1311,17 @@ getInlined() const
 void Object::
 setInlined(bool aInlined, const std::string &aFileName)
 {
+	// In theory we might be able to re-use an existing _document node rather than deleting and re-creating one,
+	// but currently if you try that you will get "ERROR- document already has root" from AppendNewElementWithComment, called by generateXMLDocument
+	// TODO: use DOMDocument::adoptNode(DOMNode *source) to be able to switch owner documents...
+	// For now it's safest to delete all XML structures
+	clearXMLStructures();
+
 	_inlined = aInlined;
 	if(!_inlined) {
-		// In theory we might be able to re-use an existing _document node rather than deleting and re-creating one,
-		// but currently if you try that you will get "ERROR- document already has root" from AppendNewElementWithComment, called by generateXMLDocument
-		delete _document;
 		_document = new XMLDocument();
 		_document->setFileName(aFileName);
-	} else {
-		delete _document;
-		_document = NULL;
-		_refNode = NULL;
 	}
-	_node = NULL;
 }
 
 /** 
@@ -1352,6 +1350,65 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rC
 	return parsedFileAttribute;
 }
 
+//-----------------------------------------------------------------------------
+// CLEAR XML STRUCTURES (RECURSIVELY)
+//-----------------------------------------------------------------------------
+void Object::
+clearXMLStructures()
+{
+	_refNode = NULL;
+	_node = NULL;
+	_inlined = true;
+
+	// LOOP THROUGH PROPERTIES
+	for(int i=0;i<_propertySet.getSize();i++) {
+
+		Property *property = _propertySet.get(i);
+		Property::PropertyType type = property->getType();
+
+		// VALUE
+		switch(type) {
+
+		case(Property::Bool) :
+		case(Property::Int) :
+		case(Property::Dbl) :
+		case(Property::Str) :
+		case(Property::BoolArray) :
+		case(Property::IntArray) :
+		case(Property::DblArray) :
+		case(Property::StrArray) :
+			break; // Nothing to do for the basic types
+
+		// Obj
+		case(Property::Obj) : {
+			Object &object = property->getValueObj();
+			object.clearXMLStructures();
+			break;
+		}
+
+		// ObjArray
+		case(Property::ObjArray) :
+			for(int j=0;j<property->getValueObjArraySize();j++)
+				property->getValueObjPtr(j)->clearXMLStructures();
+			break;
+
+		// ObjPtr
+		case(Property::ObjPtr) : {
+			Object *object = property->getValueObjPtr();
+			if(object) object->clearXMLStructures();
+			break;
+		}
+
+		// NOT RECOGNIZED
+		default :
+			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+			break;
+		}
+	}
+
+	delete _document;
+	_document = NULL;
+}
 //=============================================================================
 // IO
 //=============================================================================
