@@ -703,8 +703,8 @@ void SimmMotionData::addToRdStorage(Storage& rStorage, double aStartTime, double
 	 * don't find one, it's a fatal error so throw an exception.
 	 * Don't add a column if its name is 'unassigned'.
 	 */
-	int i, j, startIndex = rStorage.findIndex(0, aStartTime);
-	int endIndex = rStorage.findIndex(rStorage.getSize() - 1, aEndTime);
+	int i, j, startIndex, endIndex;
+	rStorage.findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
 
 	for (i = startIndex; i <= endIndex; i++)
 	{

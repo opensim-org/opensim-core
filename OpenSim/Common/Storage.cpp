@@ -2110,6 +2110,22 @@ findIndex(double aT) const
 	return(_lastI);
 }
 //_____________________________________________________________________________
+/** 
+ * Find the range of frames that is between start time and end time
+ * (inclusive). Return the indices of the bounding frames.
+ */
+void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const
+{
+	if(aStartTime > aEndTime) {
+		double tmp = aStartTime;
+		aStartTime = aEndTime;
+		aEndTime = tmp;
+	}
+
+	oStartFrame = findIndex(0, aStartTime);
+	oEndFrame = findIndex(getSize()-1, aEndTime);
+}
+//_____________________________________________________________________________
 /**
  * Resample Storage columns to specified rate. This's done by fitting splines
  * to Storage columns and resampling
@@ -2465,8 +2481,8 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
 	 * don't find one, it's a fatal error so throw an exception.
 	 * Don't add a column if its name is 'unassigned'.
 	 */
-	int i, j, startIndex = rStorage.findIndex(0, aStartTime);
-	int endIndex = rStorage.findIndex(rStorage.getSize() - 1, aEndTime);
+	int i, j, startIndex, endIndex;
+	rStorage.findFrameRange(aStartTime, aEndTime, startIndex, endIndex);
 	int numColumns=getColumnLabels().getSize();
 	for (i = startIndex; i <= endIndex; i++)
 	{
