@@ -145,6 +145,9 @@ public:
 	void getPrescribedCoordinateNames(Array<std::string>& aNameArray);
 	void getOutputMarkerNames(Array<std::string>& aNameArray);
 	Model& getModel() { return _model; };
+	int getNumUnprescribedCoordinates() { return _unprescribedQs.getSize(); }
+	int getNumOutputMarkers() { return _markers.getSize(); }
+	const AbstractCoordinate *getUnprescribedCoordinate(int i) const { return _unprescribedQs.get(i)->coord; }
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------

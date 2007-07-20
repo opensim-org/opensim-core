@@ -48,10 +48,14 @@ class IKTarget;
 
 class OSIMTOOLS_API IKSolverImpl : public IKSolverInterface 
 {
+private:
+	Array<int> _userDataColumnIndices;
+
 public:
 	IKSolverImpl(IKTarget& aOptimizationTarget);
 	virtual ~IKSolverImpl() {}
 
+	virtual void initializeSolver(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 private:
 
@@ -65,7 +69,6 @@ private:
 						StateVector* inputRow);
 
 	SimTK::Optimizer *createOptimizer(const IKTrial &aIKOptions, SimTK::OptimizerSystem &aSystem) const;
-
 };
 
 }; //namespace

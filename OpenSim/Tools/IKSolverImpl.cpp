@@ -32,14 +32,9 @@ IKSolverInterface(aOptimizationTarget)
 }
 //______________________________________________________________________________
 /**
- * This is the heart of the IK solver, this method solves a specific motion trial
- * given an input storage object for input, one for output.
-
- * @param aIKOptions Pass along to the method attributes specified by end-user in input file.
- * @param inputData Set of frames to solve packaged as a storage fle.
- * @param outputData the frames solved by the solver represented as a storage onbject.
+ * Initializes the columns of the output storage
  */
-void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData)
+void IKSolverImpl::initializeSolver(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData)
 {
 	/* Get names for unprescribed Qs (ones that will be solved). */
 	Array<string> unprescribedCoordinateNames;
@@ -71,20 +66,30 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	}
 	// User data (colummns that are in input storage file but not used by IK,
 	// to be passed along for later processing.
-	const Array<string> &inputColumnLabels = inputData.getColumnLabels();
-	Array<int> userDataColumnIndices(0);
+	_userDataColumnIndices.setSize(0);
 	Array<string> userColumnLabels;
-	collectUserData(inputColumnLabels, resultColumnLabels, userColumnLabels, userDataColumnIndices);
+	collectUserData(inputData.getColumnLabels(), resultColumnLabels, userColumnLabels, _userDataColumnIndices);
 	resultColumnLabels.append(userColumnLabels);
 
 	outputData.setColumnLabels(resultColumnLabels);
+}
+//______________________________________________________________________________
+/**
+ * This is the heart of the IK solver, this method solves a specific motion trial
+ * given an input storage object for input, one for output.
 
+ * @param aIKOptions Pass along to the method attributes specified by end-user in input file.
+ * @param inputData Set of frames to solve packaged as a storage fle.
+ * @param outputData the frames solved by the solver represented as a storage onbject.
+ */
+void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData)
+{
 	// Main loop to set initial conditions and solve snapshots
 	// At every step we use experimental data as a starting guess 
-	int numParameters = unprescribedCoordinateNames.getSize();
+	int numParameters = _ikTarget.getNumUnprescribedCoordinates();
 	Array<double> unprescribedQGuess(0.0, numParameters);	// Initial guess and work array
 	Array<double> unprescribedQSol(0.0, numParameters);	// Solution array
-	Array<double> experimentalMarkerLocations(0.0, markerNames.getSize() * 3);
+	Array<double> experimentalMarkerLocations(0.0, _ikTarget.getNumOutputMarkers() * 3);
 
 	int startFrame = 0, endFrame = 1;
 
@@ -92,7 +97,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	 * based on the user-defined start/end times stored in
 	 * the simmIKTrialOptions.
 	 */
-	aIKOptions.findFrameRange(inputData, startFrame, endFrame);
+	inputData.findFrameRange(aIKOptions.getStartTime(), aIKOptions.getEndTime(), startFrame, endFrame);	
 
 	if (endFrame - startFrame > 1)
 		cout << "Solving frames " << startFrame + 1 << " to " << endFrame + 1 << " (time = " <<
@@ -101,11 +106,10 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	// Gather lower and upper bounds
 	Vector lowerBounds(numParameters), upperBounds(numParameters);
 	// Set the lower and upper bounds on the unprescribed Q array
-	// TODO: shouldn't have to search for coordinates by name
 	AbstractDynamicsEngine &eng = _ikTarget.getModel().getDynamicsEngine();
 	for (int i = 0; i < numParameters; i++)
 	{
-		AbstractCoordinate* coord = eng.getCoordinateSet()->get(unprescribedCoordinateNames[i]);
+		const AbstractCoordinate* coord = _ikTarget.getUnprescribedCoordinate(i);
 		lowerBounds[i] = coord->getRangeMin();
 		upperBounds[i] = coord->getRangeMax();
 	}
@@ -167,7 +171,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 
 		// Append user data to qsAndMarkersArray
 		Array<double> dataRow(qsAndMarkersArray);
-		appendUserData(dataRow, userDataColumnIndices, inputData.getStateVector(index));
+		appendUserData(dataRow, _userDataColumnIndices, inputData.getStateVector(index));
 
 		// Allocate new row (StateVector) and add it to outputData
 		StateVector *nextDataRow = new StateVector();

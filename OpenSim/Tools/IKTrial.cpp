@@ -73,6 +73,10 @@ IKTrial::IKTrial() :
  */
 IKTrial::~IKTrial()
 {
+	delete _inputStorage;
+	delete _outputStorage;
+	delete _target;
+	delete _ikSolver;
 }
 
 //_____________________________________________________________________________
@@ -136,6 +140,10 @@ void IKTrial::setNull()
 	setType("IKTrial");
 
 	_coordinateFileName = "";
+	_inputStorage = 0;
+	_outputStorage = 0;
+	_target = 0;
+	_ikSolver = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -146,7 +154,6 @@ void IKTrial::setupProperties()
 	_markerFileNameProp.setComment("TRC file (.trc) containing the time history of experimental marker positions.");
 	_markerFileNameProp.setName("marker_file");
 	_propertySet.append(&_markerFileNameProp);
-
 
 	_coordinateFileNameProp.setComment("Name of file containing the joint angles "
 		"used to set the initial configuration of the model for the purpose of placing the markers. "
@@ -210,9 +217,27 @@ IKTrial& IKTrial::operator=(const IKTrial &aIKTrialParams)
 
 	return(*this);
 }
-
-bool IKTrial::processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage)
+//_____________________________________________________________________________
+/**
+ * initializeTrialCommon -- must call before solveTrial
+ */
+bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData)
 {
+	// Initialize input storage
+	delete _inputStorage;
+	_inputStorage = new Storage();
+
+	// Initialize output storage
+	delete _outputStorage;
+	_outputStorage = new Storage();
+	_outputStorage->setName(getName());
+
+	// In case we have left over
+	delete _target;
+	_target = 0;
+	delete _ikSolver;
+	_ikSolver = 0;
+
 	// During the IK trial, *all* coordinates that have values specified
 	// in the input coordinate file will use those values for the
 	// trial (these values can be used either as starting values
@@ -224,8 +249,7 @@ bool IKTrial::processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerDat
 	try
 	{
 		/* Convert marker data to an Storage object. */
-		Storage inputStorage;
-		aMarkerData.makeRdStorage(inputStorage);
+		aMarkerData.makeRdStorage(*_inputStorage);
 
 		if (_coordinateFileName != "")
 		{
@@ -235,74 +259,89 @@ bool IKTrial::processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerDat
 			// Adjust the user-defined start and end times to make sure they are in the
 			// range of the marker data. This must be done so that you only look in the
 			// coordinate data for rows that will actually be solved.
-			double firstStateTime = inputStorage.getFirstTime();
-			double lastStateTime = inputStorage.getLastTime();
+			double firstStateTime = _inputStorage->getFirstTime();
+			double lastStateTime = _inputStorage->getLastTime();
 			double startTime = MAX(firstStateTime, getStartTime());
 			double endTime = MIN(lastStateTime, getEndTime());
 
 			// Add the coordinate data to the marker data. There must be a row of
 			// corresponding coordinate data for every row of marker data that will
 			// be solved, or it is a fatal error.
-			coordinateValues.addToRdStorage(inputStorage, startTime, endTime);
+			coordinateValues.addToRdStorage(*_inputStorage, startTime, endTime);
 		}
 
-		inputStorage.print("markers_coords_ik.sto");
+		_inputStorage->print("markers_coords_ik.sto");
 
 		// Create target
-		IKTarget *target = new IKTarget(aModel, aIKTaskSet, inputStorage);
-		target->printTasks();
-		// Create solver
-		IKSolverImpl *ikSolver = new IKSolverImpl(*target);
-		// Solve
-		ikSolver->solveFrames(*this, inputStorage, aOutputStorage);
+		_target = new IKTarget(aModel, aIKTaskSet, *_inputStorage);
+		_target->printTasks();
 
-		delete target;
-		delete ikSolver;
+		// Create solver
+		_ikSolver = new IKSolverImpl(*_target);
+		_ikSolver->initializeSolver(*this, *_inputStorage, *_outputStorage);
 	}
 	catch (Exception &x)
 	{
 		x.print(cout);
+		delete _inputStorage; _inputStorage = 0;
+		delete _outputStorage; _outputStorage = 0;
+		delete _ikSolver; _ikSolver = 0;
+		delete _target; _target = 0;
 		return false;
 	}
 
 	return true;
 }
-
-bool IKTrial::processTrial(Model& aModel, IKTaskSet& aIKTaskSet)
+//_____________________________________________________________________________
+/**
+ */
+bool IKTrial::initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 {
-	cout << endl << "Processing IK trial: " << getName() << endl;
+	cout << endl << "Initializing IK trial: " << getName() << endl;
 
 	MarkerData markerData(_markerFileName);
 	/* Convert the marker data into the model's units. */
 	markerData.convertToUnits(aModel.getLengthUnits());
 
-	Storage outputStorage;
-	outputStorage.setName(getName());
-	if(!processTrialCommon(aModel,aIKTaskSet,markerData,outputStorage))
+	if(!initializeTrialCommon(aModel, aIKTaskSet, markerData))
 		return false;
-
-	if (!_outputMotionFileNameProp.getUseDefault())
-	{
-		outputStorage.setWriteSIMMHeader(true);
-		aModel.getDynamicsEngine().convertRadiansToDegrees(outputStorage);
-		outputStorage.print(_outputMotionFileName.c_str());
-	}
 
 	return true;
 }
-
-/* Find the range of frames that is between start time and end time
- * (inclusive). Return the indices of the bounding frames.
+//_____________________________________________________________________________
+/**
  */
-void IKTrial::findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const
+bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 {
-	if (_timeRange[0] > _timeRange[1])
+	cout << endl << "Solving IK trial: " << getName() << endl;
+
+	// Check if trial was initialized
+	if(!_ikSolver) throw Exception("IKTrial.solveTrial: ERR- IKTrial not initialized before solveTrial called",__FILE__,__LINE__);
+
+	bool success = false;
+	try 
 	{
-		double tmp = _timeRange[0];
-		_timeRange[0] = _timeRange[1];
-		_timeRange[1] = tmp;
+		_ikSolver->solveFrames(*this, *_inputStorage, *_outputStorage);
+
+		if (!_outputMotionFileNameProp.getUseDefault())
+		{
+			// TODO: avoid converting units in-place (as this means that suddenly as soon as IK is done the storage
+			// (available to others through getOutputStorage() changes units)
+			_outputStorage->setWriteSIMMHeader(true);
+			aModel.getDynamicsEngine().convertRadiansToDegrees(*_outputStorage);
+			_outputStorage->print(_outputMotionFileName.c_str());
+		}
+
+		success = true;
+	}
+	catch (Exception &x)
+	{
+		x.print(cout);
 	}
 
-	oStartFrame = aData.findIndex(0, _timeRange[0]);
-	oEndFrame = aData.findIndex(aData.getSize()-1, _timeRange[1]);
+	// We're done with the IK solver, but we keep around _inputStorage/_outputStorage
+	delete _ikSolver; _ikSolver = 0;
+	delete _target; _target = 0;
+
+	return success;
 }

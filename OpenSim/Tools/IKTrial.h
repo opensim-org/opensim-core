@@ -44,6 +44,8 @@ class Model;
 class CoordinateSet;
 class MarkerData;
 class IKTaskSet;
+class IKTarget;
+class IKSolverImpl;
 
 //=============================================================================
 //=============================================================================
@@ -101,6 +103,12 @@ protected:
 
 	std::string _optimizerAlgorithm;
 
+	// These are iniitalized in initializeTrial, and used in solveTrial
+	Storage *_inputStorage;
+	Storage *_outputStorage;
+	IKTarget *_target;
+	IKSolverImpl *_ikSolver;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -127,10 +135,10 @@ public:
 	void setStartTime(double aTime) { _timeRange[0] = aTime; }
 	void setEndTime(double aTime) { _timeRange[1] = aTime; }
 	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
-	void findFrameRange(const Storage& aData, int& oStartFrame, int& oEndFrame) const;
 
-	bool processTrial(Model& aModel, IKTaskSet& aIKTaskSet);
-	bool processTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData, Storage& aOutputStorage);
+	bool initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData);
+	bool initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet);
+	bool solveTrial(Model& aModel, IKTaskSet& aIKTaskSet);
 
 	/*===== Set and Get ===============*/
 	const std::string& getMarkerDataFileName() const { return _markerFileName; }
@@ -144,6 +152,8 @@ public:
 
 	void setOptimizerAlgorithm(const std::string& aOptimizerAlgorithm) { _optimizerAlgorithm = aOptimizerAlgorithm; }
 	std::string getOptimizerAlgorithm() const { return _optimizerAlgorithm; }
+
+	Storage *getOutputStorage() { return _outputStorage; }
 
 private:
 	void setNull();

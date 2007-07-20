@@ -211,6 +211,35 @@ operator=(const IKTool &aTool)
 //=============================================================================
 // RUN
 //=============================================================================
+void IKTool::initializeTrial(int i) 
+{
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	IO::chDir(directoryOfSetupFile);
+
+	_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
+	if(!_IKTrialSet.get(i)->initializeTrial(*_model, _ikTaskSet))
+		cout << "Trial " << _IKTrialSet.get(i)->getName() << " initialization failed." << endl;
+
+	IO::chDir(saveWorkingDirectory);
+}
+void IKTool::solveTrial(int i) 
+{
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	IO::chDir(directoryOfSetupFile);
+
+	if (_IKTrialSet.get(i)->solveTrial(*_model, _ikTaskSet))
+		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
+	else
+		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
+
+	IO::chDir(saveWorkingDirectory);
+}
 //_____________________________________________________________________________
 /**
  * Run the investigation.
@@ -219,22 +248,10 @@ void IKTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-	IO::chDir(directoryOfSetupFile);
-
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
-		_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
-		if (_IKTrialSet.get(i)->processTrial(*_model, _ikTaskSet))
-			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
-		else
-			cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
+		initializeTrial(i);
+		solveTrial(i);
 	}
-
-	IO::chDir(saveWorkingDirectory);
 }
-

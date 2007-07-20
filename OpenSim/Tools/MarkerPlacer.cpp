@@ -279,17 +279,15 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	 */
 	aModel->getDynamicsEngine().deleteUnusedMarkers(staticPose.getMarkerNames());
 
-	Storage outputStorage;
-	outputStorage.setName(_markerFileName);
-
 	IKTrial ikTrial;
 	if(_coordinateFileName != "") ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
 	ikTrial.setOptimizerAlgorithm(_optimizerAlgorithm);
 //	ikTrial.setIncludeMarkers(true);
-	if(!ikTrial.processTrialCommon(*aModel,_ikTaskSet,staticPose,outputStorage)) 
-		return false;
+	if(!ikTrial.initializeTrialCommon(*aModel,_ikTaskSet,staticPose)) return false;
+	if(!ikTrial.solveTrial(*aModel,_ikTaskSet)) return false;
+	ikTrial.getOutputStorage()->setName(_markerFileName);
 
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
@@ -325,7 +323,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
 		if (!_outputMotionFileNameProp.getUseDefault())
 		{
-			Storage motionData(outputStorage);
+			Storage motionData(*ikTrial.getOutputStorage());
 			aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
 			motionData.setWriteSIMMHeader(true);
 			motionData.setName("static pose");
