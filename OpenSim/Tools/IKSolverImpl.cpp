@@ -156,6 +156,15 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		cout << "Frame " << index + 1 << " (t=" << currentTime << "):\t";
 		_ikTarget.printPerformance(&unprescribedQSol[0]);
 
+		// Append user data to qsAndMarkersArray
+		Array<double> dataRow(qsAndMarkersArray);
+		appendUserData(dataRow, _userDataColumnIndices, inputData.getStateVector(index));
+
+		// Allocate new row (StateVector) and add it to outputData
+		StateVector *nextDataRow = new StateVector();
+		nextDataRow->setStates(timeT, dataRow.getSize(), &dataRow[0]);
+		outputData.append(*nextDataRow);
+
 		// INTEGRATION CALLBACKS
 		// TODO: pass callback a reasonable "dt" value
 		double emptyX, emptyY;
@@ -168,15 +177,6 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		AnalysisSet *analysisSet = _ikTarget.getModel().getAnalysisSet();
 		if(analysisSet!=NULL)
 			analysisSet->step(&emptyX,&emptyY,NULL,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
-
-		// Append user data to qsAndMarkersArray
-		Array<double> dataRow(qsAndMarkersArray);
-		appendUserData(dataRow, _userDataColumnIndices, inputData.getStateVector(index));
-
-		// Allocate new row (StateVector) and add it to outputData
-		StateVector *nextDataRow = new StateVector();
-		nextDataRow->setStates(timeT, dataRow.getSize(), &dataRow[0]);
-		outputData.append(*nextDataRow);
 	}
 
 	delete optimizer;
