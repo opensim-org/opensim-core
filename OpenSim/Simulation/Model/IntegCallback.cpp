@@ -162,7 +162,23 @@ operator=(const IntegCallback &aObject)
 	return(*this);
 }
 
-
+//=============================================================================
+// INTEGCALLBACK
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Return whether or not to proceed with this callback.
+ * The callback will not proceed (i.e., returns false) if either the
+ * analysis is turned off or if aStep is not an even multiple of
+ * the step interval set @see rdStepCallback.
+ *
+ * @return True or False.
+ */
+bool IntegCallback::
+proceed(int aStep)
+{
+	return(getOn() && ((aStep%_stepInterval)==0));
+}
 //=============================================================================
 // GET AND SET
 //=============================================================================

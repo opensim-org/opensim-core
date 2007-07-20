@@ -97,6 +97,7 @@ private:
 	void setupProperties();
 
 public:
+	virtual bool proceed(int aStep=0);
 
 	//--------------------------------------------------------------------------
 	// GET AND SET

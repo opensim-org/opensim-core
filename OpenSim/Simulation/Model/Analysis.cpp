@@ -275,23 +275,6 @@ getColumnLabels() const
 
 
 //=============================================================================
-// ANALYSIS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Return whether or not to proceed with this analysis.
- * The analysis will not proceed (i.e., returns false) if either the
- * analysis is turned off or if aStep is not an even multiple of
- * the step interval set @see rdStepCallback.
- *
- * @return True or False.
- */
-bool Analysis::
-proceed(int aStep)
-{
-	return(getOn() && ((aStep%_stepInterval)==0));
-}
-//=============================================================================
 // IO
 //=============================================================================
 //_____________________________________________________________________________
