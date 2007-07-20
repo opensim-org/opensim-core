@@ -166,10 +166,9 @@ int SimtkAnimationCallback::
 step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
 		double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
 {
-	if((aStep% getStepInterval())!=0)
-		return (0);
-
 	_currentTime = aT;
+
+	if(!proceed(aStep)) return 0;
 	
 	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
 	getTransformsFromKinematicsEngine(*_model);
