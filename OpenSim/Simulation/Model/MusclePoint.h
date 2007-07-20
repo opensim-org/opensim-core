@@ -36,7 +36,6 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Storage.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
