@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 	strcpy(EngineType,"Simm");
 	strcpy(EngineName,"SimmKinematicsEngine");
 
-	printf("simmToOpenSim, version 0.8.1 (April 20, 2007)\n");
+	printf("simmToOpenSim, version 0.9.0 (July 19, 2007)\n");
 
    if (argc < 5)
    {
@@ -403,15 +403,18 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 	{
 		MuscleStruct* m = &ms->muscle[i];
 
-		// For now, model = 9 and model = NULL map to SimmDarrylMuscle.
+		// For now, model = 9 and map to SimmDarrylMuscle.
 		// All other values map to SimmZajacHill. Eventually, each model
 		// index should map to a distinct muscle class in OpenSim,
 		// especially model = 7, which is a ligament model.
-		if (m->muscle_model_index == NULL || *m->muscle_model_index == 9)
-			strcpy(muscleClassName, "SimmDarrylMuscle");
-		else
+		if (m->muscle_model_index == NULL || *m->muscle_model_index == 4)
 			strcpy(muscleClassName, "SimmZajacHill");
-
+		else if (*m->muscle_model_index == 9)
+			strcpy(muscleClassName, "SimmDarrylMuscle");
+		else{	// Warn about unsupported but use SimmZajacHill
+			strcpy(muscleClassName, "SimmZajacHill");
+		    printf("Warning: muscle %s has unsupported muscle model %d.\n", m->name, *m->muscle_model_index);
+		}
 		write_xml_muscle(fp, ms, m, muscleClassName, angleUnits, 0);
 	}
 	fprintf(fp, "\t</objects>\n");
@@ -780,8 +783,7 @@ void write_xml_coordinates(FILE* fp, ModelStruct* ms, int angleUnits)
 
 void write_xml_speeds(FILE* fp, ModelStruct* ms, int angleUnits)
 {
-	int i, j;
-	SplineFunction* sf;
+	int i;
 	double conversion;
 
 	if (angleUnits == RADIANS)
@@ -952,8 +954,8 @@ void write_xml_ke(FILE* fp, ModelStruct* ms, char geometryDirectory[], int angle
 	write_xml_coordinates(fp, ms, angleUnits);
 	if(STRINGS_ARE_EQUAL(EngineType,"Simbody")) write_xml_speeds(fp, ms, angleUnits);
 	write_xml_joints(fp, ms, angleUnits);
-	fprintf(fp, "\t\t</SimmKinematicsEngine>\n");
-	fprintf(fp, "\t</%s>\n",EngineName);
+	fprintf(fp, "\t\t</%s>\n",EngineName);
+	fprintf(fp, "\t</DynamicsEngine>\n");
 }
 
 void write_xml_units(FILE* fp, ModelStruct* ms)
