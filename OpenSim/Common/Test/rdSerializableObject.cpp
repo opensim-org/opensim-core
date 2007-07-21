@@ -193,7 +193,7 @@ setupSerializedMembers()
 	arrayObj.append(object.copy());
 	object.setName("Obj3");
 	arrayObj.append(object.copy());
-	PropertyObjArray pObjArray("Test_ObjArray",arrayObj);
+	PropertyObjArray<Object> pObjArray("Test_ObjArray",arrayObj);
 	pObjArray.setComment("Comment on Object Array");
 	_propertySet.append(pObjArray.copy());
 }

@@ -125,7 +125,7 @@ Storage::Storage(const string &aFileName) :
 	ifstream *fp = IO::OpenInputFile(aFileName);
 	if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
 
-	int nr=0,nc=0,nd=0;
+	int nr=0,nc=0;
 	if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
 	cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
 

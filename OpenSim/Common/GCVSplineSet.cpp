@@ -267,7 +267,6 @@ constructStorage(int aDerivOrder,double aDX)
 
 	// SET COLUMN LABELS
 	GCVSpline *spline;
-	int len = n*(Object::NAME_LENGTH+4);
 	Array<std::string> labels;
 	labels.append("time");
 	for(int i=0;i<n;i++) {

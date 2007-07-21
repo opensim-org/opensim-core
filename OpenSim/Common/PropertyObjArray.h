@@ -39,6 +39,7 @@
 #include <string>
 #include "ArrayPtrs.h"
 #include "Property.h"
+#include "Object.h"
 
 
 //=============================================================================

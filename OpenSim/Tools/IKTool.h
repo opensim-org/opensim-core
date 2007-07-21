@@ -91,8 +91,8 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	void IKTool::initializeTrial(int i);
-	bool IKTool::solveTrial(int i);
+	void initializeTrial(int i);
+	bool solveTrial(int i);
 	virtual void run();
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
