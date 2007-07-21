@@ -103,11 +103,14 @@ protected:
 
 	std::string _optimizerAlgorithm;
 
-	// These are iniitalized in initializeTrial, and used in solveTrial
+	// These are initialized in initializeTrial, and used in solveTrial
 	Storage *_inputStorage;
 	Storage *_outputStorage;
 	IKTarget *_target;
 	IKSolverImpl *_ikSolver;
+
+	// Whether or not to write write to the designated output files (GUI will set this to false)
+	bool _printResultFiles;
 
 //=============================================================================
 // METHODS
@@ -154,6 +157,8 @@ public:
 	std::string getOptimizerAlgorithm() const { return _optimizerAlgorithm; }
 
 	Storage *getOutputStorage() { return _outputStorage; }
+
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 private:
 	void setNull();

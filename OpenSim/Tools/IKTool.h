@@ -48,6 +48,9 @@ private:
 	PropertyStr _optimizerAlgorithmProp;
 	std::string &_optimizerAlgorithm;
 
+	// Whether or not to write write to the designated output files (GUI will set this to false)
+	bool _printResultFiles;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -89,8 +92,10 @@ public:
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	void IKTool::initializeTrial(int i);
-	void IKTool::solveTrial(int i);
+	bool IKTool::solveTrial(int i);
 	virtual void run();
+
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 //=============================================================================
 };	// END of class IKTool

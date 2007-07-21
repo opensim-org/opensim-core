@@ -125,6 +125,7 @@ void IKTrial::copyData(const IKTrial &aIKTrialParams)
 	_includeMarkers = aIKTrialParams._includeMarkers;
 	_outputMotionFileName = aIKTrialParams._outputMotionFileName;
 	_notes = aIKTrialParams._notes;
+	_printResultFiles = aIKTrialParams._printResultFiles;
 }
 
 
@@ -144,6 +145,7 @@ void IKTrial::setNull()
 	_outputStorage = 0;
 	_target = 0;
 	_ikSolver = 0;
+	_printResultFiles = true;
 }
 //_____________________________________________________________________________
 /**
@@ -323,7 +325,7 @@ bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 	{
 		_ikSolver->solveFrames(*this, *_inputStorage, *_outputStorage);
 
-		if (!_outputMotionFileNameProp.getUseDefault())
+		if (_printResultFiles && !_outputMotionFileNameProp.getUseDefault())
 		{
 			// TODO: avoid converting units in-place (as this means that suddenly as soon as IK is done the storage
 			// (available to others through getOutputStorage() changes units)

@@ -150,6 +150,7 @@ setNull()
 	setupProperties();
 
 	_optimizerAlgorithm = "ipopt";
+	_printResultFiles = true;
 }
 //_____________________________________________________________________________
 /**
@@ -199,6 +200,7 @@ operator=(const IKTool &aTool)
 	_ikTaskSet = aTool._ikTaskSet;
 	_IKTrialSet = aTool._IKTrialSet;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
+	_printResultFiles = aTool._printResultFiles;
 
 	return(*this);
 }
@@ -220,12 +222,13 @@ void IKTool::initializeTrial(int i)
 	IO::chDir(directoryOfSetupFile);
 
 	_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
+	_IKTrialSet.get(i)->setPrintResultFiles(_printResultFiles);
 	if(!_IKTrialSet.get(i)->initializeTrial(*_model, _ikTaskSet))
 		cout << "Trial " << _IKTrialSet.get(i)->getName() << " initialization failed." << endl;
 
 	IO::chDir(saveWorkingDirectory);
 }
-void IKTool::solveTrial(int i) 
+bool IKTool::solveTrial(int i) 
 {
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
@@ -233,12 +236,15 @@ void IKTool::solveTrial(int i)
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	if (_IKTrialSet.get(i)->solveTrial(*_model, _ikTaskSet))
+	bool result = _IKTrialSet.get(i)->solveTrial(*_model, _ikTaskSet);
+	if(result)
 		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
 	else
 		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
 
 	IO::chDir(saveWorkingDirectory);
+
+	return result;
 }
 //_____________________________________________________________________________
 /**

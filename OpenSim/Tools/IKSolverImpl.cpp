@@ -117,6 +117,8 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 
 	Optimizer *optimizer = createOptimizer(aIKOptions, _ikTarget);
 
+	try {
+
 	for (int index = startFrame; index <= endFrame; index++)
 	{
 		// Get time associated with index
@@ -179,6 +181,10 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 			analysisSet->step(&emptyX,&emptyY,NULL,index-startFrame-1,0,currentTime,&emptyX,&emptyY);
 	}
 
+	} catch (...) { // e.g. may get InterruptedException from the callbackSet
+		delete optimizer;
+		throw;
+	}
 	delete optimizer;
 }
 //______________________________________________________________________________
