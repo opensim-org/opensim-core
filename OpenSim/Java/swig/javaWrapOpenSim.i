@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/Callback.h>
 #include <OpenSim/Simulation/Model/CallbackSet.h>
 #include <OpenSim/Simulation/Model/IntegCallback.h>
+#include <OpenSim/Simulation/Model/InterruptingIntegCallback.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
@@ -330,6 +331,7 @@ using namespace OpenSim;
 %template(SetCallback) OpenSim::Set<OpenSim::Callback>;
 %include <OpenSim/Simulation/Model/CallbackSet.h>
 %include <OpenSim/Simulation/Model/IntegCallback.h>
+%include <OpenSim/Simulation/Model/InterruptingIntegCallback.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Simulation/Model/Analysis.h>
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
