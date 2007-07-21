@@ -63,7 +63,7 @@ int main(int argc,char **argv)
 	if (!subject->isDefaultModelScaler())
 	{
 		ModelScaler& scaler = subject->getModelScaler();
-		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
+		scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass());
 	}
 	else
 	{
