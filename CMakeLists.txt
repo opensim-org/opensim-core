@@ -2,6 +2,8 @@ PROJECT (OpenSim)
 
 SET(OPENSIM_MINIMAL_BUILD ON CACHE BOOL "Minimal build (only build essential libraries and excutables)")
 
+SET(INSTALL_HEADERS OFF)
+
 # EXCLUDE_IF_MINIMAL_BUILD is a variable we set up which can be included in a SET_TARGET_PROPERTIES command for those
 # targets that you only want built by default in non-minimal build settings
 IF(OPENSIM_MINIMAL_BUILD)
@@ -69,6 +71,8 @@ INCLUDE_DIRECTORIES(${SIMTK_DIR}/core/include)
 
 IF(WIN32)
 	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib ${OpenSim_LIBRARY_DIR})
+ELSE(WIN32)
+	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib)
 ENDIF(WIN32)
 
 SET(USE_STATIC_SIMTK_LIBRARIES OFF CACHE BOOL "Link to static SimTK libraries (useful for debugging)")
