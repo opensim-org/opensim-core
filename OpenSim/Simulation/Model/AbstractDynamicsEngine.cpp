@@ -354,7 +354,8 @@ int AbstractDynamicsEngine::replaceMarkerSet(MarkerSet& aMarkerSet)
 	// Now add the markers from aMarkerSet whose body names match bodies in the engine.
 	for (i = 0; i < aMarkerSet.getSize(); i++)
 	{
-		AbstractMarker* marker = aMarkerSet.get(i);
+		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
+		AbstractMarker* marker = (AbstractMarker*)aMarkerSet.get(i)->copy();
 		const string* bodyName = marker->getBodyName();
 		AbstractBody* body = _bodySet.get(*bodyName);
 		if (body)
