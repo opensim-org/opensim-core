@@ -338,10 +338,10 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 
 		// Initialize as if it has no task
 		info->experimentalColumn = -1;
-		// initialize the constant experimental value (used if from_file is false) to the current value of the SimmCoordinate
-		// (comes from <value> in the SimmCoordinate, or <default_value> if that's not defined).  If the IKCoordinateTask
-		// specifies its own value, constantExperimentalValue will be overwritten with that value below.
-		info->constantExperimentalValue = coord->getValue();
+		// initialize the constant experimental value (used if from_file is false) to the default value of the SimmCoordinate.
+		// Previously was set to the current value of the coordinate, but that is less reliable when running from GUI.
+		// If the IKCoordinateTask specifies its own value, constantExperimentalValue will be overwritten with that value below.
+		info->constantExperimentalValue = coord->getDefaultValue();
 		info->weight = 0;
 
 		allCoordinates.append(info);
