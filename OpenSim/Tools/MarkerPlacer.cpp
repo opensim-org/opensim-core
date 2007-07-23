@@ -280,7 +280,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	aModel->getDynamicsEngine().deleteUnusedMarkers(staticPose.getMarkerNames());
 
 	IKTrial ikTrial;
-	if(_coordinateFileName != "") ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
+	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	ikTrial.setStartTime(_timeRange[0]);
 	ikTrial.setEndTime(_timeRange[0]);
 	ikTrial.setOptimizerAlgorithm(_optimizerAlgorithm);

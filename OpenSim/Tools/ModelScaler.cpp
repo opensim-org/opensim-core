@@ -294,15 +294,21 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 			{
 				/* Load the static pose marker file, and convert units.
 			    */
-				MarkerData markerData(aPathToSubject + _markerFileName);
-				markerData.convertToUnits(aModel->getLengthUnits());
+				MarkerData *markerData = 0;
+				if(!_markerFileName.empty() && _markerFileName!=PropertyStr::getDefaultStr()) {
+					markerData = new MarkerData(aPathToSubject + _markerFileName);
+					markerData->convertToUnits(aModel->getLengthUnits());
+				}
 
 				/* Now take and apply the measurements. */
 				for (int j = 0; j < _measurementSet.getSize(); j++)
 				{
 					if (_measurementSet.get(j)->getApply())
 					{
-						double scaleFactor = computeMeasurementScaleFactor(*aModel, markerData, *_measurementSet.get(j));
+						if(!markerData)
+							throw Exception("ModelScaler.processModel: ERROR- "+_markerFileNameProp.getName()+
+											    " not set but measurements are used",__FILE__,__LINE__);
+						double scaleFactor = computeMeasurementScaleFactor(*aModel, *markerData, *_measurementSet.get(j));
 						if (!rdMath::isNAN(scaleFactor))
 							_measurementSet.get(j)->applyScaleFactor(scaleFactor, theScaleSet);
 						else

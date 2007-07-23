@@ -253,7 +253,7 @@ bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, Marker
 		/* Convert marker data to an Storage object. */
 		aMarkerData.makeRdStorage(*_inputStorage);
 
-		if (_coordinateFileName != "")
+		if (!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr())
 		{
 			Storage coordinateValues(_coordinateFileName);
 			aModel.getDynamicsEngine().convertDegreesToRadians(coordinateValues);
