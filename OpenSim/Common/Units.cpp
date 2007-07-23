@@ -209,9 +209,9 @@ double Units::convertTo(UnitType aType) const
 /**
  * Get the text label for the units.
  *
- * @return Pointer to the character string.
+ * @return String label.
  */
-const char* Units::getLabel() const
+string Units::getLabel() const
 {
 	switch(_type)
 	{
@@ -229,6 +229,36 @@ const char* Units::getLabel() const
 			return "seconds";
 		case simmMilliseconds:
 			return "milliseconds";
+		case simmNewtons:
+			return "N";
+		case simmUnknownUnits:
+		default:
+			return "unknown";
+	}
+}
+/**
+ * Get the text label for the units.
+ *
+ * @return String label.
+ */
+string Units::getAbbreviation() const
+{
+	switch(_type)
+	{
+	   case simmRadians:
+		   return "rad";
+	   case simmDegrees:
+		   return "rad"; // ???
+	   case simmMillimeters:
+		   return "mm";
+	   case simmCentimeters:
+		   return "cm";
+	   case simmMeters:
+		   return "m";
+		case simmSeconds:
+			return "s";
+		case simmMilliseconds:
+			return "ms";
 		case simmNewtons:
 			return "N";
 		case simmUnknownUnits:

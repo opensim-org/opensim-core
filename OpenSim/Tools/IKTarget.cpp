@@ -161,7 +161,7 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 	{
 		cout << "total error = " << totalErrorSquared;
 		if (worstMarker >= 0)
-			cout << ", worst marker " << _markers[worstMarker]->marker->getName() << " (" << maxMarkerError << ")";
+			cout << ", worst marker " << _markers[worstMarker]->marker->getName() << " (" << maxMarkerError << " " << _model.getLengthUnits().getAbbreviation() << ")";
 		if (worstCoordinate >= 0)
 			cout << ", worst coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << " (" << maxCoordinateError << ")";
 		cout << endl;

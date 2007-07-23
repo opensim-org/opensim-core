@@ -80,7 +80,8 @@ public:
 	double convertTo(UnitType aType) const;
 	double convertTo(const Units& aUnit) const;
 	UnitType getType() const { return _type; }
-	const char* getLabel() const;
+	std::string getLabel() const;
+	std::string getAbbreviation() const;
 
 //=============================================================================
 };	// END of class Units
