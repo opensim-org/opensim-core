@@ -563,7 +563,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 	for(int i=0;i<size;i++) {
 		store = _storageList[i];
 		if(store==NULL) continue;
-		store->reset(aT);
+		store->purge();
 	}
 
 	// RECORD
