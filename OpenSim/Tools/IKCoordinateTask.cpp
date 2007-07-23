@@ -26,6 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "IKCoordinateTask.h"
+#include <OpenSim/Common/IO.h>
 
 //=============================================================================
 // NAMESPACES
@@ -41,11 +42,11 @@ using namespace OpenSim;
  * Default constructor.
  */
 IKCoordinateTask::IKCoordinateTask() :
-   _fromFile(_fromFileProp.getValueBool()),
+	_valueType(_valueTypeProp.getValueStr()),
    _value(_valueProp.getValueDbl())
 {
 	setType("IKCoordinateTask");
-	_fromFile = false;
+	_valueType = ValueTypeToString(DefaultValue);
 	_value = 0;
 	setupProperties();
 }
@@ -56,10 +57,10 @@ IKCoordinateTask::IKCoordinateTask() :
  */
 IKCoordinateTask::IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask) :
    IKTask(aIKCoordinateTask),
-   _fromFile(_fromFileProp.getValueBool()),
+	_valueType(_valueTypeProp.getValueStr()),
    _value(_valueProp.getValueDbl())
 {
-	_fromFile = aIKCoordinateTask._fromFile;
+	_valueType = aIKCoordinateTask._valueType;
 	_value = aIKCoordinateTask._value;
 	setupProperties();
 }
@@ -79,15 +80,14 @@ Object* IKCoordinateTask::copy() const
  */
 void IKCoordinateTask::setupProperties()
 {
-	_fromFileProp.setComment("Indicates whether the coordinate values should come from the coordinates_file."
-									 "  If false, then the desired value (or prescribed value in case of locked coordinates) will"
-									 " come from (a) the <value> attribute in this task, or if that's not defined then (b) the"
-									 " <value> attribute in the coordinate, or if that's not defined then (c) the <default_value>"
-									 " attribute in the coordinate.");
-	_fromFileProp.setName("from_file");
-	_propertySet.append(&_fromFileProp);
+	_valueTypeProp.setComment("Indicates the source of the coordinate value for this task.  Possible values are"
+								     " default_value (use default value of coordinate, as specified in the model file, as the fixed target value),"
+								     " manual_value (use the value specified in the value property of this task as the fixed target value),"
+									  " or from_file (use the coordinate values from the coordinate data specified by the coordinates_file property).");
+	_valueTypeProp.setName("value_type");
+	_propertySet.append(&_valueTypeProp);
 
-	_valueProp.setComment("This value will be used as the desired (or prescribed) coordinate value if from_file is set to false.");
+	_valueProp.setComment("This value will be used as the desired (or prescribed) coordinate value if value_type is set to manual_value.");
 	_valueProp.setName("value");
 	_propertySet.append(&_valueProp);
 }
@@ -104,7 +104,27 @@ void IKCoordinateTask::setupProperties()
 IKCoordinateTask& IKCoordinateTask::operator=(const IKCoordinateTask &aIKCoordinateTask)
 {
 	IKTask::operator=(aIKCoordinateTask);
-	_fromFile = aIKCoordinateTask._fromFile;
+	_valueType = aIKCoordinateTask._valueType;
 	_value = aIKCoordinateTask._value;
 	return *this;
+}
+
+//=============================================================================
+// ValueType enum utilities
+//=============================================================================
+string IKCoordinateTask::ValueTypeToString(ValueType type) {
+	switch(type) {
+		case DefaultValue: return "default_value";
+		case ManualValue: return "manual_value";
+		case FromFile: return "from_file";
+		default: return "";
+	}
+}
+
+IKCoordinateTask::ValueType IKCoordinateTask::StringToValueType(const string &str) {
+	string strLower = IO::Lowercase(str);
+	if(strLower=="default_value") return DefaultValue;
+	else if(strLower=="manual_value") return ManualValue;
+	else if(strLower=="from_file") return FromFile;
+	else throw Exception("IKCoordinateTask: ERROR- Unrecognized value type '"+str+"', expecting default_value, manual_value, or from_file.",__FILE__,__LINE__);
 }

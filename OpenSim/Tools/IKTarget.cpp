@@ -364,13 +364,13 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 		// Potential issue here if marker has same name as coordinate...  We'll search in reverse
 		// because coordinates should appear after markers in the storage.
 		// NOTE: If we're not getting the experimental value from file, we'll use constantExperimentalValue
-		if(coordTask->getFromFile()) {
+		if(coordTask->getValueType() == IKCoordinateTask::FromFile) {
 			int j = aNameArray.rfindIndex(coordName);
 			if(j < 0)
 				throw Exception("IKTarget.buildCoordinateMap: ERROR- coordinate task '"+coordName+
 									 "' specifies from_file but no column found for this coordinate in coordinates file",__FILE__,__LINE__);
 			info->experimentalColumn = j - 1; // account for time column
-		} else if(!coordTask->getValueUseDefault()) {
+		} else if(coordTask->getValueType() == IKCoordinateTask::ManualValue) {
 			info->constantExperimentalValue = coordTask->getValue();
 		}
 

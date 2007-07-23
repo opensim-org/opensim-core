@@ -638,6 +638,14 @@ TrimTrailingWhitespace(std::string &rStr)
 }
 
 std::string IO::
+Lowercase(const std::string &aStr)
+{
+	std::string result = aStr;
+	for(unsigned int i=0; i<aStr.size(); i++) result[i] = tolower(result[i]);
+	return result;
+}
+
+std::string IO::
 Uppercase(const std::string &aStr)
 {
 	std::string result = aStr;

@@ -3,7 +3,7 @@
 
 #include "osimToolsDLL.h"
 #include "IKTask.h"
-#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
@@ -18,9 +18,12 @@ namespace OpenSim {
 class OSIMTOOLS_API IKCoordinateTask : public IKTask
 {
 	OPENSIM_DECLARE_DERIVED(IKCoordinateTask, IKTask);
+public:
+	enum ValueType { DefaultValue, ManualValue, FromFile };
+
 protected:
-	PropertyBool _fromFileProp;
-	bool &_fromFile;
+	PropertyStr _valueTypeProp;
+	std::string &_valueType;
 
 	PropertyDbl _valueProp;
 	double &_value;
@@ -34,14 +37,14 @@ public:
 	IKCoordinateTask& operator=(const IKCoordinateTask &aIKCoordinateTask);
 #endif
 
-	bool getFromFile() { return _fromFile; }
-	void setFromFile(bool fromFile) { _fromFile = fromFile; }
-
-	bool getValueUseDefault() const { return _valueProp.getUseDefault(); }
-	void setValueUseDefault(bool useDefault) { _valueProp.setUseDefault(useDefault); }
+	void setValueType(ValueType type) { _valueType = ValueTypeToString(type); }
+	ValueType getValueType() const { return StringToValueType(_valueType); }
 
 	double getValue() const { return _value; }
-	void setValue(double value) { _value = value; _valueProp.setUseDefault(false); }
+	void setValue(double value) { _value = value; }
+
+	static std::string ValueTypeToString(ValueType type);
+	static ValueType StringToValueType(const std::string &str);
 
 private:
 	void setupProperties();

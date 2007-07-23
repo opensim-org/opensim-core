@@ -129,6 +129,7 @@ public:
 	static void TrimLeadingWhitespace(std::string &rStr);
 	static void TrimTrailingWhitespace(std::string &rStr);
 	static void TrimWhitespace(std::string &rStr) { TrimLeadingWhitespace(rStr); TrimTrailingWhitespace(rStr); }
+	static std::string Lowercase(const std::string &aStr);
 	static std::string Uppercase(const std::string &aStr);
 //=============================================================================
 };	// END CLASS IO

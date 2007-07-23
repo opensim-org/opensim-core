@@ -1357,6 +1357,7 @@ void Object::
 clearXMLStructures()
 {
 	_refNode = NULL;
+	if(_node) XMLNode::RemoveElementFromParent(_node);
 	_node = NULL;
 	_inlined = true;
 
