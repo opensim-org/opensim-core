@@ -205,6 +205,11 @@ operator=(const PointKinematics &aPointKinematics)
 	_point = aPointKinematics._point;
 	_pointName = aPointKinematics._pointName;
 	_bodyName = aPointKinematics._bodyName;
+
+	// STORAGE
+	deleteStorage();
+	allocateStorage();
+
 	return(*this);
 }
 //_____________________________________________________________________________
