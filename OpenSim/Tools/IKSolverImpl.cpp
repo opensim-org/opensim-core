@@ -91,13 +91,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	Array<double> unprescribedQSol(0.0, numParameters);	// Solution array
 	Array<double> experimentalMarkerLocations(0.0, _ikTarget.getNumOutputMarkers() * 3);
 
-	int startFrame = 0, endFrame = 1;
-
-	/* Get the indices of the starting frame and the ending frame,
-	 * based on the user-defined start/end times stored in
-	 * the simmIKTrialOptions.
-	 */
-	inputData.findFrameRange(aIKOptions.getStartTime(), aIKOptions.getEndTime(), startFrame, endFrame);	
+	int startFrame = aIKOptions.getStartFrame(), endFrame = aIKOptions.getEndFrame();
 
 	if (endFrame - startFrame > 1)
 		cout << "Solving frames " << startFrame + 1 << " to " << endFrame + 1 << " (time = " <<

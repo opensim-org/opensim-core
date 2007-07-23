@@ -281,6 +281,10 @@ bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, Marker
 		// Create solver
 		_ikSolver = new IKSolverImpl(*_target);
 		_ikSolver->initializeSolver(*this, *_inputStorage, *_outputStorage);
+
+		// Get the indices of the starting frame and the ending frame,
+		// based on the user-defined start/end times
+		_inputStorage->findFrameRange(getStartTime(), getEndTime(), _startFrame, _endFrame);
 	}
 	catch (Exception &x)
 	{

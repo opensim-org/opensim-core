@@ -108,6 +108,8 @@ protected:
 	Storage *_outputStorage;
 	IKTarget *_target;
 	IKSolverImpl *_ikSolver;
+	int _startFrame;
+	int _endFrame;
 
 	// Whether or not to write write to the designated output files (GUI will set this to false)
 	bool _printResultFiles;
@@ -129,21 +131,25 @@ public:
 #endif
    void copyData(const IKTrial &aIKTrialParams);
 
-	double getStartTime() const { return _timeRange[0]; }
-	double getEndTime() const { return _timeRange[1]; }
 	double getKinematicsSmoothing() const { return _kinematicsSmoothing; }
 	double getGroundReactionSmoothing() const { return _groundReactionSmoothing; }
-	bool getIncludeMarkers() const { return _includeMarkers; }
-
-	void setStartTime(double aTime) { _timeRange[0] = aTime; }
-	void setEndTime(double aTime) { _timeRange[1] = aTime; }
-	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
 
 	bool initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData);
 	bool initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet);
 	bool solveTrial(Model& aModel, IKTaskSet& aIKTaskSet);
 
 	/*===== Set and Get ===============*/
+	double getStartTime() const { return _timeRange[0]; }
+	double getEndTime() const { return _timeRange[1]; }
+	void setStartTime(double aTime) { _timeRange[0] = aTime; }
+	void setEndTime(double aTime) { _timeRange[1] = aTime; }
+
+	int getStartFrame() const { return _startFrame; }
+	int getEndFrame() const { return _endFrame; }
+
+	bool getIncludeMarkers() const { return _includeMarkers; }
+	void setIncludeMarkers(bool aValue) { _includeMarkers = aValue; }
+
 	const std::string& getMarkerDataFileName() const { return _markerFileName; }
 	void setMarkerDataFileName(const std::string& aMarkerFileName) { _markerFileName = aMarkerFileName; }
 
