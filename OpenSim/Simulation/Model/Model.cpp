@@ -1172,6 +1172,11 @@ bool Model::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMa
 	//    properties.
 	if (returnVal)
 	{
+		//If using the SimbodyEngine, force the model to be regenerated in Simbody with scaled segments
+		if (getDynamicsEngine().getType() == "SimbodyEngine"){
+			getDynamicsEngine().setup(this);
+		}
+
 		for (i = 0; i < _actuatorSet.getSize(); i++)
 			_actuatorSet.get(i)->postScale(aScaleSet);
 	}
