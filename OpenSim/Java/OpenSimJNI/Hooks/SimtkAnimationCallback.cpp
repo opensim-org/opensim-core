@@ -100,13 +100,7 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
 	// For now we make new list, copy then we'll fix performance
 	_transforms = new Transform[de.getNumBodies()];
 
-	BodySet *bodySet = de.getBodySet();
-	AbstractBody* body;
-	int i,nb = bodySet->getSize();
-	for(i=0;i<nb;i++) {
-		body = bodySet->get(i);
-		_transforms[i] = de.getTransform(*body);
-	}
+	getTransformsFromKinematicsEngine(*aModel);
 
 	_currentTime=0.0;
 	//cout<<endl<<endl;

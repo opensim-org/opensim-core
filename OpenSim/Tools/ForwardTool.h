@@ -77,7 +77,7 @@ private:
 public:
 	virtual ~ForwardTool();
 	ForwardTool();
-	ForwardTool(const std::string &aFileName);
+	ForwardTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	ForwardTool(const ForwardTool &aObject);
 	virtual Object* copy() const;
 private:
@@ -98,6 +98,22 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
+	const std::string &getControlsFileName() const { return _controlsFileName; }
+	void setControlsFileName(const std::string &aFileName) { _controlsFileName = aFileName; }
+
+	const std::string &getInitialStatesFileName() const { return _initialStatesFileName; }
+	void setInitialStatesFileName(const std::string &aFileName) { _initialStatesFileName = aFileName; }
+
+	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
+
+	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
+	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
+
+	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
+	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
+	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
 
 	//--------------------------------------------------------------------------
 	// INTERFACE

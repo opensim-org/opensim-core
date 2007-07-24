@@ -121,43 +121,40 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void setModel(Model *aModel);
 	virtual Model* getModel() const;
-	void setOutputPrecision(int aPrecision);
-	int getOutputPrecision() const;
+
+	bool getReplaceActuatorSet() const { return _replaceActuatorSet; }
+	void setReplaceActuatorSet(bool aReplace) { _replaceActuatorSet = aReplace; }
+
+	Array<std::string> &getActuatorSetFiles() { return _actuatorSetFiles; }
+
+	int getOutputPrecision() const { return _outputPrecision; }
+	void setOutputPrecision(int aPrecision) { _outputPrecision = aPrecision; }
+
 	AnalysisSet& getAnalysisSet() const;
+
 	// Results Directory
-	const std::string& getResultsDir() const {
-		return _resultsDir;
-	};
-	void setResultsDir(const std::string& aString)
-	{
-		_resultsDir = aString;
-	};
+	const std::string& getResultsDir() const { return _resultsDir; }
+	void setResultsDir(const std::string& aString) { _resultsDir = aString; }
+
 	// AbstractTool time range
-	double getStartTime() const
-	{
-		return _ti;
-	}
-	double getFinalTime() const
-	{
-		return _tf;
-	}
-	void setStartTime(const double aStartTime)
-	{
-		_ti=aStartTime;
-	}
-	void setFinalTime(const double aFinalTime)
-	{
-		_tf=aFinalTime;
-	}
+	double getInitialTime() const { return _ti; }
+	double getFinalTime() const { return _tf; }
+	void setInitialTime(const double aInitialTime) { _ti=aInitialTime; }
+	void setFinalTime(const double aFinalTime) { _tf=aFinalTime; }
+	// DEPRACATED: should use "initial" instead of "start"
+	double getStartTime() const { return _ti; }
+	void setStartTime(const double aStartTime) { _ti=aStartTime; } // depracated: should use "initial" instead of "start"
+
+	// Integrator settings
+	double getMaximumNumberOfSteps() const { return _maxSteps; }
+	double getMaxDT() const { return _maxDT; }
+	double getErrorTolerance() const { return _errorTolerance; }
+	double getFineTolerance() const { return _fineTolerance; }
+
 	// Model xml file
-	const std::string& getModelFilename()
-	{
-		return _modelFile;
-	}
-	void setModelFilename(const std::string& aModelFile)
-	{
-		_modelFile = aModelFile;
-	}
+	const std::string& getModelFilename() const { return _modelFile; }
+	void setModelFilename(const std::string& aModelFile) { _modelFile = aModelFile; }
+
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------

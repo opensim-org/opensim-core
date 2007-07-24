@@ -97,7 +97,7 @@ private:
 public:
 	virtual ~AnalyzeTool();
 	AnalyzeTool();
-	AnalyzeTool(const std::string &aFileName);
+	AnalyzeTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	AnalyzeTool(const AnalyzeTool &aObject);
 	AnalyzeTool(Model* aModel);
 	virtual Object* copy() const;
