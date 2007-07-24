@@ -807,7 +807,7 @@ void write_xml_speeds(FILE* fp, ModelStruct* ms, int angleUnits)
 		fprintf(fp, "\t\t\t\t<%sSpeed name=\"%s_u\">\n", EngineType,ms->gencoord[i].name);
 		fprintf(fp, "\t\t\t\t\t<default_value> 0.0 </default_value>\n");
 		fprintf(fp, "\t\t\t\t\t<coordinate> %s </coordinate>\n",ms->gencoord[i].name);
-		fprintf(fp, "\t\t\t\t</%sCoordinate>\n",EngineType);
+		fprintf(fp, "\t\t\t\t</%sSpeed>\n",EngineType);
 	}
 	fprintf(fp, "\t\t\t</objects>\n");
 	fprintf(fp, "\t\t\t</SpeedSet>\n");
