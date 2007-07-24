@@ -44,6 +44,7 @@ MZOPTFORCERRA2 = 18;
 % 1. Construct full paths for all gait2392 example files from OpenSim.
 %
 
+Analyze_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_Analyze.xml' );
 CMC_ActuatorsFileName = fullfile( gait2392ExampleDirectory, 'gait2392_CMC_Actuators.xml' );
 CMC_ControlConstraintsFileName = fullfile( gait2392ExampleDirectory, 'gait2392_CMC_ControlConstraints.xml' );
 CMC_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_CMC.xml' );
@@ -70,6 +71,7 @@ Perturb_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_Per
 % 2. Read in all relevant gait2392 example setup files from OpenSim.
 %
 
+Analyze_SetupDomNode = xmlread( Analyze_SetupFileName );
 CMC_ActuatorsDomNode = xmlread( CMC_ActuatorsFileName );
 CMC_ControlConstraintsDomNode = xmlread( CMC_ControlConstraintsFileName );
 CMC_SetupDomNode = xmlread( CMC_SetupFileName );
@@ -205,7 +207,7 @@ cmcDesiredKinematicsFileName = fullfile( rra2ResultsDirectoryName, [trialName '_
 cmcTaskSetFileName = [trialName '_CMC_Tasks.xml'];
 cmcConstraintsFileName = [trialName '_CMC_ControlConstraints.xml'];
 % CMC setup file node: external_loads_file := externalLoadsFileName
-% RRA2 setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+% CMC setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 
 % 3.1.6 Set Forward values.
 
@@ -222,13 +224,27 @@ useSpecifiedDt = 'true';
 % Forward setup file node: external_loads_file := externalLoadsFileName
 % Forward setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 
+% 3.1.7 Set Analyze values.
+
+% 3.1.7.1 Set Analyze setup file values.
+analyzeName = trialName;
+% Analyze setup file node: model_file := adjustedModelFileName
+% Analyze setup file node: actuator_set_files := cmcActuatorSetFileName
+analyzeResultsDirectory = './ResultsAnalyze';
+analyzeInitialTime = '0.5';
+analyzeFinalTime = '2.0';
+analyzeControlsFileName = fullfile( cmcResultsDirectoryName, [cmcName '_controls.xml'] );
+analyzeInitialStatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_states.sto'] );
+% Analyze setup file node: external_loads_file := externalLoadsFileName
+% Analyze setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+
 % 3.2 Set these new values in the setup file DOM nodes.
 Scale_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( scaleName );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( mass );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 7).getChildNodes.item(0).setData( height );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( notes );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(19).getChildNodes.item(3).getChildNodes.item(0).setData( scaleModelFileName );
-Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(19).getChildNodes.item(7).getAttributes.item(0).setValue( markerSetFileName );
+Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(19).getChildNodes.item(7).getChildNodes.item(0).setData( markerSetFileName );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(7).getAttributes.item(0).setValue( scaleSetFileName );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(11).getAttributes.item(0).setValue( measurementSetFileName );
 Scale_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(15).getChildNodes.item(0).setData( scaleMarkerFileName );
@@ -341,11 +357,27 @@ Forward_SetupDomNode.getChildNodes.item(0).getChildNodes.item(63).getChildNodes.
 % Forward setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 Forward_SetupDomNode.getChildNodes.item(0).getChildNodes.item(67).getChildNodes.item(0).setData( desiredMotionFileName );
 
+Analyze_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( analyzeName );
+% Analyze setup file node: model_file := adjustedModelFileName
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% Analyze setup file node: actuator_set_files := cmcActuatorSetFileName
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( cmcActuatorSetFileName );
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( analyzeResultsDirectory );
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( analyzeInitialTime );
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( analyzeFinalTime );
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(35).getChildNodes.item(0).setData( analyzeControlsFileName );
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(39).getChildNodes.item(0).setData( analyzeInitialStatesFileName );
+% Analyze setup file node: external_loads_file := externalLoadsFileName
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(43).getChildNodes.item(0).setData( externalLoadsFileName );
+% Analyze setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(47).getChildNodes.item(0).setData( desiredMotionFileName );
+
 %
 % 4. Write new setup files to outputDirectory.
 %
 
 % 4.1 Form full paths for all output setup files.
+Analyze_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_Analyze.xml'] );
 CMC_ActuatorsFileName = fullfile( outputDirectory, cmcActuatorSetFileName );
 CMC_ControlConstraintsFileName = fullfile( outputDirectory, cmcConstraintsFileName );
 CMC_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_CMC.xml'] );
@@ -369,6 +401,7 @@ Forward_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_Forward.xm
 Perturb_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_Perturb.xml'] );
 
 % 4.2 Write all setup files.
+xmlwrite( Analyze_SetupFileName, Analyze_SetupDomNode );
 xmlwrite( CMC_ActuatorsFileName, CMC_ActuatorsDomNode );
 xmlwrite( CMC_ControlConstraintsFileName, CMC_ControlConstraintsDomNode );
 xmlwrite( CMC_SetupFileName, CMC_SetupDomNode );
