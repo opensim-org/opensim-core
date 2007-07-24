@@ -36,6 +36,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Tools/IKSolverImpl.h>
 #include <OpenSim/Tools/IKTarget.h>
@@ -54,6 +55,9 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 */
 int main(int argc,char **argv)
 {
+	//TODO: put these options on the command line
+	LoadOpenSimLibrary("osimSimbodyEngine");
+
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
 
