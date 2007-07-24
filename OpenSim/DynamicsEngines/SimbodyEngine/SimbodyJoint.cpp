@@ -32,6 +32,8 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include "SimbodyJoint.h"
+#include "SimbodyRotationDof.h"
+#include "SimbodyTranslationDof.h"
 #include "SimbodyEngine.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -401,32 +403,53 @@ void SimbodyJoint::scale(const ScaleSet& aScaleSet)
 		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
 		 return;
 
-	// Location in parent
-	double scaledLocationInParent[3];
-	for(int i=0; i<3; i++) scaledLocationInParent[i] = scaleFactors[i] * _locationInParent[i];
-	setLocationInParent(scaledLocationInParent);
 
+	/* This code assumes that if the DOF is a function with 2 points, then it
+	 * acts as the independent gencoord, and should not be scaled. It
+	 * also assumes that if the function has 3 or more points, it should be
+	 * scaled.
+	 */
+   for (int i = 0; i < _dofSet.getSize(); i++)
+   {
+		if (_dofSet.get(i)->getMotionType() == AbstractDof::Translational)
+		{
+			SimbodyTranslationDof* transDof = dynamic_cast<SimbodyTranslationDof*>(_dofSet.get(i));
+			Function* function = transDof->getFunction();
+			int axis = transDof->getAxisIndex();
 
-	// SCALING TO DO WITH THE CHILD BODY -----
-	const string& childName = getChildBody()->getName();
-	// Get scale factors
-	for (int i=0; i<aScaleSet.getSize(); i++) {
-		Scale *scale = aScaleSet.get(i);
-		if (scale->getSegmentName() == childName) {
-			scale->getScaleFactors(scaleFactors);
-			break;
+			if (transDof->getCoordinate() == NULL)
+			{
+				/* If the DOF has no coordinate, then it is a constant, so it should
+				 * cast to a Constant.
+				 */
+				Constant* cons = dynamic_cast<Constant*>(function);
+				if (cons)
+					cons->setValue(transDof->getValue() * scaleFactors[axis]);
+			}
+			else
+			{
+				bool scaleIt = false;
+				if (function->getNumberOfPoints() > 2)
+				{
+					scaleIt = true;
+				}
+				else if (function->getNumberOfPoints() == 2)
+				{
+					// If the function does not pass through 0,0 or its slope
+					// at 0,0 is not 1 or -1, then scale the function.
+					double valueAtZero = function->evaluate(0, 0.0, 0.0, 0.0);
+					double slopeAtZero = function->evaluate(1, 0.0, 0.0, 0.0);
+
+					if (NOT_EQUAL_WITHIN_ERROR(valueAtZero, 0.0) ||
+						 (NOT_EQUAL_WITHIN_ERROR(slopeAtZero, 1.0) && NOT_EQUAL_WITHIN_ERROR(slopeAtZero, -1.0)))
+						scaleIt = true;
+				}
+
+				if (scaleIt)
+					function->scaleY(scaleFactors[axis]);
+			}
 		}
 	}
 
-	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
-		 return;
-
-	// Location in child
-	double scaledLocationInChild[3];
-	for(int i=0; i<3; i++) scaledLocationInChild[i] = scaleFactors[i] * _locationInChild[i];
-	setLocationInChild(scaledLocationInChild);
 }
 

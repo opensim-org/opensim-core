@@ -375,6 +375,14 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			}
 			q->_bodyId = childId;
 			q->_mobilityIndex = 0;
+			if(rotation){
+				q->_motionType = AbstractDof::Rotational;
+			}
+			else{
+				q->_motionType = AbstractDof::Translational;
+			}
+
+
 			// Speed
 			string uName = AbstractSpeed::getSpeedName(qName);
 			SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
@@ -386,6 +394,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			}
 			u->_bodyId = childId;
 			u->_mobilityIndex = 0;
+			u->setCoordinate(q);
 		}
 
 		// UPDATE PARENT ID
@@ -597,7 +606,7 @@ createGroundBodyIfNecessary()
 		if(body->getName() == simbodyGroundName) {
 			ground = body;
 			break;
-		}
+	}
 	}
 
 	// If the ground body doesn't exist create it
@@ -915,7 +924,11 @@ void SimbodyEngine::extractConfiguration(const double aY[],double rQ[],double rU
  */
 void SimbodyEngine::applyDefaultConfiguration()
 {
-	throw Exception("SimbodyEngine::applyDefaultConfiguration() not yet implemented.");
+	for (int i = 0; i < _coordinateSet.getSize(); i++)
+		_coordinateSet.get(i)->setValue(_coordinateSet.get(i)->getDefaultValue());
+
+	for (int i = 0; i < _speedSet.getSize(); i++)
+		_speedSet.get(i)->setValue(_speedSet.get(i)->getDefaultValue());
 }
 
 
@@ -946,6 +959,31 @@ void SimbodyEngine::getGravity(double aGrav[3]) const
 {
 	// TODO:  Is there a better way to do this?
 	Vec3::updAs(&aGrav[0]) = _gravitySubsystem->getGravity(*_s);
+}
+
+
+//--------------------------------------------------------------------------
+// SCALING
+//--------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Scale the Simbody Dynamics engine
+ *
+ * @param aScaleSet the set of XYZ scale factors for the bodies
+ * @param aFinalMass the mass that the scaled model should have
+ * @param aPreserveMassDist whether or not the masses of the
+ *        individual bodies should be scaled with the body scale factors.
+ * @return Whether or not scaling was successful.
+ */
+bool SimbodyEngine::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
+{
+	// Base class
+	AbstractDynamicsEngine::scale(aScaleSet, aFinalMass, aPreserveMassDist);
+
+	// Invalidate all of the paths
+	//_path.invalidate();
+
+	return true;
 }
 
 
@@ -1091,7 +1129,7 @@ void SimbodyEngine::getPosition(const AbstractBody &aBody, const double aPoint[3
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rPos[0]) = _matter->locateBodyPointOnGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1110,7 +1148,7 @@ void SimbodyEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rVel[0]) = _matter->calcBodyFixedPointVelocityInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1130,7 +1168,7 @@ void SimbodyEngine::getAcceleration(const AbstractBody &aBody, const double aPoi
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAcc[0]) = _matter->calcBodyFixedPointAccelerationInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1143,7 +1181,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double rDirCo
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Mat33::updAs(&rDirCos[0][0]) = _matter->getBodyRotation(*_s, b->_id).asMat33();
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1156,7 +1194,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirC
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Mat33::updAs(rDirCos) = _matter->getBodyRotation(*_s, b->_id).asMat33();
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1169,7 +1207,7 @@ void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngVel[0]) = _matter->getBodyAngularVelocity(*_s, b->_id);
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1182,7 +1220,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, doubl
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(rAngVel) = _matter->getBodyAngularVelocity(*_s, b->_id);
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1196,7 +1234,7 @@ void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, double rAn
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1209,7 +1247,7 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, d
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1220,18 +1258,11 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, d
  */
 OpenSim::Transform SimbodyEngine::getTransform(const AbstractBody &aBody)
 {
-	Transform t;
+	double aMat[4][4];
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 
-	// 1. Get the coordinates of aBody's origin in its SD/FAST body's frame.
-
-	// 2. Convert the origin of aBody into the inertial frame.
-
-	// 3. Get the orientation of aBody in the inertial frame.
-
-	// 4. Fill in the transform with the translation and rotation.
-
-	return t;
+	Mat44::updAs(&aMat[0][0]) = _matter->getBodyTransform(*_s, b->_id).toMat44();
+	return Transform(aMat);
 }
 
 //--------------------------------------------------------------------------
@@ -1421,7 +1452,9 @@ void SimbodyEngine::applyTorques(int aN, const AbstractBody *aBodies[], const do
  */
 void SimbodyEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3])
 {
-	const SimbodyBody *b = (SimbodyBody*)(&aBody);
+	double torqueInG[3];
+	transform(aBody, aTorque, *_groundBody, torqueInG);
+	applyTorque(aBody, torqueInG);
 }
 
 //_____________________________________________________________________________
@@ -1555,7 +1588,8 @@ double SimbodyEngine::getNetAppliedGeneralizedForce(const AbstractCoordinate &aU
  */
 void SimbodyEngine::computeGeneralizedForces(double aDUDT[], double rF[]) const
 {
-
+	//This is an inverse dynamics type routine not currently supported by Simbody
+	//TODO: F = M*udot
 
 }
 
@@ -1600,8 +1634,6 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
 		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives.\n\n";
 		return;
 	}
-	Vector qdot = _s->getQDot();
-	Vector udot = _s->getUDot();
 
 	// ASSIGN THEM (MAYBE SLOW BUT CORRECT
 	int nq = _s->getNQ();
@@ -1744,7 +1776,7 @@ calcDistance(const AbstractBody& aBody1, const OpenSim::Array<double>& aPoint1,
 	const SimbodyBody* b1 = (SimbodyBody*)(&aBody1);
 	const SimbodyBody* b2 = (SimbodyBody*)(&aBody2);
 	return _matter->calcPointToPointDistance(*_s, b1->_id, Vec3::getAs(&aPoint1[0]), b2->_id, Vec3::getAs(&aPoint2[0]));
-}
+	}
 
 //_____________________________________________________________________________
 /**
@@ -1761,7 +1793,7 @@ double SimbodyEngine::calcDistance(const AbstractBody& aBody1, const double aPoi
 	const SimbodyBody* b1 = (SimbodyBody*)(&aBody1);
 	const SimbodyBody* b2 = (SimbodyBody*)(&aBody2);
 	return _matter->calcPointToPointDistance(*_s, b1->_id, Vec3::getAs(aPoint1), b2->_id, Vec3::getAs(aPoint2));
-}
+	}
 
 //_____________________________________________________________________________
 /**

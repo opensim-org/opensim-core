@@ -287,7 +287,9 @@ void SimbodyCoordinate::setup(AbstractDynamicsEngine* aEngine)
 	else if (_defaultValue > _range[1])
 		_defaultValue = _range[1];
 
-	determineType();
+	// If the user specified a default value but not a value, set the
+	// current value to the default value
+	//setValue(_defaultValue);
 }
 
 //=============================================================================

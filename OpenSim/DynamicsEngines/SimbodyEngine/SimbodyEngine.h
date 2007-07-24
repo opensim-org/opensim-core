@@ -170,6 +170,8 @@ public:
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
 	//--------------------------------------------------------------------------
+
+	virtual void setTime(const double aTime) {_s->setTime(aTime); };
 	virtual void setConfiguration(const double aY[]);
 	virtual void getConfiguration(double rY[]) const;
 	virtual void setConfiguration(const double aQ[], const double aU[]);
@@ -188,6 +190,11 @@ public:
 	virtual int
 		assemble(double aTime,double *rState,int *aLock,double aTol,
 		int aMaxevals,int *rFcnt,int *rErr) { return 0; };
+
+	//--------------------------------------------------------------------------
+	// SCALING
+	//--------------------------------------------------------------------------
+	virtual bool scale(const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
 
 	//--------------------------------------------------------------------------
 	// BODY INFORMATION

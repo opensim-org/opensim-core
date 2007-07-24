@@ -111,6 +111,7 @@ public:
 	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true);
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
+	void getScaleFactors(Array<double>& aScaleFactors) const;
 
 private:
 	void setNull();

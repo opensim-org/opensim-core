@@ -428,15 +428,19 @@ void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScale
  */
 void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
 {
-	cerr<<"SimbodyBody.scaleInertialProperties: not yet implemented.\n";
-	return;
+	cerr<<"SimbodyBody.scaleInertialProperties: not vaidated for Simbody yet.\n";
+
+	double inertia[3][3];
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			inertia[i][j] = _inertia[3*i+j];
 
 	// Scales assuming mass stays the same
-	double mass, inertia[3][3];
-	scaleInertiaTensor(mass, aScaleFactors, inertia);
+	scaleInertiaTensor(_mass, aScaleFactors, inertia);
 
-	// Set new values
-	setInertia(inertia);
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			_inertia[3*i+j] = inertia[i][j];
 
 	// Scales mass
 	if(aScaleMass)
@@ -452,22 +456,28 @@ void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFa
  */
 void SimbodyBody::scaleMass(double aScaleFactor)
 {
-	cerr<<"SimbodyBody.scaleMass: not yet implemented.\n";
-	return;
+	cerr<<"SimbodyBody.scaleMass: not vaidated for Simbody yet.\n";
 
-	double mass, inertia[3][3];
-
-	mass *= aScaleFactor;
-	for (int i=0;i<3;i++)
-	  for(int j=0;j<3;j++)
-		inertia[i][j] *= aScaleFactor;
-
-	// Update properties and SDFast
-	setMass(mass);
-	setInertia(inertia);
+	_mass *= aScaleFactor;
+	for (int i=0;i<9;i++) _inertia[i] *= aScaleFactor;
 }
 
 
 //=============================================================================
 // UTILITY
 //=============================================================================
+
+
+//=============================================================================
+// I/O
+//=============================================================================
+void SimbodyBody::getScaleFactors(OpenSim::Array<double>& scales) const
+{
+
+	double scaleFactors[3];
+	_displayer.getScaleFactors(scaleFactors);
+
+	for (int i=0; i<3; i++)
+		scales[i] = scaleFactors[i];
+
+}
