@@ -134,7 +134,7 @@ void SdfastSpeed::copyData(const SdfastSpeed &aSpeed)
 void SdfastSpeed::copyData(const AbstractSpeed &aSpeed)
 {
 	_defaultValue = aSpeed.getDefaultValue();
-	_coordinate = aSpeed.getCoordinate();
+	_coordinate = aSpeed.getCoordinate(); // TODO: should we be copying pointers?
 	if (_coordinate)
 		_coordinateName = _coordinate->getName();
 	else

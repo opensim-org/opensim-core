@@ -138,8 +138,8 @@ void SdfastBody::copyData(const SdfastBody &aBody)
 	_inertia = aBody._inertia;
 	_displayer = aBody._displayer;
 	_index = aBody._index;
-	_SdfastEngine = aBody._SdfastEngine;
-	updateSdfast();
+	_SdfastEngine = aBody._SdfastEngine; // TODO: should we be copying pointers?
+	updateSdfast(); // TODO: should we really call this here?  or maybe wait until setup is called?
 }
 
 //_____________________________________________________________________________

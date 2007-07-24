@@ -60,7 +60,6 @@ SdfastCoordinate::SdfastCoordinate() :
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
-	_constraintIndependentCoordinate(NULL),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
@@ -103,7 +102,6 @@ SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
-	_constraintIndependentCoordinate(NULL),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
@@ -139,7 +137,6 @@ SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
 	_maxRestraintFunction(_maxRestraintFunctionProp.getValueObjPtrRef()),
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
-	_constraintIndependentCoordinate(NULL),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
 	_motionType(AbstractDof::Rotational),
@@ -185,19 +182,20 @@ void SdfastCoordinate::copyData(const SdfastCoordinate &aCoordinate)
 	_keys = aCoordinate._keys;
 	_clamped = aCoordinate._clamped;
 	_locked = aCoordinate._locked;
+	_QType = aCoordinate._QType;
 	_restraintFunction = (Function*)Object::SafeCopy(aCoordinate._restraintFunction);
 	_minRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._minRestraintFunction);
 	_maxRestraintFunction = (Function*)Object::SafeCopy(aCoordinate._maxRestraintFunction);
 	_restraintActive = aCoordinate._restraintActive;
 	_constraintIndependentCoordinateName = aCoordinate._constraintIndependentCoordinateName;
-	_constraintIndependentCoordinate = aCoordinate._constraintIndependentCoordinate;
+	_constraintIndependentCoordinate = aCoordinate._constraintIndependentCoordinate; // TODO: should we be copying pointers?
 	_constraintNumber = aCoordinate._constraintNumber;
 	_constraintFunction = (Function*)Object::SafeCopy(aCoordinate._constraintFunction);
+	_motionType = aCoordinate._motionType;
 	_index = aCoordinate._index;
 	_joint = aCoordinate._joint;
 	_axis = aCoordinate._axis;
-	_SdfastEngine = aCoordinate._SdfastEngine;
-	_motionType = aCoordinate._motionType;
+	_SdfastEngine = aCoordinate._SdfastEngine; // TODO: should we be copying pointers?
 }
 
 //_____________________________________________________________________________
@@ -233,6 +231,7 @@ void SdfastCoordinate::setNull(void)
 	setType("SdfastCoordinate");
 
 	_constraintIndependentCoordinateName = "";
+	_constraintIndependentCoordinate = NULL;
 	_constraintNumber = -1;
 }
 

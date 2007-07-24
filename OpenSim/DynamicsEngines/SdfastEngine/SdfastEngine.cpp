@@ -120,11 +120,8 @@ SdfastEngine::SdfastEngine(const string &aFileName) :
 
 SdfastEngine::~SdfastEngine()
 {
-	if (_y)
-		delete [] _y;
-
-	if (_dy)
-		delete [] _dy;
+	delete [] _y;
+	delete [] _dy;
 }
 
 //_____________________________________________________________________________
@@ -150,9 +147,7 @@ SdfastEngine::SdfastEngine(const SdfastEngine& aEngine) :
  */
 Object* SdfastEngine::copy() const
 {
-	SdfastEngine *object = new SdfastEngine(*this);
-
-	return object;
+	return new SdfastEngine(*this);
 }
 
 //=============================================================================
@@ -254,10 +249,14 @@ void SdfastEngine::constructSystemVariables()
 void SdfastEngine::copyData(const SdfastEngine &aEngine)
 {
 	_groundBody = aEngine._groundBody;
+	_modelLibraryName = aEngine._modelLibraryName;
 	_numBodies = aEngine._numBodies;
 	_numQs = aEngine._numQs;
 	_numUs = aEngine._numUs;
 	_numJoints = aEngine._numJoints;
+
+	delete[] _y; _y = NULL;
+	delete[] _dy; _dy = NULL;
 	if (_numQs > 0 || _numUs > 0) {
 		_y = new double[_numQs + _numUs];
 		_dy = new double[_numQs + _numUs];
@@ -265,8 +264,6 @@ void SdfastEngine::copyData(const SdfastEngine &aEngine)
 			_y[i] = aEngine._y[i];
 			_dy[i] = aEngine._dy[i];
 		}
-	} else {
-		_y = _dy = NULL;
 	}
 }
 
