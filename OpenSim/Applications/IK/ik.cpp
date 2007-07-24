@@ -29,6 +29,8 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
@@ -54,6 +56,10 @@ int main(int argc,char **argv)
 	//----------------------
 	try {
 	//----------------------
+
+	//TODO: put these options on the command line
+	LoadOpenSimLibrary("osimSimbodyEngine");
+	LoadOpenSimLibrary("osimSimmKinematicsEngine");
 
 	// REGISTER TYPES
 	IKTool::registerTypes();
