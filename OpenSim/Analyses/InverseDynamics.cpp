@@ -346,8 +346,12 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	}
 
 	// LAPACK SOLVER
+	// NOTE: It destroys the matrices/vectors we pass to it, so we need to pass it copies of performanceMatrix and performanceVector (don't bother making
+	// copies of _constraintMatrix/Vector since those are reinitialized each time anyway)
 	int info;
-	dgglse_(nf, nf, &nacc, &_performanceMatrix(0,0), nf, &_constraintMatrix(0,0), nacc, &_performanceVector[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
+	SimTK::Matrix performanceMatrixCopy = _performanceMatrix;
+	SimTK::Vector performanceVectorCopy = _performanceVector;
+	dgglse_(nf, nf, &nacc, &performanceMatrixCopy(0,0), nf, &_constraintMatrix(0,0), nacc, &performanceVectorCopy[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
 
 	_storage->append(aT,nf,&f[0]);
 
