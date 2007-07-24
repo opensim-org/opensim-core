@@ -120,11 +120,13 @@ public:
 	const std::string& getXCoordinateName() const { return _XCoordinateName; }
 	const std::string& getYCoordinateName() const { return _YCoordinateName; }
 	const std::string& getZCoordinateName() const { return _ZCoordinateName; }
-
+	
+	virtual	void scale(Array<double>& aScaleFactors);
 	virtual bool isActive() const { return true; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 	virtual void update();
 	virtual void getVelocity(double aVelocity[3]);
+
 
 	OPENSIM_DECLARE_DERIVED(MovingMusclePoint, MusclePoint);
 private:

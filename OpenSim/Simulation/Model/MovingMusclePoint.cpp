@@ -301,3 +301,17 @@ void MovingMusclePoint::getVelocity(double aVelocity[3])
 	else
 		aVelocity[2] = 0.0;
 }
+
+void MovingMusclePoint::scale(Array<double>& aScaleFactors)
+{
+	if (_XCoordinate)
+		_XAttachment->scaleY(aScaleFactors[0]);
+
+	if (_YCoordinate)
+		_YAttachment->scaleY(aScaleFactors[1]);
+
+	if (_ZCoordinate)
+		 _ZAttachment->scaleY(aScaleFactors[2]);
+
+	updateGeometry();
+}

@@ -109,9 +109,9 @@ public:
 	const AbstractBody* getBody() const { return _body; }
 	void setBody(AbstractBody& aBody);
 	const std::string& getBodyName() const { return _bodyName; }
-	void scale(Array<double>& aScaleFactors);
 	const AbstractMuscle* getMuscle() const { return _muscle; }
 
+	virtual	void scale(Array<double>& aScaleFactors);
 	virtual bool isActive() const { return true; }
 	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
