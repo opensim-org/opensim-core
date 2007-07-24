@@ -57,7 +57,9 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
+	//TODO: put these options on the command line
 	LoadOpenSimLibrary("osimSdfastEngine");
+	LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE
 	int i;
