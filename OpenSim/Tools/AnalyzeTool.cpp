@@ -64,7 +64,7 @@ AnalyzeTool::AnalyzeTool() :
  *
  * @param aFileName File name of the document.
  */
-AnalyzeTool::AnalyzeTool(const string &aFileName) :
+AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 	AbstractTool(aFileName, false),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
@@ -82,8 +82,10 @@ AnalyzeTool::AnalyzeTool(const string &aFileName) :
 	setType("AnalyzeTool");
 	setNull();
 	updateFromXMLNode();
-	loadModel(aFileName);
-	loadControlsStatesPseudoStatesExternalLoadsFromFiles();
+	if(aLoadModelAndInput) {
+		loadModel(aFileName);
+		loadControlsStatesPseudoStatesExternalLoadsFromFiles();
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -481,6 +483,7 @@ getPseudoStatesStorage()
 void AnalyzeTool::
 loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 {
+	delete _statesStore; _statesStore = NULL;
 	if(_statesFileName!="") {
 		if(_coordinatesFileName!="") cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
 		if(_speedsFileName!="") cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
@@ -521,6 +524,7 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 	cout<<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<".\n";
 
 	// Controls
+	delete _controlSet; _controlSet = NULL;
 	if(_controlsFileName!="") {
 		cout<<"\n\nLoading controls from file "<<_controlsFileName<<".\n";
 		_controlSet = new ControlSet(_controlsFileName);
@@ -528,6 +532,7 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 
 	// Pseudo States
 	int nyp = _model->getNumPseudoStates();
+	delete _pseudoStore; _pseudoStore = NULL;
 	if(nyp > 0) {
 		if(_pseudoStatesFileName=="") {
 			string msg = "AnalyzeTool.initializeFromFiles: A pseudo states file must be specified.";
@@ -679,10 +684,8 @@ bool AnalyzeTool::run()
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = ".";
 	if (_document)	// When the tool is created live from GUI it has no file/document association
-		directoryOfSetupFile=IO::getParentDirectory(getDocumentFileName());
-	IO::chDir(directoryOfSetupFile);
+		IO::chDir(IO::getParentDirectory(getDocumentFileName()));
 
 	// COMPUTE INITIAL AND FINAL INDEX
 	double ti,tf;
