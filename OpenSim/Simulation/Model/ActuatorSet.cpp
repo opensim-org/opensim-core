@@ -392,7 +392,7 @@ append(ActuatorSet &aActuatorSet, bool aAllowDuplicateNames)
 			}
 		}
 		if(!nameExists) {
-			success = Set<AbstractActuator>::append(aActuatorSet.get(i));
+			if(!Set<AbstractActuator>::append(aActuatorSet.get(i))) success = false;
 			// individual actuators keep pointers to model as well!! 
 			aActuatorSet.get(i)->setModel(_model);
 		}

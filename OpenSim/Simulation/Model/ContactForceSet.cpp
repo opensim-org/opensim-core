@@ -166,6 +166,14 @@ append(ContactForce *aContact)
 }
 //_____________________________________________________________________________
 /**
+ */
+bool ContactForceSet::
+append(ContactForceSet &aContactForceSet, bool aAllowDuplicateNames)
+{
+	return ActuatorSet::append(aContactForceSet, aAllowDuplicateNames);
+}
+//_____________________________________________________________________________
+/**
  * Set the contact force at an index.  A copy is not made.  The contact force
  * previously set a the index is removed and, if the set is the memory owner,
  * deleted.

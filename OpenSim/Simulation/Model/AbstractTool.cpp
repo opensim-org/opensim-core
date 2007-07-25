@@ -298,12 +298,13 @@ operator=(const AbstractTool &aTool)
 //_____________________________________________________________________________
 /**
  * Set the model to be investigated.
+ * NOTE: setup() should have been called on the model prior to calling this method
  */
 void AbstractTool::
 setModel(Model *aModel)
 {
 	_model = aModel;
-	_analysisSet.setModel(_model);
+	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -346,8 +347,35 @@ loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet, C
 
 		cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
-		Model *model = new Model(_modelFile);
+		Model *model = 0;
 
+		try {
+			model = new Model(_modelFile);
+		} catch(...) { // Properly restore current directory if an exception is thrown
+			IO::chDir(saveWorkingDirectory);
+			throw;
+		}
+
+		IO::chDir(saveWorkingDirectory);
+
+		updateModelActuatorsAndContactForces(model, aToolSetupFileName, rOriginalActuatorSet, rOriginalContactForceSet);
+
+		model->setup();
+		if(!model->getActuatorSet()->check())
+			throw(Exception("ERROR ActuatorSet::check() failed",__FILE__,__LINE__));
+
+		setModel(model);
+	}
+}
+
+void AbstractTool::
+updateModelActuatorsAndContactForces(Model *model, const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet, ContactForceSet *rOriginalContactForceSet)
+{
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
+	IO::chDir(directoryOfSetupFile);
+
+	try {
 		if(rOriginalActuatorSet) *rOriginalActuatorSet = *model->getActuatorSet();
 
 		// If replacing actuator set read in from model file, clear it here
@@ -360,28 +388,23 @@ loadModel(const string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet, C
 			model->getActuatorSet()->append(*actuatorSet);
 		}
 
-      if(rOriginalContactForceSet) *rOriginalContactForceSet = *model->getContactSet();
+		if(rOriginalContactForceSet) *rOriginalContactForceSet = *model->getContactSet();
 
-      // If replacing contact force set read in from model file, clear it here
-      if(_replaceContactForceSet) model->getContactSet()->setSize(0);
+		// If replacing contact force set read in from model file, clear it here
+		if(_replaceContactForceSet) model->getContactSet()->setSize(0);
 
-      // Load contact force set
-      for(int i=0;i<_contactForceSetFiles.getSize();i++) {
-         cout<<"Adding contact force set from "<<_contactForceSetFiles[i]<<endl;
-         ContactForceSet *contactForceSet=new ContactForceSet(_contactForceSetFiles[i]);
-         for(int j=0;j<contactForceSet->getSize();j++) {
-            // TODO - implement ContactForceSet::append(ContactForceSet&), like ActuatorSet::append(ActuatorSet&), so this for loop becomes one line like for actuatorSet above. (CTJ)
-            model->getContactSet()->append((ContactForce*)contactForceSet->get(j));
-         }
-      }
-
-		model->setup();
-		if(!model->getActuatorSet()->check())
-			throw(Exception("ERROR ActuatorSet::check() failed",__FILE__,__LINE__));
-		setModel(model);
-
+		// Load contact force set
+		for(int i=0;i<_contactForceSetFiles.getSize();i++) {
+			cout<<"Adding contact force set from "<<_contactForceSetFiles[i]<<endl;
+			ContactForceSet *contactForceSet=new ContactForceSet(_contactForceSetFiles[i]);
+			model->getContactSet()->append(*contactForceSet); // uses append defined in ActuatorSet, parent class of ContactForceSet
+		}
+	} catch (...) {
 		IO::chDir(saveWorkingDirectory);
+		throw;
 	}
+
+	IO::chDir(saveWorkingDirectory);
 }
 //_____________________________________________________________________________
 /**

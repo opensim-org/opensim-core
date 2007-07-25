@@ -8,6 +8,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
+#include <OpenSim/Common/InterruptedException.h>
 #include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -59,7 +60,7 @@ ForwardTool::ForwardTool() :
  *
  * @param aFileName File name of the document.
  */
-ForwardTool::ForwardTool(const string &aFileName) :
+ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_initialStatesFileName(_initialStatesFileNameProp.getValueStr()),
@@ -73,8 +74,7 @@ ForwardTool::ForwardTool(const string &aFileName) :
 	setType("ForwardTool");
 	setNull();
 	updateFromXMLNode();
-	loadModel(aFileName);
-	if (_model) addAnalysisSetToModel();
+	if(aLoadModel) loadModel(aFileName);
 }
 //_____________________________________________________________________________
 /**
@@ -265,7 +265,7 @@ operator=(const ForwardTool &aTool)
 /**
  * Run the investigation.
  */
-void ForwardTool::run()
+bool ForwardTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -407,20 +407,28 @@ void ForwardTool::run()
 		_model->setInitialStates(&yi[0]);
 	}
 
-	// INTEGRATE
-	cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
-	manager.integrate();
+	bool completed = true;
 
+	try {
+		// INTEGRATE
+		cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
+		manager.integrate();
+	} catch (...) { // e.g. may get InterruptedException
+		completed = false;
+	}
 
 	// PRINT RESULTS
-	printResults(getName(),getResultsDir()); // this will create results directory if necessary
-	Storage *xStore = integrand.getControlStorage();
-	Storage *yStore = integrand.getStateStorage();
-	Storage *ypStore = integrand.getPseudoStateStorage();
-	xStore->print(getResultsDir() + "/" + getName() + "_controls.sto");
-	yStore->print(getResultsDir() + "/" + getName() + "_states.sto");
-	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+	// TODO: prompt to print partial results if integration not completed
+	if(completed) {
+		printResults(getName(),getResultsDir()); // this will create results directory if necessary
+		integrand.getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
+		integrand.getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
+		integrand.getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+	}
+
 	IO::chDir(saveWorkingDirectory);
+
+	return completed;
 }
 
 //=============================================================================

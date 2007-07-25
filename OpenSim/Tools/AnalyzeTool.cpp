@@ -83,7 +83,6 @@ AnalyzeTool::AnalyzeTool(const string &aFileName) :
 	setNull();
 	updateFromXMLNode();
 	loadModel(aFileName);
-	if(_model) addAnalysisSetToModel();
 	loadControlsStatesPseudoStatesExternalLoadsFromFiles();
 }
 //_____________________________________________________________________________
@@ -660,7 +659,7 @@ getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Arr
 /**
  * Run the investigation.
  */
-void AnalyzeTool::run()
+bool AnalyzeTool::run()
 {
 	cout<<"Running investigation "<<getName()<<"."<<endl;
 
@@ -759,4 +758,6 @@ void AnalyzeTool::run()
 	if (_printResultFiles)
 		printResults(getName(),getResultsDir()); // this will create results directory if necessary
 	IO::chDir(saveWorkingDirectory);
+
+	return true;
 }

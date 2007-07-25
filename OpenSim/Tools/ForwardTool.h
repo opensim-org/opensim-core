@@ -77,7 +77,7 @@ private:
 public:
 	virtual ~ForwardTool();
 	ForwardTool();
-	ForwardTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
+	ForwardTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	ForwardTool(const ForwardTool &aObject);
 	virtual Object* copy() const;
 private:
@@ -118,7 +118,7 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	virtual void run();
+	virtual bool run();
 
 	//--------------------------------------------------------------------------
 	// UTILITY (also used by the CMCTool)

@@ -77,7 +77,6 @@ IKTool::IKTool(const string &aFileName, Model* guiModel) :
 								  _modelFileProp.getName()+" property (currently '"+_modelFile+"') is the model containing the "+
 								  "SimmKinematicsEngine (and not the SD/Fast-based model generated using makeSDFastModel)",__FILE__,__LINE__) );
 	}
-	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -213,8 +212,10 @@ operator=(const IKTool &aTool)
 //=============================================================================
 // RUN
 //=============================================================================
-void IKTool::initializeTrial(int i) 
+bool IKTool::initializeTrial(int i) 
 {
+	bool success = true;
+
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
 	string saveWorkingDirectory = IO::getCwd();
@@ -223,10 +224,14 @@ void IKTool::initializeTrial(int i)
 
 	_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
 	_IKTrialSet.get(i)->setPrintResultFiles(_printResultFiles);
-	if(!_IKTrialSet.get(i)->initializeTrial(*_model, _ikTaskSet))
+	if(!_IKTrialSet.get(i)->initializeTrial(*_model, _ikTaskSet)) {
+		success = false;
 		cout << "Trial " << _IKTrialSet.get(i)->getName() << " initialization failed." << endl;
+	}
 
 	IO::chDir(saveWorkingDirectory);
+
+	return success;
 }
 bool IKTool::solveTrial(int i) 
 {
@@ -250,14 +255,17 @@ bool IKTool::solveTrial(int i)
 /**
  * Run the investigation.
  */
-void IKTool::run()
+bool IKTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
+
+	bool success = true;
 
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
-		initializeTrial(i);
-		solveTrial(i);
+		if(!initializeTrial(i) || !solveTrial(i)) success = false;
 	}
+
+	return success;
 }

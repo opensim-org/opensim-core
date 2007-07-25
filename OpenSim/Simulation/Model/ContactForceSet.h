@@ -87,6 +87,7 @@ private:
 public:
 	// CONTACT
 	bool append(ContactForce *aContact);
+	bool append(ContactForceSet &aContactForceSet, bool aAllowDuplicateNames=false);
 	bool set(int aIndex,ContactForce *aContact);
 
 	// Methods moved down from Model, need to be implemented

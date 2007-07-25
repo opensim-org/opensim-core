@@ -139,7 +139,6 @@ CMCTool::CMCTool(const string &aFileName) :
 	setNull();
 	updateFromXMLNode();
 	loadModel(aFileName, &_originalActuatorSet);
-	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -465,7 +464,7 @@ operator=(const CMCTool &aTool)
 /**
  * Run the investigation.
  */
-void CMCTool::run()
+bool CMCTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -512,7 +511,7 @@ void CMCTool::run()
 	if(_desiredKinematicsFileName=="") {
 		cout<<"ERROR- a desired kinematics file was not specified.\n\n";
 		IO::chDir(saveWorkingDirectory);
-		return;
+		return false;
 	}
 	cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
 	Storage desiredKinStore(_desiredKinematicsFileName);
@@ -559,7 +558,7 @@ void CMCTool::run()
 	if(_taskSetFileName=="") {
 		cout<<"ERROR- a task set was not specified\n\n";
 		IO::chDir(saveWorkingDirectory);
-		return;
+		return false;
 	}
 	rdCMC_TaskSet taskSet(_taskSetFileName);
 	cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
@@ -817,6 +816,8 @@ void CMCTool::run()
 	}
 
 	IO::chDir(saveWorkingDirectory);
+
+	return true;
 }
 
 

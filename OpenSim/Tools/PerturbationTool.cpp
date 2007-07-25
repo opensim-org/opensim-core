@@ -136,7 +136,6 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 	setNull();
 	updateFromXMLNode();
 	loadModel(aFileName);
-	if (_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
 /**
@@ -491,7 +490,7 @@ operator=(const PerturbationTool &aTool)
 /**
  * Run the investigation.
  */
-void PerturbationTool::run()
+bool PerturbationTool::run()
 {
 	cout<<"Running investigation "<<getName()<<".\n";
 
@@ -921,6 +920,8 @@ void PerturbationTool::run()
 	elapsedTime = difftime(finishTime,startTime);
 	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 	cout<<"================================================================\n\n\n";
+
+	return true;
 }
 
 

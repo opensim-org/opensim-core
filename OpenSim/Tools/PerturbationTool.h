@@ -187,7 +187,7 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	virtual void run();
+	virtual bool run();
 	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 

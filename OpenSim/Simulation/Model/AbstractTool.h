@@ -159,6 +159,7 @@ public:
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
 	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
+	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void addAnalysisSetToModel();
 
 	void solveForEquilibrium(bool aSolve)
@@ -168,7 +169,7 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	virtual void run() = 0;
+	virtual bool run() = 0;
 	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 

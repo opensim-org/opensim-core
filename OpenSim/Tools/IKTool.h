@@ -91,9 +91,9 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	void initializeTrial(int i);
+	bool initializeTrial(int i);
 	bool solveTrial(int i);
-	virtual void run();
+	virtual bool run();
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
