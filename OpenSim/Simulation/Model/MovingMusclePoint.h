@@ -70,29 +70,29 @@ class OSIMSIMULATION_API MovingMusclePoint : public MusclePoint
 private:
 
 protected:
-	PropertyObjPtr<Function> _XAttachmentProp;
-	Function* &_XAttachment;
+	PropertyObjPtr<Function> _xAttachmentProp;
+	Function* &_xAttachment;
 
-	PropertyStr _XCoordinateNameProp;
-   std::string &_XCoordinateName;
+	PropertyStr _xCoordinateNameProp;
+   std::string &_xCoordinateName;
 
-	const AbstractCoordinate* _XCoordinate;
+	const AbstractCoordinate* _xCoordinate;
 
-	PropertyObjPtr<Function> _YAttachmentProp;
-	Function* &_YAttachment;
+	PropertyObjPtr<Function> _yAttachmentProp;
+	Function* &_yAttachment;
 
-	PropertyStr _YCoordinateNameProp;
-   std::string &_YCoordinateName;
+	PropertyStr _yCoordinateNameProp;
+   std::string &_yCoordinateName;
 
-	const AbstractCoordinate* _YCoordinate;
+	const AbstractCoordinate* _yCoordinate;
 
-	PropertyObjPtr<Function> _ZAttachmentProp;
-	Function* &_ZAttachment;
+	PropertyObjPtr<Function> _zAttachmentProp;
+	Function* &_zAttachment;
 
-	PropertyStr _ZCoordinateNameProp;
-   std::string &_ZCoordinateName;
+	PropertyStr _zCoordinateNameProp;
+   std::string &_zCoordinateName;
 
-	const AbstractCoordinate* _ZCoordinate;
+	const AbstractCoordinate* _zCoordinate;
 
 //=============================================================================
 // METHODS
@@ -111,15 +111,15 @@ public:
 #endif
    void copyData(const MovingMusclePoint &aPoint);
 
-	const AbstractCoordinate* getXCoordinate() const { return _XCoordinate; }
-	const AbstractCoordinate* getYCoordinate() const { return _YCoordinate; }
-	const AbstractCoordinate* getZCoordinate() const { return _ZCoordinate; }
+	const AbstractCoordinate* getXCoordinate() const { return _xCoordinate; }
+	const AbstractCoordinate* getYCoordinate() const { return _yCoordinate; }
+	const AbstractCoordinate* getZCoordinate() const { return _zCoordinate; }
 	void setXCoordinate(AbstractCoordinate& aCoordinate);
 	void setYCoordinate(AbstractCoordinate& aCoordinate);
 	void setZCoordinate(AbstractCoordinate& aCoordinate);
-	const std::string& getXCoordinateName() const { return _XCoordinateName; }
-	const std::string& getYCoordinateName() const { return _YCoordinateName; }
-	const std::string& getZCoordinateName() const { return _ZCoordinateName; }
+	const std::string& getXCoordinateName() const { return _xCoordinateName; }
+	const std::string& getYCoordinateName() const { return _yCoordinateName; }
+	const std::string& getZCoordinateName() const { return _zCoordinateName; }
 	
 	virtual	void scale(Array<double>& aScaleFactors);
 	virtual bool isActive() const { return true; }

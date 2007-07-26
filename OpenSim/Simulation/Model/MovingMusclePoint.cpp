@@ -48,12 +48,12 @@ using namespace OpenSim;
  * Default constructor.
  */
 MovingMusclePoint::MovingMusclePoint() :
-   _XAttachment(_XAttachmentProp.getValueObjPtrRef()),
-	_XCoordinateName(_XCoordinateNameProp.getValueStr()),
-   _YAttachment(_YAttachmentProp.getValueObjPtrRef()),
-	_YCoordinateName(_YCoordinateNameProp.getValueStr()),
-   _ZAttachment(_ZAttachmentProp.getValueObjPtrRef()),
-	_ZCoordinateName(_ZCoordinateNameProp.getValueStr())
+   _xAttachment(_xAttachmentProp.getValueObjPtrRef()),
+	_xCoordinateName(_xCoordinateNameProp.getValueStr()),
+   _yAttachment(_yAttachmentProp.getValueObjPtrRef()),
+	_yCoordinateName(_yCoordinateNameProp.getValueStr()),
+   _zAttachment(_zAttachmentProp.getValueObjPtrRef()),
+	_zCoordinateName(_zCoordinateNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -75,12 +75,12 @@ MovingMusclePoint::~MovingMusclePoint()
  */
 MovingMusclePoint::MovingMusclePoint(const MovingMusclePoint &aPoint) :
    MusclePoint(aPoint),
-   _XAttachment(_XAttachmentProp.getValueObjPtrRef()),
-	_XCoordinateName(_XCoordinateNameProp.getValueStr()),
-   _YAttachment(_YAttachmentProp.getValueObjPtrRef()),
-	_YCoordinateName(_YCoordinateNameProp.getValueStr()),
-   _ZAttachment(_ZAttachmentProp.getValueObjPtrRef()),
-	_ZCoordinateName(_ZCoordinateNameProp.getValueStr())
+   _xAttachment(_xAttachmentProp.getValueObjPtrRef()),
+	_xCoordinateName(_xCoordinateNameProp.getValueStr()),
+   _yAttachment(_yAttachmentProp.getValueObjPtrRef()),
+	_yCoordinateName(_yCoordinateNameProp.getValueStr()),
+   _zAttachment(_zAttachmentProp.getValueObjPtrRef()),
+	_zCoordinateName(_zCoordinateNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -111,12 +111,12 @@ Object* MovingMusclePoint::copy() const
  */
 void MovingMusclePoint::copyData(const MovingMusclePoint &aPoint)
 {
-	_XAttachment = aPoint._XAttachment;
-	_XCoordinateName = aPoint._XCoordinateName;
-	_YAttachment = aPoint._YAttachment;
-	_YCoordinateName = aPoint._YCoordinateName;
-	_ZAttachment = aPoint._ZAttachment;
-	_ZCoordinateName = aPoint._ZCoordinateName;
+	_xAttachment = (Function*)Object::SafeCopy(aPoint._xAttachment);
+	_xCoordinateName = aPoint._xCoordinateName;
+	_yAttachment = (Function*)Object::SafeCopy(aPoint._yAttachment);
+	_yCoordinateName = aPoint._yCoordinateName;
+	_zAttachment = (Function*)Object::SafeCopy(aPoint._zAttachment);
+	_zCoordinateName = aPoint._zCoordinateName;
 }
 
 //_____________________________________________________________________________
@@ -127,9 +127,9 @@ void MovingMusclePoint::setNull()
 {
 	setType("MovingMusclePoint");
 
-	_XCoordinate = NULL;
-	_YCoordinate = NULL;
-	_ZCoordinate = NULL;
+	_xCoordinate = NULL;
+	_yCoordinate = NULL;
+	_zCoordinate = NULL;
 }
 
 //_____________________________________________________________________________
@@ -138,23 +138,23 @@ void MovingMusclePoint::setNull()
  */
 void MovingMusclePoint::setupProperties()
 {
-	_XAttachmentProp.setName("X_attachment");
-	_propertySet.append(&_XAttachmentProp);
+	_xAttachmentProp.setName("XAttachment");
+	_propertySet.append(&_xAttachmentProp);
 
-	_XCoordinateNameProp.setName("X_coordinate");
-	_propertySet.append(&_XCoordinateNameProp);
+	_xCoordinateNameProp.setName("x_coordinate");
+	_propertySet.append(&_xCoordinateNameProp);
 
-	_YAttachmentProp.setName("Y_attachment");
-	_propertySet.append(&_YAttachmentProp);
+	_yAttachmentProp.setName("YAttachment");
+	_propertySet.append(&_yAttachmentProp);
 
-	_YCoordinateNameProp.setName("Y_coordinate");
-	_propertySet.append(&_YCoordinateNameProp);
+	_yCoordinateNameProp.setName("y_coordinate");
+	_propertySet.append(&_yCoordinateNameProp);
 
-	_ZAttachmentProp.setName("Z_attachment");
-	_propertySet.append(&_ZAttachmentProp);
+	_zAttachmentProp.setName("ZAttachment");
+	_propertySet.append(&_zAttachmentProp);
 
-	_ZCoordinateNameProp.setName("Z_coordinate");
-	_propertySet.append(&_ZCoordinateNameProp);
+	_zCoordinateNameProp.setName("z_coordinate");
+	_propertySet.append(&_zCoordinateNameProp);
 }
 
 //_____________________________________________________________________________
@@ -165,10 +165,9 @@ void MovingMusclePoint::setupProperties()
  */
 void MovingMusclePoint::setXCoordinate(AbstractCoordinate& aCoordinate)
 {
-	if (&aCoordinate != _XCoordinate)
-	{
-	   _XCoordinate = &aCoordinate;
-	   _XCoordinateName = _XCoordinate->getName();
+	if (&aCoordinate != _xCoordinate) {
+	   _xCoordinate = &aCoordinate;
+	   _xCoordinateName = _xCoordinate->getName();
 		_muscle->invalidatePath();
 	}
 }
@@ -181,10 +180,9 @@ void MovingMusclePoint::setXCoordinate(AbstractCoordinate& aCoordinate)
  */
 void MovingMusclePoint::setYCoordinate(AbstractCoordinate& aCoordinate)
 {
-	if (&aCoordinate != _YCoordinate)
-	{
-	   _YCoordinate = &aCoordinate;
-	   _YCoordinateName = _YCoordinate->getName();
+	if (&aCoordinate != _yCoordinate) {
+	   _yCoordinate = &aCoordinate;
+	   _yCoordinateName = _yCoordinate->getName();
 		_muscle->invalidatePath();
 	}
 }
@@ -197,10 +195,9 @@ void MovingMusclePoint::setYCoordinate(AbstractCoordinate& aCoordinate)
  */
 void MovingMusclePoint::setZCoordinate(AbstractCoordinate& aCoordinate)
 {
-	if (&aCoordinate != _ZCoordinate)
-	{
-	   _ZCoordinate = &aCoordinate;
-	   _ZCoordinateName = _ZCoordinate->getName();
+	if (&aCoordinate != _zCoordinate) {
+	   _zCoordinate = &aCoordinate;
+	   _zCoordinateName = _zCoordinate->getName();
 		_muscle->invalidatePath();
 	}
 }
@@ -219,9 +216,9 @@ void MovingMusclePoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 
 	// Look up the coordinates by name in the dynamics engine and
 	// store pointers to them.
-	_XCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_XCoordinateName);
-	_YCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_YCoordinateName);
-	_ZCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_ZCoordinateName);
+	_xCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_xCoordinateName);
+	_yCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_yCoordinateName);
+	_zCoordinate = aModel->getDynamicsEngine().getCoordinateSet()->get(_zCoordinateName);
 
 	// Update the XYZ location of the point (stored in _attachment).
 	update();
@@ -253,14 +250,14 @@ MovingMusclePoint& MovingMusclePoint::operator=(const MovingMusclePoint &aPoint)
  */
 void MovingMusclePoint::update()
 {
-	if (_XCoordinate)
-		_attachment[0] = _XAttachment->evaluate(0, _XCoordinate->getValue(), 0.0, 0.0);
+	if (_xCoordinate)
+		_attachment[0] = _xAttachment->evaluate(0, _xCoordinate->getValue(), 0.0, 0.0);
 
-	if (_YCoordinate)
-		_attachment[1] = _YAttachment->evaluate(0, _YCoordinate->getValue(), 0.0, 0.0);
+	if (_yCoordinate)
+		_attachment[1] = _yAttachment->evaluate(0, _yCoordinate->getValue(), 0.0, 0.0);
 
-	if (_ZCoordinate)
-		_attachment[2] = _ZAttachment->evaluate(0, _ZCoordinate->getValue(), 0.0, 0.0);
+	if (_zCoordinate)
+		_attachment[2] = _zAttachment->evaluate(0, _zCoordinate->getValue(), 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
@@ -277,26 +274,26 @@ void MovingMusclePoint::getVelocity(double aVelocity[3])
 	
 	SpeedSet *speeds = _body->getDynamicsEngine()->getSpeedSet();
 
-	if (_XCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_XCoordinateName))->getValue();
+	if (_xCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_xCoordinateName))->getValue();
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[0] = _XAttachment->evaluate(1, _XCoordinate->getValue(), 0.0, 0.0)*speed;
+		aVelocity[0] = _xAttachment->evaluate(1, _xCoordinate->getValue(), 0.0, 0.0)*speed;
 	}
 	else
 		aVelocity[0] = 0.0;
 
-	if (_YCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_YCoordinateName))->getValue();
+	if (_yCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_yCoordinateName))->getValue();
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[1] = _YAttachment->evaluate(1, _YCoordinate->getValue(), 0.0, 0.0)*speed;
+		aVelocity[1] = _yAttachment->evaluate(1, _yCoordinate->getValue(), 0.0, 0.0)*speed;
 	}
 	else
 		aVelocity[1] = 0.0;
 
-	if (_ZCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_ZCoordinateName))->getValue();
+	if (_zCoordinate){
+		speed = speeds->get(AbstractSpeed::getSpeedName(_zCoordinateName))->getValue();
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[2] = _ZAttachment->evaluate(1, _ZCoordinate->getValue(), 0.0, 0.0);
+		aVelocity[2] = _zAttachment->evaluate(1, _zCoordinate->getValue(), 0.0, 0.0);
 	}
 	else
 		aVelocity[2] = 0.0;
@@ -304,14 +301,14 @@ void MovingMusclePoint::getVelocity(double aVelocity[3])
 
 void MovingMusclePoint::scale(Array<double>& aScaleFactors)
 {
-	if (_XCoordinate)
-		_XAttachment->scaleY(aScaleFactors[0]);
+	if (_xCoordinate)
+		_xAttachment->scaleY(aScaleFactors[0]);
 
-	if (_YCoordinate)
-		_YAttachment->scaleY(aScaleFactors[1]);
+	if (_yCoordinate)
+		_yAttachment->scaleY(aScaleFactors[1]);
 
-	if (_ZCoordinate)
-		 _ZAttachment->scaleY(aScaleFactors[2]);
+	if (_zCoordinate)
+		 _zAttachment->scaleY(aScaleFactors[2]);
 
 	updateGeometry();
 }
