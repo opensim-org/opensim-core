@@ -130,7 +130,7 @@ end
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
-RUN_CODE_BLOCK_5 = true;
+RUN_CODE_BLOCK_5 = false;
 if RUN_CODE_BLOCK_5
     gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
     outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware_vslow_auto';
@@ -154,11 +154,12 @@ if RUN_CODE_BLOCK_5
     mxOptimalForceRRA2 = '2.0';
     myOptimalForceRRA2 = '2.0';
     mzOptimalForceRRA2 = '2.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
@@ -221,11 +222,12 @@ if RUN_CODE_BLOCK_6
     mxOptimalForceRRA2 = '2.0';
     myOptimalForceRRA2 = '2.0';
     mzOptimalForceRRA2 = '2.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
@@ -288,11 +290,12 @@ if RUN_CODE_BLOCK_7
     mxOptimalForceRRA2 = '2.0';
     myOptimalForceRRA2 = '2.0';
     mzOptimalForceRRA2 = '2.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
@@ -353,11 +356,12 @@ if RUN_CODE_BLOCK_8
     mxOptimalForceRRA2 = '2.0';
     myOptimalForceRRA2 = '2.0';
     mzOptimalForceRRA2 = '2.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
@@ -420,11 +424,12 @@ if RUN_CODE_BLOCK_9
     mxOptimalForceRRA2 = '2.0';
     myOptimalForceRRA2 = '2.0';
     mzOptimalForceRRA2 = '2.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
@@ -463,7 +468,7 @@ end
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
-RUN_CODE_BLOCK_10 = false;
+RUN_CODE_BLOCK_10 = true;
 if RUN_CODE_BLOCK_10
     gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
     outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
@@ -487,11 +492,12 @@ if RUN_CODE_BLOCK_10
     mxOptimalForceRRA2 = '4.0';
     myOptimalForceRRA2 = '4.0';
     mzOptimalForceRRA2 = '4.0';
+    cmcOptimizerAlgorithm = 'cfsqp';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fyMinControlConstraintRRA2 ...
                         fyMaxControlConstraintRRA2 mxMinControlConstraintRRA2 mxMaxControlConstraintRRA2 ...
                         myMinControlConstraintRRA2 myMaxControlConstraintRRA2 mzMinControlConstraintRRA2 ...
                         mzMaxControlConstraintRRA2 fxOptimalForceRRA2 fyOptimalForceRRA2 fzOptimalForceRRA2 ...
-                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 };
+                        mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
     initialPercent = 0;
     finalPercent = 150;
