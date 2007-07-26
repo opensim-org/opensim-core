@@ -325,8 +325,9 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			}
 			Vec3 massCenter(0,0,0);
 			massCenter = com;
-			SimTK::Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
-			MassProperties massProps(mass,massCenter,inertiaTensor);
+			Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
+			Inertia inertiaTensorAboutBodyFrame = inertiaTensor.shiftFromMassCenter(-Vec3(com),mass);
+         MassProperties massProps(mass,massCenter,inertiaTensorAboutBodyFrame);
 			cout<<"\n"<<child->getName()<<massProps<<endl;
 
 			// ADD RIGID BODY
@@ -353,9 +354,6 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 				cout<<"pin axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
 			}
-
-			// Note- if parentID is used farther below, this line may need to be moved to end of loop.
-			parentId = childId;
 
 			// UPDATE BODY ID IN REAL CHILD BODY
 			// This is only done for the last axis
@@ -395,9 +393,26 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			u->_bodyId = childId;
 			u->_mobilityIndex = 0;
 			u->setCoordinate(q);
-		}
 
-		// UPDATE PARENT ID
+			// CHECK FOR LOCKED COORDINATES
+			// If a coordinate is locked, add a distance constraint.
+			/*
+			if(q->_locked) {
+				cout<<"Handling locked coordinate."<<endl;
+				double a[3],p[3];
+				dof->getAxis(a);
+				Mtx::PerpendicularUnitVector(a,p);
+				Vec3 pParent(p);
+				Vec3 pChild(p);
+				pParent += parentTranslation;
+				pChild += childTranslation;
+				_matter->addConstantDistanceConstraint(parentId,pParent,childId,pChild,0.0);
+			}
+			*/
+
+			// UPDATE PARENT ID
+			parentId = childId;
+		}
 
 		// ADD RIGID BODIES TO THE CHILD BODY
 		addRigidBodies(child);
@@ -606,7 +621,7 @@ createGroundBodyIfNecessary()
 		if(body->getName() == simbodyGroundName) {
 			ground = body;
 			break;
-	}
+		}
 	}
 
 	// If the ground body doesn't exist create it
@@ -1129,7 +1144,7 @@ void SimbodyEngine::getPosition(const AbstractBody &aBody, const double aPoint[3
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rPos[0]) = _matter->locateBodyPointOnGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1148,7 +1163,7 @@ void SimbodyEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rVel[0]) = _matter->calcBodyFixedPointVelocityInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1168,7 +1183,7 @@ void SimbodyEngine::getAcceleration(const AbstractBody &aBody, const double aPoi
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAcc[0]) = _matter->calcBodyFixedPointAccelerationInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1181,7 +1196,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double rDirCo
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Mat33::updAs(&rDirCos[0][0]) = _matter->getBodyRotation(*_s, b->_id).asMat33();
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1194,7 +1209,7 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirC
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
 	Mat33::updAs(rDirCos) = _matter->getBodyRotation(*_s, b->_id).asMat33();
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1207,7 +1222,7 @@ void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngVel[0]) = _matter->getBodyAngularVelocity(*_s, b->_id);
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1220,7 +1235,7 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, doubl
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(rAngVel) = _matter->getBodyAngularVelocity(*_s, b->_id);
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1234,7 +1249,7 @@ void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, double rAn
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1247,7 +1262,7 @@ void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, d
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
 	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1634,6 +1649,8 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
 		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives.\n\n";
 		return;
 	}
+	Vector qdot = _matter->getQDot(*_s);
+	Vector udot = _matter->getUDot(*_s);
 
 	// ASSIGN THEM (MAYBE SLOW BUT CORRECT
 	int nq = _s->getNQ();
@@ -1776,7 +1793,7 @@ calcDistance(const AbstractBody& aBody1, const OpenSim::Array<double>& aPoint1,
 	const SimbodyBody* b1 = (SimbodyBody*)(&aBody1);
 	const SimbodyBody* b2 = (SimbodyBody*)(&aBody2);
 	return _matter->calcPointToPointDistance(*_s, b1->_id, Vec3::getAs(&aPoint1[0]), b2->_id, Vec3::getAs(&aPoint2[0]));
-	}
+}
 
 //_____________________________________________________________________________
 /**
@@ -1793,7 +1810,7 @@ double SimbodyEngine::calcDistance(const AbstractBody& aBody1, const double aPoi
 	const SimbodyBody* b1 = (SimbodyBody*)(&aBody1);
 	const SimbodyBody* b2 = (SimbodyBody*)(&aBody2);
 	return _matter->calcPointToPointDistance(*_s, b1->_id, Vec3::getAs(aPoint1), b2->_id, Vec3::getAs(aPoint2));
-	}
+}
 
 //_____________________________________________________________________________
 /**

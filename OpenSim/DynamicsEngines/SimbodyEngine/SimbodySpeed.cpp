@@ -300,6 +300,8 @@ double SimbodySpeed::getValue() const
  */
 double SimbodySpeed::getAcceleration() const
 {
-	return 0; //(not implemented) _engine->_matter->getMobilizerUDot(*(_engine->_s),_bodyId,_mobilityIndex);
+	//_engine->_matter->getMobilizerUDot(*(_engine->_s),_bodyId,_mobilityIndex);
+	Vector udot = _engine->_matter->getUDot(*(_engine->_s));
+	return udot(_bodyId - 1);
 }
 
