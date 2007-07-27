@@ -267,6 +267,7 @@ public:
 	std::string getDocumentFileName() const;
 	DOMElement* getXMLNode() const;
 	void clearXMLStructures();
+	void setAllPropertiesUseDefault(bool aUseDefault);
 protected:
 	void setXMLNode(DOMElement *aNode);
 private:

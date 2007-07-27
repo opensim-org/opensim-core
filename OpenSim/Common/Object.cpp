@@ -1410,6 +1410,60 @@ clearXMLStructures()
 	delete _document;
 	_document = NULL;
 }
+
+//-----------------------------------------------------------------------------
+// setAllPropertiesUseDefault
+//-----------------------------------------------------------------------------
+void Object::
+setAllPropertiesUseDefault(bool aUseDefault)
+{
+	// LOOP THROUGH PROPERTIES
+	for(int i=0;i<_propertySet.getSize();i++) {
+
+		Property *property = _propertySet.get(i);
+		property->setUseDefault(aUseDefault);
+		Property::PropertyType type = property->getType();
+
+		// VALUE
+		switch(type) {
+
+		case(Property::Bool) :
+		case(Property::Int) :
+		case(Property::Dbl) :
+		case(Property::Str) :
+		case(Property::BoolArray) :
+		case(Property::IntArray) :
+		case(Property::DblArray) :
+		case(Property::StrArray) :
+			break; // Nothing to do for the basic types
+
+		// Obj
+		case(Property::Obj) : {
+			Object &object = property->getValueObj();
+			object.setAllPropertiesUseDefault(aUseDefault);
+			break;
+		}
+
+		// ObjArray
+		case(Property::ObjArray) :
+			for(int j=0;j<property->getValueObjArraySize();j++)
+				property->getValueObjPtr(j)->setAllPropertiesUseDefault(aUseDefault);
+			break;
+
+		// ObjPtr
+		case(Property::ObjPtr) : {
+			Object *object = property->getValueObjPtr();
+			if(object) object->setAllPropertiesUseDefault(aUseDefault);
+			break;
+		}
+
+		// NOT RECOGNIZED
+		default :
+			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+			break;
+		}
+	}
+}
 //=============================================================================
 // IO
 //=============================================================================
