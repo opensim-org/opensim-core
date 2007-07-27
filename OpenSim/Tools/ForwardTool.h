@@ -104,16 +104,19 @@ public:
 	const std::string &getInitialStatesFileName() const { return _initialStatesFileName; }
 	void setInitialStatesFileName(const std::string &aFileName) { _initialStatesFileName = aFileName; }
 
+	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
+
+	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
-
 	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
 	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-
 	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
+	void setExternalLoadsBody1(const std::string &aName) { _externalLoadsBody1 = aName; }
 	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
+	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
+	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
 	//--------------------------------------------------------------------------
 	// INTERFACE

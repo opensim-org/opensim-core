@@ -103,6 +103,8 @@ public:
 	void clearValue() { _value = DefaultValue; setUseDefault(true); }
 	static const std::string& getDefaultStr() { return DefaultValue; }
 
+	bool isValidFileName() { return _value!="" && _value!=DefaultValue; }
+
 //=============================================================================
 };	// END of class PropertyStr
 

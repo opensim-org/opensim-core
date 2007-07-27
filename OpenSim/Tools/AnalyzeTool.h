@@ -137,8 +137,8 @@ public:
 	void setCoordinatesFileName(const std::string &aFileName) { _coordinatesFileName = aFileName; }
 	const std::string &getSpeedsFileName() const { return _speedsFileName; }
 	void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
-
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
+	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
@@ -146,8 +146,11 @@ public:
 	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
 	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
 	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
+	void setExternalLoadsBody1(const std::string &aName) { _externalLoadsBody1 = aName; }
 	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
+	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
 	//--------------------------------------------------------------------------
 	// UTILITIES

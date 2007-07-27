@@ -484,13 +484,13 @@ void AnalyzeTool::
 loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 {
 	delete _statesStore; _statesStore = NULL;
-	if(_statesFileName!="") {
-		if(_coordinatesFileName!="") cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
-		if(_speedsFileName!="") cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
+	if(_statesFileNameProp.isValidFileName()) {
+		if(_coordinatesFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
+		if(_speedsFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
 		cout<<"\nLoading states from file "<<_statesFileName<<".\n";
 		_statesStore = new Storage(_statesFileName);
 	} else {
-		if(_coordinatesFileName=="") 
+		if(!_coordinatesFileNameProp.isValidFileName()) 
 			throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
 
 		cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<".\n";
@@ -525,7 +525,7 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 
 	// Controls
 	delete _controlSet; _controlSet = NULL;
-	if(_controlsFileName!="") {
+	if(_controlsFileNameProp.isValidFileName()) {
 		cout<<"\n\nLoading controls from file "<<_controlsFileName<<".\n";
 		_controlSet = new ControlSet(_controlsFileName);
 	}
@@ -534,7 +534,7 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 	int nyp = _model->getNumPseudoStates();
 	delete _pseudoStore; _pseudoStore = NULL;
 	if(nyp > 0) {
-		if(_pseudoStatesFileName=="") {
+		if(_pseudoStatesFileNameProp.isValidFileName()) {
 			string msg = "AnalyzeTool.initializeFromFiles: A pseudo states file must be specified.";
 			throw Exception(msg,__FILE__,__LINE__);
 		}
