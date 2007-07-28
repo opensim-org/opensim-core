@@ -151,6 +151,13 @@ void setNull()
 // OPERATORS
 //=============================================================================
 public:
+// A non-operator version of operator== which we can use in java
+// NOTE: I tried to name it "equals" since that's the standard way to compare objects in
+// java, but didn't seem to work...  - Eran
+bool arrayEquals(const Array<T> &aArray) const
+{
+	return *this == aArray;
+}
 #ifndef SWIG
 //-----------------------------------------------------------------------------
 // BRACKETS ([])

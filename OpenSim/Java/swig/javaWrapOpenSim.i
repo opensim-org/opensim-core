@@ -197,6 +197,23 @@ using namespace OpenSim;
   public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
 %}
 
+%typemap(javacode) OpenSim::Array<std::string> %{
+   public java.util.Vector<String> toVector() {
+      java.util.Vector<String> vector = new java.util.Vector<String>();
+      vector.setSize(getSize());
+      for(int i=0; i<getSize(); i++) vector.set(i, getitem(i));
+      return vector;
+   }
+   public void append(java.util.Vector<String> vector) {
+      for(int i=0; i<vector.size(); i++) append(vector.get(i));
+   }
+   public static ArrayStr fromVector(java.util.Vector<String> vector) {
+      ArrayStr array = new ArrayStr();
+      array.append(vector);
+      return array;
+   }
+%}
+
 %pragma(java) jniclassclassmodifiers="public class"
 
 %pragma(java) jniclassimports="import org.opensim.utils.TheApp;"

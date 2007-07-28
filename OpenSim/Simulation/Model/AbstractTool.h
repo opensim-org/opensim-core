@@ -126,6 +126,7 @@ public:
 	void setReplaceActuatorSet(bool aReplace) { _replaceActuatorSet = aReplace; }
 
 	Array<std::string> &getActuatorSetFiles() { return _actuatorSetFiles; }
+	void setActuatorSetFiles(const Array<std::string> &aActuatorSetFiles) { _actuatorSetFiles = aActuatorSetFiles; }
 
 	int getOutputPrecision() const { return _outputPrecision; }
 	void setOutputPrecision(int aPrecision) { _outputPrecision = aPrecision; }
