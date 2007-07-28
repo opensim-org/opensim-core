@@ -51,7 +51,7 @@ clear fnames fnameMeasured;
 fnames = {sprintf('%s_%s_packaged.mot', subject, ss.trial)};
 fnameMeasured = sprintf('%s%s_%sEmgEnv.mot', datadir, subject, ss.trial);
 figHandleArray = 10:18;
-compare_muscleActFromMot(subject, fnames, fnameMeasured, ss, figHandleArray, ref_dataFormatDelaware);
+compare_muscleActFromMotDirectOverlay(subject, fnames, fnameMeasured, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 20:28;
 compare_muscleExcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 30:38;
