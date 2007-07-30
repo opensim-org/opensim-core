@@ -40,6 +40,7 @@ MXOPTFORCERRA2 = 16;
 MYOPTFORCERRA2 = 17;
 MZOPTFORCERRA2 = 18;
 CMCOPTIMIZERALGORITHM = 19;
+IDRESULTSDIRECTORY = 20;
 
 %
 % 1. Construct full paths for all gait2392 example files from OpenSim.
@@ -248,7 +249,7 @@ analyzeInitialStatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_sta
 idName = trialName;
 % ID setup file node: model_file := adjustedModelFileName
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
-idResultsDirectory = './ResultsID';
+idResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
 idInitialTime = '0.5';
 idFinalTime = '2.0';
 % ID setup file node: coordinates_file := desiredMotionFileName

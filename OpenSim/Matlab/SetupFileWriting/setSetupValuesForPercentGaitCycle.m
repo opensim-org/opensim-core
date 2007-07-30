@@ -217,7 +217,6 @@ analyzeInitialStatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_sta
 idName = trialName;
 % ID setup file node: model_file := adjustedModelFileName
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
-idResultsDirectory = './ResultsID';
 idInitialTime = initialTimeStr;
 idFinalTime = finalTimeStr;
 % ID setup file node: coordinates_file := desiredMotionFileName
@@ -316,7 +315,6 @@ ID_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idName );
 ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
 ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idResultsDirectory );
 ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idInitialTime );
 ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idFinalTime );
 % ID setup file node: coordinates_file := desiredMotionFileName
