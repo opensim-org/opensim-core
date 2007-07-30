@@ -428,8 +428,6 @@ void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScale
  */
 void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
 {
-	cerr<<"SimbodyBody.scaleInertialProperties: not vaidated for Simbody yet.\n";
-
 	double inertia[3][3];
 	for(int i=0;i<3;i++)
 		for(int j=0;j<3;j++)
@@ -456,8 +454,6 @@ void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFa
  */
 void SimbodyBody::scaleMass(double aScaleFactor)
 {
-	cerr<<"SimbodyBody.scaleMass: not vaidated for Simbody yet.\n";
-
 	_mass *= aScaleFactor;
 	for (int i=0;i<9;i++) _inertia[i] *= aScaleFactor;
 }
