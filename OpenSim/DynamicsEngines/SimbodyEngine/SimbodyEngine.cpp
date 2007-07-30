@@ -190,7 +190,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		DofSet *dofSet = joint->getDofSet();
 		int nDof = dofSet->getSize();
 		int dofIndexForLastCoordinate = findIndexOfDofThatHasLastGeneralizedCoordinate(dofSet);
-		cout<<"Dof that has last gen. coord is at index "<<dofIndexForLastCoordinate<<" in DofSet."<<endl;
+		//cout<<"Dof that has last gen. coord is at index "<<dofIndexForLastCoordinate<<" in DofSet."<<endl;
 		bool parentTranslationSet = false;
 		Vec3 locationInParent(0,0,0);
 		bool custom = false;
@@ -201,7 +201,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			AbstractDof *dof = dofSet->get(i);
 			if(dof==NULL) continue;
 			string dofName = dof->getName();
-			cout<<"SimbodyEngine.addRigidBodies: creating dof "<<dofName<<" between "<<aBody->getName()<<" and "<<childName<<"."<<endl;
+			//cout<<"SimbodyEngine.addRigidBodies: creating dof "<<dofName<<" between "<<aBody->getName()<<" and "<<childName<<"."<<endl;
 			bool translation = (dofName=="tx")||(dofName=="ty")||(dofName=="tz");
 			bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
 
@@ -235,18 +235,18 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 					if(translation) {
 						if(dofName=="tx") {
 							locationInParent[0] = dofFunction->evaluate(0,0.0);
-							cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
+							//cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
 						} else if(dofName=="ty") {
 							locationInParent[1] = dofFunction->evaluate(0,0.0);
-							cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
+							//cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
 						} else if(dofName=="tz") {
 							locationInParent[2] = dofFunction->evaluate(0,0.0);
-							cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
+							//cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
 						}
 
 					// Rotation
 					} else if(rotation) {
-						cout<<"Found constant rotation.  Neglecting it for now."<<endl;
+						//cout<<"Found constant rotation.  Neglecting it for now."<<endl;
 					}
 					continue;
 
@@ -257,12 +257,12 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 
 					// Linear (slider or pin mobilizer)
 					if(mx!=rdMath::NAN) {
-						cout<<"SimbodyEngine.addRigidBodies: dof depends linearly on its gen coord ";
-						cout<<"with a slope of "<<mx<<"."<<endl;
+						//cout<<"SimbodyEngine.addRigidBodies: dof depends linearly on its gen coord ";
+						//cout<<"with a slope of "<<mx<<"."<<endl;
 
 					// Non-linear (custom mobilizer)
 					} else if(mx==rdMath::NAN) {
-						cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
+						//cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
 						custom = true;
 						if(dofName=="tx") {
 							txFunction = dofFunction;
@@ -328,7 +328,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			Inertia inertiaTensor(inertia[0][0],inertia[1][1],inertia[2][2],inertia[0][1],inertia[0][2],inertia[1][2]);
 			Inertia inertiaTensorAboutBodyFrame = inertiaTensor.shiftFromMassCenter(-Vec3(com),mass);
          MassProperties massProps(mass,massCenter,inertiaTensorAboutBodyFrame);
-			cout<<"\n"<<child->getName()<<massProps<<endl;
+			//cout<<"\n"<<child->getName()<<massProps<<endl;
 
 			// ADD RIGID BODY
 			// Custom
@@ -341,17 +341,17 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 					string msg = "SimbodyEngine.addRigidBodies: ERR- function specifying ty for a Rot2Planar mobilizer is missing.";
 					throw Exception(msg,__FILE__,__LINE__);
 				}
-				cout<<"Making a Rot2Planar mobilizer."<<endl;
+				//cout<<"Making a Rot2Planar mobilizer."<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Rot2Planar(txFunction,tyFunction));
 
 			// Translation (Slider)
 			}else if(translation) {
-				cout<<"slider axis = "<<unitVec<<endl;
+				//cout<<"slider axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Slider());
 
 			// Rotation (Pin)
 			} else if(rotation) {
-				cout<<"pin axis = "<<unitVec<<endl;
+				//cout<<"pin axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
 			}
 
