@@ -3,7 +3,7 @@ function plot_geom(geom)
 lightdir = [1 0 0];
 color = [0 0 1];
 
-close all;
+%close all;
 figure;
 hold on;
 for i=1:geom.np

@@ -310,6 +310,7 @@ public:
 	virtual const AnalysisSet* getAnalysisSet() const;
 #endif
 	virtual void addAnalysis(Analysis *aAnalysis);
+	virtual void removeAnalysis(Analysis *aAnalysis);
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVES

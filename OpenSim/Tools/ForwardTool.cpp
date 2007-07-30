@@ -32,6 +32,7 @@ using namespace std;
  */
 ForwardTool::~ForwardTool()
 {
+	delete _integrand;
 }
 //_____________________________________________________________________________
 /**
@@ -157,6 +158,8 @@ setNull()
 	_externalLoadsBody2 = "";
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 	_useSpecifiedDt = false;
+	_integrand = NULL;
+	_printResultFiles = true;
 }
 //_____________________________________________________________________________
 /**
@@ -353,9 +356,10 @@ bool ForwardTool::run()
 
 	// SETUP SIMULATION
 	// Manager
-	ModelIntegrand integrand(_model);
-	if(controlSet!=NULL) integrand.setControlSet(*controlSet);
-	Manager manager(&integrand);
+	delete _integrand;
+	_integrand = new ModelIntegrand(_model);
+	if(controlSet!=NULL) _integrand->setControlSet(*controlSet);
+	Manager manager(_integrand);
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
@@ -418,17 +422,32 @@ bool ForwardTool::run()
 	}
 
 	// PRINT RESULTS
-	// TODO: prompt to print partial results if integration not completed
-	if(completed) {
-		printResults(getName(),getResultsDir()); // this will create results directory if necessary
-		integrand.getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
-		integrand.getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
-		integrand.getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
-	}
+	if(_printResultFiles) printResults();
 
 	IO::chDir(saveWorkingDirectory);
 
 	return completed;
+}
+//=============================================================================
+// PRINT RESULTS
+//=============================================================================
+void ForwardTool::
+printResults() 
+{
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory.
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	IO::chDir(directoryOfSetupFile);
+
+	AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
+	if(_integrand) {
+		_integrand->getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
+		_integrand->getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
+		_integrand->getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+	}
+
+	IO::chDir(saveWorkingDirectory);
 }
 
 //=============================================================================

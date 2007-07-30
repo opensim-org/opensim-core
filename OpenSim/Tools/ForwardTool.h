@@ -23,6 +23,7 @@ namespace OpenSim {
 
 class ForceApplier;
 class TorqueApplier;
+class ModelIntegrand;
 
 //=============================================================================
 //=============================================================================
@@ -68,6 +69,11 @@ private:
 	OpenSim::PropertyBool _useSpecifiedDtProp;
 	bool &_useSpecifiedDt;
 
+	// Model integrand.  Make it a pointer so we can print results from a separate function.
+	ModelIntegrand *_integrand;
+
+	// Whether or not to write write to the designated output files (GUI will set this to false)
+	bool _printResultFiles;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -118,10 +124,14 @@ public:
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual bool run();
+
+	void printResults();
 
 	//--------------------------------------------------------------------------
 	// UTILITY (also used by the CMCTool)
