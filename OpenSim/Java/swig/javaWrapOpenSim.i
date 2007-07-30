@@ -67,6 +67,7 @@
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/GeneralizedForces.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
+#include <OpenSim/Analyses/InverseDynamics.h>
 
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
@@ -378,6 +379,7 @@ using namespace OpenSim;
 %include <OpenSim/Analyses/IndAcc.h>
 %include <OpenSim/Analyses/GeneralizedForces.h>
 %include <OpenSim/Analyses/MuscleAnalysis.h>
+%include <OpenSim/Analyses/InverseDynamics.h>
 
 %template(ArrayBool) OpenSim::Array<bool>;
 %template(ArrayDouble) OpenSim::Array<double>;

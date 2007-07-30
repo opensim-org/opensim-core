@@ -29,6 +29,7 @@ namespace OpenSim {
 
 class OSIMANALYSES_API Kinematics : public Analysis 
 {
+	OPENSIM_DECLARE_DERIVED(Kinematics, Analysis);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -47,6 +48,9 @@ protected:
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;
+
+	// Make recording accelerations optional since it is more computationally intensive (invokes dynamics engine calls)
+	bool _recordAccelerations;
 
 //=============================================================================
 // METHODS
@@ -86,6 +90,8 @@ public:
 	// MODEL
 	virtual void setModel(Model *aModel);
 
+	void setRecordAccelerations(bool aRecordAccelerations) { _recordAccelerations = aRecordAccelerations; } // TODO: re-allocate storage or delete storage
+
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
@@ -109,8 +115,6 @@ public:
 	virtual int
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
-
-	virtual ArrayPtrs<Storage>& getStorageList();
 
 //=============================================================================
 };	// END of class Kinematics

@@ -26,6 +26,7 @@ class ActuatorSet;
 
 class OSIMANALYSES_API InverseDynamics : public Analysis 
 {
+	OPENSIM_DECLARE_DERIVED(InverseDynamics, Analysis);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -80,6 +81,9 @@ public:
 	//--------------------------------------------------------------------------
 	void setStorageCapacityIncrements(int aIncrement);
 	Storage* getStorage();
+
+	bool getUseModelActuatorSet() { return _useModelActuatorSet; }
+	void setUseModelActuatorSet(bool aUseModelActuatorSet) { _useModelActuatorSet = aUseModelActuatorSet; }
 
 	virtual void setModel(Model *aModel);
 	//--------------------------------------------------------------------------

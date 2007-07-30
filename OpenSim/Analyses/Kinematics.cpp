@@ -141,6 +141,8 @@ setNull()
 	_pStore=_vStore=_aStore=0;
 	_coordinates.setSize(1);
 	_coordinates[0] = "all";
+
+	_recordAccelerations = true;
 }
 //_____________________________________________________________________________
 /**
@@ -161,6 +163,8 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 {
 	// BASE CLASS
 	Analysis::operator=(aKinematics);
+
+	_recordAccelerations = aKinematics._recordAccelerations;
 
 	// Deallocate _y & _dy if already allocated
 	if(_y!=NULL) { delete[] _y;  _y=NULL; }
@@ -192,9 +196,11 @@ void Kinematics::
 allocateStorage()
 {
 	// ACCELERATIONS
-	_aStore = new Storage(1000,"Accelerations");
-	_aStore->setDescription(getDescription());
-	_storageList.append(_aStore);
+	if(_recordAccelerations) {
+		_aStore = new Storage(1000,"Accelerations");
+		_aStore->setDescription(getDescription());
+		_storageList.append(_aStore);
+	}
 
 	// VELOCITIES
 	_vStore = new Storage(1000,"Speeds");
@@ -414,28 +420,29 @@ record(double aT,double *aX,double *aY)
 	int nu = _model->getNumSpeeds();
 	int ny = _model->getNumStates();
 
-	// COMPUTE DERIVATIVES
-	// ----------------------------------
-	// SET
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
+	if(_recordAccelerations) {
+		// COMPUTE DERIVATIVES
+		// ----------------------------------
+		// SET
+		_model->set(aT,aX,aY);
+		_model->getDerivCallbackSet()->set(aT,aX,aY);
 
-	// ACTUATION
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
+		// ACTUATION
+		_model->getActuatorSet()->computeActuation();
+		_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
+		_model->getActuatorSet()->apply();
+		_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 
-	// CONTACT
-	_model->getContactSet()->computeContact();
-	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->getContactSet()->apply();
-	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
+		// CONTACT
+		_model->getContactSet()->computeContact();
+		_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
+		_model->getContactSet()->apply();
+		_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
 
-	// ACCELERATIONS
-	_model->getDynamicsEngine().computeDerivatives(_dy,&_dy[nq]);
-	// ----------------------------------
-
+		// ACCELERATIONS
+		_model->getDynamicsEngine().computeDerivatives(_dy,&_dy[nq]);
+		// ----------------------------------
+	}
 
 	// CONVERT RESULTS TO ANGLES
 	memcpy(_y,aY,ny*sizeof(double));
@@ -445,7 +452,7 @@ record(double aT,double *aX,double *aY)
 	if(getInDegrees()) {
 		_model->getDynamicsEngine().convertRadiansToDegrees(_y,_y);
 		_model->getDynamicsEngine().convertRadiansToDegrees(&_y[nq],&_y[nq]);
-		_model->getDynamicsEngine().convertRadiansToDegrees(&_dy[nq],&_dy[nq]);
+		if(_recordAccelerations) _model->getDynamicsEngine().convertRadiansToDegrees(&_dy[nq],&_dy[nq]);
 	}
 
 	// RECORD RESULTS
@@ -454,8 +461,10 @@ record(double aT,double *aX,double *aY)
 	_pStore->append(aT,nvalues,&_values[0]);
 	for(int i=0;i<nvalues;i++) _values[i] = _y[nq+_coordinateIndices[i]];
 	_vStore->append(aT,nvalues,&_values[0]);
-	for(int i=0;i<nvalues;i++) _values[i] = _dy[nq+_coordinateIndices[i]];
-	_aStore->append(aT,nvalues,&_values[0]);
+	if(_recordAccelerations) {
+		for(int i=0;i<nvalues;i++) _values[i] = _dy[nq+_coordinateIndices[i]];
+		_aStore->append(aT,nvalues,&_values[0]);
+	}
 
 	return(0);
 }
@@ -604,8 +613,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	}
 
 	// ACCELERATIONS
-	_aStore->scaleTime(_model->getTimeNormConstant());
-	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
+	if(_recordAccelerations) {
+		_aStore->scaleTime(_model->getTimeNormConstant());
+		Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
+	}
 
 	// VELOCITIES
 	_vStore->scaleTime(_model->getTimeNormConstant());
@@ -625,10 +636,3 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	return(0);
 }
-
-
-ArrayPtrs<Storage>& Kinematics::getStorageList()
-{
-	return _storageList;
-}
-

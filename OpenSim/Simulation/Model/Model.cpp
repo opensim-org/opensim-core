@@ -954,7 +954,6 @@ void Model::removeIntegCallback(IntegCallback *aCallback)
 	aCallback->setModel(0);
 	_integCallbackSet->remove(aCallback);
 }
-
 //=============================================================================
 // DERIVATIVE CALLBACKS
 //=============================================================================
@@ -1034,7 +1033,23 @@ void Model::addAnalysis(Analysis *aAnalysis)
 		_analysisSet->append(aAnalysis);
 	}
 }
+//_____________________________________________________________________________
+/**
+ * Remove an analysis from the model
+ *
+ * @param aAnalysis Pointer to the analysis to remove.
+ */
+void Model::removeAnalysis(Analysis *aAnalysis)
+{
+	// CHECK FOR NULL
+	if(aAnalysis==NULL) {
+		printf("Model.removeAnalysis:  ERROR- NULL analysis.\n");
+	}
 
+	// ADD
+	aAnalysis->setModel(0);
+	_analysisSet->remove(aAnalysis);
+}
 
 //==========================================================================
 // DERIVATIVES
