@@ -302,6 +302,7 @@ double SimbodySpeed::getAcceleration() const
 {
 	//_engine->_matter->getMobilizerUDot(*(_engine->_s),_bodyId,_mobilityIndex);
 	Vector udot = _engine->_matter->getUDot(*(_engine->_s));
-	return udot(_bodyId - 1);
+	//cout<<_coordinateName<<": udot("<<_bodyId-1<<")="<<udot[_bodyId-1]<<endl;
+	return udot[_bodyId - 1];
 }
 
