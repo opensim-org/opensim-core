@@ -65,7 +65,6 @@ static char simbodyGroundName[] = "ground";
  */
 SimbodyEngine::~SimbodyEngine()
 {
-	cout<<"Destroying SimbodyEngine."<<endl;
 	deleteSimbodyVariables();
 }
 //_____________________________________________________________________________
