@@ -47,7 +47,7 @@ figHandleArray = 8:9;
 compare_grftFromMot(subject, fnames, fnameMeasured, ss, figHandleArray);
 clear fnames fnameMeasured;
 
-% muscle excitations, activations, and forces
+% muscle excitations, activations, and forces; actuator forces; joint moments
 fnames = {sprintf('%s_%s_packaged.mot', subject, ss.trial)};
 fnameMeasured = sprintf('%s%s_%sEmgEnv.mot', datadir, subject, ss.trial);
 figHandleArray = 10:18;
@@ -58,6 +58,8 @@ figHandleArray = 30:38;
 compare_muscleFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 40:43;
 compare_actuatorFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
+figHandleArray = 50:53;
+compare_jointMomFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 clear fnames fnameMeasured;
 
 if ~GLOBAL_individualprintmenus
