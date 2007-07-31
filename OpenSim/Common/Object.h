@@ -376,6 +376,14 @@ public:
 		return this->isKindOf(type); 
 	} 
 
+	template<class T> static void getRegisteredObjectsOfGivenType(ArrayPtrs<T> &rArray) {
+		rArray.setSize(0);
+		rArray.setMemoryOwner(false);
+		for(int i=0; i<_Types.getSize(); i++)
+			if(dynamic_cast<T*>(_Types[i]))
+				rArray.append(dynamic_cast<T*>(_Types[i]));
+	}
+
 //=============================================================================
 };	// END of class Object
 /**

@@ -105,6 +105,10 @@ public:
 		printResults(const std::string &aBaseName,const std::string &aPath="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+	static void getAvailableAnalyses(AnalysisSet& as);
 
 //=============================================================================
 };	// END of class AnalysisSet

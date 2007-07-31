@@ -58,6 +58,7 @@ class Model;
  */
 class OSIMSIMULATION_API Analysis: public IntegCallback
 {
+	OPENSIM_DECLARE_DERIVED(Analysis, IntegCallback);
 public:
 	//enum { DESCRIP_LENGTH=8192 };
 

@@ -285,3 +285,15 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 		analysis->printResults(aBaseName,aDir,aDT,aExtension);
 	}
 }
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Fills the passed in analysis set with all available (i.e. registered) analyses.
+ */
+void AnalysisSet::
+getAvailableAnalyses(AnalysisSet& as)
+{
+	Object::template getRegisteredObjectsOfGivenType<Analysis>(as._objects);
+}

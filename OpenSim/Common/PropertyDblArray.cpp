@@ -239,9 +239,9 @@ const string &PropertyDblArray::
 toString()
 {
 	string str = "(";
-	char dbl[32];
+	char dbl[256];
 	for(int i=0; i < _array.getSize(); i++){
-		sprintf (dbl, "%lf\n", _array[i]);
+		sprintf (dbl, "%g\n", _array[i]);
 		str += dbl;
 	}
 	str += ")";

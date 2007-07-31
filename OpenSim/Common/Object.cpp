@@ -543,7 +543,7 @@ RegisterType(const Object &aObject)
 			}
 			_Types.set(i,aObject.copy());
 			_Types.get(i)->setName(DEFAULT_NAME);
-			_mapTypesToDefaultObjects[aObject.getType()]= aObject.copy();
+			_mapTypesToDefaultObjects[aObject.getType()]= _Types.get(i);
 			return;
 		} 
 	}

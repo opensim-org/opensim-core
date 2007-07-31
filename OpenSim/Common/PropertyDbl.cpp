@@ -178,8 +178,8 @@ getValueDbl() const
 const string &PropertyDbl::
 toString()
 {
-	char dbl[32];
-	sprintf(dbl, "%lf", _value);
+	char dbl[256];
+	sprintf(dbl, "%g", _value);
 	_valueString = string(dbl);
 	return (_valueString);
 }
