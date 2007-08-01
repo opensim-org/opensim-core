@@ -131,6 +131,8 @@ protected:
 	/** List of parameters in the control set that are serving as the
 	controls in the optimization problem. */
 	Array<int> _paramList;
+	/** Flag to indicate whether to use verbose printing. */
+	bool _verbose;
 
 
 	/** Vector function for estimating actuator forces over a specified time
@@ -177,6 +179,8 @@ public:
 	bool getUseCurvatureFilter() const;
 	void setUseReflexes(bool aTrueFalse);
 	bool getUseReflexes() const;
+	void setUseVerbosePrinting(bool aTrueFalse);
+	bool getUseVerbosePrinting() const;
 	virtual void constrainControlsBasedOnReflexes(double time,Array<double> &xmin,Array<double> &xmax);
 
 	//--------------------------------------------------------------------------
@@ -199,7 +203,7 @@ public:
 	//--------------------------------------------------------------------------
 	static void
 		FilterControls(const ControlSet &aControlSet,double aDT,double aT,
-			   Array<double> &rControls);
+			   Array<double> &rControls,bool aVerbosePrinting);
 
 
 //=============================================================================

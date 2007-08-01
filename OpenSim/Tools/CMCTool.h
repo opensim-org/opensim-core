@@ -151,6 +151,9 @@ private:
 	adjust_com_to_reduce_residuals is set to true. */
 	PropertyStr _outputModelFileProp;
 	std::string &_outputModelFile;
+	/** Flag for turning on and off verbose printing. */
+	PropertyBool _verboseProp;
+	bool &_verbose;
 
 	ActuatorSet _originalActuatorSet;
 

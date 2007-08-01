@@ -127,6 +127,7 @@ setNull()
 	_controlSet = NULL;
 	_useCurvatureFilter = false;
 	_useReflexes = false;
+	_verbose = false;
 	_controlConstraintsFromReflexes = NULL;
 	_paramList.setSize(0);
 }
@@ -650,7 +651,7 @@ computeControls(double &rDT,double aT,const double *aY,
 	if(_restoreDT) {
 		rDT = _lastDT / 2.0;
 		_restoreDT = false;
-		printf("rdCMC.computeControls: restored dt to %.8lf\n",
+		if(_verbose) printf("rdCMC.computeControls: restored dt to %.8lf\n",
 			rDT);
 	}
 
@@ -675,9 +676,9 @@ computeControls(double &rDT,double aT,const double *aY,
 		}
 	}
 
-	cout<<"\n\n----------------------------------\n";
-	cout<<"rdCMC.computeControls: t="<<aT<<" dt="<<rDT<<endl;
-	cout<<"rdCMC.computeControls: targetTime = "<<_tf<<endl;
+	if(_verbose) cout<<"\n\n----------------------------------\n";
+	cout<<"rdCMC.computeControls:  t = "<<aT<<endl;
+	if(_verbose) cout<<"integration step size = "<<rDT<<",  target time = "<<_tf<<endl;
 
 	int i;
 
@@ -726,15 +727,17 @@ computeControls(double &rDT,double aT,const double *aY,
 	_taskSet->recordErrorsAsLastErrors();
 	Array<double> &pErr = _taskSet->getPositionErrors();
 	Array<double> &vErr = _taskSet->getVelocityErrors();
-	cout<<"\nErrors at time "<<aT<<":"<<endl;
+	if(_verbose) cout<<"\nErrors at time "<<aT<<":"<<endl;
 	rdCMC_Task *task;
 	for(i=0;i<pErr.getSize();i++) {
 		
 		task = _taskSet->get(i);
 		if(task==NULL) continue;
 
-		cout<<task->getName()<<":  ";
-		cout<<"pErr="<<pErr[i]<<" vErr="<<vErr[i]<<endl;
+		if(_verbose) {
+			cout<<task->getName()<<":  ";
+			cout<<"pErr="<<pErr[i]<<" vErr="<<vErr[i]<<endl;
+		}
 	}
 	double *err = new double[pErr.getSize()];
 	for(i=0;i<pErr.getSize();i++) err[i] = pErr[i];
@@ -760,12 +763,12 @@ computeControls(double &rDT,double aT,const double *aY,
 				rdCMC_Joint *jointTask = dynamic_cast<rdCMC_Joint*>(_taskSet->get(i));
 				if(jointTask->getLimit()) {
 					double w = rdMath::SigmaDn(jointTask->getLimit() * relativeTau, jointTask->getLimit(), fabs(pErr[i]));
-					cout << "Task " << i << ": err=" << pErr[i] << ", limit=" << jointTask->getLimit() << ", sigmoid=" << w << endl;
+					if(_verbose) cout << "Task " << i << ": err=" << pErr[i] << ", limit=" << jointTask->getLimit() << ", sigmoid=" << w << endl;
 					stressTermWeight = min(stressTermWeight, w);
 				}
 			}
 		}
-		cout << "Setting stress term weight to " << stressTermWeight << " (relativeTau was " << relativeTau << ")" << std::endl;
+		if(_verbose) cout << "Setting stress term weight to " << stressTermWeight << " (relativeTau was " << relativeTau << ")" << std::endl;
 		realTarget->setStressTermWeight(stressTermWeight);
 
 		for(i=0;i<vErr.getSize();i++) err[i] = vErr[i];
@@ -818,8 +821,10 @@ computeControls(double &rDT,double aT,const double *aY,
 		}
 	}
 	*/
-	cout<<"\nxmin:\n"<<xmin<<endl;
-	cout<<"\nxmax:\n"<<xmax<<endl;
+	if(_verbose) {
+		cout<<"\nxmin:\n"<<xmin<<endl;
+		cout<<"\nxmax:\n"<<xmax<<endl;
+	}
 
 	// ILSE-  For modeling reflexes
 	if(_useReflexes) constrainControlsBasedOnReflexes(_tf,xmin,xmax);
@@ -832,12 +837,14 @@ computeControls(double &rDT,double aT,const double *aY,
 	_predictor->setTargetForces(&zero[0]);
 	_predictor->evaluate(&xmin[0],&fmin[0]);
 	_predictor->evaluate(&xmax[0],&fmax[0]);
-	cout<<endl<<endl;
-	cout<<"\ntiReal = "<<tiReal<<"  tfReal = "<<tfReal<<endl;
-	cout<<"Min forces:\n";
-	cout<<fmin<<endl;
-	cout<<"Max forces:\n";
-	cout<<fmax<<endl;
+	if(_verbose) {
+		cout<<endl<<endl;
+		cout<<"\ntiReal = "<<tiReal<<"  tfReal = "<<tfReal<<endl;
+		cout<<"Min forces:\n";
+		cout<<fmin<<endl;
+		cout<<"Max forces:\n";
+		cout<<fmax<<endl;
+	}
 
 	// Print actuator force range if range is small
 	double range;
@@ -850,7 +857,7 @@ computeControls(double &rDT,double aT,const double *aY,
 			} catch(...) {};
 		}
 	}
-	cout<<endl<<endl;
+	if(_verbose) cout<<endl<<endl;
 
 
 	// SOLVE STATIC OPTIMIZATION FOR DESIRED ACTUATOR FORCES
@@ -890,7 +897,7 @@ computeControls(double &rDT,double aT,const double *aY,
 			success=true;
 		}
 
-		_target->printPerformance(&_f[0]);
+		if(_verbose) _target->printPerformance(&_f[0]);
 
 		// Solution
 		if(success) {
@@ -925,8 +932,10 @@ computeControls(double &rDT,double aT,const double *aY,
 		}
 	}
 
-	cout<<"\nDesired actuator forces:\n";
-	cout<<_f<<endl;
+	if(_verbose) {
+		cout<<"\nDesired actuator forces:\n";
+		cout<<_f<<endl;
+	}
 
 
 	// ROOT SOLVE FOR EXCITATIONS
@@ -936,14 +945,16 @@ computeControls(double &rDT,double aT,const double *aY,
 	Array<double> fErrors(0.0,N);
 	Array<double> controls(0.0,N);
 	controls = rootSolver.solve(xmin,xmax,tol);
-	cout<<"\n\nControls:\n";
-	cout<<controls<<endl;
+	if(_verbose) {
+		cout<<"\n\nControls:\n";
+		cout<<controls<<endl;
+	}
 	//_predictor->evaluate(&controls[0],&fErrors[0]);
 	//cout<<"\n\nErrors:\n";
 	//cout<<fErrors<<endl<<endl;
 
 	// FILTER OSCILLATIONS IN CONTROL VALUES
-	if(_useCurvatureFilter) FilterControls(rControlSet,_targetDT,_tf,controls);
+	if(_useCurvatureFilter) FilterControls(rControlSet,_targetDT,_tf,controls,_verbose);
 
 	// SET EXCITATIONS
 	rControlSet.setControlValues(_tf,&controls[0]);
@@ -1012,6 +1023,31 @@ getUseReflexes() const
 
 //_____________________________________________________________________________
 /**
+ * Set whether or not to use verbose printing.
+ *
+ * @param aTrueFalse If true, print verbose information.
+ * If false, print only critical information.
+ */
+void rdCMC::
+setUseVerbosePrinting(bool aTrueFalse)
+{
+	_verbose = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to use reflexes to constrain the controls.
+ *
+ * @return If true, controls will be constrained based on reflexes.
+ * If false, they will not be constrained based on reflexes.
+ */
+bool rdCMC::
+getUseVerbosePrinting() const
+{
+	return(_verbose);
+}
+
+//_____________________________________________________________________________
+/**
  * Constrain the controls based on reflexes.
  *
  * @param t Current time in the simulation in normalized time.
@@ -1055,10 +1091,10 @@ constrainControlsBasedOnReflexes(double t,Array<double> &xmin,Array<double> &xma
 		string name = reflexName.get(r);
 		for(i=0;i<nx;i++) {
 			if(name == _model->getControlName(i)) {
-				cout<<"Found control "<<i<<" for reflex "<<name<<endl;
+				if(_verbose) cout<<"Found control "<<i<<" for reflex "<<name<<endl;
 				controlIndex[r] = i;
 			} else {
-				cout<<"Did not find a control for reflex "<<name<<endl;
+				if(_verbose) cout<<"Did not find a control for reflex "<<name<<endl;
 			}
 		}
 	}
@@ -1105,14 +1141,14 @@ constrainControlsBasedOnReflexes(double t,Array<double> &xmin,Array<double> &xma
  */
 void rdCMC::
 FilterControls(const ControlSet &aControlSet,double aDT,double aT,
-			   Array<double> &rControls)
+			   Array<double> &rControls,bool aVerbosePrinting)
 {
 	if(aDT <= rdMath::ZERO) {
-		cout<<"\nrdCMC.filterControls: aDT is practically 0.0, skipping!\n\n";
+		if(aVerbosePrinting) cout<<"\nrdCMC.filterControls: aDT is practically 0.0, skipping!\n\n";
 		return;
 	}
 
-	cout<<"\n\nFiltering controls to limit curvature...\n";
+	if(aVerbosePrinting) cout<<"\n\nFiltering controls to limit curvature...\n";
 
 	int i;
 	int size = rControls.getSize();
@@ -1156,10 +1192,10 @@ FilterControls(const ControlSet &aControlSet,double aDT,double aT,
 		rControls[i] = (3.0*x2[i] + 2.0*x1[i] + x0[i]) / 6.0;
 
 		// PRINT
-		cout<<aControlSet[i]->getName()<<": old="<<x2[i]<<" new="<<rControls[i]<<endl;
+		if(aVerbosePrinting) cout<<aControlSet[i]->getName()<<": old="<<x2[i]<<" new="<<rControls[i]<<endl;
 	}
 
-	cout<<endl<<endl;
+	if(aVerbosePrinting) cout<<endl<<endl;
 }
 
 

@@ -98,7 +98,8 @@ CMCTool::CMCTool() :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr())
+	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
 	setNull();
@@ -133,7 +134,8 @@ CMCTool::CMCTool(const string &aFileName) :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr())
+	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
 	setNull();
@@ -201,7 +203,8 @@ CMCTool(const CMCTool &aTool) :
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
-	_outputModelFile(_outputModelFileProp.getValueStr())
+	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
 	setNull();
@@ -253,6 +256,7 @@ setNull()
 	_adjustedCOMBody = "";
 	_adjustCOMToReduceResiduals = false;
 	_outputModelFile = "";
+	_verbose = false;
 }
 //_____________________________________________________________________________
 /**
@@ -406,6 +410,11 @@ void CMCTool::setupProperties()
 	_outputModelFileProp.setComment(comment);
 	_outputModelFileProp.setName("output_model_file");
 	_propertySet.append( &_outputModelFileProp );
+
+	comment = "True-false flag indicating whether or not to turn on verbose printing for cmc.";
+	_verboseProp.setComment(comment);
+	_verboseProp.setName("use_verbose_printing");
+	_propertySet.append( &_verboseProp );
 }
 
 
@@ -448,6 +457,7 @@ operator=(const CMCTool &aTool)
 	_outputModelFile = aTool._outputModelFile;
 	_computeAverageResiduals = aTool._computeAverageResiduals;
 	_adjustCOMToReduceResiduals = aTool._adjustCOMToReduceResiduals;
+	_verbose = aTool._verbose;
 
 	return(*this);
 }
@@ -668,6 +678,10 @@ bool CMCTool::run()
 		optimizer->setAdvancedRealOption("obj_scaling_factor",1);
 		optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",100);
 	}
+
+	if(_verbose) cout<<"\nSetting cmc controller to use verbose printing."<<endl;
+	else cout<<"\nSetting cmc controller to not use verbose printing."<<endl;
+	controller.setUseVerbosePrinting(_verbose);
 
 	controller.setCheckTargetTime(true);
 
