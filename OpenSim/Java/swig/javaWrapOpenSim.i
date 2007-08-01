@@ -28,6 +28,7 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/IO.h>
 
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
@@ -339,6 +340,7 @@ using namespace OpenSim;
 %include <OpenSim/Common/Storage.h>
 %include <OpenSim/Common/Units.h>
 %include <OpenSim/Common/rdMath.h>
+%include <OpenSim/Common/IO.h>
 
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/AbstractActuator.h>

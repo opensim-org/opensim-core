@@ -62,9 +62,6 @@
 using namespace OpenSim;
 using namespace std;
 
-const int IO::STRLEN = IO_STRLEN;
-const int IO::STRING_INCREMENT = IO_STRING_INCREMENT;
-
 // STATICS
 bool IO::_Scientific = false;
 bool IO::_GFormatForDoubleOutput = false;
@@ -564,7 +561,7 @@ GetFileNameFromURI(const string& aURI)
 
 // TODO: account for '\n' inside comments
 string IO::
-formatText(const string& aComment,const string& leadingWhitespace,int width)
+formatText(const string& aComment,const string& leadingWhitespace,int width,const string& endlineTokenToInsert)
 {
     string formatted;
     int count = 0;
@@ -588,8 +585,8 @@ formatText(const string& aComment,const string& leadingWhitespace,int width)
             count += whitespace.size()+word.size();
         } else {
             if(!formatted.empty()) {
-                if(newlineCount) for(int j=0;j<newlineCount-1;j++) formatted += "\n";
-                formatted += "\n" + leadingWhitespace;
+                if(newlineCount) for(int j=0;j<newlineCount-1;j++) formatted += endlineTokenToInsert;
+                formatted += endlineTokenToInsert + leadingWhitespace;
             }
             formatted += word;
             count = word.size();

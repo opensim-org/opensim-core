@@ -38,11 +38,8 @@
 #include "osimCommonDLL.h"
 #include <fstream>
 
-
 // DEFINES
 const int IO_STRLEN = 2048;
-const int IO_STRING_INCREMENT = 2048;
-
 
 //=============================================================================
 //=============================================================================
@@ -59,12 +56,6 @@ class OSIMCOMMON_API IO {
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	/** Default size of a statically or locally allocated character array. */
-	static const int STRLEN;
-	/** Increment by which the size of character strings are incremented. */
-	static const int STRING_INCREMENT;
-
 private:
 	// NUMBER OUTPUT
 	/** Specifies whether number output is in scientific or float format. */
@@ -120,7 +111,7 @@ public:
 	static std::string getCwd();
 	static std::string getParentDirectory(const std::string& fileName);
 	static std::string GetFileNameFromURI(const std::string& aURI);
-	static std::string formatText(const std::string& aComment,const std::string& leadingWhitespace,int width);
+	static std::string formatText(const std::string& aComment,const std::string& leadingWhitespace,int width,const std::string& endlineTokenToInsert="\n");
 
 	// String utilities
 	static std::string GetSuffix(const std::string &aStr, int aLen);
