@@ -165,6 +165,7 @@ setupProperties()
 
 	_propUnitVectorA.setName("direction_A");
 	_propUnitVectorA.setValue(3,x_axis);
+	_propUnitVectorA.setAllowableArraySize(3);
 	_propertySet.append( &_propUnitVectorA );
 
 	_propBodyBName.setName("body_B");

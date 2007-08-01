@@ -177,10 +177,12 @@ setupProperties()
 
 	_propNormalA.setName("normal_A");
 	_propNormalA.setValue(3,origin);
+	_propNormalA.setAllowableArraySize(3);
 	_propertySet.append( &_propNormalA );
 
 	_propNormalB.setName("normal_B");
 	_propNormalB.setValue(3,origin);
+	_propNormalB.setAllowableArraySize(3);
 	_propertySet.append( &_propNormalB );
 }
 

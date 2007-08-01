@@ -112,6 +112,7 @@ setupProperties()
 	// scale factors
 	_propScaleFactors.setName("scales");
 	_propScaleFactors.setValue(one3);
+	_propScaleFactors.setAllowableArraySize(3);
 	_propertySet.append( &_propScaleFactors );
 
 	// segment name

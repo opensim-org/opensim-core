@@ -181,6 +181,7 @@ void IKTrial::setupProperties()
 	_timeRangeProp.setComment("Time range over which the IK problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
+	_timeRangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_kinematicsSmoothingProp.setComment("Smoothing factor for preprocessing the kinematic data. "

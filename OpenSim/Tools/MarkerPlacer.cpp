@@ -192,6 +192,7 @@ void MarkerPlacer::setupProperties()
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
+	_timeRangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_outputJointFileNameProp.setComment("Name of the new SIMM Joint file (.jnt) after scaling and marker placement (optional).");

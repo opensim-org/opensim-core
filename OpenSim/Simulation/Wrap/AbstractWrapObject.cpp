@@ -118,6 +118,7 @@ void AbstractWrapObject::setupProperties()
 	const double defaultTranslations[] = {0.0, 0.0, 0.0};
 	_translationProp.setName("translation");
 	_translationProp.setValue(3, defaultTranslations);
+	_translationProp.setAllowableArraySize(3);
 	_propertySet.append(&_translationProp);
 
 	_activeProp.setName("active");

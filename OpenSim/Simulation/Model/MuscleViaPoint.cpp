@@ -127,6 +127,7 @@ void MuscleViaPoint::setupProperties()
 	const double defaultRange[] = {0.0, 0.0};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
+	_rangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_rangeProp);
 
 	_coordinateNameProp.setName("coordinate");

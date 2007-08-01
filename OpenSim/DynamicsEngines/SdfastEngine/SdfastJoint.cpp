@@ -149,10 +149,12 @@ void SdfastJoint::setupProperties()
 	double origin[] = {0.0, 0.0, 0.0};
 	_locationInParentProp.setName("location_in_parent");
 	_locationInParentProp.setValue(3,origin);
+	_locationInParentProp.setAllowableArraySize(3);
 	_propertySet.append(&_locationInParentProp);
 
 	_locationInChildProp.setName("location_in_child");
 	_locationInChildProp.setValue(3,origin);
+	_locationInChildProp.setAllowableArraySize(3);
 	_propertySet.append(&_locationInChildProp);
 
 	_indexProp.setName("index");

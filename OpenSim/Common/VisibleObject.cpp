@@ -207,6 +207,7 @@ void VisibleObject::setupProperties()
 	_propertySet.append(&_propVisibleProp);
 
 	_propScaleFactors.setName("scale_factors");
+	_propScaleFactors.setAllowableArraySize(3);
 	_propertySet.append(&_propScaleFactors);
 }
 

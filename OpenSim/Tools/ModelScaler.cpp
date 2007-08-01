@@ -188,6 +188,7 @@ void ModelScaler::setupProperties()
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
+	_timeRangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_preserveMassDistProp.setComment("Flag (true or false) indicating whether or not to preserve relative mass between segments.");

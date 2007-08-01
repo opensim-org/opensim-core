@@ -140,6 +140,7 @@ void Marker::setupProperties()
 	const double defaultAttachment[] = {0.0, 0.0, 0.0};
 	_offsetProp.setName("location");
 	_offsetProp.setValue(3, defaultAttachment);
+	_offsetProp.setAllowableArraySize(3);
 	_propertySet.append(&_offsetProp);
 
 	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "

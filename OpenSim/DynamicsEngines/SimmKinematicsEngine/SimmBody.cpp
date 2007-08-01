@@ -132,11 +132,13 @@ void SimmBody::setupProperties()
 	const double defaultMC[] = {0.0, 0.0, 0.0};
 	_massCenterProp.setName("mass_center");
 	_massCenterProp.setValue(3, defaultMC);
+	_massCenterProp.setAllowableArraySize(3);
 	_propertySet.append(&_massCenterProp);
 
 	const double defaultInertia[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	_inertiaProp.setName("inertia");
 	_inertiaProp.setValue(9, defaultInertia);
+	_inertiaProp.setAllowableArraySize(9);
 	_propertySet.append(&_inertiaProp);
 
 	_displayerProp.setName("Displayer");

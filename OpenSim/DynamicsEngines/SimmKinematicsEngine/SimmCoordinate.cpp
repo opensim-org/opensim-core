@@ -188,6 +188,7 @@ void SimmCoordinate::setupProperties(void)
 	const double defaultRange[] = {-999999.9, 999999.9};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
+	_rangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_rangeProp);
 
 	_keysProp.setComment("Computer keyboard keys that can be used to manipulate "

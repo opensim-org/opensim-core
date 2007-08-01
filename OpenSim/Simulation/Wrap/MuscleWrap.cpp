@@ -124,6 +124,7 @@ void MuscleWrap::setupProperties()
 	const int defaultRange[] = {-1, -1};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
+	_rangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_rangeProp);
 }
 

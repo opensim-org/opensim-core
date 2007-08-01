@@ -182,10 +182,12 @@ setupProperties()
 
 	_propPointA.setName("point_A");
 	_propPointA.setValue(3,origin);
+	_propPointA.setAllowableArraySize(3);
 	_propertySet.append( &_propPointA );
 
 	_propUnitVectorA.setName("direction_A");
 	_propUnitVectorA.setValue(3,x_axis);
+	_propUnitVectorA.setAllowableArraySize(3);
 	_propertySet.append( &_propUnitVectorA );
 
 	_propBodyBName.setName("body_B");
@@ -193,6 +195,7 @@ setupProperties()
 
 	_propPointB.setName("point_B");
 	_propPointB.setValue(3,origin);
+	_propPointB.setAllowableArraySize(3);
 	_propertySet.append( &_propPointB );
 
 	_propOptimalForce.setName("optimal_force");

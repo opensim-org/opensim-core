@@ -135,6 +135,7 @@ void MusclePoint::setupProperties()
 	const double defaultAttachment[] = {0.0, 0.0, 0.0};
 	_attachmentProp.setName("location");
 	_attachmentProp.setValue(3, defaultAttachment);
+	_attachmentProp.setAllowableArraySize(3);
 	_propertySet.append(&_attachmentProp);
 
 	_displayerProp.setName("display");

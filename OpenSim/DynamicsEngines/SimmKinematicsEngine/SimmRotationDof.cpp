@@ -116,6 +116,7 @@ void SimmRotationDof::setupProperties()
 	const double defaultAxis[] = {1.0, 0.0, 0.0};
 	_axisProp.setName("axis");
 	_axisProp.setValue(3, defaultAxis);
+	_axisProp.setAllowableArraySize(3);
 	_propertySet.append(&_axisProp);
 }
 
