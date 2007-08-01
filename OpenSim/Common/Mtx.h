@@ -78,6 +78,7 @@ public:
 	static double Magnitude(int aN,const double aV[]);
 	static double DotProduct(int aN,const double aV1[],const double aV2[]);
 	static int CrossProduct(double *aV1,double *aV2,double *aV);
+	static void PerpendicularUnitVector(double *aV,double *rV);
 	static void
 	 Interpolate(int aN,double aT1,double *aY1,double aT2,double *aY2,
 	 double t,double *aY);

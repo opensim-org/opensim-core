@@ -166,6 +166,39 @@ CrossProduct(double *aV1,double *aV2,double *aV)
 
 	return(0);
 }
+//_____________________________________________________________________________
+/**
+ * Get a unit vector that is perpendicular to a specified vector.  The unit
+ * vector is arbitrary, in the sense that it is one of an infinite number of
+ * vectors that are perpendicular to the original specified vector.
+ *
+ * @param aV Input vector.
+ * @param rV Perpendicular unit vector.
+ */
+void Mtx::
+PerpendicularUnitVector(double *aV,double *rV)
+{
+	double u[3];
+	Normalize(3,aV,u);
+	
+	// Which component is smallest?
+	int s0 = 0;
+	for(int i=1;i<3;i++) {
+		if(u[i] < u[s0]) s0=i;
+	}
+
+	// Set the other two components
+	int s1,s2;
+	if(s0==0) { s1=1; s2=2; }
+	if(s0==1) { s1=2; s2=0; }
+	if(s0==2) { s1=0; s2=1; }
+
+	// Set the perpendicular unit vector
+	rV[s0] = 0.0;
+	rV[s1] = u[s2];
+	rV[s2] = -u[s1];
+}
+
 //-----------------------------------------------------------------------------
 // INTERPOLATION
 //-----------------------------------------------------------------------------
