@@ -108,6 +108,8 @@ setNull()
 	_type = Property::None;
 	_name = "unknown";
 	_useDefault = false;
+	_minArraySize = 0;
+	_maxArraySize = INT_MAX;
 }
 
 
@@ -132,6 +134,8 @@ operator=(const Property &aProperty)
 	setName(aProperty.getName());
 	setUseDefault(aProperty.getUseDefault());
 	_comment = aProperty.getComment();
+	_minArraySize = aProperty._minArraySize;
+	_maxArraySize = aProperty._maxArraySize;
 	return(*this);
 }
 

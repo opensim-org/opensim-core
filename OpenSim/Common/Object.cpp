@@ -1089,7 +1089,7 @@ updateXMLNode(DOMElement *aParent)
 				// updateDefaultObjectsXMLNode calls setXMLNode(NULL) only on the top-level objects but not
 				// the descendent objects, so the descendents have stale children...
 				if(type==Property::ObjArray) {
-					for(int j=0;j<property->getValueObjArraySize();j++) {
+					for(int j=0;j<property->getArraySize();j++) {
 						if(createdNewParent) property->getValueObjPtr(j)->setXMLNode(NULL); // object might have a stale child node
 						property->getValueObjPtr(j)->updateXMLNode(elmt);
 					}
@@ -1389,7 +1389,7 @@ clearXMLStructures()
 
 		// ObjArray
 		case(Property::ObjArray) :
-			for(int j=0;j<property->getValueObjArraySize();j++)
+			for(int j=0;j<property->getArraySize();j++)
 				property->getValueObjPtr(j)->clearXMLStructures();
 			break;
 
@@ -1446,7 +1446,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
 
 		// ObjArray
 		case(Property::ObjArray) :
-			for(int j=0;j<property->getValueObjArraySize();j++)
+			for(int j=0;j<property->getArraySize();j++)
 				property->getValueObjPtr(j)->setAllPropertiesUseDefault(aUseDefault);
 			break;
 

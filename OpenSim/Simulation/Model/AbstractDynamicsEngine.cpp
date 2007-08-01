@@ -187,6 +187,7 @@ void AbstractDynamicsEngine::setupProperties()
 	_gravityProp.setComment("Acceleration due to gravity expressed.");
 	_gravityProp.setName("gravity");
 	_gravityProp.setValue(3, defaultGravity);
+	_gravityProp.setAllowableArraySize(3);
 	_propertySet.append(&_gravityProp);
 
 	// Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)

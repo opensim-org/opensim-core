@@ -99,10 +99,8 @@ public:
 	virtual const Array<double>& getValueDblArray() const;
 	// VALUE as String
 	virtual const std::string &toString();
-	// VALUE primitive
-	virtual double& getDblValueAt(int aIndex) const;
-	virtual void setDblValueAt(int aIndex, const double aDouble) const;
-	virtual const int getArraySize() const;
+	// SIZE
+	virtual int getArraySize() const { return _array.getSize(); }
 
 
 //=============================================================================

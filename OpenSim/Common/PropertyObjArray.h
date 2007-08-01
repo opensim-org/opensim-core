@@ -95,8 +95,9 @@ public:
 	virtual const char* getTypeAsString() const { return "ObjArray"; }
 	// VALUE as String
 	virtual const std::string &toString() { _valueString = "(Array of objects)"; return _valueString; }
+	// SIZE
+	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE
-	virtual int getValueObjArraySize() const { return _array.getSize(); }
 	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
 	virtual void appendValue(Object *obj) { 
 		if(!isValidObject(obj)) throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "+obj->getType(),__FILE__,__LINE__);

@@ -201,36 +201,6 @@ getValueDblArray() const
 }
 //_____________________________________________________________________________
 /**
- * Get value at specific index.
- *
- * @return Reference to the value of this property at specified index.
- */
-double& PropertyDblArray::getDblValueAt(int aIndex) const
-{
-	return _array[aIndex];
-}
-//_____________________________________________________________________________
-/**
- * Set value at specific index.
- *
- * 
- */
-void PropertyDblArray::setDblValueAt(int aIndex, const double aDouble) const
-{
-	_array[aIndex] = aDouble;
-}
-//_____________________________________________________________________________
-/**
- * Get the size of Array used by property.
- *
- * @return size of Array used by property.
- */
-const int PropertyDblArray::getArraySize() const
-{
-	return _array.getSize();
-}
-//_____________________________________________________________________________
-/**
  * Get a constant String represeting the value of this property.
  *
  * @return Constant String represeting the value of this property.

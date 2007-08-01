@@ -95,6 +95,8 @@ public:
 	virtual void setValue(int aSize,const std::string aArray[]);
 	virtual Array<std::string>& getValueStrArray();
 	virtual const Array<std::string>& getValueStrArray() const;
+	// SIZE
+	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE as String
 	virtual const std::string &toString();
 

@@ -93,6 +93,8 @@ public:
 	virtual void setValue(int aSize,const bool aArray[]);
 	virtual Array<bool>& getValueBoolArray();
 	virtual const Array<bool>& getValueBoolArray() const;
+	// SIZE
+	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE as String
 	virtual const std::string &toString();
 

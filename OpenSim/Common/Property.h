@@ -111,6 +111,9 @@ private:
 	/** Flag indicating whether or not this property uses some
 	default property for initializing its value. */
 	bool _useDefault;
+
+	int _minArraySize; // minimum number of elements for a property of array type
+	int _maxArraySize; // maximum number of elements for a property of array type
 protected:
 	/** Comment to be associated with property, shown for default objects only
 	for efficiency. */
@@ -164,6 +167,11 @@ public:
 	// VALUE
 	// Textual representation
 	virtual const std::string &toString()=0;
+
+	void setAllowableArraySize(int aMin, int aMax) { _minArraySize = aMin; _maxArraySize = aMax; }
+	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
+	int getMinArraySize() { return _minArraySize; }
+	int getMaxArraySize() { return _maxArraySize; }
 
 	// These methods have been given default implementations, rather than being made pure virtual
 	// so that all classes derived from Property will not have to implement each method.
@@ -236,13 +244,15 @@ public:
 	virtual Object* getValueObjPtr() { Property_PROPERTY_TYPE_MISMATCH(); }
 
 	// Obj Array
-	virtual int getValueObjArraySize() const { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual Object* getValueObjPtr(int index) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void appendValue(Object *obj) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void clearObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
 	// USE DEFAULT
 	void setUseDefault(bool aTrueFalse);
 	bool getUseDefault() const;
+
+	// Generic way to get number of elements
+	virtual int getArraySize() const { Property_PROPERTY_TYPE_MISMATCH(); }
 
 	// Templates for get & set
 	template<class T> T &getValue();
