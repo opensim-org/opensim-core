@@ -216,9 +216,9 @@ solve(const Array<double> &ax,const Array<double> &bx,
 	}
 
 	// PRINT
-	cout<<"\n\nRootSolver:  found solution in "<<iter<<" iterations.\n";
-	cout<<"converged array:\n";
-	cout<<converged<<endl<<endl;
+	//cout<<"\n\nRootSolver:  found solution in "<<iter<<" iterations.\n";
+	//cout<<"converged array:\n";
+	//cout<<converged<<endl<<endl;
 	//cout<<"roots:\n";
 	//cout<<b<<endl<<endl;
 	//cout<<"errors:\n";
