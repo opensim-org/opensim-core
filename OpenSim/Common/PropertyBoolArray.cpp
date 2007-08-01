@@ -208,9 +208,8 @@ const string &PropertyBoolArray::
 toString()
 {
 	string str = "(";
-	for(int i=0; i < _array.getSize(); i++){
-		str += (_array[i]?"True ":"False ");
-	}
+	for(int i=0; i < _array.getSize(); i++)
+		str += (i>0?" ":"") + (_array[i]?string("True"):string("False"));
 	str += ")";
 	_valueString = str;
 	return (_valueString);

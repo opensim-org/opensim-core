@@ -208,10 +208,10 @@ const string &PropertyIntArray::
 toString()
 {
 	string str = "(";
-	char intString[32];
+	char intString[256];
 	for(int i=0; i < _array.getSize(); i++){
-		sprintf(intString, "%d ", _array[i]);
-		str += string(intString);
+		sprintf(intString, "%d", _array[i]);
+		str += (i>0?" ":"") + string(intString);
 	}
 	str += ")";
 	_valueString = str;

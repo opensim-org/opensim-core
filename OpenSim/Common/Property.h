@@ -99,8 +99,8 @@ public:
 	/** Enumeration of recognized types. */
 	enum PropertyType
 	{
-		None=0,Bool, Int, Flt, Dbl, Str, Obj, ObjPtr,
-		BoolArray, IntArray, FltArray, DblArray, StrArray, ObjArray
+		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
+		BoolArray, IntArray, DblArray, StrArray, ObjArray
 	};
 
 private:
