@@ -161,7 +161,7 @@ printPerformance(double *x)
 {
 	double p;
 	objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
-	std::cout << "total error = " << p << std::endl;
+	std::cout << "performance = " << p << std::endl;
 }
 
 //=============================================================================
