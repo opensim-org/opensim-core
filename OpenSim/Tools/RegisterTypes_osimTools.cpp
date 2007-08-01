@@ -34,6 +34,7 @@
 #include "CMCTool.h"
 #include "ForwardTool.h"
 #include "PerturbationTool.h"
+#include "AnalyzeTool.h"
 
 #include "GenericModelMaker.h"
 #include "IKCoordinateTask.h"
@@ -70,6 +71,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( CMCTool() );
 	Object::RegisterType( ForwardTool() );
 	Object::RegisterType( PerturbationTool() );
+	Object::RegisterType( AnalyzeTool() );
 
 	Object::RegisterType( GenericModelMaker() );
 	Object::RegisterType( IKCoordinateTask() );
