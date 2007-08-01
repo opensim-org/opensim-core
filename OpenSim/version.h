@@ -29,21 +29,24 @@
 * POSSIBILITY OF SUCH DAMAGE. 
 */
 
+#if defined(__cplusplus) || defined(SWIG)
 #include <string>
-
 namespace OpenSim {
+#endif
 
-	static std::string Version = "0.9.6";
+	static const char *OpenSimVersion = "0.9.6";
 
+#if defined(__cplusplus) || defined(SWIG)
 	std::string GetVersionAndDate() { 
 		char buffer[256];
-		sprintf(buffer,"version %s, build date %s %s", Version.c_str(), __TIME__, __DATE__);
+		sprintf(buffer,"version %s, build date %s %s", OpenSimVersion, __TIME__, __DATE__);
 		return std::string(buffer);
 	}
 
 	std::string GetVersion() {
-		return Version;
+		return OpenSimVersion;
 	}
 }
+#endif
 
 #endif

@@ -23,6 +23,7 @@
 #include "universal.h"
 #include "main.h"
 #include "wefunctions.h"
+#include <OpenSim/version.h>
 
 
 static char EngineType[256];
@@ -47,7 +48,7 @@ int main(int argc, char* argv[])
 	strcpy(EngineType,"Simm");
 	strcpy(EngineName,"SimmKinematicsEngine");
 
-	printf("simmToOpenSim, version 0.9.0 (July 19, 2007)\n");
+	printf("simmToOpenSim, version %s, build date %s %s\n", OpenSimVersion, __TIME__, __DATE__);
 
    if (argc < 5)
    {
