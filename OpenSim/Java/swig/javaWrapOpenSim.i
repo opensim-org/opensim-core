@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/version.h>
 
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
@@ -341,6 +342,7 @@ using namespace OpenSim;
 %include <OpenSim/Common/Units.h>
 %include <OpenSim/Common/rdMath.h>
 %include <OpenSim/Common/IO.h>
+%include <OpenSim/version.h>
 
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/AbstractActuator.h>

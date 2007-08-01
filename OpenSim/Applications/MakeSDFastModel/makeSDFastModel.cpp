@@ -161,7 +161,7 @@ int main(int argc,char **argv)
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
 	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream<<"\n\n"<<progName<<":\n"<<Version_And_Date()<<"\n\n";
+	aOStream<<"\n\n"<<progName<<":\n"<<GetVersionAndDate()<<"\n\n";
 	aOStream<<"Option                    Argument         Action / Notes\n";
 	aOStream<<"------                    --------         --------------\n";
 	aOStream<<"-Help, -H                                  Print the command-line options for "<<progName<<".\n";

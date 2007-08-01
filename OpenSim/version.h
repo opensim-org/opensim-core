@@ -33,12 +33,16 @@
 
 namespace OpenSim {
 
-	static const char *Version = "0.8.3";
+	static std::string Version = "0.9.6";
 
-	std::string Version_And_Date() { 
+	std::string GetVersionAndDate() { 
 		char buffer[256];
-		sprintf(buffer,"version %s, build date %s %s", Version, __TIME__, __DATE__);
+		sprintf(buffer,"version %s, build date %s %s", Version.c_str(), __TIME__, __DATE__);
 		return std::string(buffer);
+	}
+
+	std::string GetVersion() {
+		return Version;
 	}
 }
 
