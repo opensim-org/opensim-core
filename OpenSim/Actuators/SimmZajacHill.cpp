@@ -224,6 +224,13 @@ void SimmZajacHill::setup(Model* aModel)
 	// Base class
 	AbstractMuscle::setup(aModel);
 
+	if(!getActiveForceLengthCurve()) 
+		throw Exception("SimmZajacHill.setup: ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+	else if(!getPassiveForceLengthCurve())
+		throw Exception("SimmZajacHill.setup: ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+	else if(!getTendonForceLengthCurve())
+		throw Exception("SimmZajacHill.setup: ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+
 	// Reasonable initial activation value
 	_activation = 0.01;
 
