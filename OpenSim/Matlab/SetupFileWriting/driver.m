@@ -511,8 +511,10 @@ if RUN_CODE_BLOCK_10
                         mxOptimalForceRRA2 myOptimalForceRRA2 mzOptimalForceRRA2 cmcOptimizerAlgorithm ...
                         idResultsDirectory };
     setupwrite( gait2392ExampleDirectory, outputDirectory, subjectName, trialName, specialSettings );
-    initialPercent = 0;
-    finalPercent = 150;
+    %initialPercent = 0;
+    %finalPercent = 150;
+    initialPercent = 100;
+    finalPercent = 250;
     inputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';
     outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_1.5_fast_auto';
     subjectName = 'delaware3';

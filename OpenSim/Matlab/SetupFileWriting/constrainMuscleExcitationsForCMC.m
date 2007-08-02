@@ -8,7 +8,10 @@ function constrainMuscleExcitationsForCMC( excitationOffRegions, outputDirectory
 %
 
 % Minimum possible excitation value, indicating that an actuator is off.
-off = 0.02;
+offMin = 0.02;
+
+% Maximum excitation value for when an actuator is off.
+offMax = 0.02;
 
 % Maximum possible excitation value, indicating that an actuator is fully
 % on.
@@ -225,12 +228,12 @@ minValuesCell = offTimeIntervalsCell;
 maxValuesCell = offTimeIntervalsCell;
 for i = 1:length( minValuesCell )
     % Set all min values to off.
-    minValuesCell{i} = minValuesCell{i} * 0 + off;
+    minValuesCell{i} = minValuesCell{i} * 0 + offMin;
     row = maxValuesCell{i};
     for j = 1:2:length( row )
         % For the ((j+1)/2)th interval, set initial maximum to on, and
         % final maximum to off.
-        row( j:j+1 ) = [on off];
+        row( j:j+1 ) = [on offMax];
     end
     maxValuesCell{i} = row;
 end
@@ -259,7 +262,7 @@ for i = 1:length( timesCell )
     lastTime = currentActuatorTimeInterval( end );
     if lastTime < cmcFinalTime
         timesCell{i} = [timesCell{i} cmcFinalTime];
-        minValuesCell{i} = [minValuesCell{i} off];
+        minValuesCell{i} = [minValuesCell{i} offMin];
         maxValuesCell{i} = [maxValuesCell{i} on];
     end
 end
