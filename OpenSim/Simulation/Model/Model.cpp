@@ -58,6 +58,8 @@ using namespace OpenSim;
  */
 Model::Model() :
 	_fileName("Unassigned"),
+	_creditsStr(_creditsStrProp.getValueStr()),
+	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
@@ -76,6 +78,8 @@ Model::Model() :
 Model::Model(const string &aFileName) :
 	Object(aFileName, false),
 	_fileName("Unassigned"),
+	_creditsStr(_creditsStrProp.getValueStr()),
+	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
@@ -107,6 +111,8 @@ Model::Model(const string &aFileName) :
 
 Model::Model(const Model &aModel) :
    Object(aModel),
+	_creditsStr(_creditsStrProp.getValueStr()),
+	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
@@ -166,6 +172,8 @@ Object* Model::copy() const
 void Model::copyData(const Model &aModel)
 {
 	_fileName = aModel._fileName;
+	_creditsStr = aModel._creditsStr;
+	_publicationsStr = aModel._publicationsStr;
 	_lengthUnits = aModel._lengthUnits;
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
@@ -204,6 +212,12 @@ void Model::setNull()
  */
 void Model::setupProperties()
 {
+	_creditsStrProp.setName("credits");
+	_propertySet.append(&_creditsStrProp);
+
+	_publicationsStrProp.setName("publications");
+	_propertySet.append(&_publicationsStrProp);
+
 	_contactSetProp.setName("ContactForceSet");
 	_propertySet.append(&_contactSetProp);
 
@@ -239,6 +253,12 @@ void Model::setup()
 		IO::chDir(dirPath);
 	}
 
+	if (_creditsStrProp.getUseDefault()){
+		_creditsStr = "Model authors names..";
+	}
+	if (_publicationsStrProp.getUseDefault()){
+		_publicationsStr = "List of publications related to model...";
+	}
 	// CALLBACK SETS
 	_analysisSet = new AnalysisSet(this);
 	_integCallbackSet = new IntegCallbackSet(this);

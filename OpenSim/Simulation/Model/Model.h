@@ -80,7 +80,15 @@ private:
 	/** Name of file from which the model was constructed. */
 	std::string _fileName;
 
-	/** Units for all lengths, distances. */
+	/** Model credits Info. */
+	PropertyStr _creditsStrProp;
+	std::string& _creditsStr;
+
+	/** Publications and References. */
+	PropertyStr _publicationsStrProp;
+	std::string& _publicationsStr;
+
+	/** Units for all length. */
 	PropertyStr _lengthUnitsStrProp;
 	std::string& _lengthUnitsStr;
 	Units _lengthUnits;
@@ -170,6 +178,14 @@ public:
 	//--------------------------------------------------------------------------
 	virtual const std::string& getInputFileName() const { return _fileName; }
 	virtual void setInputFileName(const std::string& fileName) { _fileName = fileName; }
+
+	//--------------------------------------------------------------------------
+	// CREDITS
+	//--------------------------------------------------------------------------
+	virtual const std::string& getCredits() const { return _creditsStr; }
+	virtual void setAuthors(const std::string& aCredits) { _creditsStr = aCredits; }
+	virtual const std::string& getPublications() const { return _publicationsStr; }
+	virtual void setPublications(const std::string& aPublications) { _publicationsStr = aPublications; }
 
 	//--------------------------------------------------------------------------
 	// UNITS
