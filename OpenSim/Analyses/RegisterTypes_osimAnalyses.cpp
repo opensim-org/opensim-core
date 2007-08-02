@@ -33,10 +33,11 @@ OSIMANALYSES_API void RegisterTypes_suAnalyses()
 	Object::RegisterType( Actuation() );
 	Object::RegisterType( PointKinematics() );
 	Object::RegisterType( BodyKinematics() );
-	Object::RegisterType( ActuatorGeneralizedForces() );
-   Object::RegisterType( GeneralizedForces() );
 	Object::RegisterType( MuscleAnalysis() );
 	Object::RegisterType( InverseDynamics() );
+	// unregistering until we verify that these work
+	//Object::RegisterType( ActuatorGeneralizedForces() );
+   //Object::RegisterType( GeneralizedForces() );
 }
 
 suAnalysesInstantiator::suAnalysesInstantiator() 
