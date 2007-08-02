@@ -84,7 +84,9 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 	updateFromXMLNode();
 	if(aLoadModelAndInput) {
 		loadModel(aFileName);
-		loadControlsStatesPseudoStatesExternalLoadsFromFiles();
+		loadStatesFromFile();
+		loadControlsFromFile();
+		loadPseudoStatesFromFile();
 	}
 }
 //_____________________________________________________________________________
@@ -481,7 +483,7 @@ getPseudoStatesStorage()
  * in from file.
  */
 void AnalyzeTool::
-loadControlsStatesPseudoStatesExternalLoadsFromFiles()
+loadStatesFromFile()
 {
 	delete _statesStore; _statesStore = NULL;
 	if(_statesFileNameProp.isValidFileName()) {
@@ -522,14 +524,43 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 
 	cout<<"Found "<<_statesStore->getSize()<<" state vectors with time stamps ranging\n";
 	cout<<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<".\n";
+}
 
+void AnalyzeTool::
+setStatesFromMotion(const Storage &aMotion, bool aInDegrees)
+{
+	cout<<endl<<"Creating states from motion storage"<<endl;
+	// TODO: should we optionally filter it?
+	Storage *qStore=NULL, *uStore=NULL;
+	if(aInDegrees) _model->getDynamicsEngine().formCompleteStorages(aMotion,qStore,uStore);
+	else {
+		// If incoming motion is in radians, we should convert to degrees before calling formCompleteStorage.
+		// And we do this in a copy of the motion so we don't alter the incoming motion
+		Storage motionCopy(aMotion);
+		_model->getDynamicsEngine().convertRadiansToDegrees(motionCopy);
+		_model->getDynamicsEngine().formCompleteStorages(motionCopy,qStore,uStore);
+	}
+	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
+	_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+	setStatesStorageFromCoordinatesAndSpeeds(qStore, uStore);
+	delete qStore;
+	delete uStore;
+}
+
+void AnalyzeTool::
+loadControlsFromFile()
+{
 	// Controls
 	delete _controlSet; _controlSet = NULL;
 	if(_controlsFileNameProp.isValidFileName()) {
 		cout<<"\n\nLoading controls from file "<<_controlsFileName<<".\n";
 		_controlSet = new ControlSet(_controlsFileName);
 	}
+}
 
+void AnalyzeTool::
+loadPseudoStatesFromFile()
+{
 	// Pseudo States
 	int nyp = _model->getNumPseudoStates();
 	delete _pseudoStore; _pseudoStore = NULL;
@@ -541,10 +572,6 @@ loadControlsStatesPseudoStatesExternalLoadsFromFiles()
 		cout<<"\nLoading states from file "<<_pseudoStatesFileName<<".\n";
 		_pseudoStore = new Storage(_pseudoStatesFileName);
 	}
-
-	// External Loads
-	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 }
 //_____________________________________________________________________________
 /**
@@ -686,6 +713,10 @@ bool AnalyzeTool::run()
 	string saveWorkingDirectory = IO::getCwd();
 	if (_document)	// When the tool is created live from GUI it has no file/document association
 		IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+
+	// External Loads
+	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// COMPUTE INITIAL AND FINAL INDEX
 	double ti,tf;

@@ -155,7 +155,10 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITIES
 	//--------------------------------------------------------------------------
-	void loadControlsStatesPseudoStatesExternalLoadsFromFiles();
+	void setStatesFromMotion(const Storage &aMotion, bool aInDegrees) SWIG_DECLARE_EXCEPTION;
+	void loadControlsFromFile() SWIG_DECLARE_EXCEPTION;
+	void loadStatesFromFile() SWIG_DECLARE_EXCEPTION;
+	void loadPseudoStatesFromFile() SWIG_DECLARE_EXCEPTION;
 	void verifyControlsStatesPseudoStates();
 	double getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Array<double> &rP);
 	void setPrintResultFiles(bool aToWrite);
