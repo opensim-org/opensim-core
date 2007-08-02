@@ -218,16 +218,26 @@ MusclePoint& MusclePoint::operator=(const MusclePoint &aPoint)
  *
  * @param aBody Reference to the body.
  */
-void MusclePoint::setBody(AbstractBody& aBody)
+void MusclePoint::setBody(AbstractBody& aBody, bool preserveLocation)
 {
-	// Invalidate the path and the geometry if you're
-	// about to change the body the point is fixed to.
-	if (&aBody != _body && _muscle != NULL) {
-		_muscle->invalidatePath();
+	if (&aBody == _body)
+		return;
+
+	// Preserve location means to switch bodies without changing
+	// the location of the point in the inertial reference frame.
+	if (preserveLocation) {
+	   AbstractDynamicsEngine* engine = aBody.getDynamicsEngine();
+	   if (engine)
+		   engine->transformPosition(*_body, _attachment, aBody, _attachment);
 	}
 
 	_body = &aBody;
 	_bodyName = aBody.getName();
+
+	// Invalidate the path if the point and muscle have already
+	// been set up.
+	if (_muscle != NULL)
+		_muscle->invalidatePath();
 }
 
 //_____________________________________________________________________________

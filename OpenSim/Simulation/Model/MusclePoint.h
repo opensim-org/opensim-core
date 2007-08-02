@@ -107,7 +107,7 @@ public:
 	void setAttachment(double aAttachment[3]);
    void setAttachment(int aCoordIndex, double aAttachment);
 	const AbstractBody* getBody() const { return _body; }
-	void setBody(AbstractBody& aBody);
+	void setBody(AbstractBody& aBody, bool preserveLocation = false);
 	const std::string& getBodyName() const { return _bodyName; }
 	const AbstractMuscle* getMuscle() const { return _muscle; }
 
