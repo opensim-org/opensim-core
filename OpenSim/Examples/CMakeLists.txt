@@ -1,3 +1,3 @@
-SUBDIRS(Gait2354 Gait2392 FallingBlock)
+SUBDIRS(Gait2354 Gait2392)
 
 INSTALL_FILES(/examples/ FILES README.txt)
