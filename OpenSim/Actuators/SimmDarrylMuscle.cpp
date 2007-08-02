@@ -167,63 +167,63 @@ void SimmDarrylMuscle::setupProperties()
 {
 	_maxIsometricForceProp.setName("max_isometric_force");
 	_maxIsometricForceProp.setValue(0.0);
-	_propertySet.append(&_maxIsometricForceProp, "force");
+	_propertySet.append(&_maxIsometricForceProp, "Parameters");
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
 	_optimalFiberLengthProp.setValue(0.0);
-	_propertySet.append(&_optimalFiberLengthProp, "force");
+	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
 	_tendonSlackLengthProp.setValue(0.0);
-	_propertySet.append(&_tendonSlackLengthProp, "force");
+	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
 
 	_pennationAngleProp.setName("pennation_angle");
 	_pennationAngleProp.setValue(0.0);
-	_propertySet.append(&_pennationAngleProp, "force");
+	_propertySet.append(&_pennationAngleProp, "Parameters");
 
 	_activationTimeConstantProp.setName("activation_time_constant");
 	_activationTimeConstantProp.setValue(0.0);
-	_propertySet.append(&_activationTimeConstantProp, "dynamic");
+	_propertySet.append(&_activationTimeConstantProp, "Parameters");
 
 	_deactivationTimeConstantProp.setName("deactivation_time_constant");
 	_deactivationTimeConstantProp.setValue(0.0);
-	_propertySet.append(&_deactivationTimeConstantProp, "dynamic");
+	_propertySet.append(&_deactivationTimeConstantProp, "Parameters");
 
 	_vmaxProp.setName("Vmax");
 	_vmaxProp.setValue(0.0);
-	_propertySet.append(&_vmaxProp, "dynamic");
+	_propertySet.append(&_vmaxProp, "Parameters");
 
 	_vmax0Prop.setName("Vmax0");
 	_vmax0Prop.setValue(0.0);
-	_propertySet.append(&_vmax0Prop, "dynamic");
+	_propertySet.append(&_vmax0Prop, "Parameters");
 
 	_fmaxTendonStrainProp.setName("FmaxTendonStrain");
 	_fmaxTendonStrainProp.setValue(0.0);
-	_propertySet.append(&_fmaxTendonStrainProp, "force");
+	_propertySet.append(&_fmaxTendonStrainProp, "Parameters");
 
 	_fmaxMuscleStrainProp.setName("FmaxMuscleStrain");
 	_fmaxMuscleStrainProp.setValue(0.0);
-	_propertySet.append(&_fmaxMuscleStrainProp, "force");
+	_propertySet.append(&_fmaxMuscleStrainProp, "Parameters");
 
 	_kShapeActiveProp.setName("KshapeActive");
 	_kShapeActiveProp.setValue(0.0);
-	_propertySet.append(&_kShapeActiveProp, "force");
+	_propertySet.append(&_kShapeActiveProp, "Parameters");
 
 	_kShapePassiveProp.setName("KshapePassive");
 	_kShapePassiveProp.setValue(0.0);
-	_propertySet.append(&_kShapePassiveProp, "force");
+	_propertySet.append(&_kShapePassiveProp, "Parameters");
 
 	_dampingProp.setName("damping");
 	_dampingProp.setValue(0.0);
-	_propertySet.append(&_dampingProp, "dynamic");
+	_propertySet.append(&_dampingProp, "Parameters");
 
 	_afProp.setName("Af");
 	_afProp.setValue(0.0);
-	_propertySet.append(&_afProp, "force");
+	_propertySet.append(&_afProp, "Parameters");
 
 	_flenProp.setName("Flen");
 	_flenProp.setValue(0.0);
-	_propertySet.append(&_flenProp, "force");
+	_propertySet.append(&_flenProp, "Parameters");
 }
 
 //_____________________________________________________________________________

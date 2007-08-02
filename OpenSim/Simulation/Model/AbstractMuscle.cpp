@@ -154,7 +154,7 @@ void AbstractMuscle::setupProperties()
 
 	_muscleModelIndexProp.setName("muscle_model");
 	_muscleModelIndexProp.setValue(4);
-	_propertySet.append(&_muscleModelIndexProp, "dynamic");
+	_propertySet.append(&_muscleModelIndexProp, "Parameters");
 }
 
 //_____________________________________________________________________________
