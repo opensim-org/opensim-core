@@ -147,10 +147,17 @@ public:
 	void setStartTime(const double aStartTime) { _ti=aStartTime; } // depracated: should use "initial" instead of "start"
 
 	// Integrator settings
-	double getMaximumNumberOfSteps() const { return _maxSteps; }
+	int getMaximumNumberOfSteps() const { return _maxSteps; }
+	void setMaximumNumberOfSteps(int aMaxSteps) { _maxSteps = aMaxSteps; }
+
 	double getMaxDT() const { return _maxDT; }
+	void setMaxDT(double aMaxDT) { _maxDT = aMaxDT; }
+
 	double getErrorTolerance() const { return _errorTolerance; }
+	void setErrorTolerance(double aErrorTolerance) { _errorTolerance = aErrorTolerance; }
+
 	double getFineTolerance() const { return _fineTolerance; }
+	void setFineTolerance(double aFineTolerance) { _fineTolerance = aFineTolerance; }
 
 	// Model xml file
 	const std::string& getModelFilename() const { return _modelFile; }

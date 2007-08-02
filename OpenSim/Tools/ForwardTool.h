@@ -111,6 +111,7 @@ public:
 	void setInitialStatesFileName(const std::string &aFileName) { _initialStatesFileName = aFileName; }
 
 	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
+	void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
 
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
