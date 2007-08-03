@@ -530,19 +530,26 @@ void AnalyzeTool::
 setStatesFromMotion(const Storage &aMotion, bool aInDegrees)
 {
 	cout<<endl<<"Creating states from motion storage"<<endl;
-	// TODO: should we optionally filter it?
-	Storage *qStore=NULL, *uStore=NULL;
-	if(aInDegrees) _model->getDynamicsEngine().formCompleteStorages(aMotion,qStore,uStore);
-	else {
-		// If incoming motion is in radians, we should convert to degrees before calling formCompleteStorage.
-		// And we do this in a copy of the motion so we don't alter the incoming motion
-		Storage motionCopy(aMotion);
-		_model->getDynamicsEngine().convertRadiansToDegrees(motionCopy);
-		_model->getDynamicsEngine().formCompleteStorages(motionCopy,qStore,uStore);
+
+	// Make a copy in case we need to convert to degrees and/or filter
+	Storage motionCopy(aMotion);
+
+	if(!aInDegrees) _model->getDynamicsEngine().convertRadiansToDegrees(motionCopy);
+
+	if(_lowpassCutoffFrequency>=0) {
+		cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"...\n\n";
+		motionCopy.pad(60);
+		motionCopy.lowpassFIR(50,_lowpassCutoffFrequency);
 	}
+
+	Storage *qStore=NULL, *uStore=NULL;
+	_model->getDynamicsEngine().formCompleteStorages(motionCopy,qStore,uStore);
+
 	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
 	_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+
 	setStatesStorageFromCoordinatesAndSpeeds(qStore, uStore);
+
 	delete qStore;
 	delete uStore;
 }

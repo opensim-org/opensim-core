@@ -163,6 +163,9 @@ public:
 	const std::string& getModelFilename() const { return _modelFile; }
 	void setModelFilename(const std::string& aModelFile) { _modelFile = aModelFile; }
 
+	bool getSolveForEquilibrium() const { return _solveForEquilibriumForAuxiliaryStates; }
+	void setSolveForEquilibrium(bool aSolve) { _solveForEquilibriumForAuxiliaryStates = aSolve; }
+
 	//--------------------------------------------------------------------------
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
@@ -170,10 +173,6 @@ public:
 	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void addAnalysisSetToModel();
 
-	void solveForEquilibrium(bool aSolve)
-	{
-		_solveForEquilibriumForAuxiliaryStates=aSolve;
-	}
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------

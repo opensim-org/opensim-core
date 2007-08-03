@@ -184,7 +184,7 @@ void AbstractDynamicsEngine::setup(Model* aModel)
 void AbstractDynamicsEngine::setupProperties()
 {
 	const double defaultGravity[] = {0.0, -9.80665, 0.0};
-	_gravityProp.setComment("Acceleration due to gravity expressed.");
+	_gravityProp.setComment("Acceleration due to gravity.");
 	_gravityProp.setName("gravity");
 	_gravityProp.setValue(3, defaultGravity);
 	_gravityProp.setAllowableArraySize(3);

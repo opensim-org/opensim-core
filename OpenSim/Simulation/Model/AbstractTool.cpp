@@ -221,7 +221,8 @@ void AbstractTool::setupProperties()
 	_tfProp.setName("final_time");
 	_propertySet.append( &_tfProp );
 
-	comment = "Maximum number of integrator steps.";
+	comment = "Flag indicating whether or not to compute equilibrium values for states other than the coordinates or speeds.  "
+			    "For example, equilibrium muscle fiber lengths or muscle forces.";
 	_solveForEquilibriumForAuxiliaryStatesProp.setComment(comment);
 	_solveForEquilibriumForAuxiliaryStatesProp.setName("solve_for_equilibrium_for_auxiliary_states");
 	_propertySet.append( &_solveForEquilibriumForAuxiliaryStatesProp );
