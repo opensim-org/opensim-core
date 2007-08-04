@@ -166,7 +166,7 @@ private:
 public:
 	virtual ~CMCTool();
 	CMCTool();
-	CMCTool(const std::string &aFileName);
+	CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	CMCTool(const CMCTool &aObject);
 	virtual Object* copy() const;
 private:
@@ -186,7 +186,43 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	
+
+	const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
+	void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
+
+	const std::string &getConstraintsFileName() { return _constraintsFileName; }
+	void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }
+
+	const std::string &getTaskSetFileName() { return _taskSetFileName; }
+	void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
+
+	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
+	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
+
+	const std::string &getOutputModelFileName() { return _outputModelFile; }
+	void setOutputModelFileName(const std::string &aFileName) { _outputModelFile = aFileName; }
+
+	bool getAdjustCOMToReduceResiduals() { return _adjustCOMToReduceResiduals; }
+	void setAdjustCOMToReduceResiduals(bool aAdjust) { _adjustCOMToReduceResiduals = aAdjust; }
+
+	const std::string &getAdjustedCOMBody() { return _adjustedCOMBody; }
+	void setAdjustedCOMBody(const std::string &aBody) { _adjustedCOMBody = aBody; }
+
+	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
+	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
+
+	// External loads get/set
+	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
+	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
+	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
+	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
+	void setExternalLoadsBody1(const std::string &aName) { _externalLoadsBody1 = aName; }
+	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
+	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
+	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
@@ -196,6 +232,8 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	Storage *getForceStorage();
+
+	void setOriginalActuatorSet(const ActuatorSet &aActuatorSet);
 
 #ifndef SWIG
 	ControlSet*

@@ -110,7 +110,7 @@ CMCTool::CMCTool() :
  *
  * @param aFileName File name of the XML document.
  */
-CMCTool::CMCTool(const string &aFileName) :
+CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
@@ -140,7 +140,7 @@ CMCTool::CMCTool(const string &aFileName) :
 	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
-	loadModel(aFileName, &_originalActuatorSet);
+	if(aLoadModel) loadModel(aFileName, &_originalActuatorSet);
 }
 //_____________________________________________________________________________
 /**
@@ -1147,4 +1147,9 @@ Storage* CMCTool::getForceStorage(){
 		Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
 		if(actuation==NULL) return 0;
 		return actuation->getForceStorage();
+}
+
+
+void CMCTool::setOriginalActuatorSet(const ActuatorSet &aActuatorSet) {
+	_originalActuatorSet = aActuatorSet;
 }
