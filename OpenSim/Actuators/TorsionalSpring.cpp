@@ -251,7 +251,7 @@ getScaleFactor()
  * be specified and in radians.
  */
 void TorsionalSpring::
-computeTargetFunctions(Storage *aQStore,Storage *aUStore)
+computeTargetFunctions(const Storage &aQStore,const Storage &aUStore)
 {
 	int i;
 	int nq = _model->getNumCoordinates();
@@ -262,12 +262,12 @@ computeTargetFunctions(Storage *aQStore,Storage *aUStore)
 	Storage angStore,angVelStore;
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
-	int size = aQStore->getSize();
+	int size = aQStore.getSize();
 	for(i=0;i<size;i++) {
 		// Set the model state
-		aQStore->getTime(i,t);
-		aQStore->getData(i,nq,&q[0]);
-		aUStore->getData(i,nu,&u[0]);
+		aQStore.getTime(i,t);
+		aQStore.getData(i,nq,&q[0]);
+		aUStore.getData(i,nu,&u[0]);
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity

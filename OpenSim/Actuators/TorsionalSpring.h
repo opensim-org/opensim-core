@@ -83,7 +83,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	void computeTargetFunctions(Storage *aQStore,Storage *aUStore);
+	void computeTargetFunctions(const Storage &aQStore,const Storage &aUStore);
 	
 	//--------------------------------------------------------------------------
 	// CALLBACKS

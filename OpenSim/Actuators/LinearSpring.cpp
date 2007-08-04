@@ -263,14 +263,14 @@ getScaleFactor()
  */
 void LinearSpring::
 computePointAndTargetFunctions(
-	Storage *aQStore,Storage *aUStore,VectorFunction &aPGlobal)
+	const Storage &aQStore,const Storage &aUStore,VectorFunction &aPGlobal)
 {
 	computePointFunction(aQStore, aUStore, aPGlobal);
 	computeTargetFunctions(aQStore, aUStore);
 }
 
 void LinearSpring::
-computeTargetFunctions(Storage *aQStoreForTarget,Storage *aUStoreForTarget)
+computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreForTarget)
 {
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
@@ -281,12 +281,12 @@ computeTargetFunctions(Storage *aQStoreForTarget,Storage *aUStoreForTarget)
 	Storage pStore,pGlobalStore,vGlobalStore;
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
-	int size = aQStoreForTarget->getSize();
+	int size = aQStoreForTarget.getSize();
 	for(int i=0;i<size;i++) {
 		// Set the model state
-		aQStoreForTarget->getTime(i,*(&t[0]));
-		aQStoreForTarget->getData(i,nq,&q[0]);
-		aUStoreForTarget->getData(i,nu,&u[0]);
+		aQStoreForTarget.getTime(i,*(&t[0]));
+		aQStoreForTarget.getData(i,nq,&q[0]);
+		aUStoreForTarget.getData(i,nu,&u[0]);
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity
@@ -411,7 +411,17 @@ applyActuation(double aT,double *aX,double *aY)
 			force[i] = _scaleFactor*(_k[i]*dx[i] + _b[i]*dv[i]);
 		}
 		setForce(force);
-		_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
+		double threshold = 0.1;
+		if(fabs(Mtx::Magnitude(3,force)) > threshold) {
+			cout<<"linear spring ("<<aT<<"):\n";
+			cout<<"force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
+			cout<<"dx = "<<dx[0]<<", "<<dx[1]<<", "<<dx[2]<<endl;
+			cout<<"dv = "<<dv[0]<<", "<<dv[1]<<", "<<dv[2]<<endl;
+		}
+		if(fabs(Mtx::Magnitude(3,force)) > threshold) {
+			cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
+			_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
+		}
 
 		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 	}	

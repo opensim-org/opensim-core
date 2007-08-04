@@ -52,36 +52,7 @@ PerturbationTool::PerturbationTool() :
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
-	_perturbGravity(_perturbGravityProp.getValueBool()),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_qFileName(_qFileNameProp.getValueStr()),
-	_uFileName(_uFileNameProp.getValueStr()),
-	_yFileName(_yFileNameProp.getValueStr()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
-	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
-	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_perturbGravity(_perturbGravityProp.getValueBool())
 {
 	setType("PerturbationTool");
 	setNull();
@@ -96,41 +67,12 @@ PerturbationTool::PerturbationTool() :
  * @param aFileName File name of the document.
  */
 PerturbationTool::PerturbationTool(const string &aFileName):
-	AbstractTool(aFileName, false),
+	ForwardTool(aFileName, false),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
-	_perturbGravity(_perturbGravityProp.getValueBool()),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_qFileName(_qFileNameProp.getValueStr()),
-	_uFileName(_uFileNameProp.getValueStr()),
-	_yFileName(_yFileNameProp.getValueStr()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
-	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
-	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_perturbGravity(_perturbGravityProp.getValueBool())
 {
 	setType("PerturbationTool");
 	setNull();
@@ -175,41 +117,12 @@ PerturbationTool::PerturbationTool(const string &aFileName):
  */
 PerturbationTool::
 PerturbationTool(const PerturbationTool &aTool):
-	AbstractTool(aTool),
+	ForwardTool(aTool),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
 	_actuatorsToPerturb(_actuatorsToPerturbProp.getValueStrArray()),
-	_perturbGravity(_perturbGravityProp.getValueBool()),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
-	_qFileName(_qFileNameProp.getValueStr()),
-	_uFileName(_uFileNameProp.getValueStr()),
-	_yFileName(_yFileNameProp.getValueStr()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
-	_springTransitionStartWeight(_springTransitionStartWeightProp.getValueDbl()),
-	_springTransitionEndWeight(_springTransitionEndWeightProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_perturbGravity(_perturbGravityProp.getValueBool())
 {
 	setNull();
 	*this = aTool;
@@ -237,34 +150,6 @@ setNull()
 	_actuatorsToPerturb.setSize(1);
 	_actuatorsToPerturb[0] = "all";
 	_perturbGravity = true;
-
-	// FOOT CONTACT EVENTS
-	_rHeelStrike = _rFootFlat =_rHeelOff = _rToeOff = 0.0;
-	_lHeelStrike = _lFootFlat =_lHeelOff = _lToeOff = 0.0;
-
-	// CORRECTIVE SPRING PARAMETERS
-	_tau = 0.001;
-	_tauRightStart = _tauRightEnd = _tauLeftStart = _tauLeftEnd = _tau;
-	_springTransitionStartWeight = 0.05;
-	_springTransitionEndWeight = 0.25;
-	_kLin.setSize(3);
-	_kLin[0] = _kLin[1] = _kLin[2] = 5000000.0;
-	_bLin.setSize(3);
-	_bLin[0] = _bLin[1] = _bLin[2] = 1500.0;
-	_kTor.setSize(3);
-	_kTor[0] = _kTor[1] = _kTor[2] = 100000.0;
-	_bTor.setSize(3);
-	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
-
-	_externalLoadsFileName = "";
-	_externalLoadsModelKinematicsFileName = "";
-	_externalLoadsBody1 = "";
-	_externalLoadsBody2 = "";
-	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
-	_outputDetailedResults = false;
-
-	rLin = lLin = 0;
-	rTrq = lTrq = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -303,157 +188,6 @@ void PerturbationTool::setupProperties()
 	_perturbGravityProp.setComment("Whether or not to compute induced accelerations due to gravity perturbation.");
 	_perturbGravityProp.setName("perturb_gravity");
 	_propertySet.append( &_perturbGravityProp );
-
-	// CORRECTIVE SPRING PARAMETERS
-	comment = "Rise time for scaling functions.  This parameter determines how fast a corrective "
-				 "spring is scaled into or out of effect around contact events.";
-	_tauProp.setComment(comment);
-	_tauProp.setName("scaling_rise_time");
-	_propertySet.append( &_tauProp );
-
-	comment = "Override scaling_rise_time for right foot flat (transition in).";
-	_tauRightStartProp.setComment(comment);
-	_tauRightStartProp.setName("scaling_rise_time_right_start");
-	_propertySet.append( &_tauRightStartProp );
-
-	comment = "Override scaling_rise_time for right heel off (transition out).";
-	_tauRightEndProp.setComment(comment);
-	_tauRightEndProp.setName("scaling_rise_time_right_end");
-	_propertySet.append( &_tauRightEndProp );
-
-	comment = "Override scaling_rise_time for left foot flat (transition in).";
-	_tauLeftStartProp.setComment(comment);
-	_tauLeftStartProp.setName("scaling_rise_time_left_start");
-	_propertySet.append( &_tauLeftStartProp );
-
-	comment = "Override scaling_rise_time for left heel off (transition out).";
-	_tauLeftEndProp.setComment(comment);
-	_tauLeftEndProp.setName("scaling_rise_time_left_end");
-	_propertySet.append( &_tauLeftEndProp );
-
-	comment = "Percent of body weight at which linear springs start to transition in.";
-	_springTransitionStartWeightProp.setComment(comment);
-	_springTransitionStartWeightProp.setName("spring_transition_start_weight");
-	_propertySet.append( &_springTransitionStartWeightProp );
-
-	comment = "Percent of body weight past which linear springs are fully activated.";
-	_springTransitionEndWeightProp.setComment(comment);
-	_springTransitionEndWeightProp.setName("spring_transition_end_weight");
-	_propertySet.append( &_springTransitionEndWeightProp );
-
-	_kLinProp.setComment("Stiffness for linear (translational) corrective springs");
-	_kLinProp.setName("corrective_spring_linear_stiffness");
-	_propertySet.append( &_kLinProp );
-
-	_bLinProp.setComment("Damping for linear (translational) corrective springs");
-	_bLinProp.setName("corrective_spring_linear_damping");
-	_propertySet.append( &_bLinProp );
-
-	_kTorProp.setComment("Stiffness for torsional corrective springs");
-	_kTorProp.setName("corrective_spring_torsional_stiffness");
-	_propertySet.append( &_kTorProp );
-
-	_bTorProp.setComment("Damping for torsional corrective springs");
-	_bTorProp.setName("corrective_spring_torsional_damping");
-	_propertySet.append( &_bTorProp );
-
-
-	// INPUT FILE NAMES
-	comment = "XML file containing the controls (e.g., muscle excitations) for the forward simulation.";
-	_controlsFileNameProp.setComment(comment);
-	_controlsFileNameProp.setName("controls_file");
-	_propertySet.append( &_controlsFileNameProp );
-
-	comment = "Storage file (.sto) containing the generalized coordinates for the model. "
-				 "These coordinates are used in conjuction with the center of pressure data "
-				 "to place the corrective springs at the centers of pressure in the local frames "
-				 "of each foot."; 
-	_qFileNameProp.setComment(comment);
-	_qFileNameProp.setName("coordinates_file");
-	_propertySet.append( &_qFileNameProp );
-
-	comment = "Storage file (.sto) containing the generalized speeds for the model. "
-				 "These speeds are used to set the expected velocities of the centers of pressure "
-				 "so that damping can be applied by the corrective springs if the trajectory "
-				 "of the foot deviates from the expected trajectory."; 
-	_uFileNameProp.setComment(comment);
-	_uFileNameProp.setName("speeds_file");
-	_propertySet.append( &_uFileNameProp );
-
-	comment = "Storage file (.sto) containing the model states during the unperturbed simulation. "
-				 "These states are used to set the initial states of the model for each perturbed simulation.";
-	_yFileNameProp.setComment(comment);
-	_yFileNameProp.setName("states_file");
-	_propertySet.append( &_yFileNameProp );
-
-	// FOOT CONTACT EVENT TIMES
-	_rHeelStrikeProp.setComment("Time of right heel strike.  The linear corrective spring will increase its influence at this time.");
-	_rHeelStrikeProp.setName("r_heel_strike");
-	_propertySet.append( &_rHeelStrikeProp );
-
-	_rFootFlatProp.setComment("Time of right foot flat.  The torsional corrective spring will increase its influence at this time.");
-	_rFootFlatProp.setName("r_foot_flat");
-	_propertySet.append( &_rFootFlatProp );
-
-	_rHeelOffProp.setComment("Time of right heel off.  The torsional corrective spring will decrease its influence at this time.");
-	_rHeelOffProp.setName("r_heel_off");
-	_propertySet.append( &_rHeelOffProp );
-
-	_rToeOffProp.setComment("Time of right toe off.  The linear corrective spring will decrease its influence at this time.");
-	_rToeOffProp.setName("r_toe_off");
-	_propertySet.append( &_rToeOffProp );
-
-	_lHeelStrikeProp.setComment("Time of left heel strike.  The linear corrective spring will increase its influence at this time");
-	_lHeelStrikeProp.setName("l_heel_strike");
-	_propertySet.append( &_lHeelStrikeProp );
-
-	_lFootFlatProp.setComment("Time of left foot flat.  The torsional corrective spring will increase its influence at this time");
-	_lFootFlatProp.setName("l_foot_flat");
-	_propertySet.append( &_lFootFlatProp );
-
-	_lHeelOffProp.setComment("Time of left heel off.  The torsional corrective spring will decrease its influence at this time");
-	_lHeelOffProp.setName("l_heel_off");
-	_propertySet.append( &_lHeelOffProp );
-
-	_lToeOffProp.setComment("Time of left toe off.  The linear corrective spring will decrease its influence at this time");
-	_lToeOffProp.setName("l_toe_off");
-	_propertySet.append( &_lToeOffProp );
-
-	// EXTERNAL LOADS (e.g. GROUND REACTION FORCES)
-	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
-	_externalLoadsFileNameProp.setComment(comment);
-	_externalLoadsFileNameProp.setName("external_loads_file");
-	_propertySet.append( &_externalLoadsFileNameProp );
-
-	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
-	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-	comment = "Name of the body to which the first set of external loads "
-				 "should be applied (e.g., the name of the right foot).";
-	_externalLoadsBody1Prop.setComment(comment);
-	_externalLoadsBody1Prop.setName("external_loads_body1");
-	_propertySet.append( &_externalLoadsBody1Prop );
-
-	comment = "Name of the body to which the second set of external loads "
-				 "should be applied (e.g., the name of the left foot).";
-	_externalLoadsBody2Prop.setComment(comment);
-	_externalLoadsBody2Prop.setName("external_loads_body2");
-	_propertySet.append( &_externalLoadsBody2Prop );
-
-	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
-				 "to the external loads. A negative value results in no filtering. "
-				 "The default value is -1.0, so no filtering.";
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
-
-	comment = "Output detailed results including spring forces during each forward integration used for perturbation "
-			    "(that's one forward integration for each perturbed actuator for each time interval).";
-	_outputDetailedResultsProp.setComment(comment);
-	_outputDetailedResultsProp.setName("output_detailed_results");
-	_propertySet.append( &_outputDetailedResultsProp );
 }
 
 
@@ -541,8 +275,31 @@ bool PerturbationTool::run()
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&rightGRFApp,&leftGRFApp);
 
-	// CONSTRUCT CORRECTIVE SPRINGS
-	constructCorrectiveSprings(rightGRFApp,leftGRFApp);
+	// CORRECTIVE SPRINGS
+	Storage qStore,uStore;
+	_model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
+	AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
+	AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+	// Body1 Linear
+	if(_rLinSpringOn) {
+		_rLin = addLinearCorrectiveSpring(qStore,uStore,*rightGRFApp);
+	}
+	// Body1 Torsional
+	if(_rTorSpringOn) {
+		double tauOn = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
+		double tauOff = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
+		_rTor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_rFootFlat,tauOff,_rHeelOff);
+	}
+	// Body2 Linear
+	if(_lLinSpringOn) {
+		_lLin = addLinearCorrectiveSpring(qStore,uStore,*leftGRFApp);
+	}
+	// Body2 Torsional
+	if(_lTorSpringOn) {
+		double tauOn = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
+		double tauOff = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
+		_lTor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_lFootFlat,tauOff,_lHeelOff);
+	}
 
 	// INPUT
 	// Controls
@@ -550,7 +307,7 @@ bool PerturbationTool::run()
 	ControlSet *controlSet = new ControlSet(_controlsFileName);
 	cout<<"Found "<<controlSet->getSize()<<" controls.\n\n";
 	// States
-	Storage *yStore = new Storage(_yFileName);
+	Storage *yStore = new Storage(_statesFileName);
 
 	// Add actuation analysis -- needed in order to evaluate unperturbed forces
 	// Actuation
@@ -857,21 +614,21 @@ bool PerturbationTool::run()
 
 			if(_outputDetailedResults) {
 				// Spring forces
-				if(rLin) {
+				if(_rLin) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_rLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					rLin->getAppliedForceStorage()->print(fileName);
+					_rLin->getAppliedForceStorage()->print(fileName);
 				}
-				if(lLin) {
+				if(_lLin) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_lLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					lLin->getAppliedForceStorage()->print(fileName);
+					_lLin->getAppliedForceStorage()->print(fileName);
 				}
-				if(rTrq) {
+				if(_rTor) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_rTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					rTrq->getAppliedTorqueStorage()->print(fileName);
+					_rTor->getAppliedTorqueStorage()->print(fileName);
 				}
-				if(lTrq) {
+				if(_lTor) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_lTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					lTrq->getAppliedTorqueStorage()->print(fileName);
+					_lTor->getAppliedTorqueStorage()->print(fileName);
 				}
 				if(kin) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_Kinematics_q.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
@@ -925,151 +682,6 @@ bool PerturbationTool::run()
 }
 
 
-//_____________________________________________________________________________
-/**
- * Construct the corrective springs.
- */
-void PerturbationTool::
-constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp)
-{
-	// Qs and Us
-	cout<<"\n\nLoading generalized coordinates and speeds from files "
-	    <<_qFileName<<" and "<<_uFileName<<".\n";
-	Storage qStore(_qFileName);
-	Storage uStore(_uFileName);
-
-	// CONVERT Qs AND Us TO RADIANS AND QUATERNIONS
-	_model->getDynamicsEngine().convertDegreesToRadians(qStore);
-	_model->getDynamicsEngine().convertAnglesToQuaternions(&qStore);
-	_model->getDynamicsEngine().convertDegreesToRadians(uStore);
-
-	// SCALING FUNCTIONS FOR SPRINGS
-	double dtScale=0.001;
-	double tiScale = qStore.getFirstTime();
-	double tfScale = qStore.getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> rLinearScale(0.0),rTorsionalScale(0.0);
-	Array<double> lLinearScale(0.0),lTorsionalScale(0.0);
-
-	double tauRStart = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
-	double tauREnd = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
-	double tauLStart = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
-	double tauLEnd = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
-
-	cout << "Spring parameters:" << endl;
-	cout << "\tSpring transition weights: " << _springTransitionStartWeight << " " << _springTransitionEndWeight << endl;
-	cout << "\tTau values: right_start = " << tauRStart << ", right_end = " << tauREnd << ", left_start = " << tauLStart << ", left_end = " << tauLEnd << endl;
-
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		// time
-		timeScale.append(tScale);
-		double value1,value2;
-
-		// Use vertical GRF to transition linear springs
-		double r_grf[3], l_grf[3];
-		aRightGRFApp->getForceFunction()->evaluate(&tScale,r_grf);
-		aLeftGRFApp->getForceFunction()->evaluate(&tScale,l_grf);
-		double r_grf_y_norm = rdMath::Clamp(r_grf[1]/(r_grf[1]+l_grf[1]),0.,1.);
-		double l_grf_y_norm = 1-r_grf_y_norm;
-		rLinearScale.append(rdMath::Step(r_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
-		lLinearScale.append(rdMath::Step(l_grf_y_norm,_springTransitionStartWeight,_springTransitionEndWeight));
-
-		// Use different tau's to transition torsional springs
-		// rTorsional
-		value1 = rdMath::SigmaUp(tauRStart,_rFootFlat,tScale);
-		value2 = rdMath::SigmaDn(tauREnd,_rHeelOff,tScale);
-		rTorsionalScale.append(value1+value2-1.0);
-		// lTorsional
-		value1 = rdMath::SigmaUp(tauLStart,_lFootFlat,tScale);
-		value2 = rdMath::SigmaDn(tauLEnd,_lHeelOff,tScale);
-		lTorsionalScale.append(value1+value2-1.0);
-	}
-	// Create Splines
-	GCVSpline *rScaleTranslationalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&rLinearScale[0]);
-	rScaleTranslationalSpline->setName("Right_Translational");
-	GCVSpline *rScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&rTorsionalScale[0]);
-	rScaleTorsionalSpline->setName("Right_Torsional");
-	GCVSpline *lScaleTranslationalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lLinearScale[0]);
-	lScaleTranslationalSpline->setName("Left_Translational");
-	GCVSpline *lScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lTorsionalScale[0]);
-	lScaleTorsionalSpline->setName("Left_Torsional");
-
-	// TODO: this assumes that external loads body 1 is right foot, and external loads body 2 is left foot
-	if(_externalLoadsBody1.size() && _externalLoadsBody1[_externalLoadsBody1.size()-1]=='l' || 
-		_externalLoadsBody2.size() && _externalLoadsBody2[_externalLoadsBody2.size()-1]=='r')
-		throw Exception("PerturbationTool: ERR- External loads body 1 should be right foot and external loads body 2 should be left foot",__FILE__,__LINE__);
-
-	AbstractBody *rightFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-	if(!rightFootBody) throw Exception("PerturbationTool: ERR- Could not find right foot body '"+_externalLoadsBody1+"'",__FILE__,__LINE__);
-	AbstractBody *leftFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-	if(!leftFootBody) throw Exception("PerturbationTool: ERR- Could not find left foot body '"+_externalLoadsBody2+"'",__FILE__,__LINE__);
-
-	// LINEAR
-	// right
-	rLin = new LinearSpring(_model,rightFootBody);
-	// Use the same foot-frame COP positions as the GRF force applier
-	rLin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
-	rLin->computeTargetFunctions(&qStore,&uStore);
-	rLin->setKValue(&_kLin[0]);
-	rLin->setBValue(&_bLin[0]);
-	rLin->setScaleFunction(rScaleTranslationalSpline);
-	if(_outputDetailedResults) rLin->setRecordAppliedLoads(true);
-	_model->addDerivCallback(rLin);
-	// left linear
-	lLin = new LinearSpring(_model,leftFootBody);
-	// Use the same foot-frame COP positions as the GRF force applier
-	lLin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
-	lLin->computeTargetFunctions(&qStore,&uStore);
-	lLin->setKValue(&_kLin[0]);
-	lLin->setBValue(&_bLin[0]);
-	lLin->setScaleFunction(lScaleTranslationalSpline);
-	if(_outputDetailedResults) lLin->setRecordAppliedLoads(true);
-	_model->addDerivCallback(lLin);
-
-	// TORSIONAL
-	// right
-	rTrq = new TorsionalSpring(_model,rightFootBody);
-	rTrq->computeTargetFunctions(&qStore,&uStore);
-	rTrq->setKValue(&_kTor[0]);
-	rTrq->setBValue(&_bTor[0]);
-	rTrq->setScaleFunction(rScaleTorsionalSpline);
-	if(_outputDetailedResults) rTrq->setRecordAppliedLoads(true);
-	_model->addDerivCallback(rTrq);
-	// left
-	lTrq = new TorsionalSpring(_model,leftFootBody);
-	lTrq->computeTargetFunctions(&qStore,&uStore);
-	lTrq->setKValue(&_kTor[0]);
-	lTrq->setBValue(&_bTor[0]);
-	lTrq->setScaleFunction(lScaleTorsionalSpline);
-	if(_outputDetailedResults) lTrq->setRecordAppliedLoads(true);
-	_model->addDerivCallback(lTrq);
-
-	Array<string> labels;
-	labels.append("time"); 
-	labels.append("r_scale_linear"); 
-	labels.append("l_scale_linear");
-	labels.append("r_scale_torsional"); 
-	labels.append("l_scale_torsional");
-	labels.append("r_stance");
-	labels.append("l_stance");
-	labels.append("r_footflat");
-	labels.append("l_footflat");
-	Storage debugStorage;
-	debugStorage.setColumnLabels(labels);
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		double values[8] = {rScaleTranslationalSpline->evaluate(0,tScale), 
-								  lScaleTranslationalSpline->evaluate(0,tScale),
-								  rScaleTorsionalSpline->evaluate(0,tScale),
-								  lScaleTorsionalSpline->evaluate(0,tScale),
-								  (_rHeelStrike<=tScale && tScale<=_rToeOff)?1:0,
-								  (_lHeelStrike<=tScale && tScale<=_lToeOff)?1:0,
-								  (_rFootFlat<=tScale && tScale<=_rHeelOff)?1:0,
-								  (_lFootFlat<=tScale && tScale<=_lHeelOff)?1:0};
-		debugStorage.append(tScale,8,values);
-	}
-	debugStorage.print("spring_scales.sto");
-	cout << "Wrote out spring_scales.sto for debugging spring scaling" << endl;
-}
 
 
 //=============================================================================

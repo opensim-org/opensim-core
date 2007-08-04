@@ -101,7 +101,7 @@ public:
 
 	virtual void reset(); 
 	
-	void computePointFunction(Storage *aQStore,Storage *aUStore,
+	void computePointFunction(const Storage &aQStore,const Storage &aUStore,
 		VectorFunction &aPGlobal);
 
 	//--------------------------------------------------------------------------

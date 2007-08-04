@@ -467,8 +467,56 @@ int AbstractDynamicsEngine::deleteUnusedMarkers(const Array<string>& aMarkerName
 
 
 //=============================================================================
-// CONSTRAINTS
+// CONFIGURATION
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Extract the configuration (coordinates and speeds) of a model from the states.
+ *
+ * @param aYStore Storage object containing a complete set of model states.
+ * @param rQStore Storage object containing the coordinates held in aYStore.
+ * @param rUStore Storage object containing the speeds held in aYStore.
+ */
+void AbstractDynamicsEngine::
+extractConfiguration(const Storage &aYStore,Storage &rQStore,Storage &rUStore)
+{
+	int nq = getNumCoordinates();
+	int nu = getNumSpeeds();
+	int nqnu = nq+nu;
+
+	// CONFIGURE
+	// Names
+	rQStore.setName("Coordinates");
+	rUStore.setName("Speeds");
+	// Description
+	rQStore.setDescription(aYStore.getDescription());
+	rUStore.setDescription(aYStore.getDescription());
+	// Column labels
+	Array<string> qLabels("",nq),uLabels("",nu);
+	Array<string> labels = aYStore.getColumnLabels();
+	for(int i=0;i<nq;i++) qLabels[i] = labels[i];
+	for(int i=0;i<nu;i++) uLabels[i] = labels[nq+i];
+	rQStore.setColumnLabels(qLabels);
+	rUStore.setColumnLabels(uLabels);
+	// Purge
+	rQStore.purge();
+	rUStore.purge();
+
+	// LOOP THROUGH STATES
+	int size = aYStore.getSize();
+	StateVector *vector;
+	double time;
+	Array<double> data(0.0);
+	Array<double> q(0.0,nq);
+	for(int i=0;i<size;i++) {
+		vector = aYStore.getStateVector(i);
+		if(vector->getSize()<nqnu) continue;
+		time = vector->getTime();
+		data = vector->getData();
+		rQStore.append(time,nq,&data[0]);
+		rUStore.append(time,nu,&data[nq]);
+	}
+}
 //_____________________________________________________________________________
 /**
  * From a potentially partial specification of the generalized coordinates,

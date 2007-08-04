@@ -221,6 +221,7 @@ public:
 	virtual void getSpeeds(double rU[]) const = 0;
 	virtual void getAccelerations(double rDUDT[]) const = 0;
 	virtual void extractConfiguration(const double aY[],double rQ[],double rU[]) const = 0;
+	virtual void extractConfiguration(const Storage &aYStore,Storage &rQStore,Storage &rUStore);
 	virtual void applyDefaultConfiguration() = 0;
 
 	//--------------------------------------------------------------------------

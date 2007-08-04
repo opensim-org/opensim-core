@@ -84,10 +84,10 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	void
-		computePointAndTargetFunctions(Storage *aQStore,Storage *aUStore,
+		computePointAndTargetFunctions(const Storage &aQStore,const Storage &aUStore,
 		VectorFunction &aPGlobal);
 	void
-		computeTargetFunctions(Storage *aQStoreForTarget,Storage *aUStoreForTarget);
+		computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreForTarget);
 
 	//--------------------------------------------------------------------------
 	// CALLBACKS

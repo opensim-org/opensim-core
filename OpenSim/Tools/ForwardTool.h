@@ -7,6 +7,7 @@
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -21,8 +22,11 @@
 
 namespace OpenSim { 
 
+class AbstractBody;
 class ForceApplier;
 class TorqueApplier;
+class LinearSpring;
+class TorsionalSpring;
 class ModelIntegrand;
 
 //=============================================================================
@@ -38,13 +42,23 @@ class OSIMTOOLS_API ForwardTool: public AbstractTool
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
-private:
+protected:
+	// BASIC INPUT
 	/** Name of the controls file. */
 	PropertyStr _controlsFileNameProp;
 	std::string &_controlsFileName;
-	/** Name of the initial states file. */
-	PropertyStr _initialStatesFileNameProp;
-	std::string &_initialStatesFileName;
+	/** Name of the states file.  The states file must at a minimum contain the
+	initial states for a simulation.  If a complete set of states is available,
+	the time stamps can be used to specify the integration steps and corrective
+	springs, which allow perturbations, can be added to the simulation. */
+	PropertyStr _statesFileNameProp;
+	std::string &_statesFileName;
+	/** If true, the time steps from the states file are used during
+	current integration. */
+	OpenSim::PropertyBool _useSpecifiedDtProp;
+	bool &_useSpecifiedDt;
+
+	// EXTERNAL LOADS
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;
@@ -65,15 +79,90 @@ private:
 	The default value is -1.0, so no filtering. */
 	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
-	/** If true, the time steps from the initial states file are used during current integration */
-	OpenSim::PropertyBool _useSpecifiedDtProp;
-	bool &_useSpecifiedDt;
+	/** Flag indicating whether or not to output corrective spring loads and other
+	quantities. */
+	OpenSim::PropertyBool _outputDetailedResultsProp;
+	bool &_outputDetailedResults;
 
-	// Model integrand.  Make it a pointer so we can print results from a separate function.
+	// FOOT CONTACT EVENT TIMES
+	/** Flag indicating wether or not to turn on a linear corrective spring for the right foot. */
+	OpenSim::PropertyBool _rLinSpringOnProp;
+	bool &_rLinSpringOn;
+	/** Flag indicating wether or not to turn on a torsional corrective spring for the right foot. */
+	OpenSim::PropertyBool _rTorSpringOnProp;
+	bool &_rTorSpringOn;
+	/** Flag indicating wether or not to turn on a linear corrective spring for the left foot. */
+	OpenSim::PropertyBool _lLinSpringOnProp;
+	bool &_lLinSpringOn;
+	/** Flag indicating wether or not to turn on a torsional corrective spring for the left foot. */
+	OpenSim::PropertyBool _lTorSpringOnProp;
+	bool &_lTorSpringOn;
+	/** Time of right heel strike. */
+	PropertyDbl _rHeelStrikeProp;
+	double &_rHeelStrike;
+	/** Time of right foot flat. */
+	PropertyDbl _rFootFlatProp;
+	double &_rFootFlat;
+	/** Time of right heel off. */
+	PropertyDbl _rHeelOffProp;
+	double &_rHeelOff;
+	/** Time of right toe off. */
+	PropertyDbl _rToeOffProp;
+	double &_rToeOff;
+	/** Time of left heel strike. */
+	PropertyDbl _lHeelStrikeProp;
+	double &_lHeelStrike;
+	/** Time of left foot flat. */
+	PropertyDbl _lFootFlatProp;
+	double &_lFootFlat;
+	/** Time of left heel off. */
+	PropertyDbl _lHeelOffProp;
+	double &_lHeelOff;
+	/** Time of left toe off. */
+	PropertyDbl _lToeOffProp;
+	double &_lToeOff;
+
+	// CORRECTIVE SPRING PARAMETERS
+	/** Rise time for scaling functions. */
+	PropertyDbl _tauProp;
+	double &_tau;
+	PropertyDbl _tauRightStartProp;
+	double &_tauRightStart;
+	PropertyDbl _tauRightEndProp;
+	double &_tauRightEnd;
+	PropertyDbl _tauLeftStartProp;
+	double &_tauLeftStart;
+	PropertyDbl _tauLeftEndProp;
+	double &_tauLeftEnd;
+	/** Spring transition weight. */
+	PropertyDbl _springTransitionStartForceProp;
+	double &_springTransitionStartForce;
+	PropertyDbl _springTransitionEndForceProp;
+	double &_springTransitionEndForce;
+	/** Stiffness for linear corrective springs. */
+	PropertyDblArray _kLinProp;
+	Array<double> &_kLin;
+	/** Damping for linear corrective springs. */
+	PropertyDblArray _bLinProp;
+	Array<double> &_bLin;
+	/** Stiffness for torsional corrective springs. */
+	PropertyDblArray _kTorProp;
+	Array<double> &_kTor;
+	/** Damping for torsional corrective springs. */
+	PropertyDblArray _bTorProp;
+	Array<double> &_bTor;
+
+	// INTERNAL WORK ARRAYS
+	/** Model integrand.  Make it a pointer so we can print results from a separate function. */
 	ModelIntegrand *_integrand;
-
-	// Whether or not to write write to the designated output files (GUI will set this to false)
+	/** Storage for the input states. */
+	Storage *_yStore;
+	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
 	bool _printResultFiles;
+	/** Pointer to the linear and torsional corrective springs. */
+	LinearSpring *_rLin, *_lLin;
+	TorsionalSpring *_rTor, *_lTor;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -89,7 +178,13 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void constructCorrectiveSprings();
+protected:
+	//void constructCorrectiveSprings(ForceApplier *aRightGRFApp,ForceApplier *aLeftGRFApp);
+	LinearSpring*
+		addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const ForceApplier &aAppliedForce);
+	TorsionalSpring*
+		addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,AbstractBody *aBody,
+		double aTauOn,double aTimeOn,double aTauOff,double aTimeOff);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -107,8 +202,8 @@ public:
 	const std::string &getControlsFileName() const { return _controlsFileName; }
 	void setControlsFileName(const std::string &aFileName) { _controlsFileName = aFileName; }
 
-	const std::string &getInitialStatesFileName() const { return _initialStatesFileName; }
-	void setInitialStatesFileName(const std::string &aFileName) { _initialStatesFileName = aFileName; }
+	const std::string &getStatesFileName() const { return _statesFileName; }
+	void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
 
 	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
 	void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
@@ -124,18 +219,16 @@ public:
 	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
-
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual bool run();
-
 	void printResults();
 
 	//--------------------------------------------------------------------------
-	// UTILITY (also used by the CMCTool)
+	// UTILITY
 	//--------------------------------------------------------------------------
 	static void initializeExternalLoads(Model *aModel, 
 		const std::string &aExternalLoadsFileName,

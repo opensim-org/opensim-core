@@ -117,7 +117,7 @@ ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *
 	forceData->getDataColumn(pzNum,z);
 	VectorGCVSplineR1R3 *pointFunc;
 	pointFunc = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
-	computePointFunction(aQStore, aUStore, *pointFunc);
+	computePointFunction(*aQStore,*aUStore,*pointFunc);
 
 	// COMPUTE FORCE FUNCTION
 	forceData->getDataColumn(fxNum,x);
@@ -486,13 +486,12 @@ reset()
  * which the force is to be applied in the global frame.
  */
 void ForceApplier::
-computePointFunction(
-	Storage *aQStore,Storage *aUStore,VectorFunction &aPGlobal)
+computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunction &aPGlobal)
 {
 	int i;
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int size = aQStore->getSize();
+	int size = aQStore.getSize();
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
 	Array<double> originGlobal(0.0,3),origin(0.0,3);
@@ -501,9 +500,9 @@ computePointFunction(
 	Storage pStore,vStore;
 	for(i=0;i<size;i++) {
 		// Set the model state
-		aQStore->getTime(i,*(&t[0]));
-		aQStore->getData(i,nq,&q[0]);
-		aUStore->getData(i,nu,&u[0]);
+		aQStore.getTime(i,*(&t[0]));
+		aQStore.getData(i,nq,&q[0]);
+		aUStore.getData(i,nu,&u[0]);
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Position in local frame (i.e. with respect to body's origin, not center of mass)
