@@ -94,9 +94,9 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
 	for (int i = 0; i < getNumParameters(); i++)
-	{
-		_unprescribedQs[i]->coord->setValue(x[i]);
-		if (debug)
+		_unprescribedQs[i]->coord->setValue(x[i], i==(getNumParameters()-1));
+	if(debug) {
+		for (int i = 0; i < getNumParameters(); i++)
 			cout << _unprescribedQs[i]->coord->getName() << " = " << _unprescribedQs[i]->coord->getValue() << endl;
 	}
 

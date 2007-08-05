@@ -141,6 +141,7 @@ public:
 	virtual void updateFromCoordinate(const AbstractCoordinate &aCoordinate);
 	virtual double getValue() const;
 	virtual bool setValue(double aValue);
+	virtual bool setValue(double aValue, bool aRealize);
 	virtual bool getValueUseDefault() const { return true; }
 	virtual void getRange(double rRange[2]) const { rRange[0] = _range[0]; rRange[1] = _range[1]; }
 	virtual bool setRange(double aRange[2]);

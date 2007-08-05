@@ -78,6 +78,7 @@ public:
 	virtual void updateFromCoordinate(const AbstractCoordinate &aCoordinate) = 0;
 	virtual double getValue() const  = 0;
 	virtual bool setValue(double aValue) = 0;
+	virtual bool setValue(double aValue, bool aRealize) { return setValue(aValue); }
 	virtual bool getValueUseDefault() const = 0;
 	virtual void getRange(double rRange[2]) const = 0;
 	virtual bool setRange(double aRange[2]) = 0;

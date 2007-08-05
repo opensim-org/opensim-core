@@ -383,16 +383,18 @@ double SimbodyCoordinate::getValue() const
  * @param aValue value to change to.
  * @return Whether or not the value was changed.
  */
-bool SimbodyCoordinate::setValue(double aValue)
+bool SimbodyCoordinate::setValue(double aValue) { return setValue(aValue, true); }
+bool SimbodyCoordinate::setValue(double aValue, bool aRealize)
 {
 	if (_locked) {
 		cout<<"SimbodyCoordinate.setValue: WARN- coordinate "<<getName();
 		cout<<" is locked. Unable to change its value." << endl;
+		if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
 		return false;
 	}
 	_engine->resetBodyAndMobilityForceVectors();
 	_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
-	_engine->_matter->realize(*(_engine->_s),Stage::Velocity);
+	if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
 
 	// TODO: use Observer mechanism for _jointList, _pathList, and muscles
 	ActuatorSet* act = _engine->getModel()->getActuatorSet();
