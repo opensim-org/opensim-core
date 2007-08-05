@@ -3,7 +3,7 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 						  ${XERCES_INCLUDE_DIR})
 
 # cmake should automatically figure out what other libraries are needed
-LINK_LIBRARIES(debug osimCommon_d osimSimulation_d osimSimbodyEngine_d osimAnalyses_d)
+LINK_LIBRARIES(osimSimulation osimSimbodyEngine osimAnalyses)
 
 ADD_EXECUTABLE(testSimbodyEngine testSimbodyEngine.cpp)
 
