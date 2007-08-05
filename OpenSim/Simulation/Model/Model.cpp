@@ -310,7 +310,7 @@ void Model::setup()
 	if(!origDirPath.empty())
 		IO::chDir(origDirPath);
 
-	cout << "Model " << getName() << " setup completed" << endl;
+	//cout << "Model " << getName() << " setup completed" << endl;
 }
 //_____________________________________________________________________________
 /**
