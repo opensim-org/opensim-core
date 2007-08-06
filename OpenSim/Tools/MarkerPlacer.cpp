@@ -152,6 +152,8 @@ void MarkerPlacer::setNull()
 	_optimizerAlgorithm = "ipopt";
 
 	_printResultFiles = true;
+	_moveModelMarkers = true;
+	_ikTrial = NULL;
 }
 
 //_____________________________________________________________________________
@@ -280,21 +282,23 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	 */
 	aModel->getDynamicsEngine().deleteUnusedMarkers(staticPose.getMarkerNames());
 
-	IKTrial ikTrial;
-	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) ikTrial.setCoordinateFileName(aPathToSubject + _coordinateFileName);
-	ikTrial.setStartTime(_timeRange[0]);
-	ikTrial.setEndTime(_timeRange[0]);
-	ikTrial.setOptimizerAlgorithm(_optimizerAlgorithm);
-//	ikTrial.setIncludeMarkers(true);
-	if(!ikTrial.initializeTrialCommon(*aModel,_ikTaskSet,staticPose)) return false;
-	if(!ikTrial.solveTrial(*aModel,_ikTaskSet)) return false;
-	ikTrial.getOutputStorage()->setName(_markerFileName);
+	delete _ikTrial;
+	_ikTrial = new IKTrial();
+	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) _ikTrial->setCoordinateFileName(aPathToSubject + _coordinateFileName);
+	_ikTrial->setStartTime(_timeRange[0]);
+	_ikTrial->setEndTime(_timeRange[0]);
+	_ikTrial->setOptimizerAlgorithm(_optimizerAlgorithm);
+	_ikTrial->setPrintResultFiles(false); // We'll do our own printing
+//	_ikTrial->setIncludeMarkers(true);
+	if(!_ikTrial->initializeTrialCommon(*aModel,_ikTaskSet,staticPose)) return false;
+	if(!_ikTrial->solveTrial(*aModel,_ikTaskSet)) return false;
+	_ikTrial->getOutputStorage()->setName(_markerFileName);
 
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
 	 * the proper configuration so the coordinates do not need to be changed.
 	 */
-	moveModelMarkersToPose(*aModel, staticPose);
+	if(_moveModelMarkers) moveModelMarkersToPose(*aModel, staticPose);
 
 	if(_printResultFiles) {
 		/* Write output files, if names specified by the user. */
@@ -324,7 +328,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
 		if (!_outputMotionFileNameProp.getUseDefault())
 		{
-			Storage motionData(*ikTrial.getOutputStorage());
+			Storage motionData(*_ikTrial->getOutputStorage());
 			aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
 			motionData.setWriteSIMMHeader(true);
 			motionData.setName("static pose");
@@ -384,4 +388,9 @@ void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
 	}
 
 	cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
+}
+
+Storage *MarkerPlacer::getOutputStorage() 
+{
+	return _ikTrial ? _ikTrial->getOutputStorage() : NULL; 
 }

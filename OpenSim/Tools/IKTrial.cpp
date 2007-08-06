@@ -329,7 +329,6 @@ bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 	try 
 	{
 		_ikSolver->solveFrames(*this, *_inputStorage, *_outputStorage);
-
 		if (_printResultFiles && !_outputMotionFileNameProp.getUseDefault())
 		{
 			// TODO: avoid converting units in-place (as this means that suddenly as soon as IK is done the storage

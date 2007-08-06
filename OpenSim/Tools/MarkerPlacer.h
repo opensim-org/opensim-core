@@ -37,12 +37,13 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include "IKTaskSet.h"
 #include "osimToolsDLL.h"
-#include "osimToolsDLL.h"
 
 namespace OpenSim {
 
 class Model;
 class MarkerData;
+class IKTrial;
+class Storage;
 
 //=============================================================================
 //=============================================================================
@@ -112,6 +113,10 @@ protected:
 
 	// Whether or not to write write to the designated output files (GUI will set this to false)
 	bool _printResultFiles;
+	// Whether to move the model markers (set to false if you just want to preview the static pose)
+	bool _moveModelMarkers;
+
+	IKTrial *_ikTrial;
 
 //=============================================================================
 // METHODS
@@ -209,6 +214,11 @@ public:
 	}
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+
+	bool getMoveModelMarkers() { return _moveModelMarkers; }
+	void setMoveModelMarkers(bool aMove) { _moveModelMarkers = aMove; }
+
+	Storage *getOutputStorage();
 
 private:
 	void setNull();
