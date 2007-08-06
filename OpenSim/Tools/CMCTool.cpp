@@ -485,6 +485,15 @@ bool CMCTool::run()
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
 
+	// OUTPUT DIRECTORY
+	// Do the maneuver to change then restore working directory 
+	// so that the parsing code behaves properly if called from a different directory
+	string saveWorkingDirectory = IO::getCwd();
+	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+	IO::chDir(directoryOfSetupFile);
+
+	try {
+
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
 
@@ -500,13 +509,6 @@ bool CMCTool::run()
 			throw Exception("CMCTool: ERROR- Body '"+_adjustedCOMBody+"' specified in "+
 								 _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
 	}
-
-	// OUTPUT DIRECTORY
-	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory
-	string saveWorkingDirectory = IO::getCwd();
-	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-	IO::chDir(directoryOfSetupFile);
 
 	// ASSIGN NUMBERS OF THINGS
 	int i;
@@ -805,11 +807,6 @@ bool CMCTool::run()
 		residualFile.close();
 	}
 
-	// Tell integration callbacks we're done so the GUI knows what to do.
-	IntegCallbackSet* callbacks = _model->getIntegCallbackSet();
-	if (callbacks!=0)
-		callbacks->end(0,0.0,0.0,0,0);
-
 	// Write new model file
 	if(_adjustCOMToReduceResiduals) {
 		if(_outputModelFile=="") {
@@ -827,6 +824,13 @@ bool CMCTool::run()
 		_model->getActuatorSet()->append(_originalActuatorSet);
 
 		_model->print(_outputModelFile);
+	}
+
+	} catch(Exception &x) {
+		// TODO: eventually might want to allow writing of partial results
+		x.print(cout);
+		IO::chDir(saveWorkingDirectory);
+		return false;
 	}
 
 	IO::chDir(saveWorkingDirectory);

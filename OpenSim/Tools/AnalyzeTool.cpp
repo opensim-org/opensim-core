@@ -710,17 +710,21 @@ bool AnalyzeTool::run()
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
 
-	// VERIFY THE CONTROL SET, STATES, AND PSEUDO STATES ARE TENABLE
-	verifyControlsStatesPseudoStates();
-
-	// SET OUTPUT PRECISION
-	IO::SetPrecision(_outputPrecision);
-
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
 	if (_document)	// When the tool is created live from GUI it has no file/document association
 		IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+
+	bool completed = true;
+
+	try {
+
+	// VERIFY THE CONTROL SET, STATES, AND PSEUDO STATES ARE TENABLE
+	verifyControlsStatesPseudoStates();
+
+	// SET OUTPUT PRECISION
+	IO::SetPrecision(_outputPrecision);
 
 	// External Loads
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
@@ -800,10 +804,17 @@ bool AnalyzeTool::run()
 		pPrev = p;
 	}
 
+	} catch (Exception &x) {
+		x.print(cout);
+		completed = false;
+	}
+
 	// PRINT RESULTS
-	if (_printResultFiles)
+	// TODO: give option to write partial results if not completed
+	if (completed && _printResultFiles)
 		printResults(getName(),getResultsDir()); // this will create results directory if necessary
+
 	IO::chDir(saveWorkingDirectory);
 
-	return true;
+	return completed;
 }
