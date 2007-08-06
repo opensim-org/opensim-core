@@ -717,7 +717,7 @@ operator=(const ForwardTool &aTool)
  */
 bool ForwardTool::run()
 {
-	cout<<"Running investigation "<<getName()<<".\n";
+	cout<<"Running investigation "<<getName()<<"."<<endl;
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
@@ -739,21 +739,21 @@ bool ForwardTool::run()
 	// Controls
 	ControlSet *controlSet=NULL;
 	if(_controlsFileName!="") {
-		cout<<"\n\nLoading controls from file "<<_controlsFileName<<".\n";
+		cout<<"\n\nLoading controls from file "<<_controlsFileName<<"."<<endl;
 		controlSet = new ControlSet(_controlsFileName);
-		cout<<"Found "<<controlSet->getSize()<<" controls.\n\n";
+		cout<<"Found "<<controlSet->getSize()<<" controls."<<endl<<endl;
 	}
 	// Initial states
 	if(_statesFileName!="") {
-		cout<<"\nLoading states from file "<<_statesFileName<<".\n";
+		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
 		_yStore = new Storage(_statesFileName);
-		cout<<"Found "<<_yStore->getSize()<<" state vectors with time stamps ranging\n";
-		cout<<"from "<<_yStore->getFirstTime()<<" to "<<_yStore->getLastTime()<<".\n";
+		cout<<"Found "<<_yStore->getSize()<<" state vectors with time stamps ranging"<<endl;
+		cout<<"from "<<_yStore->getFirstTime()<<" to "<<_yStore->getLastTime()<<"."<<endl;
 	}
 
 	// INITIAL AND FINAL TIMES
 	// From initial states...
-	int index;
+	int index=-1;
 	double ti,tf;
 	if(_yStore!=NULL) {
 		index = _yStore->findIndex(_ti);
@@ -791,7 +791,6 @@ bool ForwardTool::run()
 			_tf = tf;
 		}
 	}
-
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
