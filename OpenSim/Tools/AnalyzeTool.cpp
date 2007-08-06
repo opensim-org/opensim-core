@@ -15,6 +15,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
 #include "ForwardTool.h"
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 //#include <OpenSim/Analyses/MomentArmAnalysis.h>
@@ -743,6 +744,7 @@ bool AnalyzeTool::run()
 		string msg = "AnalysisTool.run: ERROR- no analyses have been set.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
+	IntegCallbackSet *callbackSet = _model->getIntegCallbackSet();
 
 	// TODO: some sort of filtering or something to make derivatives smoother?
 	GCVSplineSet statesSplineSet(5,_statesStore);
@@ -774,18 +776,21 @@ bool AnalyzeTool::run()
 			if (_solveForEquilibriumForAuxiliaryStates)
 				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// End
 		} else if(i==iFinal) {
 			if (_solveForEquilibriumForAuxiliaryStates)
 				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 
 		// Step
 		} else {
 			if (_solveForEquilibriumForAuxiliaryStates)
 				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
 			analysisSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
 		}
 
 		// ASSIGN PREV
