@@ -411,7 +411,7 @@ applyActuation(double aT,double *aX,double *aY)
 			force[i] = _scaleFactor*(_k[i]*dx[i] + _b[i]*dv[i]);
 		}
 		setForce(force);
-		double threshold = 0.1;
+		double threshold = 1.0;
 		if(fabs(Mtx::Magnitude(3,force)) > threshold) {
 			cout<<"linear spring ("<<aT<<"):\n";
 			cout<<"force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
