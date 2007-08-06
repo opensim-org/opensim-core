@@ -88,19 +88,27 @@ SimtkAnimationCallback::~SimtkAnimationCallback()
  *
  * @param aModel Model to which the callback mthods apply.
  */
-SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel) :
+SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel, Model *aModelForDisplay) :
 	IntegCallback(aModel)
 {
 	//cout<<"\n\nCreating new SimtkAnimationCallback...\n";
 	// NULL
 	setNull();
-	AbstractDynamicsEngine& de = aModel->getDynamicsEngine();
+
+	if(aModelForDisplay) _modelForDisplay = aModelForDisplay;
+	else _modelForDisplay = aModel;
+
+	AbstractDynamicsEngine& de = getModelForDisplay()->getDynamicsEngine();
 	// We could keep pointer to body's xform, but that requires display
 	// to be synchronous.
 	// For now we make new list, copy then we'll fix performance
 	_transforms = new Transform[de.getNumBodies()];
 
-	getTransformsFromKinematicsEngine(*aModel);
+	// Make sure the models are compatible (in terms of q's and u's)
+	assert(getModel()->getDynamicsEngine().getNumCoordinates() == getModelForDisplay()->getDynamicsEngine().getNumCoordinates());
+	assert(getModel()->getDynamicsEngine().getNumSpeeds() == getModelForDisplay()->getDynamicsEngine().getNumSpeeds());
+
+	getTransformsFromKinematicsEngine(*getModelForDisplay());
 
 	_currentTime=0.0;
 	//cout<<endl<<endl;
@@ -163,11 +171,13 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
 	_currentTime = aT;
 
 	if(!proceed(aStep)) return 0;
+
+	if(getModelForDisplay() != getModel()) getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
 	
 	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
-	getTransformsFromKinematicsEngine(*_model);
+	getTransformsFromKinematicsEngine(*getModelForDisplay());
 	// update muscle geometry
-	_model->getActuatorSet()->updateDisplayers();
+	getModelForDisplay()->getActuatorSet()->updateDisplayers();
 	//mutex_end(0);
 	return (0);
 }

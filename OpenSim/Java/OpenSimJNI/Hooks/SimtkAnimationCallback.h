@@ -62,6 +62,8 @@ protected:
 	/** Current simulation time for feedback purposes */
 	double			_currentTime;
 	double*			_offsets;
+
+	Model*			_modelForDisplay; // might be a different model than the one we're the callback on
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -73,7 +75,7 @@ public:
 	// and memory menagement on the Java side is side-stepped
 	static SimtkAnimationCallback* CreateAnimationCallback(Model *aModel);
 protected:
-	SimtkAnimationCallback(Model *aModel);
+	SimtkAnimationCallback(Model *aModel, Model *aModelForDisplay=0);
 	virtual ~SimtkAnimationCallback();
 private:
 	void setNull();
@@ -99,6 +101,8 @@ public:
 	const Transform* getBodyTransform(int bodyIndex) const;
 
 	void extractOffsets(Model& displayModel);
+
+	Model *getModelForDisplay() { return _modelForDisplay; }
 public:
 	// Load transforms vector from KinematicsEngine
 	void getTransformsFromKinematicsEngine(Model& simmModel);
