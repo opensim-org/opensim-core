@@ -21,8 +21,6 @@
 #include "LinearSpring.h"
 
 
-
-
 using namespace OpenSim;
 using namespace std;
 
@@ -63,6 +61,7 @@ setNull()
 	_targetVelocity = NULL;
 	_scaleFunction = NULL;
 	_scaleFactor = 1.0;
+	_threshold = 0.0;
 	_k[0] = _k[1] = _k[2] = 0.0;
 	_b[0] = _b[1] = _b[2] = 0.0;
 }
@@ -130,7 +129,6 @@ getTargetVelocity() const
 	return(_targetVelocity);
 }
 
-
 //-----------------------------------------------------------------------------
 // K VALUE
 //-----------------------------------------------------------------------------
@@ -154,9 +152,9 @@ setKValue(double aK[3])
  * @return aK.
  */
 void LinearSpring::
-getKValue(double aK[3])
+getKValue(double aK[3]) const
 {
-	aK = _k;
+	memcpy(aK,_k,3*sizeof(double));
 }
 
 //-----------------------------------------------------------------------------
@@ -183,9 +181,37 @@ setBValue(double aB[3])
  * @return aB.
  */
 void LinearSpring::
-getBValue(double aB[3])
+getBValue(double aB[3]) const
 {
-	aB = _b;
+	memcpy(aB,_b,3*sizeof(double));
+}
+
+//-----------------------------------------------------------------------------
+// THRESHOLD
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the magnitude theshold below which no force is applied.
+ *
+ * @param aThreshold Magnitude threshold.  A negative value or 0 will result
+ * in the force always being applied.
+ */
+void LinearSpring::
+setThreshold(double aThreshold)
+{
+	_threshold = aThreshold;
+}
+//_____________________________________________________________________________
+/**
+ * Get the magnitude theshold below which no force is applied.
+ *
+ * @param aThreshold Magnitude threshold.  A negative value or 0 will result
+ * in the force always being applied.
+ */
+double LinearSpring::
+getThreshold() const
+{
+	return _threshold;
 }
 
 //-----------------------------------------------------------------------------
@@ -411,19 +437,18 @@ applyActuation(double aT,double *aX,double *aY)
 			force[i] = _scaleFactor*(_k[i]*dx[i] + _b[i]*dv[i]);
 		}
 		setForce(force);
-		double threshold = 1.0;
-		if(fabs(Mtx::Magnitude(3,force)) > threshold) {
-			cout<<"linear spring ("<<aT<<"):\n";
-			cout<<"force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
-			cout<<"dx = "<<dx[0]<<", "<<dx[1]<<", "<<dx[2]<<endl;
-			cout<<"dv = "<<dv[0]<<", "<<dv[1]<<", "<<dv[2]<<endl;
-		}
-		if(fabs(Mtx::Magnitude(3,force)) > threshold) {
-			cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
+		//if(fabs(Mtx::Magnitude(3,force)) >= _threshold) {
+		//	cout<<"linear spring ("<<aT<<"):\n";
+		//	cout<<"force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
+		//	cout<<"dx = "<<dx[0]<<", "<<dx[1]<<", "<<dx[2]<<endl;
+		//	cout<<"dv = "<<dv[0]<<", "<<dv[1]<<", "<<dv[2]<<endl;
+		//}
+		if(fabs(Mtx::Magnitude(3,force)) >= _threshold) {
+			//cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
 			_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
+			if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 		}
 
-		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
 	}	
 }
 

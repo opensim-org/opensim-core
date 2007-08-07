@@ -15,7 +15,7 @@ class SwigDirector_SimtkAnimationCallback : public OpenSim::SimtkAnimationCallba
 
 public:
     void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
-    SwigDirector_SimtkAnimationCallback(JNIEnv *jenv, OpenSim::Model *aModel);
+    SwigDirector_SimtkAnimationCallback(JNIEnv *jenv, OpenSim::Model *aModel, OpenSim::Model *aModelForDisplay = 0);
     virtual ~SwigDirector_SimtkAnimationCallback();
     virtual OpenSim::Object *copy() const;
     virtual OpenSim::Object *copy(DOMElement *aNode) const;

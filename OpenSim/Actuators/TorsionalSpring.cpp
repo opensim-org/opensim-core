@@ -9,9 +9,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <string>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
@@ -20,6 +19,11 @@
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include "TorsionalSpring.h"
+
+
+using namespace OpenSim;
+using namespace std;
+
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -61,6 +65,7 @@ setNull()
 	_targetVelocity = NULL;
 	_k[0] = _k[1] = _k[2] = 0.0;
 	_b[0] = _b[1] = _b[2] = 0.0;
+	_threshold = 0.0;
 	_scaleFunction = NULL;
 	_scaleFactor = 1.0;
 }
@@ -177,6 +182,34 @@ void TorsionalSpring::
 getBValue(double aB[3])
 {
 	aB = _b;
+}
+
+//-----------------------------------------------------------------------------
+// THRESHOLD
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the magnitude theshold below which no torque is applied.
+ *
+ * @param aThreshold Magnitude threshold.  A negative value or 0 will result
+ * in the torque always being applied.
+ */
+void TorsionalSpring::
+setThreshold(double aThreshold)
+{
+	_threshold = aThreshold;
+}
+//_____________________________________________________________________________
+/**
+ * Get the magnitude theshold below which no torque is applied.
+ *
+ * @param aThreshold Magnitude threshold.  A negative value or 0 will result
+ * in the torque always being applied.
+ */
+double TorsionalSpring::
+getThreshold() const
+{
+	return _threshold;
 }
 
 //-----------------------------------------------------------------------------
@@ -378,8 +411,17 @@ applyActuation(double aT,double *aX,double *aY)
 
 		// Apply torque to body
 		setTorque(torque);
-		_model->getDynamicsEngine().applyTorque(*_body,_torque);
-		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
+		//if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
+		//	cout<<"torsional spring ("<<aT<<"):\n";
+		//	cout<<"torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
+		//	cout<<"dx = "<<difAng[0]<<", "<<difAng[1]<<", "<<difAng[2]<<endl;
+		//	cout<<"dv = "<<difQDot[0]<<", "<<difQDot[1]<<", "<<difQDot[2]<<endl;
+		//}
+		//if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
+		//	cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
+		//	_model->getDynamicsEngine().applyTorque(*_body,_torque);
+		//	if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
+		//}
 
 	}	
 }

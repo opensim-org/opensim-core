@@ -70,6 +70,8 @@ ForwardTool::ForwardTool() :
 	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
+	_forceThreshold(_forceThresholdProp.getValueDbl()),
+	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -117,6 +119,8 @@ ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
+	_forceThreshold(_forceThresholdProp.getValueDbl()),
+	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -194,6 +198,8 @@ ForwardTool(const ForwardTool &aTool) :
 	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
+	_forceThreshold(_forceThresholdProp.getValueDbl()),
+	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
 	_kLin(_kLinProp.getValueDblArray()),
 	_bLin(_bLinProp.getValueDblArray()),
 	_kTor(_kTorProp.getValueDblArray()),
@@ -252,6 +258,8 @@ setNull()
 	_tauRightStart = _tauRightEnd = _tauLeftStart = _tauLeftEnd = _tau;
 	_springTransitionStartForce = 1.0;
 	_springTransitionEndForce = 50.0;
+	_forceThreshold = 0.0;
+	_torqueThreshold = 0.0;
 	_kLin.setSize(3);
 	_kLin[0] = _kLin[1] = _kLin[2] = 5000000.0;
 	_bLin.setSize(3);
@@ -416,15 +424,29 @@ void ForwardTool::setupProperties()
 	_tauLeftEndProp.setName("scaling_rise_time_left_end");
 	_propertySet.append( &_tauLeftEndProp );
 
-	comment = "Percent of body weight at which linear springs start to transition in.";
+	comment = "Force magnitude at which linear springs start to transition in.";
 	_springTransitionStartForceProp.setComment(comment);
-	_springTransitionStartForceProp.setName("spring_transition_start_weight");
+	_springTransitionStartForceProp.setName("spring_transition_start_force");
 	_propertySet.append( &_springTransitionStartForceProp );
 
-	comment = "Percent of body weight past which linear springs are fully activated.";
+	comment = "Force magnitude past which linear springs are fully activated.";
 	_springTransitionEndForceProp.setComment(comment);
-	_springTransitionEndForceProp.setName("spring_transition_end_weight");
+	_springTransitionEndForceProp.setName("spring_transition_end_force");
 	_propertySet.append( &_springTransitionEndForceProp );
+
+	comment ="Force magnitude below which the linear corrective springs exert no force. "
+				"Setting this parameter to a small positive number will make it possible to "
+				"open-loop simulation for a longer period of time with less drift.";
+	_forceThresholdProp.setComment(comment);
+	_forceThresholdProp.setName("spring_force_threshold");
+	_propertySet.append( &_forceThresholdProp );
+
+	comment ="Torque magnitude below which the torsional corrective springs exert no force. "
+				"Setting this parameter to a small positive number will make it possible to "
+				"open-loop simulation for a longer period of time with less drift.";
+	_torqueThresholdProp.setComment(comment);
+	_torqueThresholdProp.setName("spring_torque_threshold");
+	_propertySet.append( &_torqueThresholdProp );
 
 	_kLinProp.setComment("Stiffness for linear (translational) corrective springs");
 	_kLinProp.setName("corrective_spring_linear_stiffness");
@@ -630,6 +652,7 @@ addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const Fo
 	spring->computeTargetFunctions(aQStore,aUStore);
 	spring->setKValue(&_kLin[0]);
 	spring->setBValue(&_bLin[0]);
+	spring->setThreshold(_forceThreshold);
 	spring->setScaleFunction(scaleSpline);
 	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
 	_model->addDerivCallback(spring);
@@ -668,6 +691,7 @@ addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,Abstr
 	spring->computeTargetFunctions(aQStore,aUStore);
 	spring->setKValue(&_kTor[0]);
 	spring->setBValue(&_bTor[0]);
+	spring->setThreshold(_torqueThreshold);
 	spring->setScaleFunction(scaleSpline);
 	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
 	_model->addDerivCallback(spring);
@@ -692,13 +716,47 @@ operator=(const ForwardTool &aTool)
 	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
+	// BASIC INPUT
 	_controlsFileName = aTool._controlsFileName;
 	_statesFileName = aTool._statesFileName;
+	_useSpecifiedDt = aTool._useSpecifiedDt;
+
+	// EXTERNAL LOADS
 	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
 	_externalLoadsBody1Prop = aTool._externalLoadsBody1Prop;
 	_externalLoadsBody2Prop = aTool._externalLoadsBody2Prop;
 	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
+	_outputDetailedResults = aTool._outputDetailedResults;
+
+	// FOOT CONTACT
+	_rLinSpringOn = aTool._rLinSpringOn;
+	_rTorSpringOn = aTool._rTorSpringOn;
+	_lLinSpringOn = aTool._lLinSpringOn;
+	_lTorSpringOn = aTool._lTorSpringOn;
+	_rHeelStrike = aTool._rHeelStrike;
+	_rFootFlat = aTool._rFootFlat;
+	_rHeelOff = aTool._rHeelOff;
+	_rToeOff = aTool._rToeOff;
+	_lHeelStrike = aTool._lHeelStrike;
+	_lFootFlat = aTool._lFootFlat;
+	_lHeelOff = aTool._lHeelOff;
+	_lToeOff = aTool._lToeOff;
+
+	// CORRECTIVE SPRING PARAMETERS
+	_tau = aTool._tau;
+	_tauRightStart = aTool._tauRightStart;
+	_tauRightEnd = aTool._tauRightEnd;
+	_tauLeftStart = aTool._tauLeftStart;
+	_tauLeftEnd = aTool._tauLeftEnd;
+	_springTransitionStartForce = aTool._springTransitionStartForce;
+	_springTransitionEndForce = aTool._springTransitionEndForce;
+	_forceThreshold = aTool._forceThreshold;
+	_torqueThreshold = aTool._torqueThreshold;
+	_kLin = aTool._kLin;
+	_bLin = aTool._bLin;
+	_kTor = aTool._kTor;
+	_bTor = aTool._bTor;
 
 	return(*this);
 }

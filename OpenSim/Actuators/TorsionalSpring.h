@@ -53,6 +53,9 @@ protected:
 	double _k[3];
 	/** Damping. */
 	double _b[3];
+	/** If the magnitude of the torque is below this threshold, no torque
+	is applied. */
+	double _threshold;
 
 //=============================================================================
 // METHODS
@@ -71,14 +74,16 @@ public:
 	VectorFunction* getTargetPosition() const;
 	void setTargetVelocity(VectorFunction* aVelFunction);
 	VectorFunction* getTargetVelocity() const;
-	void setKValue(double aK[3]);
-	void getKValue(double aK[3]);
-	void setBValue(double aB[3]);
-	void getBValue(double aB[3]);
 	void setScaleFunction(Function* _scaleFunction);
 	Function* getScaleFunction() const;
 	void setScaleFactor(double aScaleFactor);
 	double getScaleFactor();
+	void setKValue(double aK[3]);
+	void getKValue(double aK[3]);
+	void setBValue(double aB[3]);
+	void getBValue(double aB[3]);
+	void setThreshold(double aThreshold);
+	double getThreshold() const;
 
 	//--------------------------------------------------------------------------
 	// UTILITY

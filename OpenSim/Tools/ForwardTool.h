@@ -126,19 +126,32 @@ protected:
 	/** Rise time for scaling functions. */
 	PropertyDbl _tauProp;
 	double &_tau;
+	/** Time at which the torsional spring for body1 scale into effect. */
 	PropertyDbl _tauRightStartProp;
 	double &_tauRightStart;
+	/** Time at which the torsional spring for body1 scale out of effect. */
 	PropertyDbl _tauRightEndProp;
 	double &_tauRightEnd;
+	/** Time at which the torsional spring for body2 scale into effect. */
 	PropertyDbl _tauLeftStartProp;
 	double &_tauLeftStart;
+	/** Time at which the torsional spring for body2 scale out of effect. */
 	PropertyDbl _tauLeftEndProp;
 	double &_tauLeftEnd;
-	/** Spring transition weight. */
+	/** Force magnitude above which the linear springs start to scale in to effect. */
 	PropertyDbl _springTransitionStartForceProp;
 	double &_springTransitionStartForce;
+	/** Force magnitude below which the linear springs start to scale out of effect. */
 	PropertyDbl _springTransitionEndForceProp;
 	double &_springTransitionEndForce;
+	/** Force magnitude below which no corrective linear spring forces are applied.
+	This allows an unperturbed forward integration to execute with minimal drift. */
+	PropertyDbl _forceThresholdProp;
+	double &_forceThreshold;
+	/** Torque mangnitude below which no corrective torsional spring foreces are applied.
+	This allows an unperturbed forward integration to execute with minimal drift. */
+	PropertyDbl _torqueThresholdProp;
+	double &_torqueThreshold;
 	/** Stiffness for linear corrective springs. */
 	PropertyDblArray _kLinProp;
 	Array<double> &_kLin;
