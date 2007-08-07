@@ -37,7 +37,7 @@ xmin = timeRange.min;
 xmax = timeRange.max;
 if xmax - xmin > 1.0
     xval = 0: 0.5: xmax;
-elseif (xmax - xmin <= 1.0) & (xmax - xmin > 0.5)
+elseif (xmax - xmin <= 1.0) && (xmax - xmin > 0.5)
     xval = 0: 0.2: xmax;
 else
     xval = 0: 0.1: xmax;
@@ -63,13 +63,13 @@ for plotIndex = 1:nSubPlots
     set(gca, 'xlim', [xmin xmax], 'xtick', xval, ...
             'FontName', aFontName, 'FontSize', aFontSize, ...
             'TickDir', aTickDir);
-    if plotIndex == 1 | plotIndex == 2 | plotIndex == 9 | plotIndex == 10
+    if plotIndex == 1 || plotIndex == 2 || plotIndex == 9 || plotIndex == 10
         xlabel('time (s)');
             a = get(gca, 'xlabel');
             set(a, 'FontName', aFontName, 'FontSize', aFontSize);
     end
     
-    if plotIndex == 1 | plotIndex == 2
+    if plotIndex == 1 || plotIndex == 2
         ymin = fmin;
         ymax = fmax;
         yval = fval;
@@ -108,11 +108,16 @@ subplot(nPlotRows, nPlotCols, 3);
 set(gca, 'xlim', [0 1]);
 styles = {'blue', 'red', 'cyan', 'magenta', 'green'};
 
+legendString = cell( length(fnames) );
 for i = 1:length(fnames)
     legendString{i} = [fnames{i}, ':  ', styles{i}];
 end
 legendString{i+1} = ' ';  
-legendString{i+2} = 'EMG On/Off Times from Perry 1992:  black bars';
+legendString{i+2} = 'Joint Moments from Inman et al. 1981: green curves';
+legendString{i+3} = 'Joint Moments from Cappozzo et al. 1975: red curves';
+legendString{i+4} = 'Joint Moments from Cappozzo 1983: cyan curves';
+legendString{i+5} = 'Joint Moments from Crowninshield et al. 1978: yellow curves';
+legendString{i+6} = 'Joint Moments from Patriarco et al. 1981: magenta curves';
 
 for i = 1:length(legendString)
     x = 0;

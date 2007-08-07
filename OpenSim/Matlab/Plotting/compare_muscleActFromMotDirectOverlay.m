@@ -107,7 +107,7 @@ for figNum = 1:length(figHandleArray)
                 time{fileNum}, limb, fileNum);
         end
             
-        % Plot data from UW-Gait Workflow.
+        % Plot data from SimTrack or UW-Gait Workflow.
         for plotIndex = 3:nSubPlots
             subplot(nPlotRows, nPlotCols, plotIndex);
             overlay_muscleDataFromMot(q(fileNum), ...
