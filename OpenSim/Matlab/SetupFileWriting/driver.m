@@ -478,7 +478,7 @@ end
 % These lines create new setup files for a trial from the gait example.
 % This code block will make all setup files and excitation constraints in a
 % new CMC control constraints file for this trial.
-RUN_CODE_BLOCK_10 = false;
+RUN_CODE_BLOCK_10 = true;
 if RUN_CODE_BLOCK_10
     gait2392ExampleDirectory = 'D:\programfiles\OpenSim\OpenSim\Examples\Gait2392';
     outputDirectory = 'D:\programfiles\FCA\SU\Testing\delaware3_fast_auto';

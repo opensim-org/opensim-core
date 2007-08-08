@@ -234,55 +234,63 @@ leftContactRanges = leftContactRanges(2:end,:);
 % contain the start and end frame numbers for each time
 % interval during which a foot was in contact with the
 % ground.  We will now perform some sanity checks and
-% determine which leg was the first to be in contact and
-% leave the ground, and then use that to determine which
-% force plate number corresponds to that leg (we assume
-% that the right leg is on force plate #1, and that the
-% left leg is on force plate #2).
-if leftContactRanges(1,1) == 0
-    if rightContactRanges(1,1) == 0
-        % Both feet were in contact with the ground at the
-        % beginning of the motion.  So figure out which leg
-        % got off the ground first, and label that leg as the
-        % first leg to be in contact with the ground.
-        if leftContactRanges(1,2) < rightContactRanges(1,2)
-            ictoIn.firstICLimb = 'L';
-        else
-            ictoIn.firstICLimb = 'R';
-        end
+% determine which leg was the first to come in contact
+% with the ground.
+rightDimensions = size( rightContactRanges );
+leftDimensions = size( leftContactRanges );
+rightNumRows = rightDimensions(1);
+leftNumRows = leftDimensions(1);
+rightFirstPositiveContactStartFrameNumber = -1;
+leftFirstPositiveContactStartFrameNumber = -1;
+% Find frame number of first initial contact of the right limb, if such an
+% initial contact exists.
+for i = 1:rightNumRows
+    if rightContactRanges(i,1) > 0
+        rightFirstPositiveContactStartFrameNumber = rightContactRanges(i,1);
+        break;
+    end
+end
+% Find frame number of first initial contact of the left limb, if such an
+% initial contact exists.
+for i = 1:leftNumRows
+    if leftContactRanges(i,1) > 0
+        leftFirstPositiveContactStartFrameNumber = leftContactRanges(i,1);
+        break;
+    end
+end
+% Now we can assume that right/left FirstPositiveContactStartFrameNumber
+% variables are each either -1 or a positive number.  Just to be sure,
+% let's throw an error if this is not the case.
+if rightFirstPositiveContactStartFrameNumber ~= -1 && rightFirstPositiveContactStartFrameNumber <= 0
+    error( 'rightFirstPositiveContactStartFrameNumber should be -1 or positive!' );
+end
+if leftFirstPositiveContactStartFrameNumber ~= -1 && leftFirstPositiveContactStartFrameNumber <= 0
+    error( 'leftFirstPositiveContactStartFrameNumber should be -1 or positive!' );
+end
+% Assign the first initial contact limb to be the one with the lower
+% positive contact start frame number.  If only one limb has such a frame
+% number, then the first initial contact limb is that limb.  If neither
+% limb has such a frame number, then no limb ever comes into contact with a
+% force plate, so throw an error.
+if rightFirstPositiveContactStartFrameNumber == -1
+    if leftFirstPositiveContactStartFrameNumber == -1
+        error( 'Neither limb has a first initial contact with the ground!' );
     else
-        % The left leg was touching the ground when the
-        % motion started, but the right leg didn't even
-        % start touching the ground until sometime later.
-        % So, label the left leg as the first leg to be
-        % in contact with the ground.
         ictoIn.firstICLimb = 'L';
     end
+elseif leftFirstPositiveContactStartFrameNumber == -1
+    ictoIn.firstICLimb = 'R';
+elseif rightFirstPositiveContactStartFrame < leftFirstPositiveContactStartFrame
+    ictoIn.firstICLimb = 'R';
 else
-    if rightContactRanges(1,1) == 0
-        % The right leg was touching the ground when the
-        % motion started, but the left leg didn't even
-        % start touching the ground until sometime later.
-        % So, label the right leg as the first leg to be
-        % in contact with the ground.
-        ictoIn.firstICLimb = 'R';
-    else
-        % Both legs were off the ground when the motion
-        % started.  This is not allowed, since we assume
-        % that the subject was performing a walking motion,
-        % and not flying around in the air like a bird (or
-        % a runner).  We shall print an error message and
-        % give up.
-        sprintf('Both legs were off the ground at the beginning of the motion.  I don\''t know what to do with a flying motion, so I\''m giving up.');
-        return;
-    end
+    ictoIn.firstICLimb = 'L';
 end
 
 % If we got this far, we have now decided, for sure, which
-% leg was in contact with the ground first.  If the right
-% leg was in contact first, then force plate #1 was the first
-% force plate to be touched by the subject.  Otherwise, the
-% first force plate to be touched by the subject was force
+% leg came in contact with the ground first.  If the right
+% leg came in contact first, then force plate #1 was the first
+% force plate to be hit by the subject.  Otherwise, the
+% first force plate to be hit by the subject was force
 % plate #2.
 if ictoIn.firstICLimb == 'R'
     ictoIn.firstICFP = 1;
@@ -291,7 +299,7 @@ else
     ictoIn.firstICFP = 2;
 end
 
-% We now know which leg was in contact with the ground
+% We now know which leg came in contact with the ground
 % first, as well as the frame number ranges during which
 % each leg was in contact with the ground.  So, starting
 % with the first leg that was in contact with the ground,
