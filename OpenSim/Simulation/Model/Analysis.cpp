@@ -163,6 +163,7 @@ setNull()
 	setupProperties();
 	_inDegrees=true;
 	_storageList.setMemoryOwner(false);
+	_printResultFiles=true;
 }
 //_____________________________________________________________________________
 /**
@@ -195,6 +196,7 @@ operator=(const Analysis &aAnalysis)
 
 	// Data members
 	_inDegrees = aAnalysis._inDegrees;
+	_printResultFiles = aAnalysis._printResultFiles;
 
 	return(*this);
 }

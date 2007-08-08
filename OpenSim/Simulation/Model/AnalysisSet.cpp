@@ -282,7 +282,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	for(i=0;i<size;i++) {
 		analysis = get(i);
 		if(analysis==NULL) continue;
-		analysis->printResults(aBaseName,aDir,aDT,aExtension);
+		if(analysis->getPrintResultFiles()) analysis->printResults(aBaseName,aDir,aDT,aExtension);
 	}
 }
 //=============================================================================

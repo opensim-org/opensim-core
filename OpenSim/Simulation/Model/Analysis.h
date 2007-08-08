@@ -76,7 +76,7 @@ private:
 
 protected:
 	ArrayPtrs<Storage> _storageList;
-	bool					 _writeResultsToFiles;
+	bool _printResultFiles;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -119,10 +119,8 @@ public:
 	int getStorageInterval() const;
 #endif
 	virtual ArrayPtrs<Storage>& getStorageList();
-	void setWriteResultsToFiles(const bool writeToFiles)
-	{
-		_writeResultsToFiles=writeToFiles;
-	}
+	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
+	bool getPrintResultFiles() const { return _printResultFiles; }
 
 	//--------------------------------------------------------------------------
 	// RESULTS
