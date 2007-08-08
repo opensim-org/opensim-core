@@ -527,6 +527,9 @@ computeInitialStates(double &rTI,double *rYI)
 		// COMPUTE CONTROLS
 		dtFirst = 1.0e-8;
 		computeControls(dtFirst,rTI,&y[0],xiSet);
+			// TODO: fix this some other way; doing this because computeControls turns them back on at the end
+			_model->getAnalysisSet()->setOn(false);
+			_model->getIntegCallbackSet()->setOn(false);
 		setTargetTime(rdMath::MINUS_INFINITY);
 
 		// GET CONTROLS
