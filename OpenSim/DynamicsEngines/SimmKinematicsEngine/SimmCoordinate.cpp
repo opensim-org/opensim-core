@@ -339,7 +339,7 @@ void SimmCoordinate::determineType()
 
 			for (int j = 0; j < dofs->getSize(); j++)
          {
-				if (dofs->get(i)->getCoordinate() == this && dofs->get(i)->getMotionType() == AbstractDof::Rotational)
+				if (dofs->get(j)->getCoordinate() == this && dofs->get(j)->getMotionType() == AbstractDof::Rotational)
             {
 					/* You've found one rotational DOF: set the coordinate's type
 					 * to rotational and you're done.
