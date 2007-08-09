@@ -280,7 +280,7 @@ if rightFirstPositiveContactStartFrameNumber == -1
     end
 elseif leftFirstPositiveContactStartFrameNumber == -1
     ictoIn.firstICLimb = 'R';
-elseif rightFirstPositiveContactStartFrame < leftFirstPositiveContactStartFrame
+elseif rightFirstPositiveContactStartFrameNumber < leftFirstPositiveContactStartFrameNumber
     ictoIn.firstICLimb = 'R';
 else
     ictoIn.firstICLimb = 'L';
