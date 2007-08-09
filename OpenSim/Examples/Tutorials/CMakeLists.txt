@@ -1,0 +1,1 @@
+SUBDIRS(bolegs seplegs WristModel)

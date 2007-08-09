@@ -1,3 +1,2 @@
-SUBDIRS(Gait2354 Gait2392)
-
+SUBDIRS(Gait2354_Simbody Tutorials)
 INSTALL_FILES(/examples/ FILES README.txt)

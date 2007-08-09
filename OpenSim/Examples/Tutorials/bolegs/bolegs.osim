@@ -1,0 +1,3375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model name="Both Legs with Muscles">
+	<defaults>
+		<SimmZajacHill name="defaultmuscle">
+			<tendon_force_length_curve>
+				<natCubicSpline>
+					<x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.010800000000 0.025700000000 0.043500000000 0.065200000000 0.091500000000 0.123000000000 0.161000000000 0.208000000000 0.227000000000 345.000000000000 345.000000000000 345.000000000000 345.000000000000 </y>
+				</natCubicSpline>
+			</tendon_force_length_curve>
+			<active_force_length_curve>
+				<natCubicSpline>
+					<x>-5.000000000000 0.000000000000 0.401000000000 0.402000000000 0.403500000000 0.527250000000 0.628750000000 0.718750000000 0.861250000000 1.045000000000 1.217500000000 1.438750000000 1.618750000000 1.620000000000 1.621000000000 2.200000000000 5.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.226667000000 0.636667000000 0.856667000000 0.950000000000 0.993333000000 0.770000000000 0.246667000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 </y>
+				</natCubicSpline>
+			</active_force_length_curve>
+			<passive_force_length_curve>
+				<natCubicSpline>
+					<x>-5.000000000000 0.998000000000 0.999000000000 1.000000000000 1.100000000000 1.200000000000 1.300000000000 1.400000000000 1.500000000000 1.600000000000 1.601000000000 1.602000000000 5.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
+				</natCubicSpline>
+			</passive_force_length_curve>
+		</SimmZajacHill>
+    <SimmDarrylMuscle name="defaultmuscle">
+      <tendon_force_length_curve>
+        <natCubicSpline>
+          <x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+          <y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.010800000000 0.025700000000 0.043500000000 0.065200000000 0.091500000000 0.123000000000 0.161000000000 0.208000000000 0.227000000000 345.000000000000 345.000000000000 345.000000000000 345.000000000000 </y>
+        </natCubicSpline>
+      </tendon_force_length_curve>
+      <active_force_length_curve>
+        <natCubicSpline>
+          <x>-5.000000000000 0.000000000000 0.401000000000 0.402000000000 0.403500000000 0.527250000000 0.628750000000 0.718750000000 0.861250000000 1.045000000000 1.217500000000 1.438750000000 1.618750000000 1.620000000000 1.621000000000 2.200000000000 5.000000000000 </x>
+          <y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.226667000000 0.636667000000 0.856667000000 0.950000000000 0.993333000000 0.770000000000 0.246667000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 </y>
+        </natCubicSpline>
+      </active_force_length_curve>
+      <passive_force_length_curve>
+        <natCubicSpline>
+          <x>-5.000000000000 0.998000000000 0.999000000000 1.000000000000 1.100000000000 1.200000000000 1.300000000000 1.400000000000 1.500000000000 1.600000000000 1.601000000000 1.602000000000 5.000000000000 </x>
+          <y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
+        </natCubicSpline>
+      </passive_force_length_curve>
+    </SimmDarrylMuscle>
+	</defaults>
+	<credits>Delp, S.L., Loan, J.P., Hoy, M.G., Zajac, F.E., Topp E.L., Rosen, J.M.</credits>
+	<publications>An interactive graphics-based model of the lower extremity to study orthopaedic surgical procedures. IEEE Transactions on Biomedical     Engineering, vol. 37, pp. 757-767, 1990.</publications>
+	<angle_units> radians </angle_units>
+	<ActuatorSet>
+	<groups>
+		<ObjectGroup name="r hip abductors">
+			<members>GMAX1 GMED1 GMED2 GMED3 GMIN1 GMIN2 GMIN3 PERI SAR TFL </members>
+		</ObjectGroup>
+		<ObjectGroup name="r hip flexors">
+			<members>ADDBREV ADDLONG GMED1 GMIN1 GRA ILIACUS PECT PSOAS RF SAR TFL </members>
+		</ObjectGroup>
+		<ObjectGroup name="r hip int rotators">
+			<members>GMED1 GMIN1 ILIACUS PSOAS TFL </members>
+		</ObjectGroup>
+		<ObjectGroup name="r hip ext rotators">
+			<members>GLEM GMED3 GMIN3 PERI QUADFEM </members>
+		</ObjectGroup>
+		<ObjectGroup name="r hip extensors">
+			<members>ADDLONG AMAG1 AMAG2 AMAG3 BIFEMLH GMAX1 GMAX2 GMAX3 GMED3 GMIN3 SEMIMEM SEMITEN </members>
+		</ObjectGroup>
+		<ObjectGroup name="r hip adductors">
+			<members>ADDBREV ADDLONG AMAG1 AMAG2 AMAG3 BIFEMLH GRA PECT SEMIMEM SEMITEN </members>
+		</ObjectGroup>
+		<ObjectGroup name="r knee flexors">
+			<members>BIFEMLH BIFEMSH GRA LATGAS MEDGAS SAR SEMIMEM SEMITEN </members>
+		</ObjectGroup>
+		<ObjectGroup name="r knee extensors">
+			<members>LIGPAT RF VASINT VASLAT VASMED </members>
+		</ObjectGroup>
+		<ObjectGroup name="r ankle plantar flexors">
+			<members>FLEXDIG FLEXHAL LATGAS MEDGAS PERBREV PERLONG SOL TIBPOST </members>
+		</ObjectGroup>
+		<ObjectGroup name="r ankle dorsiflexors">
+			<members>EXTDIG EXTHAL PERTERT TIBANT TPOST2 </members>
+		</ObjectGroup>
+        <ObjectGroup name="r invertors">
+			<members>EXTHAL FLEXDIG FLEXHAL TIBANT TIBPOST </members>
+		</ObjectGroup>
+		<ObjectGroup name="r evertors">
+			<members>EXTDIG PERBREV PERLONG PERTERT TPOST2 </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip abductors">
+			<members>LGMAX1 LGMED1 LGMED2 LGMED3 LGMIN1 LGMIN2 LGMIN3 LPERI LTFL LSAR </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip flexors">
+			<members>LADDBREV LADDLONG LGMED1 LGMIN1 LGRA LILIACUS LPECT LPSOAS LRF LTFL LSAR </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip int rotators">
+			<members>LGMED1 LGMIN1 LILIACUS LPSOAS LTFL </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip ext rotators">
+			<members>LGLEM LGMED3 LGMIN3 LPERI LQUADFEM </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip extensors">
+			<members>LADDLONG LAMAG1 LAMAG2 LAMAG3 LBIFEMLH LGMAX1 LGMAX2 LGMAX3 LGMED3 LGMIN3 LSEMIMEM LSEMITEN </members>
+		</ObjectGroup>
+		<ObjectGroup name="l hip adductors">
+			<members>LADDBREV LADDLONG LAMAG1 LAMAG2 LAMAG3 LBIFEMLH LGRA LPECT LSEMIMEM LSEMITEN </members>
+		</ObjectGroup>
+		<ObjectGroup name="l knee flexors">
+			<members>LBIFEMLH LBIFEMSH LGRA LLATGAS LMEDGAS LSEMIMEM LSEMITEN LSAR </members>
+		</ObjectGroup>
+		<ObjectGroup name="l knee extensors">
+			<members>LLIGPAT LRF LVASINT LVASLAT LVASMED </members>
+		</ObjectGroup>
+		<ObjectGroup name="l ankle plantar flexors">
+			<members>LFLEXDIG LFLEXHAL LLATGAS LMEDGAS LPERBREV LPERLONG LSOL LTIBPOST </members>
+		</ObjectGroup>
+		<ObjectGroup name="l ankle dorsiflexors">
+			<members>LEXTDIG LEXTHAL LPERTERT LTIBANT LTPOST2 </members>
+		</ObjectGroup>
+		<ObjectGroup name="l invertors">
+			<members>LEXTHAL LFLEXDIG LFLEXHAL LTIBANT LTIBPOST </members>
+		</ObjectGroup>
+		<ObjectGroup name="l evertors">
+			<members>LEXTDIG LPERBREV LPERLONG LPERTERT LTPOST2 </members>
+		</ObjectGroup>
+	</groups>
+	<objects>
+		<SimmZajacHill name="GMED1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040800000000 0.030400000000 0.120900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.011700000000 0.055500000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>546.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
+			<tendon_slack_length>0.078000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMED2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.085500000000 0.044500000000 0.076600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.005800000000 0.052700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>382.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084500000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMED3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.122300000000 0.010500000000 0.064800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030900000000 -0.004700000000 0.051800000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>435.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064600000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.331612557879</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMIN1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.046700000000 -0.008000000000 0.105600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.007200000000 -0.010400000000 0.056000000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>180.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.068000000000</optimal_fiber_length>
+			<tendon_slack_length>0.016000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMIN2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.063300000000 -0.006500000000 0.099100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.009600000000 -0.010400000000 0.056000000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>190.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.056000000000</optimal_fiber_length>
+			<tendon_slack_length>0.026000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMIN3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083400000000 -0.006300000000 0.085600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.013500000000 -0.008300000000 0.055000000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>215.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.038000000000</optimal_fiber_length>
+			<tendon_slack_length>0.051000000000</tendon_slack_length>
+			<pennation_angle>0.366519142919</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="SEMIMEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119200000000 -0.101500000000 0.069500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.024300000000 -0.053600000000 -0.019400000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1030.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.080000000000</optimal_fiber_length>
+			<tendon_slack_length>0.359000000000</tendon_slack_length>
+			<pennation_angle>0.261799387799</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="SEMITEN">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.123700000000 -0.104300000000 0.060300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.031400000000 -0.054500000000 -0.014600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.011300000000 -0.074600000000 -0.024500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002700000000 -0.095600000000 -0.019300000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>328.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.201000000000</optimal_fiber_length>
+			<tendon_slack_length>0.262000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="BIFEMLH">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.124400000000 -0.100100000000 0.066600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.008100000000 -0.072900000000 0.042300000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>717.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.109000000000</optimal_fiber_length>
+			<tendon_slack_length>0.341000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="BIFEMSH">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 0.023400000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.010100000000 -0.072500000000 0.040600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>402.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.173000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.401425727959</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="SAR">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015300000000 -0.001300000000 0.124200000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.003000000000 -0.356800000000 -0.042100000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.005600000000 -0.041900000000 -0.039900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.058900000000 -0.038300000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.024300000000 -0.084000000000 -0.025200000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>104.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.579000000000</optimal_fiber_length>
+			<tendon_slack_length>0.040000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="RF">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.029500000000 -0.031100000000 0.096800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.033400000000 -0.403000000000 0.001900000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.459967919293</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.012100000000 0.043700000000 -0.001000000000</location>
+					<body>r_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>779.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.346000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="ADDLONG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031600000000 -0.083600000000 0.016900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 0.023400000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>418.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.138000000000</optimal_fiber_length>
+			<tendon_slack_length>0.110000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="ADDBREV">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.058700000000 -0.091500000000 0.016400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000900000000 -0.119600000000 0.029400000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>286.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.020000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="AMAG1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.073200000000 -0.117400000000 0.025500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.004500000000 -0.121100000000 0.033900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>346.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.060000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="AMAG2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083100000000 -0.119200000000 0.030800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.228500000000 0.022700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>312.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.121000000000</optimal_fiber_length>
+			<tendon_slack_length>0.130000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="AMAG3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.077100000000 -0.118100000000 0.027600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.007000000000 -0.383700000000 -0.026600000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>444.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.131000000000</optimal_fiber_length>
+			<tendon_slack_length>0.260000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="TFL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031100000000 0.021400000000 0.124100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029400000000 -0.099500000000 0.059700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.404900000000 0.035700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.048700000000 0.029700000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>155.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.095000000000</optimal_fiber_length>
+			<tendon_slack_length>0.425000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PECT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.043100000000 -0.076800000000 0.045100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.012200000000 -0.082200000000 0.025300000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>177.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.001000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GRA">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.056300000000 -0.103800000000 0.007900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.047500000000 -0.035800000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.083600000000 -0.022800000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>108.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.352000000000</optimal_fiber_length>
+			<tendon_slack_length>0.140000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMAX1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119500000000 0.061200000000 0.070000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.129100000000 0.001200000000 0.088600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.045700000000 -0.024800000000 0.039200000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.027700000000 -0.056600000000 0.047000000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>382.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.142000000000</optimal_fiber_length>
+			<tendon_slack_length>0.125000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMAX2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.134900000000 0.017600000000 0.056300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.137600000000 -0.052000000000 0.091400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.042600000000 -0.053000000000 0.029300000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015600000000 -0.101600000000 0.041900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>546.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.147000000000</optimal_fiber_length>
+			<tendon_slack_length>0.127000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GMAX3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.155600000000 -0.031400000000 0.005800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.152900000000 -0.105200000000 0.040300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.029900000000 -0.104100000000 0.013500000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.006000000000 -0.141900000000 0.041100000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>368.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.144000000000</optimal_fiber_length>
+			<tendon_slack_length>0.145000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="ILIACUS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.067400000000 0.036500000000 0.085400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.055000000000 0.085100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.001700000000 -0.054300000000 0.005700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019300000000 -0.062100000000 0.012900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>429.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.090000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PSOAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.064700000000 0.088700000000 0.028900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023800000000 -0.057000000000 0.075900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.001600000000 -0.050700000000 0.003800000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018800000000 -0.059700000000 0.010400000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>371.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.104000000000</optimal_fiber_length>
+			<tendon_slack_length>0.130000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="QUADFEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.114300000000 -0.115100000000 0.052000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.038100000000 -0.035900000000 0.036600000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>254.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
+			<tendon_slack_length>0.024000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="GLEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.113300000000 -0.082000000000 0.071400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014200000000 -0.003300000000 0.044300000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>109.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.024000000000</optimal_fiber_length>
+			<tendon_slack_length>0.039000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PERI">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.139600000000 0.000300000000 0.023500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.119300000000 -0.027600000000 0.065700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014800000000 -0.003600000000 0.043700000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>296.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.026000000000</optimal_fiber_length>
+			<tendon_slack_length>0.115000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="VASMED">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.014000000000 -0.209900000000 0.018800000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.035600000000 -0.276900000000 0.000900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.037000000000 -0.404800000000 -0.012500000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.209862237482</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.027400000000 -0.425500000000 -0.013100000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.780061304109</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.006300000000 0.044500000000 -0.017000000000</location>
+					<body>r_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1294.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.089000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="VASINT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.029000000000 -0.192400000000 0.031000000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.033500000000 -0.208400000000 0.028500000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.034300000000 -0.403000000000 0.005500000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.419999879423</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.005800000000 0.048000000000 -0.000600000000</location>
+					<body>r_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1365.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.136000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="VASLAT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.004800000000 -0.185400000000 0.034900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.026900000000 -0.259100000000 0.040900000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.036100000000 -0.403000000000 0.020500000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.209862237482</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.025300000000 -0.424300000000 0.018400000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-2.617993877991 -1.919862177194</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.010300000000 0.042300000000 0.014100000000</location>
+					<body>r_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1871.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.157000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="MEDGAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.012700000000 -0.392900000000 -0.023500000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.023900000000 -0.402200000000 -0.025800000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-0.770039265980 0.100007366139</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.021700000000 -0.048700000000 -0.029500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 -0.005300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1113.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.045000000000</optimal_fiber_length>
+			<tendon_slack_length>0.408000000000</tendon_slack_length>
+			<pennation_angle>0.296705972839</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LATGAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015500000000 -0.394600000000 0.027200000000</location>
+					<body>r_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.025400000000 -0.401800000000 0.027400000000</location>
+					<body>r_femur</body>
+					<coordinate>r_knee_angle</coordinate>
+					<range>-0.770039265980 0.100007366139</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.024200000000 -0.048100000000 0.023500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 -0.005300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>488.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064000000000</optimal_fiber_length>
+			<tendon_slack_length>0.385000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="SOL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 0.007100000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 -0.005300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2839.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.030000000000</optimal_fiber_length>
+			<tendon_slack_length>0.268000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="SOLSTIF">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 0.007100000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 -0.005300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2839.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.030000000000</optimal_fiber_length>
+			<tendon_slack_length>0.268000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+			<tendon_force_length_curve>
+				<natCubicSpline>
+					<x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 1.080000000000 2.570000000000 4.350000000000 6.520000000000 9.150000000000 12.300000000000 16.100000000000 20.800000000000 22.700000000000 34500.000000000000 34500.000000000000 34500.000000000000 34500.000000000000 </y>
+				</natCubicSpline>
+			</tendon_force_length_curve>
+		</SimmZajacHill>
+		<SimmZajacHill name="TIBPOST">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 0.001900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.405100000000 -0.022900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.041700000000 0.033400000000 -0.028600000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.077200000000 0.015900000000 -0.028100000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="FLEXDIG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.008300000000 -0.204600000000 -0.001800000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.405100000000 -0.019600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043600000000 0.031500000000 -0.028000000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070800000000 0.017600000000 -0.026300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.165800000000 -0.008100000000 0.011600000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.001900000000 -0.007800000000 0.014700000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028500000000 -0.007100000000 0.021500000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044100000000 -0.006000000000 0.024200000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>310.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.034000000000</optimal_fiber_length>
+			<tendon_slack_length>0.400000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="FLEXHAL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007900000000 -0.233400000000 0.024400000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018600000000 -0.407900000000 -0.017400000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.037400000000 0.027600000000 -0.024100000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.103800000000 0.006800000000 -0.025600000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.172600000000 -0.005300000000 -0.026900000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.015500000000 -0.006400000000 -0.026500000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056200000000 -0.010200000000 -0.018100000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>322.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.043000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="TIBANT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.017900000000 -0.162400000000 0.011500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032900000000 -0.395100000000 -0.017700000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.116600000000 0.017800000000 -0.030500000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>603.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.098000000000</optimal_fiber_length>
+			<tendon_slack_length>0.223000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PERBREV">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007000000000 -0.264600000000 0.032500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019800000000 -0.418400000000 0.028300000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.429500000000 0.028900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.047100000000 0.027000000000 0.023300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.067700000000 0.021900000000 0.034300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>348.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.161000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PERLONG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.000500000000 -0.156800000000 0.036200000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.020700000000 -0.420500000000 0.028600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.016200000000 -0.431900000000 0.028900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043800000000 0.023000000000 0.022100000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.068100000000 0.010600000000 0.028400000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085200000000 0.006900000000 0.011800000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.120300000000 0.008500000000 -0.018400000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>754.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.049000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="PERTERT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001000000000 -0.280400000000 0.023100000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.022900000000 -0.406900000000 0.015900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085700000000 0.022800000000 0.029900000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>90.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.079000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.226892802759</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="EXTDIG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.003200000000 -0.138100000000 0.027600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028900000000 -0.400700000000 0.007200000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.092200000000 0.038800000000 -0.000100000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.161600000000 0.005500000000 0.013000000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000300000000 0.004700000000 0.015300000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044300000000 -0.000400000000 0.025000000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>341.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.102000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="EXTHAL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001200000000 -0.176700000000 0.022800000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032600000000 -0.398500000000 -0.008500000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.097000000000 0.038900000000 -0.021100000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.129300000000 0.030900000000 -0.025700000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.173400000000 0.013900000000 -0.028000000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029800000000 0.004100000000 -0.024500000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056300000000 0.003400000000 -0.018600000000</location>
+					<body>r_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>108.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.111000000000</optimal_fiber_length>
+			<tendon_slack_length>0.305000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LIGPAT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.039000000000 -0.082200000000 0.000000000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002100000000 0.001500000000 0.000100000000</location>
+					<body>r_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>100.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.005000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="TPOST2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 0.001900000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006300000000 -0.350500000000 0.014600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.016500000000 -0.390400000000 0.017600000000</location>
+					<body>r_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.091200000000 0.046300000000 0.008600000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.105000000000 0.032500000000 0.009300000000</location>
+					<body>r_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMED1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040800000000 0.030400000000 -0.120900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.011700000000 -0.055500000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>546.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
+			<tendon_slack_length>0.078000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMED2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.085500000000 0.044500000000 -0.076600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.005800000000 -0.052700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>382.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084500000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMED3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.122300000000 0.010500000000 -0.064800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030900000000 -0.004700000000 -0.051800000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>435.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064600000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.331612557879</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMIN1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.046700000000 -0.008000000000 -0.105600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.007200000000 -0.010400000000 -0.056000000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>180.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.068000000000</optimal_fiber_length>
+			<tendon_slack_length>0.016000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMIN2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.063300000000 -0.006500000000 -0.099100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.009600000000 -0.010400000000 -0.056000000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>190.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.056000000000</optimal_fiber_length>
+			<tendon_slack_length>0.026000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMIN3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083400000000 -0.006300000000 -0.085600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.013500000000 -0.008300000000 -0.055000000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>215.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.038000000000</optimal_fiber_length>
+			<tendon_slack_length>0.051000000000</tendon_slack_length>
+			<pennation_angle>0.366519142919</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LSEMIMEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119200000000 -0.101500000000 -0.069500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.024300000000 -0.053600000000 0.019400000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1030.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.080000000000</optimal_fiber_length>
+			<tendon_slack_length>0.359000000000</tendon_slack_length>
+			<pennation_angle>0.261799387799</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LSEMITEN">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.123700000000 -0.104300000000 -0.060300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.031400000000 -0.054500000000 0.014600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.011300000000 -0.074600000000 0.024500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002700000000 -0.095600000000 0.019300000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>328.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.201000000000</optimal_fiber_length>
+			<tendon_slack_length>0.262000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LBIFEMLH">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.124400000000 -0.100100000000 -0.066600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.008100000000 -0.072900000000 -0.042300000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>717.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.109000000000</optimal_fiber_length>
+			<tendon_slack_length>0.341000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LBIFEMSH">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 -0.023400000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.010100000000 -0.072500000000 -0.040600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>402.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.173000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.401425727959</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LSAR">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015300000000 -0.001300000000 -0.124200000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.003000000000 -0.356800000000 0.042100000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.005600000000 -0.041900000000 0.039900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.058900000000 0.038300000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.024300000000 -0.084000000000 0.025200000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>104.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.579000000000</optimal_fiber_length>
+			<tendon_slack_length>0.040000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LRF">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.029500000000 -0.031100000000 -0.096800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.033400000000 -0.403000000000 -0.001900000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.459967919293</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.012100000000 0.043700000000 0.001000000000</location>
+					<body>l_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>779.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.346000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LADDLONG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031600000000 -0.083600000000 -0.016900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 -0.023400000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>418.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.138000000000</optimal_fiber_length>
+			<tendon_slack_length>0.110000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LADDBREV">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.058700000000 -0.091500000000 -0.016400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000900000000 -0.119600000000 -0.029400000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>286.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.020000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LAMAG1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.073200000000 -0.117400000000 -0.025500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.004500000000 -0.121100000000 -0.033900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>346.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.060000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LAMAG2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083100000000 -0.119200000000 -0.030800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.228500000000 -0.022700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>312.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.121000000000</optimal_fiber_length>
+			<tendon_slack_length>0.130000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LAMAG3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.077100000000 -0.118100000000 -0.027600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.007000000000 -0.383700000000 0.026600000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>444.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.131000000000</optimal_fiber_length>
+			<tendon_slack_length>0.260000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LTFL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031100000000 0.021400000000 -0.124100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029400000000 -0.099500000000 -0.059700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.404900000000 -0.035700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.048700000000 -0.029700000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>155.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.095000000000</optimal_fiber_length>
+			<tendon_slack_length>0.425000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPECT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.043100000000 -0.076800000000 -0.045100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.012200000000 -0.082200000000 -0.025300000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>177.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.001000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGRA">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.056300000000 -0.103800000000 -0.007900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.047500000000 0.035800000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.083600000000 0.022800000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>108.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.352000000000</optimal_fiber_length>
+			<tendon_slack_length>0.140000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMAX1">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119500000000 0.061200000000 -0.070000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.129100000000 0.001200000000 -0.088600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.045700000000 -0.024800000000 -0.039200000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.027700000000 -0.056600000000 -0.047000000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>382.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.142000000000</optimal_fiber_length>
+			<tendon_slack_length>0.125000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMAX2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.134900000000 0.017600000000 -0.056300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.137600000000 -0.052000000000 -0.091400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.042600000000 -0.053000000000 -0.029300000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015600000000 -0.101600000000 -0.041900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>546.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.147000000000</optimal_fiber_length>
+			<tendon_slack_length>0.127000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGMAX3">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.155600000000 -0.031400000000 -0.005800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.152900000000 -0.105200000000 -0.040300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.029900000000 -0.104100000000 -0.013500000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.006000000000 -0.141900000000 -0.041100000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>368.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.144000000000</optimal_fiber_length>
+			<tendon_slack_length>0.145000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LILIACUS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.067400000000 0.036500000000 -0.085400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.055000000000 -0.085100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.001700000000 -0.054300000000 -0.005700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019300000000 -0.062100000000 -0.012900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>429.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.090000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPSOAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.064700000000 0.088700000000 -0.028900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023800000000 -0.057000000000 -0.075900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.001600000000 -0.050700000000 -0.003800000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018800000000 -0.059700000000 -0.010400000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>371.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.104000000000</optimal_fiber_length>
+			<tendon_slack_length>0.130000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LQUADFEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.114300000000 -0.115100000000 -0.052000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.038100000000 -0.035900000000 -0.036600000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>254.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
+			<tendon_slack_length>0.024000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LGLEM">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.113300000000 -0.082000000000 -0.071400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014200000000 -0.003300000000 -0.044300000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>109.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.024000000000</optimal_fiber_length>
+			<tendon_slack_length>0.039000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPERI">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.139600000000 0.000300000000 -0.023500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.119300000000 -0.027600000000 -0.065700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014800000000 -0.003600000000 -0.043700000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>296.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.026000000000</optimal_fiber_length>
+			<tendon_slack_length>0.115000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LVASMED">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.014000000000 -0.209900000000 -0.018800000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.035600000000 -0.276900000000 -0.000900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.037000000000 -0.404800000000 0.012500000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.209862237482</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.027400000000 -0.425500000000 0.013100000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.780061304109</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.006300000000 0.044500000000 0.017000000000</location>
+					<body>l_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1294.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.089000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LVASINT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.029000000000 -0.192400000000 -0.031000000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.033500000000 -0.208400000000 -0.028500000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.034300000000 -0.403000000000 -0.005500000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.419999879423</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.005800000000 0.048000000000 0.000600000000</location>
+					<body>l_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1365.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.136000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LVASLAT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.004800000000 -0.185400000000 -0.034900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.026900000000 -0.259100000000 -0.040900000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.036100000000 -0.403000000000 -0.020500000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.209862237482</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.025300000000 -0.424300000000 -0.018400000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-2.617993877991 -1.919862177194</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.010300000000 0.042300000000 -0.014100000000</location>
+					<body>l_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1871.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.157000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LMEDGAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.012700000000 -0.392900000000 0.023500000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.023900000000 -0.402200000000 0.025800000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-0.770039265980 0.100007366139</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.021700000000 -0.048700000000 0.029500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 0.005300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1113.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.045000000000</optimal_fiber_length>
+			<tendon_slack_length>0.408000000000</tendon_slack_length>
+			<pennation_angle>0.296705972839</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LLATGAS">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015500000000 -0.394600000000 -0.027200000000</location>
+					<body>l_femur</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.025400000000 -0.401800000000 -0.027400000000</location>
+					<body>l_femur</body>
+					<coordinate>l_knee_angle</coordinate>
+					<range>-0.770039265980 0.100007366139</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.024200000000 -0.048100000000 -0.023500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 0.005300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>488.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064000000000</optimal_fiber_length>
+			<tendon_slack_length>0.385000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LSOL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 -0.007100000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 0.005300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2839.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.030000000000</optimal_fiber_length>
+			<tendon_slack_length>0.268000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LSOLSTIF">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 -0.007100000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.004400000000 0.031000000000 0.005300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2839.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.030000000000</optimal_fiber_length>
+			<tendon_slack_length>0.268000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+			<tendon_force_length_curve>
+				<natCubicSpline>
+					<x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 1.080000000000 2.570000000000 4.350000000000 6.520000000000 9.150000000000 12.300000000000 16.100000000000 20.800000000000 22.700000000000 34500.000000000000 34500.000000000000 34500.000000000000 34500.000000000000 </y>
+				</natCubicSpline>
+			</tendon_force_length_curve>
+		</SimmZajacHill>
+		<SimmZajacHill name="LTIBPOST">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 -0.001900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.405100000000 0.022900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.041700000000 0.033400000000 0.028600000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.077200000000 0.015900000000 0.028100000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LFLEXDIG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.008300000000 -0.204600000000 0.001800000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.405100000000 0.019600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043600000000 0.031500000000 0.028000000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070800000000 0.017600000000 0.026300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.165800000000 -0.008100000000 -0.011600000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.001900000000 -0.007800000000 -0.014700000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028500000000 -0.007100000000 -0.021500000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044100000000 -0.006000000000 -0.024200000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>310.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.034000000000</optimal_fiber_length>
+			<tendon_slack_length>0.400000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LFLEXHAL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007900000000 -0.233400000000 -0.024400000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018600000000 -0.407900000000 0.017400000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.037400000000 0.027600000000 0.024100000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.103800000000 0.006800000000 0.025600000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.172600000000 -0.005300000000 0.026900000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.015500000000 -0.006400000000 0.026500000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056200000000 -0.010200000000 0.018100000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>322.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.043000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LTIBANT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.017900000000 -0.162400000000 -0.011500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032900000000 -0.395100000000 0.017700000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.116600000000 0.017800000000 0.030500000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>603.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.098000000000</optimal_fiber_length>
+			<tendon_slack_length>0.223000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPERBREV">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007000000000 -0.264600000000 -0.032500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019800000000 -0.418400000000 -0.028300000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.429500000000 -0.028900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.047100000000 0.027000000000 -0.023300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.067700000000 0.021900000000 -0.034300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>348.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.161000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPERLONG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.000500000000 -0.156800000000 -0.036200000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.020700000000 -0.420500000000 -0.028600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.016200000000 -0.431900000000 -0.028900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043800000000 0.023000000000 -0.022100000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.068100000000 0.010600000000 -0.028400000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085200000000 0.006900000000 -0.011800000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.120300000000 0.008500000000 0.018400000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>754.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.049000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LPERTERT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001000000000 -0.280400000000 -0.023100000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.022900000000 -0.406900000000 -0.015900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085700000000 0.022800000000 -0.029900000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>90.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.079000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.226892802759</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LEXTDIG">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.003200000000 -0.138100000000 -0.027600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028900000000 -0.400700000000 -0.007200000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.092200000000 0.038800000000 0.000100000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.161600000000 0.005500000000 -0.013000000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000300000000 0.004700000000 -0.015300000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044300000000 -0.000400000000 -0.025000000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>341.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.102000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LEXTHAL">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001200000000 -0.176700000000 -0.022800000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032600000000 -0.398500000000 0.008500000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.097000000000 0.038900000000 0.021100000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.129300000000 0.030900000000 0.025700000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.173400000000 0.013900000000 0.028000000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029800000000 0.004100000000 0.024500000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056300000000 0.003400000000 0.018600000000</location>
+					<body>l_toes</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>108.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.111000000000</optimal_fiber_length>
+			<tendon_slack_length>0.305000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LLIGPAT">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.039000000000 -0.082200000000 0.000000000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002100000000 0.001500000000 -0.000100000000</location>
+					<body>l_patella</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>100.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.005000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="LTPOST2">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 -0.001900000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006300000000 -0.350500000000 -0.014600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.016500000000 -0.390400000000 -0.017600000000</location>
+					<body>l_tibia</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.091200000000 0.046300000000 -0.008600000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.105000000000 0.032500000000 -0.009300000000</location>
+					<body>l_calcaneus</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+		</SimmZajacHill>
+	</objects>
+	</ActuatorSet>
+	<DynamicsEngine>
+		<SimmKinematicsEngine>
+			<gravity>0.0 -9.80665 0.0</gravity>
+			<MarkerSet>
+				<objects>
+				</objects>
+			</MarkerSet>
+			<BodySet>
+			<objects>
+				<SimmBody name="world">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="pelvis">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> pelvis.vtp sacrum.vtp l_pelvis.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_femur">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> femur.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_tibia">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> tibia.vtp fibula.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_patella">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> pat.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_talus">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> talus.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_calcaneus">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> foot.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="r_toes">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> bofoot.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_femur">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_femur.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_tibia">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_tibia.vtp l_fibula.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_patella">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_pat.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_talus">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_talus.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_calcaneus">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_foot.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="l_toes">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+					<VisibleObject name="">
+						<geometry_files> l_bofoot.vtp </geometry_files>
+					</VisibleObject>
+				</SimmBody>
+			</objects>
+			</BodySet>
+			<CoordinateSet>
+			<objects>
+				<SimmCoordinate name="rZ">
+					<range>-3.141592653590 3.141592653590</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="rX">
+					<range>-3.141592653590 3.141592653590</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="rY">
+					<range>-3.141592653590 3.141592653590</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_hip_flexion">
+					<range>-0.191986217719 1.658062789395</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_hip_adduction">
+					<range>-0.872664625997 0.261799387799</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_hip_rotation">
+					<range>-0.349065850399 0.349065850399</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_knee_angle">
+					<range>-2.094395102393 0.000000000000</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_ankle_angle">
+					<range>-0.523598775598 0.523598775598</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_subt_angle">
+					<range>-0.349065850399 0.349065850399</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="r_mtp_angle">
+					<range>-0.523598775598 0.523598775598</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_hip_flexion">
+					<range>-0.191986217719 1.658062789395</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_hip_adduction">
+					<range>-0.872664625997 0.261799387799</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_hip_rotation">
+					<range>-0.349065850399 0.349065850399</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_knee_angle">
+					<range>-2.094395102393 0.000000000000</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_ankle_angle">
+					<range>-0.523598775598 0.523598775598</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_subt_angle">
+					<range>-0.349065850399 0.349065850399</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+				<SimmCoordinate name="l_mtp_angle">
+					<range>-0.523598775598 0.523598775598</range>
+					<default_value>0.000000000000</default_value>
+					<tolerance>0.000000000000</tolerance>
+					<stiffness>0.000000000000</stiffness>
+					<clamped>true</clamped>
+					<locked>false</locked>
+					<restraint_active>false</restraint_active>
+				</SimmCoordinate>
+			</objects>
+			</CoordinateSet>
+			<JointSet>
+			<objects>
+				<SimmJoint name="pelvis">
+					<bodies>world pelvis</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>rZ</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<coordinate>rX</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<coordinate>rY</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_hip">
+					<bodies>pelvis r_femur</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>-0.070700000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.066100000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.083500000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>r_hip_flexion</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<coordinate>r_hip_adduction</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<coordinate>r_hip_rotation</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_femur-tibia">
+					<bodies>r_femur r_tibia</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.745329251994 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>-0.003200000000 0.001790000000 0.004110000000 0.004100000000 0.002120000000 -0.001000000000 -0.003100000000 -0.005250000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.221730476396 -0.523598775598 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>-0.422600000000 -0.408200000000 -0.399000000000 -0.397600000000 -0.396600000000 -0.396000000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_tibia-patella">
+					<bodies>r_tibia r_patella</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>0.017300000000 0.032400000000 0.038100000000 0.043000000000 0.046900000000 0.048400000000 0.049600000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.570796326795 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.004991641661 </x>
+									<y>-0.021900000000 -0.020200000000 -0.020000000000 -0.020400000000 -0.021100000000 -0.021900000000 -0.022300000000 -0.022700000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.002400000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>r_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.999972789860 -1.457524458340 -0.526391302401 0.027925268032 0.174532925199 </x>
+									<y>0.308050612977 0.308050612977 0.306305283725 0.270176968209 -0.037000980142 -0.279950812020 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_ankle">
+					<bodies>r_tibia r_talus</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.430000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>-0.104529403876 -0.173649009691 0.979244415434</axis>
+							<coordinate>r_ankle_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_subtalar">
+					<bodies>r_talus r_calcaneus</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>-0.048770000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.041950000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.007920000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.787179606862 0.604747457256 -0.120949491451</axis>
+							<coordinate>r_subt_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="r_mtp">
+					<bodies>r_calcaneus r_toes</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>0.178800000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.002000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.001080000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.580821885781 0.000000000000 -0.814030673254</axis>
+							<coordinate>r_mtp_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_hip">
+					<bodies>pelvis l_femur</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>-0.070700000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.066100000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>-0.083500000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>l_hip_flexion</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<coordinate>l_hip_adduction</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>6.283185307179 -6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<coordinate>l_hip_rotation</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>6.283185307179 -6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_femur-tibia">
+					<bodies>l_femur l_tibia</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.745329251994 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>-0.003200000000 0.001790000000 0.004110000000 0.004100000000 0.002120000000 -0.001000000000 -0.003100000000 -0.005250000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.221730476396 -0.523598775598 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>-0.422600000000 -0.408200000000 -0.399000000000 -0.397600000000 -0.396600000000 -0.396000000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>-6.283185307179 6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_tibia-patella">
+					<bodies>l_tibia l_patella</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.000000000000 </x>
+									<y>0.017300000000 0.032400000000 0.038100000000 0.043000000000 0.046900000000 0.048400000000 0.049600000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.570796326795 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.004991641661 </x>
+									<y>-0.021900000000 -0.020200000000 -0.020000000000 -0.020400000000 -0.021100000000 -0.021900000000 -0.022300000000 -0.022700000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>-0.002400000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<coordinate>l_knee_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-2.094395102393 -1.999972789860 -1.457524458340 -0.526391302401 0.027925268032 0.174532925199 </x>
+									<y>0.308050612977 0.308050612977 0.306305283725 0.270176968209 -0.037000980142 -0.279950812020 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_ankle">
+					<bodies>l_tibia l_talus</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.430000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>-0.104529403876 -0.173649009691 -0.979244415434</axis>
+							<coordinate>l_ankle_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>6.283185307179 -6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_subtalar">
+					<bodies>l_talus l_calcaneus</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>-0.048770000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.041950000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>-0.007920000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.787179606862 0.604747457256 0.120949491451</axis>
+							<coordinate>l_subt_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>6.283185307179 -6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+				<SimmJoint name="l_mtp">
+					<bodies>l_calcaneus l_toes</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<Value>
+								<Constant>
+									<value>0.178800000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>-0.002000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>-0.001080000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>0.580821885781 0.000000000000 0.814030673254</axis>
+							<coordinate>l_mtp_angle</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-6.283185307179 6.283185307179 </x>
+									<y>6.283185307179 -6.283185307179 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
+			</objects>
+			</JointSet>
+		</SimmKinematicsEngine>
+	</DynamicsEngine>
+</Model>
