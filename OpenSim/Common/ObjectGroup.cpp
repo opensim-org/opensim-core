@@ -238,8 +238,8 @@ void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
  */
 void ObjectGroup::setup(ArrayPtrs<Object>& aObjects)
 {
-	int i;
-	for (i=0; i<_memberNames.getSize();) {
+	_memberObjects.setSize(0); // clear existing contents
+	for (int i=0; i<_memberNames.getSize();) {
 		Object* obj = aObjects.get(_memberNames.get(i));
 		if (obj != NULL) {
 			_memberObjects.insert(i, obj);
