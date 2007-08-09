@@ -178,7 +178,7 @@ using namespace OpenSim;
  
   public int hashCode() {
      if (cacheId==-1)
-        cacheId=getName().hashCode()+10000 * getType().hashCode();
+        cacheId=(int)swigCPtr;
      
     return( cacheId );
   }
