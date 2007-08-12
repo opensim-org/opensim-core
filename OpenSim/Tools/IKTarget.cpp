@@ -101,8 +101,10 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 	}
 
 	// Tally the square of the errors from markers
-	double totalErrorSquared = 0.0;
-	double maxMarkerError = 0.0, maxCoordinateError = 0.0; // these are the max weighted errors
+	double totalWeightedSquaredErrors = 0.0;
+	double totalMarkerSquaredErrors = 0.0;
+	double totalCoordinateSquaredErrors = 0.0;
+	double maxMarkerError = 0.0, maxCoordinateError = 0.0; // these are the max unweighted errors
 	int worstMarker = -1, worstCoordinate = -1;
 
 	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
@@ -111,28 +113,29 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 	for (int i = 0; i < _markers.getSize(); i++)
 	{
 		if(!_markers[i]->validExperimentalPosition) continue;
-		double markerError = 0.0;
-		double globalPos[3];
 
 		// Get marker offset in local frame
 		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
 
 		// transform local marker to world frame
+		double globalPos[3];
 		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
 
-		double err = 0.0;
+		double markerError = 0.0;
 		for (int j = 0; j < 3; j++)
 		{
-			err = _markers[i]->experimentalPosition[j] - globalPos[j];
+			double err = _markers[i]->experimentalPosition[j] - globalPos[j];
 			markerError += (err * err);
 		}
-		markerError *= _markers[i]->weight;
+
+		totalMarkerSquaredErrors += markerError;
 		if (markerError > maxMarkerError)
 		{
 			maxMarkerError = markerError;
 			worstMarker = i;
 		}
-		totalErrorSquared += markerError;
+
+		totalWeightedSquaredErrors += _markers[i]->weight * markerError;
 
 		if (debug)
 			cout << _markers[i]->marker->getName() << " w = " << _markers[i]->weight 
@@ -145,13 +148,16 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 		double experimentalValue = _unprescribedWeightedQs[i]->experimentalValue;
 		double computedValue = _unprescribedWeightedQs[i]->coord->getValue();
 		double err = experimentalValue - computedValue;
-		double coordinateError = _unprescribedWeightedQs[i]->weight * err * err;
+		double coordinateError = err * err;
+
+		totalCoordinateSquaredErrors += coordinateError;
 		if (coordinateError > maxCoordinateError)
 		{
 			maxCoordinateError = coordinateError;
 			worstCoordinate = i;
 		}
-		totalErrorSquared += coordinateError;
+
+		totalWeightedSquaredErrors += _unprescribedWeightedQs[i]->weight * coordinateError;
 
 		if (debug)
 			cout << _unprescribedWeightedQs[i]->coord->getName() << " w = " << _unprescribedWeightedQs[i]->weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
@@ -159,11 +165,15 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 
 	if (_printPerformanceValues || (!calcDerivs && debug))
 	{
-		cout << "total error = " << totalErrorSquared;
-		if (worstMarker >= 0)
-			cout << ", worst marker " << _markers[worstMarker]->marker->getName() << " (" << maxMarkerError << " " << _model.getLengthUnits().getAbbreviation() << ")";
-		if (worstCoordinate >= 0)
-			cout << ", worst coordinate " << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << " (" << maxCoordinateError << ")";
+		cout << "total weighted squared error = " << totalWeightedSquaredErrors;
+		if(totalMarkerSquaredErrors>0) {
+			cout << ", marker error: RMS=" << sqrt(totalMarkerSquaredErrors/_markers.getSize());
+			if (worstMarker >= 0) cout << ", max=" << sqrt(maxMarkerError) << " (" << _markers[worstMarker]->marker->getName() << ")";
+		}
+		if(totalCoordinateSquaredErrors>0) {
+			cout << ", coord error: RMS=" << sqrt(totalCoordinateSquaredErrors/_unprescribedWeightedQs.getSize());
+			if (worstCoordinate >= 0) cout << ", max=" << sqrt(maxCoordinateError) << " (" << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << ")";
+		}
 		cout << endl;
 		setErrorReportingQuantities(
 			maxMarkerError, 
@@ -172,7 +182,7 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 			(worstCoordinate<0)?"":_unprescribedWeightedQs[worstCoordinate]->coord->getName());
 	}
 
-	f = totalErrorSquared;
+	f = totalWeightedSquaredErrors;
 
 	return 0;
 }
