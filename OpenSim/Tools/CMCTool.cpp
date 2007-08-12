@@ -984,21 +984,29 @@ void CMCTool::
 addNecessaryAnalyses()
 {
 	int stepInterval = 1;
-	int index;
-	if((index=_model->getAnalysisSet()->getIndex("Actuation"))==-1) {
+	AnalysisSet *as = _model->getAnalysisSet();
+	// Add Actuation if necessary
+	Actuation *act = NULL;
+	for(int i=0; i<as->getSize(); i++) 
+		if(as->get(i)->getType() == "Actuation") { act = (Actuation*)as->get(i); break; }
+	if(!act) {
 		std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
-		Actuation *actuation = new Actuation(_model);
-		actuation->setStepInterval(stepInterval);
-		_model->addAnalysis(actuation);
+		act = new Actuation(_model);
+		act->setStepInterval(stepInterval);
+		_model->addAnalysis(act);
 	}
-	if((index=_model->getAnalysisSet()->getIndex("Kinematics"))==-1) {
+	// Add Kinematics if necessary
+	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
+	Kinematics *kin = NULL;
+	for(int i=0; i<as->getSize(); i++) 
+		if(as->get(i)->getType() == "Kinematics" && as->get(i)->getPrintResultFiles()) { kin = (Kinematics*)as->get(i); break; }
+	if(!kin) {
 		std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
-		Kinematics *kin = new Kinematics(_model);
+		kin = new Kinematics(_model);
 		kin->setStepInterval(stepInterval);
 		kin->getPositionStorage()->setWriteSIMMHeader(true);
 		_model->addAnalysis(kin);
 	} else {
-		Kinematics *kin = (Kinematics*)_model->getAnalysisSet()->get(index);
 		kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
 }
