@@ -820,8 +820,8 @@ bool CMCTool::run()
 		// Set the model's actuator set back to the original set.  e.g. in RRA1
 		// we load the model but replace its (muscle) actuators with torque actuators.
 		// So we need to put back the muscles before writing out the adjusted model.
-		_model->getActuatorSet()->setSize(0);
-		_model->getActuatorSet()->append(_originalActuatorSet);
+		// NOTE: use operator= so actuator groups are properly copied over
+		*_model->getActuatorSet() = _originalActuatorSet;
 
 		_model->print(_outputModelFile);
 	}
