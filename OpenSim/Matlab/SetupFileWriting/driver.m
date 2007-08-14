@@ -558,9 +558,9 @@ if RUN_CODE_BLOCK_DE3_FAST_WALK1
     fxOptimalForceCMC = '100.0';
     fyOptimalForceCMC = '200.0';
     fzOptimalForceCMC = '100.0';
-    mxOptimalForceCMC = '80.0';
-    myOptimalForceCMC = '80.0';
-    mzOptimalForceCMC = '80.0';
+    mxOptimalForceCMC = '200.0';
+    myOptimalForceCMC = '200.0';
+    mzOptimalForceCMC = '200.0';
     cmcOptimizerAlgorithm = 'cfsqp';
     idResultsDirectory = './ResultsCMC';
     specialSettings = { subjectMass subjectHeight femurScaleFactor tibiaScaleFactor fxMinControlConstraintRRA2 ...
