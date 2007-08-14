@@ -164,13 +164,22 @@ getModel()
 void AnalysisSet::
 setOn(bool aTrueFalse)
 {
-	int i;
-	Callback *callback;
-	for(i=0;i<getSize();i++) {
-		callback = get(i);
-		if(callback==NULL) continue;
-		callback->setOn(aTrueFalse);
-	}
+	for(int i=0;i<getSize();i++) if(get(i)) get(i)->setOn(aTrueFalse);
+}
+
+void AnalysisSet::
+setOn(const Array<bool> &aOn) 
+{
+	if(aOn.getSize()!=getSize()) throw Exception("AnalysisSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
+	for(int i=0; i<getSize(); i++) if(get(i)) get(i)->setOn(aOn[i]);
+}
+
+Array<bool> AnalysisSet::
+getOn() const
+{
+	Array<bool> on(false,getSize());
+	for(int i=0; i<getSize(); i++) if(get(i)) on[i] = get(i)->getOn();
+	return on;
 }
 
 

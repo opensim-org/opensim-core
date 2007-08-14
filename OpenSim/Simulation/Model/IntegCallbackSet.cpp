@@ -117,14 +117,24 @@ getModel()
 void IntegCallbackSet::
 setOn(bool aTrueFalse)
 {
-	int i;
-	Callback *callback;
-	for(i=0;i<getSize();i++) {
-		callback = get(i);
-		if(callback==NULL) continue;
-		callback->setOn(aTrueFalse);
-	}
+	for(int i=0;i<getSize();i++) if(get(i)) get(i)->setOn(aTrueFalse);
 }
+
+void IntegCallbackSet::
+setOn(const Array<bool> &aOn) 
+{
+	if(aOn.getSize()!=getSize()) throw Exception("IntegCallbackSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
+	for(int i=0; i<getSize(); i++) if(get(i)) get(i)->setOn(aOn[i]);
+}
+
+Array<bool> IntegCallbackSet::
+getOn() const
+{
+	Array<bool> on(false,getSize());
+	for(int i=0; i<getSize(); i++) if(get(i)) on[i] = get(i)->getOn();
+	return on;
+}
+
 //-----------------------------------------------------------------------------
 // INTEGRATION CALLBACK
 //-----------------------------------------------------------------------------

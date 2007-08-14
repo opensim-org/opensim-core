@@ -81,6 +81,8 @@ public:
 	void setModel(Model *aModel);
 	Model* getModel();
 	void setOn(bool aTrueFalse);
+	void setOn(const Array<bool> &aOn);
+	Array<bool> getOn() const;
 	IntegCallback* getIntegCallback(int aIndex) const;
 
 	//--------------------------------------------------------------------------
