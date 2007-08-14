@@ -45,9 +45,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	cout<<"\n-------------------------------------------------------\n";
-	cout<<"Library SdfastEngine...\n";
-	cout<<"-------------------------------------------------------\n\n";
+	cout<<"\n-------------------------------------------------------"<<endl;
+	cout<<"Library SdfastEngine..."<<endl;
+	cout<<"-------------------------------------------------------"<<endl<<endl;
 }
 
 static void Plugin_Detach()

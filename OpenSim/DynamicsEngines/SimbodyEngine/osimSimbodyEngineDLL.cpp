@@ -45,9 +45,9 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	cout<<"\n-------------------------------------------------------\n";
-	cout<<"Library SimbodyEngine...\n";
-	cout<<"-------------------------------------------------------\n\n";
+	cout<<"\n-------------------------------------------------------"<<endl;
+	cout<<"Library SimbodyEngine..."<<endl;
+	cout<<"-------------------------------------------------------"<<endl<<endl;
 }
 
 static void Plugin_Detach()
@@ -74,13 +74,15 @@ BOOL APIENTRY DllMain( HANDLE hModule,
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
-		case DLL_THREAD_ATTACH:
 			Plugin_Attach();
 			break;
 
 		case DLL_PROCESS_DETACH:
-		case DLL_THREAD_DETACH:
 			Plugin_Detach();
+			break;
+
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
 			break;
     }
 
