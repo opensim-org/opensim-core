@@ -117,8 +117,8 @@
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/Actuators/Torque.h>
-#include <OpenSim/Actuators/SimmDarrylMuscle.h>
-#include <OpenSim/Actuators/SimmZajacHill.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
 
 #include <OpenSim/Tools/IKTrial.h>
 #include <OpenSim/Tools/IKTrialSet.h>
@@ -451,8 +451,8 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/Force.h>
 %include <OpenSim/Simulation/Model/GeneralizedForce.h>
 %include <OpenSim/Actuators/Torque.h>
-%include <OpenSim/Actuators/SimmDarrylMuscle.h>
-%include <OpenSim/Actuators/SimmZajacHill.h>
+%include <OpenSim/Actuators/Thelen2003Muscle.h>
+%include <OpenSim/Actuators/Schutte1993Muscle.h>
 
 %include <OpenSim/Common/SimmPoint.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>

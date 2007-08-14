@@ -1,7 +1,8 @@
-#ifndef __SimmDarrylMuscle_h__
-#define __SimmDarrylMuscle_h__
+#ifndef __Schutte1993Muscle_h__
+#define __Schutte1993Muscle_h__
 
-// SimmDarrylMuscle.h
+// Schutte1993Muscle.h
+// Author: Peter Loan
 /*
  * Copyright (c) 2006, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -26,8 +27,11 @@
 
 
 // INCLUDE
+#include <iostream>
+#include <math.h>
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
@@ -51,13 +55,22 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API SimmDarrylMuscle : public AbstractMuscle  
+class OSIMACTUATORS_API Schutte1993Muscle : public AbstractMuscle  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
+	PropertyDbl _timeScaleProp;
+	double &_timeScale;
+
+	PropertyDbl _activation1Prop;
+	double &_activation1;
+
+	PropertyDbl _activation2Prop;
+	double &_activation2;
+
 	PropertyDbl _maxIsometricForceProp;
 	double &_maxIsometricForce;
 
@@ -70,49 +83,23 @@ protected:
 	PropertyDbl _pennationAngleProp;
 	double &_pennationAngle;
 
-	/** Activation time constant */  
-	PropertyDbl _activationTimeConstantProp;
-	double &_activationTimeConstant;
+	PropertyDbl _maxContractionVelocityProp;
+	double &_maxContractionVelocity;
 
-	/** Deactivation time constant */
-	PropertyDbl _deactivationTimeConstantProp;
-	double &_deactivationTimeConstant;
-
-	/** Max contraction velocity full activation in fiber lengths per second */
-	PropertyDbl _vmaxProp;
-	double &_vmax;
-
-	/** Max contraction velocity at low activation */
-	PropertyDbl _vmax0Prop;
-	double &_vmax0;
-
-	/** Tendon strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxTendonStrainProp;
-	double &_fmaxTendonStrain;
-
-	/** Passive muscle strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxMuscleStrainProp;
-	double &_fmaxMuscleStrain;
-
-	/** Shape factor for Gaussian active muscle force-length relationship */
-	PropertyDbl _kShapeActiveProp;
-	double &_kShapeActive;
-
-	/** Exponential shape factor for passive force-length relationship */
-	PropertyDbl _kShapePassiveProp;
-	double &_kShapePassive;
-
-	/** Passive damping included in the force-velocity relationship */
 	PropertyDbl _dampingProp;
 	double &_damping;
 
-	/** Force-velocity shape factor */
-	PropertyDbl _afProp;
-	double &_af;
+	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
+	Function *&_tendonForceLengthCurve;
 
-	/** Maximum normalized lengthening force */
-	PropertyDbl _flenProp;
-	double &_flen;
+	PropertyObjPtr<Function> _activeForceLengthCurveProp;
+	Function *&_activeForceLengthCurve;
+
+	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
+	Function *&_passiveForceLengthCurve;
+
+	PropertyObjPtr<Function> _forceVelocityCurveProp;
+	Function *&_forceVelocityCurve;
 
 	// Muscle controls
 	double _excitation;
@@ -138,15 +125,15 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmDarrylMuscle();
-	SimmDarrylMuscle(const SimmDarrylMuscle &aMuscle);
-	virtual ~SimmDarrylMuscle();
+	Schutte1993Muscle();
+	Schutte1993Muscle(const Schutte1993Muscle &aMuscle);
+	virtual ~Schutte1993Muscle();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	SimmDarrylMuscle& operator=(const SimmDarrylMuscle &aMuscle);
+	Schutte1993Muscle& operator=(const Schutte1993Muscle &aMuscle);
 #endif
-   void copyData(const SimmDarrylMuscle &aMuscle);
+   void copyData(const Schutte1993Muscle &aMuscle);
 	virtual void copyPropertyValues(AbstractActuator& aActuator);
 
 	//--------------------------------------------------------------------------
@@ -157,55 +144,50 @@ public:
 	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
 	virtual double getTendonSlackLength() { return _tendonSlackLength; }
 	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
-	virtual double getActivationTimeConstant() { return _activationTimeConstant; }
-	virtual double getDeactivationTimeConstant() { return _deactivationTimeConstant; }
-	virtual double getVmax() { return _vmax; }
-	virtual double getVmax0() { return _vmax0; }
-	virtual double getFmaxTendonStrain() { return _fmaxTendonStrain; }
-	virtual double getFmaxMuscleStrain() { return _fmaxMuscleStrain; }
-	virtual double getKshapeActive() { return _kShapeActive; }
-	virtual double getKshapePassive() { return _kShapePassive; }
+	virtual double getMaxContractionVelocity() { return _maxContractionVelocity; }
+	virtual double getTimeScale() { return _timeScale; }
 	virtual double getDamping() { return _damping; }
-	virtual double getAf() { return _af; }
-	virtual double getFlen() { return _flen; }
 	// Computed quantities
 	virtual double getPennationAngle();
 	virtual double getFiberLength();
 	virtual double getNormalizedFiberLength();
 	virtual double getPassiveFiberForce();
-	virtual double getStress() const;
 
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
+	// COMPUTATION
 	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(double rDYDT[]);
 	virtual void computeEquilibrium();
 	virtual void computeActuation();
-	double calcTendonForce(double aNormTendonLength) const;
-	double calcPassiveForce(double aNormFiberLength) const;
-	double calcActiveForce(double aNormFiberLength) const;
-	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	double computeIsometricForce(double activation);
 
-	//--------------------------------------------------------------------------
-	// SCALE
-	//--------------------------------------------------------------------------
 	virtual void postScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void setup(Model* aModel);
 
-	OPENSIM_DECLARE_DERIVED(SimmDarrylMuscle, AbstractActuator);
+	virtual Function* getActiveForceLengthCurve() const;
+	virtual Function* getPassiveForceLengthCurve() const;
+	virtual Function* getTendonForceLengthCurve() const;
+	virtual Function* getForceVelocityCurve() const;
+
+	double calcNonzeroPassiveForce(double aNormFiberLength, double aNormFiberVelocity) const;
+	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+	double calcTendonForce(double aNormTendonLength) const;
+
+	double getStress() const;
+	double computeIsometricForce(double activation);
+
+	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, AbstractActuator);
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class SimmDarrylMuscle
+};	// END of class Schutte1993Muscle
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmDarrylMuscle_h__
+#endif // __Schutte1993Muscle_h__
 
 

@@ -404,16 +404,16 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms, int angleUnits)
 	{
 		MuscleStruct* m = &ms->muscle[i];
 
-		// For now, model = 9 and map to SimmDarrylMuscle.
-		// All other values map to SimmZajacHill. Eventually, each model
+		// For now, model = 9 and map to Thelen2003Muscle.
+		// All other values map to Schutte1993Muscle. Eventually, each model
 		// index should map to a distinct muscle class in OpenSim,
 		// especially model = 7, which is a ligament model.
 		if (m->muscle_model_index == NULL || *m->muscle_model_index == 4)
-			strcpy(muscleClassName, "SimmZajacHill");
+			strcpy(muscleClassName, "Schutte1993Muscle");
 		else if (*m->muscle_model_index == 9)
-			strcpy(muscleClassName, "SimmDarrylMuscle");
-		else{	// Warn about unsupported but use SimmZajacHill
-			strcpy(muscleClassName, "SimmZajacHill");
+			strcpy(muscleClassName, "Thelen2003Muscle");
+		else{	// Warn about unsupported but use Schutte1993Muscle
+			strcpy(muscleClassName, "Schutte1993Muscle");
 		    printf("Warning: muscle %s has unsupported muscle model %d.\n", m->name, *m->muscle_model_index);
 		}
 		write_xml_muscle(fp, ms, m, muscleClassName, angleUnits, 0);
@@ -973,8 +973,8 @@ void write_xml_defaults(FILE* fp, ModelStruct* ms, int angleUnits)
 	fprintf(fp, "\t<defaults>\n");
 	// We need to write a default muscle for all supported types of muscles (since
 	// the default mechanism works by matching class names)
-	write_xml_muscle(fp, ms, &ms->default_muscle, "SimmZajacHill", angleUnits, 1);
-	write_xml_muscle(fp, ms, &ms->default_muscle, "SimmDarrylMuscle", angleUnits, 1);
+	write_xml_muscle(fp, ms, &ms->default_muscle, "Schutte1993Muscle", angleUnits, 1);
+	write_xml_muscle(fp, ms, &ms->default_muscle, "Thelen2003Muscle", angleUnits, 1);
 	fprintf(fp, "\t</defaults>\n");
 }
 

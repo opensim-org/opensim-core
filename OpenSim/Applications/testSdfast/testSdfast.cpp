@@ -32,7 +32,7 @@
 #include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/DynamicsEngines/SdfastEngine/SdfastEngine.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/Actuators/SimmZajacHill.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 	Object::RegisterType(SimmKinematicsEngine());
 	SimmKinematicsEngine::registerTypes();
 
-	Object::RegisterType(SimmZajacHill());
-	//SimmZajacHill::registerTypes();
+	Object::RegisterType(Schutte1993Muscle());
+	//Schutte1993Muscle::registerTypes();
 
 	try {
 			// Construct the model with the SimmKinematicsEngine

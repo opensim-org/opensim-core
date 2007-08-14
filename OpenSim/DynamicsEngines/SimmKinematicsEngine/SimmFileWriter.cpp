@@ -39,8 +39,8 @@
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
-#include <OpenSim/Actuators/SimmZajacHill.h>
-#include <OpenSim/Actuators/SimmDarrylMuscle.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include "SimmCoordinate.h"
 #include "SimmRotationDof.h"
 #include "SimmTranslationDof.h"
@@ -703,9 +703,9 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		aStream << endl << "endgroups" << endl;
 	}
 
-	if (dynamic_cast<SimmZajacHill*>(&aMuscle))
+	if (dynamic_cast<Schutte1993Muscle*>(&aMuscle))
 	{
-		SimmZajacHill *szh = dynamic_cast<SimmZajacHill*>(&aMuscle);
+		Schutte1993Muscle *szh = dynamic_cast<Schutte1993Muscle*>(&aMuscle);
 
 		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
@@ -764,9 +764,9 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			}
 		}
 	}
-	else if (dynamic_cast<SimmDarrylMuscle*>(&aMuscle))
+	else if (dynamic_cast<Thelen2003Muscle*>(&aMuscle))
 	{
-		SimmDarrylMuscle *sdm = dynamic_cast<SimmDarrylMuscle*>(&aMuscle);
+		Thelen2003Muscle *sdm = dynamic_cast<Thelen2003Muscle*>(&aMuscle);
 
 		aStream << "max_force " << sdm->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << sdm->getOptimalFiberLength() << endl;

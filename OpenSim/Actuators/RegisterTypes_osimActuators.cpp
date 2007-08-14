@@ -11,8 +11,8 @@
 #include "JointMoment.h"
 #include "LinearSetPoint.h"
 #include "PolynomialSetPoint.h"
-#include "SimmDarrylMuscle.h"
-#include "SimmZajacHill.h"
+#include "Thelen2003Muscle.h"
+#include "Schutte1993Muscle.h"
 #include "Torque.h"
 
 using namespace OpenSim;
@@ -34,8 +34,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( JointMoment() );
 	Object::RegisterType( LinearSetPoint() );
 	Object::RegisterType( PolynomialSetPoint() );
-	Object::RegisterType( SimmDarrylMuscle() );
-	Object::RegisterType( SimmZajacHill() );
+	Object::RegisterType( Thelen2003Muscle() );
+	Object::RegisterType( Schutte1993Muscle() );
 	Object::RegisterType( Torque() );
 
 }
