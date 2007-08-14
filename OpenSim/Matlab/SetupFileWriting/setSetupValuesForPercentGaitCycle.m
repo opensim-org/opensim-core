@@ -7,6 +7,21 @@ function setSetupValuesForPercentGaitCycle( initialPercent, finalPercent, inputD
 %
 
 %
+% 0. Do initial setup steps.
+%
+
+% Copy gait2392.osim file from gait2392 example directory to destination
+% directory, if this file doesn't already exist in the destination
+% directory.
+sourceGenericModelFileName = fullfile( inputDirectory, 'gait2392.osim' );
+destinationGenericModelFileName = fullfile( outputDirectory, 'gait2392.osim' );
+outputDirectoryDoesntExist = ( exist( outputDirectory, 'dir' ) ~= 7 );
+if outputDirectoryDoesntExist
+    mkdir( outputDirectory );
+end
+copyfile( sourceGenericModelFileName, destinationGenericModelFileName );
+
+%
 % 1. Compute initial and final times for the simulation.
 %
 
