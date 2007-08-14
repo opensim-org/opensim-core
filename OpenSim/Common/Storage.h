@@ -233,7 +233,7 @@ public:
 	int findIndex(double aT) const;
 	int findIndex(int aI,double aT) const;
 	void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
-	void resample(const double aDT, const int aDegree);
+	double resample(double aDT, int aDegree);
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

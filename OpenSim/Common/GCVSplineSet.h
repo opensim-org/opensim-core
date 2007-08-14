@@ -69,11 +69,11 @@ public:
 	//--------------------------------------------------------------------------
 	GCVSplineSet();
 	GCVSplineSet(const char *aFileName);
-	GCVSplineSet(int aDegree,Storage *aStore,double aErrorVariance=0.0);
+	GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
 	virtual ~GCVSplineSet();
 private:
 	void setNull();
-	void construct(int aDegree,Storage *aStore,double aErrorVariance);
+	void construct(int aDegree,const Storage *aStore,double aErrorVariance);
 
 	//--------------------------------------------------------------------------
 	// SET AND GET

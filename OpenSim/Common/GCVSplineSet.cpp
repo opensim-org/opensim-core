@@ -95,7 +95,7 @@ GCVSplineSet(const char *aFileName) :
  * @see GCVSpline
  */
 GCVSplineSet::
-GCVSplineSet(int aDegree,Storage *aStore,double aErrorVariance)
+GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
 {
 	setNull();
 	if(aStore==NULL) return;
@@ -133,7 +133,7 @@ setNull()
  * @param aErrorVariance Error variance for the data.
  */
 void GCVSplineSet::
-construct(int aDegree,Storage *aStore,double aErrorVariance)
+construct(int aDegree,const Storage *aStore,double aErrorVariance)
 {
 	if(aStore==NULL) return;
 

@@ -2021,13 +2021,14 @@ void Storage::
 lowpassFIR(int aOrder,double aCutoffFrequency)
 {
 	double dtmin = getMinTimeStep();
+
 	if(dtmin<rdMath::ZERO) {
 		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
 		return;
 	}
 
 	// RESAMPLE
-	resample(dtmin,5);
+	dtmin = resample(dtmin,5);
 	int size = getSize();
 	if(size<(2*aOrder)) {
 		cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
@@ -2131,13 +2132,22 @@ void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFram
  * to Storage columns and resampling
  *
  * @param aDT Time interval between adjacent statevectors.
+ * @return Actual sampling time step (may be clamped)
  */
-void Storage::
-resample(const double aDT, const int aDegree)
+double Storage::
+resample(double aDT, int aDegree)
 {
 	int numDataRows = _storage.getSize();
 
-	if(numDataRows<=1) return;
+	if(numDataRows<=1) return aDT;
+
+	// Limit aDT based on expected number of samples
+	int maxSamples = 100000;
+	if((getLastTime()-getFirstTime())/aDT > maxSamples) {
+		double newDT = (getLastTime()-getFirstTime())/maxSamples;
+		cout<<"Storage.lowpassFIR: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+		aDT = newDT;
+	}
 
 	GCVSplineSet *splineSet = new GCVSplineSet(aDegree,this);
 
@@ -2153,6 +2163,8 @@ resample(const double aDT, const int aDegree)
 
 	delete newStorage;
 	delete splineSet;
+
+	return aDT;
 }
 
 
