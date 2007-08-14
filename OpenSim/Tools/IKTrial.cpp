@@ -320,14 +320,14 @@ bool IKTrial::initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet)
  */
 bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 {
-	cout << endl << "Solving IK trial: " << getName() << endl;
-
-	// Check if trial was initialized
-	if(!_ikSolver) throw Exception("IKTrial.solveTrial: ERR- IKTrial not initialized before solveTrial called",__FILE__,__LINE__);
-
 	bool success = false;
 	try 
 	{
+		// Check if trial was initialized
+		if(!_ikSolver) throw Exception("IKTrial.solveTrial: ERR- IKTrial not initialized before solveTrial called (or initialization failed)",__FILE__,__LINE__);
+
+		cout << endl << "Solving IK trial: " << getName() << endl;
+
 		_ikSolver->solveFrames(*this, *_inputStorage, *_outputStorage);
 		if (_printResultFiles && !_outputMotionFileNameProp.getUseDefault())
 		{
