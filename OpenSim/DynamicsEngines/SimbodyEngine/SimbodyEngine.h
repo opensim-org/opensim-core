@@ -268,7 +268,7 @@ public:
 	// EQUATIONS OF MOTION
 	//--------------------------------------------------------------------------
 	virtual void formMassMatrix(double *rI) {};
-	virtual void formEulerTransform(const AbstractBody &aBody, double *rE) const {};
+	virtual void formEulerTransform(const AbstractBody &aBody, double *rE) const;
 	virtual void formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody=NULL) const {};
 	virtual void formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody=NULL) const {};
 	virtual void formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody=NULL) const {};

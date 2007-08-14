@@ -2003,7 +2003,9 @@ void SimbodyEngine::convertAnglesToQuaternions(Storage *rQStore) const
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
 {
 	Vec3 angs(aE1, aE2, aE3);
-	Rotation (Rotation::updAs(&rDirCos[0][0])).setToBodyFixed123(angs);
+	Rotation aRot; 
+	aRot.setToBodyFixed123(angs);
+	Mat33::updAs(&rDirCos[0][0]) = aRot.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -2017,8 +2019,11 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
 void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const
 {
 	if(rDirCos==NULL) return;
+	
 	Vec3 angs(aE1, aE2, aE3);
-	Rotation (Rotation::updAs(&rDirCos[0])).setToBodyFixed123(angs);
+	Rotation aRot; 
+	aRot.setToBodyFixed123(angs);
+	Mat33::updAs(&rDirCos[0]) = aRot.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -2158,3 +2163,29 @@ resetBodyAndMobilityForceVectors()
 	_mobilityForces = 0.0;
 }
 
+void SimbodyEngine::formEulerTransform(const AbstractBody &aBody, double *rE) const
+{
+	if (&aBody && rE)
+	{
+		// GET ORIENTATION OF aBody
+		double ang[3], dc[3][3];
+
+		getDirectionCosines(aBody, dc);
+		convertDirectionCosinesToAngles(dc, &ang[0], &ang[1], &ang[2]);
+
+		// ROW 1
+		*rE =  cos(ang[2]) / cos(ang[1]);
+		rE++;  *rE = -sin(ang[2]) / cos(ang[1]);
+		rE++;  *rE = 0.0;
+
+		// ROW 2
+		rE++;  *rE = sin(ang[2]);
+		rE++;  *rE = cos(ang[2]);
+		rE++;  *rE = 0.0;
+
+		// ROW 3
+		rE++;  *rE = -cos(ang[2]) * sin(ang[1]) / cos(ang[1]);
+		rE++;  *rE =  sin(ang[1]) * sin(ang[2]) / cos(ang[1]);
+		rE++;  *rE = 1.0;
+	}
+}
