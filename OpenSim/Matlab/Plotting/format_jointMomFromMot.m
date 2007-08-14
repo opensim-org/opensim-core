@@ -106,7 +106,8 @@ end
 % Add legend.
 subplot(nPlotRows, nPlotCols, 3);
 set(gca, 'xlim', [0 1]);
-styles = {'blue', 'red', 'cyan', 'magenta', 'green'};
+styles = {'IK (thick cyan solid), RRA1 (thick cyan dotted), RRA2 (blue solid), CMC (blue dotted)', ...
+          'red', 'cyan', 'magenta', 'green'};
 
 legendString = cell( length(fnames) );
 for i = 1:length(fnames)
@@ -115,7 +116,7 @@ end
 legendString{i+1} = ' ';  
 legendString{i+2} = 'Joint Moments from Inman et al. 1981: green curves';
 legendString{i+3} = 'Joint Moments from Cappozzo et al. 1975: red curves';
-legendString{i+4} = 'Joint Moments from Cappozzo 1983: cyan curves';
+legendString{i+4} = 'Joint Moments from Cappozzo 1983: thin cyan solid curves';
 legendString{i+5} = 'Joint Moments from Crowninshield et al. 1978: yellow curves';
 legendString{i+6} = 'Joint Moments from Patriarco et al. 1981: magenta curves';
 

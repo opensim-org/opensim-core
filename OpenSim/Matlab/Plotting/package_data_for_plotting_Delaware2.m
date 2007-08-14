@@ -9,7 +9,10 @@ grfFile = sprintf('%s_%s.mot', subject, trial);
 frcFile = sprintf('ResultsCMC/%s_%s_Actuation_force.sto', subject, trial);
 statesFile = sprintf('ResultsCMC/%s_%s_states.sto', subject, trial);
 controlsFile = sprintf('ResultsCMC/%s_%s_controls.sto', subject, trial);
-momentsFile = sprintf('ResultsCMC/%s_%s_InverseDynamics_force.sto', subject, trial);
+ikMomentsFile = sprintf('ResultsCMC/%s_%s_ik_InverseDynamics_force.sto', subject, trial);
+rra1MomentsFile = sprintf('ResultsCMC/%s_%s_RRA1_InverseDynamics_force.sto', subject, trial);
+rra2MomentsFile = sprintf('ResultsCMC/%s_%s_RRA2_InverseDynamics_force.sto', subject, trial);
+cmcMomentsFile = sprintf('ResultsCMC/%s_%s_CMC_InverseDynamics_force.sto', subject, trial);
 outFile = sprintf('%s_%s_%s.mot', subject, trial, suffix);
 
 output.labels = {};
@@ -67,11 +70,41 @@ output.data(:,(end+1):(end+length(I))) = interp1(q.data(:,1),q.data(:,I),time);
 time_min = max(time_min, q.data(1,1));
 time_max = min(time_max, q.data(end,1));
 
-disp(sprintf('Processing %s', momentsFile'));
-q = read_motionFile(momentsFile);
+disp(sprintf('Processing %s', ikMomentsFile'));
+q = read_motionFile(ikMomentsFile);
 notI = find_columns_by_label(q.labels, 'time');
 I = setdiff(1:length(q.labels), notI);
-newlabels = strcat(q.labels(I),'_moment');
+newlabels = strcat(q.labels(I),'_ik_moment');
+output.labels = {output.labels{:} newlabels{:}};
+output.data(:,(end+1):(end+length(I))) = interp1(q.data(:,1),q.data(:,I),time);
+time_min = max(time_min, q.data(1,1));
+time_max = min(time_max, q.data(end,1));
+
+disp(sprintf('Processing %s', rra1MomentsFile'));
+q = read_motionFile(rra1MomentsFile);
+notI = find_columns_by_label(q.labels, 'time');
+I = setdiff(1:length(q.labels), notI);
+newlabels = strcat(q.labels(I),'_rra1_moment');
+output.labels = {output.labels{:} newlabels{:}};
+output.data(:,(end+1):(end+length(I))) = interp1(q.data(:,1),q.data(:,I),time);
+time_min = max(time_min, q.data(1,1));
+time_max = min(time_max, q.data(end,1));
+
+disp(sprintf('Processing %s', rra2MomentsFile'));
+q = read_motionFile(rra2MomentsFile);
+notI = find_columns_by_label(q.labels, 'time');
+I = setdiff(1:length(q.labels), notI);
+newlabels = strcat(q.labels(I),'_rra2_moment');
+output.labels = {output.labels{:} newlabels{:}};
+output.data(:,(end+1):(end+length(I))) = interp1(q.data(:,1),q.data(:,I),time);
+time_min = max(time_min, q.data(1,1));
+time_max = min(time_max, q.data(end,1));
+
+disp(sprintf('Processing %s', cmcMomentsFile'));
+q = read_motionFile(cmcMomentsFile);
+notI = find_columns_by_label(q.labels, 'time');
+I = setdiff(1:length(q.labels), notI);
+newlabels = strcat(q.labels(I),'_cmc_moment');
 output.labels = {output.labels{:} newlabels{:}};
 output.data(:,(end+1):(end+length(I))) = interp1(q.data(:,1),q.data(:,I),time);
 time_min = max(time_min, q.data(1,1));

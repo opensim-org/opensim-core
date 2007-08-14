@@ -16,9 +16,9 @@ function [] = overlay_jointMomentsFromMot(q, qPlotLabel, time, fileNum)
 
 
 % Specify attributes of subplots.
-pLineStyle = {'-', ':', '--', '-.', '-'};                       
-pLineWidth = 1.25;                  
-pLineColor = {'b', 'r', 'c', 'm', 'g'};
+pLineStyle = {'-', ':', '-', ':', '--'};                       
+pLineWidth = {2, 2, 1.25, 1.25, 1.25};                  
+pLineColor = {'c', 'c', 'b', 'b', 'b'};
 
 % Get data corresponding to plot label.
 if isempty(qPlotLabel)
@@ -33,7 +33,7 @@ else
         hold on;
         p = plot(time, data);
         set(p, 'LineStyle', pLineStyle{curveNum}, 'LineWidth', ...
-                pLineWidth, 'Color', pLineColor{fileNum});
+                pLineWidth{curveNum}, 'Color', pLineColor{curveNum});
     end    
 end
 return;

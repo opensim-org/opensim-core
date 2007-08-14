@@ -34,7 +34,7 @@ ss.limb = trial.limb;
 
 % joint angles
 fnames = {sprintf('%s_%s_ik.mot', subject, ss.trial)
-		  sprintf('Results/%s_%s_RRA2_Kinematics_q.mot', subject, ss.trial)};
+		  sprintf('ResultsCMC/%s_%s_Kinematics_q.mot', subject, ss.trial)};
 fnameMeasured = sprintf('%s_%s.mot', subject, ss.trial);
 figHandleArray = 1:3;
 compare_jntanglesFromMot(subject, fnames, fnameMeasured, ss, figHandleArray, ref_dataFormatDelaware);
@@ -49,7 +49,8 @@ clear fnames fnameMeasured;
 
 % muscle excitations, activations, and forces; actuator forces; joint moments
 fnames = {sprintf('%s_%s_packaged.mot', subject, ss.trial)};
-fnameMeasured = sprintf('%s%s_%sEmgEnv.mot', datadir, subject, ss.trial);
+%fnameMeasured = sprintf('%s%s_%sEmgEnv.mot', datadir, subject, ss.trial);
+fnameMeasured = {};
 figHandleArray = 10:18;
 compare_muscleActFromMotDirectOverlay(subject, fnames, fnameMeasured, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 20:28;

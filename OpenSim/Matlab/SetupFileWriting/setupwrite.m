@@ -25,22 +25,44 @@ MASS = 1;
 HEIGHT = 2;
 FEMURSCALEFACTOR = 3;
 TIBIASCALEFACTOR = 4;
-FYMINCCRRA2 = 5;
-FYMAXCCRRA2 = 6;
-MXMINCCRRA2 = 7;
-MXMAXCCRRA2 = 8;
-MYMINCCRRA2 = 9;
-MYMAXCCRRA2 = 10;
-MZMINCCRRA2 = 11;
-MZMAXCCRRA2 = 12;
-FXOPTFORCERRA2 = 13;
-FYOPTFORCERRA2 = 14;
-FZOPTFORCERRA2 = 15;
-MXOPTFORCERRA2 = 16;
-MYOPTFORCERRA2 = 17;
-MZOPTFORCERRA2 = 18;
-CMCOPTIMIZERALGORITHM = 19;
-IDRESULTSDIRECTORY = 20;
+FXMINCCRRA2 = 5;
+FXMAXCCRRA2 = 6;
+FYMINCCRRA2 = 7;
+FYMAXCCRRA2 = 8;
+FZMINCCRRA2 = 9;
+FZMAXCCRRA2 = 10;
+MXMINCCRRA2 = 11;
+MXMAXCCRRA2 = 12;
+MYMINCCRRA2 = 13;
+MYMAXCCRRA2 = 14;
+MZMINCCRRA2 = 15;
+MZMAXCCRRA2 = 16;
+FXOPTFORCERRA2 = 17;
+FYOPTFORCERRA2 = 18;
+FZOPTFORCERRA2 = 19;
+MXOPTFORCERRA2 = 20;
+MYOPTFORCERRA2 = 21;
+MZOPTFORCERRA2 = 22;
+FXMINCCCMC = 23;
+FXMAXCCCMC = 24;
+FYMINCCCMC = 25;
+FYMAXCCCMC = 26;
+FZMINCCCMC = 27;
+FZMAXCCCMC = 28;
+MXMINCCCMC = 29;
+MXMAXCCCMC = 30;
+MYMINCCCMC = 31;
+MYMAXCCCMC = 32;
+MZMINCCCMC = 33;
+MZMAXCCCMC = 34;
+FXOPTFORCECMC = 35;
+FYOPTFORCECMC = 36;
+FZOPTFORCECMC = 37;
+MXOPTFORCECMC = 38;
+MYOPTFORCECMC = 39;
+MZOPTFORCECMC = 40;
+CMCOPTIMIZERALGORITHM = 41;
+IDRESULTSDIRECTORY = 42;
 
 %
 % 1. Construct full paths for all gait2392 example files from OpenSim.
@@ -51,7 +73,10 @@ CMC_ActuatorsFileName = fullfile( gait2392ExampleDirectory, 'gait2392_CMC_Actuat
 CMC_ControlConstraintsFileName = fullfile( gait2392ExampleDirectory, 'gait2392_CMC_ControlConstraints.xml' );
 CMC_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_CMC.xml' );
 CMC_TasksFileName = fullfile( gait2392ExampleDirectory, 'gait2392_CMC_Tasks.xml' );
-ID_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_ID.xml' );
+IDIK_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_ID.xml' );
+IDRRA1_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_ID.xml' );
+IDRRA2_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_ID.xml' );
+IDCMC_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_ID.xml' );
 IK_SetupFileName = fullfile( gait2392ExampleDirectory, 'subject01_Setup_IK.xml' );
 IK_TasksFileName = fullfile( gait2392ExampleDirectory, 'gait2392_IK_Tasks.xml' );
 RRA1_ActuatorsFileName = fullfile( gait2392ExampleDirectory, 'gait2392_RRA1_Actuators.xml' );
@@ -79,7 +104,10 @@ CMC_ActuatorsDomNode = xmlread( CMC_ActuatorsFileName );
 CMC_ControlConstraintsDomNode = xmlread( CMC_ControlConstraintsFileName );
 CMC_SetupDomNode = xmlread( CMC_SetupFileName );
 CMC_TasksDomNode = xmlread( CMC_TasksFileName );
-ID_SetupDomNode = xmlread( ID_SetupFileName );
+IDIK_SetupDomNode = xmlread( IDIK_SetupFileName );
+IDRRA1_SetupDomNode = xmlread( IDRRA1_SetupFileName );
+IDRRA2_SetupDomNode = xmlread( IDRRA2_SetupFileName );
+IDCMC_SetupDomNode = xmlread( IDCMC_SetupFileName );
 IK_SetupDomNode = xmlread( IK_SetupFileName );
 IK_TasksDomNode = xmlread( IK_TasksFileName );
 RRA1_ActuatorsDomNode = xmlread( RRA1_ActuatorsFileName );
@@ -181,8 +209,12 @@ rra2ConstraintsFileName = [trialName '_RRA2_ControlConstraints.xml'];
 % RRA2 setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 
 % 3.1.4.2 Set RRA2 control constraint file values.
+fxMinControlConstraintRRA2 = specialSettings{ FXMINCCRRA2 };
+fxMaxControlConstraintRRA2 = specialSettings{ FXMAXCCRRA2 };
 fyMinControlConstraintRRA2 = specialSettings{ FYMINCCRRA2 };
 fyMaxControlConstraintRRA2 = specialSettings{ FYMAXCCRRA2 };
+fzMinControlConstraintRRA2 = specialSettings{ FZMINCCRRA2 };
+fzMaxControlConstraintRRA2 = specialSettings{ FZMAXCCRRA2 };
 mxMinControlConstraintRRA2 = specialSettings{ MXMINCCRRA2 };
 mxMaxControlConstraintRRA2 = specialSettings{ MXMAXCCRRA2 };
 myMinControlConstraintRRA2 = specialSettings{ MYMINCCRRA2 };
@@ -213,6 +245,28 @@ cmcConstraintsFileName = [trialName '_CMC_ControlConstraints.xml'];
 % CMC setup file node: external_loads_file := externalLoadsFileName
 % CMC setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 cmcOptimizerAlgorithm = specialSettings{ CMCOPTIMIZERALGORITHM };
+
+% 3.1.5.2 Set CMC control constraint file values.
+fxMinControlConstraintCMC = specialSettings{ FXMINCCCMC };
+fxMaxControlConstraintCMC = specialSettings{ FXMAXCCCMC };
+fyMinControlConstraintCMC = specialSettings{ FYMINCCCMC };
+fyMaxControlConstraintCMC = specialSettings{ FYMAXCCCMC };
+fzMinControlConstraintCMC = specialSettings{ FZMINCCCMC };
+fzMaxControlConstraintCMC = specialSettings{ FZMAXCCCMC };
+mxMinControlConstraintCMC = specialSettings{ MXMINCCCMC };
+mxMaxControlConstraintCMC = specialSettings{ MXMAXCCCMC };
+myMinControlConstraintCMC = specialSettings{ MYMINCCCMC };
+myMaxControlConstraintCMC = specialSettings{ MYMAXCCCMC };
+mzMinControlConstraintCMC = specialSettings{ MZMINCCCMC };
+mzMaxControlConstraintCMC = specialSettings{ MZMAXCCCMC };
+
+% 3.1.5.3 Set CMC actuator file values.
+fxOptimalForceCMC = specialSettings{ FXOPTFORCECMC };
+fyOptimalForceCMC = specialSettings{ FYOPTFORCECMC };
+fzOptimalForceCMC = specialSettings{ FZOPTFORCECMC };
+mxOptimalForceCMC = specialSettings{ MXOPTFORCECMC };
+myOptimalForceCMC = specialSettings{ MYOPTFORCECMC };
+mzOptimalForceCMC = specialSettings{ MZOPTFORCECMC };
 
 % 3.1.6 Set Forward values.
 
@@ -245,14 +299,44 @@ analyzeInitialStatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_sta
 
 % 3.1.8 Set ID (Inverse Dynamics) values.
 
-% 3.1.8.1 Set ID (special case of Analyze) setup file values.
-idName = trialName;
+% 3.1.8.1 Set setup file values for ID for IK results.
+idIkName = [trialName '_ik'];
 % ID setup file node: model_file := adjustedModelFileName
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
-idResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
-idInitialTime = '0.5';
-idFinalTime = '2.0';
+idIkResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
+idIkInitialTime = '0.5';
+idIkFinalTime = '2.0';
 % ID setup file node: coordinates_file := desiredMotionFileName
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+
+% 3.1.8.2 Set setup file values for ID for RRA1 results.
+idRra1Name = [trialName '_rra1'];
+% ID setup file node: model_file := adjustedModelFileName
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+idRra1ResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
+idRra1InitialTime = '0.5';
+idRra1FinalTime = '2.0';
+idRra1CoordinatesFileName = fullfile( rra1ResultsDirectoryName, [rra1Name '_Kinematics_q.sto'] );
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+
+% 3.1.8.3 Set setup file values for ID for RRA2 results.
+idRra2Name = [trialName '_rra2'];
+% ID setup file node: model_file := adjustedModelFileName
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+idRra2ResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
+idRra2InitialTime = '0.5';
+idRra2FinalTime = '2.0';
+idRra2CoordinatesFileName = fullfile( rra2ResultsDirectoryName, [rra2Name '_Kinematics_q.sto'] );
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+
+% 3.1.8.4 Set setup file values for ID for CMC results.
+idCmcName = [trialName '_cmc'];
+% ID setup file node: model_file := adjustedModelFileName
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+idCmcResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
+idCmcInitialTime = '0.5';
+idCmcFinalTime = '2.0';
+idCmcCoordinatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_Kinematics_q.sto'] );
 % ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 
 % 3.2 Set these new values in the setup file DOM nodes.
@@ -327,8 +411,12 @@ RRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(65).getChildNodes.ite
 % RRA2 setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 RRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(69).getChildNodes.item(0).setData( desiredMotionFileName );
 
+RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 1).getChildNodes.item(1).getChildNodes.item(0).setData( fxMinControlConstraintRRA2 );
+RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 1).getChildNodes.item(3).getChildNodes.item(0).setData( fxMaxControlConstraintRRA2 );
 RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 3).getChildNodes.item(1).getChildNodes.item(0).setData( fyMinControlConstraintRRA2 );
 RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 3).getChildNodes.item(3).getChildNodes.item(0).setData( fyMaxControlConstraintRRA2 );
+RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 5).getChildNodes.item(1).getChildNodes.item(0).setData( fzMinControlConstraintRRA2 );
+RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 5).getChildNodes.item(3).getChildNodes.item(0).setData( fzMaxControlConstraintRRA2 );
 RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 7).getChildNodes.item(1).getChildNodes.item(0).setData( mxMinControlConstraintRRA2 );
 RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 7).getChildNodes.item(3).getChildNodes.item(0).setData( mxMaxControlConstraintRRA2 );
 RRA2_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 9).getChildNodes.item(1).getChildNodes.item(0).setData( myMinControlConstraintRRA2 );
@@ -358,6 +446,26 @@ CMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(67).getChildNodes.item
 % RRA2 setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 CMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(71).getChildNodes.item(0).setData( desiredMotionFileName );
 CMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(123).getChildNodes.item(0).setData( cmcOptimizerAlgorithm );
+
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 1).getChildNodes.item(1).getChildNodes.item(0).setData( fxMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 1).getChildNodes.item(3).getChildNodes.item(0).setData( fxMaxControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 3).getChildNodes.item(1).getChildNodes.item(0).setData( fyMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 3).getChildNodes.item(3).getChildNodes.item(0).setData( fyMaxControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 5).getChildNodes.item(1).getChildNodes.item(0).setData( fzMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 5).getChildNodes.item(3).getChildNodes.item(0).setData( fzMaxControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 7).getChildNodes.item(1).getChildNodes.item(0).setData( mxMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 7).getChildNodes.item(3).getChildNodes.item(0).setData( mxMaxControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 9).getChildNodes.item(1).getChildNodes.item(0).setData( myMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 9).getChildNodes.item(3).getChildNodes.item(0).setData( myMaxControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item(11).getChildNodes.item(1).getChildNodes.item(0).setData( mzMinControlConstraintCMC );
+CMC_ControlConstraintsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item(11).getChildNodes.item(3).getChildNodes.item(0).setData( mzMaxControlConstraintCMC );
+
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 3).getChildNodes.item(1).getChildNodes.item(0).setData( fxOptimalForceCMC );
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 5).getChildNodes.item(1).getChildNodes.item(0).setData( fyOptimalForceCMC );
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 7).getChildNodes.item(1).getChildNodes.item(0).setData( fzOptimalForceCMC );
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item( 9).getChildNodes.item(1).getChildNodes.item(0).setData( mxOptimalForceCMC );
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item(11).getChildNodes.item(1).getChildNodes.item(0).setData( myOptimalForceCMC );
+CMC_ActuatorsDomNode.getChildNodes.item(0).getChildNodes.item(3).getChildNodes.item(13).getChildNodes.item(1).getChildNodes.item(0).setData( mzOptimalForceCMC );
 
 Forward_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( forwardName );
 % Forward setup file node: model_file := adjustedModelFileName
@@ -390,18 +498,57 @@ Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(43).getChildNodes.
 % Analyze setup file node: external_loads_model_kinematics_file := desiredMotionFileName
 Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(47).getChildNodes.item(0).setData( desiredMotionFileName );
 
-ID_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idName );
+IDIK_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idIkName );
 % ID setup file node: model_file := adjustedModelFileName
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idResultsDirectory );
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idInitialTime );
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idFinalTime );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idIkResultsDirectory );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idIkInitialTime );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idIkFinalTime );
 % ID setup file node: coordinates_file := desiredMotionFileName
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.item(0).setData( desiredMotionFileName );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.item(0).setData( desiredMotionFileName );
 % ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
-ID_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
+
+IDRRA1_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idRra1Name );
+% ID setup file node: model_file := adjustedModelFileName
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idRra1ResultsDirectory );
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idRra1InitialTime );
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idRra1FinalTime );
+% ID setup file node: coordinates_file := desiredMotionFileName
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.item(0).setData( idRra1CoordinatesFileName );
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
+
+IDRRA2_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idRra2Name );
+% ID setup file node: model_file := adjustedModelFileName
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idRra2ResultsDirectory );
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idRra2InitialTime );
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idRra2FinalTime );
+% ID setup file node: coordinates_file := desiredMotionFileName
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.item(0).setData( idRra2CoordinatesFileName );
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+IDRRA2_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
+
+IDCMC_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idCmcName );
+% ID setup file node: model_file := adjustedModelFileName
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% ID setup file node: actuator_set_files := rra1ActuatorSetFileName
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idCmcResultsDirectory );
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(23).getChildNodes.item(0).setData( idCmcInitialTime );
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(27).getChildNodes.item(0).setData( idCmcFinalTime );
+% ID setup file node: coordinates_file := desiredMotionFileName
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.item(0).setData( idCmcCoordinatesFileName );
+% ID setup file node: external_loads_model_kinematics_file := desiredMotionFileName
+IDCMC_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
 
 %
 % 4. Write new setup files to outputDirectory.
@@ -413,7 +560,10 @@ CMC_ActuatorsFileName = fullfile( outputDirectory, cmcActuatorSetFileName );
 CMC_ControlConstraintsFileName = fullfile( outputDirectory, cmcConstraintsFileName );
 CMC_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_CMC.xml'] );
 CMC_TasksFileName = fullfile( outputDirectory, cmcTaskSetFileName );
-ID_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_ID.xml'] );
+IDIK_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_ID_IK.xml'] );
+IDRRA1_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_ID_RRA1.xml'] );
+IDRRA2_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_ID_RRA2.xml'] );
+IDCMC_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_ID_CMC.xml'] );
 IK_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_IK.xml'] );
 IK_TasksFileName = fullfile( outputDirectory, ikTaskSetFileName );
 RRA1_ActuatorsFileName = fullfile( outputDirectory, rra1ActuatorSetFileName );
@@ -438,7 +588,10 @@ xmlwrite( CMC_ActuatorsFileName, CMC_ActuatorsDomNode );
 xmlwrite( CMC_ControlConstraintsFileName, CMC_ControlConstraintsDomNode );
 xmlwrite( CMC_SetupFileName, CMC_SetupDomNode );
 xmlwrite( CMC_TasksFileName, CMC_TasksDomNode );
-xmlwrite( ID_SetupFileName, ID_SetupDomNode );
+xmlwrite( IDIK_SetupFileName, IDIK_SetupDomNode );
+xmlwrite( IDRRA1_SetupFileName, IDRRA1_SetupDomNode );
+xmlwrite( IDRRA2_SetupFileName, IDRRA2_SetupDomNode );
+xmlwrite( IDCMC_SetupFileName, IDCMC_SetupDomNode );
 xmlwrite( IK_SetupFileName, IK_SetupDomNode );
 xmlwrite( IK_TasksFileName, IK_TasksDomNode );
 xmlwrite( RRA1_ActuatorsFileName, RRA1_ActuatorsDomNode );
