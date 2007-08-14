@@ -1,7 +1,7 @@
 #ifndef __SimbodyEngine_h__
 #define __SimbodyEngine_h__
 // SimbodyEngine.h
-// Authors: Frank C. Anderson
+// Authors: Frank C. Anderson, Ajay Seth
 /*
  * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -138,8 +138,7 @@ private:
 	int findIndexOfDofThatHasLastGeneralizedCoordinate(DofSet *aDofSet);
 	void createGroundBodyIfNecessary();
 	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
-	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;
-	
+	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;	
 
 public:
 	void init(Model* aModel);
@@ -170,7 +169,6 @@ public:
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
 	//--------------------------------------------------------------------------
-
 	virtual void setTime(const double aTime) {_s->setTime(aTime); };
 	virtual void setConfiguration(const double aY[]);
 	virtual void getConfiguration(double rY[]) const;

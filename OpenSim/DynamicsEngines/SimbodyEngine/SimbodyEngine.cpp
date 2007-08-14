@@ -1,5 +1,5 @@
 // SimbodyEngine.cpp
-// Authors: Frank C. Anderson
+// Authors: Frank C. Anderson, Ajay Seth
 /*
  * Copyright (c) 2007, Stanford University. All rights reserved. 
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -79,7 +79,7 @@ SimbodyEngine::SimbodyEngine() :
 	setupProperties();
 
 	// CONSTRUCT SIMPLE PENDULUM
-	constructPendulum();
+	//constructPendulum();
 }
 
 //_____________________________________________________________________________
@@ -648,6 +648,8 @@ createGroundBodyIfNecessary()
 	// Set member variable and append to body set.
 	_groundBody = ground;
 }
+
+
 //_____________________________________________________________________________
 /**
  * Perform some set up functions that happen after the
@@ -659,6 +661,7 @@ void SimbodyEngine::setup(Model* aModel)
 {
 	constructMultibodySystem();
 	AbstractDynamicsEngine::setup(aModel);
+	//applyDefaultConfiguration();
 }
 
 //=============================================================================
@@ -930,12 +933,35 @@ void SimbodyEngine::extractConfiguration(const double aY[],double rQ[],double rU
 	int nu = getNumSpeeds();
 	memcpy(rU,&aY[nq],nu*sizeof(double));
 }
-
 //_____________________________________________________________________________
 /**
- * applyDefaultConfiguration
- *
+ * Apply the default configuration to the model.  This means setting the
+ * generalized coordinates and spees to their default values.
  */
+void SimbodyEngine::applyDefaultConfiguration()
+{
+   int i;
+	
+	// Coordinates
+	int nq = _coordinateSet.getSize();
+	Array<double> q(0.0,nq);
+	for(i=0; i<nq; i++) {
+		q[i] = _coordinateSet[i]->getDefaultValue();
+	}
+
+	// Speeds
+	int nu = _speedSet.getSize();
+	Array<double> u(0.0,nu);
+	for(i=0; i<nu; i++) {
+		u[i] = _speedSet[i]->getDefaultValue();
+	}
+
+	setConfiguration(&q[0],&u[0]);
+}
+//_____________________________________________________________________________
+/**
+ * Apply the default configuration to the model.  This means setting the
+ * generalized coordinates and spees to their default values.
 void SimbodyEngine::applyDefaultConfiguration()
 {
 	for (int i = 0; i < _coordinateSet.getSize(); i++)
@@ -944,6 +970,7 @@ void SimbodyEngine::applyDefaultConfiguration()
 	for (int i = 0; i < _speedSet.getSize(); i++)
 		_speedSet.get(i)->setValue(_speedSet.get(i)->getDefaultValue());
 }
+ */
 
 
 //--------------------------------------------------------------------------

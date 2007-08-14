@@ -289,7 +289,7 @@ void SimbodyCoordinate::setup(AbstractDynamicsEngine* aEngine)
 
 	// If the user specified a default value but not a value, set the
 	// current value to the default value
-	//setValue(_defaultValue);
+	setValue(_defaultValue);
 }
 
 //=============================================================================
