@@ -385,12 +385,12 @@ getControlSet()
  * Assumes coordinates and speeds are already in radians.
  * Fills in zeros for actuator and contact set states.
  */
-void AnalyzeTool::
-setStatesStorageFromCoordinatesAndSpeeds(const Storage *aQStore, const Storage *aUStore)
+Storage *AnalyzeTool::
+createStatesStorageFromCoordinatesAndSpeeds(const Model *aModel, const Storage *aQStore, const Storage *aUStore)
 {
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int ny = _model->getNumStates();
+	int nq = aModel->getNumCoordinates();
+	int nu = aModel->getNumSpeeds();
+	int ny = aModel->getNumStates();
 
 	if(aQStore->getSmallestNumberOfStates() != nq)
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- Coordinates storage does not have correct number of coordinates.",__FILE__,__LINE__);
@@ -403,18 +403,20 @@ setStatesStorageFromCoordinatesAndSpeeds(const Storage *aQStore, const Storage *
 
 	Array<string> stateNames;
 	stateNames.append("time");
-	_model->getStateNames(stateNames);
+	aModel->getStateNames(stateNames);
 
-	_statesStore = new Storage(512,"states");
-	_statesStore->setColumnLabels(stateNames);
+	Storage *statesStore = new Storage(512,"states");
+	statesStore->setColumnLabels(stateNames);
 	Array<double> y(0.0,ny);
 	for(int index=0; index<aQStore->getSize(); index++) {
 		double t;
 		aQStore->getTime(index,t);
 		aQStore->getData(index,nq,&y[0]);
 		if(aUStore) aUStore->getData(index,nu,&y[nq]);
-		_statesStore->append(t,ny,&y[0]);
+		statesStore->append(t,ny,&y[0]);
 	}
+
+	return statesStore;
 }
 
 //_____________________________________________________________________________
@@ -490,17 +492,17 @@ loadStatesFromFile()
 	if(_statesFileNameProp.isValidFileName()) {
 		if(_coordinatesFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
 		if(_speedsFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
-		cout<<"\nLoading states from file "<<_statesFileName<<".\n";
+		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
 		_statesStore = new Storage(_statesFileName);
 	} else {
 		if(!_coordinatesFileNameProp.isValidFileName()) 
 			throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
 
-		cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<".\n";
+		cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<"."<<endl;
 		Storage coordinatesStore(_coordinatesFileName);
 
 		if(_lowpassCutoffFrequency>=0) {
-			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"...\n\n";
+			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
 			coordinatesStore.pad(60);
 			coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
 		}
@@ -510,21 +512,21 @@ loadStatesFromFile()
 
 		if(_speedsFileName!="") {
 			delete uStore;
-			cout<<"\nLoading speeds from file "<<_speedsFileName<<".\n";
+			cout<<"\nLoading speeds from file "<<_speedsFileName<<"."<<endl;
 			uStore = new Storage(_speedsFileName);
 		}
 
 		_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
 		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
 
-		setStatesStorageFromCoordinatesAndSpeeds(qStore, uStore);
+		_statesStore = createStatesStorageFromCoordinatesAndSpeeds(_model, qStore, uStore);
 
 		delete qStore;
 		delete uStore;
 	}
 
-	cout<<"Found "<<_statesStore->getSize()<<" state vectors with time stamps ranging\n";
-	cout<<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<".\n";
+	cout<<"Found "<<_statesStore->getSize()<<" state vectors with time stamps ranging "
+		 <<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<"."<<endl;
 }
 
 void AnalyzeTool::
@@ -538,7 +540,7 @@ setStatesFromMotion(const Storage &aMotion, bool aInDegrees)
 	if(!aInDegrees) _model->getDynamicsEngine().convertRadiansToDegrees(motionCopy);
 
 	if(_lowpassCutoffFrequency>=0) {
-		cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"...\n\n";
+		cout<<"\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl;
 		motionCopy.pad(60);
 		motionCopy.lowpassFIR(50,_lowpassCutoffFrequency);
 	}
@@ -549,7 +551,7 @@ setStatesFromMotion(const Storage &aMotion, bool aInDegrees)
 	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
 	_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
 
-	setStatesStorageFromCoordinatesAndSpeeds(qStore, uStore);
+	_statesStore = createStatesStorageFromCoordinatesAndSpeeds(_model, qStore, uStore);
 
 	delete qStore;
 	delete uStore;
@@ -691,7 +693,6 @@ getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Arr
 	return t;
 }
 
-
 //=============================================================================
 // RUN
 //=============================================================================
@@ -730,14 +731,6 @@ bool AnalyzeTool::run()
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
-	// COMPUTE INITIAL AND FINAL INDEX
-	double ti,tf;
-	int iInitial = _statesStore->findIndex(_ti);
-	int iFinal = _statesStore->findIndex(_tf);
-	_statesStore->getTime(iInitial,ti);
-	_statesStore->getTime(iFinal,tf);
-	cout<<"\n\nExecuting the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
-
 	// ANALYSIS SET
 	AnalysisSet *analysisSet = _model->getAnalysisSet();
 	if(analysisSet==NULL) {
@@ -748,61 +741,15 @@ bool AnalyzeTool::run()
 		string msg = "AnalysisTool.run: ERROR- no analyses have been set.";
 		throw Exception(msg,__FILE__,__LINE__);
 	}
-	IntegCallbackSet *callbackSet = _model->getIntegCallbackSet();
 
-	// TODO: some sort of filtering or something to make derivatives smoother?
-	GCVSplineSet statesSplineSet(5,_statesStore);
-
-	// PERFORM THE ANALYSES
-	double tPrev=0.0,t=0.0,dt=0.0;
-	int nx = _model->getNumControls();
-	int ny = _model->getNumStates();
-	int np = _model->getNumPseudoStates();
-	Array<double> xPrev(0.0,nx),x(0.0,nx);
-	Array<double> yPrev(0.0,nx),y(0.0,ny);
-	Array<double> pPrev(0.0,np),p(0.0,np);
-	Array<double> dydt(0.0,ny);
-	for(int i=iInitial;i<=iFinal;i++) {
-		
-		// Data
-		t = getControlsStatesPseudoStates(i,x,y,p);
-		if((i==iInitial) && ((i+1)<=iFinal)) {
-			_statesStore->getTime(i+1,dt);
-			dt = dt - t;
-		} else {
-			dt = t - tPrev;
-		}
-
-		statesSplineSet.evaluate(dydt,1,t);
-
-		// Begin
-		if(i==iInitial) {
-			if (_solveForEquilibriumForAuxiliaryStates)
-				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
-			analysisSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-			if(callbackSet) callbackSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-
-		// End
-		} else if(i==iFinal) {
-			if (_solveForEquilibriumForAuxiliaryStates)
-				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
-			analysisSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-			if(callbackSet) callbackSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-
-		// Step
-		} else {
-			if (_solveForEquilibriumForAuxiliaryStates)
-				_model->computeEquilibriumForAuxiliaryStates(&y[0]);
-			analysisSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-			if(callbackSet) callbackSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
-		}
-
-		// ASSIGN PREV
-		tPrev = t;
-		xPrev = x;
-		yPrev = y;
-		pPrev = p;
-	}
+	// Call helper function to process analysis
+	double ti,tf;
+	int iInitial = _statesStore->findIndex(_ti);
+	int iFinal = _statesStore->findIndex(_tf);
+	_statesStore->getTime(iInitial,ti);
+	_statesStore->getTime(iFinal,tf);
+	cout<<"Executing the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
+	run(*_model, iInitial, iFinal, *_statesStore, _pseudoStore, _controlSet, _solveForEquilibriumForAuxiliaryStates);
 
 	} catch (Exception &x) {
 		x.print(cout);
@@ -817,4 +764,67 @@ bool AnalyzeTool::run()
 	IO::chDir(saveWorkingDirectory);
 
 	return completed;
+}
+
+//=============================================================================
+// HELPER
+//=============================================================================
+void AnalyzeTool::run(Model &aModel, int iInitial, int iFinal, const Storage &aStatesStore, Storage *aPseudoStore, ControlSet *aControlSet, bool aSolveForEquilibrium)
+{
+	AnalysisSet *analysisSet = aModel.getAnalysisSet();
+	IntegCallbackSet *callbackSet = aModel.getIntegCallbackSet();
+
+	// TODO: some sort of filtering or something to make derivatives smoother?
+	GCVSplineSet statesSplineSet(5,&aStatesStore);
+
+	// PERFORM THE ANALYSES
+	double tPrev=0.0,t=0.0,dt=0.0;
+	int nx = aModel.getNumControls();
+	int ny = aModel.getNumStates();
+	int np = aModel.getNumPseudoStates();
+	Array<double> xPrev(0.0,nx),x(0.0,nx);
+	Array<double> yPrev(0.0,nx),y(0.0,ny);
+	Array<double> pPrev(0.0,np),p(0.0,np);
+	Array<double> dydt(0.0,ny);
+	for(int i=iInitial;i<=iFinal;i++) {
+
+		aStatesStore.getTime(i,t); // time
+		if(aControlSet) aControlSet->getControlValues(t,x); // controls
+		aStatesStore.getData(i,y.getSize(),&y[0]); // states
+		if(aPseudoStore) aPseudoStore->getData(i,p.getSize(),&p[0]); // pseudostates
+
+		if((i==iInitial) && ((i+1)<=iFinal)) {
+			aStatesStore.getTime(i+1,dt);
+			dt = dt - t;
+		} else {
+			dt = t - tPrev;
+		}
+
+		statesSplineSet.evaluate(dydt,1,t);
+
+		// Begin
+		if(i==iInitial) {
+			if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(&y[0]);
+			analysisSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->begin(iInitial,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+
+		// End
+		} else if(i==iFinal) {
+			if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(&y[0]);
+			analysisSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->end(iFinal,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+
+		// Step
+		} else {
+			if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(&y[0]);
+			analysisSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+			if(callbackSet) callbackSet->step(&xPrev[0],&yPrev[0],&pPrev[0],i,dt,t,&x[0],&y[0],&p[0],&dydt[0]);
+		}
+
+		// ASSIGN PREV
+		tPrev = t;
+		xPrev = x;
+		yPrev = y;
+		pPrev = p;
+	}
 }

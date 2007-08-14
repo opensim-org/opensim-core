@@ -122,7 +122,7 @@ public:
 	void setControlSet(ControlSet *aSet);
 	ControlSet* getControlSet();
 	void setStatesStorage(Storage *aStore);
-	void setStatesStorageFromCoordinatesAndSpeeds(const Storage *aQStore, const Storage *aUStore);
+	static Storage *createStatesStorageFromCoordinatesAndSpeeds(const Model *aModel, const Storage *aQStore, const Storage *aUStore);
 	Storage* getStatesStorage();
 	void setPseudoStatesStorage(Storage *aStore);
 	Storage* getPseudoStatesStorage();
@@ -162,11 +162,16 @@ public:
 	void verifyControlsStatesPseudoStates();
 	double getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Array<double> &rP);
 	void setPrintResultFiles(bool aToWrite);
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual bool run();
 
+	//--------------------------------------------------------------------------
+	// HELPER
+	//--------------------------------------------------------------------------
+	static void run(Model &aModel, int iInitial, int iFinal, const Storage &aStatesStore, Storage *aPseudoStore, ControlSet *aControlSet, bool aSolveForEquilibrium);
 
 //=============================================================================
 };	// END of class AnalyzeTool

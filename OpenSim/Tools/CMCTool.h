@@ -143,6 +143,12 @@ private:
 	mass of a body to reduced DC offsets in MX and MZ. */
 	PropertyBool _adjustCOMToReduceResidualsProp;
 	bool &_adjustCOMToReduceResiduals;
+	/** Initial time for computing average residuals used to adjust COM. */
+	PropertyDbl _initialTimeForCOMAdjustmentProp;
+	double &_initialTimeForCOMAdjustment;
+	/** Final time for computing average residuals used to adjust COM. */
+	PropertyDbl _finalTimeForCOMAdjustmentProp;
+	double &_finalTimeForCOMAdjustment;
 	/** Name of the body whose center of mass is adjusted. */
 	PropertyStr _adjustedCOMBodyProp;
 	std::string &_adjustedCOMBody;
@@ -151,6 +157,9 @@ private:
 	adjust_com_to_reduce_residuals is set to true. */
 	PropertyStr _outputModelFileProp;
 	std::string &_outputModelFile;
+	/** Flag indicating whether or not to adjust the kinematics in order to reduce residuals. */
+	PropertyBool _adjustKinematicsToReduceResidualsProp;
+	bool &_adjustKinematicsToReduceResiduals;
 	/** Flag for turning on and off verbose printing. */
 	PropertyBool _verboseProp;
 	bool &_verbose;
@@ -208,6 +217,9 @@ public:
 	const std::string &getAdjustedCOMBody() { return _adjustedCOMBody; }
 	void setAdjustedCOMBody(const std::string &aBody) { _adjustedCOMBody = aBody; }
 
+	bool getAdjustKinematicsToReduceResiduals() { return _adjustKinematicsToReduceResiduals; }
+	void setAdjustKinematicsToReduceResiduals(bool aAdjust) { _adjustKinematicsToReduceResiduals = aAdjust; }
+
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
@@ -236,18 +248,15 @@ public:
 	void setOriginalActuatorSet(const ActuatorSet &aActuatorSet);
 
 #ifndef SWIG
-	ControlSet*
-		constructRRAControlSet(ControlSet *aControlConstraints);
-	void
-		initializeControlSetUsingConstraints(
-		const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *ControlSet);
-	void computeInitialStatesFromCoordinates(
-		const FunctionSet &aQSet,Array<double> &rYI);
-	void computeAverageResiduals(
-		Array<double> &rFAve,Array<double> &rMAve);
-	void adjustCOMToReduceResiduals(
-		const Array<double> &aFAve,const Array<double> &aMAve);
+	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
+	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *ControlSet);
+	void adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore);
+	void adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve);
 	void addNecessaryAnalyses();
+	void writeAdjustedModel();
+
+	static void computeAverageResiduals(const Storage &aForceStore,Array<double> &rFAve,Array<double> &rMAve);
+	static void computeAverageResiduals(Model &aModel, double aTi, double aTf, const Storage &aStatesStore, Array<double>& rFAve, Array<double>& rMAve);
 #endif
 //=============================================================================
 };	// END of class CMCTool

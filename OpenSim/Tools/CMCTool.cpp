@@ -32,6 +32,7 @@
 //=============================================================================
 #include <time.h>
 #include "CMCTool.h"
+#include "AnalyzeTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
@@ -49,6 +50,7 @@
 #include <OpenSim/Actuators/TorqueApplier.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/InverseDynamics.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
 #include "rdCMC.h"
@@ -58,7 +60,6 @@
 
 using namespace std;
 using namespace OpenSim;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -97,8 +98,11 @@ CMCTool::CMCTool() :
 	_printLevel(_printLevelProp.getValueInt()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
+	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -133,8 +137,11 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	_printLevel(_printLevelProp.getValueInt()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
+	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -202,8 +209,11 @@ CMCTool(const CMCTool &aTool) :
 	_printLevel(_printLevelProp.getValueInt()),
 	_computeAverageResiduals(_computeAverageResidualsProp.getValueBool()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
+	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
+	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
 	_adjustedCOMBody(_adjustedCOMBodyProp.getValueStr()),
 	_outputModelFile(_outputModelFileProp.getValueStr()),
+	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -255,7 +265,10 @@ setNull()
 	_computeAverageResiduals = false;
 	_adjustedCOMBody = "";
 	_adjustCOMToReduceResiduals = false;
+	_initialTimeForCOMAdjustment = -1;
+	_finalTimeForCOMAdjustment = -1;
 	_outputModelFile = "";
+	_adjustKinematicsToReduceResiduals = true;
 	_verbose = false;
 }
 //_____________________________________________________________________________
@@ -396,6 +409,19 @@ void CMCTool::setupProperties()
 	_adjustCOMToReduceResidualsProp.setName("adjust_com_to_reduce_residuals");
 	_propertySet.append( &_adjustCOMToReduceResidualsProp );
 
+	comment = "Initial time used when computing average residuals in order to adjust "
+				 "the body's center of mass.  If both initial and final time are set to "
+				 "-1 (their default value) then the main initial and final time settings will be used.";
+	_initialTimeForCOMAdjustmentProp.setComment(comment);
+	_initialTimeForCOMAdjustmentProp.setName("initial_time_for_com_adjustment");
+	_propertySet.append( &_initialTimeForCOMAdjustmentProp );
+
+	comment = "Final time used when computing average residuals in order to adjust "
+				 "the body's center of mass.";
+	_finalTimeForCOMAdjustmentProp.setComment(comment);
+	_finalTimeForCOMAdjustmentProp.setName("final_time_for_com_adjustment");
+	_propertySet.append( &_finalTimeForCOMAdjustmentProp );
+
 	comment = "Name of the body whose center of mass is adjusted. "
 				 "The heaviest segment in the model should normally be chosen. "
 				 "For a gait model, the torso segment is usually the best choice.";
@@ -410,6 +436,14 @@ void CMCTool::setupProperties()
 	_outputModelFileProp.setComment(comment);
 	_outputModelFileProp.setName("output_model_file");
 	_propertySet.append( &_outputModelFileProp );
+
+	comment = "Flag (true or false) indicating whether or not to adjust the kinematics "
+			    "in order to reduce residuals.  Set this flag to false, and set "
+				 ""+_adjustCOMToReduceResidualsProp.getName()+" on in order to only adjust the "
+				 "model's center of mass without adjusting kinematics";
+	_adjustKinematicsToReduceResidualsProp.setComment(comment);
+	_adjustKinematicsToReduceResidualsProp.setName("adjust_kinematics_to_reduce_residuals");
+	_propertySet.append( &_adjustKinematicsToReduceResidualsProp );
 
 	comment = "True-false flag indicating whether or not to turn on verbose printing for cmc.";
 	_verboseProp.setComment(comment);
@@ -455,8 +489,11 @@ operator=(const CMCTool &aTool)
 	_printLevel = aTool._printLevel;
 	_adjustedCOMBody = aTool._adjustedCOMBody;
 	_outputModelFile = aTool._outputModelFile;
+	_adjustKinematicsToReduceResiduals = aTool._adjustKinematicsToReduceResiduals;
 	_computeAverageResiduals = aTool._computeAverageResiduals;
 	_adjustCOMToReduceResiduals = aTool._adjustCOMToReduceResiduals;
+	_initialTimeForCOMAdjustment = aTool._initialTimeForCOMAdjustment;
+	_finalTimeForCOMAdjustment = aTool._finalTimeForCOMAdjustment;
 	_verbose = aTool._verbose;
 
 	return(*this);
@@ -528,6 +565,25 @@ bool CMCTool::run()
 	cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
 	Storage desiredKinStore(_desiredKinematicsFileName);
 
+	// ---- INITIAL AND FINAL TIME ----
+	// NOTE: important to do this before padding (for filtering)
+	// Initial Time
+	double ti = desiredKinStore.getFirstTime();
+	if(_ti<ti) {
+		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
+		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
+		cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+		_ti = ti;
+	}
+	// Final time
+	double tf = desiredKinStore.getLastTime();
+	if(_tf>tf) {
+		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
+		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
+		cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+		_tf = tf;
+	}
+
 	// Filter
 	// Eran: important to filter *before* calling formCompleteStorages because we need the
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
@@ -547,21 +603,44 @@ bool CMCTool::run()
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
 	Storage *qStore=NULL;
-	Storage *uStoreTmp=NULL;
-	_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStoreTmp);
+	Storage *uStore=NULL;
+	_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStore);
 	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
-
-	// Spline
-	cout<<"\nConstructing function set for tracking...\n\n";
-	GCVSplineSet qSet(5,qStore);
-	Storage *uStore = qSet.constructStorage(1);
-	GCVSplineSet uSet(5,uStore);
-	Storage *dudtStore = qSet.constructStorage(2);
-	dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
+	_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
 
 	// GROUND REACTION FORCES
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
+
+	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
+	if(_adjustCOMToReduceResiduals) {
+		adjustCOMToReduceResiduals(*qStore,*uStore);
+
+		// If not adjusting kinematics, we don't proceed with CMC, and just stop here.
+		if(!_adjustKinematicsToReduceResiduals) {
+			cout << "No kinematics adjustment requested." << endl;
+			delete qStore;
+			delete uStore;
+			writeAdjustedModel();
+			IO::chDir(saveWorkingDirectory);
+			return true;
+		}
+	}
+
+	// Spline
+	cout<<"\nConstructing function set for tracking...\n\n";
+	GCVSplineSet qSet(5,qStore);
+	delete qStore; qStore = NULL;
+
+	delete uStore;
+	uStore = qSet.constructStorage(1);
+	GCVSplineSet uSet(5,uStore);
+	delete uStore; uStore=NULL;
+
+	// Print dudt for debugging
+	Storage *dudtStore = qSet.constructStorage(2);
+	dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
+	delete dudtStore; dudtStore=NULL;
 
 	// ANALYSES
 	addNecessaryAnalyses();
@@ -585,25 +664,6 @@ bool CMCTool::run()
 
 	// RRA CONTROLS
 	ControlSet *rraControlSet = constructRRAControlSet(controlConstraints);
-		
-	// ---- INITIAL AND FINAL TIME ----
-	// Initial Time
-	double ti = desiredKinStore.getFirstTime();
-	if(_ti<ti) {
-		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-		cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
-		_ti = ti;
-	}
-	// Final time
-	double tf = desiredKinStore.getLastTime();
-	if(_tf>tf) {
-		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-		cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
-		_tf = tf;
-	}
-
 
 	// ---- INITIAL STATES ----
 	Array<double> yi(0.0,ny);
@@ -767,21 +827,6 @@ bool CMCTool::run()
 	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 	cout<<"================================================================\n\n\n";
 
-	// ---- RESIDUAL COMPUTATIONS ----
-	// Average
-	Array<double> FAve(0.0,3),MAve(0.0,3);
-	if(_adjustCOMToReduceResiduals || _computeAverageResiduals) {
-		computeAverageResiduals(FAve,MAve);
-		cout<<"\n\nAverage residuals:\n";
-		cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-		cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl<<endl;
-	}
-
-	// Adjust center of mass
-	if(_adjustCOMToReduceResiduals) {
-		adjustCOMToReduceResiduals(FAve,MAve);
-	}
-
 	// ---- RESULTS -----
 	double dt = 0.001;
 	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
@@ -794,7 +839,15 @@ bool CMCTool::run()
 	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
 	controller.getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
-	if(_adjustCOMToReduceResiduals || _computeAverageResiduals) {
+	Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
+	if(_computeAverageResiduals && actuation) {
+		Array<double> FAve(0.0,3),MAve(0.0,3);
+		Storage *forceStore = actuation->getForceStorage();
+		computeAverageResiduals(*forceStore,FAve,MAve);
+		cout<<"\n\nAverage residuals:\n";
+		cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+		cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl<<endl;
+
 		// Write the average residuals (DC offsets) out to a file
 		ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());
 		residualFile << "Average Residuals:\n\n";
@@ -808,23 +861,7 @@ bool CMCTool::run()
 	}
 
 	// Write new model file
-	if(_adjustCOMToReduceResiduals) {
-		if(_outputModelFile=="") {
-			cerr<<"Warning: A name for the output model was not set.\n";
-			cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
-			cerr<<" in the setup file.\n";
-			cerr<<"Writing to adjusted_model.osim ...\n\n";
-			_outputModelFile = "adjusted_model.osim";
-		}
-
-		// Set the model's actuator set back to the original set.  e.g. in RRA1
-		// we load the model but replace its (muscle) actuators with torque actuators.
-		// So we need to put back the muscles before writing out the adjusted model.
-		// NOTE: use operator= so actuator groups are properly copied over
-		*_model->getActuatorSet() = _originalActuatorSet;
-
-		_model->print(_outputModelFile);
-	}
+	if(_adjustCOMToReduceResiduals) writeAdjustedModel();
 
 	} catch(Exception &x) {
 		// TODO: eventually might want to allow writing of partial results
@@ -842,6 +879,25 @@ bool CMCTool::run()
 //=============================================================================
 // UTILITY
 //=============================================================================
+void CMCTool::
+writeAdjustedModel() 
+{
+	if(_outputModelFile=="") {
+		cerr<<"Warning: A name for the output model was not set.\n";
+		cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
+		cerr<<" in the setup file.\n";
+		cerr<<"Writing to adjusted_model.osim ...\n\n";
+		_outputModelFile = "adjusted_model.osim";
+	}
+
+	// Set the model's actuator set back to the original set.  e.g. in RRA1
+	// we load the model but replace its (muscle) actuators with torque actuators.
+	// So we need to put back the muscles before writing out the adjusted model.
+	// NOTE: use operator= so actuator groups are properly copied over
+	*_model->getActuatorSet() = _originalActuatorSet;
+
+	_model->print(_outputModelFile);
+}
 //_____________________________________________________________________________
 /**
  * Compute the average residuals.
@@ -852,29 +908,21 @@ bool CMCTool::run()
  * set to 3.
  */
 void CMCTool::
-computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
+computeAverageResiduals(const Storage &aForceStore,Array<double> &rFAve,Array<double> &rMAve)
 {
-	// GET FORCE STORAGE
-	Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
-	if(actuation==NULL) return;
-	Storage *forceStore = actuation->getForceStorage();
-
 	// COMPUTE AVERAGE
-	int size = forceStore->getSmallestNumberOfStates();
+	int size = aForceStore.getSmallestNumberOfStates();
 	Array<double> ave(0.0);
 	ave.setSize(size);
-	forceStore->computeAverage(size,&ave[0]);
+	aForceStore.computeAverage(size,&ave[0]);
 
 	// GET INDICES
-	int iFX = forceStore->getStateIndex("FX");
-	int iFY = forceStore->getStateIndex("FY");
-	int iFZ = forceStore->getStateIndex("FZ");
-	int iMX = forceStore->getStateIndex("MX");
-	int iMY = forceStore->getStateIndex("MY");
-	int iMZ = forceStore->getStateIndex("MZ");
-	//cout<<"Residual Indices:\n";
-	//cout<<"iFX="<<iFX<<" iFY="<<iFY<<" iFZ="<<iFZ<<endl;
-	//cout<<"iMX="<<iMX<<" iMY="<<iMY<<" iMZ="<<iMZ<<endl;
+	int iFX = aForceStore.getStateIndex("FX");
+	int iFY = aForceStore.getStateIndex("FY");
+	int iFZ = aForceStore.getStateIndex("FZ");
+	int iMX = aForceStore.getStateIndex("MX");
+	int iMY = aForceStore.getStateIndex("MY");
+	int iMZ = aForceStore.getStateIndex("MZ");
 
 	// GET AVE FORCES
 	if(iFX>=0) rFAve[0] = ave[iFX];
@@ -885,6 +933,74 @@ computeAverageResiduals(Array<double> &rFAve,Array<double> &rMAve)
 	if(iMX>=0) rMAve[0] = ave[iMX];
 	if(iMY>=0) rMAve[1] = ave[iMY];
 	if(iMZ>=0) rMAve[2] = ave[iMZ];
+}
+
+void CMCTool::
+adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore)
+{
+	// Create a states storage from q's and u's
+	Storage *statesStore = AnalyzeTool::createStatesStorageFromCoordinatesAndSpeeds(_model, &qStore, &uStore);
+
+	double ti = _ti;
+	double tf = _tf;
+	if(_initialTimeForCOMAdjustment!=-1 || _finalTimeForCOMAdjustment!=-1) {
+		ti = _initialTimeForCOMAdjustment;
+		tf = _finalTimeForCOMAdjustment;
+	}
+
+	Array<double> FAve(0.0,3),MAve(0.0,3);
+
+	double actualTi, actualTf;
+	statesStore->getTime(statesStore->findIndex(ti),actualTi);
+	statesStore->getTime(statesStore->findIndex(tf),actualTf);
+	cout<<"\nNote: requested COM adjustment time range "<<ti<<" - "<<tf<<" clamped to nearest available data times "<<actualTi<<" - "<<actualTf<<endl;
+
+	computeAverageResiduals(*_model, ti, tf, *statesStore, FAve, MAve);
+	cout<<"Average residuals before adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
+	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
+
+	adjustCOMToReduceResiduals(FAve,MAve);
+
+	computeAverageResiduals(*_model, ti, tf, *statesStore, FAve, MAve);
+	cout<<"Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
+	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
+
+	delete statesStore;
+}
+
+// Uses an inverse dynamics analysis to compute average residuals
+void CMCTool::
+computeAverageResiduals(Model &aModel, double aTi, double aTf, const Storage &aStatesStore, Array<double>& rFAve, Array<double>& rMAve)
+{
+	// Turn off whatever's currently there (but remember whether it was on/off)
+	AnalysisSet *analysisSet = aModel.getAnalysisSet();
+	Array<bool> analysisSetOn = analysisSet->getOn();
+	analysisSet->setOn(false);
+	IntegCallbackSet *callbackSet = aModel.getIntegCallbackSet();
+	Array<bool> callbackSetOn = callbackSet->getOn();
+	callbackSet->setOn(false);
+
+	// add inverse dynamics analysis
+	InverseDynamics *inverseDynamics = new InverseDynamics();
+	aModel.addAnalysis(inverseDynamics);
+
+	int iInitial = aStatesStore.findIndex(aTi);
+	int iFinal = aStatesStore.findIndex(aTf);
+	aStatesStore.getTime(iInitial,aTi);
+	aStatesStore.getTime(iFinal,aTf);
+
+	cout << "\nComputing average residuals between " << aTi << " and " << aTf << endl;
+	AnalyzeTool::run(aModel, iInitial, iFinal, aStatesStore, 0, 0, false);
+
+	computeAverageResiduals(*inverseDynamics->getStorage(),rFAve,rMAve);
+
+	aModel.removeAnalysis(inverseDynamics);
+
+	// Turn off whatever's currently there
+	analysisSet->setOn(analysisSetOn);
+	callbackSet->setOn(callbackSetOn);
 }
 //_____________________________________________________________________________
 /**
@@ -899,16 +1015,7 @@ void CMCTool::
 adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve)
 {
 	// CHECK SIZE
-	if(aFAve.getSize()<3) {
-		cout<<"CMCTool.adjustedCOMToReduceResiduals: \n";
-		cout<<"ERR- The size of aFAve should be at least 3.\n";
-		return;
-	}
-	if(aMAve.getSize()<3) {
-		cout<<"CMCTool.adjustedCOMToReduceResiduals: \n";
-		cout<<"ERR- The size of aMAve should be at least 3.\n";
-		return;
-	}
+	assert(aFAve.getSize()==3 && aMAve.getSize()==3);
 
 	// GRAVITY
 	double g[3];
@@ -935,7 +1042,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 
 	cout<<"CMCTool.adjustCOMToReduceResiduals:\n";
 	cout<<_adjustedCOMBody<<" weight = "<<bodyWeight<<"\n";
-	cout<<"dx="<<dx<<", dz="<<dz<<"\n\n";
+	cout<<"dx="<<dx<<", dz="<<dz<<endl;
 
 	// GET EXISTING COM
 	Array<double> com(0.0,3);
@@ -951,7 +1058,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	//---- MASS CHANGE ----
 	// Get recommended mass change.
 	double dmass = aFAve[1] / g[1];
-	cout<<"\n\ndmass = "<<dmass<<endl;
+	cout<<"\ndmass = "<<dmass<<endl;
 	// Loop through bodies
 	int i;
 	int nb = _model->getNumBodies();
@@ -965,7 +1072,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 		mass[i] = body->getMass();
 		massTotal += mass[i];
 	}
-	cout<<"\n\nRecommended mass adjustments:\n";
+	cout<<"\nRecommended mass adjustments:"<<endl;
 	for(i=0;i<nb;i++) {
 		body = (*bodySet)[i];
 		if(body==NULL) continue;
@@ -973,7 +1080,6 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 		massNew[i] = mass[i] + massChange[i];
 		cout<<body->getName()<<":  orig mass = "<<mass[i]<<", new mass = "<<massNew[i]<<endl;
 	}
-
 }
 
 //_____________________________________________________________________________
