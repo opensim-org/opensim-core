@@ -108,6 +108,13 @@ SimtkAnimationCallback::SimtkAnimationCallback(Model *aModel, Model *aModelForDi
 	assert(getModel()->getDynamicsEngine().getNumCoordinates() == getModelForDisplay()->getDynamicsEngine().getNumCoordinates());
 	assert(getModel()->getDynamicsEngine().getNumSpeeds() == getModelForDisplay()->getDynamicsEngine().getNumSpeeds());
 
+	if(getModel()!=getModelForDisplay()) {
+		Array<std::string> stateNames1, stateNames2;
+		getModel()->getStateNames(stateNames1);
+		getModelForDisplay()->getStateNames(stateNames2);
+		if(stateNames1==stateNames2) _modelForDisplayCompatibleStates=true;
+	}
+
 	getTransformsFromKinematicsEngine(*getModelForDisplay());
 
 	_currentTime=0.0;
@@ -129,6 +136,7 @@ setNull()
 	//_transforms.setSize(0);
 	_currentTime=0.0;
 	_modelForDisplaySetConfiguration=true;
+	_modelForDisplayCompatibleStates=false;
 }
 
 
@@ -174,12 +182,8 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
 	if(!proceed(aStep)) return 0;
 
 	if(getModelForDisplay() != getModel() && _modelForDisplaySetConfiguration) {
-		// NOTE: doing this can be dangerous (just because they have the same #states doesn't
-		// mean they're compatible states...)
-		//if(getModelForDisplay()->getNumStates() == getModel()->getNumStates())
-		//	getModelForDisplay()->setStates(aY);
-		//else
-			getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
+		if(_modelForDisplayCompatibleStates) getModelForDisplay()->setStates(aY);
+		else getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
 	}
 	
 	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time

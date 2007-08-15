@@ -65,6 +65,7 @@ protected:
 
 	Model*			_modelForDisplay; // might be a different model than the one we're the callback on
 	bool				_modelForDisplaySetConfiguration;
+	bool				_modelForDisplayCompatibleStates;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -105,6 +106,7 @@ public:
 
 	Model *getModelForDisplay() { return _modelForDisplay; }
 	void setModelForDisplaySetConfiguration(bool aSetConfiguration) { _modelForDisplaySetConfiguration = aSetConfiguration; }
+	bool getModelForDisplayCompatibleStates() { return _modelForDisplayCompatibleStates; }
 public:
 	// Load transforms vector from KinematicsEngine
 	void getTransformsFromKinematicsEngine(Model& simmModel);
