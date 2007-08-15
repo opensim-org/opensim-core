@@ -220,6 +220,8 @@ public:
 
 	Storage *getOutputStorage();
 
+	IKTrial *getIKTrial() { return _ikTrial; }
+
 private:
 	void setNull();
 	void setupProperties();

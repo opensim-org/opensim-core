@@ -57,6 +57,7 @@ public:
 
 	virtual void initializeSolver(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
 	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
+	virtual void interrupt();
 private:
 
 	void collectUserData(const Array<std::string> &,

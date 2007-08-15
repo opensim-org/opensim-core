@@ -137,6 +137,7 @@ public:
 	bool initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData);
 	bool initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet);
 	bool solveTrial(Model& aModel, IKTaskSet& aIKTaskSet);
+	void interrupt();
 
 	/*===== Set and Get ===============*/
 	double getStartTime() const { return _timeRange[0]; }

@@ -71,6 +71,7 @@ MarkerPlacer::MarkerPlacer() :
  */
 MarkerPlacer::~MarkerPlacer()
 {
+	delete _ikTrial;
 }
 
 //_____________________________________________________________________________

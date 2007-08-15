@@ -182,6 +182,11 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	}
 	delete optimizer;
 }
+
+void IKSolverImpl::interrupt()
+{
+	_ikTarget.interrupt();
+}
 //______________________________________________________________________________
 /**
  * UserData is the set of columns that are not used directly by the IK problem (for example

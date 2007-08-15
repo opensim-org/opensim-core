@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Common/InterruptedException.h>
 #include "IKTaskSet.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
@@ -54,7 +55,8 @@ IKTarget::IKTarget(Model &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalD
 _model(aModel),
 _ikTaskSet(aIKTaskSet),
 _experimentalDataStorage(aExperimentalDataStorage),
-_markers(NULL)
+_markers(NULL),
+_interrupted(false)
 {
 	buildMarkerMap(aExperimentalDataStorage.getColumnLabels());
 	buildCoordinateMap(aExperimentalDataStorage.getColumnLabels());
@@ -91,6 +93,8 @@ IKTarget::
  */
 int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, SimTK::Real &f) const
 {
+	if(_interrupted) throw InterruptedException();
+
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
 	for (int i = 0; i < getNumParameters(); i++)

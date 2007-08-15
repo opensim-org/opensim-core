@@ -345,9 +345,13 @@ bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 		x.print(cout);
 	}
 
-	// We're done with the IK solver, but we keep around _inputStorage/_outputStorage
-	delete _ikSolver; _ikSolver = 0;
-	delete _target; _target = 0;
-
 	return success;
+}
+//_____________________________________________________________________________
+/**
+ * TODO: do some mutex locking to ensure _target is not deleted from under our feet just before we call interrupt()
+ */
+void IKTrial::interrupt()
+{
+	if(_target) _target->interrupt();
 }

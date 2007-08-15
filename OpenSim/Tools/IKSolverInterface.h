@@ -58,6 +58,10 @@ public:
 		std::cout<< "Error, IKSolverInterface::solveFrames() - not implemented.\n";
 	}
 
+	virtual void interrupt()
+	{
+		std::cout<< "Error, IKSolverInterface::interrupt() - not implemented.\n";
+	}
 };
 
 }; //namespace

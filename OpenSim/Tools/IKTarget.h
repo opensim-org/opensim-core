@@ -113,6 +113,8 @@ private:
 	mutable double	_worstCoordinateError;
 	mutable std::string _nameOfWorstCoordinate;
 
+	bool _interrupted;
+
 //==============================================================================
 // METHODS
 //==============================================================================
@@ -135,6 +137,7 @@ public:
 	void prepareToSolve(int aIndex, double* qGuess);
 	void printTasks() const;
 	void printPerformance(double *x);
+	void interrupt() { _interrupted = true; }
 	//---------------------------------------------------------------------------
 	// SET AND GET
 	//---------------------------------------------------------------------------
