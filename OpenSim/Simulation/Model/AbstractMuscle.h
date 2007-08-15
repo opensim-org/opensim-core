@@ -160,6 +160,7 @@ public:
 	virtual double getPassiveMusclePower();
 	virtual double getActiveMusclePower();
 	*/
+	virtual double getActivation() const = 0;
 	//---------
 	virtual void computeActuation();
 	virtual double computeMomentArm(AbstractCoordinate& aCoord);

@@ -176,6 +176,8 @@ public:
 	double getStress() const;
 	double computeIsometricForce(double activation);
 
+	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
+
 	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, AbstractActuator);
 
 private:

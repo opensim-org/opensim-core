@@ -174,6 +174,7 @@ public:
 	virtual double getNormalizedFiberLength();
 	virtual double getPassiveFiberForce();
 	virtual double getStress() const;
+	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
