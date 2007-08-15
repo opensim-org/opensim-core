@@ -234,6 +234,8 @@ public:
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
+	Storage *getStateStorage();
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------

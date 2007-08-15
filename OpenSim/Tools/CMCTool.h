@@ -49,6 +49,8 @@
 
 namespace OpenSim {
 
+class ModelIntegrand;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -165,6 +167,8 @@ private:
 	bool &_verbose;
 
 	ActuatorSet _originalActuatorSet;
+	/** Model integrand.  Make it a pointer so we can print results from a separate function. */
+	ModelIntegrand *_integrand;
 
 //=============================================================================
 // METHODS
@@ -244,6 +248,7 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	Storage *getForceStorage();
+	Storage *getStateStorage();
 
 	void setOriginalActuatorSet(const ActuatorSet &aActuatorSet);
 

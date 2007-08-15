@@ -70,6 +70,7 @@ using namespace OpenSim;
  */
 CMCTool::~CMCTool()
 {
+	delete _integrand;
 }
 //_____________________________________________________________________________
 /**
@@ -270,6 +271,8 @@ setNull()
 	_outputModelFile = "";
 	_adjustKinematicsToReduceResiduals = true;
 	_verbose = false;
+
+	_integrand = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -752,16 +755,17 @@ bool CMCTool::run()
 
 	// ---- SIMULATION ----
 	// Manager
-	ModelIntegrand integrand(_model);
-	integrand.setController(&controller);
-	Manager manager(&integrand);
+	delete _integrand;
+	_integrand = new ModelIntegrand(_model);
+	_integrand->setController(&controller);
+	Manager manager(_integrand);
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf-_targetDT-rdMath::ZERO);
 
 	// Initialize integrand controls using controls read in from file (which specify min/max control values)
 	// and set the CMC integrand's control set to be a reference to the model integrand's control set.
-	ControlSet *controlSet = integrand.getControlSet();
+	ControlSet *controlSet = _integrand->getControlSet();
 	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,controlSet);
 	cmcIntegrand.setControlSetReference(*controlSet);
 
@@ -831,12 +835,15 @@ bool CMCTool::run()
 	double dt = 0.001;
 	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
 	controlSet->print(getResultsDir() + "/" + getName() + "_controls.xml");
-	Storage *xStore = integrand.getControlStorage();
-	Storage *yStore = integrand.getStateStorage();
-	Storage *ypStore = integrand.getPseudoStateStorage();
-	xStore->print(getResultsDir() + "/" + getName() + "_controls.sto");
-	yStore->print(getResultsDir() + "/" + getName() + "_states.sto");
-	ypStore->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+	_integrand->getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
+	_integrand->getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
+	_integrand->getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+
+	Storage statesDegrees(*_integrand->getStateStorage());
+	_model->getDynamicsEngine().convertRadiansToDegrees(statesDegrees);
+	statesDegrees.setWriteSIMMHeader(true);
+	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
+
 	controller.getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
 	Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
@@ -1266,7 +1273,14 @@ Storage* CMCTool::getForceStorage(){
 		if(actuation==NULL) return 0;
 		return actuation->getForceStorage();
 }
-
+//_____________________________________________________________________________
+/**
+ */
+Storage *CMCTool::
+getStateStorage() 
+{
+	return _integrand ? _integrand->getStateStorage() : 0;
+}
 
 void CMCTool::setOriginalActuatorSet(const ActuatorSet &aActuatorSet) {
 	_originalActuatorSet = aActuatorSet;

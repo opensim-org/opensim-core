@@ -235,7 +235,6 @@ setNull()
 	_controlsFileName = "";
 	_statesFileName = "";
 	_useSpecifiedDt = false;
-	_integrand = NULL;
 	_printResultFiles = true;
 
 	// EXTERNAL LOADS
@@ -1008,6 +1007,11 @@ printResults()
 	IO::chDir(saveWorkingDirectory);
 }
 
+Storage *ForwardTool::
+getStateStorage() 
+{
+	return _integrand ? _integrand->getStateStorage() : 0;
+}
 //=============================================================================
 // EXTERNAL LOADS
 //=============================================================================
