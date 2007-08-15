@@ -727,7 +727,7 @@ double Thelen2003Muscle::computeIsometricForce(double aActivation)
    double tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
    double old_fiber_length, length_change, tendon_stiffness, percent;
-   double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
+   double error_force = 0.0, old_error_force, tendon_force, norm_tendon_length;
    
    // If the muscle has no fibers, then treat it as a ligament.
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
@@ -801,11 +801,8 @@ double Thelen2003Muscle::computeIsometricForce(double aActivation)
 
       fiber_force = (_activeForce + _passiveForce) * _maxIsometricForce * cos_factor;
 
-      tendon_strain = (tendon_length / _tendonSlackLength - 1.0);
-      if (tendon_strain < 0.0)
-         tendon_force = 0.0;
-      else
-         tendon_force = calcTendonForce(tendon_strain) * _maxIsometricForce;
+      norm_tendon_length = tendon_length / _optimalFiberLength;
+      tendon_force = calcTendonForce(norm_tendon_length) * _maxIsometricForce;
 
       old_error_force = error_force;
  
@@ -835,7 +832,7 @@ double Thelen2003Muscle::computeIsometricForce(double aActivation)
 			double tendon_elastic_modulus = 1200.0;
 			double tendon_max_stress = 32.0;
 
-         tendon_stiffness = calcTendonForce(tendon_strain) *
+         tendon_stiffness = calcTendonForce(norm_tendon_length) *
 				_maxIsometricForce / _tendonSlackLength;
 
          min_tendon_stiffness = (_activeForce + _passiveForce) *
