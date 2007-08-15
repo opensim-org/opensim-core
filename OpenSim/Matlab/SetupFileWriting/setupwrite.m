@@ -301,7 +301,7 @@ analyzeInitialStatesFileName = fullfile( cmcResultsDirectoryName, [cmcName '_sta
 
 % 3.1.8.1 Set setup file values for ID for IK results.
 idIkName = [trialName '_ik'];
-% ID setup file node: model_file := adjustedModelFileName
+% ID setup file node: model_file := dynamicModelFileName
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
 idIkResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
 idIkInitialTime = '0.5';
@@ -311,7 +311,7 @@ idIkFinalTime = '2.0';
 
 % 3.1.8.2 Set setup file values for ID for RRA1 results.
 idRra1Name = [trialName '_rra1'];
-% ID setup file node: model_file := adjustedModelFileName
+% ID setup file node: model_file := dynamicModelFileName
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
 idRra1ResultsDirectory = specialSettings{ IDRESULTSDIRECTORY };
 idRra1InitialTime = '0.5';
@@ -499,8 +499,8 @@ Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(43).getChildNodes.
 Analyze_SetupDomNode.getChildNodes.item(0).getChildNodes.item(47).getChildNodes.item(0).setData( desiredMotionFileName );
 
 IDIK_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idIkName );
-% ID setup file node: model_file := adjustedModelFileName
-IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% ID setup file node: model_file := dynamicModelFileName
+IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( dynamicModelFileName );
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
 IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
 IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idIkResultsDirectory );
@@ -512,8 +512,8 @@ IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(41).getChildNodes.ite
 IDIK_SetupDomNode.getChildNodes.item(0).getChildNodes.item(57).getChildNodes.item(0).setData( desiredMotionFileName );
 
 IDRRA1_SetupDomNode.getChildNodes.item(0).getAttributes.item( 0).setValue( idRra1Name );
-% ID setup file node: model_file := adjustedModelFileName
-IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( adjustedModelFileName );
+% ID setup file node: model_file := dynamicModelFileName
+IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item( 3).getChildNodes.item(0).setData( dynamicModelFileName );
 % ID setup file node: actuator_set_files := rra1ActuatorSetFileName
 IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(11).getChildNodes.item(0).setData( rra1ActuatorSetFileName );
 IDRRA1_SetupDomNode.getChildNodes.item(0).getChildNodes.item(15).getChildNodes.item(0).setData( idRra1ResultsDirectory );
