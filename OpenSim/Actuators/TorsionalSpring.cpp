@@ -411,17 +411,17 @@ applyActuation(double aT,double *aX,double *aY)
 
 		// Apply torque to body
 		setTorque(torque);
-		//if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
-		//	cout<<"torsional spring ("<<aT<<"):\n";
-		//	cout<<"torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
-		//	cout<<"dx = "<<difAng[0]<<", "<<difAng[1]<<", "<<difAng[2]<<endl;
-		//	cout<<"dv = "<<difQDot[0]<<", "<<difQDot[1]<<", "<<difQDot[2]<<endl;
-		//}
-		//if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
-		//	cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
-		//	_model->getDynamicsEngine().applyTorque(*_body,_torque);
-		//	if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
-		//}
+		if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
+			cout<<"torsional spring ("<<aT<<"):\n";
+			cout<<"torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
+			cout<<"dx = "<<difAng[0]<<", "<<difAng[1]<<", "<<difAng[2]<<endl;
+			cout<<"dv = "<<difQDot[0]<<", "<<difQDot[1]<<", "<<difQDot[2]<<endl;
+		}
+		if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
+			cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
+			_model->getDynamicsEngine().applyTorque(*_body,_torque);
+			if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
+		}
 
 	}	
 }
