@@ -82,6 +82,7 @@ public:
 	a file. */
 	static const char *DEFAULT_HEADER_TOKEN;
 	static const char* DEFAULT_HEADER_SEPARATOR;
+	static const int MAX_RESAMPLE_SIZE;
 protected:
 	static std::string simmReservedKeys[];
 
@@ -234,6 +235,7 @@ public:
 	int findIndex(int aI,double aT) const;
 	void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
 	double resample(double aDT, int aDegree);
+	double resampleLinear(double aDT);
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

@@ -61,6 +61,7 @@ const double Storage::LARGE_NEGATIVE = -1.0e-30;
 const double Storage::LARGE_POSITIVE =  1.0e-30;
 const char* Storage::DEFAULT_HEADER_TOKEN = "endheader";
 const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\r\n";
+const int Storage::MAX_RESAMPLE_SIZE = 100000;
 //============================================================================
 // STATICS
 //============================================================================
@@ -2142,10 +2143,10 @@ resample(double aDT, int aDegree)
 	if(numDataRows<=1) return aDT;
 
 	// Limit aDT based on expected number of samples
-	int maxSamples = 100000;
+	int maxSamples = MAX_RESAMPLE_SIZE;
 	if((getLastTime()-getFirstTime())/aDT > maxSamples) {
 		double newDT = (getLastTime()-getFirstTime())/maxSamples;
-		cout<<"Storage.lowpassFIR: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+		cout<<"Storage.resample: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
 		aDT = newDT;
 	}
 
@@ -2166,7 +2167,52 @@ resample(double aDT, int aDegree)
 
 	return aDT;
 }
+//_____________________________________________________________________________
+/**
+ * Resample using linear interpolation
+ */
+double Storage::
+resampleLinear(double aDT)
+{
+	int numDataRows = _storage.getSize();
 
+	if(numDataRows<=1) return aDT;
+
+	// Limit aDT based on expected number of samples
+	int maxSamples = MAX_RESAMPLE_SIZE;
+	if((getLastTime()-getFirstTime())/aDT > maxSamples) {
+		double newDT = (getLastTime()-getFirstTime())/maxSamples;
+		cout<<"Storage.resampleLinear: WARNING: resampling at time step "<<newDT<<" (but minimum time step is "<<aDT<<")"<<endl;
+		aDT = newDT;
+	}
+
+	Array<std::string> saveLabels = getColumnLabels();
+
+	// HOW MANY TIME STEPS?
+	double ti = getFirstTime();
+	double tf = getLastTime();
+	int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+
+	Storage *newStorage = new Storage(nr);
+
+	// LOOP THROUGH THE DATA
+	int ny=0;
+	double *y=NULL;
+	StateVector vec;
+	for(int i=0; i<nr; i++) {
+		double t = ti+aDT*(double)i;
+		// INTERPOLATE THE STATES
+		ny = getDataAtTime(t,ny,&y);
+		newStorage->append(t,ny,y);
+	}
+
+	copyData(*newStorage);
+
+	delete newStorage;
+	delete[] y;
+
+	return aDT;
+}
 
 //=============================================================================
 // IO
