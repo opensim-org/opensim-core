@@ -112,6 +112,8 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	Optimizer *optimizer = createOptimizer(aIKOptions, _ikTarget);
 
 	try {
+	Array<double> emptyX(0.0,_ikTarget.getModel().getNumControls());
+	Array<double> emptyY(0.0,_ikTarget.getModel().getNumStates());
 
 	for (int index = startFrame; index <= endFrame; index++)
 	{
@@ -163,16 +165,15 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 
 		// INTEGRATION CALLBACKS
 		// TODO: pass callback a reasonable "dt" value
-		double emptyX, emptyY;
 		IntegCallbackSet *callbackSet = _ikTarget.getModel().getIntegCallbackSet();
 		if(callbackSet!=NULL)
-			callbackSet->step(&emptyX,&emptyY,NULL,index-startFrame+1,0,currentTime,&emptyX,&emptyY);
+			callbackSet->step(&emptyX[0],&emptyY[0],NULL,index-startFrame+1,0,currentTime,&emptyX[0],&emptyY[0]);
 
 		// ANALYSES
 		// TODO: pass callback a reasonable "dt" value
 		AnalysisSet *analysisSet = _ikTarget.getModel().getAnalysisSet();
 		if(analysisSet!=NULL)
-			analysisSet->step(&emptyX,&emptyY,NULL,index-startFrame+1,0,currentTime,&emptyX,&emptyY);
+			analysisSet->step(&emptyX[0],&emptyY[0],NULL,index-startFrame+1,0,currentTime,&emptyX[0],&emptyY[0]);
 	}
 
 	} catch (...) { // e.g. may get InterruptedException from the callbackSet

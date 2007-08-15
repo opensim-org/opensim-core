@@ -60,7 +60,7 @@ private:
 public:
 	virtual ~IKTool();
 	IKTool();
-	IKTool(const std::string &aFileName, Model* guiModel=0) SWIG_DECLARE_EXCEPTION;
+	IKTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
 

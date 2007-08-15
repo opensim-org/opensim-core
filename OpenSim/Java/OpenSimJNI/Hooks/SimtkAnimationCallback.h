@@ -64,6 +64,7 @@ protected:
 	double*			_offsets;
 
 	Model*			_modelForDisplay; // might be a different model than the one we're the callback on
+	bool				_modelForDisplaySetConfiguration;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -103,6 +104,7 @@ public:
 	void extractOffsets(Model& displayModel);
 
 	Model *getModelForDisplay() { return _modelForDisplay; }
+	void setModelForDisplaySetConfiguration(bool aSetConfiguration) { _modelForDisplaySetConfiguration = aSetConfiguration; }
 public:
 	// Load transforms vector from KinematicsEngine
 	void getTransformsFromKinematicsEngine(Model& simmModel);

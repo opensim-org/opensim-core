@@ -54,7 +54,7 @@ IKTool::IKTool() :
  *
  * @param aFileName File name of the document.
  */
-IKTool::IKTool(const string &aFileName, Model* guiModel) :
+IKTool::IKTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
@@ -66,11 +66,7 @@ IKTool::IKTool(const string &aFileName, Model* guiModel) :
 	setNull();
 	updateFromXMLNode();
 
-	if(guiModel) {
-		// A valid model is passed in, and is initialized (likely from GUI)
-		// In this scenario, _modelFile is ignored (probably with a warning)
-		setModel(guiModel);
-	} else {
+	if(aLoadModel) {
 		loadModel(aFileName);
 		if (_model && !_model->hasDynamicsEngine()) 
 			throw( Exception("No dynamics engine found for model.  Make sure the OpenSim model specified in the "+
