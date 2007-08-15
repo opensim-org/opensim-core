@@ -253,6 +253,7 @@ public:
 	// STATES
 	//--------------------------------------------------------------------------
 	virtual void getStateNames(Array<std::string> &rStateNames) const;
+	virtual void setStates(const Array<double> &aY) { setStates(&aY[0]); }
 	virtual void setStates(const double aY[]);
 	virtual void getStates(double rY[]) const;
 	//virtual void setState(const std::string &aName,double aY);

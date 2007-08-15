@@ -998,6 +998,11 @@ printResults()
 		_integrand->getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
 		_integrand->getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
 		_integrand->getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+
+		Storage statesDegrees(*_integrand->getStateStorage());
+		_model->getDynamicsEngine().convertRadiansToDegrees(statesDegrees);
+		statesDegrees.setWriteSIMMHeader(true);
+		statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
 	}
 
 	IO::chDir(saveWorkingDirectory);
