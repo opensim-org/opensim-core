@@ -173,8 +173,14 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
 
 	if(!proceed(aStep)) return 0;
 
-	if(getModelForDisplay() != getModel() && _modelForDisplaySetConfiguration) 
-		getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
+	if(getModelForDisplay() != getModel() && _modelForDisplaySetConfiguration) {
+		// NOTE: doing this can be dangerous (just because they have the same #states doesn't
+		// mean they're compatible states...)
+		//if(getModelForDisplay()->getNumStates() == getModel()->getNumStates())
+		//	getModelForDisplay()->setStates(aY);
+		//else
+			getModelForDisplay()->getDynamicsEngine().setConfiguration(&aY[0], &aY[getModelForDisplay()->getNumCoordinates()]);
+	}
 	
 	//mutex_begin(0);	// Intention is to make sure xforms that are cached are consistent from the same time
 	getTransformsFromKinematicsEngine(*getModelForDisplay());
