@@ -49,6 +49,8 @@ clear fnames fnameMeasured;
 
 % muscle excitations, activations, and forces; actuator forces; joint moments
 fnames = {sprintf('%s_%s_packaged.mot', subject, ss.trial)};
+% Uncomment the line below, and comment out the line below that, to plot
+% measured EMG data against the muscle activations.
 %fnameMeasured = sprintf('%s%s_%sEmgEnv.mot', datadir, subject, ss.trial);
 fnameMeasured = {};
 figHandleArray = 10:18;
@@ -60,7 +62,11 @@ compare_muscleFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDela
 figHandleArray = 40:43;
 compare_actuatorFrcFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
 figHandleArray = 50:53;
-compare_jointMomFromMot(subject, fnames, ss, figHandleArray, ref_dataFormatDelaware);
+% Change "false" to "true" in the line below to plot the literature joint moments
+% against the simulated joint moments and joint moments estimated from
+% applying inverse dynamics to the result of applying inverse kinematics to
+% the measured marker trajectories.
+compare_jointMomFromMot(subject, fnames, false, ss, figHandleArray, ref_dataFormatDelaware);
 clear fnames fnameMeasured;
 
 if ~GLOBAL_individualprintmenus
