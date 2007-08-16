@@ -187,6 +187,7 @@ public:
 	{
 		for (int i=_allGeometry.getSize()-1; i >= 0; i--)
 			delete _allGeometry.get(i);
+		_allGeometry.setSize(0);
 	}
 	Geometry* getGeometry(int i)
 	{

@@ -160,7 +160,9 @@ public:
 	void getKeys(std::string rKeys[]) const;
 	const Array<std::string>& getKeys() const { return _keys; }
 	const Array<AbstractJoint*>& getJointList() const { return _jointList; }
+	void clearJointList() { _jointList.setSize(0); }
 	const Array<SimmPath*>& getPathList() const { return _pathList; }
+	void clearPathList() { _pathList.setSize(0); }
 	void determineType();
 
 private:

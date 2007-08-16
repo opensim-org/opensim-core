@@ -108,9 +108,7 @@ Object* ObjectGroup::copy() const
 void ObjectGroup::copyData(const ObjectGroup &aGroup)
 {
    _memberNames = aGroup._memberNames;
-	_memberObjects = aGroup._memberObjects;
-	// because ArrayPtrs::operator= sets MemoryOwner to true
-	_memberObjects.setMemoryOwner(false);
+	_memberObjects = aGroup._memberObjects; // TODO: this copies pointers... but as long as call setup afterwards it should be okay
 }
 
 //_____________________________________________________________________________
@@ -119,10 +117,8 @@ void ObjectGroup::copyData(const ObjectGroup &aGroup)
  */
 void ObjectGroup::setNull()
 {
-	_memberObjects.setSize(0);
-	_memberObjects.setMemoryOwner(false);
-
 	setType("ObjectGroup");
+	_memberObjects.setSize(0);
 }
 
 //_____________________________________________________________________________
@@ -163,7 +159,10 @@ ObjectGroup& ObjectGroup::operator=(const ObjectGroup &aGroup)
  */
 bool ObjectGroup::contains(const string& aName) const
 {
-	return _memberObjects.getIndex(aName) != -1;
+	for(int i=0; i<_memberObjects.getSize(); i++)
+		if(_memberObjects[i] && _memberObjects[i]->getName()==aName)
+			return true;
+	return false;
 }
 
 //_____________________________________________________________________________
@@ -176,7 +175,7 @@ void ObjectGroup::add(Object* aObject)
 {
 	if (aObject != NULL) {
 		// check if object is already a member of this group
-		if (_memberObjects.getIndex(aObject) != -1) return;
+		if (_memberObjects.findIndex(aObject) != -1) return;
 
 		_memberObjects.append(aObject);
 		_memberNames.append(aObject->getName());
@@ -193,11 +192,10 @@ void ObjectGroup::remove(const Object* aObject)
 {
 	if (aObject != NULL)
 	{
-		for (int i=0; i<_memberObjects.getSize(); i++) {
-			if (aObject == _memberObjects.get(i)) {
-				_memberObjects.remove(i);
-				_memberNames.remove(i);
-			}
+		int index = _memberObjects.findIndex(const_cast<Object*>(aObject));
+		if(index >= 0) {
+			_memberObjects.remove(index);
+			_memberNames.remove(index);
 		}
 	}
 }
@@ -213,14 +211,10 @@ void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
 {
 	if (aOldObject != NULL && aNewObject != NULL)
 	{
-		for (int i=0; i<_memberObjects.getSize(); i++) {
-			if (aOldObject == _memberObjects.get(i)) {
-				_memberObjects.remove(i);
-				_memberNames.remove(i);
-				_memberObjects.insert(i, aNewObject);
-				_memberNames.insert(i, aNewObject->getName());
-				break;
-			}
+		int index = _memberObjects.findIndex(const_cast<Object*>(aOldObject));
+		if(index >= 0) {
+			_memberObjects.get(index) = aNewObject;
+			_memberNames.get(index) = aNewObject->getName();
 		}
 	}
 }

@@ -65,7 +65,7 @@ protected:
 	PropertyStrArray _memberNamesProp;
 	Array<std::string>& _memberNames;
 
-	ArrayPtrs<Object> _memberObjects;
+	Array<Object*> _memberObjects;
 
 //=============================================================================
 // METHODS
@@ -90,10 +90,7 @@ public:
 	void remove(const Object* aObject);
 	void replace(const Object* aOldObject, Object* aNewObject);
 	void setup(ArrayPtrs<Object>& aObjects);
-	const ArrayPtrs<Object>& getMembers() const
-	{
-		return _memberObjects;
-	}
+	const Array<Object*>& getMembers() const { return _memberObjects; }
 
 	OPENSIM_DECLARE_DERIVED(ObjectGroup, Object);
 

@@ -1704,6 +1704,12 @@ void SimmKinematicsEngine::makePaths()
  */
 void SimmKinematicsEngine::createCoordinateJointLists()
 {
+	// Clear current joint lists!!
+	for(int i=0; i<_coordinateSet.getSize(); i++) {
+		SimmCoordinate* coordinate = dynamic_cast<SimmCoordinate*>(_coordinateSet.get(i));
+		if(coordinate) ((SimmCoordinate*)coordinate)->clearJointList();
+	}
+
    for (int i = 0; i < _coordinateSet.getSize(); i++)
    {
       for (int j = 0; j < _jointSet.getSize(); j++)
@@ -1723,6 +1729,12 @@ void SimmKinematicsEngine::createCoordinateJointLists()
  */
 void SimmKinematicsEngine::createCoordinatePathLists()
 {
+	// Clear current path lists!!
+	for(int i=0; i<_coordinateSet.getSize(); i++) {
+		SimmCoordinate* coordinate = dynamic_cast<SimmCoordinate*>(_coordinateSet.get(i));
+		if(coordinate) ((SimmCoordinate*)coordinate)->clearPathList();
+	}
+
 	for (int i = 0; i < _bodySet.getSize(); i++)
 	{
 		for (int j = 0; j < _bodySet.getSize(); j++)

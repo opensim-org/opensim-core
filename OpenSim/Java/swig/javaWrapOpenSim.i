@@ -390,6 +390,7 @@ using namespace OpenSim;
 %template(ArrayDouble) OpenSim::Array<double>;
 %template(ArrayInt) OpenSim::Array<int>;
 %template(ArrayStr) OpenSim::Array<std::string>;
+%template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::AbstractMarker>;
