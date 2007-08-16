@@ -281,24 +281,24 @@ bool PerturbationTool::run()
 	AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
 	AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
 	// Body1 Linear
-	if(_rLinSpringOn) {
-		_rLin = addLinearCorrectiveSpring(qStore,uStore,*rightGRFApp);
+	if(_body1LinSpringActive) {
+		_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*rightGRFApp);
 	}
 	// Body1 Torsional
-	if(_rTorSpringOn) {
-		double tauOn = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
-		double tauOff = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
-		_rTor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_rFootFlat,tauOff,_rHeelOff);
+	if(_body1TorSpringActive) {
+		double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
+		double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
+		_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
 	}
 	// Body2 Linear
-	if(_lLinSpringOn) {
-		_lLin = addLinearCorrectiveSpring(qStore,uStore,*leftGRFApp);
+	if(_body2LinSpringActive) {
+		_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*leftGRFApp);
 	}
 	// Body2 Torsional
-	if(_lTorSpringOn) {
-		double tauOn = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
-		double tauOff = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
-		_lTor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_lFootFlat,tauOff,_lHeelOff);
+	if(_body2TorSpringActive) {
+		double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
+		double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
+		_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
 	}
 
 	// INPUT
@@ -614,21 +614,21 @@ bool PerturbationTool::run()
 
 			if(_outputDetailedResults) {
 				// Spring forces
-				if(_rLin) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_rLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_rLin->getAppliedForceStorage()->print(fileName);
+				if(_body1Lin) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_body1.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					_body1Lin->getAppliedForceStorage()->print(fileName);
 				}
-				if(_lLin) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_lLin.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_lLin->getAppliedForceStorage()->print(fileName);
+				if(_body2Lin) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_body2.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					_body2Lin->getAppliedForceStorage()->print(fileName);
 				}
-				if(_rTor) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_rTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_rTor->getAppliedTorqueStorage()->print(fileName);
+				if(_body1Tor) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_body1.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					_body1Tor->getAppliedTorqueStorage()->print(fileName);
 				}
-				if(_lTor) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_lTrq.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_lTor->getAppliedTorqueStorage()->print(fileName);
+				if(_body2Tor) {
+					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_body2.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
+					_body2Tor->getAppliedTorqueStorage()->print(fileName);
 				}
 				if(kin) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_Kinematics_q.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);

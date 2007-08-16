@@ -86,58 +86,46 @@ protected:
 
 	// FOOT CONTACT EVENT TIMES
 	/** Flag indicating wether or not to turn on a linear corrective spring for the right foot. */
-	OpenSim::PropertyBool _rLinSpringOnProp;
-	bool &_rLinSpringOn;
+	OpenSim::PropertyBool _body1LinSpringActiveProp;
+	bool &_body1LinSpringActive;
 	/** Flag indicating wether or not to turn on a torsional corrective spring for the right foot. */
-	OpenSim::PropertyBool _rTorSpringOnProp;
-	bool &_rTorSpringOn;
+	OpenSim::PropertyBool _body1TorSpringActiveProp;
+	bool &_body1TorSpringActive;
 	/** Flag indicating wether or not to turn on a linear corrective spring for the left foot. */
-	OpenSim::PropertyBool _lLinSpringOnProp;
-	bool &_lLinSpringOn;
+	OpenSim::PropertyBool _body2LinSpringActiveProp;
+	bool &_body2LinSpringActive;
 	/** Flag indicating wether or not to turn on a torsional corrective spring for the left foot. */
-	OpenSim::PropertyBool _lTorSpringOnProp;
-	bool &_lTorSpringOn;
-	/** Time of right heel strike. */
-	PropertyDbl _rHeelStrikeProp;
-	double &_rHeelStrike;
-	/** Time of right foot flat. */
-	PropertyDbl _rFootFlatProp;
-	double &_rFootFlat;
-	/** Time of right heel off. */
-	PropertyDbl _rHeelOffProp;
-	double &_rHeelOff;
-	/** Time of right toe off. */
-	PropertyDbl _rToeOffProp;
-	double &_rToeOff;
-	/** Time of left heel strike. */
-	PropertyDbl _lHeelStrikeProp;
-	double &_lHeelStrike;
-	/** Time of left foot flat. */
-	PropertyDbl _lFootFlatProp;
-	double &_lFootFlat;
-	/** Time of left heel off. */
-	PropertyDbl _lHeelOffProp;
-	double &_lHeelOff;
-	/** Time of left toe off. */
-	PropertyDbl _lToeOffProp;
-	double &_lToeOff;
+	OpenSim::PropertyBool _body2TorSpringActiveProp;
+	bool &_body2TorSpringActive;
+	/** Time at which the torsional spring comes on for body1 (if the spring is active). */
+	PropertyDbl _body1TorSpringTimeOnProp;
+	double &_body1TorSpringTimeOn;
+	/** Time at which the torsional spring turns off for body1 (if the spring is active). */
+	PropertyDbl _body1TorSpringTimeOffProp;
+	double &_body1TorSpringTimeOff;
+	/** Time at which the torsional spring turns on for body2 (if the spring is active). */
+	PropertyDbl _body2TorSpringTimeOnProp;
+	double &_body2TorSpringTimeOn;
+	/** Time at which the torsional spring turns off for body2 (if the spring is active). */
+	PropertyDbl _body2TorSpringTimeOffProp;
+	double &_body2TorSpringTimeOff;
 
 	// CORRECTIVE SPRING PARAMETERS
-	/** Rise time for scaling functions. */
+	/** Rise time for scaling functions for the torsional corrective springs. */
 	PropertyDbl _tauProp;
 	double &_tau;
-	/** Time at which the torsional spring for body1 scale into effect. */
-	PropertyDbl _tauRightStartProp;
-	double &_tauRightStart;
-	/** Time at which the torsional spring for body1 scale out of effect. */
-	PropertyDbl _tauRightEndProp;
-	double &_tauRightEnd;
-	/** Time at which the torsional spring for body2 scale into effect. */
-	PropertyDbl _tauLeftStartProp;
-	double &_tauLeftStart;
-	/** Time at which the torsional spring for body2 scale out of effect. */
-	PropertyDbl _tauLeftEndProp;
-	double &_tauLeftEnd;
+	/** Scaling rise-time for the body1 torsional spring turning on. */
+	PropertyDbl _tauBody1OnProp;
+	double &_tauBody1On;
+	/** Scaling rise-time for the body1 torsional spring turning off. */
+	PropertyDbl _tauBody1OffProp;
+	double &_tauBody1Off;
+	/** Scaling rise-time for the body2 torsional spring turning on. */
+	PropertyDbl _tauBody2OnProp;
+	double &_tauBody2On;
+	/** Scaling rise-time for the body2 torsional spring turning off. */
+	PropertyDbl _tauBody2OffProp;
+	double &_tauBody2Off;
 	/** Force magnitude above which the linear springs start to scale in to effect. */
 	PropertyDbl _springTransitionStartForceProp;
 	double &_springTransitionStartForce;
@@ -173,8 +161,8 @@ protected:
 	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
 	bool _printResultFiles;
 	/** Pointer to the linear and torsional corrective springs. */
-	LinearSpring *_rLin, *_lLin;
-	TorsionalSpring *_rTor, *_lTor;
+	LinearSpring *_body1Lin, *_body2Lin;
+	TorsionalSpring *_body1Tor, *_body2Tor;
 
 //=============================================================================
 // METHODS

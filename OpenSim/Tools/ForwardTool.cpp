@@ -51,23 +51,19 @@ ForwardTool::ForwardTool() :
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_rLinSpringOn(_rLinSpringOnProp.getValueBool()),
-	_rTorSpringOn(_rTorSpringOnProp.getValueBool()),
-	_lLinSpringOn(_lLinSpringOnProp.getValueBool()),
-	_lTorSpringOn(_lTorSpringOnProp.getValueBool()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
+	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
+	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
+	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
+	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
+	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
+	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
+	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
+	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_tauBody1On(_tauBody1OnProp.getValueDbl()),
+	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
+	_tauBody2On(_tauBody2OnProp.getValueDbl()),
+	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
@@ -100,23 +96,19 @@ ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_rLinSpringOn(_rLinSpringOnProp.getValueBool()),
-	_rTorSpringOn(_rTorSpringOnProp.getValueBool()),
-	_lLinSpringOn(_lLinSpringOnProp.getValueBool()),
-	_lTorSpringOn(_lTorSpringOnProp.getValueBool()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
+	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
+	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
+	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
+	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
+	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
+	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
+	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
+	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_tauBody1On(_tauBody1OnProp.getValueDbl()),
+	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
+	_tauBody2On(_tauBody2OnProp.getValueDbl()),
+	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
@@ -179,23 +171,19 @@ ForwardTool(const ForwardTool &aTool) :
 	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_rLinSpringOn(_rLinSpringOnProp.getValueBool()),
-	_rTorSpringOn(_rTorSpringOnProp.getValueBool()),
-	_lLinSpringOn(_lLinSpringOnProp.getValueBool()),
-	_lTorSpringOn(_lTorSpringOnProp.getValueBool()),
-	_rHeelStrike(_rHeelStrikeProp.getValueDbl()),
-	_rFootFlat(_rFootFlatProp.getValueDbl()),
-	_rHeelOff(_rHeelOffProp.getValueDbl()),
-	_rToeOff(_rToeOffProp.getValueDbl()),
-	_lHeelStrike(_lHeelStrikeProp.getValueDbl()),
-	_lFootFlat(_lFootFlatProp.getValueDbl()),
-	_lHeelOff(_lHeelOffProp.getValueDbl()),
-	_lToeOff(_lToeOffProp.getValueDbl()),
+	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
+	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
+	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
+	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
+	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
+	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
+	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
+	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
 	_tau(_tauProp.getValueDbl()),
-	_tauRightStart(_tauRightStartProp.getValueDbl()),
-	_tauRightEnd(_tauRightEndProp.getValueDbl()),
-	_tauLeftStart(_tauLeftStartProp.getValueDbl()),
-	_tauLeftEnd(_tauLeftEndProp.getValueDbl()),
+	_tauBody1On(_tauBody1OnProp.getValueDbl()),
+	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
+	_tauBody2On(_tauBody2OnProp.getValueDbl()),
+	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
 	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
@@ -245,16 +233,16 @@ setNull()
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 
 	// CORRECTIVE SPING ON FLAGS
-	_rLinSpringOn = _rTorSpringOn = false;
-	_lLinSpringOn = _lTorSpringOn = false;
+	_body1LinSpringActive = _body1TorSpringActive = false;
+	_body2LinSpringActive = _body2TorSpringActive = false;
 
 	// FOOT CONTACT EVENTS
-	_rHeelStrike = _rFootFlat =_rHeelOff = _rToeOff = 0.0;
-	_lHeelStrike = _lFootFlat =_lHeelOff = _lToeOff = 0.0;
+	_body1TorSpringTimeOn = _body1TorSpringTimeOff = 0.0;
+	_body2TorSpringTimeOn = _body2TorSpringTimeOff = 0.0;
 
 	// CORRECTIVE SPRING PARAMETERS
 	_tau = 0.001;
-	_tauRightStart = _tauRightEnd = _tauLeftStart = _tauLeftEnd = _tau;
+	_tauBody1On = _tauBody1Off = _tauBody2On = _tauBody2Off = _tau;
 	_springTransitionStartForce = 1.0;
 	_springTransitionEndForce = 50.0;
 	_forceThreshold = 0.0;
@@ -272,10 +260,10 @@ setNull()
 	// INTERNAL WORK VARIABLES
 	_integrand = NULL;
 	_yStore = NULL;	
-	_rLin = NULL;
-	_lLin = NULL;
-	_rTor = NULL;
-	_lTor = NULL;
+	_body1Lin = NULL;
+	_body2Lin = NULL;
+	_body1Tor = NULL;
+	_body2Tor = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -347,91 +335,80 @@ void ForwardTool::setupProperties()
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
 
-	// FOOT CONTACT EVENT TIMES
-	_rLinSpringOnProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 1.");
-	_rLinSpringOnProp.setName("body1_linear_corrective_spring_on");
-	_propertySet.append(&_rLinSpringOnProp);
+	// CONTACT ON-OFF PROPERTIES
+	// Body1 Linear
+	_body1LinSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 1.");
+	_body1LinSpringActiveProp.setName("body1_linear_corrective_spring_active");
+	_propertySet.append(&_body1LinSpringActiveProp);
 
-	_rTorSpringOnProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 1.");
-	_rTorSpringOnProp.setName("body1_torsional_corrective_spring_on");
-	_propertySet.append(&_rTorSpringOnProp);
+	// Body1 Torsional
+	_body1TorSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 1.");
+	_body1TorSpringActiveProp.setName("body1_torsional_corrective_spring_active");
+	_propertySet.append(&_body1TorSpringActiveProp);
 
-	_lLinSpringOnProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 2.");
-	_lLinSpringOnProp.setName("body2_linear_corrective_spring_on");
-	_propertySet.append(&_lLinSpringOnProp);
+	_body1TorSpringTimeOnProp.setComment("Time at which the torsional spring comes on for body1 (if it is active). By default, this time is 0.0.");
+	_body1TorSpringTimeOnProp.setName("body1_torsional_corrective_spring_time_on");
+	_propertySet.append( &_body1TorSpringTimeOnProp );
 
-	_lTorSpringOnProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 2.");
-	_lTorSpringOnProp.setName("body2_torsional_corrective_spring_on");
-	_propertySet.append(&_lTorSpringOnProp);
+	_body1TorSpringTimeOffProp.setComment("Time at which the torsional spring turns off for body1 (if it is active). By default, this time is 0.0.");
+	_body1TorSpringTimeOffProp.setName("body1_torsional_corrective_spring_time_off");
+	_propertySet.append( &_body1TorSpringTimeOffProp );
 
-	_rHeelStrikeProp.setComment("Time of right heel strike.  The linear corrective spring will increase its influence at this time.");
-	_rHeelStrikeProp.setName("r_heel_strike");
-	_propertySet.append( &_rHeelStrikeProp );
+	// Body2 Linear
+	_body2LinSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 2.");
+	_body2LinSpringActiveProp.setName("body2_linear_corrective_spring_active");
+	_propertySet.append(&_body2LinSpringActiveProp);
 
-	_rFootFlatProp.setComment("Time of right foot flat.  The torsional corrective spring will increase its influence at this time.");
-	_rFootFlatProp.setName("r_foot_flat");
-	_propertySet.append( &_rFootFlatProp );
+	// Body2 Torsional
+	_body2TorSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 2.");
+	_body2TorSpringActiveProp.setName("body2_torsional_corrective_spring_active");
+	_propertySet.append(&_body2TorSpringActiveProp);
 
-	_rHeelOffProp.setComment("Time of right heel off.  The torsional corrective spring will decrease its influence at this time.");
-	_rHeelOffProp.setName("r_heel_off");
-	_propertySet.append( &_rHeelOffProp );
+	_body2TorSpringTimeOnProp.setComment("Time at which the torsional spring comes on for body2 (if it is active). By default, this time is 0.0.");
+	_body2TorSpringTimeOnProp.setName("body2_torsional_corrective_spring_time_on");
+	_propertySet.append( &_body2TorSpringTimeOnProp );
 
-	_rToeOffProp.setComment("Time of right toe off.  The linear corrective spring will decrease its influence at this time.");
-	_rToeOffProp.setName("r_toe_off");
-	_propertySet.append( &_rToeOffProp );
+	_body2TorSpringTimeOffProp.setComment("Time at which the torsional spring turns off for body2 (if it is active). By default, this time is 0.0.");
+	_body2TorSpringTimeOffProp.setName("body2_torsional_corrective_spring_time_off");
+	_propertySet.append( &_body2TorSpringTimeOffProp );
 
-	_lHeelStrikeProp.setComment("Time of left heel strike.  The linear corrective spring will increase its influence at this time");
-	_lHeelStrikeProp.setName("l_heel_strike");
-	_propertySet.append( &_lHeelStrikeProp );
-
-	_lFootFlatProp.setComment("Time of left foot flat.  The torsional corrective spring will increase its influence at this time");
-	_lFootFlatProp.setName("l_foot_flat");
-	_propertySet.append( &_lFootFlatProp );
-
-	_lHeelOffProp.setComment("Time of left heel off.  The torsional corrective spring will decrease its influence at this time");
-	_lHeelOffProp.setName("l_heel_off");
-	_propertySet.append( &_lHeelOffProp );
-
-	_lToeOffProp.setComment("Time of left toe off.  The linear corrective spring will decrease its influence at this time");
-	_lToeOffProp.setName("l_toe_off");
-	_propertySet.append( &_lToeOffProp );
 
 	// CORRECTIVE SPRING PARAMETERS
-	comment = "Rise time for scaling functions.  This parameter determines how fast a corrective "
-				 "spring is scaled into or out of effect around contact events.";
-	_tauProp.setComment(comment);
-	_tauProp.setName("scaling_rise_time");
-	_propertySet.append( &_tauProp );
-
-	comment = "Override scaling_rise_time for right foot flat (transition in).";
-	_tauRightStartProp.setComment(comment);
-	_tauRightStartProp.setName("scaling_rise_time_right_start");
-	_propertySet.append( &_tauRightStartProp );
-
-	comment = "Override scaling_rise_time for right heel off (transition out).";
-	_tauRightEndProp.setComment(comment);
-	_tauRightEndProp.setName("scaling_rise_time_right_end");
-	_propertySet.append( &_tauRightEndProp );
-
-	comment = "Override scaling_rise_time for left foot flat (transition in).";
-	_tauLeftStartProp.setComment(comment);
-	_tauLeftStartProp.setName("scaling_rise_time_left_start");
-	_propertySet.append( &_tauLeftStartProp );
-
-	comment = "Override scaling_rise_time for left heel off (transition out).";
-	_tauLeftEndProp.setComment(comment);
-	_tauLeftEndProp.setName("scaling_rise_time_left_end");
-	_propertySet.append( &_tauLeftEndProp );
-
 	comment = "Force magnitude at which linear springs start to transition in.";
 	_springTransitionStartForceProp.setComment(comment);
-	_springTransitionStartForceProp.setName("spring_transition_start_force");
+	_springTransitionStartForceProp.setName("linear_spring_transition_start_force");
 	_propertySet.append( &_springTransitionStartForceProp );
 
 	comment = "Force magnitude past which linear springs are fully activated.";
 	_springTransitionEndForceProp.setComment(comment);
 	_springTransitionEndForceProp.setName("spring_transition_end_force");
 	_propertySet.append( &_springTransitionEndForceProp );
+
+	comment = "Rise time for scaling functions for the torsional corrective springs. "
+				 "This parameter determines how fast a torsional corrective spring is scaled on and off.";
+	_tauProp.setComment(comment);
+	_tauProp.setName("torsional_spring_scaling_rise_time");
+	_propertySet.append( &_tauProp );
+
+	comment = "Override scaling rise time for the on transition of the body1 torsional corrective spring.";
+	_tauBody1OnProp.setComment(comment);
+	_tauBody1OnProp.setName("body1_scaling_rise_time_on");
+	_propertySet.append( &_tauBody1OnProp );
+
+	comment = "Override scaling rise time for the off transition out of the body1 torsional corrective spring.";
+	_tauBody1OffProp.setComment(comment);
+	_tauBody1OffProp.setName("body1_scaling_rise_time_off");
+	_propertySet.append( &_tauBody1OffProp );
+
+	comment = "Override scaling rise time for the on transition of the body2 torsional corrective spring.";
+	_tauBody2OnProp.setComment(comment);
+	_tauBody2OnProp.setName("body2_scaling_rise_time_on");
+	_propertySet.append( &_tauBody2OnProp );
+
+	comment = "Override scaling rise time for the off transition of the body2 torsional corrective spring.";
+	_tauBody2OffProp.setComment(comment);
+	_tauBody2OffProp.setName("body2_scaling_rise_time_off");
+	_propertySet.append( &_tauBody2OffProp );
 
 	comment ="Force magnitude below which the linear corrective springs exert no force. "
 				"Setting this parameter to a small positive number will make it possible to "
@@ -495,10 +472,10 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 	Array<double> rLinearScale(0.0),rTorsionalScale(0.0);
 	Array<double> lLinearScale(0.0),lTorsionalScale(0.0);
 
-	double tauRStart = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
-	double tauREnd = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
-	double tauLStart = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
-	double tauLEnd = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
+	double tauRStart = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
+	double tauREnd = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
+	double tauLStart = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
+	double tauLEnd = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
 
 	cout << "Spring parameters:" << endl;
 	cout << "\tSpring transition weights: " << _springTransitionStartForce << " " << _springTransitionEndForce << endl;
@@ -521,11 +498,11 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 		// Use different tau's to transition torsional springs
 		// rTorsional
 		value1 = rdMath::SigmaUp(tauRStart,_rFootFlat,tScale);
-		value2 = rdMath::SigmaDn(tauREnd,_rHeelOff,tScale);
+		value2 = rdMath::SigmaDn(tauREnd,_body1TorSpringTimeOff,tScale);
 		rTorsionalScale.append(value1+value2-1.0);
 		// lTorsional
-		value1 = rdMath::SigmaUp(tauLStart,_lFootFlat,tScale);
-		value2 = rdMath::SigmaDn(tauLEnd,_lHeelOff,tScale);
+		value1 = rdMath::SigmaUp(tauLStart,_body2TorSpringTimeOn,tScale);
+		value2 = rdMath::SigmaDn(tauLEnd,_body2TorSpringTimeOff,tScale);
 		lTorsionalScale.append(value1+value2-1.0);
 	}
 	// Create Splines
@@ -545,50 +522,50 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 
 	// LINEAR
 	// right
-	if(_rLinSpringOn) {
-		_rLin = new LinearSpring(_model,rightFootBody);
+	if(_body1LinSpringActive) {
+		_body1Lin = new LinearSpring(_model,rightFootBody);
 		// Use the same foot-frame COP positions as the GRF force applier
-		_rLin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
-		_rLin->computeTargetFunctions(qStore,uStore);
-		_rLin->setKValue(&_kLin[0]);
-		_rLin->setBValue(&_bLin[0]);
-		_rLin->setScaleFunction(rScaleTranslationalSpline);
-		if(_outputDetailedResults) _rLin->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_rLin);
+		_body1Lin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
+		_body1Lin->computeTargetFunctions(qStore,uStore);
+		_body1Lin->setKValue(&_kLin[0]);
+		_body1Lin->setBValue(&_bLin[0]);
+		_body1Lin->setScaleFunction(rScaleTranslationalSpline);
+		if(_outputDetailedResults) _body1Lin->setRecordAppliedLoads(true);
+		_model->addDerivCallback(_body1Lin);
 	}
 	// left linear
-	if(_lLinSpringOn) {
-		_lLin = new LinearSpring(_model,leftFootBody);
+	if(_body2LinSpringActive) {
+		_body2Lin = new LinearSpring(_model,leftFootBody);
 		// Use the same foot-frame COP positions as the GRF force applier
-		_lLin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
-		_lLin->computeTargetFunctions(qStore,uStore);
-		_lLin->setKValue(&_kLin[0]);
-		_lLin->setBValue(&_bLin[0]);
-		_lLin->setScaleFunction(lScaleTranslationalSpline);
-		if(_outputDetailedResults) _lLin->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_lLin);
+		_body2Lin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
+		_body2Lin->computeTargetFunctions(qStore,uStore);
+		_body2Lin->setKValue(&_kLin[0]);
+		_body2Lin->setBValue(&_bLin[0]);
+		_body2Lin->setScaleFunction(lScaleTranslationalSpline);
+		if(_outputDetailedResults) _body2Lin->setRecordAppliedLoads(true);
+		_model->addDerivCallback(_body2Lin);
 	}
 
 	// TORSIONAL
 	// right
-	if(_rTorSpringOn) {
-		_rTor = new TorsionalSpring(_model,rightFootBody);
-		_rTor->computeTargetFunctions(qStore,uStore);
-		_rTor->setKValue(&_kTor[0]);
-		_rTor->setBValue(&_bTor[0]);
-		_rTor->setScaleFunction(rScaleTorsionalSpline);
-		if(_outputDetailedResults) _rTor->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_rTor);
+	if(_body1TorSpringActive) {
+		_body1Tor = new TorsionalSpring(_model,rightFootBody);
+		_body1Tor->computeTargetFunctions(qStore,uStore);
+		_body1Tor->setKValue(&_kTor[0]);
+		_body1Tor->setBValue(&_bTor[0]);
+		_body1Tor->setScaleFunction(rScaleTorsionalSpline);
+		if(_outputDetailedResults) _body1Tor->setRecordAppliedLoads(true);
+		_model->addDerivCallback(_body1Tor);
 	}
 	// left
-	if(_lTorSpringOn) {
-		_lTor = new TorsionalSpring(_model,leftFootBody);
-		_lTor->computeTargetFunctions(qStore,uStore);
-		_lTor->setKValue(&_kTor[0]);
-		_lTor->setBValue(&_bTor[0]);
-		_lTor->setScaleFunction(lScaleTorsionalSpline);
-		if(_outputDetailedResults) _lTor->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_lTor);
+	if(_body2TorSpringActiveProp) {
+		_body2Tor = new TorsionalSpring(_model,leftFootBody);
+		_body2Tor->computeTargetFunctions(qStore,uStore);
+		_body2Tor->setKValue(&_kTor[0]);
+		_body2Tor->setBValue(&_bTor[0]);
+		_body2Tor->setScaleFunction(lScaleTorsionalSpline);
+		if(_outputDetailedResults) _body2Tor->setRecordAppliedLoads(true);
+		_model->addDerivCallback(_body2Tor);
 	}
 
 	Array<string> labels;
@@ -610,8 +587,8 @@ constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp
 								  lScaleTorsionalSpline->evaluate(0,tScale),
 								  (_rHeelStrike<=tScale && tScale<=_rToeOff)?1:0,
 								  (_lHeelStrike<=tScale && tScale<=_lToeOff)?1:0,
-								  (_rFootFlat<=tScale && tScale<=_rHeelOff)?1:0,
-								  (_lFootFlat<=tScale && tScale<=_lHeelOff)?1:0};
+								  (_rFootFlat<=tScale && tScale<=_body1TorSpringTimeOff)?1:0,
+								  (_body2TorSpringTimeOn<=tScale && tScale<=_body2TorSpringTimeOff)?1:0};
 		debugStorage.append(tScale,8,values);
 	}
 	debugStorage.print("spring_scales.sto");
@@ -729,25 +706,21 @@ operator=(const ForwardTool &aTool)
 	_outputDetailedResults = aTool._outputDetailedResults;
 
 	// FOOT CONTACT
-	_rLinSpringOn = aTool._rLinSpringOn;
-	_rTorSpringOn = aTool._rTorSpringOn;
-	_lLinSpringOn = aTool._lLinSpringOn;
-	_lTorSpringOn = aTool._lTorSpringOn;
-	_rHeelStrike = aTool._rHeelStrike;
-	_rFootFlat = aTool._rFootFlat;
-	_rHeelOff = aTool._rHeelOff;
-	_rToeOff = aTool._rToeOff;
-	_lHeelStrike = aTool._lHeelStrike;
-	_lFootFlat = aTool._lFootFlat;
-	_lHeelOff = aTool._lHeelOff;
-	_lToeOff = aTool._lToeOff;
+	_body1LinSpringActive = aTool._body1LinSpringActive;
+	_body1TorSpringActive = aTool._body1TorSpringActive;
+	_body1TorSpringTimeOn = aTool._body1TorSpringTimeOn;
+	_body1TorSpringTimeOff = aTool._body1TorSpringTimeOff;
+	_body2LinSpringActive = aTool._body2LinSpringActive;
+	_body2TorSpringActive = aTool._body2TorSpringActive;
+	_body2TorSpringTimeOn = aTool._body2TorSpringTimeOn;
+	_body2TorSpringTimeOff = aTool._body2TorSpringTimeOff;
 
 	// CORRECTIVE SPRING PARAMETERS
 	_tau = aTool._tau;
-	_tauRightStart = aTool._tauRightStart;
-	_tauRightEnd = aTool._tauRightEnd;
-	_tauLeftStart = aTool._tauLeftStart;
-	_tauLeftEnd = aTool._tauLeftEnd;
+	_tauBody1On = aTool._tauBody1On;
+	_tauBody1Off = aTool._tauBody1Off;
+	_tauBody2On = aTool._tauBody2On;
+	_tauBody2Off = aTool._tauBody2Off;
 	_springTransitionStartForce = aTool._springTransitionStartForce;
 	_springTransitionEndForce = aTool._springTransitionEndForce;
 	_forceThreshold = aTool._forceThreshold;
@@ -864,24 +837,24 @@ bool ForwardTool::run()
 		AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
 		AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
 		// Body1 Linear
-		if(_rLinSpringOn) {
-			_rLin = addLinearCorrectiveSpring(qStore,uStore,*body1Force);
+		if(_body1LinSpringActive) {
+			_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*body1Force);
 		}
 		// Body1 Torsional
-		if(_rTorSpringOn) {
-			double tauOn = _tauRightStartProp.getUseDefault() ? _tau : _tauRightStart;
-			double tauOff = _tauRightEndProp.getUseDefault() ? _tau : _tauRightEnd;
-			_rTor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_rFootFlat,tauOff,_rHeelOff);
+		if(_body1TorSpringActive) {
+			double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
+			double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
+			_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
 		}
 		// Body2 Linear
-		if(_lLinSpringOn) {
-			_lLin = addLinearCorrectiveSpring(qStore,uStore,*body2Force);
+		if(_body2LinSpringActive) {
+			_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*body1Force);
 		}
 		// Body2 Torsional
-		if(_lTorSpringOn) {
-			double tauOn = _tauLeftStartProp.getUseDefault() ? _tau : _tauLeftStart;
-			double tauOff = _tauLeftEndProp.getUseDefault() ? _tau : _tauLeftEnd;
-			_lTor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_lFootFlat,tauOff,_lHeelOff);
+		if(_body2TorSpringActive) {
+			double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
+			double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
+			_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
 		}
 	}
 
@@ -956,22 +929,21 @@ bool ForwardTool::run()
 	char fileName[Object::NAME_LENGTH];
 	if(_printResultFiles) printResults();
 	if(_outputDetailedResults) {
-		// Spring forces
-		if(_rLin) {
-			sprintf(fileName,"%s/%s_detailed_appliedForce_rLin.sto",getResultsDir().c_str(),getName().c_str());
-			_rLin->getAppliedForceStorage()->print(fileName);
+		if(_body1Lin) {
+			sprintf(fileName,"%s/%s_detailed_appliedForce_body1.sto",getResultsDir().c_str(),getName().c_str());
+			_body1Lin->getAppliedForceStorage()->print(fileName);
 		}
-		if(_lLin) {
-			sprintf(fileName,"%s/%s_detailed_appliedForce_lLin.sto",getResultsDir().c_str(),getName().c_str());
-			_lLin->getAppliedForceStorage()->print(fileName);
+		if(_body2Lin) {
+			sprintf(fileName,"%s/%s_detailed_appliedForce_body2.sto",getResultsDir().c_str(),getName().c_str());
+			_body2Lin->getAppliedForceStorage()->print(fileName);
 		}
-		if(_rTor) {
-			sprintf(fileName,"%s/%s_detailed_appliedTorque_rTor.sto",getResultsDir().c_str(),getName().c_str());
-			_rTor->getAppliedTorqueStorage()->print(fileName);
+		if(_body1Tor) {
+			sprintf(fileName,"%s/%s_detailed_appliedTorque_body1.sto",getResultsDir().c_str(),getName().c_str());
+			_body1Tor->getAppliedTorqueStorage()->print(fileName);
 		}
-		if(_lTor) {
-			sprintf(fileName,"%s/%s_detailed_appliedTorque_lTor.sto",getResultsDir().c_str(),getName().c_str());
-			_lTor->getAppliedTorqueStorage()->print(fileName);
+		if(_body2Tor) {
+			sprintf(fileName,"%s/%s_detailed_appliedTorque_body2.sto",getResultsDir().c_str(),getName().c_str());
+			_body2Tor->getAppliedTorqueStorage()->print(fileName);
 		}
 	}
 
