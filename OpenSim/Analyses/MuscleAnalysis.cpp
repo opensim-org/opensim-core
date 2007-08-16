@@ -229,7 +229,7 @@ allocateStorageObjects()
 	_tendonLengthStore->setDescription(getDescription());
 	_storageList.append(_tendonLengthStore );
 
-	_forceStore = new Storage(1000,"Force");
+	_forceStore = new Storage(1000,"TendonForce");
 	_forceStore->setDescription(getDescription());
 	_storageList.append(_forceStore );
 
