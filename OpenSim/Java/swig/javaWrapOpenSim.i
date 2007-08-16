@@ -108,6 +108,8 @@
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
+#include <OpenSim/Simulation/Model/MovingMusclePoint.h>
+
 #include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
@@ -443,6 +445,8 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/MusclePoint.h>
 %include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
 %include <OpenSim/Simulation/Model/MuscleViaPoint.h>
+%include <OpenSim/Simulation/Model/MovingMusclePoint.h>
+
 %template(SetMusclePoint) OpenSim::Set<OpenSim::MusclePoint>;
 %template(ArrayMusclePoint) OpenSim::Array<OpenSim::MusclePoint*>;
 %include <OpenSim/Simulation/Model/MusclePointSet.h>
