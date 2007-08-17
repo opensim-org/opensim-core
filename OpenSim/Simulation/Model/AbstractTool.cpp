@@ -427,6 +427,10 @@ addAnalysisSetToModel()
 		analysis->setModel(_model);
 		_model->addAnalysis(analysis);
 	}
+
+	// Since the model has the analyses and will delete them when it is destructed, 
+	// make sure we don't also try to delete them when the tool gets destructed!!
+	_analysisSet.setMemoryOwner(false);
 }
 
 
