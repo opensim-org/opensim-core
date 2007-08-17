@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Model name="Wrist Model">
 	<defaults>
-		<Schutte1993Muscle name="defaultmuscle">
+		<SimmZajacHill name="defaultmuscle">
 			<max_isometric_force>546.000000000000</max_isometric_force>
 			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
@@ -25,8 +25,8 @@
 					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
 				</natCubicSpline>
 			</passive_force_length_curve>
-		</Schutte1993Muscle>
-		<Thelen2003Muscle name="defaultmuscle">
+		</SimmZajacHill>
+		<SimmDarrylMuscle name="defaultmuscle">
 			<max_isometric_force>546.000000000000</max_isometric_force>
 			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
@@ -50,31 +50,33 @@
 					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
 				</natCubicSpline>
 			</passive_force_length_curve>
-		</Thelen2003Muscle>
+		</SimmDarrylMuscle>
 	</defaults>
+	<credits>Gonzalez, R.V., Buchanan, T.S., Delp, S.L.</credits>
+	<publications>How muscle architecture and moment arms affect wrist flexion-extension moments. Journal of Biomechanics, vol. 30, pp. 705-712, 1997.</publications>
 	<angle_units> radians </angle_units>
 	<ActuatorSet>
 	<groups>
 		<ObjectGroup name="transfer">
-			<members>ECRB ECUpre </members>
+			<members>ECU_pre-surgery ECRB </members>
 		</ObjectGroup>
 		<ObjectGroup name="final">
-			<members>ECUpost </members>
+			<members>ECU_post-surgery </members>
 		</ObjectGroup>
 		<ObjectGroup name="flexors">
 			<members>APL EPB FCR FCU FDPI FDPL FDPM FDPR FDSI FDSL FDSM FDSR FPL PL </members>
 		</ObjectGroup>
 		<ObjectGroup name="extensors">
-			<members>ECRB ECRL ECUpost ECUpre EDCI EDCL EDCM EDCR EDM EIP EPL </members>
+			<members>ECU_pre-surgery ECU_post-surgery ECRB ECRL EDCI EDCL EDCM EDCR EDM EIP EPL </members>
+		</ObjectGroup>		
+		<ObjectGroup name="ulnar deviators">
+			<members>ECU_pre-surgery ECU_post-surgery EDCL EDCR EDM FCU FDPL FDPM FDPR FDSL FDSR </members>
 		</ObjectGroup>
-		<ObjectGroup name="radial">
+        <ObjectGroup name="radial deviators">
 			<members>APL ECRB ECRL EDCI EIP EPB EPL FCR FDPI FDSI FPL PL </members>
 		</ObjectGroup>
-		<ObjectGroup name="ulnar">
-			<members>ECUpost ECUpre EDCL EDCR EDM FCU FDPL FDPM FDPR FDSL FDSR </members>
-		</ObjectGroup>
 		<ObjectGroup name="wrist">
-			<members>ECRB ECRL ECUpost ECUpre FCR FCU </members>
+			<members>ECRB ECRL ECU_pre-surgery ECU_post-surgery FCR FCU </members>
 		</ObjectGroup>
 		<ObjectGroup name="hand">
 			<members>EDCI EDCL EDCM EDCR EDM EIP FDPI FDPL FDPM FDPR FDSI FDSL FDSM FDSR FPL PL </members>
@@ -84,81 +86,7 @@
 		</ObjectGroup>
 	</groups>
 	<objects>
-		<Schutte1993Muscle name="FCR">
-			<MusclePointSet>
-			<objects>
-				<MusclePoint>
-					<location>0.006390000000 -0.277610000000 0.013130000000</location>
-					<body>humerus</body>
-				</MusclePoint>
-				<MusclePoint>
-					<location>0.009530000000 -0.216670000000 0.050240000000</location>
-					<body>radius</body>
-				</MusclePoint>
-				<MuscleViaPoint>
-					<location>0.015460000000 0.014510000000 -0.013990000000</location>
-					<body>trapezoid</body>
-					<coordinate>flexion</coordinate>
-					<range>0.000000000000 0.000000000000</range>
-				</MuscleViaPoint>
-				<MusclePoint>
-					<location>0.013950000000 -0.001200000000 -0.006700000000</location>
-					<body>trapezoid</body>
-				</MusclePoint>
-				<MusclePoint>
-					<location>0.005920000000 0.002690000000 0.013280000000</location>
-					<body>metacarpal2</body>
-				</MusclePoint>
-			</objects>
-			</MusclePointSet>
-			<max_isometric_force>59.700000000000</max_isometric_force>
-			<optimal_fiber_length>0.062800000000</optimal_fiber_length>
-			<tendon_slack_length>0.218500000000</tendon_slack_length>
-			<pennation_angle>0.054105206812</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FCU">
-			<MusclePointSet>
-			<objects>
-				<MusclePoint>
-					<location>0.004630000000 -0.277680000000 0.013180000000</location>
-					<body>humerus</body>
-				</MusclePoint>
-				<MuscleViaPoint>
-					<location>-0.004650000000 -0.227710000000 0.055890000000</location>
-					<body>ulna</body>
-					<coordinate>flexion</coordinate>
-					<range>0.610865238198 1.570796326795</range>
-				</MuscleViaPoint>
-				<MuscleViaPoint>
-					<location>-0.013680000000 -0.228990000000 0.058050000000</location>
-					<body>ulna</body>
-					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.610865238198</range>
-				</MuscleViaPoint>
-				<MuscleViaPoint>
-					<location>0.019010000000 0.010900000000 0.002610000000</location>
-					<body>hamate</body>
-					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.000000000000</range>
-				</MuscleViaPoint>
-				<MuscleViaPoint>
-					<location>0.018990000000 0.002400000000 0.001200000000</location>
-					<body>hamate</body>
-					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.610865238198</range>
-				</MuscleViaPoint>
-				<MusclePoint>
-					<location>0.008450000000 -0.009100000000 -0.019630000000</location>
-					<body>metacarpal5</body>
-				</MusclePoint>
-			</objects>
-			</MusclePointSet>
-			<max_isometric_force>102.600000000000</max_isometric_force>
-			<optimal_fiber_length>0.050900000000</optimal_fiber_length>
-			<tendon_slack_length>0.242000000000</tendon_slack_length>
-			<pennation_angle>0.211184839491</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="ECUpre">
+		<SimmZajacHill name="ECU_pre-surgery">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -195,8 +123,8 @@
 			<optimal_fiber_length>0.062200000000</optimal_fiber_length>
 			<tendon_slack_length>0.231000000000</tendon_slack_length>
 			<pennation_angle>0.061086523820</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="ECUpost">
+		</SimmZajacHill>
+		<SimmZajacHill name="ECU_post-surgery">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -245,8 +173,76 @@
 			<optimal_fiber_length>0.062200000000</optimal_fiber_length>
 			<tendon_slack_length>0.231000000000</tendon_slack_length>
 			<pennation_angle>0.061086523820</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EDM">
+		</SimmZajacHill>
+		<SimmZajacHill name="FCR">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.006390000000 -0.277610000000 0.013130000000</location>
+					<body>humerus</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.009530000000 -0.216670000000 0.050240000000</location>
+					<body>radius</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.013950000000 -0.001200000000 -0.006700000000</location>
+					<body>trapezoid</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005920000000 0.002690000000 0.013280000000</location>
+					<body>metacarpal2</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>59.700000000000</max_isometric_force>
+			<optimal_fiber_length>0.062800000000</optimal_fiber_length>
+			<tendon_slack_length>0.218500000000</tendon_slack_length>
+			<pennation_angle>0.054105206812</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="FCU">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.004630000000 -0.277680000000 0.013180000000</location>
+					<body>humerus</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.004650000000 -0.227710000000 0.055890000000</location>
+					<body>ulna</body>
+					<coordinate>flexion</coordinate>
+					<range>0.558505360638 1.570796326795</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>-0.013680000000 -0.228990000000 0.058050000000</location>
+					<body>ulna</body>
+					<coordinate>flexion</coordinate>
+					<range>-1.570796326795 -0.628318530718</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.019010000000 0.010900000000 0.002610000000</location>
+					<body>hamate</body>
+					<coordinate>flexion</coordinate>
+					<range>-1.570796326795 -0.034906585040</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.018990000000 0.002400000000 0.001200000000</location>
+					<body>hamate</body>
+					<coordinate>flexion</coordinate>
+					<range>-1.570796326795 0.558505360638</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.008450000000 -0.009100000000 -0.019630000000</location>
+					<body>metacarpal5</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>102.600000000000</max_isometric_force>
+			<optimal_fiber_length>0.050900000000</optimal_fiber_length>
+			<tendon_slack_length>0.242000000000</tendon_slack_length>
+			<pennation_angle>0.211184839491</pennation_angle>
+		</SimmZajacHill>
+		<SimmZajacHill name="EDM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -293,8 +289,8 @@
 			<optimal_fiber_length>0.067500000000</optimal_fiber_length>
 			<tendon_slack_length>0.347000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="ECRB">
+		</SimmZajacHill>
+		<SimmZajacHill name="ECRB">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -323,8 +319,8 @@
 			<optimal_fiber_length>0.058500000000</optimal_fiber_length>
 			<tendon_slack_length>0.220500000000</tendon_slack_length>
 			<pennation_angle>0.155334303427</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="ECRL">
+		</SimmZajacHill>
+		<SimmZajacHill name="ECRL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -344,12 +340,6 @@
 					<body>radius</body>
 				</MusclePoint>
 				<MuscleViaPoint>
-					<location>-0.009060000000 0.011210000000 0.005720000000</location>
-					<body>trapezoid</body>
-					<coordinate>flexion</coordinate>
-					<range>0.000000000000 0.000000000000</range>
-				</MuscleViaPoint>
-				<MuscleViaPoint>
 					<location>-0.013490000000 0.011180000000 0.022040000000</location>
 					<body>metacarpal2</body>
 					<coordinate>deviation</coordinate>
@@ -365,8 +355,8 @@
 			<optimal_fiber_length>0.093600000000</optimal_fiber_length>
 			<tendon_slack_length>0.202600000000</tendon_slack_length>
 			<pennation_angle>0.043633231300</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDSI">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDSI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -389,13 +379,13 @@
 					<location>0.022440000000 0.013970000000 0.001390000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.698131700798</range>
+					<range>-1.570796326795 -0.715584993318</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.027030000000 0.004110000000 0.004440000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.349065850399</range>
+					<range>-1.570796326795 -0.331612557879</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.029440000000 -0.011430000000 0.008690000000</location>
@@ -411,11 +401,11 @@
 				</MusclePoint>
 				<MusclePoint>
 					<location>0.005960000000 -0.046240000000 0.008830000000</location>
-					<body>iphalanx1</body>
+					<body>proximal_phalanx</body>
 				</MusclePoint>
 				<MusclePoint>
 					<location>0.005810000000 -0.005900000000 0.002630000000</location>
-					<body>iphalanx3</body>
+					<body>distal_phalanx</body>
 				</MusclePoint>
 			</objects>
 			</MusclePointSet>
@@ -423,8 +413,8 @@
 			<optimal_fiber_length>0.083500000000</optimal_fiber_length>
 			<tendon_slack_length>0.338000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDSM">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDSM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -481,8 +471,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.354000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDSR">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDSR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -499,7 +489,7 @@
 					<location>-0.000370000000 -0.217640000000 0.040900000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.000000000000</range>
+					<range>-1.570796326795 -0.087266462600</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.021890000000 0.013060000000 0.000480000000</location>
@@ -539,8 +529,8 @@
 			<optimal_fiber_length>0.073600000000</optimal_fiber_length>
 			<tendon_slack_length>0.353500000000</tendon_slack_length>
 			<pennation_angle>0.069813170080</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDSL">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDSL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -551,13 +541,13 @@
 					<location>0.010480000000 -0.214230000000 0.039780000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>0.436332312999 1.570796326795</range>
+					<range>0.479965544298 1.570796326795</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.001000000000 -0.217700000000 0.041800000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.000000000000</range>
+					<range>-1.570796326795 0.017453292520</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.022010000000 0.012580000000 -0.000270000000</location>
@@ -597,8 +587,8 @@
 			<optimal_fiber_length>0.051500000000</optimal_fiber_length>
 			<tendon_slack_length>0.343000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDPI">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDPI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -615,19 +605,19 @@
 					<location>0.001300000000 -0.216590000000 0.046190000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.000000000000</range>
+					<range>-1.570796326795 0.017453292520</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.022690000000 0.011170000000 0.003470000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.436332312999</range>
+					<range>-1.570796326795 -0.383972435439</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.024990000000 0.000650000000 0.005890000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.349065850399</range>
+					<range>-1.570796326795 -0.383972435439</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.013000000000 -0.004800000000 0.010720000000</location>
@@ -639,11 +629,11 @@
 				</MusclePoint>
 				<MusclePoint>
 					<location>0.004940000000 -0.050600000000 0.009140000000</location>
-					<body>iphalanx1</body>
+					<body>proximal_phalanx</body>
 				</MusclePoint>
 				<MusclePoint>
 					<location>0.009500000000 -0.030280000000 0.003430000000</location>
-					<body>iphalanx2</body>
+					<body>mid_phalanx</body>
 				</MusclePoint>
 			</objects>
 			</MusclePointSet>
@@ -651,8 +641,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.322000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDPM">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDPM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -663,7 +653,7 @@
 					<location>0.004330000000 -0.216890000000 0.042700000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>0.261799387799 1.570796326795</range>
+					<range>0.279252680319 1.570796326795</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>-0.001520000000 -0.216390000000 0.044450000000</location>
@@ -705,8 +695,8 @@
 			<optimal_fiber_length>0.083500000000</optimal_fiber_length>
 			<tendon_slack_length>0.320000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDPR">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDPR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -723,7 +713,7 @@
 					<location>-0.002610000000 -0.217000000000 0.042860000000</location>
 					<body>radius</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.296705972839</range>
+					<range>-1.570796326795 -0.314159265359</range>
 				</MuscleViaPoint>
 				<MuscleViaPoint>
 					<location>0.023800000000 0.011170000000 -0.000970000000</location>
@@ -759,8 +749,8 @@
 			<optimal_fiber_length>0.079800000000</optimal_fiber_length>
 			<tendon_slack_length>0.314000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FDPL">
+		</SimmZajacHill>
+		<SimmZajacHill name="FDPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -789,7 +779,7 @@
 					<location>0.028290000000 0.001750000000 0.004730000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.174532925199</range>
+					<range>-1.570796326795 0.209439510239</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.012860000000 -0.015970000000 -0.006170000000</location>
@@ -813,8 +803,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.303600000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EDCL">
+		</SimmZajacHill>
+		<SimmZajacHill name="EDCL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -869,8 +859,8 @@
 			<optimal_fiber_length>0.065000000000</optimal_fiber_length>
 			<tendon_slack_length>0.349500000000</tendon_slack_length>
 			<pennation_angle>0.034906585040</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EDCR">
+		</SimmZajacHill>
+		<SimmZajacHill name="EDCR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -919,8 +909,8 @@
 			<optimal_fiber_length>0.062600000000</optimal_fiber_length>
 			<tendon_slack_length>0.390000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EDCM">
+		</SimmZajacHill>
+		<SimmZajacHill name="EDCM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -949,7 +939,7 @@
 					<location>-0.012570000000 0.006590000000 -0.002080000000</location>
 					<body>metacarpal3</body>
 					<coordinate>flexion</coordinate>
-					<range>-0.314159265359 1.745329251994</range>
+					<range>-0.349065850399 1.745329251994</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>-0.013480000000 -0.076960000000 0.011080000000</location>
@@ -969,8 +959,8 @@
 			<optimal_fiber_length>0.072400000000</optimal_fiber_length>
 			<tendon_slack_length>0.390000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EDCI">
+		</SimmZajacHill>
+		<SimmZajacHill name="EDCI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1005,7 +995,7 @@
 					<location>-0.014210000000 -0.018860000000 0.007800000000</location>
 					<body>metacarpal3</body>
 					<coordinate>flexion</coordinate>
-					<range>0.000000000000 1.745329251994</range>
+					<range>0.017453292520 1.745329251994</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>-0.012250000000 -0.069260000000 0.040420000000</location>
@@ -1013,11 +1003,11 @@
 				</MusclePoint>
 				<MusclePoint>
 					<location>-0.006580000000 -0.048520000000 0.004400000000</location>
-					<body>iphalanx1</body>
+					<body>proximal_phalanx</body>
 				</MusclePoint>
 				<MusclePoint>
 					<location>-0.002910000000 -0.010430000000 0.000070000000</location>
-					<body>iphalanx3</body>
+					<body>distal_phalanx</body>
 				</MusclePoint>
 			</objects>
 			</MusclePointSet>
@@ -1025,8 +1015,8 @@
 			<optimal_fiber_length>0.070000000000</optimal_fiber_length>
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="FPL">
+		</SimmZajacHill>
+		<SimmZajacHill name="FPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1051,7 +1041,7 @@
 					<location>0.005770000000 0.010180000000 -0.015280000000</location>
 					<body>thumb</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.000000000000</range>
+					<range>-1.570796326795 0.017453292520</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.006300000000 -0.017700000000 0.019900000000</location>
@@ -1079,8 +1069,8 @@
 			<optimal_fiber_length>0.055200000000</optimal_fiber_length>
 			<tendon_slack_length>0.198800000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="APL">
+		</SimmZajacHill>
+		<SimmZajacHill name="APL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1113,7 +1103,7 @@
 					<location>0.007220000000 0.009060000000 0.010820000000</location>
 					<body>trapezium</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.698131700798</range>
+					<range>-1.570796326795 0.785398163397</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.003840000000 0.001960000000 0.014520000000</location>
@@ -1129,8 +1119,8 @@
 			<optimal_fiber_length>0.071300000000</optimal_fiber_length>
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.130899693900</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EPB">
+		</SimmZajacHill>
+		<SimmZajacHill name="EPB">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1157,7 +1147,7 @@
 					<location>-0.000780000000 0.004580000000 0.014750000000</location>
 					<body>trapezium</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 -0.488692190558</range>
+					<range>-1.570796326795 -0.349065850399</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>-0.003870000000 0.000110000000 0.016470000000</location>
@@ -1181,8 +1171,8 @@
 			<optimal_fiber_length>0.067500000000</optimal_fiber_length>
 			<tendon_slack_length>0.110000000000</tendon_slack_length>
 			<pennation_angle>0.125663706144</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EPL">
+		</SimmZajacHill>
+		<SimmZajacHill name="EPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1231,8 +1221,8 @@
 			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
 			<tendon_slack_length>0.220000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="EIP">
+		</SimmZajacHill>
+		<SimmZajacHill name="EIP">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1257,7 +1247,7 @@
 				</MusclePoint>
 				<MusclePoint>
 					<location>-0.004520000000 -0.018200000000 0.003960000000</location>
-					<body>iphalanx3</body>
+					<body>distal_phalanx</body>
 				</MusclePoint>
 			</objects>
 			</MusclePointSet>
@@ -1265,8 +1255,8 @@
 			<optimal_fiber_length>0.058900000000</optimal_fiber_length>
 			<tendon_slack_length>0.248040000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</Schutte1993Muscle>
-		<Schutte1993Muscle name="PL">
+		</SimmZajacHill>
+		<SimmZajacHill name="PL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1281,7 +1271,7 @@
 					<location>0.036890000000 0.001350000000 0.007320000000</location>
 					<body>capitate</body>
 					<coordinate>flexion</coordinate>
-					<range>-1.570796326795 0.610865238198</range>
+					<range>-1.570796326795 0.593411945678</range>
 				</MuscleViaPoint>
 				<MusclePoint>
 					<location>0.009320000000 -0.023770000000 0.009810000000</location>
@@ -1293,7 +1283,7 @@
 			<optimal_fiber_length>0.063800000000</optimal_fiber_length>
 			<tendon_slack_length>0.236000000000</tendon_slack_length>
 			<pennation_angle>0.069813170080</pennation_angle>
-		</Schutte1993Muscle>
+		</SimmZajacHill>
 	</objects>
 	</ActuatorSet>
 	<DynamicsEngine>
@@ -1393,36 +1383,6 @@
 						<geometry_files> r_triq.vtp </geometry_files>
 					</VisibleObject>
 				</SimmBody>
-				<SimmBody name="rotaxis">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
-				<SimmBody name="auxprfem">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
-				<SimmBody name="auxprrud">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
-				<SimmBody name="auxdrfem">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
-				<SimmBody name="auxdrrud">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
-				<SimmBody name="carp_metacarp">
-					<mass>0.000000000000</mass>
-					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
-					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
-				</SimmBody>
 				<SimmBody name="metacarpal2">
 					<mass>0.000000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
@@ -1431,7 +1391,7 @@
 						<geometry_files> fingers1.vtp </geometry_files>
 					</VisibleObject>
 				</SimmBody>
-				<SimmBody name="iphalanx1">
+				<SimmBody name="proximal_phalanx">
 					<mass>0.000000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
 					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
@@ -1439,7 +1399,7 @@
 						<geometry_files> fingers2.vtp </geometry_files>
 					</VisibleObject>
 				</SimmBody>
-				<SimmBody name="iphalanx2">
+				<SimmBody name="mid_phalanx">
 					<mass>0.000000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
 					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
@@ -1447,7 +1407,7 @@
 						<geometry_files> fingers3.vtp </geometry_files>
 					</VisibleObject>
 				</SimmBody>
-				<SimmBody name="iphalanx3">
+				<SimmBody name="distal_phalanx">
 					<mass>0.000000000000</mass>
 					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
 					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
@@ -1510,6 +1470,41 @@
 					<VisibleObject name="">
 						<geometry_files> fingers17.vtp fingers18.vtp fingers19.vtp </geometry_files>
 					</VisibleObject>
+				</SimmBody>
+				<SimmBody name="imagine">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="rotaxis">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="auxprfem">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="auxprrud">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="auxdrfem">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="auxdrrud">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+				</SimmBody>
+				<SimmBody name="carp_metacarp">
+					<mass>0.000000000000</mass>
+					<mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+					<inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
 				</SimmBody>
 			</objects>
 			</BodySet>
@@ -1668,7 +1663,60 @@
 					</objects>
 					</DofSet>
 				</SimmJoint>
-				
+				<SimmJoint name="updown">
+					<bodies>rotaxis imagine</bodies>
+					<DofSet>
+					<objects>
+						<SimmTranslationDof name="tx">
+							<coordinate>flexion</coordinate>
+							<Value>
+								<natCubicSpline>
+									<x>-1.570796326795 0.000000000000 1.570796326795 </x>
+									<y>-0.010000000000 0.000000000000 0.010000000000 </y>
+								</natCubicSpline>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="ty">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmTranslationDof name="tz">
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmTranslationDof>
+						<SimmRotationDof name="r1">
+							<axis>1.000000000000 0.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r2">
+							<axis>0.000000000000 1.000000000000 0.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>0.000000000000</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+						<SimmRotationDof name="r3">
+							<axis>0.000000000000 0.000000000000 1.000000000000</axis>
+							<Value>
+								<Constant>
+									<value>1.570796326795</value>
+								</Constant>
+							</Value>
+						</SimmRotationDof>
+					</objects>
+					</DofSet>
+				</SimmJoint>
 				<SimmJoint name="radioulnar">
 					<bodies>ulna radius</bodies>
 					<DofSet>
@@ -2512,7 +2560,7 @@
 					</DofSet>
 				</SimmJoint>
 				<SimmJoint name="MCP2">
-					<bodies>metacarpal2 iphalanx1</bodies>
+					<bodies>metacarpal2 proximal_phalanx</bodies>
 					<DofSet>
 					<objects>
 						<SimmTranslationDof name="tx">
@@ -2568,7 +2616,7 @@
 					</DofSet>
 				</SimmJoint>
 				<SimmJoint name="PIP">
-					<bodies>iphalanx1 iphalanx2</bodies>
+					<bodies>proximal_phalanx mid_phalanx</bodies>
 					<DofSet>
 					<objects>
 						<SimmTranslationDof name="tx">
@@ -2622,7 +2670,7 @@
 					</DofSet>
 				</SimmJoint>
 				<SimmJoint name="DIP">
-					<bodies>iphalanx2 iphalanx3</bodies>
+					<bodies>mid_phalanx distal_phalanx</bodies>
 					<DofSet>
 					<objects>
 						<SimmTranslationDof name="tx">

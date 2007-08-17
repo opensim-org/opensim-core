@@ -1,1 +1,1 @@
-SUBDIRS(bolegs seplegs WristModel)
+SUBDIRS(BothLegs SeparateLegs WristModel)

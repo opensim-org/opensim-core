@@ -4,7 +4,7 @@ Northwestern University and Rehabilitation Institute of Chicago
 ******************************************************************************/
 #include "simmkeys.h"
 
-name bolegs_walk
+name BothLegsWalk
 datacolumns 15
 datarows 51
 range 0.0 1.0
