@@ -1,4 +1,4 @@
-function [] = directlyOverlay_perryEMG(perryScaled, refNum, timeRange)
+function [] = directlyOverlay_perryEMG(perryScaled, refNum, timeRange, fgColor)
 % Purpose:  Overlays EMG on/off times reported by Perry, for the muscles in 
 %           perryScaled, onto the current subplot.
 %
@@ -11,6 +11,7 @@ function [] = directlyOverlay_perryEMG(perryScaled, refNum, timeRange)
 %                          .onoffAlt  - 'alternate' on/off timings reported
 %           timeRange.min and timeRange.max are the min and max values 
 %               of the time axis, respectively
+%           fgColor is the color of the Perry bars in the plots
 %
 % ASA, 9-05, rev 11-05
 
@@ -18,10 +19,10 @@ function [] = directlyOverlay_perryEMG(perryScaled, refNum, timeRange)
 % Specify attributes of subplots.
 pLineStyle = '-';                   % style for Perry's on/off data
 pLineWidth = 5.0;                  
-pLineColor = 'k';
+pLineColor = fgColor;
 qLineStyle = '-';                   % style for Perry's on/off alt data
 qLineWidth = 2.0;                  
-qLineColor = 'k';
+qLineColor = fgColor;
 
 % Overlay EMG on/off timing from Perry for reference.
 % NOTE:  [ymin, ymax] = get(gca, 'ylim'); 

@@ -191,6 +191,20 @@ if plotLiteratureData
     colorPatriarco = 'm';
 end
 
+timeAxisIsPercentGc = strcmpi( tInfo.timeAxisLabel, 'percent of gait cycle' );
+if timeAxisIsPercentGc
+    percent = time;
+    for fileNum = 1:length(fnames)
+        percent{fileNum} = convert_timeToCycle( time{fileNum}, tInfo.gcLimb, tInfo, ictoEvents, ...
+                                                tInfo.analogRate, ref_dataFormat );
+    end
+    percentAux = convert_timeToCycle( [timeRange.min, timeRange.max], ...
+                                      tInfo.gcLimb, tInfo, ictoEvents, ...
+                                      tInfo.analogRate, ref_dataFormat );
+    percentRange.min = percentAux(1);
+    percentRange.max = percentAux(2);
+end
+
 % Get labels that specify contents of figures and subplots.
 % NOTE: figContents returns a structure, formatted as follows:
 %           figContents(figNum).qPlotLabel{plotNum} 
@@ -209,16 +223,17 @@ scnsize = get(0, 'ScreenSize');
 scnwidth = scnsize(3);
 scnheight = scnsize(4);
 figPos = [0.25*scnwidth, 0.05*scnheight, 0.65*scnwidth, 0.85*scnheight];
-figColor = 'w';
 
 % For each figure...
 for figNum = 1:length(figHandleArray)
     figure(figHandleArray(figNum)); 
     clf
-    set(gcf, 'Position', figPos, 'Color', figColor);
+    set(gcf, 'Position', figPos, 'Color', tInfo.bgColor);
 
     if plotLiteratureData
         % Plot literature joint moment data.
+        % MODIFY THIS CODE when plotting against % gait cycle, i.e. when
+        % timeAxisIsPercentGc is true.
         if figNum == 2 % Hip moments
             subplot(nPlotRows, nPlotCols, 5);
             overlay_jointMomentFromLiterature(leftTimesScaled, leftHipFlexionInman, colorInman);
@@ -275,32 +290,56 @@ for figNum = 1:length(figHandleArray)
                     limb = 'R';
             end
             subplot(nPlotRows, nPlotCols, plotIndex);
-            overlay_grftVertical(q(fileNum), ...
-                figContents(figNum).qPlotLabel{plotIndex}, ...
-                time{fileNum}, limb, fileNum);
+            if timeAxisIsPercentGc
+                overlay_grftVertical(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    percent{fileNum}, limb, fileNum);
+            else
+                overlay_grftVertical(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    time{fileNum}, limb, fileNum);
+            end
+            set(findobj(gca, 'Type', 'Line'), 'Color', tInfo.fgColor);
         end
              
         % Plot data from SimTrack or UW-Gait Workflow.
         for plotIndex = 3:nSubPlots
             subplot(nPlotRows, nPlotCols, plotIndex);
-            overlay_jointMomentsFromMot(q(fileNum), ...
-                figContents(figNum).qPlotLabel{plotIndex}, ...
-                time{fileNum}, fileNum);
+            if timeAxisIsPercentGc
+                overlay_jointMomentsFromMot(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    percent{fileNum}, fileNum);
+            else
+                overlay_jointMomentsFromMot(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    time{fileNum}, fileNum);
+            end
         end
     end
     
     % Format figure.
-    format_jointMomFromMot(fnames, timeRange, tInfo, ...
-                figContents(figNum).subplotTitle, ...
-                figContents(figNum).subplotAxisLabel, ...
-                figContents(figNum).subplotRange, ...
-                figContents(figNum).subplotTick);
+    if timeAxisIsPercentGc
+        format_jointMomFromMot(fnames, percentRange, tInfo, ...
+                    figContents(figNum).subplotTitle, ...
+                    figContents(figNum).subplotAxisLabel, ...
+                    figContents(figNum).subplotRange, ...
+                    figContents(figNum).subplotTick);
+    else
+        format_jointMomFromMot(fnames, timeRange, tInfo, ...
+                    figContents(figNum).subplotTitle, ...
+                    figContents(figNum).subplotAxisLabel, ...
+                    figContents(figNum).subplotRange, ...
+                    figContents(figNum).subplotTick);
+    end
                                 
     % Add title
     titleString = sprintf('%s%s%s%3.2f%s', ...
         'Comparison of Joint Moments:  Subject ', subject, ...
         ', ', tInfo.speed, ' m/s');
     Suptitle(titleString);      % MATLAB m-file for adding "super title"
+
+    % Set foreground colors
+    set(findobj(gcf, 'Type', 'Text'), 'Color', tInfo.fgColor);
 end
 
 % Query user.

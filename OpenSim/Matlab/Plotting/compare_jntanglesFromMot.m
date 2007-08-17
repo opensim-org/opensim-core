@@ -96,6 +96,36 @@ end
 cycTimes = ...
     convert_cycleToTime(g.cycle, tInfo, ictoEvents, tInfo.analogRate, ref_dataFormat);
 
+timeAxisIsPercentGc = strcmpi( tInfo.timeAxisLabel, 'percent of gait cycle' );
+if timeAxisIsPercentGc
+    if strcmp( tInfo.gcLimb, 'R' )
+        times = cycTimes.R;
+    else % Assuming tInfo.gcLimb is 'L'
+        times = cycTimes.L;
+    end
+    sizeOfTimes = size( times );
+    cycPercents = zeros( sizeOfTimes );
+    numberOfColumnsInTimes = sizeOfTimes(2);
+    for colNum = 1:numberOfColumnsInTimes
+        cycPercents(:,colNum) = convert_timeToCycle( times(:,colNum), tInfo.gcLimb, tInfo, ...
+                                           ictoEvents, tInfo.analogRate, ref_dataFormat );
+    end
+    if ~isempty(fnameMeasured)
+        percentMeasured = convert_timeToCycle( timeMeasured, tInfo.gcLimb, tInfo, ictoEvents, ...
+                                               tInfo.analogRate, ref_dataFormat );
+    end
+    percent = time;
+    for fileNum = 1:length(fnames)
+        percent{fileNum} = convert_timeToCycle( time{fileNum}, tInfo.gcLimb, tInfo, ictoEvents, ...
+                                                tInfo.analogRate, ref_dataFormat );
+    end
+    percentAux = convert_timeToCycle( [timeRange.min, timeRange.max], ...
+                                      tInfo.gcLimb, tInfo, ictoEvents, ...
+                                      tInfo.analogRate, ref_dataFormat );
+    percentRange.min = percentAux(1);
+    percentRange.max = percentAux(2);
+end
+
 % Get labels that specify contents of figures and subplots.
 % NOTE: figContents returns a structure, formatted as follows:
 %           figContents(figNum).qPlotLabel{plotNum} 
@@ -116,35 +146,55 @@ scnsize = get(0, 'ScreenSize');
 scnwidth = scnsize(3);
 scnheight = scnsize(4);
 figPos = [0.25*scnwidth, 0.05*scnheight, 0.65*scnwidth, 0.85*scnheight];
-figColor = 'w';
 
 % For each figure...
 for figNum = 1:length(figHandleArray)
     figure(figHandleArray(figNum)); 
     clf
-    set(gcf, 'Position', figPos, 'Color', figColor);
+    set(gcf, 'Position', figPos, 'Color', tInfo.bgColor);
         
     % Plot reference joint angles.
-    switch figNum
-        case {1 2}
-            for plotIndex = 1:nSubPlots
-                subplot(nPlotRows, nPlotCols, plotIndex);
-                overlay_jntanglesMean(g.jntangles, ...
-                  figContents(figNum).gcdMeanLabel{plotIndex}, cycTimes.R);
-            end
-        case 3
-            for plotIndex = 1:nSubPlots
-                subplot(nPlotRows, nPlotCols, plotIndex);
-                overlay_jntanglesMean(g.jntangles, ...
-                  figContents(figNum).gcdMeanLabel{plotIndex}, cycTimes.L);
-            end
-    end
+    % UNCOMMENT THIS CODE, AND DEBUG overlay_jntanlgesMean.m when
+    % timeAxisIsPercentGc is true.
+%    switch figNum
+%        case {1 2}
+%            for plotIndex = 1:nSubPlots
+%                subplot(nPlotRows, nPlotCols, plotIndex);
+%                if timeAxisIsPercentGc
+%                    overlay_jntanglesMean(g.jntangles, ...
+%                      figContents(figNum).gcdMeanLabel{plotIndex}, cycPercents);
+%                else
+%                    overlay_jntanglesMean(g.jntangles, ...
+%                      figContents(figNum).gcdMeanLabel{plotIndex}, cycTimes.R);
+%                end
+%            end
+%        case 3
+%            for plotIndex = 1:nSubPlots
+%                subplot(nPlotRows, nPlotCols, plotIndex);
+%                if timeAxisIsPercentGc
+%                    overlay_jntanglesMean(g.jntangles, ...
+%                      figContents(figNum).gcdMeanLabel{plotIndex}, cycPercents);
+%                else
+%                    overlay_jntanglesMean(g.jntangles, ...
+%                      figContents(figNum).gcdMeanLabel{plotIndex}, cycTimes.L);
+%                end
+%            end
+%    end
         
     % Plot measured joint angles.
-    for plotIndex = 1:nSubPlots
-        subplot(nPlotRows, nPlotCols, plotIndex);
-        overlay_jntanglesMeasured(qMeasured, ...
-            figContents(figNum).qMeasuredLabel{plotIndex}, timeMeasured);
+    % DEBUG THIS CODE: when timeAxisIsPercentGc is true, it doesn't seem to
+    % quite work correctly; also, may need to pass it bg, fg colors?
+    if ~isempty(fnameMeasured)
+        for plotIndex = 1:nSubPlots
+            subplot(nPlotRows, nPlotCols, plotIndex);
+            if timeAxisIsPercentGc
+                overlay_jntanglesMeasured(qMeasured, ...
+                    figContents(figNum).qMeasuredLabel{plotIndex}, percentMeasured);
+            else
+                overlay_jntanglesMeasured(qMeasured, ...
+                    figContents(figNum).qMeasuredLabel{plotIndex}, timeMeasured);
+            end
+        end
     end
                 
     % For each file in fnames{}...
@@ -153,24 +203,43 @@ for figNum = 1:length(figHandleArray)
         % Plot data from UW-Gait Workflow.
         for plotIndex = 1:nSubPlots
             subplot(nPlotRows, nPlotCols, plotIndex);
-            overlay_jntanglesFromMot(q(fileNum), ...
-                figContents(figNum).qPlotLabel{plotIndex}, ...
-                time{fileNum}, fileNum);
+            if timeAxisIsPercentGc
+                overlay_jntanglesFromMot(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    percent{fileNum}, fileNum);
+            else
+                overlay_jntanglesFromMot(q(fileNum), ...
+                    figContents(figNum).qPlotLabel{plotIndex}, ...
+                    time{fileNum}, fileNum);
+            end
         end
     end
     
     % Format figure.
-    format_jntanglesFromMot(fnames, fnameMeasured, timeRange, ...
-            figContents(figNum).subplotTitle, ...
-            figContents(figNum).subplotAxisLabel, ...
-            figContents(figNum).subplotRange, ...
-            figContents(figNum).subplotTick);
+    if timeAxisIsPercentGc
+        format_jntanglesFromMot(fnames, fnameMeasured, percentRange, ...
+                tInfo.timeAxisLabel, tInfo.bgColor, tInfo.fgColor, ...
+                figContents(figNum).subplotTitle, ...
+                figContents(figNum).subplotAxisLabel, ...
+                figContents(figNum).subplotRange, ...
+                figContents(figNum).subplotTick);
+    else
+        format_jntanglesFromMot(fnames, fnameMeasured, timeRange, ...
+                tInfo.timeAxisLabel, tInfo.bgColor, tInfo.fgColor, ...
+                figContents(figNum).subplotTitle, ...
+                figContents(figNum).subplotAxisLabel, ...
+                figContents(figNum).subplotRange, ...
+                figContents(figNum).subplotTick);
+    end
     
     % Add title
     titleString = sprintf('%s%s%s%3.2f%s', ...
         'Comparison of Joint Angles:  Subject ', subject, ...
         ', ', tInfo.speed, ' m/s');
     Suptitle(titleString);      % MATLAB m-file for adding "super title"
+
+    % Set foreground colors
+    set(findobj(gcf, 'Type', 'Text'), 'Color', tInfo.fgColor);
 end
       
 % Query user.

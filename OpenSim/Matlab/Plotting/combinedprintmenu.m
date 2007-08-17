@@ -22,6 +22,7 @@ while ~done
             for figNum = 1:length(figHandleArray)
 				disp(sprintf('Processing figure %d (%d/%d)', figHandleArray(figNum), figNum, length(figHandleArray)));
                 orient(figHandleArray(figNum), 'tall');  
+                set(figHandleArray(figNum), 'InvertHardCopy', 'off');
 				if figNum == 1
 					printCommand = ['print -f', num2str(figHandleArray(figNum)), ' -dpsc2 ', filename];
 				else

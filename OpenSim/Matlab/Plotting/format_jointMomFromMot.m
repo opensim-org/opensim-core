@@ -35,7 +35,10 @@ aTickDir = 'out';
 % Specify time axis range and tick values.
 xmin = timeRange.min;               
 xmax = timeRange.max;
-if xmax - xmin > 1.0
+timeAxisIsPercentGc = strcmpi( tInfo.timeAxisLabel, 'percent of gait cycle' );
+if timeAxisIsPercentGc
+    xval = 0:  25: xmax;
+elseif xmax - xmin > 1.0
     xval = 0: 0.5: xmax;
 elseif (xmax - xmin <= 1.0) && (xmax - xmin > 0.5)
     xval = 0: 0.2: xmax;
@@ -52,6 +55,9 @@ fval = 0:200:fmax;
 for plotIndex = 1:nSubPlots  
     subplot(nPlotRows, nPlotCols, plotIndex)
     hold on;
+
+    % Set background color.
+    set(gca, 'Color', tInfo.bgColor);
     
     if ~isempty(subplotTitle{plotIndex})
         title(subplotTitle{plotIndex});
@@ -101,6 +107,13 @@ for plotIndex = 1:nSubPlots
             set(a, 'FontName', aFontName, 'FontSize', aFontSize);   
     end
     set(gca, 'Box', 'off');
+    
+    % Set foreground colors.
+    set(get(gca, 'Title'), 'Color', tInfo.fgColor);
+    set(get(gca, 'XLabel'), 'Color', tInfo.fgColor);
+    set(get(gca, 'YLabel'), 'Color', tInfo.fgColor);
+    set(gca, 'XColor', tInfo.fgColor);
+    set(gca, 'YColor', tInfo.fgColor);
 end
 
 % Add legend.
