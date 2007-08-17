@@ -119,7 +119,7 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model *aModel) SWIG_DECLARE_EXCEPTION;
 	virtual Model* getModel() const;
 
 	bool getReplaceActuatorSet() const { return _replaceActuatorSet; }
