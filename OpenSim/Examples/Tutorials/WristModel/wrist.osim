@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Model name="Wrist Model">
 	<defaults>
-		<SimmZajacHill name="defaultmuscle">
+		<Schutte1993Muscle name="defaultmuscle">
 			<max_isometric_force>546.000000000000</max_isometric_force>
 			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
@@ -25,8 +25,8 @@
 					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
 				</natCubicSpline>
 			</passive_force_length_curve>
-		</SimmZajacHill>
-		<SimmDarrylMuscle name="defaultmuscle">
+		</Schutte1993Muscle>
+		<Thelen2003Muscle name="defaultmuscle">
 			<max_isometric_force>546.000000000000</max_isometric_force>
 			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
@@ -50,7 +50,7 @@
 					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
 				</natCubicSpline>
 			</passive_force_length_curve>
-		</SimmDarrylMuscle>
+		</Thelen2003Muscle>
 	</defaults>
 	<credits>Gonzalez, R.V., Buchanan, T.S., Delp, S.L.</credits>
 	<publications>How muscle architecture and moment arms affect wrist flexion-extension moments. Journal of Biomechanics, vol. 30, pp. 705-712, 1997.</publications>
@@ -86,7 +86,7 @@
 		</ObjectGroup>
 	</groups>
 	<objects>
-		<SimmZajacHill name="ECU_pre-surgery">
+		<Schutte1993Muscle name="ECU_pre-surgery">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -123,8 +123,8 @@
 			<optimal_fiber_length>0.062200000000</optimal_fiber_length>
 			<tendon_slack_length>0.231000000000</tendon_slack_length>
 			<pennation_angle>0.061086523820</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="ECU_post-surgery">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ECU_post-surgery">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -173,8 +173,8 @@
 			<optimal_fiber_length>0.062200000000</optimal_fiber_length>
 			<tendon_slack_length>0.231000000000</tendon_slack_length>
 			<pennation_angle>0.061086523820</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FCR">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FCR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -199,8 +199,8 @@
 			<optimal_fiber_length>0.062800000000</optimal_fiber_length>
 			<tendon_slack_length>0.218500000000</tendon_slack_length>
 			<pennation_angle>0.054105206812</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FCU">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FCU">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -241,8 +241,8 @@
 			<optimal_fiber_length>0.050900000000</optimal_fiber_length>
 			<tendon_slack_length>0.242000000000</tendon_slack_length>
 			<pennation_angle>0.211184839491</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EDM">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EDM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -289,8 +289,8 @@
 			<optimal_fiber_length>0.067500000000</optimal_fiber_length>
 			<tendon_slack_length>0.347000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="ECRB">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ECRB">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -319,8 +319,8 @@
 			<optimal_fiber_length>0.058500000000</optimal_fiber_length>
 			<tendon_slack_length>0.220500000000</tendon_slack_length>
 			<pennation_angle>0.155334303427</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="ECRL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ECRL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -355,8 +355,8 @@
 			<optimal_fiber_length>0.093600000000</optimal_fiber_length>
 			<tendon_slack_length>0.202600000000</tendon_slack_length>
 			<pennation_angle>0.043633231300</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDSI">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDSI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -413,8 +413,8 @@
 			<optimal_fiber_length>0.083500000000</optimal_fiber_length>
 			<tendon_slack_length>0.338000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDSM">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDSM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -471,8 +471,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.354000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDSR">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDSR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -529,8 +529,8 @@
 			<optimal_fiber_length>0.073600000000</optimal_fiber_length>
 			<tendon_slack_length>0.353500000000</tendon_slack_length>
 			<pennation_angle>0.069813170080</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDSL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDSL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -587,8 +587,8 @@
 			<optimal_fiber_length>0.051500000000</optimal_fiber_length>
 			<tendon_slack_length>0.343000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDPI">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDPI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -641,8 +641,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.322000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDPM">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDPM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -695,8 +695,8 @@
 			<optimal_fiber_length>0.083500000000</optimal_fiber_length>
 			<tendon_slack_length>0.320000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDPR">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDPR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -749,8 +749,8 @@
 			<optimal_fiber_length>0.079800000000</optimal_fiber_length>
 			<tendon_slack_length>0.314000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FDPL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FDPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -803,8 +803,8 @@
 			<optimal_fiber_length>0.074900000000</optimal_fiber_length>
 			<tendon_slack_length>0.303600000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EDCL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EDCL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -859,8 +859,8 @@
 			<optimal_fiber_length>0.065000000000</optimal_fiber_length>
 			<tendon_slack_length>0.349500000000</tendon_slack_length>
 			<pennation_angle>0.034906585040</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EDCR">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EDCR">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -909,8 +909,8 @@
 			<optimal_fiber_length>0.062600000000</optimal_fiber_length>
 			<tendon_slack_length>0.390000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EDCM">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EDCM">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -959,8 +959,8 @@
 			<optimal_fiber_length>0.072400000000</optimal_fiber_length>
 			<tendon_slack_length>0.390000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EDCI">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EDCI">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1015,8 +1015,8 @@
 			<optimal_fiber_length>0.070000000000</optimal_fiber_length>
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="FPL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="FPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1069,8 +1069,8 @@
 			<optimal_fiber_length>0.055200000000</optimal_fiber_length>
 			<tendon_slack_length>0.198800000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="APL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="APL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1119,8 +1119,8 @@
 			<optimal_fiber_length>0.071300000000</optimal_fiber_length>
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.130899693900</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EPB">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EPB">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1171,8 +1171,8 @@
 			<optimal_fiber_length>0.067500000000</optimal_fiber_length>
 			<tendon_slack_length>0.110000000000</tendon_slack_length>
 			<pennation_angle>0.125663706144</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EPL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EPL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1221,8 +1221,8 @@
 			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
 			<tendon_slack_length>0.220000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="EIP">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="EIP">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1255,8 +1255,8 @@
 			<optimal_fiber_length>0.058900000000</optimal_fiber_length>
 			<tendon_slack_length>0.248040000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
-		</SimmZajacHill>
-		<SimmZajacHill name="PL">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="PL">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1283,7 +1283,7 @@
 			<optimal_fiber_length>0.063800000000</optimal_fiber_length>
 			<tendon_slack_length>0.236000000000</tendon_slack_length>
 			<pennation_angle>0.069813170080</pennation_angle>
-		</SimmZajacHill>
+		</Schutte1993Muscle>
 	</objects>
 	</ActuatorSet>
 	<DynamicsEngine>
