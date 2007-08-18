@@ -426,6 +426,7 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 	newPoint->setBody(aBody);
 	Array<double>& location = newPoint->getAttachment();
 	placeNewAttachment(location, aIndex, aBody);
+	newPoint->setup(getModel(), this);
 	_attachmentSet.insert(aIndex, newPoint);
 
 	// rename the attachment points starting at this new one
