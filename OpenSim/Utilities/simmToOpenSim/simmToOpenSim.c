@@ -664,6 +664,7 @@ void write_xml_bodies(FILE* fp, ModelStruct* ms, char geometryDirectory[], int a
 				}
 			}
 			fprintf(fp, "</geometry_files>\n");
+			fprintf(fp, "\t\t\t\t\t\t<scale_factors> %f %f %f </scale_factors>\n", ss->bone_scale[0], ss->bone_scale[1], ss->bone_scale[2]);
 			fprintf(fp, "\t\t\t\t\t</VisibleObject>\n");
 		}
 		if (segment_has_wrap_objects(ms, i))
