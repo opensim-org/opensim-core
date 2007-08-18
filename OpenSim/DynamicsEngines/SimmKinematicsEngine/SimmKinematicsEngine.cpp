@@ -462,7 +462,7 @@ void SimmKinematicsEngine::applyDefaultConfiguration()
  */
 int SimmKinematicsEngine::assemble(double aTime, double *rState, int *aLock, double aTol, int aMaxevals, int *rFcnt, int *rErr)
 {
-	throw Exception("SimmKinematicsEngine::assemble(double aTime, double *rState, int *aLock, double aTol, int aMaxevals, int *rFcnt, int *rErr) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::assemble() not implemented.");
 	return 0;
 }
 
@@ -559,7 +559,7 @@ double SimmKinematicsEngine::getMass() const
  */
 void SimmKinematicsEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
 {
-	throw Exception("SimmKinematicsEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getSystemInertia() not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -572,7 +572,7 @@ void SimmKinematicsEngine::getSystemInertia(double *rM, double rCOM[3], double r
  */
 void SimmKinematicsEngine::getSystemInertia(double *rM, double *rCOM, double *rI) const
 {
-	throw Exception("SimmKinematicsEngine::getSystemInertia(double *rM, double *rCOM, double *rI) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getSystemInertia() not implemented.");
 }
 
 //--------------------------------------------------------------------------
@@ -640,7 +640,7 @@ void SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const double a
  */
 void SimmKinematicsEngine::getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getAcceleration(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -735,7 +735,7 @@ void SimmKinematicsEngine::getDirectionCosines(const AbstractBody &aBody, double
  */
 void SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getAngularVelocity() not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -747,7 +747,7 @@ void SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, double 
  */
 void SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getAngularVelocityBodyLocal() not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -759,7 +759,7 @@ void SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody
  */
 void SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getAngularAcceleration(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -771,7 +771,7 @@ void SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, dou
  */
 void SimmKinematicsEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const
 {
-	throw Exception("SimmKinematicsEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::getAngularAccelerationBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -815,8 +815,7 @@ Transform SimmKinematicsEngine::getTransform(const AbstractBody &aBody)
  */
 void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
 {
-	// Not throwing exception otherwise MuscleAnalysis fails for SimmKinematicsEngine based models.
-	//throw Exception("SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyForce(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -830,7 +829,7 @@ void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aP
  */
 void SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3])
 {
-	throw Exception("SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyForces(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -844,7 +843,7 @@ void SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], co
  */
 void SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces)
 {
-	throw Exception("SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyForces(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -884,7 +883,7 @@ void SimmKinematicsEngine::applyForceBodyLocal(const AbstractBody &aBody, const 
  */
 void SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3])
 {
-	throw Exception("SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyForceBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -898,7 +897,7 @@ void SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBod
  */
 void SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces)
 {
-	throw Exception("SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyForceBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -911,7 +910,7 @@ void SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBod
 // TORQUES EXPRESSED IN INERTIAL FRAME
 void SimmKinematicsEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3])
 {
-	throw Exception("SimmKinematicsEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorque(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -924,7 +923,7 @@ void SimmKinematicsEngine::applyTorque(const AbstractBody &aBody, const double a
  */
 void SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double aTorques[][3])
 {
-	throw Exception("SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double aTorques[][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorques(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -937,7 +936,7 @@ void SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], c
  */
 void SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double *aTorques)
 {
-	throw Exception("SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double *aTorques) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorques(): SimmKinematicsEngine does not support dynamics.");
 }
 
 // TORQUES EXPRESSED IN BODY-LOCAL FRAME (sdbodyt())
@@ -950,7 +949,7 @@ void SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], c
  */
 void SimmKinematicsEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3])
 {
-	throw Exception("SimmKinematicsEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -963,7 +962,7 @@ void SimmKinematicsEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const
  */
 void SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double aTorques[][3])
 {
-	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double aTorques[][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -976,7 +975,7 @@ void SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBo
  */
 void SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aTorques)
 {
-	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aTorques) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
 
 // GENERALIZED FORCES
@@ -989,7 +988,7 @@ void SimmKinematicsEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBo
  */
 void SimmKinematicsEngine::applyGeneralizedForce(const AbstractCoordinate &aU, double aF)
 {
-	throw Exception("SimmKinematicsEngine::applyGeneralizedForce(const AbstractCoordinate &aU, double aF) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyGeneralizedForce(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -1000,7 +999,7 @@ void SimmKinematicsEngine::applyGeneralizedForce(const AbstractCoordinate &aU, d
  */
 void SimmKinematicsEngine::applyGeneralizedForces(const double aF[])
 {
-	throw Exception("SimmKinematicsEngine::applyGeneralizedForces(const double aF[]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyGeneralizedForces(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -1013,7 +1012,7 @@ void SimmKinematicsEngine::applyGeneralizedForces(const double aF[])
  */
 void SimmKinematicsEngine::applyGeneralizedForces(int aN, const AbstractCoordinate *aU[], const double aF[])
 {
-	throw Exception("SimmKinematicsEngine::applyGeneralizedForces(int aN, const AbstractCoordinate *aU[], const double aF[]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyGeneralizedForces(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //--------------------------------------------------------------------------
@@ -1028,7 +1027,7 @@ void SimmKinematicsEngine::applyGeneralizedForces(int aN, const AbstractCoordina
  */
 double SimmKinematicsEngine::getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const
 {
-	throw Exception("SimmKinematicsEngine::getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::applyNetGeneralizedForce(): SimmKinematicsEngine does not support dynamics.");
 	return 0.0;
 }
 
@@ -1041,7 +1040,7 @@ double SimmKinematicsEngine::getNetAppliedGeneralizedForce(const AbstractCoordin
  */
 void SimmKinematicsEngine::computeGeneralizedForces(double aDUDT[], double rF[]) const
 {
-	throw Exception("SimmKinematicsEngine::computeGeneralizedForces(double aDUDT[], double rF[]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::computeGeneralizedForce(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -1053,7 +1052,7 @@ void SimmKinematicsEngine::computeGeneralizedForces(double aDUDT[], double rF[])
  */
 void SimmKinematicsEngine::computeReactions(double rForces[][3], double rTorques[][3]) const
 {
-	throw Exception("SimmKinematicsEngine::computeReactions(double rForces[][3], double rTorques[][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::computeReactions(): SimmKinematicsEngine does not support dynamics.");
 }
 
 
@@ -1068,7 +1067,7 @@ void SimmKinematicsEngine::computeReactions(double rForces[][3], double rTorques
  */
 void SimmKinematicsEngine::formMassMatrix(double *rI)
 {
-	throw Exception("SimmKinematicsEngine::formMassMatrix(double *rI) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::formMassMatrix(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
@@ -1080,7 +1079,7 @@ void SimmKinematicsEngine::formMassMatrix(double *rI)
  */
 void SimmKinematicsEngine::formEulerTransform(const AbstractBody &aBody, double *rE) const
 {
-	throw Exception("SimmKinematicsEngine::formEulerTransform(const AbstractBody &aBody, double *rE) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::formEulerTransform() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1094,7 +1093,7 @@ void SimmKinematicsEngine::formEulerTransform(const AbstractBody &aBody, double 
  */
 void SimmKinematicsEngine::formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody) const
 {
-	throw Exception("SimmKinematicsEngine::formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::formJacobianTranslation() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1107,7 +1106,7 @@ void SimmKinematicsEngine::formJacobianTranslation(const AbstractBody &aBody, co
  */
 void SimmKinematicsEngine::formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody) const
 {
-	throw Exception("SimmKinematicsEngine::formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::formJacobianOrientation() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1120,7 +1119,7 @@ void SimmKinematicsEngine::formJacobianOrientation(const AbstractBody &aBody, do
  */
 void SimmKinematicsEngine::formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody) const
 {
-	throw Exception("SimmKinematicsEngine::formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::formJacobianEuler() not yet implemented.");
 }
 
 //--------------------------------------------------------------------------
@@ -1135,7 +1134,7 @@ void SimmKinematicsEngine::formJacobianEuler(const AbstractBody &aBody, double *
  */
 void SimmKinematicsEngine::computeDerivatives(double *dqdt, double *dudt)
 {
-	throw Exception("SimmKinematicsEngine::computeAccelerations(double *dqdt, double *dudt) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::computeDerivatives(): SimmKinematicsEngine does not support dynamics.");
 }
 
 
@@ -1391,7 +1390,7 @@ double SimmKinematicsEngine::calcDistance(const AbstractBody& aBody1, const doub
  */
 void SimmKinematicsEngine::convertQuaternionsToAngles(double *aQ, double *rQAng) const
 {
-	throw Exception("SimmKinematicsEngine::convertQuaternionsToAngles(double *aQ, double *rQAng) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertQuaternionsToAngles() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1402,7 +1401,7 @@ void SimmKinematicsEngine::convertQuaternionsToAngles(double *aQ, double *rQAng)
  */
 void SimmKinematicsEngine::convertQuaternionsToAngles(Storage *rQStore) const
 {
-	throw Exception("SimmKinematicsEngine::convertQuaternionsToAngles(Storage *rQStore) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertQuaternionsToAngles() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1414,7 +1413,7 @@ void SimmKinematicsEngine::convertQuaternionsToAngles(Storage *rQStore) const
  */
 void SimmKinematicsEngine::convertAnglesToQuaternions(double *aQAng, double *rQ) const
 {
-	throw Exception("SimmKinematicsEngine::convertAnglesToQuaternions(double *aQAng, double *rQ) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertAnglesToQuaternions() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1425,7 +1424,7 @@ void SimmKinematicsEngine::convertAnglesToQuaternions(double *aQAng, double *rQ)
  */
 void SimmKinematicsEngine::convertAnglesToQuaternions(Storage *rQStore) const
 {
-	throw Exception("SimmKinematicsEngine::convertAnglesToQuaternions(Storage *rQStore) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertAnglesToQuaternions() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1439,7 +1438,7 @@ void SimmKinematicsEngine::convertAnglesToQuaternions(Storage *rQStore) const
  */
 void SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
 {
-	throw Exception("SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertAnglesToDirectionCosines() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1453,7 +1452,7 @@ void SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE
  */
 void SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const
 {
-	throw Exception("SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertAnglesToDirectionCosines() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1467,7 +1466,7 @@ void SimmKinematicsEngine::convertAnglesToDirectionCosines(double aE1, double aE
  */
 void SimmKinematicsEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const
 {
-	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToAngles() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1481,7 +1480,7 @@ void SimmKinematicsEngine::convertDirectionCosinesToAngles(double aDirCos[3][3],
  */
 void SimmKinematicsEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const
 {
-	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToAngles() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1496,7 +1495,7 @@ void SimmKinematicsEngine::convertDirectionCosinesToAngles(double *aDirCos, doub
  */
 void SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
 {
-	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], double *rQ1, double *rQ2, double *rQ3, double *rQ4) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToQuaternions() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1511,7 +1510,7 @@ void SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double aDirCos[3
  */
 void SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
 {
-	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertDirectionCosinesToQuaternions() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1526,7 +1525,7 @@ void SimmKinematicsEngine::convertDirectionCosinesToQuaternions(double *aDirCos,
  */
 void SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const
 {
-	throw Exception("SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertQuaternionsToDirectionCosines() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1541,7 +1540,7 @@ void SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, doub
  */
 void SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const
 {
-	throw Exception("SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::convertQuaternionsToDirectionCosines() not yet implemented.");
 }
 
 //_____________________________________________________________________________
@@ -1560,7 +1559,7 @@ void SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, doub
  */
 void SimmKinematicsEngine::computeConstrainedCoordinates(double *rQ) const
 {
-	throw Exception("SimmKinematicsEngine::computeConstrainedCoordinates(double *rQ) not yet implemented.");
+	throw Exception("SimmKinematicsEngine::computeConstrainedCoordinates() not yet implemented.");
 }
 
 //_____________________________________________________________________________
