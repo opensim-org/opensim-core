@@ -253,7 +253,7 @@ bool IKTool::solveTrial(int i)
  */
 bool IKTool::run()
 {
-	cout<<"Running investigation "<<getName()<<".\n";
+	cout<<"Running tool "<<getName()<<".\n";
 
 	bool success = true;
 

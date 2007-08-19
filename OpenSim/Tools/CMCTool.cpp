@@ -516,7 +516,7 @@ operator=(const CMCTool &aTool)
  */
 bool CMCTool::run()
 {
-	cout<<"Running investigation "<<getName()<<".\n";
+	cout<<"Running tool "<<getName()<<".\n";
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {

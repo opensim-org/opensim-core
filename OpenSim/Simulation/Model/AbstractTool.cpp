@@ -430,8 +430,6 @@ addAnalysisSetToModel()
 		analysis->setModel(_model);
 		_model->addAnalysis(analysis);
 	}
-
-	_model->getAnalysisSet()->print("ANALYSIS_SET.xml");
 }
 
 

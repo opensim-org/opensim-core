@@ -226,7 +226,7 @@ operator=(const PerturbationTool &aTool)
  */
 bool PerturbationTool::run()
 {
-	cout<<"Running investigation "<<getName()<<".\n";
+	cout<<"Running tool "<<getName()<<".\n";
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {

@@ -747,7 +747,7 @@ operator=(const ForwardTool &aTool)
  */
 bool ForwardTool::run()
 {
-	cout<<"Running investigation "<<getName()<<"."<<endl;
+	cout<<"Running tool "<<getName()<<"."<<endl;
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
@@ -1004,8 +1004,7 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 								TorqueApplier **rLeftTorqueApp)
 {
 	if(aExternalLoadsFileName=="") {
-		cout<<"\n\nWARNING- a file name for external loads was not specified.";
-		cout<<" No loads will be applied.\n\n";
+		cout<<"No external loads will be applied (external loads file not specified)."<<endl;
 		return;
 	}
 
@@ -1030,11 +1029,11 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 	qStore->pad(60); 
 	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
 		int order = 50;
-		cout<<"\n\nLow-pass filtering external load kinematics with a cutoff frequency of ";
-		cout<<aLowpassCutoffFrequencyForLoadKinematics<<"...\n\n";
+		cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
+		    <<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
 		qStore->lowpassFIR(order,aLowpassCutoffFrequencyForLoadKinematics);
 	} else {
-		cout<<"\n\nNote- not filtering the external loads model kinematics.\n\n";
+		cout<<"Note- not filtering the external loads model kinematics."<<endl;
 	}
 	// Spline
 	GCVSplineSet qSet(5,qStore);

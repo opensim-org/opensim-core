@@ -702,7 +702,7 @@ getControlsStatesPseudoStates(int aIndex,Array<double> &rX,Array<double> &rY,Arr
  */
 bool AnalyzeTool::run()
 {
-	cout<<"Running investigation "<<getName()<<"."<<endl;
+	cout<<"Running analyze tool "<<getName()<<"."<<endl;
 
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
