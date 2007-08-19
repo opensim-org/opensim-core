@@ -165,6 +165,7 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	Analysis::operator=(aKinematics);
 
 	_recordAccelerations = aKinematics._recordAccelerations;
+	_coordinates = aKinematics._coordinates;
 
 	// Deallocate _y & _dy if already allocated
 	if(_y!=NULL) { delete[] _y;  _y=NULL; }

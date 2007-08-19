@@ -93,6 +93,9 @@ operator=(const InverseDynamics &aInverseDynamics)
 {
 	// BASE CLASS
 	Analysis::operator=(aInverseDynamics);
+
+	_useModelActuatorSet = aInverseDynamics._useModelActuatorSet;
+
 	return(*this);
 }
 

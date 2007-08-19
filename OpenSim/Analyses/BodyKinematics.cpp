@@ -142,6 +142,7 @@ operator=(const BodyKinematics &aBodyKinematics)
 {
 	// BASE CLASS
 	Analysis::operator=(aBodyKinematics);
+	_bodies = aBodyKinematics._bodies;
 	_angVelInLocalFrame = aBodyKinematics._angVelInLocalFrame;
 	return(*this);
 }

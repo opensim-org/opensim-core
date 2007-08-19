@@ -410,6 +410,9 @@ updateModelActuatorsAndContactForces(Model *model, const string &aToolSetupFileN
 //_____________________________________________________________________________
 /**
  * Adds Analysis objects from analysis set to model.
+ *
+ * NOTE: Makes copies of analyses.  Also, both this tool and the model have ownership of their analysis
+ * objects, so making a copy is necessary so a single analysis won't be deleted twice.
  */
 void AbstractTool::
 addAnalysisSetToModel()
@@ -422,15 +425,13 @@ addAnalysisSetToModel()
 
 	int size = _analysisSet.getSize();
 	for(int i=0;i<size;i++) {
-		Analysis *analysis = _analysisSet.get(i);
-		if(analysis==NULL) continue;
+		if(!_analysisSet.get(i)) continue;
+		Analysis *analysis = (Analysis*)_analysisSet.get(i)->copy();
 		analysis->setModel(_model);
 		_model->addAnalysis(analysis);
 	}
 
-	// Since the model has the analyses and will delete them when it is destructed, 
-	// make sure we don't also try to delete them when the tool gets destructed!!
-	_analysisSet.setMemoryOwner(false);
+	_model->getAnalysisSet()->print("ANALYSIS_SET.xml");
 }
 
 
