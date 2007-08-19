@@ -322,7 +322,7 @@ updateStorageObjects()
 		}
 	}
 	_coordinateList = tmpCoordinateList;
-	cout<<"Number of active moment arm storage array = "<<_momentArmStorageArray.getSize()<<endl;
+	//cout<<"Number of active moment arm storage array = "<<_momentArmStorageArray.getSize()<<endl;
 
 	// CONSTRUCT AND SET COLUMN LABELS
 	constructColumnLabels();
