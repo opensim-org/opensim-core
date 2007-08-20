@@ -815,7 +815,7 @@ Transform SimmKinematicsEngine::getTransform(const AbstractBody &aBody)
  */
 void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
 {
-	throw Exception("SimmKinematicsEngine::applyForce(): SimmKinematicsEngine does not support dynamics.");
+	//throw Exception("SimmKinematicsEngine::applyForce(): SimmKinematicsEngine does not support dynamics.");
 }
 
 //_____________________________________________________________________________
