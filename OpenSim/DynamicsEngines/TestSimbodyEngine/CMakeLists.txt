@@ -9,7 +9,7 @@ ADD_EXECUTABLE(testSimbodyEngine testSimbodyEngine.cpp)
 
 SET_TARGET_PROPERTIES(testSimbodyEngine PROPERTIES PROJECT_LABEL "Tests - testSimbodyEngine")
         
-INSTALL_TARGETS(/bin/ testSimbodyEngine)
+#INSTALL_TARGETS(/bin/ testSimbodyEngine)
 #
 # Testing
 #

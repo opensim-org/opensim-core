@@ -28,4 +28,4 @@ SET_TARGET_PROPERTIES(testSdfast PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_
 ##    ${EXECUTABLE_OUTPUT_PATH}/Debug/testSdfast.exe
 ##    ${buildLocation}/../testSdfast_d.exe
 ##)
-INSTALL_TARGETS(/bin/ testSdfast)
+#INSTALL_TARGETS(/bin/ testSdfast)
