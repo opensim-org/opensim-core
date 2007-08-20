@@ -43,12 +43,19 @@ ENDIF(WIN32)
 IF(WIN32)
 	SET(SIMTK_OPENSIM_INSTALL_DIR "c:/Program Files/SimTK/OpenSim")
 	SET(SIMTK_DIR "c:/Program Files/SimTK/" CACHE PATH "Top-level directory of SimTK install")
-	SET(NETBEANS_INSTALL_DIR "C:/netbeans-5.5/" CACHE PATH "Netbeans install directory")
-	SET(VTK_LIB_DIR "C:/VTK50/vtk-5.0.0/VTKBuild/bin" CACHE PATH "Prebuilt VTK-shared libraries")	
 ELSE(WIN32)
 	SET(SIMTK_OPENSIM_INSTALL_DIR "/usr/local/SimTK/OpenSim")
 	SET(SIMTK_DIR "/usr/local/SimTK" CACHE PATH "Top-level directory of SimTK install")
 ENDIF(WIN32)
+
+SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
+IF(OPENSIM_INSTALL_PACKAGE_BUILD)
+IF(WIN32)
+	SET(NETBEANS_INSTALL_DIR "C:/netbeans-5.5/" CACHE PATH "Netbeans install directory")
+	SET(VTK_LIB_DIR "C:/Projects/OpenSim105/Vendors/vtk_dll" CACHE PATH "Prebuilt VTK-shared libraries")	
+	SET(JRE_TO_PACKAGE "C:/Program Files/Java/jdk1.5.0_06/jre" CACHE PATH "JRE to package with OpenSim (jre dir)")
+ENDIF(WIN32)
+ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 IF(NOT LIBRARY_OUTPUT_PATH)
   SET(LIBRARY_OUTPUT_PATH ${OpenSim_BINARY_DIR}/${RDI_ARCH} CACHE INTERNAL "Single output directory for building all libraries.")
@@ -87,10 +94,15 @@ ELSE(USE_STATIC_SIMTK_LIBRARIES)
 	SET(SIMTK_MATH_LIB debug SimTKmath_d optimized SimTKmath SimTKlapack)
 ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
+
+IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 # We don't really want to copy the version of lapack we're using because that may be specific to our machine, so we take the generic lapack version (i.e. generic pentium 32 bit single proc)
 IF(WIN32)
-INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.dll ${SIMTK_DIR}/core/lib/SimTKmath.dll ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.dll)
-INSTALL_FILES(/lib/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.lib ${SIMTK_DIR}/core/lib/SimTKmath.lib ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.lib)
+INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.dll ${SIMTK_DIR}/core/lib/SimTKmath.dll ${SIMTK_DIR}/core/lib/SimTKcpodes.dll ${SIMTK_DIR}/core/lib/SimTKsimbody.dll ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.dll)
+INSTALL_FILES(/lib/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.lib ${SIMTK_DIR}/core/lib/SimTKmath.lib ${SIMTK_DIR}/core/lib/SimTKcpodes.lib ${SIMTK_DIR}/core/lib/SimTKsimbody.lib ${SIMTK_DIR}/core/lib/generic_lapack/SimTKlapack.lib)
+INSTALL_FILES(/bin/ FILES "C:/WINDOWS/system32/msvcr71.dll")
+INSTALL_FILES(/bin/ FILES "C:/WINDOWS/system32/msvcp71.dll")
+
 ELSE(WIN32)
 INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/libSimTKcommon.so ${SIMTK_DIR}/core/lib/libSimTKmath.so ${SIMTK_DIR}/core/lib/generic_lapack/libSimTKlapack.so)
 ENDIF(WIN32)
@@ -101,16 +113,16 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
 SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of BioComputation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "9")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
    # sure there is at least one set of four (4) backlasshes.
-   # SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\OpenSimIcon.bmp")
+   SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\Install\\\\OpenSimInstallerIcon.bmp")
    # SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\OpenSim.exe")
-   SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY}OpenSimPlatform")
+   SET(CPACK_NSIS_DISPLAY_NAME  "${CPACK_PACKAGE_INSTALL_DIRECTORY} Application")
    SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.simtk.org/home/opensim")
    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.simtk.org/home/opensim")
    SET(CPACK_NSIS_CONTACT "aymanh@simtk.org")
@@ -123,9 +135,12 @@ SET(CPACK_PACKAGE_EXECUTABLES "OpenSim" "OpenSim")
 
 INCLUDE (CPack)
 
+ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
+
 #
 # Build the documentation
 #
 
 #-----------------------------------------------------------------------------
+
 SUBDIRS(Vendors OpenSim Documentation)
