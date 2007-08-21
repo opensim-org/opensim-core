@@ -52,7 +52,7 @@ SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(WIN32)
 	SET(NETBEANS_INSTALL_DIR "C:/netbeans-5.5/" CACHE PATH "Netbeans install directory")
-	SET(VTK_LIB_DIR "C:/Projects/OpenSim105/Vendors/vtk_dll" CACHE PATH "Prebuilt VTK-shared libraries")	
+	SET(VTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll CACHE PATH "Prebuilt VTK-shared libraries")	
 	SET(JRE_TO_PACKAGE "C:/Program Files/Java/jdk1.5.0_06/jre" CACHE PATH "JRE to package with OpenSim (jre dir)")
 ENDIF(WIN32)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
