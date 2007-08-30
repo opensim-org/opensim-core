@@ -46,6 +46,12 @@ void Fatal_Error(const char *msg, const char *function, const char *file, unsign
 	exit(1);
 }
 
+/**
+ * Basically a utility that lets me take a bash script that has lines such as
+ * export VAR=value
+ * and insert these environment variables into this executable's environment.
+ * Mostly for testing/debugging applications.
+ */
 void AddEnvironmentVariablesFromFile(const std::string &aFileName)
 {
 	if(aFileName.empty()) return;

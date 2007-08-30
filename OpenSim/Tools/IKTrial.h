@@ -58,6 +58,7 @@ class IKSolverImpl;
  */
 class OSIMTOOLS_API IKTrial : public Object  
 {
+	OPENSIM_DECLARE_DERIVED(IKTrial, Object);
 
 //=============================================================================
 // DATA
