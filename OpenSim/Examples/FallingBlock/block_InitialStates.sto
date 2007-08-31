@@ -1,0 +1,8 @@
+block_InitialStates
+nRows=1565
+nColumns=13
+endheader
+time	block_tx	block_ty	block_tz	block_rz	block_rx	block_ry    block_tx_u	block_ty_u	block_tz_u	block_rz_u	block_rx_u	block_ry_u
+-1.0    0.0 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+0.0    0.0 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+1.0    0.0 0.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
