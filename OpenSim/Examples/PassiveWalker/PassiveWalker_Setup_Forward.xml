@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ForwardTool name="wheel">
+
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file> PassiveWalker.osim </model_file>
+	
+	<!--Replace the model's actuator set with sets specified in
+	    <actuator_set_files>? If false, the actuator set is appended to.-->
+	<replace_actuator_set> false </replace_actuator_set>
+	<!--List of xml files used to construct an actuator set for the model.-->
+	<actuator_set_files>  </actuator_set_files>
+	
+	<!--Replace the model's contact set with sets specified in
+	    <actuator_set_files>? If false, the actuator set is appended to.-->
+	<replace_contact_force_set> false </replace_contact_force_set>
+
+	<!--Directory used for writing results.-->
+	<results_directory> Results </results_directory>
+	<!--Output precision.  It is 8 by default.-->
+	<output_precision> 20 </output_precision>
+	<!--Initial time for the simulation.-->
+	<initial_time> 0.0 </initial_time>
+	<!--Final time for the simulation.-->
+	<final_time> 2.0 </final_time>
+	<!--Maximum number of integrator steps.-->
+	<maximum_number_of_integrator_steps> 30000 </maximum_number_of_integrator_steps>
+	<!--Maximum integration step size.-->
+	<maximum_integrator_step_size> 0.001 </maximum_integrator_step_size>
+	<!--Integrator error tolerance. When the error is greater, the integrator
+	    step size is decreased.-->
+	<integrator_error_tolerance> 5e-005 </integrator_error_tolerance>
+	<!--Integrator fine tolerance. When the error is less, the integrator step
+	    size is increased.-->
+	<integrator_fine_tolerance> 5e-007 </integrator_fine_tolerance>
+	
+	<!-- ANALYSES -->
+	<!--Set of analyses to be run during the investigation.-->
+	<AnalysisSet name="Analyses">
+		<objects>
+			<Kinematics name="Kinematics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 1 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+			</Kinematics>
+		</objects>
+	</AnalysisSet>
+	
+	<!-- BASIC FORWARD SETTINGS -->
+	<!--XML file containing the controls (e.g., muscle excitations) for the
+	    forward simulation.-->
+	<controls_file>  </controls_file>
+	<!--Storage file (.sto) containing the initial states for the forward
+	    simulation. This file often contains multiple rows of data, each row
+	    being a time-stamped array of states. The first column contains the
+	    time.  The rest of the columns contain the states in the order
+	    appropriate for the model. In a storage file, unlike a motion file
+	    (.mot), non-uniform time spacing is allowed.  If the user-specified
+	    initial time for a simulation does not correspond exactly to one of
+	    the time stamps in this file, inerpolation is NOT used because it is
+	    usually necessary to being a simulation from an exact set of states.
+	    Instead, the closest earlier set of states is used.-->
+	<states_file> PassiveWalker_InitialStates.sto </states_file>
+	<!--Flag (true or false) indicating whether or not the integrator should
+	    use a particular time stepping.  If true, the time stepping is
+	    extracted from the initial states file.  In this situation, therefore,
+	    the initial states file must contain all the time steps in a
+	    simulation and be written out to high precision (usually 20 decimal
+	    places).  Setting this flag to true can be useful when reproducing a
+	    previous forward simulation with as little drift as possible.  If this
+	    flag is false, the integrator is left to determine its own time
+	    stepping.-->
+	<use_specified_dt> false </use_specified_dt>
+		
+</ForwardTool>
+
