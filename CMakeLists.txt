@@ -1,5 +1,14 @@
 PROJECT (OpenSim)
 
+SET(ARCH64 OFF CACHE BOOL "ON for 64bit builds, OFF for 32bit builds")
+
+# Use /lib64 instead of /lib for 64 bit linux builds
+IF(ARCH64)
+SET(LIB64 64)
+ELSE(ARCH64)
+SET(LIB64)
+ENDIF(ARCH64)
+
 SET(OPENSIM_MINIMAL_BUILD ON CACHE BOOL "Minimal build (only build essential libraries and excutables)")
 
 SET(INSTALL_HEADERS OFF)
@@ -81,7 +90,7 @@ INCLUDE_DIRECTORIES(${SIMTK_DIR}/core/include)
 IF(WIN32)
 	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib ${OpenSim_LIBRARY_DIR})
 ELSE(WIN32)
-	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib)
+	LINK_DIRECTORIES(${SIMTK_DIR}/core/lib${LIB64})
 ENDIF(WIN32)
 
 SET(USE_STATIC_SIMTK_LIBRARIES OFF CACHE BOOL "Link to static SimTK libraries (useful for debugging)")
@@ -104,7 +113,7 @@ INSTALL_FILES(/bin/ FILES "C:/WINDOWS/system32/msvcr71.dll")
 INSTALL_FILES(/bin/ FILES "C:/WINDOWS/system32/msvcp71.dll")
 
 ELSE(WIN32)
-INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/libSimTKcommon.so ${SIMTK_DIR}/core/lib/libSimTKmath.so ${SIMTK_DIR}/core/lib/generic_lapack/libSimTKlapack.so)
+INSTALL_FILES(/lib/ FILES ${SIMTK_DIR}/core/lib${LIB64}/libSimTKcommon.so ${SIMTK_DIR}/core/lib${LIB64}/libSimTKmath.so ${SIMTK_DIR}/core/lib${LIB64}/generic_lapack/libSimTKlapack.so)
 ENDIF(WIN32)
 
 INCLUDE (Dart)
