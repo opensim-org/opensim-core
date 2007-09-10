@@ -594,7 +594,7 @@ calc_wrap_path:
 	{
 		double r1p1[3], r2p2[3], r1w1[3], r2w2[3];
 
-		double *w1 = aWrapResult.wrap_pts.get(0).get();
+		double *w1 = aWrapResult.wrap_pts.get(1).get();
 		double *w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2).get();
 
 		// check for wrong-way wrap by testing angle of first and last
@@ -856,15 +856,16 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 														  double vs[], double vs4, bool far_side_wrap,
 														  WrapResult& aWrapResult) const
 {
-	int i, j, k, l, imax, numWrapSegments;
+	int i, j, k, l, imax, numPathSegments;
 	double u[3], ux[3], mu, a0[3], ar1[3], ar2[3], phi, dphi, phi0, len,
 		r0[3][3], vsy[3], vsz[3], rphi[3][3], t[3], r[3], f1[3], f2[3], dr[3],
-		aa, bb, cc, mu3, s[500][3], dv[3], q[3], p[3];
+		aa, bb, cc, mu3, s[500][3], dv[3];
+	double desiredSegLength = 0.001;
 
 	MAKE_3DVECTOR21(r1, r2, dr);
-	len = Mtx::Magnitude(3, dr);
+	len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
 
-	if (len < 0.001) {
+	if (len < desiredSegLength) {
 		// If the distance between r1 and r2 is very small, then don't bother
 		// calculating wrap points along the surface of the ellipsoid.
 		// Just use r1 and r2 as the surface points and return the distance
@@ -874,20 +875,26 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 		aWrapResult.wrap_pts.append(p1);
 		SimmPoint p2(r2);
 		aWrapResult.wrap_pts.append(p2);
-		aWrapResult.wrap_path_length = len;
+		aWrapResult.wrap_path_length = len * aWrapResult.factor; // the length is unnormalized later
 		return;
 	} else {
 		// You don't know the wrap length until you divide it
 		// into N pieces and add up the lengths of each one.
 		// So calculate N based on the distance between r1 and r2.
-		// First unfactor the length, then assume it's in meters
-		// to make each segment about 1mm long.
-		numWrapSegments = (int) (len / (aWrapResult.factor * 0.001));
-		if (numWrapSegments < 0)
-			numWrapSegments = 0;
-		else if (numWrapSegments > 500)
-			numWrapSegments = 500;
+		// desiredSegLength should really depend on the units of
+		// the model, but for now assume it's in meters and use 0.001.
+		numPathSegments = (int) (len / desiredSegLength);
+		if (numPathSegments <= 0)
+		{
+			aWrapResult.wrap_path_length = len;
+			return;
+		}
+		else if (numPathSegments > 499)
+			numPathSegments = 499;
 	}
+
+	int numPathPts = numPathSegments + 1;
+	int numInteriorPts = numPathPts - 2;
 
 	ux[0] = 1.0;
 	ux[1] = 0.0;
@@ -915,9 +922,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 	phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
 
 	if (far_side_wrap)
-		dphi = - (2 * rdMath::PI - phi0) / (double) numWrapSegments;
+		dphi = - (2 * rdMath::PI - phi0) / (double) numPathSegments;
 	else
-		dphi = phi0 / (double) numWrapSegments;
+		dphi = phi0 / (double) numPathSegments;
 
 	Mtx::CrossProduct(ar1, ar2, vsz);
 	Mtx::Normalize(3, vsz, vsz);
@@ -941,7 +948,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 
 	rphi[2][2] = 1;
 
-	for (i = 0; i < numWrapSegments; i++)
+	for (i = 0; i < numInteriorPts; i++)
 	{
 		phi = (i + 1) * dphi;
 		rphi[0][0] = cos(phi);
@@ -983,7 +990,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 	SimmPoint p1(r1);
 	aWrapResult.wrap_pts.append(p1);
 
-	for (i = 0; i < numWrapSegments; i++)
+	for (i = 0; i < numInteriorPts; i++)
 	{
 		SimmPoint spt(&s[i][0]);
 		aWrapResult.wrap_pts.append(spt);
@@ -994,25 +1001,11 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 
 	aWrapResult.wrap_path_length = 0.0;
 
-	p[0] = s[0][0];
-	p[1] = s[0][1];
-	p[2] = s[0][2];
-
-	MAKE_3DVECTOR21(p, r1, dv);
-
-	aWrapResult.wrap_path_length += Mtx::Magnitude(3, dv);
-
-	for (i = 0; i < numWrapSegments - 1; i++)
+	for (i = 0; i < numPathSegments; i++)
 	{
-		p[0] = s[i][0];
-		p[1] = s[i][1];
-		p[2] = s[i][2];
-
-		q[0] = s[i+1][0];
-		q[1] = s[i+1][1];
-		q[2] = s[i+1][2];
-
-		MAKE_3DVECTOR21(q, p, dv); 
+		SimmPoint p = aWrapResult.wrap_pts.get(i);
+		SimmPoint q = aWrapResult.wrap_pts.get(i+1);
+		MAKE_3DVECTOR21(q.get(), p.get(), dv); 
 
 		aWrapResult.wrap_path_length += Mtx::Magnitude(3, dv);
 	}
