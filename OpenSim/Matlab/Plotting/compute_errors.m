@@ -54,6 +54,8 @@ if exist(ikKinematicsFileName,'file') && exist(cmcKinematicsFileName,'file')
     rotationalCoordinateColumnNumbers = setdiff( allColumnNumbers, translationalCoordinateColumnNumbers );
     disp(sprintf('Max translation error (m) = %s', max_column_info(labelsOfCoordinatesToCompare, errors, translationalCoordinateColumnNumbers)));
     disp(sprintf('Max RMS translation error (m) = %s', rms_column_info(labelsOfCoordinatesToCompare, errors, translationalCoordinateColumnNumbers)));
+    disp(sprintf('Mean RMS translation error (m) = %s', mean_rms_column_info(errors, translationalCoordinateColumnNumbers)));
     disp(sprintf('Max angle error (deg) = %s', max_column_info(labelsOfCoordinatesToCompare, errors, rotationalCoordinateColumnNumbers)));
     disp(sprintf('Max RMS angle error (deg) = %s', rms_column_info(labelsOfCoordinatesToCompare, errors, rotationalCoordinateColumnNumbers)));
+    disp(sprintf('Mean RMS angle error (deg) = %s', mean_rms_column_info(errors, rotationalCoordinateColumnNumbers)));
 end

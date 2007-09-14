@@ -1,4 +1,4 @@
-function [] = overlay_jointMomentsFromMot(q, qPlotLabel, time, fileNum)
+function [] = overlay_jointMomentsFromMotSinglePlot(q, qPlotLabel, time, lineColors)
 % Purpose:  Extracts the data column(s) specified by qPlotLabel from q,
 %           and plots the data vs time on the current subplot.
 %
@@ -9,16 +9,15 @@ function [] = overlay_jointMomentsFromMot(q, qPlotLabel, time, fileNum)
 %				q.nc 		= number of matrix columns
 %           qPlotLabel{} specifies the label(s) of the data to be plotted
 %           time is an array of corresponding time values
-%           fileNum is used to specify the line style
 %
 % CTJ, 02-07, adapted from:
 % ASA, 11-05, revised 2-06
 
 
 % Specify attributes of subplots.
-pLineStyle = {'-', ':', '-', ':', '--'};                       
-pLineWidth = {2, 2, 1.25, 1.25, 1.25};                  
-pLineColor = {'c', 'c', 'b', 'b', 'b'};
+pLineStyle = {'-', '-', '-', '-'};                       
+pLineWidth = {6, 2, 6, 2};                  
+pLineColor = {lineColors{1}, lineColors{2}, [0.7 0 0], [1 0 0]};
 
 % Get data corresponding to plot label.
 if isempty(qPlotLabel)
@@ -26,8 +25,7 @@ if isempty(qPlotLabel)
 
 else
     for curveNum = 1:length(qPlotLabel)
-        dataIndex = find(strcmpi(q.labels, qPlotLabel{curveNum}));
-        data = q.data(:, dataIndex);
+        data = q.data(:, strcmpi(q.labels, qPlotLabel{curveNum}));
 
         % Convert pelvis, hip, and knee angles from the model CS to a 
         % conventional gait lab CS.
