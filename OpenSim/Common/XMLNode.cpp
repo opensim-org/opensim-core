@@ -100,6 +100,7 @@ GetNumberOfParents(const DOMNode *aNode)
 //_____________________________________________________________________________
 /**
  * Create a new element and add it as a child to a specified parent node with comment.
+ * The element is added to the end of the list of children.
  * If comment needs to be specified but not name then "" should be passed for name.
  *
  * @param aParent Node to which to add the child element.
@@ -167,6 +168,80 @@ AppendNewElementWithComment(DOMNode *aParent,
 }
 //_____________________________________________________________________________
 /**
+ * Create a new element and add it as a child to a specified parent node with comment.
+ * The element is inserted into the list of children right before the element specified
+ * by aNodeIndex.
+ * If comment needs to be specified but not name then "" should be passed for name.
+ *
+ * @param aParent Node to which to add the child element.
+ * @param aTag Tag name of the element to be added.
+ * @param aName Attribute name of the element.
+ * @param aComment comment to be associated with xml node.
+ * @param aNodeIndex index of element node before which to insert this new one.
+ * @return Child element.  NULL is returned on an error.
+ */
+DOMElement* XMLNode::
+InsertNewElementWithComment(DOMNode *aParent,
+							const string &aTag,
+							const string &aName,
+							const string &aComment,
+							int aNodeIndex)
+{
+	if(aParent==NULL) return(NULL);
+
+	// GET DOCUMENT
+	DOMDocument *doc;
+	bool parentIsDoc = (aParent->getNodeType()==DOMNode::DOCUMENT_NODE);
+	if(parentIsDoc) {
+		doc = (DOMDocument*)aParent;
+	} else {
+		doc = aParent->getOwnerDocument();
+	}
+	if(doc==NULL) return(NULL);
+
+	// DON'T ALLOW MORE THAN ONE ROOT
+	if(parentIsDoc && (doc->getDocumentElement()!=NULL)) {
+		printf("XMLNode.AddNewElement: ERROR- document already has root.\n");
+		return(NULL);
+	}
+
+	// CREATE NEW NODE
+	DOMElement *child = CreateDOMElement(doc,aTag);	
+	if(!aName.empty()) SetAttribute(child,"name",aName);
+
+	// DETERMINE LEVEL OF PARENT
+	int level = GetNumberOfParents(aParent);
+	if(level>TABLIMIT) level=TABLIMIT;
+
+	DOMNode* nextSibling = FindInsertionPoint(aParent, aNodeIndex);
+
+	// LEADING SPACE
+	if(!parentIsDoc) {
+		// If it already has children, we rely on the whitespace already there (just need to add a single tab)
+		string space = aParent->hasChildNodes() ? WhitespaceString(1,false) : WhitespaceString(level,true);
+		aParent->insertBefore(CreateDOMText(doc,space), nextSibling);
+	}
+
+	// Add Comment if needed
+	if (!aComment.empty()){
+		// CREATE comment
+		string space = WhitespaceString(level,false);
+		string formattedComment = IO::formatText(aComment,space+"    ",70);
+		aParent->insertBefore(CreateDOMComment(doc,formattedComment), nextSibling);
+		// Add newline
+		aParent->insertBefore(CreateDOMText(doc,WhitespaceString(level,true)), nextSibling);
+	}
+
+	// ADD CHILD
+	if(child!=NULL) aParent->insertBefore(child, nextSibling);
+
+	// TRAILING SPACE
+	if(!parentIsDoc) aParent->insertBefore(CreateDOMText(doc,WhitespaceString(level-1,true)), nextSibling);
+
+	return(child);
+}
+//_____________________________________________________________________________
+/**
  * Remove all the children of a specified node.
  *
  * @param aNode Node whose children are to be removed.
@@ -182,6 +257,50 @@ RemoveChildren(DOMNode *aNode)
 	}
 
 }
+//_____________________________________________________________________________
+/**
+ * Find the first node (comment or otherwise) that corresponds to the Nth object
+ * (N is aNodeIndex, and is one-based). This method is used to find the appropriate
+ * insertion point for the nodes associated with an object that is being inserted
+ * into the middle of an array or set of objects. If the object will be the Nth one,
+ * then find the Nth element child of the parent node, and then back up over
+ * comment/text nodes, if there are any. This will be the node before which the new
+ * object's nodes should be inserted. This code assumes that all objects before the
+ * one being inserted already have their nodes in the parent.
+ */
+DOMNode* XMLNode::
+FindInsertionPoint(DOMNode *aParent, int aNodeIndex)
+{
+	if(!aParent) return NULL;
+
+	// aNodeIndex == 0 means insert at the end, which is accomplished by
+	// returning a NULL insertion point.
+	if (aNodeIndex < 1) return NULL;
+
+	// sanity check
+	assert(aParent->getNodeType() == DOMNode::ELEMENT_NODE || aParent->getNodeType() == DOMNode::DOCUMENT_NODE);
+
+	DOMNodeList* children = aParent->getChildNodes();
+	for (int j=0, count=0; j<children->getLength(); j++) {
+		if (children->item(j)->getNodeType() == DOMNode::ELEMENT_NODE)
+			count++;
+		if (count == aNodeIndex) {
+			// If the previous node is a comment node, go back one node.
+			if (j > 0 && children->item(j-1)->getNodeType() == DOMNode::COMMENT_NODE)
+				return children->item(j-1);
+			// If the previous node is a text node, and the one before that is a
+			// comment node, go back two nodes.
+			if (j > 1 && children->item(j-1)->getNodeType() == DOMNode::TEXT_NODE &&
+				 children->item(j-2)->getNodeType() == DOMNode::COMMENT_NODE)
+				return children->item(j-2);
+		}
+	}
+
+	// There aren't aNodeIndex element nodes, so return NULL so the insertion point
+	// will be at the end.
+	return NULL;
+}
+
 //_____________________________________________________________________________
 /**
  * Remove an element from its parent, and optionally remove whitespace and comments

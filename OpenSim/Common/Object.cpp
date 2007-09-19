@@ -947,7 +947,7 @@ updateDefaultObjectsFromXMLNode()
  * @param aParent Parent XML element.
  */
 void Object::
-updateXMLNode(DOMElement *aParent)
+updateXMLNode(DOMElement *aParent, int aNodeIndex)
 {
 	// Handle non-inlined object
 	if(!getInlined()) {
@@ -980,7 +980,7 @@ updateXMLNode(DOMElement *aParent)
 	// GENERATE XML NODE?
 	if(_node==NULL) {
 		if(Object_DEBUG) cout<<"Generating XML node for "<<*this<<endl;
-		generateXMLNode(aParent);
+		generateXMLNode(aParent, aNodeIndex);
 	}
 
 	// CHECK THAT IT IS AN ELEMENT NODE
@@ -1057,7 +1057,7 @@ updateXMLNode(DOMElement *aParent)
 			}
 
 			if(!elmt && !property->getUseDefault()) {
-				elmt = XMLNode::AppendNewElementWithComment(_node, object.getType(), object.getName(), property->getComment());
+				elmt = XMLNode::InsertNewElementWithComment(_node, object.getType(), object.getName(), property->getComment(), aNodeIndex);
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
 			}
@@ -1077,7 +1077,7 @@ updateXMLNode(DOMElement *aParent)
 			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			bool createdNewParent = false;
 			if(!elmt && !property->getUseDefault()) {
-				elmt = XMLNode::AppendNewElementWithComment(_node, name, "", property->getComment());
+				elmt = XMLNode::InsertNewElementWithComment(_node, name, "", property->getComment(), aNodeIndex);
 				createdNewParent = true;
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
@@ -1091,7 +1091,7 @@ updateXMLNode(DOMElement *aParent)
 				if(type==Property::ObjArray) {
 					for(int j=0;j<property->getArraySize();j++) {
 						if(createdNewParent) property->getValueObjPtr(j)->setXMLNode(NULL); // object might have a stale child node
-						property->getValueObjPtr(j)->updateXMLNode(elmt);
+						property->getValueObjPtr(j)->updateXMLNode(elmt, j+1);
 					}
 				} else {
 					Object *object = property->getValueObjPtr();
@@ -1175,7 +1175,7 @@ updateDefaultObjectsXMLNode(DOMElement *aParent)
  * a new document.
  */
 void Object::
-generateXMLNode(DOMElement *aParent)
+generateXMLNode(DOMElement *aParent, int aNodeIndex)
 {
 	// CHECK FOR DIFFERENT DOCUMENTS ERROR
 	if((aParent!=NULL)&&(_node!=NULL)) {
@@ -1209,7 +1209,7 @@ generateXMLNode(DOMElement *aParent)
 		}
 
 		// GENERATE NEW NODE
-		_node = XMLNode::AppendNewElementWithComment(aParent,getType(),getName(),"");
+		_node = XMLNode::InsertNewElementWithComment(aParent,getType(),getName(),"", aNodeIndex);
 	}
 }
 

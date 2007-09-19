@@ -93,8 +93,16 @@ public:
 							const std::string &aTag,
 							const std::string &aName="",
 							const std::string &aComment="");
+	static DOMElement* 
+		InsertNewElementWithComment(DOMNode *aParent,
+							const std::string &aTag,
+							const std::string &aName="",
+							const std::string &aComment="",
+							int aNodeIndex=0);
 	static void
 		RemoveChildren(DOMNode *aNode);
+	static DOMNode*
+		FindInsertionPoint(DOMNode *aElement, int aNodeIndex);
 	static void
 		RemoveElementFromParent(DOMElement *aElement, bool aRemoveWhitespaceAndComments = true);
 	static void

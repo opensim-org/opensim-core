@@ -257,9 +257,9 @@ public:
 	virtual bool isValidDefaultType(const Object *aObject) const;
 	virtual void updateFromXMLNode();
 	virtual void updateDefaultObjectsFromXMLNode();
-	virtual void updateXMLNode(DOMElement *aParent);
+	virtual void updateXMLNode(DOMElement *aParent, int aNodeIndex=0);
 	virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
-	virtual void generateXMLNode(DOMElement *aParent);
+	virtual void generateXMLNode(DOMElement *aParent, int aNodeIndex=0);
 	// Inline support
 	bool getInlined() const;
 	void setInlined(bool aInlined, const std::string &aFileName="");
