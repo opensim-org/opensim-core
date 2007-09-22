@@ -59,14 +59,8 @@ LEFT  = 2;
 
 CMC_ControlConstraintsFileName = fullfile( outputDirectory, [trialName '_CMC_ControlConstraints.xml'] );
 node = xmlread( CMC_ControlConstraintsFileName );
-CMC_SdfastCfsqpSetupFile = fullfile( outputDirectory, [trialName '_Setup_CMC_Sdfast_Cfsqp.xml'] );
-CMC_SdfastIpoptSetupFile = fullfile( outputDirectory, [trialName '_Setup_CMC_Sdfast_Ipopt.xml'] );
-CMC_SimbodyCfsqpSetupFile = fullfile( outputDirectory, [trialName '_Setup_CMC_Simbody_Cfsqp.xml'] );
-CMC_SimbodyIpoptSetupFile = fullfile( outputDirectory, [trialName '_Setup_CMC_Simbody_Ipopt.xml'] );
-CMC_SdfastCfsqpSetupDomNode = xmlread( CMC_SdfastCfsqpSetupFile );
-CMC_SdfastIpoptSetupDomNode = xmlread( CMC_SdfastIpoptSetupFile );
-CMC_SimbodyCfsqpSetupDomNode = xmlread( CMC_SimbodyCfsqpSetupFile );
-CMC_SimbodyIpoptSetupDomNode = xmlread( CMC_SimbodyIpoptSetupFile );
+CMC_SetupFile = fullfile( outputDirectory, [trialName '_Setup_CMC.xml'] );
+CMC_SetupDomNode = xmlread( CMC_SetupFile );
 
 %
 % Compute on-off time intervals for all muscles from excitationOffRegions.
@@ -187,10 +181,10 @@ actuatorNames = strcat( actuatorNames, '.excitation' );
 % Compute gait cycle start/end indices in right and left limbs, based on
 % the initial and final times for this trial specified in the CMC setup
 % file.
-CMC_SdfastCfsqpSetupMainBodyNode = CMC_SdfastCfsqpSetupDomNode.getChildNodes.item(0);
+CMC_SetupMainBodyNode = CMC_SetupDomNode.getChildNodes.item(0);
 desiredTagNames = { 'initial_time' 'final_time' };
 values = { 'Not a number' 'Not a number' };
-values = findAndGetValuesFromTags( CMC_SdfastCfsqpSetupMainBodyNode, desiredTagNames, values );
+values = findAndGetValuesFromTags( CMC_SetupMainBodyNode, desiredTagNames, values );
 cmcInitialTime = str2double( values{1} );
 cmcFinalTime = str2double( values{2} );
 if cmcInitialTime > cmcFinalTime
@@ -378,30 +372,9 @@ xmlwrite( outputFullFilePath, node );
 % constraints file in the appropriate spot in the setup file.
 %
 
-CMC_SdfastCfsqpSetupMainBodyNode = CMC_SdfastCfsqpSetupDomNode.getChildNodes.item(0);
+CMC_SetupMainBodyNode = CMC_SetupDomNode.getChildNodes.item(0);
 desiredTagNames = { 'constraints_file' };
 values = { outputFileName };
-findAndFillInTags( CMC_SdfastCfsqpSetupMainBodyNode, desiredTagNames, values );
-New_CMC_SdfastCfsqpSetupFileName = fullfile( outputDirectory, [trialName '_Setup_Constrained_CMC_Sdfast_Cfsqp.xml'] );
-xmlwrite( New_CMC_SdfastCfsqpSetupFileName, CMC_SdfastCfsqpSetupDomNode );
-
-CMC_SdfastIpoptSetupMainBodyNode = CMC_SdfastIpoptSetupDomNode.getChildNodes.item(0);
-desiredTagNames = { 'constraints_file' };
-values = { outputFileName };
-findAndFillInTags( CMC_SdfastIpoptSetupMainBodyNode, desiredTagNames, values );
-New_CMC_SdfastIpoptSetupFileName = fullfile( outputDirectory, [trialName '_Setup_Constrained_CMC_Sdfast_Ipopt.xml'] );
-xmlwrite( New_CMC_SdfastIpoptSetupFileName, CMC_SdfastIpoptSetupDomNode );
-
-CMC_SimbodyCfsqpSetupMainBodyNode = CMC_SimbodyCfsqpSetupDomNode.getChildNodes.item(0);
-desiredTagNames = { 'constraints_file' };
-values = { outputFileName };
-findAndFillInTags( CMC_SimbodyCfsqpSetupMainBodyNode, desiredTagNames, values );
-New_CMC_SimbodyCfsqpSetupFileName = fullfile( outputDirectory, [trialName '_Setup_Constrained_CMC_Simbody_Cfsqp.xml'] );
-xmlwrite( New_CMC_SimbodyCfsqpSetupFileName, CMC_SimbodyCfsqpSetupDomNode );
-
-CMC_SimbodyIpoptSetupMainBodyNode = CMC_SimbodyIpoptSetupDomNode.getChildNodes.item(0);
-desiredTagNames = { 'constraints_file' };
-values = { outputFileName };
-findAndFillInTags( CMC_SimbodyIpoptSetupMainBodyNode, desiredTagNames, values );
-New_CMC_SimbodyIpoptSetupFileName = fullfile( outputDirectory, [trialName '_Setup_Constrained_CMC_Simbody_Ipopt.xml'] );
-xmlwrite( New_CMC_SimbodyIpoptSetupFileName, CMC_SimbodyIpoptSetupDomNode );
+findAndFillInTags( CMC_SetupMainBodyNode, desiredTagNames, values );
+New_CMC_SetupFileName = fullfile( outputDirectory, [trialName '_Setup_Constrained_CMC.xml'] );
+xmlwrite( New_CMC_SetupFileName, CMC_SetupDomNode );
