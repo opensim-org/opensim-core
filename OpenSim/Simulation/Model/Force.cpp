@@ -224,6 +224,7 @@ operator=(const Force &aForce)
 	AbstractActuator::operator=(aForce);
 
 	// BODY A
+	_bodyAName = aForce._bodyAName;
 	setBodyA(aForce.getBodyA());
 
 	// POINT A
@@ -233,6 +234,7 @@ operator=(const Force &aForce)
 	aForce.getForceDirectionA(&_uA[0]);
 
 	// BODY B
+	_bodyBName = aForce._bodyBName;
 	setBodyB(aForce.getBodyB());
 
 	// POINT B
