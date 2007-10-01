@@ -313,6 +313,41 @@ AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
 
 
 //=============================================================================
+// GENERIC NORMALIZED FORCE-LENGTH-VELOCIY PROPERTIES
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Evaluate the normalized force-length-velicity curve for muscle.
+ * A simple generic implementation is used here.  Derived classes should
+ * override this method for more precise evaluation of the
+ * force-length-velocity curve.
+ *
+ * @param aActivation Activation level of the muscle.  1.0 is full activation;
+ * 0.0 is no activation.
+ * @param aNormalizedLength Normalized length of the muscle fibers.  1.0 indicates
+ * the muscle fibers are at their optimal length.  Lnorm = L / Lo.
+ * @param aNormalizedVelocity Normalized shortening velocity of the muscle fibers.
+ * Positive values indicate concentric contraction (shortening); negative values
+ * indicate eccentric contraction (lengthening).  Normalized velocity is
+ * the fiber shortening velocity divided by the maximum shortening velocity times
+ * the optimal fiber length.  Vnorm = V / (Vmax*Lo).
+ * @return Force normalized by the optimal force.
+ */
+double AbstractMuscle::
+evaluateForceLengthVelocityCurve(double aActivation,double aNormalizedLength,double aNormalizedVelocity)
+{
+	// FORCE-LENGTH
+	double fLength = exp(-17.33 * fabs(pow(aNormalizedLength-1.0,3)));
+
+	// FORCE-VELOCITY
+	double fVelocity = 1.8  -  1.8 / (1.0 + exp( (0.04 - aNormalizedVelocity)/0.18) );
+
+	return aActivation * fLength * fVelocity;
+}
+
+
+
+//=============================================================================
 // GET
 //=============================================================================
 //-----------------------------------------------------------------------------

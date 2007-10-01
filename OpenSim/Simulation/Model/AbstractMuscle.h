@@ -118,7 +118,7 @@ public:
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
 
 	//--------------------------------------------------------------------------
-	// UTILITY
+	// PATH GEOMETRY
 	//--------------------------------------------------------------------------
 	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
 	bool deleteAttachmentPoint(int aIndex);
@@ -161,10 +161,18 @@ public:
 	virtual double getActiveMusclePower();
 	*/
 	virtual double getActivation() const = 0;
-	//---------
+
+
+	//--------------------------------------------------------------------------
+	// COMPUTATIONS
+	//--------------------------------------------------------------------------
 	virtual void computeActuation();
+	virtual double computeIsometricForce(double activation) = 0;
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation) = 0;
 	virtual double computeMomentArm(AbstractCoordinate& aCoord);
 	virtual void computeMomentArms(Array<double> &rMomentArms);
+	virtual double
+		evaluateForceLengthVelocityCurve(double aActivation,double aNormalizedLength,double aNormalizedVelocity);
 	//virtual void computeMoments(Array<double> &rMoments);
 	void computePath();
 	void applyWrapObjects();

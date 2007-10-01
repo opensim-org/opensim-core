@@ -152,6 +152,7 @@ public:
 	virtual double getFiberLength();
 	virtual double getNormalizedFiberLength();
 	virtual double getPassiveFiberForce();
+	double getStress() const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
@@ -159,6 +160,8 @@ public:
 	virtual void computeStateDerivatives(double rDYDT[]);
 	virtual void computeEquilibrium();
 	virtual void computeActuation();
+	virtual double computeIsometricForce(double activation);
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation);
 
 	virtual void postScale(const ScaleSet& aScaleSet);
 	virtual void scale(const ScaleSet& aScaleSet);
@@ -173,8 +176,6 @@ public:
 	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	double calcTendonForce(double aNormTendonLength) const;
 
-	double getStress() const;
-	double computeIsometricForce(double activation);
 
 	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
 

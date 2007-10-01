@@ -177,6 +177,10 @@ public:
 	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
 
 	//--------------------------------------------------------------------------
+	// FORCE-LENGTH-VELOCITY PROPERTIES
+	//--------------------------------------------------------------------------
+
+	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(double rDYDT[]);
@@ -186,7 +190,8 @@ public:
 	double calcPassiveForce(double aNormFiberLength) const;
 	double calcActiveForce(double aNormFiberLength) const;
 	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	double computeIsometricForce(double activation);
+	virtual double computeIsometricForce(double activation);
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation);
 
 	//--------------------------------------------------------------------------
 	// SCALE
