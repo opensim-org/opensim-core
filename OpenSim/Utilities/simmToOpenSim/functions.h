@@ -212,6 +212,7 @@ MotionSequence* find_nth_motion(ModelStruct* ms, int motcount);
 PlotStruct* find_nth_plot(int plotcount);
 int    find_model_ordinal(int modelnum);
 DofStruct* find_nth_q_dof(int mod, int n);
+int    find_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof);
 void   find_world_coords(DisplayStruct* dis, IntBox* vp, int mx, int my,
 			 double z_value, double* wx, double* wy, double* wz);
 int    findfuncnum(DofStruct dof, int gc);

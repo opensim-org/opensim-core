@@ -1154,6 +1154,52 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
    return 0;
 }
 
+/* This function is similar to mark_unconstrained_dof, but it only finds
+ * the unconstrained dof.
+ */
+int find_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
+{
+   int i, j, fnum;
+   double slope;
+   SplineFunction* func;
+
+   *jnt = *dof = -1;
+
+   /* This function looks through all the dofs in all the joints which are a
+    * function of the specified gencoord, and tries to find one which should
+    * be treated as the unconstrained dof. If the dof has a function with two
+    * points, the slope of the function is 1.0 or -1.0, and the function
+	 * passes through zero, then it is a good match. If there are
+    * multiple dofs which meet these criteria, the first one is treated as the
+    * unconstrained one, and the others will end up constrained (which will
+    * create a correct model).
+    */
+   for (i = 0; i < ms->numjoints; i++)
+   {
+      for (j = 0; j < 6; j++)
+      {
+	      if (ms->joint[i].dofs[j].type == function_dof &&
+	          ms->joint[i].dofs[j].gencoord == gc)
+	      {
+	         fnum = ms->joint[i].dofs[j].funcnum;
+            func = &ms->function[fnum];
+	         if (func->numpoints == 2 && EQUAL_WITHIN_ERROR(func->x[0], func->y[0]))
+	         {
+               slope = (func->y[1] - func->y[0]) / (func->x[1] - func->x[0]);
+               if (EQUAL_WITHIN_ERROR(slope, 1.0) || EQUAL_WITHIN_ERROR(slope,-1.0))
+               {
+                  *jnt = i;
+                  *dof = j;
+                  return 1;
+               }
+	         }
+	      }
+      }
+   }
+
+   return 0;
+}
+
 
 /* INIT_JOINT: this routine initializes a joint structure before a joint is read
  * from an input file.

@@ -26,8 +26,8 @@
 #include <OpenSim/version.h>
 
 
-static char EngineType[256];
-static char EngineName[256];
+char EngineType[256];
+char EngineName[256];
 ModelStruct* sMotionModel = NULL;
 char* markerSetOut = NULL;
 

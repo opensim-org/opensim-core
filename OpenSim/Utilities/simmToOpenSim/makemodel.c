@@ -70,6 +70,8 @@ extern char badLoopErrorMsg[];
 extern char gencoordResidualErrorMsg[];
 extern char badConstraintErrorMsg[];
 extern char badGencoordErrorMsg2[];
+extern char EngineType[];
+extern char EngineName[];
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static ModelStruct* get_modelstruct(void);
@@ -1730,29 +1732,40 @@ ReturnCode check_definitions(ModelStruct* ms)
       }
    }
 
-#if NO_LONGER_NECESSARY
-   for (i=0; i<ms->numjoints; i++)
-   {
-      for (j=0; j<6; j++)
-      {
-         if (ms->joint[i].dofs[j].type == constant_dof)
-            continue;
-         gc = ms->joint[i].dofs[j].gencoord;
-         fn = ms->joint[i].dofs[j].funcnum;
-         if (ms->gencoord[gc].clamped == no || ms->function[fn].defined == no)
-            continue;
-         if (ms->function[fn].x[0] > ms->gencoord[gc].range.start ||
-            ms->function[fn].x[ms->function[fn].numpoints-1] <
-            ms->gencoord[gc].range.end)
-         {
-            (void)sprintf(errorbuffer,"Function f%d does not cover full range of gencoord %s",
-               ms->function[fn].usernum, ms->gencoord[gc].name);
-            error(none,errorbuffer);
-            any_errors = yes;
-         }
-      }
-   }
-#endif
+	if (STRINGS_ARE_EQUAL(EngineType,"Simbody"))
+	{
+      if (enter_segment(ms->modelnum,"ground",no) == -1)
+		{
+         (void)sprintf(errorbuffer,"%s requires a body named \"ground\".", EngineName);
+         error(none,errorbuffer);
+         any_errors = yes;
+		}
+
+		// SimbodyEngine does not currently allow joints in which a DOF
+		// is constrained as a function of a coordinate in another joint
+		// (e.g., tibia-patella motion as a function of femur-tibia motion).
+		for (i=0; i<ms->numjoints; i++)
+		{
+			for (j=0; j<6; j++)
+			{
+				if (ms->joint[i].dofs[j].type == function_dof)
+				{
+					int jointnum = -1, dofnum = -1;
+				   if (find_unconstrained_dof(ms, ms->joint[i].dofs[j].gencoord, &jointnum, &dofnum))
+					{
+						if (jointnum != i)
+						{
+							(void)sprintf(errorbuffer,"Joint %s contains a DOF (%s) which is a function of a coordinate (%s) used in a different joint (%s). This is not allowed by %s.",
+								ms->joint[i].name, getjointvarname(j), ms->gencoord[ms->joint[i].dofs[j].gencoord].name,
+								ms->joint[jointnum].name, EngineName);
+							error(none,errorbuffer);
+							any_errors = yes;
+						}
+					}
+				}
+			}
+		}
+	}
 
 #ifndef ENGINE
    check_gencoord_usage(ms,no);
