@@ -64,6 +64,32 @@ if plotSettings.computeTimeLimitsAndTicksAutomatically
     plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
 end
 
+% Compute vertical axis limits and ticks automatically, if user said to do
+% so.
+if plotSettings.computeVerticalAxisLimitsAndTicksAutomatically
+    % Determine min and max values and range of all data being plotted.
+    minCurveValue = min( timeAndDataColumns{2} );
+    maxCurveValue = max( timeAndDataColumns{2} );
+    for curveNum = 2 : numberOfCurves
+        dataColumnIndex = curveNum + 1;
+        mincv = min( timeAndDataColumns{ dataColumnIndex } );
+        maxcv = max( timeAndDataColumns{ dataColumnIndex } );
+        minCurveValue = min( mincv, minCurveValue );
+        maxCurveValue = max( maxcv, maxCurveValue );
+    end
+    range = maxCurveValue - minCurveValue;
+    nextLowerExponentOfTen = floor( log10( range / 2 ) );
+    nextLowerPowerOfTen = 10 ^ nextLowerExponentOfTen;
+    minRoundedValue = floor( minCurveValue / nextLowerPowerOfTen ) * ...
+        nextLowerPowerOfTen;
+    maxRoundedValue =  ceil( maxCurveValue / nextLowerPowerOfTen ) * ...
+        nextLowerPowerOfTen;
+    roundedRange = maxRoundedValue - minRoundedValue;
+    plotSettings.yAxisRange = [ minRoundedValue maxRoundedValue ];
+    plotSettings.yAxisTicks = ...
+        minRoundedValue : roundedRange / 2 : maxRoundedValue;
+end
+
 % Overlay the zero line.
 if plotSettings.zeroLineOn
     zeroLine = zeros( length( timeAndDataColumns{ timeColumnIndex } ), 1 );
