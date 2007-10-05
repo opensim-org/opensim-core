@@ -121,6 +121,9 @@ Model::Model(const Model &aModel) :
 	_contactSetProp(PropertyObj("", ContactForceSet())),
 	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
 {
+	//cout << "Construct copied model " <<  endl;
+
+	// Throw exception if something wrong happened and we don't have a dynamics engine.
 	setNull();
 	setupProperties();
 	copyData(aModel);
@@ -131,6 +134,7 @@ Model::Model(const Model &aModel) :
  */
 Model::~Model()
 {
+	cout << "Deleted model " <<  getName() << endl;
 	if (_analysisSet) {
 		delete _analysisSet;
 		_analysisSet = NULL;
@@ -311,6 +315,19 @@ void Model::setup()
 		IO::chDir(origDirPath);
 
 	//cout << "Model " << getName() << " setup completed" << endl;
+}
+//_____________________________________________________________________________
+/**
+ * Perform some clean up functions that are normally done from the destructor
+ * however this gives the GUI a way to proactively do the cleaning without waiting for garbage
+ * collection to do the actual cleanup.
+ */
+void Model::cleanup()
+{
+	delete _analysisSet;  _analysisSet=NULL;
+	delete _integCallbackSet;  _integCallbackSet=NULL;
+	delete _derivCallbackSet;  _derivCallbackSet=NULL;
+	delete _dynamicsEngine; _dynamicsEngine=NULL;
 }
 //_____________________________________________________________________________
 /**

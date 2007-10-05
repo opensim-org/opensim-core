@@ -161,6 +161,8 @@ public:
 	}
 
 	virtual void setup() SWIG_DECLARE_EXCEPTION;
+	void cleanup();
+
 	bool builtOK() { return _builtOK; }
 
 protected:
