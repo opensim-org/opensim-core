@@ -95,6 +95,7 @@ public:
 	virtual ~AbstractActuator();
 	virtual Object* copy() const = 0;
 	virtual void copyPropertyValues(AbstractActuator& aActuator) { }
+	static void deleteActuator(AbstractActuator* aActuator) { delete aActuator; }
 
 private:
 	void setNull();
