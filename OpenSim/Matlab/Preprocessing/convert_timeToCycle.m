@@ -1,5 +1,5 @@
 function cycPercents = convert_timeToCycle(times, limb, tInfo, ictoEvents, analogRate, ref_dataFormat)
-% Purpose:  Converts %gait cycle values to time values corresponding to 
+% Purpose:  Converts time values to %gait cycle values corresponding to 
 %           a subject's 'simulateable' segment, for all FP hits specified 
 %           in tInfo.FP.
 %
