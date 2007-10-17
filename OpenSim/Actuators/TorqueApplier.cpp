@@ -34,6 +34,7 @@ using namespace OpenSim;
 TorqueApplier::~TorqueApplier()
 {
 	deleteStorage();
+	if (_torqueFunction) delete _torqueFunction;
 }
 //_____________________________________________________________________________
 /**
@@ -253,6 +254,7 @@ getTorque(double rTorque[3]) const
 void TorqueApplier::
 setTorqueFunction(VectorFunction* aTorqueFunction)
 {
+	if (_torqueFunction) delete _torqueFunction;
 	_torqueFunction = aTorqueFunction;
 }
 //_____________________________________________________________________________

@@ -36,6 +36,8 @@ using namespace std;
 ForceApplier::~ForceApplier()
 {
 	deleteStorage();
+	if (_pointFunction) delete _pointFunction; _pointFunction=NULL;
+	if (_forceFunction) delete _forceFunction; _forceFunction=NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -117,7 +119,11 @@ ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *
 	forceData->getDataColumn(pzNum,z);
 	VectorGCVSplineR1R3 *pointFunc;
 	pointFunc = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
+
 	computePointFunction(*aQStore,*aUStore,*pointFunc);
+
+	delete pointFunc;
+	pointFunc = NULL;
 
 	// COMPUTE FORCE FUNCTION
 	forceData->getDataColumn(fxNum,x);
@@ -125,6 +131,7 @@ ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *
 	forceData->getDataColumn(fzNum,z);
 	VectorGCVSplineR1R3 *forceFunc;
 	forceFunc = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
+
 	setForceFunction(forceFunc);
 }
 
@@ -348,6 +355,9 @@ getForce(double rForce[3]) const
 void ForceApplier::
 setPointFunction(VectorFunction* aPointFunction)
 {
+	if (_pointFunction)
+		delete _pointFunction;
+
 	_pointFunction = aPointFunction;
 }
 //_____________________________________________________________________________
@@ -376,6 +386,8 @@ getPointFunction() const
 void ForceApplier::
 setForceFunction(VectorFunction* aForceFunction)
 {
+	if (_forceFunction)
+		delete _forceFunction;
 	_forceFunction = aForceFunction;
 }
 //_____________________________________________________________________________
