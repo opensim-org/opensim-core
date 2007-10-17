@@ -49,6 +49,9 @@ using namespace OpenSim;
  */
 VectorGCVSplineR1R3::~VectorGCVSplineR1R3()
 {
+	if (_splineY0) delete _splineY0; _splineY0=NULL;
+	if (_splineY1) delete _splineY1; _splineY1=NULL;
+	if (_splineY2) delete _splineY2; _splineY2=NULL;
 }
 //_____________________________________________________________________________
 /**
