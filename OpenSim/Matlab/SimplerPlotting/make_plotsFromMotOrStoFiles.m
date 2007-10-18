@@ -37,10 +37,36 @@ plotSettings.axisTickDirection = 'Out';
 % If plotSettings.computeTimeLimitsAndTicksAutomatically is false, then
 % plotSettings.xAxisRange and plotSettings.xAxisTicks should be set
 % manually here by the user.
-plotSettings.timeOrPercent = 'Time';
+%plotSettings.timeOrPercent = 'Time';
+%plotSettings.xAxisLabel = 'Time (s)';
+plotSettings.timeOrPercent = 'Percent';
+plotSettings.xAxisLabel = 'Percent of gait cycle';
 plotSettings.shiftPercentAxisBy = 0;
 plotSettings.computeTimeLimitsAndTicksAutomatically = true;
-plotSettings.xAxisLabel = 'Time (s)';
+plotSettings.computeVerticalAxisLimitsAndTicksAutomatically = true;
+
+% Set the trial info for the plot.
+currentDirectory = cd;
+cd( 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_simbody_cfsqp' );
+[ sInfo, trialInfo ] = ref_trialInfoDelaware2( 'de2', 'ss_walk1' );
+cd( currentDirectory );
+trialInfo.gcLimb = 'L';
+trialInfo.FP = trialInfo.ss_walk1.FP;
+trialInfo.limb = trialInfo.ss_walk1.limb;
+trialInfo.ictoMatrix = trialInfo.ss_walk1.ictoMatrix;
+trialInfo.analogRate = 600;
+trialInfo.tZeroAtFirstIC = 0;
+% Get analog frames corresponding to IC and TO events from tInfo,
+% and store in structure array.
+for fpHitNum = 1:length(trialInfo.FP)
+    ictoEvents(fpHitNum).ic  = trialInfo.ictoMatrix(fpHitNum, 1);
+    ictoEvents(fpHitNum).oto = trialInfo.ictoMatrix(fpHitNum, 2);
+    ictoEvents(fpHitNum).oic = trialInfo.ictoMatrix(fpHitNum, 3);
+    ictoEvents(fpHitNum).to  = trialInfo.ictoMatrix(fpHitNum, 4);
+    ictoEvents(fpHitNum).icNext = trialInfo.ictoMatrix(fpHitNum, 5);
+end
+plotSettings.ictoEvents = ictoEvents;
+plotSettings.trialInfo = trialInfo;
 
 % Set the curve properties.
 plotSettings.curveStyles = { '-' '-.' };

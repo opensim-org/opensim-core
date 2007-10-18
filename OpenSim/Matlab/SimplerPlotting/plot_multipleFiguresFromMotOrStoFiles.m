@@ -40,8 +40,15 @@ for j = 1 : length( plotSettings.figureNumbers )
 end
 
 % Initialize min and max times and data values.
-timeMin = NaN;
-timeMax = NaN;
+if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+    leftTimeMin = NaN;
+    leftTimeMax = NaN;
+    rightTimeMin = NaN;
+    rightTimeMax = NaN;
+else
+    timeMin = NaN;
+    timeMax = NaN;
+end
 minCurveValue = zeros( length( plotSettings.figureNumbers ) ) * NaN;
 maxCurveValue = zeros( length( plotSettings.figureNumbers ) ) * NaN;
 
@@ -52,9 +59,25 @@ for i = 1 : length( plotSettings.curveSourceFiles )
     % for the last file.
     q = read_motionFile( plotSettings.curveSourceFiles{i} );
     time = q.data( :, 1 );
-    % Update min and max times.
-    timeMin = min( timeMin, min( time ) );
-    timeMax = max( timeMax, max( time ) );
+    % Convert time column and time axis from time to percent of gait cycle
+    % if necessary.
+    if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+        tInfo = plotSettings.trialInfo;
+        ictoEvents = plotSettings.ictoEvents;
+        leftTime = convert_timeToCycle( time, 'L', tInfo, ...
+            ictoEvents, tInfo.analogRate, tInfo.tZeroAtFirstIC );
+        rightTime = convert_timeToCycle( time, 'R', tInfo, ...
+            ictoEvents, tInfo.analogRate, tInfo.tZeroAtFirstIC );
+        % Update min and max times.
+        leftTimeMin  = min( leftTimeMin,  min( leftTime  ) );
+        leftTimeMax  = max( leftTimeMax,  max( leftTime  ) );
+        rightTimeMin = min( rightTimeMin, min( rightTime ) );
+        rightTimeMax = max( rightTimeMax, max( rightTime ) );
+    else
+        % Update min and max times.
+        timeMin = min( timeMin, min( time ) );
+        timeMax = max( timeMax, max( time ) );
+    end
     for j = 1 : length( plotSettings.figureNumbers )
         % Set current figure.
         figure( plotSettings.figureNumbers(j) );
@@ -70,6 +93,13 @@ for i = 1 : length( plotSettings.curveSourceFiles )
         maxCurveValue(j) = max( maxCurveValue(j), max( data ) );
         % Plot the data!
         hold on;
+        if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+            if plotSettings.trialInfo.gcLimb{j} == 'R'
+                time = rightTime;
+            else
+                time = leftTime;
+            end
+        end
         p = plot( time, data );
         set( p, ...
             'LineStyle', plotSettings.curveStyles{i}, ...
@@ -82,17 +112,88 @@ end
 
 % Compute time axis limits and ticks automatically, if user said to do so.
 if plotSettings.computeTimeLimitsAndTicksAutomatically
-    timeTickSeparation = ( timeMax - timeMin ) / 3;
-    plotSettings.xAxisRange = [ timeMin timeMax ];
-    plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
+    if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+        % For the left limb.
+        leftTimeTickSeparation = ( leftTimeMax - leftTimeMin ) / 3;
+        plotSettings.xAxisRangeLeft = [ leftTimeMin leftTimeMax ];
+        plotSettings.xAxisTicksLeft = ...
+            leftTimeMin : leftTimeTickSeparation : leftTimeMax;
+        % For the right limb.
+        rightTimeTickSeparation = ( rightTimeMax - rightTimeMin ) / 3;
+        plotSettings.xAxisRangeRight = [ rightTimeMin rightTimeMax ];
+        plotSettings.xAxisTicksRight = ...
+            rightTimeMin : rightTimeTickSeparation : rightTimeMax;
+    else
+        timeTickSeparation = ( timeMax - timeMin ) / 3;
+        plotSettings.xAxisRange = [ timeMin timeMax ];
+        plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
+    end
+end
+
+% Plot Cappellini-Ivanenko EMG data.
+if plotSettings.plotLiteratureActivations
+    % Read Cappellini-Ivanenko EMG data.
+    emgData = xlsread( 'emg_averaged_walk_run.xls', '5w' );
+    % emgData( :, column ) is from 0% to 100% of gait cycle, with 201
+    % data points, so its time vector is 0% to 100% by increments of 0.5%.
+    emgTimeAxis = transpose( 0 : 0.005 : 1 );
+    % emgData must be scaled from emgTimeAxis to the full percent
+    % range of this trial.
+    tInfo = plotSettings.trialInfo;
+    ictoEvents = plotSettings.ictoEvents;
+    [leftTimesScaled, leftEmgScaled] = scale_emgDataToTimeAxis( ...
+        emgTimeAxis, emgData, ictoEvents, tInfo.analogRate, ...
+        'L', tInfo, tInfo.tZeroAtFirstIC );
+    [rightTimesScaled, rightEmgScaled] = scale_emgDataToTimeAxis( ...
+        emgTimeAxis, emgData, ictoEvents, tInfo.analogRate, ...
+        'R', tInfo, tInfo.tZeroAtFirstIC );
+    % Convert timesScaled from time to percent of gait cycle if necessary.
+    if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+        tInfo = plotSettings.trialInfo;
+        ictoEvents = plotSettings.ictoEvents;
+        leftTimesScaled = convert_timeToCycle( leftTimesScaled, ...
+            'L', tInfo, ictoEvents, tInfo.analogRate, ...
+            tInfo.tZeroAtFirstIC );
+        rightTimesScaled = convert_timeToCycle( rightTimesScaled, ...
+            'R', tInfo, ictoEvents, tInfo.analogRate, ...
+            tInfo.tZeroAtFirstIC );
+    end
+    for j = 1 : length( plotSettings.figureNumbers )
+        % Set current figure.
+        figure( plotSettings.figureNumbers(j) );
+        % Plot the appropriate literature EMG data column in figure j.
+        hold on;
+        columnIndex = plotSettings.emgColumnIndices(j);
+        if columnIndex > 0
+            ax1 = gca;
+            set( ax1, 'Color', 'none' );
+            ax2 = axes( 'Position', get( ax1, 'Position' ), ...
+                'YAxisLocation', 'right' );
+            set( ax2, 'Color', 'none', 'XTick', [], 'XTickLabel', [] );
+            set( ax2, 'XLim', get( ax1, 'XLim' ) );
+            % Get the time and EMG data for the appropriate limb.
+            if tInfo.gcLimb{j} == 'R'
+                timesScaled = rightTimesScaled;
+                emgScaled = rightEmgScaled;
+            else
+                timesScaled = leftTimesScaled;
+                emgScaled = leftEmgScaled;
+            end
+            hEmg = line( timesScaled, emgScaled( :, columnIndex ), ...
+                'Parent', ax2 );
+            set( hEmg, ...
+                'LineStyle', plotSettings.literatureActivationCurveStyle, ...
+                'LineWidth', plotSettings.literatureActivationCurveWidth, ...
+                'Color',     plotSettings.literatureActivationCurveColor );
+            %legend( hEmg, plotSettings.literatureActivationCurveLabel );
+        end
+    end
 end
 
 % Set figure properties that must be set after the data are plotted.
 for j = 1 : length( plotSettings.figureNumbers )
     % Set current figure.
     figure( plotSettings.figureNumbers(j) );
-    % Create a legend.
-    legend( plotSettings.curveLabels );
     % Compute vertical axis limits and ticks automatically, if user said to
     % do so.
     if plotSettings.computeVerticalAxisLimitsAndTicksAutomatically
@@ -110,36 +211,87 @@ for j = 1 : length( plotSettings.figureNumbers )
     end
     % Overlay the zero line.
     if plotSettings.zeroLineOn
-        zeroLine = zeros( length( plotSettings.xAxisRange ), 1 );
-        z = plot( plotSettings.xAxisRange, zeroLine );
+        if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+            if plotSettings.trialInfo.gcLimb{j} == 'R'
+                zeroLine = ...
+                    zeros( length( plotSettings.xAxisRangeRight ), 1 );
+                hold on;
+                z = plot( plotSettings.xAxisRangeRight, zeroLine );
+            else
+                zeroLine = ...
+                    zeros( length( plotSettings.xAxisRangeLeft ), 1 );
+                hold on;
+                z = plot( plotSettings.xAxisRangeLeft, zeroLine );
+            end
+        else
+            zeroLine = zeros( length( plotSettings.xAxisRange ), 1 );
+            hold on;
+            z = plot( plotSettings.xAxisRange, zeroLine );
+        end
         set( z, ...
             'LineWidth', plotSettings.zeroLineWidth, ...
             'Color',     plotSettings.zeroLineColor );
     end
+    % Get handles for each axis.
+    ax = get( gcf, 'Children' );
+    if length( ax ) > 1
+        rightAxis = ax(1);
+        leftAxis = ax(2);
+    else
+        leftAxis = ax(1);
+    end
+    % Create a legend.
+    if length( ax ) > 1
+        lChildren = get( leftAxis,  'Children' );
+        rChildren = get( rightAxis, 'Children' );
+        legend( ...
+            [ lChildren(2) lChildren(1) rChildren(1) ], ...
+            [ plotSettings.curveLabels 'Lit' ]          );
+    else
+        legend( leftAxis, plotSettings.curveLabels );
+    end
+    if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+        if plotSettings.trialInfo.gcLimb{j} == 'R'
+            range = plotSettings.xAxisRangeRight;
+            ticks = plotSettings.xAxisTicksRight;
+        else
+            range = plotSettings.xAxisRangeLeft;
+            ticks = plotSettings.xAxisTicksLeft;
+        end
+    else
+        range = plotSettings.xAxisRange;
+        ticks = plotSettings.xAxisTicks;
+    end
     % Set x-axis properties.
-    set( gca, ...
-        'XLim',     plotSettings.xAxisRange, ...
-        'XTick',    plotSettings.xAxisTicks, ...
-        'FontName', plotSettings.axisFontName, ...
-        'FontSize', plotSettings.axisFontSize, ...
+    set( leftAxis, ...
+        'XLim',     range,                         ...
+        'XTick',    ticks,                         ...
+        'FontName', plotSettings.axisFontName,     ...
+        'FontSize', plotSettings.axisFontSize,     ...
         'TickDir',  plotSettings.axisTickDirection );
-    xlabel( plotSettings.xAxisLabel );
-    a = get( gca, 'XLabel' );
+    xlabel( leftAxis, plotSettings.xAxisLabel );
+    a = get( leftAxis, 'XLabel' );
     set( a, ...
         'FontName', plotSettings.axisFontName, ...
         'FontSize', plotSettings.axisFontSize );
+    if length( ax ) > 1
+        set( rightAxis, ...
+            'XLim',     range,                     ...
+            'FontName', plotSettings.axisFontName, ...
+            'FontSize', plotSettings.axisFontSize );
+        a = get( rightAxis, 'XLabel' );
+        set( a, ...
+            'FontName', plotSettings.axisFontName, ...
+            'FontSize', plotSettings.axisFontSize );
+    end
     % Set y-axis properties.
-    set( gca, ...
+    set( leftAxis, ...
         'YLim',     plotSettings.yAxisRange, ...
-        'YTick',    plotSettings.yAxisTicks, ...
-        'FontName', plotSettings.axisFontName, ...
-        'FontSize', plotSettings.axisFontSize, ...
-        'TickDir',  plotSettings.axisTickDirection );
-    ylabel( plotSettings.yAxisLabel );
-    a = get( gca, 'YLabel' );
-    set( a, ...
-        'FontName', plotSettings.axisFontName, ...
-        'FontSize', plotSettings.axisFontSize );
+        'YTick',    plotSettings.yAxisTicks );
     % Turn off the box surrounding the axes.
-    set( gca, 'Box', 'off' );
+    set( leftAxis, 'Box', 'off' );
+    if length( ax ) > 1
+        set( rightAxis, 'Position', get( leftAxis, 'Position' ) );
+        set( rightAxis, 'Box', 'off' );
+    end
 end

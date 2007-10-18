@@ -36,7 +36,25 @@ timeAndDataColumns = get_timeAndDataColumns( ...
     plotSettings.curveSourceFiles, ...
     plotSettings.curveSourceColumnLabels, ...
     plotSettings.curveRepeatedSourceColumnNumbers );
-timeColumnIndex = 1;
+time = timeAndDataColumns{1};
+
+% replace time with percent gait cycle
+% column; use earlier code I have for converting from time to cycle, and in
+% plotSettings include all tInfo type stuff as input; put this tInfo info
+% into plotSettings in evaluateAndCompareSimulations.m, and later in
+% make_plots*.m.  First I'll code stuff here, then make sure I have the
+% right parameters coming in from evaluateAndCompareSimulations, and then
+% add stuff to plot_multiple*.m, and then to make_plots*.m based on what I
+% added to evaluateAndCompareSimulations.m.
+
+% Convert time column and time axis from time to percent of gait cycle if
+% necessary.
+if strcmpi( plotSettings.timeOrPercent, 'Percent' )
+    tInfo = plotSettings.trialInfo;
+    ictoEvents = plotSettings.ictoEvents;
+    time = convert_timeToCycle( time, tInfo.gcLimb, tInfo, ...
+        ictoEvents, tInfo.analogRate, tInfo.tZeroAtFirstIC );
+end
 
 % Plot the curves!
 hold on;
@@ -44,7 +62,7 @@ numberOfCurves = length( timeAndDataColumns ) - 1;
 for curveNum = 1 : numberOfCurves
     dataColumnIndex = curveNum + 1;
     p = plot( ...
-        timeAndDataColumns{ timeColumnIndex }, ...
+        time, ...
         timeAndDataColumns{ dataColumnIndex } );
     set( p, ...
         'LineStyle', plotSettings.curveStyles{ curveNum }, ...
@@ -57,8 +75,8 @@ legend( plotSettings.curveLabels );
 
 % Compute time axis limits and ticks automatically, if user said to do so.
 if plotSettings.computeTimeLimitsAndTicksAutomatically
-    timeMin = min( timeAndDataColumns{ timeColumnIndex } );
-    timeMax = max( timeAndDataColumns{ timeColumnIndex } );
+    timeMin = min( time );
+    timeMax = max( time );
     timeTickSeparation = ( timeMax - timeMin ) / 3;
     plotSettings.xAxisRange = [ timeMin timeMax ];
     plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
@@ -92,8 +110,8 @@ end
 
 % Overlay the zero line.
 if plotSettings.zeroLineOn
-    zeroLine = zeros( length( timeAndDataColumns{ timeColumnIndex } ), 1 );
-    z = plot( timeAndDataColumns{ timeColumnIndex }, zeroLine );
+    zeroLine = zeros( length( time ), 1 );
+    z = plot( time, zeroLine );
     set( z, ...
         'LineWidth', plotSettings.zeroLineWidth, ...
         'Color',     plotSettings.zeroLineColor );

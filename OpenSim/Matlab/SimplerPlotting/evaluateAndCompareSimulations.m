@@ -89,11 +89,42 @@ plotSettings.axisTickDirection = 'Out';
 % If plotSettings.computeTimeLimitsAndTicksAutomatically is false, then
 % plotSettings.xAxisRange and plotSettings.xAxisTicks should be set
 % manually here by the user.
-plotSettings.timeOrPercent = 'Time';
+%plotSettings.timeOrPercent = 'Time';
+%plotSettings.xAxisLabel = 'Time (s)';
+plotSettings.timeOrPercent = 'Percent';
+plotSettings.xAxisLabel = 'Percent of gait cycle';
 plotSettings.shiftPercentAxisBy = 0;
-plotSettings.computeTimeLimitsAndTicksAutomatically = true;
+plotSettings.computeTimeLimitsAndTicksAutomatically = false;
+plotSettings.xAxisRange = [ 0 150 ];
+plotSettings.xAxisTicks = 0 : 50 : 150;
+plotSettings.xAxisRangeLeft = [ 0 150 ];
+plotSettings.xAxisTicksLeft = 0 : 50 : 150;
+plotSettings.xAxisRangeRight = [ 40 220 ];
+plotSettings.xAxisTicksRight = 40 : 40 : 220;
 plotSettings.computeVerticalAxisLimitsAndTicksAutomatically = true;
-plotSettings.xAxisLabel = 'Time (s)';
+
+% Set the trial info for the plot.
+currentDirectory = cd;
+cd( dir1 );
+[ sInfo, trialInfo ] = ref_trialInfoDelaware2( 'de2', 'ss_walk1' );
+cd( currentDirectory );
+% Note, trialInfo.gcLimb is set later for each call to a plot function.
+trialInfo.FP = trialInfo.ss_walk1.FP;
+trialInfo.limb = trialInfo.ss_walk1.limb;
+trialInfo.ictoMatrix = trialInfo.ss_walk1.ictoMatrix;
+trialInfo.analogRate = 600;
+trialInfo.tZeroAtFirstIC = 0;
+% Get analog frames corresponding to IC and TO events from tInfo,
+% and store in structure array.
+for fpHitNum = 1:length(trialInfo.FP)
+    ictoEvents(fpHitNum).ic  = trialInfo.ictoMatrix(fpHitNum, 1);
+    ictoEvents(fpHitNum).oto = trialInfo.ictoMatrix(fpHitNum, 2);
+    ictoEvents(fpHitNum).oic = trialInfo.ictoMatrix(fpHitNum, 3);
+    ictoEvents(fpHitNum).to  = trialInfo.ictoMatrix(fpHitNum, 4);
+    ictoEvents(fpHitNum).icNext = trialInfo.ictoMatrix(fpHitNum, 5);
+end
+plotSettings.ictoEvents = ictoEvents;
+plotSettings.trialInfo = trialInfo;
 
 % Set the plot title properties.
 plotSettings.titleFontName = 'Times New Roman';
@@ -129,6 +160,9 @@ if plotGeneralizedCoordinates
     plotSettings.curveColors = { 'r' 'r' };
     plotSettings.curveLabels = { 'New' 'Old' };
     plotSettings.curveRepeatedSourceColumnNumbers = { 1 1 };
+    
+    % Set limb to use to determine percent of gait cycle.
+    plotSettings.trialInfo.gcLimb = 'L';
 
     % Set plot input files and columns and plot the desired data columns.
     plotSettings.curveSourceFiles = cmcKinematicsQMotFiles;
@@ -168,6 +202,11 @@ if plotJointMoments
         aflabel = rraActuationForceLabels{j};
         plotSettings.figureTitle = [ label ' moments' ];
         plotSettings.figureNumber = i;
+        if strcmpi( label( end - 1 : end ), '_r' )
+            plotSettings.trialInfo.gcLimb = 'R';
+        else
+            plotSettings.trialInfo.gcLimb = 'L';
+        end
         if any( find( strcmpi( label, missingLabels ) ) )
             % Set the curve properties.
             plotSettings.curveStyles = { '-' '-.' };
@@ -199,19 +238,48 @@ end
 % Plot muscle activations.
 %
 
-muscleNames = { ...
-    'glut_max1_l' 'glut_max1_r' 'glut_med1_l' 'glut_med1_r' ...
-    'glut_min1_l' 'glut_min1_r' ...
-    'iliacus_l' 'iliacus_r' 'sar_l' 'sar_r' ...
-    'tfl_l' 'tfl_r' 'vas_med_l' ...
-    'vas_med_r' 'rect_fem_l' 'rect_fem_r' ...
-    'semimem_l' 'semimem_r' 'bifemlh_l' ...
-    'bifemlh_r' 'bifemsh_l' 'bifemsh_r' 'add_brev_l' ...
-    'add_brev_r' 'add_mag1_l' 'add_mag1_r' ...
-    'med_gas_l' 'med_gas_r' 'soleus_l' 'soleus_r' ...
-    'tib_ant_l' 'tib_ant_r' };
-
 if plotMuscleActivations
+
+    muscleNames = { ...
+        'glut_max1_l' 'glut_max1_r' 'glut_med1_l' 'glut_med1_r' ...
+        'glut_min1_l' 'glut_min1_r' ...
+        'iliacus_l' 'iliacus_r' 'sar_l' 'sar_r' 'tfl_l' 'tfl_r' ...
+        'vas_med_l' 'vas_med_r' 'rect_fem_l' 'rect_fem_r' ...
+        'semimem_l' 'semimem_r' 'bifemlh_l' ...
+        'bifemlh_r' 'bifemsh_l' 'bifemsh_r' 'add_long_l' ...
+        'add_long_r' 'add_mag1_l' 'add_mag1_r' ...
+        'med_gas_l' 'med_gas_r' 'soleus_l' 'soleus_r' ...
+        'tib_ant_l' 'tib_ant_r' };
+
+    % Cappellini-Ivanenko EMG data column indices for each muscle.
+    ciGmax = 16;
+    ciGmed = 17;
+    ciIlio = 18;
+    ciTfl = 19;
+    ciAddLong = 20;
+    ciSar = 21;
+    ciBflh = 22;
+    ciSemiten = 23;
+    ciRectFem = 24;
+    ciVasMed = 25;
+    ciGasMed = 27;
+    ciSol = 30;
+    ciTa = 32;
+
+    % Set, for each figure, what limb to use to determine percent of gait
+    % cycle.  For muscles on the right side, it makes more sense to plot
+    % vs. percent of gait cycle for the right limb, whereas all other
+    % muscles are plotted vs. percent of gait cycle for the left limb.
+    plotSettings.trialInfo.gcLimb = cell( 1, length( muscleNames ) );
+    for j = 1 : length( muscleNames )
+        label = muscleNames{j};
+        if strcmpi( label( end - 1 : end ), '_r' )
+            plotSettings.trialInfo.gcLimb{j} = 'R';
+        else
+            plotSettings.trialInfo.gcLimb{j} = 'L';
+        end
+    end
+
     % Set the column labels for muscle activations to be plotted.
     activationColumnLabels = strcat( muscleNames, '.activation' );
 
@@ -228,6 +296,18 @@ if plotMuscleActivations
     plotSettings.curveSourceColumnLabels = [ ...
         activationColumnLabels; ...
         activationColumnLabels ];
+    plotSettings.plotLiteratureActivations = true;
+    plotSettings.literatureActivationCurveStyle = '-';
+    plotSettings.literatureActivationCurveWidth = 1;
+    plotSettings.literatureActivationCurveColor = 'k';
+    plotSettings.literatureActivationCurveLabel = 'Lit';
+    % Indices for columns of EMG data to read for each figure.  If a
+    % particular figure should have no literature data plotted, then the
+    % column index is set to 0.
+    plotSettings.emgColumnIndices = [ ciGmax ciGmax ciGmed ciGmed 0 0 ...
+        ciIlio ciIlio ciSar ciSar ciTfl ciTfl ciVasMed ciVasMed ...
+        ciRectFem ciRectFem ciSemiten ciSemiten ciBflh ciBflh 0 0 ...
+        ciAddLong ciAddLong 0 0 ciGasMed ciGasMed ciSol ciSol ciTa ciTa ];
 
     % Plot the data!
     plot_multipleFiguresFromMotOrStoFiles( plotSettings );

@@ -43,6 +43,7 @@ function [cycTimes] = compare_jntanglesFromMot(subject, fnames, fnameMeasured, .
 %               subplotTitle, subplotAxisLabel, subplotRange, subplotTick)
 %   Suptitle(titleString)
 %
+% CTJ, 08-07, modified from
 % ASA, 11-05, revised 2-06
 
 
