@@ -950,6 +950,8 @@ bool ForwardTool::run()
 
 	IO::chDir(saveWorkingDirectory);
 
+	// Since the Tool added the DerivCallbacks to the model, it is responsible for removing them as well
+	_model->removeAllDerivCallbacks();
 	return completed;
 }
 //=============================================================================

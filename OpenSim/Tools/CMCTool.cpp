@@ -874,11 +874,14 @@ bool CMCTool::run()
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
 		IO::chDir(saveWorkingDirectory);
+		_model->removeAllDerivCallbacks();
 		return false;
 	}
 
 	IO::chDir(saveWorkingDirectory);
 
+	// Since the Tool added the DerivCallbacks to the model, it is responsible for removing them as well
+	_model->removeAllDerivCallbacks();
 	return true;
 }
 

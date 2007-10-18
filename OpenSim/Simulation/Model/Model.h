@@ -320,6 +320,7 @@ public:
 	virtual const DerivCallbackSet *getDerivCallbackSet() const;
 #endif
 	virtual void addDerivCallback(DerivCallback *aCallback);
+	virtual void removeAllDerivCallbacks();
 
 	//--------------------------------------------------------------------------
 	// ANALYSES

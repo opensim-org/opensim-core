@@ -1016,6 +1016,16 @@ const DerivCallbackSet* Model::getDerivCallbackSet() const
 }
 //_____________________________________________________________________________
 /**
+ * Remove getDerivCallbackSet from the model and free resources
+ *
+ */
+void Model::removeAllDerivCallbacks()
+{
+	// Delete callbacks
+	delete _derivCallbackSet;
+}
+//_____________________________________________________________________________
+/**
  * Add a derivative callback to the model
  *
  * @param aCallback Pointer to the derivative callback to add.

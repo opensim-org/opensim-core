@@ -24,9 +24,9 @@ public:
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
     virtual void updateDefaultObjectsFromXMLNode();
-    virtual void updateXMLNode(DOMElement *aParent);
+    virtual void updateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
     virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
-    virtual void generateXMLNode(DOMElement *aParent);
+    virtual void generateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
     virtual void update(OpenSim::Object const &aObject, Event &aEvent);
     virtual bool isA(char const *type) const;
     virtual void setModel(OpenSim::Model *arg0);
@@ -36,10 +36,10 @@ public:
     virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
 public:
     bool swig_overrides(int n) {
-      return (n < 27 ? swig_override[n] : false);
+      return (n < 29 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[27];
+    bool swig_override[29];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {
