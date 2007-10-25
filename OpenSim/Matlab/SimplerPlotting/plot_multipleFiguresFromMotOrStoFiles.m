@@ -236,7 +236,7 @@ for j = 1 : length( plotSettings.figureNumbers )
     ax = get( gcf, 'Children' );
     if length( ax ) > 1
         rightAxis = ax(1);
-        leftAxis = ax(2);
+        leftAxis = ax( end );
     else
         leftAxis = ax(1);
     end

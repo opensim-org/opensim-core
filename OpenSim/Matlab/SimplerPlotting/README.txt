@@ -32,6 +32,15 @@ combination of these.
 Calls:
 - plot_dataFromMotOrStoFiles.m
 
+make_plotsOfJointMoments.m
+--------------------------
+Makes a single plot of knee joint moments from two storage
+files: before simulation (inverse dynamics after IK) and
+after simulation (inverse dynamics after CMC).
+
+Calls:
+- plot_dataFromMotOrStoFiles.m
+
 compute_netMuscleMoments.m
 --------------------------
 Creates the file
