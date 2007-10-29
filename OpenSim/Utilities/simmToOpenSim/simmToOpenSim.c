@@ -40,6 +40,35 @@ static void printUsage(char programName[])
 	printf("Usage: %s -j joints_in [ -m muscles_in] [-e simm | simbody] -x xml_out [-ms markerset_out] [-g geometry_directory] [-a degrees | radians]\n", programName);
 }
 
+// Fix names in the model to take out XML meta characters that cause parsing problems (bug 505). -Ayman
+static void convert_model_names(ModelStruct* ms)
+{
+	int i=0;
+	int j=0;
+	// Check that names are legal. Segments, then muscles, groups, then wrap objects
+	for (i = 0; i < ms->numsegments; i++)
+	{
+		char* name = ms->segment[i].name;
+		convert_string(name, no);
+			for (j=0; j<ms->segment[i].numMarkers; j++){
+				char* markerName = ms->segment[i].marker[j].name;
+				convert_string(markerName, no);
+			}
+	}
+
+	for (i = 0; i < ms->nummuscles; i++)
+	{
+		char* name = ms->muscle[i].name;
+		convert_string(name, no);
+	}
+
+	for (i = 0; i < ms->numgroups; i++)
+	{
+		char* name = ms->muscgroup[i].name;
+		convert_string(name, no);
+	}
+}
+
 int main(int argc, char* argv[])
 {
    ModelStruct* ms;
@@ -171,8 +200,9 @@ int main(int argc, char* argv[])
 		// read_muscle_file already prints this message...
 		//printf("Read muscle file %s\n", ms->musclefilename);
 	}
-
-   write_xml_model(ms, xmlOut, geometryDirectory, angleUnits);
+	// Make sure names are legal: meeting the following criteria Alphanumeric with _ or - or . allowed
+	convert_model_names(ms);
+    write_xml_model(ms, xmlOut, geometryDirectory, angleUnits);
 
 	printf("Wrote OpenSim model file %s\n", xmlOut);
 	exit(0);

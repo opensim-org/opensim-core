@@ -1331,6 +1331,8 @@ void make_time_string(char** time_string)
  * a number. It is assumed that the string already has space for this extra
  * character. The resulting string is one token, and can therefore be used
  * as a variable name in SIMM-written C code.
+ *
+ * Ayman: modified the function so that only XML meta characters ('<', '>', '&') are converted.
  */
 
 void convert_string(char str[], SBoolean prependUnderscore)
@@ -1342,21 +1344,8 @@ void convert_string(char str[], SBoolean prependUnderscore)
 
    for (i = 0; i < len; i++)
    {
-      if (str[i] >= 97 && str[i] <= 122)  /* lowercase letters */
-         continue;
-      if (str[i] >= 65 && str[i] <= 90)   /* uppercase letters */
-         continue;
-      if (str[i] >= 48 && str[i] <= 57)   /* numbers */
-         continue;
-      str[i] = '_';
-   }
-
-   /* If the first character is a number, prepend an underscore. */
-   if (str[0] >= 48 && str[0] <= 57)
-   {
-      for (i = len + 1; i > 0; i--)
-         str[i] = str[i-1];
-      str[0] = '_';
+	 if (str[i]=='>' || str[i]=='<' || str[i]=='&')
+		 str[i]='_';
    }
 
 }
