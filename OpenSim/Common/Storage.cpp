@@ -1164,7 +1164,7 @@ int Storage::
 append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 {
 	if(aY==NULL) return(_storage.getSize());
-	if(aN<=0) return(_storage.getSize());
+	if(aN<0) return(_storage.getSize());
 
 	// APPEND
 	StateVector vec(aT,aN,aY);
