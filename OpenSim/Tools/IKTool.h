@@ -93,7 +93,7 @@ public:
 	//--------------------------------------------------------------------------
 	bool initializeTrial(int i);
 	bool solveTrial(int i);
-	virtual bool run();
+	virtual bool run() SWIG_DECLARE_EXCEPTION;
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
