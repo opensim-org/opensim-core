@@ -64,6 +64,9 @@ using namespace std;
  */
 VisibleObject::~VisibleObject()
 {
+	freeGeometry();
+	_owner = NULL;
+	_dependents.setSize(0);
 }
 
 //_____________________________________________________________________________
