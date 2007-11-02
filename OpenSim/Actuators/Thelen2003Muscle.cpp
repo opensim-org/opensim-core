@@ -908,7 +908,7 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation)
 	double isometricForce = computeIsometricForce(aActivation);
 
 	double normalizedLength = _fiberLength / _optimalFiberLength;
-	double normalizedVelocity = _speed / (_vmax * _optimalFiberLength);
+	double normalizedVelocity = - _speed / (_vmax * _optimalFiberLength);
 	cout<<getName()<<"normVel="<<normalizedVelocity;
 	normalizedVelocity *= cos(_pennationAngle);
 	cout<<"  normVelWithPenn="<<normalizedVelocity;
