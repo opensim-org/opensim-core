@@ -104,7 +104,10 @@ TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage
 	torqueFunc = new VectorGCVSplineR1R3(3,torqueSize,t,x,y,z);
 	setTorqueFunction(torqueFunc);
 
-	delete[] t, x, y, z;
+	delete[] t;
+	delete[] x;
+	delete[] y;
+	delete[] z;
 
 }
 

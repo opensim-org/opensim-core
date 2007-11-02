@@ -133,7 +133,10 @@ ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *
 
 	setForceFunction(forceFunc);
 
-	delete[] t, x, y, z;
+	delete[] t;
+	delete[] x;
+	delete[] y;
+	delete[] z;
 
 }
 
@@ -539,7 +542,10 @@ computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunctio
 	pStore.getDataColumn(2,p2);
 	VectorGCVSplineR1R3 *pFunc = new VectorGCVSplineR1R3(3,size,time,p0,p1,p2);
 	setPointFunction(pFunc);
-	delete[] time, p0, p1, p2;
+	delete[] time;
+	delete[] p0;
+	delete[] p1;
+	delete[] p2;
 
 #if 0
 	Array<int> derivWRT(0,1);

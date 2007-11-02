@@ -329,7 +329,9 @@ computeTargetFunctions(const Storage &aQStore,const Storage &aUStore)
 	setTargetPosition(angFunc);
 	// Velocity
 	if(time!=NULL) { delete[] time; time=NULL; }
-	delete[] pg0, pg1, pg2;
+	delete[] pg0;
+	delete[] pg1;
+	delete[] pg2;
 	double *vg0=0,*vg1=0,*vg2=0;
 	angVelStore.pad(padSize);
 	size = angVelStore.getTimeColumn(time);
@@ -338,7 +340,9 @@ computeTargetFunctions(const Storage &aQStore,const Storage &aUStore)
 	angVelStore.getDataColumn(2,vg2);
 	VectorGCVSplineR1R3 *angVelFunc = new VectorGCVSplineR1R3(3,size,time,vg0,vg1,vg2);
 	setTargetVelocity(angVelFunc);
-	delete[] vg0, vg1, vg2;
+	delete[] vg0;
+	delete[] vg1;
+	delete[] vg2;
 }
 
 //=============================================================================
