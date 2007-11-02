@@ -24,6 +24,8 @@ using namespace std;
  */
 AbstractTool::~AbstractTool()
 {
+	if (_toolOwnsModel)
+		delete _model;
 }
 //_____________________________________________________________________________
 /**
@@ -45,7 +47,8 @@ AbstractTool::AbstractTool():
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
-	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
+	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
+	_toolOwnsModel(true)
 {
 	setType("AbstractTool");
 	setNull();
@@ -76,7 +79,8 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
-	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
+	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
+	_toolOwnsModel(true)
 {
 	setType("AbstractTool");
 	setNull();
@@ -136,7 +140,8 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
-	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj())
+	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
+	_toolOwnsModel(true)
 {
 	setNull();
 	*this = aTool;
@@ -164,6 +169,7 @@ setNull()
 	_maxDT = 1.0;
 	_errorTolerance = 1.0e-3;
 	_fineTolerance = 1.0e-5;
+	_toolOwnsModel=true;
 }
 //_____________________________________________________________________________
 /**
@@ -285,7 +291,7 @@ operator=(const AbstractTool &aTool)
 	_errorTolerance = aTool._errorTolerance;
 	_fineTolerance = aTool._fineTolerance;
 	_analysisSet = aTool._analysisSet;
-
+	_toolOwnsModel = aTool._toolOwnsModel;
 	return(*this);
 }
 
@@ -305,6 +311,7 @@ void AbstractTool::
 setModel(Model *aModel)
 {
 	_model = aModel;
+	_toolOwnsModel=false;
 	if(_model) addAnalysisSetToModel();
 }
 //_____________________________________________________________________________
@@ -413,6 +420,10 @@ updateModelActuatorsAndContactForces(Model *model, const string &aToolSetupFileN
  *
  * NOTE: Makes copies of analyses.  Also, both this tool and the model have ownership of their analysis
  * objects, so making a copy is necessary so a single analysis won't be deleted twice.
+ *
+ * To avoid leaking when the tool is run from the GUI, pointers to the model's copy of the analyses
+ * are kept around so that they can be removed at the end of tool execution.
+ *  _analysisCopies is used to do this book keeping.
  */
 void AbstractTool::
 addAnalysisSetToModel()
@@ -424,14 +435,34 @@ addAnalysisSetToModel()
 	}
 
 	int size = _analysisSet.getSize();
+	_analysisCopies.setMemoryOwner(false);
 	for(int i=0;i<size;i++) {
 		if(!_analysisSet.get(i)) continue;
 		Analysis *analysis = (Analysis*)_analysisSet.get(i)->copy();
 		analysis->setModel(_model);
 		_model->addAnalysis(analysis);
+		_analysisCopies.append(analysis);
 	}
 }
+//_____________________________________________________________________________
+/**
+ * Remove Analysis objects that were added earlier from analysis set to model.
+ *
+ * NOTE: Pointers to the .
+ */
+void AbstractTool::
+removeAnalysisSetFromModel()
+{
+	if (!_model) {
+		return;
+	}
 
+	int size = _analysisCopies.getSize();
+	for(int i=size-1;i>=0;i--) {
+		Analysis *analysis = (Analysis*)_analysisCopies.get(i);
+		_model->removeAnalysis(analysis);
+	}
+}
 
 //=============================================================================
 // IO

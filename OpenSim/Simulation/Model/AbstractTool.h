@@ -90,7 +90,8 @@ protected:
 	/** Set of analyses to be run during the investigation. */
 	PropertyObj _analysisSetProp;
 	AnalysisSet &_analysisSet;
-
+	/** Whether the tool owns the model it operates on. Important for cleanup when done */
+	bool _toolOwnsModel;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -105,6 +106,9 @@ public:
 	//Object* copy() const;
 
 private:
+	// Keep pointers to analyses being added to model so that they can be removed later
+	AnalysisSet _analysisCopies;	 
+
 	void setNull();
 	void setupProperties();
 
@@ -172,11 +176,13 @@ public:
 	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
 	void addAnalysisSetToModel();
-
+	void removeAnalysisSetFromModel();
+	void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
+	const bool getToolOwnsModel() const { return _toolOwnsModel; };
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	virtual bool run() = 0;
+	virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 

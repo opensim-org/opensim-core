@@ -338,10 +338,7 @@ computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreFor
 	pGlobalStore.getDataColumn(2,pg2);
 	VectorGCVSplineR1R3 *pGlobalFunc = new VectorGCVSplineR1R3(3,size,time,pg0,pg1,pg2);
 	setTargetPosition(pGlobalFunc);
-	delete[] time;
-	delete[] pg0;
-	delete[] pg1;
-	delete[] pg2;
+	delete[] time, pg0, pg1, pg2;
 	// Velocity
 	time=NULL;
 	double *vg0=0,*vg1=0,*vg2=0;
@@ -352,10 +349,7 @@ computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreFor
 	vGlobalStore.getDataColumn(2,vg2);
 	VectorGCVSplineR1R3 *vGlobalFunc = new VectorGCVSplineR1R3(3,size,time,vg0,vg1,vg2);
 	setTargetVelocity(vGlobalFunc);
-	delete[] time;
-	delete[] vg0;
-	delete[] vg1;
-	delete[] vg2;
+	delete[] time, vg0, vg1, vg2;
 }
 
 

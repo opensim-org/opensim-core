@@ -186,7 +186,7 @@ void Marker::setup(AbstractDynamicsEngine* aEngine)
 		if (_body && (ownerBodyDisplayer = _body->getDisplayer())){
 			if(! ownerBodyDisplayer->hasDependent(&_displayer)){	// Only if first time to be encountered 
 				ownerBodyDisplayer->addDependent(&_displayer);
-				_displayer.addGeometry(_defaultGeometry);
+				//_displayer.addGeometry(_defaultGeometry);
 			}
 		}
 		_displayer.setOwner(this);

@@ -208,7 +208,7 @@ allocateStorageObjects()
 	}
 
 	// EVERYTHING ELSE
-	_storageList.setMemoryOwner(false);
+	//_storageList.setMemoryOwner(false);
 	_pennationAngleStore = new Storage(1000,"PennationAngle");
 	_pennationAngleStore->setDescription(getDescription());
 	_storageList.append(_pennationAngleStore );

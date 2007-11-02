@@ -613,6 +613,8 @@ formCompleteStorages(const OpenSim::Storage &aQIn,
 		rUComplete->append(time,nu,&qu[nq]);
 	}
 	
+	delete qStore;
+	
 	// Compute storage object for simulation
 	// Need to set column labels before converting rad->deg
 	rQComplete->setColumnLabels(columnLabels);

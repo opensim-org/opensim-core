@@ -122,7 +122,7 @@ ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 	setType("ForwardTool");
 	setNull();
 	updateFromXMLNode();
-	if(aLoadModel) loadModel(aFileName);
+	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
 }
 //_____________________________________________________________________________
 /**
@@ -862,7 +862,7 @@ bool ForwardTool::run()
 	// Manager
 	delete _integrand;
 	_integrand = new ModelIntegrand(_model);
-	if(controlSet!=NULL) _integrand->setControlSet(*controlSet);
+	if(controlSet!=NULL) {_integrand->setControlSet(*controlSet); delete controlSet; }
 	Manager manager(_integrand);
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
@@ -952,6 +952,7 @@ bool ForwardTool::run()
 
 	// Since the Tool added the DerivCallbacks to the model, it is responsible for removing them as well
 	_model->removeAllDerivCallbacks();
+	removeAnalysisSetFromModel();
 	return completed;
 }
 //=============================================================================

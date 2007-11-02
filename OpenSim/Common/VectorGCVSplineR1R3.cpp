@@ -136,9 +136,9 @@ setEqual(const VectorGCVSplineR1R3 &aVectorSpline)
 	setNull();
 
 	// VALUES
-	_splineY0 = aVectorSpline.getSplineY0();
-	_splineY1 = aVectorSpline.getSplineY1();
-	_splineY2 = aVectorSpline.getSplineY2();
+	if (aVectorSpline.getSplineY0()==NULL) _splineY0=NULL;	else _splineY0=new GCVSpline(*aVectorSpline.getSplineY0());
+	if (aVectorSpline.getSplineY1()==NULL) _splineY1=NULL;	else _splineY1=new GCVSpline(*aVectorSpline.getSplineY1());
+	if (aVectorSpline.getSplineY2()==NULL) _splineY2=NULL;	else _splineY2=new GCVSpline(*aVectorSpline.getSplineY2());
 
 }
 

@@ -149,6 +149,7 @@ Model::~Model()
 		delete _derivCallbackSet;
 		_derivCallbackSet = NULL;
 	}
+	//std::cout << "Model destructor has been called" << endl;
 }
 //_____________________________________________________________________________
 /**
@@ -316,6 +317,8 @@ void Model::setup()
 
 	//cout << "Model " << getName() << " setup completed" << endl;
 }
+
+
 //_____________________________________________________________________________
 /**
  * Perform some clean up functions that are normally done from the destructor
@@ -324,10 +327,12 @@ void Model::setup()
  */
 void Model::cleanup()
 {
-	delete _analysisSet;  _analysisSet=NULL;
-	delete _integCallbackSet;  _integCallbackSet=NULL;
-	delete _derivCallbackSet;  _derivCallbackSet=NULL;
-	delete _dynamicsEngine; _dynamicsEngine=NULL;
+	delete _dynamicsEngine;		_dynamicsEngine=NULL;
+	delete _analysisSet;		_analysisSet=NULL;
+	delete _integCallbackSet;	_integCallbackSet=NULL;
+	delete _derivCallbackSet;	_derivCallbackSet=NULL;
+	_actuatorSet.setSize(0);	
+	_contactSet.setSize(0);	
 }
 //_____________________________________________________________________________
 /**
@@ -1021,8 +1026,12 @@ const DerivCallbackSet* Model::getDerivCallbackSet() const
  */
 void Model::removeAllDerivCallbacks()
 {
+	//cout << "Start removeAllDerivCallbacks" << endl;
 	// Delete callbacks
+	if (_derivCallbackSet==NULL) return;
 	delete _derivCallbackSet;
+	_derivCallbackSet = NULL;
+	//cout << "End removeAllDerivCallbacks" << endl;
 }
 //_____________________________________________________________________________
 /**
@@ -1094,7 +1103,7 @@ void Model::removeAnalysis(Analysis *aAnalysis)
 	}
 
 	// ADD
-	aAnalysis->setModel(0);
+	//aAnalysis->setModel(0);
 	_analysisSet->remove(aAnalysis);
 }
 
