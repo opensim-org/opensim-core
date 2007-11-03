@@ -183,7 +183,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			cerr<<"SimbodyEngine.addRigidBodies: joint "<<joint->getName()<<" has no child."<<endl;
 		}
 
-		// LOOP OVER DOFS
+		// SOME VARIABLE DECLARATIONS AND INITIALIZATIONS
 		SimTK::BodyId parentId = aBody->_id;
 		SimTK::BodyId childId;
 		DofSet *dofSet = joint->getDofSet();
@@ -194,7 +194,81 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		Vec3 locationInParent(0,0,0);
 		bool custom = false;
 		Function *txFunction=NULL,*tyFunction=NULL;
+
+		// CHECK FOR NO DEGREES OF FREEDOM
+		int nConstDof = 0;
+		bool weld = false;
 		for(int i=0;i<nDof;i++) {
+			AbstractDof *dof = dofSet->get(i);
+			if(dof==NULL) continue;
+			string dofName = dof->getName();
+			//cout<<"SimbodyEngine.addRigidBodies: creating dof "<<dofName<<" between "<<aBody->getName()<<" and "<<childName<<"."<<endl;
+			bool translation = (dofName=="tx")||(dofName=="ty")||(dofName=="tz");
+			bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
+
+			Function *dofFunction = dof->getFunction();
+			if(dofFunction==NULL) continue;
+			string functionType = dofFunction->getType();
+			if(functionType=="Constant") nConstDof++;
+		}
+		// Weld Joint
+		// If all degrees of freedom are a constant, then this is a weld joint.
+		// Weld joints are not currently supported in Simbody.
+		if(nConstDof == nDof) {
+			weld = true;
+			string msg = "A joint with no degrees of freedom has been detected between ";
+			msg += aBody->getName();
+			msg += " and ";
+			msg += child->getName();
+			msg += ".  ";
+			msg += "The Simbody dynamics engine does not currently support weld joints.  ";
+			msg += "Either add a degree of freedom and lock it, or make an SDFast-based model.";
+			throw Exception(msg,__FILE__,__LINE__);
+		}
+
+		// DETERMIN JOINT LOCATION IN PARENT
+		// This section of code accumulates constant offsets between parent and child
+		// in the variable locationInParent.
+		for(int i=0;i<nDof;i++) {
+			AbstractDof *dof = dofSet->get(i);
+			if(dof==NULL) continue;
+
+			Function *dofFunction = dof->getFunction();
+			if(dofFunction==NULL) continue;
+			string functionType = dofFunction->getType();
+
+			if(functionType=="Constant") {
+
+				string dofName = dof->getName();
+				bool translation = (dofName=="tx")||(dofName=="ty")||(dofName=="tz");
+				bool rotation = (dofName=="r1")||(dofName=="r2")||(dofName=="r3");
+
+				// Translation
+				if(translation) {
+					if(dofName=="tx") {
+						locationInParent[0] = dofFunction->evaluate(0,0.0);
+						//cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
+					} else if(dofName=="ty") {
+						locationInParent[1] = dofFunction->evaluate(0,0.0);
+						//cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
+					} else if(dofName=="tz") {
+						locationInParent[2] = dofFunction->evaluate(0,0.0);
+						//cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
+					}
+
+				// Rotation
+				} else if(rotation) {
+					if(dofFunction->evaluate(0,0.0) != 0.0) {
+						cout<<"Found constant rotational offset."<<endl;
+						cout<<"Constant rotational offsets are not currently supported."<<endl;
+						cout<<"Setting the constant rotational offset to 0.0."<<endl;
+					}
+				}
+			}
+		}
+
+		// ADD RIGID BODIES AND JOINTS
+		for(int nConstDof=0,int i=0;i<nDof;i++) {
 
 			// GET DOF
 			AbstractDof *dof = dofSet->get(i);
@@ -225,30 +299,9 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 				string functionType = dofFunction->getType();
 
 				// CONSTANT
-				// This is not a real degree of freedom, but simply specifies the
-				// location of the mobilizer in the parent frame.
-				// An underlying rigid body should not be added.  The translation
-				// of the mobilizer frame in the parent body frame should just be set.
 				if(functionType=="Constant") {
-					// Translation
-					if(translation) {
-						if(dofName=="tx") {
-							locationInParent[0] = dofFunction->evaluate(0,0.0);
-							//cout<<"Setting a constant tx of "<<locationInParent[0]<<endl;
-						} else if(dofName=="ty") {
-							locationInParent[1] = dofFunction->evaluate(0,0.0);
-							//cout<<"Setting a constant ty of "<<locationInParent[1]<<endl;
-						} else if(dofName=="tz") {
-							locationInParent[2] = dofFunction->evaluate(0,0.0);
-							//cout<<"Setting a constant tz of "<<locationInParent[2]<<endl;
-						}
-
-					// Rotation
-					} else if(rotation) {
-						//cout<<"Found constant rotation.  Neglecting it for now."<<endl;
-					}
 					continue;
-
+	
 				// FUNCTION
 				} else {
 					double mx,my,mz;
@@ -344,7 +397,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Rot2Planar(txFunction,tyFunction));
 
 			// Translation (Slider)
-			}else if(translation) {
+			} else if(translation) {
 				//cout<<"slider axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Slider());
 
@@ -352,6 +405,45 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			} else if(rotation) {
 				//cout<<"pin axis = "<<unitVec<<endl;
 				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Pin());
+
+			// A Number of Constant DOFs Preceding Child (Weld)
+			} else if(weld) {
+				cout<<"Last dofs in joint were constant. Adding a weld joint."<<endl;
+
+				/* 
+				// The only way to do a weld joint in the current version of Simbody is to use a constraint.
+				// This weld joint is done by adding a slider joint and constraining it.
+				childId = _matter->addRigidBody(massProps,childTransform,parentId,parentTransform,Mobilizer::Slider());
+				Vec3 pParent,pChild;
+				pParent = 0.0;
+				pChild = 0.0;
+				pParent += parentTranslation;
+				pChild += childTranslation;
+				_matter->addConstantDistanceConstraint(parentId,pParent,childId,pChild,0.0);
+
+				// A coordinate and speed need to be added.
+				// Coordinate
+				SimbodyCoordinate *qWeld = new SimbodyCoordinate();
+				char childIdString[128];
+				sprintf(childIdString,"%d",childId);
+				string nameOfWeldQ = child->getName() + "_weld";
+				nameOfWeldQ += childIdString;
+				qWeld->setName(nameOfWeldQ);
+				qWeld->_defaultValue = 0.0;
+				qWeld->_initialValue = 0.0;
+				qWeld->_locked = true;
+				qWeld->_motionType = AbstractDof::Translational;
+				_coordinateSet.append(qWeld);
+				// Speed
+				SimbodySpeed *uWeld = new SimbodySpeed();
+				string nameOfWeldU = AbstractSpeed::getSpeedName(nameOfWeldQ);
+				uWeld->setName(nameOfWeldU);
+				uWeld->_coordinateName = nameOfWeldQ;
+				uWeld->_defaultValue = 0.0;
+				_speedSet.append(uWeld);
+				// Assign Dof Name
+				dof->setCoordinateName(nameOfWeldQ);
+				*/
 			}
 
 			// UPDATE BODY ID IN REAL CHILD BODY
@@ -374,12 +466,9 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			q->_mobilityIndex = 0;
 			if(rotation){
 				q->_motionType = AbstractDof::Rotational;
-			}
-			else{
+			} else {
 				q->_motionType = AbstractDof::Translational;
 			}
-
-
 			// Speed
 			string uName = AbstractSpeed::getSpeedName(qName);
 			SimbodySpeed *u = (SimbodySpeed*)_speedSet.get(uName);
@@ -394,20 +483,25 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			u->setCoordinate(q);
 
 			// CHECK FOR LOCKED COORDINATES
-			// If a coordinate is locked, add a distance constraint.
-			/*
+			// If a coordinate is locked, add a constraint.
 			if(q->_locked) {
 				cout<<"Handling locked coordinate."<<endl;
-				double a[3],p[3];
-				dof->getAxis(a);
-				Mtx::PerpendicularUnitVector(a,p);
-				Vec3 pParent(p);
-				Vec3 pChild(p);
+				Vec3 axis,d,pParent,pChild;
+				dof->getAxis(&axis[0]);
+				if(rotation) {
+					Mtx::PerpendicularUnitVector(&axis[0],&pParent[0]);
+					d = axis % pParent;
+				} else {
+					pParent = 0.0;
+					d = axis;
+				}
+				d *= 0.01;
+				pChild = pParent + d;
+				double distance = d.norm();
 				pParent += parentTranslation;
 				pChild += childTranslation;
-				_matter->addConstantDistanceConstraint(parentId,pParent,childId,pChild,0.0);
+				_matter->addConstantDistanceConstraint(parentId,pParent,childId,pChild,distance);
 			}
-			*/
 
 			// UPDATE PARENT ID
 			parentId = childId;
@@ -838,7 +932,6 @@ void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
 	int nq = getNumCoordinates();
 	Vector q(nq,aQ,true);
 	_matter->setQ(*_s,q);
-
 	// SET Us
 	int nu = getNumSpeeds();
 	Vector u(nu,aU,true);
