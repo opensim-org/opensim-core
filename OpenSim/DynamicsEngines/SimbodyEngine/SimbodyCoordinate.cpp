@@ -586,6 +586,30 @@ void SimbodyCoordinate::setConstraintFunction(const Function *function)
 	_constraintFunction = (Function*)function->copy();
 }
 
+
+//-----------------------------------------------------------------------------
+// LOCK
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set whether or not this coordinate is locked.
+ * A distance constraint is used to lock the joint a the dynamic level,
+ * so the Simbody multibody system is reconstructed every time the lock
+ * flag is changed.
+ *
+ * @param aLocked If true the joint is locked; if false the joint is unlocked.
+ */
+bool SimbodyCoordinate::setLocked(bool aLocked)
+{
+	if(aLocked == _locked) return true;
+
+	_locked = aLocked;
+	_engine->constructMultibodySystem();
+	return true;
+}
+
+
+
 //=============================================================================
 // UTILITY
 //=============================================================================

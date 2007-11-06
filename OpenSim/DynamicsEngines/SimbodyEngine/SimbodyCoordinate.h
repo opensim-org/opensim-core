@@ -165,7 +165,7 @@ public:
 	virtual bool setClamped(bool aClamped) { _clamped = aClamped; return true; }
 	virtual bool getClampedUseDefault() const { return _clampedProp.getUseDefault(); }
 	virtual bool getLocked() const { return _locked; }
-	virtual bool setLocked(bool aLocked) { _locked = aLocked; return true; }
+	virtual bool setLocked(bool aLocked);
 	virtual bool getLockedUseDefault() const { return _lockedProp.getUseDefault(); }
 	virtual AbstractDof::DofType getMotionType() const { return _motionType; }
 
