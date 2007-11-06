@@ -1,70 +1,49 @@
-function evaluateAndCompareSimulations()
+function evaluateOneSimulation()
 
 %
 % Set input file names.
 %
 
 % These are the directories containing simulations to compare.
-%dir1 = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_simbody_cfsqp';
-dir1 = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_simbody_cfsqp_mtpbig';
-%dir2 = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_OLD';
-dir2 = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_simbody_cfsqp';
+dir = 'D:\programfiles\FCA\SU\Testing\delaware2_1.5_ss_auto_simbody_cfsqp_mtpbig';
 
 % Set names of files to compare.
 cmcKinematicsQMotFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_Kinematics_q.mot' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_Kinematics_q.mot' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_Kinematics_q.mot' ) };
 cmcKinematicsQStoFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_Kinematics_q.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_Kinematics_q.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_Kinematics_q.sto' ) };
 cmcKinematicsUStoFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_Kinematics_u.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_Kinematics_u.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_Kinematics_u.sto' ) };
 cmcKinematicsDudtStoFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_Kinematics_dudt.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_Kinematics_dudt.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_Kinematics_dudt.sto' ) };
 cmcMomentsFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_cmc_InverseDynamics_force.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_cmc_InverseDynamics_force.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_cmc_InverseDynamics_force.sto' ) };
 cmcStatesFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_states.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_states.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_states.sto' ) };
 scaledModelFiles = { ...
-    fullfile( dir1, 'delaware2.osim' ) ...
-    fullfile( dir2, 'delaware2.osim' ) };
+    fullfile( dir, 'delaware2.osim' ) };
 ikMotFiles = { ...
-    fullfile( dir1, 'de2_ss_walk1_ik.mot' ) ...
-    fullfile( dir2, 'de2_ss_walk1_ik.mot' ) };
+    fullfile( dir, 'de2_ss_walk1_ik.mot' ) };
 ikMomentsFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_ik_InverseDynamics_force.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_ik_InverseDynamics_force.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_ik_InverseDynamics_force.sto' ) };
 rraKinematicsQMotFiles = { ...
-    fullfile( dir1, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_q.mot' ) ...
-    fullfile( dir2, 'Results/de2_ss_walk1_RRA2_Kinematics_q.mot' ) };
+    fullfile( dir, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_q.mot' ) };
 rraKinematicsQStoFiles = { ...
-    fullfile( dir1, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_q.sto' ) ...
-    fullfile( dir2, 'Results/de2_ss_walk1_RRA2_Kinematics_q.sto' ) };
+    fullfile( dir, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_q.sto' ) };
 rraKinematicsUStoFiles = { ...
-    fullfile( dir1, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_u.sto' ) ...
-    fullfile( dir2, 'Results/de2_ss_walk1_RRA2_Kinematics_u.sto' ) };
+    fullfile( dir, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_u.sto' ) };
 rraKinematicsDudtStoFiles = { ...
-    fullfile( dir1, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_dudt.sto' ) ...
-    fullfile( dir2, 'Results/de2_ss_walk1_RRA2_Kinematics_dudt.sto' ) };
+    fullfile( dir, 'ResultsRRA/de2_ss_walk1_RRA_Kinematics_dudt.sto' ) };
 rraActuationForcesFiles = { ...
-    fullfile( dir1, 'ResultsRRA/de2_ss_walk1_RRA_Actuation_force.sto' ) ...
-    fullfile( dir2, 'Results/de2_ss_walk1_RRA2_Actuation_force.sto' ) };
+    fullfile( dir, 'ResultsRRA/de2_ss_walk1_RRA_Actuation_force.sto' ) };
 rraMomentsFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_rra_InverseDynamics_force.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_rra2_InverseDynamics_force.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_rra_InverseDynamics_force.sto' ) };
 cmcControlsFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_controls.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_controls.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_controls.sto' ) };
 cmcActuationForcesFiles = { ...
-    fullfile( dir1, 'ResultsCMC/de2_ss_walk1_Actuation_force.sto' ) ...
-    fullfile( dir2, 'ResultsCMC/de2_ss_walk1_Actuation_force.sto' ) };
+    fullfile( dir, 'ResultsCMC/de2_ss_walk1_Actuation_force.sto' ) };
 muscleMomentsFiles = { ...
-    fullfile( dir1, 'ResultsMuscleAnalysis/de2_ss_walk1_NET_Muscle_Moments.sto' ) ...
-    fullfile( dir2, 'ResultsAnalyze/de2_ss_walk1_NET_Muscle_Moments.sto' ) };
+    fullfile( dir, 'ResultsMuscleAnalysis/de2_ss_walk1_NET_Muscle_Moments.sto' ) };
 
 %
 % Set generic plot properties.
@@ -107,7 +86,7 @@ plotSettings.computeVerticalAxisLimitsAndTicksAutomatically = true;
 
 % Set the trial info for the plot.
 currentDirectory = cd;
-cd( dir1 );
+cd( dir );
 [ sInfo, trialInfo ] = ref_trialInfoDelaware2( 'de2', 'ss_walk1' );
 cd( currentDirectory );
 % Note, trialInfo.gcLimb is set later for each call to a plot function.
@@ -148,20 +127,18 @@ plotJointMoments = plotIkMoments || plotRraMoments || plotCmcMoments || ...
 
 plotMuscleActivations = false;
 
+plotSettings.plotLiteratureMoments = false;
+
+if ~plotJointMoments
+    plotSettings.plotLiteratureMoments = false;
+end
+
 % Some simulations lack subtalar and mtp angles in IK, RRA, CMC, and all
 % inverse dynamics outputs.  This is the user's opportunity to say so.  The
 % ith entry in this array is a Boolean variable indicating whether the ith
 % simulation (directory) above contains a simulation lacking subtalar and
 % mtp angles.
-simulationsLackSubtalarAndMtpAngles = [ false false ];
-
-% Set some repeatedly used plot properties, one value per simulation
-% (directory) above.
-curveStyles = { '-' '-.' };
-curveWidths = {  1   3  };
-curveColors = { 'r' 'r' };
-curveLabels = { 'New' 'Old' };
-curveRepeatedSourceColumnNumbers = { 1 1 };
+simulationsLackSubtalarAndMtpAngles = false;
 
 %
 % Plot generalized coordinates.
@@ -181,24 +158,24 @@ gencoordColumnLabels = { 'pelvis_tx' 'pelvis_ty' 'pelvis_tz' ...
 
 if plotGeneralizedCoordinates
 
-    % Set the curve properties.
-    plotSettings.curveStyles = curveStyles;
-    plotSettings.curveWidths = curveWidths;
-    plotSettings.curveColors = curveColors;
-    plotSettings.curveLabels = curveLabels;
-    plotSettings.curveRepeatedSourceColumnNumbers = ...
-        curveRepeatedSourceColumnNumbers;
+    % Set curve properties.
+    plotSettings.curveStyles = { '-' '.' '-' };
+    plotSettings.curveWidths = {  3   1   1  };
+    plotSettings.curveColors = { [ 0 1 0.5 ] 'r' [ 0 0.5 0.25 ] };
+    plotSettings.curveLabels = { 'IK' 'RRA' 'CMC' };
+    plotSettings.curveRepeatedSourceColumnNumbers = { 1 1 1 };
     
     % Set limb to use to determine percent of gait cycle.
     plotSettings.trialInfo.gcLimb = 'L';
 
     % Set plot input files and columns and plot the desired data columns.
-    plotSettings.curveSourceFiles = cmcKinematicsQMotFiles;
+    plotSettings.curveSourceFiles = [ ikMotFiles rraKinematicsQMotFiles ...
+        cmcKinematicsQMotFiles ];
     for i = figNum : figNum + length( gencoordColumnLabels ) - 1
         label = gencoordColumnLabels{i};
-        plotSettings.figureTitle = label;
-        plotSettings.figureNumber = i;
-        plotSettings.curveSourceColumnLabels = { label, label };
+        plotSettings.figureTitle             = label;
+        plotSettings.figureNumber            = i;
+        plotSettings.curveSourceColumnLabels = { label label label };
         plot_dataFromMotOrStoFiles( plotSettings );
     end
     figNum = figNum + length( gencoordColumnLabels );
@@ -210,6 +187,13 @@ end
 %
 
 if plotJointMoments
+
+    % Set curve properties.
+    curveStyles = { '-' };
+    curveWidths = {  1  };
+    curveColors = { [ 0 0.5 0.25 ] };
+    curveLabels = { 'CMC->ID moment' };
+    curveRepeatedSourceColumnNumbers = { 1 };
     
     % Set the column labels for all joint moments.
     jointMomentColumnLabels = gencoordColumnLabels;
@@ -244,8 +228,30 @@ if plotJointMoments
     
     % Plot the desired data columns.
     for i = figNum : figNum + length( jointMomentColumnLabels ) - 1
+        
         j = i - figNum + 1; % j = 1 : length( jointMomentColumnLabels )
+        
+        % Get column labels, including special ones for RRA and CMC if
+        % needed.
         label = jointMomentColumnLabels{j};
+        if plotRraActuationForces
+            aflabel = rraActuationForceLabels{j};
+        end
+        if plotCmcActuationForces
+            cmcAflabel = cmcActuationForceLabels{j};
+        end
+        
+        % These variables should be changed depending on what moments are
+        % being plotted.
+        curveSourceColumnLabels = { label };
+        if plotRraActuationForces
+            rraCurveSourceColumnLabels = { aflabel };
+        end
+        if plotCmcActuationForces
+            cmcCurveSourceColumnLabels = { cmcAflabel };
+        end
+        
+        % Set other plot properties.
         plotSettings.figureTitle = [ label ' moments' ];
         plotSettings.figureNumber = i;
         if strcmpi( label( end - 1 : end ), '_r' )
@@ -253,6 +259,8 @@ if plotJointMoments
         else
             plotSettings.trialInfo.gcLimb = 'L';
         end
+        
+        % Set curve properties depending on what moments are being plotted.
         if any( simulationsLackSubtalarAndMtpAngles ) && ...
                 any( find( strcmpi( label, missingLabels ) ) ) && ...
                 plotMuscleMoments
@@ -264,7 +272,7 @@ if plotJointMoments
             plotSettings.curveRepeatedSourceColumnNumbers = ...
                 curveRepeatedSourceColumnNumbers;
             plotSettings.curveSourceFiles = muscleMomentsFiles;
-            plotSettings.curveSourceColumnLabels = { label label };
+            plotSettings.curveSourceColumnLabels = curveSourceColumnLabels;
         else
             % Set the curve properties.
             plotSettings.curveStyles = {};
@@ -288,7 +296,7 @@ if plotJointMoments
                     curveRepeatedSourceColumnNumbers ];
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { label label } ];
+                    curveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles ikMomentsFiles ];
             end
@@ -306,7 +314,7 @@ if plotJointMoments
                     curveRepeatedSourceColumnNumbers ];
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { label label } ];
+                    curveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles rraMomentsFiles ];
             end
@@ -324,7 +332,7 @@ if plotJointMoments
                     curveRepeatedSourceColumnNumbers ];
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { label label } ];
+                    curveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles cmcMomentsFiles ];
             end
@@ -342,7 +350,7 @@ if plotJointMoments
                     curveRepeatedSourceColumnNumbers ];
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { label label } ];
+                    curveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles muscleMomentsFiles ];
             end
@@ -358,10 +366,9 @@ if plotJointMoments
                 plotSettings.curveRepeatedSourceColumnNumbers = ...
                     [ plotSettings.curveRepeatedSourceColumnNumbers ...
                     curveRepeatedSourceColumnNumbers ];
-                aflabel = rraActuationForceLabels{j};
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { aflabel aflabel } ];
+                    rraCurveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles ...
                     rraActuationForcesFiles ];
@@ -378,17 +385,16 @@ if plotJointMoments
                 plotSettings.curveRepeatedSourceColumnNumbers = ...
                     [ plotSettings.curveRepeatedSourceColumnNumbers ...
                     curveRepeatedSourceColumnNumbers ];
-                cmcAflabel = cmcActuationForceLabels{j};
                 plotSettings.curveSourceColumnLabels = ...
                     [ plotSettings.curveSourceColumnLabels ...
-                    { cmcAflabel cmcAflabel } ];
+                    cmcCurveSourceColumnLabels ];
                 plotSettings.curveSourceFiles = ...
                     [ plotSettings.curveSourceFiles ...
                     cmcActuationForcesFiles ];
             end
         end
         
-        % Set plot properties.
+        % Set plot properties for literature data.
         plotSettings.plotLiteratureMoments = true;
         plotSettings.literatureMomentCurveStyles = { '-' '-' '-' '-' '-' };
         plotSettings.literatureMomentCurveWidths = {  1   1   1   1   1  };
@@ -408,6 +414,13 @@ end
 %
 
 if plotMuscleActivations
+    
+    % Set curve properties.
+    curveStyles = { '-' };
+    curveWidths = {  1  };
+    curveColors = { 'r' };
+    curveLabels = { 'CMC' };
+    curveRepeatedSourceColumnNumbers = { 1 };
 
     muscleNames = { ...
         'glut_max1_l' 'glut_max1_r' 'glut_med1_l' 'glut_med1_r' ...

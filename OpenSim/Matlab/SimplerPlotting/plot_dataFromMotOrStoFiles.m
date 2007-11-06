@@ -12,9 +12,10 @@ set( gcf, ...
 title( plotSettings.figureTitle );
 t = get( gca, 'Title' );
 set( t, ...
-    'FontName',          plotSettings.titleFontName, ...
-    'FontSize',          plotSettings.titleFontSize, ...
-    'VerticalAlignment', plotSettings.titleVerticalAlignment );
+    'FontName',          plotSettings.titleFontName,          ...
+    'FontSize',          plotSettings.titleFontSize,          ...
+    'VerticalAlignment', plotSettings.titleVerticalAlignment, ...
+    'Interpreter',       'none'                               );
 
 % Set the figure axis position and background color.
 axesPosition = get( gcf, 'DefaultAxesPosition' );
@@ -38,15 +39,6 @@ timeAndDataColumns = get_timeAndDataColumns( ...
     plotSettings.curveRepeatedSourceColumnNumbers );
 time = timeAndDataColumns{1};
 
-% replace time with percent gait cycle
-% column; use earlier code I have for converting from time to cycle, and in
-% plotSettings include all tInfo type stuff as input; put this tInfo info
-% into plotSettings in evaluateAndCompareSimulations.m, and later in
-% make_plots*.m.  First I'll code stuff here, then make sure I have the
-% right parameters coming in from evaluateAndCompareSimulations, and then
-% add stuff to plot_multiple*.m, and then to make_plots*.m based on what I
-% added to evaluateAndCompareSimulations.m.
-
 % Convert time column and time axis from time to percent of gait cycle if
 % necessary.
 if strcmpi( plotSettings.timeOrPercent, 'Percent' )
@@ -56,31 +48,8 @@ if strcmpi( plotSettings.timeOrPercent, 'Percent' )
         ictoEvents, tInfo.analogRate, tInfo.tZeroAtFirstIC );
 end
 
-% Plot the curves!
-hold on;
-numberOfCurves = length( timeAndDataColumns ) - 1;
-for curveNum = 1 : numberOfCurves
-    dataColumnIndex = curveNum + 1;
-    p = plot( ...
-        time, ...
-        timeAndDataColumns{ dataColumnIndex } );
-    set( p, ...
-        'LineStyle', plotSettings.curveStyles{ curveNum }, ...
-        'LineWidth', plotSettings.curveWidths{ curveNum }, ...
-        'Color',     plotSettings.curveColors{ curveNum } );
-end
-
-% Create a legend.
-legend( plotSettings.curveLabels );
-
-% Compute time axis limits and ticks automatically, if user said to do so.
-if plotSettings.computeTimeLimitsAndTicksAutomatically
-    timeMin = min( time );
-    timeMax = max( time );
-    timeTickSeparation = ( timeMax - timeMin ) / 3;
-    plotSettings.xAxisRange = [ timeMin timeMax ];
-    plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
-end
+% Remove background color for plot.
+set( gca, 'Color', 'none' );
 
 % Plot literature moments alongside simulation moments if user said to do
 % so.
@@ -171,6 +140,7 @@ if plotSettings.plotLiteratureMoments
     % The literature joint moments were scaled by the mass of the UT walking
     % model, so unscale all joint moments by this mass and scale them by the
     % mass of the subject whose movement is being simulated in this trial.
+    tInfo = plotSettings.trialInfo;
     subjectMass = tInfo.mass; % just giving it a more descriptive name!
     UTModelMass = 71.002; % in kilograms
     scaleUnscaleFactor = subjectMass / UTModelMass;
@@ -226,6 +196,22 @@ if plotSettings.plotLiteratureMoments
     rightAnkleFlexionInman         = rightJointMomentsScaled( :, 10 );
     rightAnkleFlexionCappozzo      = rightJointMomentsScaled( :, 11 );
 
+    % Styles for different literature joint moment curves, indicating which
+    % source each curve is from.
+    styleInman         = plotSettings.literatureMomentCurveStyles{1};
+    styleCappozzo1975  = plotSettings.literatureMomentCurveStyles{2};
+    styleCappozzo1983  = plotSettings.literatureMomentCurveStyles{3};
+    styleCrowninshield = plotSettings.literatureMomentCurveStyles{4};
+    stylePatriarco     = plotSettings.literatureMomentCurveStyles{5};
+
+    % Widths for different literature joint moment curves, indicating which
+    % source each curve is from.
+    widthInman         = plotSettings.literatureMomentCurveWidths{1};
+    widthCappozzo1975  = plotSettings.literatureMomentCurveWidths{2};
+    widthCappozzo1983  = plotSettings.literatureMomentCurveWidths{3};
+    widthCrowninshield = plotSettings.literatureMomentCurveWidths{4};
+    widthPatriarco     = plotSettings.literatureMomentCurveWidths{5};
+    
     % Colors for different literature joint moment curves, indicating which
     % source each curve is from.
     colorInman         = plotSettings.literatureMomentCurveColors{1};
@@ -233,7 +219,7 @@ if plotSettings.plotLiteratureMoments
     colorCappozzo1983  = plotSettings.literatureMomentCurveColors{3};
     colorCrowninshield = plotSettings.literatureMomentCurveColors{4};
     colorPatriarco     = plotSettings.literatureMomentCurveColors{5};
-
+    
     % Determine which moments to plot and add those data to
     % leftMomentsScaled and rightMomentsScaled.  Also save the appropriate
     % curve colors to momentColors, a cell array of color arrays or
@@ -245,6 +231,8 @@ if plotSettings.plotLiteratureMoments
                 rightHipFlexionInman ...
                 rightHipFlexionCappozzo ...
                 rightHipFlexionCrowninshield };
+            momentStyles = { styleInman styleCappozzo1975 styleCrowninshield };
+            momentWidths = { widthInman widthCappozzo1975 widthCrowninshield };
             momentColors = { colorInman colorCappozzo1975 colorCrowninshield };
             aLiteratureMomentShouldBePlotted = true;
         case 'hip_flexion_l'
@@ -252,66 +240,90 @@ if plotSettings.plotLiteratureMoments
                 leftHipFlexionInman ...
                 leftHipFlexionCappozzo ...
                 leftHipFlexionCrowninshield };
+            momentStyles = { styleInman styleCappozzo1975 styleCrowninshield };
+            momentWidths = { widthInman widthCappozzo1975 widthCrowninshield };
             momentColors = { colorInman colorCappozzo1975 colorCrowninshield };
             aLiteratureMomentShouldBePlotted = true;
         case 'hip_adduction_r'
             rightMomentsScaled = { ...
                 rightHipAdductionCrowninshield ...
                 rightHipAdductionPatriarco };
+            momentStyles = { styleCrowninshield stylePatriarco };
+            momentWidths = { widthCrowninshield widthPatriarco };
             momentColors = { colorCrowninshield colorPatriarco };
             aLiteratureMomentShouldBePlotted = true;
         case 'hip_adduction_l'
             leftMomentsScaled = { ...
                 leftHipAdductionCrowninshield ...
                 leftHipAdductionPatriarco };
+            momentStyles = { styleCrowninshield stylePatriarco };
+            momentWidths = { widthCrowninshield widthPatriarco };
             momentColors = { colorCrowninshield colorPatriarco };
             aLiteratureMomentShouldBePlotted = true;
         case 'hip_rotation_r'
             rightMomentsScaled = { ...
                 rightHipRotationCrowninshield ...
                 rightHipRotationPatriarco };
+            momentStyles = { styleCrowninshield stylePatriarco };
+            momentWidths = { widthCrowninshield widthPatriarco };
             momentColors = { colorCrowninshield colorPatriarco };
             aLiteratureMomentShouldBePlotted = true;
         case 'hip_rotation_l'
             leftMomentsScaled = { ...
                 leftHipRotationCrowninshield ...
                 leftHipRotationPatriarco };
+            momentStyles = { styleCrowninshield stylePatriarco };
+            momentWidths = { widthCrowninshield widthPatriarco };
             momentColors = { colorCrowninshield colorPatriarco };
             aLiteratureMomentShouldBePlotted = true;
         case 'knee_angle_r'
             rightMomentsScaled = { ...
                 rightKneeFlexionCappozzo ...
                 rightKneeFlexionInman };
+            momentStyles = { styleCappozzo1975 styleInman };
+            momentWidths = { widthCappozzo1975 widthInman };
             momentColors = { colorCappozzo1975 colorInman };
             aLiteratureMomentShouldBePlotted = true;
         case 'knee_angle_l'
             leftMomentsScaled = { ...
                 leftKneeFlexionCappozzo ...
                 leftKneeFlexionInman };
+            momentStyles = { styleCappozzo1975 styleInman };
+            momentWidths = { widthCappozzo1975 widthInman };
             momentColors = { colorCappozzo1975 colorInman };
             aLiteratureMomentShouldBePlotted = true;
         case 'ankle_angle_r'
             rightMomentsScaled = { ...
                 rightAnkleFlexionCappozzo ...
                 rightAnkleFlexionInman };
+            momentStyles = { styleCappozzo1975 styleInman };
+            momentWidths = { widthCappozzo1975 widthInman };
             momentColors = { colorCappozzo1975 colorInman };
             aLiteratureMomentShouldBePlotted = true;
         case 'ankle_angle_l'
             leftMomentsScaled = { ...
                 leftAnkleFlexionCappozzo ...
                 leftAnkleFlexionInman };
+            momentStyles = { styleCappozzo1975 styleInman };
+            momentWidths = { widthCappozzo1975 widthInman };
             momentColors = { colorCappozzo1975 colorInman };
             aLiteratureMomentShouldBePlotted = true;
         case 'lumbar_extension'
             leftMomentsScaled = { lumbarExtension };
+            momentStyles = { styleCappozzo1983 };
+            momentWidths = { widthCappozzo1983 };
             momentColors = { colorCappozzo1983 };
             aLiteratureMomentShouldBePlotted = true;
         case 'lumbar_bending'
             leftMomentsScaled = { lumbarBending };
+            momentStyles = { styleCappozzo1983 };
+            momentWidths = { widthCappozzo1983 };
             momentColors = { colorCappozzo1983 };
             aLiteratureMomentShouldBePlotted = true;
         case 'lumbar_rotation'
             leftMomentsScaled = { lumbarRotation };
+            momentStyles = { styleCappozzo1983 };
+            momentWidths = { widthCappozzo1983 };
             momentColors = { colorCappozzo1983 };
             aLiteratureMomentShouldBePlotted = true;
     end
@@ -331,7 +343,6 @@ if plotSettings.plotLiteratureMoments
     hold on;
     if aLiteratureMomentShouldBePlotted
         ax1 = gca;
-        set( ax1, 'Color', 'none' );
         ax2 = axes( 'Position', get( ax1, 'Position' ), ...
             'YAxisLocation', 'right' );
         set( ax2, 'Color', 'none', 'XTick', [], 'XTickLabel', [] );
@@ -345,16 +356,39 @@ if plotSettings.plotLiteratureMoments
             momentsScaled = leftMomentsScaled;
         end
         momentsScaledDimensions = size( momentsScaled );
-        numCurves = momentsScaledDimensions(1);
+        numCurves = momentsScaledDimensions(2);
         for i = 1 : numCurves
             hMoment = line( timesScaled, momentsScaled{i}, 'Parent', ax2 );
             set( hMoment, ...
-                'LineStyle', plotSettings.literatureMomentCurveStyles{1}, ...
-                'LineWidth', plotSettings.literatureMomentCurveWidths{1}, ...
-                'Color',     momentColors{i} );
+                'LineStyle', momentStyles{i}, ...
+                'LineWidth', momentWidths{i}, ...
+                'Color',     momentColors{i}  );
             %legend( hMoment, plotSettings.literatureMomentCurveLabel );
         end
     end
+end
+
+% Plot the curves!
+hold on;
+numberOfCurves = length( timeAndDataColumns ) - 1;
+for curveNum = 1 : numberOfCurves
+    dataColumnIndex = curveNum + 1;
+    p = plot( ...
+        time, ...
+        timeAndDataColumns{ dataColumnIndex } );
+    set( p, ...
+        'LineStyle', plotSettings.curveStyles{ curveNum }, ...
+        'LineWidth', plotSettings.curveWidths{ curveNum }, ...
+        'Color',     plotSettings.curveColors{ curveNum } );
+end
+
+% Compute time axis limits and ticks automatically, if user said to do so.
+if plotSettings.computeTimeLimitsAndTicksAutomatically
+    timeMin = min( time );
+    timeMax = max( time );
+    timeTickSeparation = ( timeMax - timeMin ) / 3;
+    plotSettings.xAxisRange = [ timeMin timeMax ];
+    plotSettings.xAxisTicks = timeMin : timeTickSeparation : timeMax;
 end
 
 % Compute vertical axis limits and ticks automatically, if user said to do
@@ -371,12 +405,19 @@ if plotSettings.computeVerticalAxisLimitsAndTicksAutomatically
         maxCurveValue = max( maxcv, maxCurveValue );
     end
     range = maxCurveValue - minCurveValue;
+    if range < 1e-7
+        range = 2;
+    end
     nextLowerExponentOfTen = floor( log10( range / 2 ) );
     nextLowerPowerOfTen = 10 ^ nextLowerExponentOfTen;
     minRoundedValue = floor( minCurveValue / nextLowerPowerOfTen ) * ...
         nextLowerPowerOfTen;
     maxRoundedValue =  ceil( maxCurveValue / nextLowerPowerOfTen ) * ...
         nextLowerPowerOfTen;
+    if minRoundedValue == maxRoundedValue
+        minRoundedValue = minRoundedValue - 1;
+        maxRoundedValue = maxRoundedValue + 1;
+    end
     roundedRange = maxRoundedValue - minRoundedValue;
     plotSettings.yAxisRange = [ minRoundedValue maxRoundedValue ];
     plotSettings.yAxisTicks = ...
@@ -422,7 +463,7 @@ if length( ax ) > 1
     %    [ lChildren(2) lChildren(1) rChildren(1) ], ...
     %    [ plotSettings.curveLabels 'Lit' ]          );
 else
-    legend( leftAxis, plotSettings.curveLabels );
+    %legend( leftAxis, plotSettings.curveLabels );
 end
 if strcmpi( plotSettings.timeOrPercent, 'Percent' )
     if plotSettings.trialInfo.gcLimb == 'R'
