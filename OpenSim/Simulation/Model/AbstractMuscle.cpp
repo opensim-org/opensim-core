@@ -1141,23 +1141,25 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 
 	computePath();
 
+	// This code assumes that coordinate angles are in radians.
 	if (aCoord.getMotionType() == AbstractDof::Rotational)
 		delta = 0.000873; /* 0.05 degrees * DEG_TO_RAD */
 	else
 		delta = 0.00005; /* model units, assume meters (TODO) */
 
-	/* Unclamp and unlock the gencoord so you can change it by +/- delta
-	 * without worrying about hitting the end of the range.
-	 */
+	// Unclamp and unlock the gencoord so you can change it by +/- delta
+	// without worrying about hitting the end of the range.
 	clampedSave = aCoord.getClamped();
 	lockedSave = aCoord.getLocked();
 	aCoord.setClamped(false);
 	aCoord.setLocked(false);
 	originalValue = aCoord.getValue();
 
-	// This code assumes that coordinate angles are in radians.
-	x[1] = originalValue;
-	y[1] = getLength();
+	// JPL 11/7/07: With SdfastEngine, the model does not come into
+	// this function with aCoord properly set to originalValue.
+	// So you can't just call getLength() to get the y[1] value.
+	//x[1] = originalValue;
+	//y[1] = getLength();
 
 	aCoord.setValue(originalValue - delta);
 	x[0] = aCoord.getValue();
@@ -1169,18 +1171,19 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 
 	/* Put the gencoord back to its original value. */
 	aCoord.setValue(originalValue);
+	// JPL 11/7/07: Now the model is properly configured with aCoord set to originalValue.
+	x[1] = originalValue;
+	y[1] = getLength();
 	aCoord.setClamped(clampedSave);
 	aCoord.setLocked(lockedSave);
 
-	/* Make a spline function with room for 3 points, to hold the muscle
-	 * length at the current coordinate value and at +/- delta from
-	 * the current value.
-	 */
+	// Make a spline function with room for 3 points, to hold the muscle
+	// length at the current coordinate value and at +/- delta from
+	// the current value.
 	NatCubicSpline spline(3, x, y);
 
-	/* The muscle's moment arm is the negative of the first derivative
-	 * of this spline function at originalValue.
-	 */
+	// The muscle's moment arm is the negative of the first derivative
+	// of this spline function at originalValue.
 	return -spline.evaluate(1, originalValue, 1.0, 1.0);
 }
 
