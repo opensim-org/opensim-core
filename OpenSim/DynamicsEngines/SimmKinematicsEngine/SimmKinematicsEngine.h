@@ -263,7 +263,7 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
-	virtual void computeConstrainedCoordinates(double *rQ) const;
+	virtual void computeConstrainedCoordinates(double rQ[]) const;
 
 //=============================================================================
 };	// END of class SimmKinematicsEngine

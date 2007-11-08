@@ -1557,9 +1557,9 @@ void SimmKinematicsEngine::convertQuaternionsToDirectionCosines(double aQ1, doub
  * imposed on the coordinates.  Since constrained degrees of freedom are not
  * treated as part of the generalized coordinates, this method does nothing.
  */
-void SimmKinematicsEngine::computeConstrainedCoordinates(double *rQ) const
+void SimmKinematicsEngine::computeConstrainedCoordinates(double rQ[]) const
 {
-	throw Exception("SimmKinematicsEngine::computeConstrainedCoordinates() not yet implemented.");
+	// Do nothing as constrained coordinates are not part of the state for SimmKinematicsEngine.
 }
 
 //_____________________________________________________________________________

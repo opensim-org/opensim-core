@@ -295,7 +295,7 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRAINTS
 	//--------------------------------------------------------------------------
-	virtual void computeConstrainedCoordinates(double *rQ) const = 0;
+	virtual void computeConstrainedCoordinates(double rQ[]) const = 0;
 	virtual void formCompleteStorages(const OpenSim::Storage &aQIn,
 		OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete) const;
 

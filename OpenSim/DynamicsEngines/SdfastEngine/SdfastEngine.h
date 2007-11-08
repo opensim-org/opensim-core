@@ -258,7 +258,7 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRAINTS
 	//--------------------------------------------------------------------------
-	virtual void computeConstrainedCoordinates(double *rQ) const;
+	virtual void computeConstrainedCoordinates(double rQ[]) const;
 
 	//--------------------------------------------------------------------------
 	// EQUATIONS OF MOTION

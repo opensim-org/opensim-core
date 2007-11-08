@@ -1797,7 +1797,7 @@ void SdfastEngine::computeReactions(double rForces[][3], double rTorques[][3]) c
  * constrained values.
  */
 void SdfastEngine::
-computeConstrainedCoordinates(double *y) const
+computeConstrainedCoordinates(double y[]) const
 {
 	int nq = getNumCoordinates();
 	for(int i=0; i<nq; i++) {
