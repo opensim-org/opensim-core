@@ -510,7 +510,7 @@ bool SdfastCoordinate::setValue(double aValue)
 		_SdfastEngine->setConfiguration(y);
 	}
 
-#if 1
+#if 0
 	// When interacting with the model via the GUI (or calling a function like
 	// kinTest(), you need to execute the following code after changing a
 	// coordinate value. But you don't want to call this code if you're

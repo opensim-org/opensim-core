@@ -1139,6 +1139,9 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
    double delta, originalValue, x[3], y[3];
 	bool clampedSave, lockedSave;
 
+	// Make an array to hold the model's configuration.
+	Array<double> config(0.0, _model->getNumConfigurations());
+
 	computePath();
 
 	// This code assumes that coordinate angles are in radians.
@@ -1155,25 +1158,28 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 	aCoord.setLocked(false);
 	originalValue = aCoord.getValue();
 
-	// JPL 11/7/07: With SdfastEngine, the model does not come into
-	// this function with aCoord properly set to originalValue.
-	// So you can't just call getLength() to get the y[1] value.
-	//x[1] = originalValue;
-	//y[1] = getLength();
+	x[1] = originalValue;
+	y[1] = getLength();
 
 	aCoord.setValue(originalValue - delta);
+	_model->getDynamicsEngine().getConfiguration(&config[0]);
+	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[0] = aCoord.getValue();
 	y[0] = getLength();
 
-	aCoord.setValue(originalValue + (2 * delta));
+	aCoord.setValue(originalValue + 2.0 * delta);
+	_model->getDynamicsEngine().getConfiguration(&config[0]);
+	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[2] = aCoord.getValue();
 	y[2] = getLength();
 
-	/* Put the gencoord back to its original value. */
+	/* Put the coordinate back to its original value. */
 	aCoord.setValue(originalValue);
-	// JPL 11/7/07: Now the model is properly configured with aCoord set to originalValue.
-	x[1] = originalValue;
-	y[1] = getLength();
+	_model->getDynamicsEngine().getConfiguration(&config[0]);
+	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	aCoord.setClamped(clampedSave);
 	aCoord.setLocked(lockedSave);
 

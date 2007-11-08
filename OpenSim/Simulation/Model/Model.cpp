@@ -1373,23 +1373,42 @@ void Model::kinTest()
 	AbstractMuscle* ms2;
 	AbstractCoordinate* hip_flex_r;
 	AbstractCoordinate* knee_flex_r;
+	AbstractBody* pelvis;
 
 	knee_flex_r = getDynamicsEngine().getCoordinateSet()->get("knee_flex_r");
 	hip_flex_r = getDynamicsEngine().getCoordinateSet()->get("hip_flex_r");
 	ms1 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("glut_max1_r"));
 	ms2 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("rectus_fem_r"));
+	pelvis = getDynamicsEngine().getBodySet()->get("pelvis");
+
+	Array<double> config(0.0, getNumConfigurations());
+
+#if 0
+	if (ms1 && pelvis)
+	{
+		ms1->addAttachmentPoint(0, *pelvis);
+		print("kinTest.osim");
+	}
+#endif
 
 	if (hip_flex_r && knee_flex_r && ms2)
 	{
 		cout << "kinTest" << endl;
 
 		hip_flex_r->setValue(0.0);
+	   getDynamicsEngine().getConfiguration(&config[0]);
+	   getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	   getDynamicsEngine().setConfiguration(&config[0]);
 
 		cout << ms2->getName() << endl;
 		for (double angle = 0.0 * rdMath::DTR; angle < 121.0 * rdMath::DTR; angle += 30.0 * rdMath::DTR)
 		{
 			knee_flex_r->setValue(angle);
-			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = " << ms2->computeMomentArm(*knee_flex_r) << endl;
+	      getDynamicsEngine().getConfiguration(&config[0]);
+	      getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	      getDynamicsEngine().setConfiguration(&config[0]);
+			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = "
+				  << ms2->computeMomentArm(*knee_flex_r) << endl;
 		}
 	}
 }
