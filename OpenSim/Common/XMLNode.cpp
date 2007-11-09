@@ -293,6 +293,7 @@ FindInsertionPoint(DOMNode *aParent, int aNodeIndex)
 			if (j > 1 && children->item(j-1)->getNodeType() == DOMNode::TEXT_NODE &&
 				 children->item(j-2)->getNodeType() == DOMNode::COMMENT_NODE)
 				return children->item(j-2);
+			return children->item(j);
 		}
 	}
 
