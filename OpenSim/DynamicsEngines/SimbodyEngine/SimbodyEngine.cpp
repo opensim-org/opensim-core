@@ -1834,7 +1834,10 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const OpenSim::Arra
 void SimbodyEngine::
 transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const
 {
-	if(&aBodyFrom == &aBodyTo) return;
+	if(&aBodyFrom == &aBodyTo) {
+	   for (int i=0; i<3; i++) rPos[i] = aPos[i];
+		return;
+	}
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
@@ -1855,7 +1858,10 @@ void SimbodyEngine::
 transformPosition(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aPos,
 	const AbstractBody &aBodyTo, OpenSim::Array<double>& rPos) const
 {
-	if(&aBodyFrom == &aBodyTo) return;
+	if(&aBodyFrom == &aBodyTo) {
+	   for (int i=0; i<3; i++) rPos[i] = aPos[i];
+		return;
+	}
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
