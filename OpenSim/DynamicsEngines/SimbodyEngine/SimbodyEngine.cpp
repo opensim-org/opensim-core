@@ -708,6 +708,8 @@ createGroundBodyIfNecessary()
 	// See if the ground body already exists.
 	// The ground body is assumed to have the name simbodyGroundName.
 	int size = _bodySet.getSize();
+	if (size==0)	// Don't want to throw an exception for trivial models
+		return;
 	SimbodyBody *ground=NULL;
 	for(int i=0; i<size; i++) {
 		SimbodyBody *body = (SimbodyBody*)_bodySet.get(i);
@@ -719,6 +721,11 @@ createGroundBodyIfNecessary()
 
 	// If the ground body doesn't exist create it
 	// and append it to the body set.
+	if (ground==NULL){
+		string msg = "Model has no ground body. Please rename base segment to 'ground' and retry.";
+		throw Exception(msg,__FILE__,__LINE__);
+	}
+	/* Temporarily comment out pending a robust solution to models without ground
 	if(ground==NULL) {
 		ground = new SimbodyBody();
 		_bodySet.append(ground);
@@ -740,7 +747,7 @@ createGroundBodyIfNecessary()
 	ground->_engine = this;
 
 	// Set member variable and append to body set.
-	_groundBody = ground;
+	_groundBody = ground; */
 }
 
 
