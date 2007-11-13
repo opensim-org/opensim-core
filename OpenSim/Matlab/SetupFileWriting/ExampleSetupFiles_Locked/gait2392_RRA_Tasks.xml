@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rdCMC_TaskSet name="gait2392_CMC">
+<rdCMC_TaskSet name="gait2392_RRA">
 
 	<defaults>
 		<rdCMC_Joint name="default">
@@ -52,7 +52,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e0 </weight>
+			<weight> 5.0e0 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tz </coordinate>
@@ -63,7 +63,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e0 </weight>
+			<weight> 5.0e0 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tx </coordinate>
@@ -74,7 +74,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e0 </weight>
+			<weight> 5.0e0 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_ty </coordinate>
@@ -85,7 +85,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e1 </weight>
+			<weight> 1.0e3 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tilt </coordinate>
@@ -96,7 +96,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e1 </weight>
+			<weight> 5.0e2 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_list </coordinate>
@@ -107,7 +107,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e1 </weight>
+			<weight> 1.0e2 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_rotation </coordinate>
@@ -121,7 +121,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_flexion_r </coordinate>
@@ -132,7 +132,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_adduction_r </coordinate>
@@ -143,7 +143,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_rotation_r </coordinate>
@@ -154,7 +154,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> knee_angle_r </coordinate>
@@ -165,34 +165,11 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_r </coordinate>
 		</rdCMC_Joint>
-
-		<rdCMC_Joint name="subtalar_angle_r">
-			<wrt_body> -1 </wrt_body>
-			<express_body> -1 </express_body>
-			<on> true </on>
-			<active> true false false </active>
-			<weight> 1.0e2 </weight>
-			<kp> 1600.0 </kp>
-			<kv>  80.0 </kv>
-			<coordinate> subtalar_angle_r </coordinate>
-		</rdCMC_Joint>
-
-		<rdCMC_Joint name="mtp_angle_r">
-			<wrt_body> -1 </wrt_body>
-			<express_body> -1 </express_body>
-			<on> true </on>
-			<active> true false false </active>
-			<weight> 1.0e2 </weight>
-			<kp> 100.0 </kp>
-			<kv>  20.0 </kv>
-			<coordinate> mtp_angle_r </coordinate>
-		</rdCMC_Joint>
-
 
 		<!-- Left Leg -->
 
@@ -201,7 +178,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_flexion_l </coordinate>
@@ -212,7 +189,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_adduction_l </coordinate>
@@ -223,7 +200,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_rotation_l </coordinate>
@@ -234,7 +211,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> knee_angle_l </coordinate>
@@ -245,32 +222,10 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e2 </weight>
+			<weight> 2.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_l </coordinate>
-		</rdCMC_Joint>
-	
-		<rdCMC_Joint name="subtalar_angle_l">
-			<wrt_body> -1 </wrt_body>
-			<express_body> -1 </express_body>
-			<on> true </on>
-			<active> true false false </active>
-			<weight> 1.0e2 </weight>
-			<kp> 1600.0 </kp>
-			<kv>  80.0 </kv>
-			<coordinate> subtalar_angle_l </coordinate>
-		</rdCMC_Joint>
-
-		<rdCMC_Joint name="mtp_angle_l">
-			<wrt_body> -1 </wrt_body>
-			<express_body> -1 </express_body>
-			<on> true </on>
-			<active> true false false </active>
-			<weight> 1.0e2 </weight>
-			<kp> 100.0 </kp>
-			<kv>  20.0 </kv>
-			<coordinate> mtp_angle_l </coordinate>
 		</rdCMC_Joint>
 
 
@@ -281,7 +236,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e1 </weight>
+			<weight> 5.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_extension </coordinate>
@@ -292,7 +247,7 @@
 			<express_body> -1 </express_body>
 			<on> true </on>
 			<active> true false false </active>
-			<weight> 1.0e1 </weight>
+			<weight> 5.0e1 </weight>
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_bending </coordinate>

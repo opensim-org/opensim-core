@@ -131,10 +131,30 @@ if plotSettings.computeTimeLimitsAndTicksAutomatically
     end
 end
 
+% Determine speed from Cappellini-Ivanenko data to plot against the data
+% from simulation, based on the speed of the subject's walk.
+%
+% Speed in km/h = ( Speed in m/s ) * ( 3600 s / 1 h ) * ( 1 km / 1000 m )
+%               = ( Speed in m/s ) * 3.6
+speedInKilometersPerHour = plotSettings.speedInMetersPerSecond * 3.6;
+if speedInKilometersPerHour < 1.5
+    sheet = '1w_';
+elseif speedInKilometersPerHour < 2.5
+    sheet = '2w_';
+elseif speedInKilometersPerHour < 4
+    sheet = '3w';
+elseif speedInKilometersPerHour < 6
+    sheet = '5w';
+elseif speedInKilometersPerHour < 8
+    sheet = '7w';
+else
+    sheet = '9w';
+end
+
 % Plot Cappellini-Ivanenko EMG data.
 if plotSettings.plotLiteratureActivations
     % Read Cappellini-Ivanenko EMG data.
-    emgData = xlsread( 'emg_averaged_walk_run.xls', '5w' );
+    emgData = xlsread( 'emg_averaged_walk_run.xls', sheet );
     % emgData( :, column ) is from 0% to 100% of gait cycle, with 201
     % data points, so its time vector is 0% to 100% by increments of 0.5%.
     emgTimeAxis = transpose( 0 : 0.005 : 1 );

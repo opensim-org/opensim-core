@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PerturbationTool name="subject01_walk1">
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file> subject01_sdfast_adjusted.osim </model_file>
+	<!--Replace the model's actuator set with sets specified in
+	    <actuator_set_files>? If false, the actuator set is appended to.-->
+	<replace_actuator_set> false </replace_actuator_set>
+	<!--List of xml files used to construct an actuator set for the model.-->
+	<actuator_set_files> gait2392_CMC_Actuators.xml </actuator_set_files>
+	<!--Directory used for writing results.-->
+	<results_directory> ./ResultsPerturb </results_directory>
+
+	<!--Output precision.  It is 8 by default.-->
+	<output_precision> 12 </output_precision>
+	<!--Initial time for the simulation.-->
+	<initial_time> 0.80 </initial_time>
+	<!--Final time for the simulation.-->
+	<final_time> 1.18 </final_time>
+
+	<!--Time over which the model states are integrated following a
+	    perturbation. To allow reaction forces to adjust to adjust to the
+	    perturbation, the recommended window is from about 0.020 seconds to
+	    about 0.040 seconds, although it may differ from model to model.-->
+	<perturbation_time_window> 0.03 </perturbation_time_window>
+	<!--Time increment between perturbation windows.  This can be smaller than
+	    the perturbation time window size (e.g., 0.010 sec).-->
+	<perturbation_time_increment> 0.01 </perturbation_time_increment>
+	<!--Magnitude of perturbation. Perturbation results should be fairly
+	    insensitive to the perturbation size.  Values between 0.10N and 10N
+	    shoudl be fine.-->
+	<perturbation_size> 1 </perturbation_size>
+	
+	<!--Maximum number of integrator steps.-->
+	<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+	<!--Maximum integration step size.-->
+	<maximum_integrator_step_size> 0.0001 </maximum_integrator_step_size>
+	<!--Integrator error tolerance. When the error is greater, the integrator
+	    step size is decreased.-->
+	<integrator_error_tolerance> 1e-007 </integrator_error_tolerance>
+	<!--Integrator fine tolerance. When the error is less, the integrator step
+	    size is increased.-->
+	<integrator_fine_tolerance> 1e-010 </integrator_fine_tolerance>
+	
+	<!--Rise time for scaling functions.  This parameter determines how fast a
+	    corrective spring is scaled into or out of effect around contact
+	    events.-->
+	<scaling_rise_time> 0.001 </scaling_rise_time>
+	<!--Stiffness for linear (translational) corrective springs-->
+	<corrective_spring_linear_stiffness> 5e+006 5e+006 5e+006 </corrective_spring_linear_stiffness>
+	<!--Damping for linear (translational) corrective springs-->
+	<corrective_spring_linear_damping> 1500 1500 1500 </corrective_spring_linear_damping>
+	<!--Stiffness for torsional corrective springs-->
+	<corrective_spring_torsional_stiffness> 100000 100000 100000 </corrective_spring_torsional_stiffness>
+	<!--Damping for torsional corrective springs-->
+	<corrective_spring_torsional_damping> 1000 1000 1000 </corrective_spring_torsional_damping>
+	
+	<!--XML file containing the controls (e.g., muscle excitations) for the
+	    forward simulation.-->
+	<controls_file> ResultsCMC/subject01_walk1_controls.xml </controls_file>
+	<!--Storage file (.sto) containing the center of pressure.-->
+	<cop_file> subject01_walk1_grf.mot </cop_file>
+	<!--Storage file (.sto) containing the generalized coordinates for the
+	    model. These coordinates are used in conjuction with the center of
+	    pressure data to place the corrective springs at the centers of
+	    pressure in the local frames of each foot.-->
+	<coordinates_file> ResultsCMC/subject01_walk1_Kinematics_q.sto </coordinates_file>
+	<!--Storage file (.sto) containing the generalized speeds for the model.
+	    These speeds are used to set the expected velocities of the centers of
+	    pressure so that damping can be applied by the corrective springs if
+	    the trajectory of the foot deviates from the expected trajectory.-->
+	<speeds_file> ResultsCMC/subject01_walk1_Kinematics_u.sto </speeds_file>
+	<!--Storage file (.sto) containing the model states during the unperturbed
+	    simulation. These states are used to set the initial states of the
+	    model for each perturbed simulation.-->
+	<states_file> ResultsCMC/subject01_walk1_states.sto </states_file>
+
+	<!--Name of the right foot body (to which the right-side corrective
+	    springs will be applied).-->
+	<right_foot_body> calcn_r </right_foot_body>
+	<!--Name of the left foot body (to which the left-side corrective springs
+	    will be applied).-->
+	<left_foot_body> calcn_l </left_foot_body>
+
+	<!--Time of right heel strike.  The linear corrective spring will increase
+	    its influence at this time.-->
+	<r_heel_strike> 0.63 </r_heel_strike>
+	<!--Time of right foot flat.  The torsional corrective spring will
+	    increase its influence at this time.-->
+	<r_foot_flat> 0.75 </r_foot_flat>
+	<!--Time of right heel off.  The torsional corrective spring will decrease
+	    its influence at this time.-->
+	<r_heel_off> 1.2 </r_heel_off>
+	<!--Time of right toe off.  The linear corrective spring will decrease its
+	    influence at this time.-->
+	<r_toe_off> 1.4 </r_toe_off>
+	<!--Time of left heel strike.  The linear corrective spring will increase
+	    its influence at this time-->
+	<l_heel_strike> 1.28 </l_heel_strike>
+	<!--Time of left foot flat.  The torsional corrective spring will increase
+	    its influence at this time-->
+	<l_foot_flat> 1.38 </l_foot_flat>
+	<!--Time of left heel off.  The torsional corrective spring will decrease
+	    its influence at this time-->
+	<l_heel_off> 1.8 </l_heel_off>
+	<!--Time of left toe off.  The linear corrective spring will decrease its
+	    influence at this time-->
+	<l_toe_off> 2 </l_toe_off>
+
+	<!--Motion file (.mot) or storage file (.sto) containing the external
+	    loads applied to the model.-->
+	<external_loads_file> subject01_walk1_grf.mot </external_loads_file>
+	<!--Motion file (.mot) or storage file (.sto) containing the model
+	    kinematics corresponding to the external loads.-->
+	<external_loads_model_kinematics_file> subject01_walk1_ik.mot </external_loads_model_kinematics_file>
+	<!--Name of the body to which the first set of external loads should be
+	    applied (e.g., the name of the right foot).-->
+	<external_loads_body1> calcn_r </external_loads_body1>
+	<!--Name of the body to which the second set of external loads should be
+	    applied (e.g., the name of the left foot).-->
+	<external_loads_body2> calcn_l </external_loads_body2>
+	<!--Low-pass cut-off frequency for filtering the model kinematics
+	    corresponding to the external loads. A negative value results in no
+	    filtering. The default value is -1.0, so no filtering.-->
+	<lowpass_cutoff_frequency_for_load_kinematics> 6 </lowpass_cutoff_frequency_for_load_kinematics>
+
+	<!--Set of analyses to be run during the investigation.-->
+	<AnalysisSet name="Analyses">
+		<objects>
+			<Kinematics name="Kinematics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 10 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+				<!--Names of generalized coordinates to record kinematics for.  Use 'all'
+				    to record all coordinates.-->
+				<coordinates> knee_angle_l knee_angle_r </coordinates>
+			</Kinematics>
+			<BodyKinematics name="BodyKinematics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 10 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+				<!--Names of bodies to record kinematics for.  Use 'all' to record all
+				    bodies.  The special name 'center_of_mass' refers to the combined
+				    center of mass.-->
+				<bodies> center_of_mass </bodies>
+			</BodyKinematics>
+		</objects>
+	</AnalysisSet>
+	
+</PerturbationTool>
+

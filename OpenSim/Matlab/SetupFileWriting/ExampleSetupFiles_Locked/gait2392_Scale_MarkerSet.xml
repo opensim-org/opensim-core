@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MarkerSet name="gait2392_Scale">
+	<objects>
+		<!-- Torso -->
+		<Marker name="Sternum">
+			<!--Location of a marker on the body segment.-->
+			<location> 0.07 0.3 0 </location>
+			<!--Flag (true or false) specifying whether or not a marker should be kept
+			    fixed in the marker placement step.  i.e. If false, the marker is
+			    allowed to move.-->
+			<fixed> false </fixed>
+			<!--Body segment in the model on which the marker resides.-->
+			<body> torso </body>
+		</Marker>
+		<Marker name="R.Acromium">
+			<location> -0.03 0.44 0.15 </location>
+			<fixed> false </fixed>
+			<body> torso </body>
+		</Marker>
+		<Marker name="L.Acromium">
+			<location> -0.03 0.44 -0.15 </location>
+			<fixed> false </fixed>
+			<body> torso </body>
+		</Marker>
+		<Marker name="Top.Head">
+			<location>0.00084 0.657 0.0</location>
+			<fixed> false </fixed>
+			<body> torso </body>
+		</Marker>
+		<!-- Also R.Bicep R.Elbow R.Write.Med R.Wrist.Lat R.Temple -->
+
+		<!-- Pelvis -->
+		<Marker name="R.ASIS">
+			<location> 0.02 0.03 0.128 </location>
+			<fixed> false </fixed>
+			<body> pelvis </body>
+		</Marker>
+		<Marker name="L.ASIS">
+			<location> 0.02 0.03 -0.128 </location>
+			<fixed> false </fixed>
+			<body> pelvis </body>
+		</Marker>
+		<Marker name="V.Sacral">
+			<location>-0.16 0.04 0.0</location>
+			<fixed> false </fixed>
+			<body> pelvis </body>
+		</Marker>
+
+		<!-- Right femur -->
+		<Marker name="R.Thigh.Upper">
+			<location>0.018 -0.20 0.064</location>
+			<fixed> false </fixed>
+			<body> femur_r </body>
+		</Marker>
+		<Marker name="R.Thigh.Front">
+			<location> 0.08 -0.25 0.0047 </location>
+			<fixed> false </fixed>
+			<body> femur_r </body>
+		</Marker>
+		<Marker name="R.Thigh.Rear">
+			<location>0.01 -0.30 0.06</location>
+			<fixed> false </fixed>
+			<body> femur_r </body>
+		</Marker>
+		<Marker name="R.Knee.Lat">
+			<location>0.0 -0.404 0.05</location>
+			<fixed> false </fixed>
+			<body> femur_r </body>
+		</Marker>
+		<Marker name="R.Knee.Med">
+			<location>0.0 -0.404 -0.05</location>
+			<fixed> false </fixed>
+			<body> femur_r </body>
+		</Marker>
+
+		<!-- Right tibia -->
+		<Marker name="R.Shank.Upper">
+			<location> 0.005 -0.065 0.05 </location>
+			<fixed> false </fixed>
+			<body> tibia_r </body>
+		</Marker>
+		<Marker name="R.Shank.Front">
+			<location> 0.05 -0.08 0 </location>
+			<fixed> false </fixed>
+			<body> tibia_r </body>
+		</Marker>
+		<Marker name="R.Shank.Rear">
+			<location> 0.02 -0.13 0.05 </location>
+			<fixed> false </fixed>
+			<body> tibia_r </body>
+		</Marker>
+		<Marker name="R.Ankle.Lat">
+			<location> -0.005 -0.41 0.053 </location>
+			<fixed> false </fixed>
+			<body> tibia_r </body>
+		</Marker>
+		<Marker name="R.Ankle.Med">
+			<location> 0.006 -0.3888 -0.038 </location>
+			<fixed> false </fixed>
+			<body> tibia_r </body>
+		</Marker>
+
+		<!-- Right calcaneous -->
+		<Marker name="R.Heel">
+			<location>-0.02 0.02 0.0</location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+		<Marker name="R.Midfoot.Sup">
+			<location> 0.13 0.03 -0.03 </location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+		<Marker name="R.Midfoot.Lat">
+			<location> 0.1 0.02 0.04 </location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+		<Marker name="R.Toe.Lat">
+			<location>0.190 0.0 0.065</location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+		<Marker name="R.Toe.Med">
+			<location>0.190 0.005 -0.04</location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+		<Marker name="R.Toe.Tip">
+			<location>0.26 0.005 0.0</location>
+			<fixed> false </fixed>
+			<body> calcn_r </body>
+		</Marker>
+
+		<!-- Left femur -->
+		<Marker name="L.Thigh.Upper">
+			<location> 0.018 -0.2 -0.064 </location>
+			<fixed> false </fixed>
+			<body> femur_l </body>
+		</Marker>
+		<Marker name="L.Thigh.Front">
+			<location> 0.08 -0.25 -0.0047 </location>
+			<fixed> false </fixed>
+			<body> femur_l </body>
+		</Marker>
+		<Marker name="L.Thigh.Rear">
+			<location>0.01 -0.30 -0.06</location>
+			<fixed> false </fixed>
+			<body> femur_l </body>
+		</Marker>
+		<Marker name="L.Knee.Lat">
+			<location>0.0 -0.404 -0.05</location>
+			<fixed> false </fixed>
+			<body> femur_l </body>
+		</Marker>
+		<Marker name="L.Knee.Med">
+			<location>0.0 -0.404 0.05</location>
+			<fixed> false </fixed>
+			<body> femur_l </body>
+		</Marker>
+
+		<!-- Left tibia -->
+		<Marker name="L.Shank.Upper">
+			<location> 0.005 -0.065 -0.05 </location>
+			<fixed> false </fixed>
+			<body> tibia_l </body>
+		</Marker>
+		<Marker name="L.Shank.Front">
+			<location> 0.05 -0.08 0 </location>
+			<fixed> false </fixed>
+			<body> tibia_l </body>
+		</Marker>
+		<Marker name="L.Shank.Rear">
+			<location> -0.02 -0.13 -0.05 </location>
+			<fixed> false </fixed>
+			<body> tibia_l </body>
+		</Marker>
+		<Marker name="L.Ankle.Lat">
+			<location> -0.005 -0.41 -0.053 </location>
+			<fixed> false </fixed>
+			<body> tibia_l </body>
+		</Marker>
+		<Marker name="L.Ankle.Med">
+			<location> 0.006 -0.3888 0.038 </location>
+			<fixed> false </fixed>
+			<body> tibia_l </body>
+		</Marker>
+
+		<!-- Left calcaneous -->
+		<Marker name="L.Heel">
+			<location>-0.02 0.02 0.0</location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+		<Marker name="L.Midfoot.Sup">
+			<location> 0.13 0.03 0.03 </location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+		<Marker name="L.Midfoot.Lat">
+			<location> 0.1 0.02 -0.04 </location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+		<Marker name="L.Toe.Lat">
+			<location>0.190 0.0 -0.065</location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+		<Marker name="L.Toe.Med">
+			<location>0.190 0.005 0.04</location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+		<Marker name="L.Toe.Tip">
+			<location>0.26 0.005 0.0</location>
+			<fixed> false </fixed>
+			<body> calcn_l </body>
+		</Marker>
+	</objects>
+</MarkerSet>

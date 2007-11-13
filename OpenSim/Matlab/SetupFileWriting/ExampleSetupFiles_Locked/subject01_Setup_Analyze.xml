@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AnalyzeTool name="subject01_walk1">
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file> subject01_simbody_adjusted.osim </model_file>
+	<!--Replace the model's actuator set with sets specified in
+	    <actuator_set_files>? If false, the actuator set is appended to.-->
+	<replace_actuator_set> false </replace_actuator_set>
+	<!--List of xml files used to construct an actuator set for the model.-->
+	<actuator_set_files> gait2392_CMC_Actuators.xml </actuator_set_files>
+	<!--Directory used for writing results.-->
+	<results_directory> ./ResultsAnalyze </results_directory>
+	<!--Output precision.  It is 8 by default.-->
+	<output_precision> 8 </output_precision>
+	<!--Initial time for the simulation.-->
+	<initial_time> 0.80 </initial_time>
+	<!--Final time for the simulation.-->
+	<final_time> 1.18 </final_time>
+	<!--Set of analyses to be run during the investigation.-->
+	<AnalysisSet name="Analyses">
+		<objects>
+			<Kinematics name="Kinematics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 10 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+			</Kinematics>
+			<Actuation name="Actuation">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 10 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+			</Actuation>
+			<BodyKinematics name="BodyKinematics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 10 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+			</BodyKinematics>
+			<MuscleAnalysis name="MuscleAnalysis">
+				<on> true </on>
+				<step_interval> 1 </step_interval>
+				<in_degrees> true </in_degrees>
+				<muscle_list> all </muscle_list>
+				<moment_arm_coordinate_list> knee_angle_r </moment_arm_coordinate_list>
+			</MuscleAnalysis>
+		</objects>
+	</AnalysisSet>
+	<!--XML file containing the controls (e.g., muscle excitations) for the
+	    forward simulation.-->
+	<controls_file> ResultsCMC/subject01_walk1_controls.xml </controls_file>
+	<!--Storage file (.sto) containing the initial states for the forward
+	    simulation. This file often contains multiple rows of data, each row
+	    being a time-stamped array of states. The first column contains the
+	    time.  The rest of the columns contain the states in the order
+	    appropriate for the model. In a storage file, unlike a motion file
+	    (.mot), non-uniform time spacing is allowed.  If the user-specified
+	    initial time for a simulation does not correspond exactly to one of
+	    the time stamps in this file, inerpolation is NOT used because it is
+	    usually necessary to being a simulation from an exact set of states.
+	    Instead, the closest earlier set of states is used.-->
+	<states_file> ResultsCMC/subject01_walk1_states.sto </states_file>
+	<!--Motion file (.mot) or storage file (.sto) containing the external
+	    loads applied to the model.-->
+	<external_loads_file> subject01_walk1_grf.mot </external_loads_file>
+	<!--Motion file (.mot) or storage file (.sto) containing the model
+	    kinematics corresponding to the external loads.-->
+	<external_loads_model_kinematics_file> subject01_walk1_ik.mot </external_loads_model_kinematics_file>
+	<!--Name of the body to which the first set of external loads should be
+	    applied (e.g., the name of the right foot).-->
+	<external_loads_body1> calcn_r </external_loads_body1>
+	<!--Name of the body to which the second set of external loads should be
+	    applied (e.g., the name of the left foot).-->
+	<external_loads_body2> calcn_l </external_loads_body2>
+	<!--Low-pass cut-off frequency for filtering the model kinematics
+	    corresponding to the external loads. A negative value results in no
+	    filtering. The default value is -1.0, so no filtering.-->
+	<lowpass_cutoff_frequency_for_load_kinematics> 6 </lowpass_cutoff_frequency_for_load_kinematics>
+	
+</AnalyzeTool>
+
