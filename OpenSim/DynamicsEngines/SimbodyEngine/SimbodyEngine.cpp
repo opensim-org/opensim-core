@@ -268,7 +268,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 		}
 
 		// ADD RIGID BODIES AND JOINTS
-		for(int nConstDof=0,int i=0;i<nDof;i++) {
+		int i=0;
+		for(int nConstDof=0;i<nDof;i++) {
 
 			// GET DOF
 			AbstractDof *dof = dofSet->get(i);
