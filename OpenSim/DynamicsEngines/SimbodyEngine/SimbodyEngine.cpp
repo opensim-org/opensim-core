@@ -138,7 +138,7 @@ void SimbodyEngine::constructMultibodySystem()
 	// Get the ground body
 	createGroundBodyIfNecessary();
 	SimbodyBody *ground = (SimbodyBody*)_bodySet.get(simbodyGroundName);
-
+	if (ground==NULL) return;
 	// Add rigid bodies
 	// This is a recursive method that attaches ALL bodies (children,
 	// grand children, etc. to the body sent in as the argument.
@@ -152,7 +152,7 @@ void SimbodyEngine::constructMultibodySystem()
 	_system->addForceSubsystem(*_userForceElements);
 	SimbodyOpenSimUserForces *osimForces = new SimbodyOpenSimUserForces(this);
 	_userForceElements->addUserForce(osimForces);
-
+	
 	// Realize the state
 	_system->realize(*_s,Stage::Velocity);
 
@@ -730,7 +730,7 @@ createGroundBodyIfNecessary()
 		ground = new SimbodyBody();
 		_bodySet.append(ground);
 	}
-
+    */
 	// Set member variables
 	ground->setName(simbodyGroundName);
 	// Mass
@@ -745,9 +745,8 @@ createGroundBodyIfNecessary()
 	ground->_id = SimTK::GroundId;
 	// Engine
 	ground->_engine = this;
-
 	// Set member variable and append to body set.
-	_groundBody = ground; */
+	_groundBody = ground;
 }
 
 
