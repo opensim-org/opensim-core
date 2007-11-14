@@ -151,6 +151,10 @@ void Schutte1993Muscle::setNull()
 	bindControl(0, _excitation, "excitation");
 	bindState(STATE_ACTIVATION, _activation, "activation");
 	bindState(STATE_FIBER_LENGTH, _fiberLength, "fiber_length");
+
+	_excitation = 0.0;
+	_activation = 0.0;
+	_fiberLength = 0.0;
 }
 
 //_____________________________________________________________________________
