@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/SimmMacros.h>
 
@@ -176,7 +177,7 @@ void SimmCoordinate::setupProperties(void)
 
 	_toleranceProp.setComment("Tolerance for a coordinate.");
 	_toleranceProp.setName("tolerance");
-	_toleranceProp.setValue(1e-6);
+	_toleranceProp.setValue(rdMath::SMALL);
 	_propertySet.append(&_toleranceProp);
 
 	_stiffnessProp.setComment("Stiffness of a coordinate.");
@@ -436,45 +437,42 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
  */
 bool SimmCoordinate::setValue(double aValue)
 {
-	// pull Value in range if it'd off by tolerance due to roundoff
-	if (_clamped){
+	// pull value into range if it's off by tolerance due to roundoff
+	if (_clamped) {
 		if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
 			aValue = _range[0];
 		else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
 			aValue = _range[1];
 	}
-	if (aValue >= _range[0] && aValue <= _range[1] || !_clamped)
-	{
+
+	if ((aValue >= _range[0] && aValue <= _range[1]) || !_clamped) {
 		// Check if the value is sufficiently different
 		if (DABS(aValue - _value) > _tolerance)
 		{
 			if (_locked) {
-				cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+				cout << "SimmCoordinate.setValue: WARN- Coordinate " << getName() << " is locked. Unable to change its value." << endl;
 				return false;
 			}
 
 			_value = aValue;
 
-			int i;
-			for (i = 0; i < _jointList.getSize(); i++)
+			for (int i = 0; i < _jointList.getSize(); i++)
 				_jointList[i]->invalidate();
 
 			int pListSize = _pathList.getSize();
-			for (i = 0; i < pListSize; i++)
+			for (int i = 0; i < pListSize; i++)
 				_pathList[i]->invalidate();
 
 			// TODO: use Observer mechanism for _jointList, _pathList, and muscles
 			ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
-			for (i = 0; i < act->getSize(); i++) {
+			for (int i = 0; i < act->getSize(); i++) {
 				AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
 				if (sm)
 					sm->invalidatePath();
 			}
 		}
-	}
-	else
-	{
-		cout << "___WARNING___: Attempting to set coordinate " << getName() << " to a value (" <<
+	} else {
+		cout << "SimmCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
 			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
 		return false;
 	}

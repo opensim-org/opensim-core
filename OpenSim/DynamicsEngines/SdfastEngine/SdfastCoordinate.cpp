@@ -30,6 +30,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
@@ -250,7 +251,7 @@ void SdfastCoordinate::setupProperties(void)
 	_propertySet.append(&_initialValueProp);
 
 	_toleranceProp.setName("tolerance");
-	_toleranceProp.setValue(0.0);
+	_toleranceProp.setValue(rdMath::SMALL);
 	_propertySet.append(&_toleranceProp);
 
 	_stiffnessProp.setName("stiffness");
@@ -497,31 +498,34 @@ double SdfastCoordinate::getValue() const
  */
 bool SdfastCoordinate::setValue(double aValue)
 {
-	if (_locked) {
-		cout << "___WARNING___: Coordinate " << getName() << " is locked. Unable to change its value." << endl;
-		return false;
+	// pull value into range if it's off by tolerance due to roundoff
+	if (_clamped) {
+		if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+			aValue = _range[0];
+		else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+			aValue = _range[1];
 	}
 
-	double* y = _SdfastEngine->getConfiguration();
-	if(y) {
-		if (DABS(aValue - y[_index]) > _tolerance) {
-			y[_index] = aValue;
+	if ((aValue >= _range[0] && aValue <= _range[1]) || !_clamped) {
+		// Check if the value is sufficiently different
+		if (DABS(aValue - getValue()) > _tolerance)
+		{
+			if (_locked) {
+				cout << "SdfastCoordinate.setValue: WARN- Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+				return false;
+			}
+
+			double* y = _SdfastEngine->getConfiguration();
+			if(y) {
+				y[_index] = aValue;
+				_SdfastEngine->setConfiguration(y);
+			}
+		} else {
+			cout << "SdfastCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
+				aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
+			return false;
 		}
-		_SdfastEngine->setConfiguration(y);
 	}
-
-#if 0
-	// When interacting with the model via the GUI (or calling a function like
-	// kinTest(), you need to execute the following code after changing a
-	// coordinate value. But you don't want to call this code if you're
-	// running a dynamic simulation. Maybe the solution is to leave this
-	// code active, and only call setValue() when you're not running a
-	// dynamic simulation (the simulation would call setConfiguration()).
-	_locked = true;
-	_SdfastEngine->assemble();
-	_locked = false;
-	_SdfastEngine->_sdstate(_SdfastEngine->getModel()->getTime(), y, &y[_SdfastEngine->getNumCoordinates()]);
-#endif
 
 	return true;
 }

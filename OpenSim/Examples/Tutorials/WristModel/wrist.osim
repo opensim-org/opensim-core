@@ -1513,7 +1513,7 @@
 				<SimmCoordinate name="elbow_flexion">
 					<range>0.000000000000 2.268928027593</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>e_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1523,7 +1523,7 @@
 				<SimmCoordinate name="flexion">
 					<range>-1.221730476396 1.221730476396</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>f_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1533,7 +1533,7 @@
 				<SimmCoordinate name="pro_sup">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>p_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1543,7 +1543,7 @@
 				<SimmCoordinate name="deviation">
 					<range>-0.436332312999 0.610865238198</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>v_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1553,7 +1553,7 @@
 				<SimmCoordinate name="MCP2_lateral">
 					<range>-0.349065850399 0.349065850399</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -1562,7 +1562,7 @@
 				<SimmCoordinate name="MCP2_flex">
 					<range>-0.174532925199 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>m_key</keys>
 					<clamped>true</clamped>
@@ -1572,7 +1572,7 @@
 				<SimmCoordinate name="PIP_flex">
 					<range>-0.087266462600 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -1581,7 +1581,7 @@
 				<SimmCoordinate name="DIP_flex">
 					<range>-0.087266462600 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -1590,7 +1590,7 @@
 				<SimmCoordinate name="thumb_abd">
 					<range>-0.785398163397 0.261799387799</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -1599,7 +1599,7 @@
 				<SimmCoordinate name="thumb_flex">
 					<range>-0.785398163397 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>

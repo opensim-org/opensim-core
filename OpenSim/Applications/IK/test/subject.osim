@@ -3565,7 +3565,7 @@
 				<SimmCoordinate name="lower_torso_TX">
 					<range>-10.000000000000 10.000000000000</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3574,7 +3574,7 @@
 				<SimmCoordinate name="lower_torso_TY">
 					<range>-10.000000000000 10.000000000000</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3583,7 +3583,7 @@
 				<SimmCoordinate name="lower_torso_TZ">
 					<range>-10.000000000000 10.000000000000</range>
 					<default_value>0.969000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3592,7 +3592,7 @@
 				<SimmCoordinate name="lower_torso_RX">
 					<range>-4.712388980385 4.712388980385</range>
 					<default_value>1.570796326795</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3601,7 +3601,7 @@
 				<SimmCoordinate name="lower_torso_RY">
 					<range>-4.712388980385 4.712388980385</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3610,7 +3610,7 @@
 				<SimmCoordinate name="lower_torso_RZ">
 					<range>-4.712388980385 4.712388980385</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>false</clamped>
 					<locked>false</locked>
@@ -3619,7 +3619,7 @@
 				<SimmCoordinate name="lumbar_roll">
 					<range>-0.785398163397 0.785398163397</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3640,7 +3640,7 @@
 				<SimmCoordinate name="lumbar_yaw">
 					<range>-1.047197551197 1.047197551197</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3661,7 +3661,7 @@
 				<SimmCoordinate name="lumbar_pitch">
 					<range>-0.785398163397 0.785398163397</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3682,7 +3682,7 @@
 				<SimmCoordinate name="neck_roll">
 					<range>-0.698131700798 0.698131700798</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3703,7 +3703,7 @@
 				<SimmCoordinate name="neck_yaw">
 					<range>-1.151917306316 1.151917306316</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3724,7 +3724,7 @@
 				<SimmCoordinate name="neck_pitch">
 					<range>-0.872664625997 1.256637061436</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3745,7 +3745,7 @@
 				<SimmCoordinate name="arm_add_r">
 					<range>-2.094395102393 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3766,7 +3766,7 @@
 				<SimmCoordinate name="arm_rot_r">
 					<range>-0.174532925199 0.174532925199</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3787,7 +3787,7 @@
 				<SimmCoordinate name="arm_flex_r">
 					<range>-0.785398163397 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3808,7 +3808,7 @@
 				<SimmCoordinate name="elbow_flex_r">
 					<range>0.000000000000 2.268928027593</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3829,7 +3829,7 @@
 				<SimmCoordinate name="pro_sup_r">
 					<range>0.872664625997 1.221730476396</range>
 					<default_value>1.047197551197</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3850,7 +3850,7 @@
 				<SimmCoordinate name="wrist_dev_r">
 					<range>-0.436332312999 0.610865238198</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3871,7 +3871,7 @@
 				<SimmCoordinate name="wrist_flex_r">
 					<range>-1.221730476396 1.221730476396</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3892,7 +3892,7 @@
 				<SimmCoordinate name="arm_add_l">
 					<range>-2.094395102393 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3913,7 +3913,7 @@
 				<SimmCoordinate name="arm_rot_l">
 					<range>-0.174532925199 0.174532925199</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3934,7 +3934,7 @@
 				<SimmCoordinate name="arm_flex_l">
 					<range>-0.785398163397 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3955,7 +3955,7 @@
 				<SimmCoordinate name="elbow_flex_l">
 					<range>0.000000000000 2.268928027593</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3976,7 +3976,7 @@
 				<SimmCoordinate name="pro_sup_l">
 					<range>0.872664625997 1.221730476396</range>
 					<default_value>1.047197551197</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -3997,7 +3997,7 @@
 				<SimmCoordinate name="wrist_dev_l">
 					<range>-0.436332312999 0.610865238198</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4018,7 +4018,7 @@
 				<SimmCoordinate name="wrist_flex_l">
 					<range>-1.221730476396 1.221730476396</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.010000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4039,7 +4039,7 @@
 				<SimmCoordinate name="hip_add_r">
 					<range>-0.872664625997 0.349065850399</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4060,7 +4060,7 @@
 				<SimmCoordinate name="hip_rot_r">
 					<range>-0.698131700798 0.698131700798</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4081,7 +4081,7 @@
 				<SimmCoordinate name="hip_flex_r">
 					<range>-0.191986217719 1.658062789395</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4102,7 +4102,7 @@
 				<SimmCoordinate name="knee_flex_r">
 					<range>-0.174532925199 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.200000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4123,7 +4123,7 @@
 				<SimmCoordinate name="ankle_flex_r">
 					<range>-0.523598775598 0.523598775598</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>2.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4144,7 +4144,7 @@
 				<SimmCoordinate name="subt_angle_r">
 					<range>-0.349065850399 0.349065850399</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>2.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4165,7 +4165,7 @@
 				<SimmCoordinate name="toe_angle_r">
 					<range>-0.523598775598 0.523598775598</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4186,7 +4186,7 @@
 				<SimmCoordinate name="hip_add_l">
 					<range>-0.872664625997 0.349065850399</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4207,7 +4207,7 @@
 				<SimmCoordinate name="hip_rot_l">
 					<range>-0.698131700798 0.698131700798</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4228,7 +4228,7 @@
 				<SimmCoordinate name="hip_flex_l">
 					<range>-0.191986217719 1.658062789395</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4249,7 +4249,7 @@
 				<SimmCoordinate name="knee_flex_l">
 					<range>-0.174532925199 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.200000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4270,7 +4270,7 @@
 				<SimmCoordinate name="ankle_flex_l">
 					<range>-0.523598775598 0.523598775598</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>2.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4291,7 +4291,7 @@
 				<SimmCoordinate name="subt_angle_l">
 					<range>-0.349065850399 0.349065850399</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>2.000000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>
@@ -4312,7 +4312,7 @@
 				<SimmCoordinate name="toe_angle_l">
 					<range>-0.523598775598 0.523598775598</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.100000000000</stiffness>
 					<clamped>true</clamped>
 					<locked>false</locked>

@@ -74,7 +74,7 @@
 				<SimbodyCoordinate name="pelvis_tx">
 					<range>-5.000000000000 5.000000000000</range>
 					<default_value>0.0</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>p_key</keys>
 					<clamped>true</clamped>
@@ -84,7 +84,7 @@
 				<SimbodyCoordinate name="pelvis_ty">
 					<range>-1.000000000000 2.000000000000</range>
 					<default_value>1.0</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -94,7 +94,7 @@
 				<SimbodyCoordinate name="pelvis_tz">
 					<range>-3.000000000000 3.000000000000</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -104,7 +104,7 @@
 				<SimbodyCoordinate name="pelvis_rz">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -114,7 +114,7 @@
 				<SimbodyCoordinate name="pelvis_rx">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -124,7 +124,7 @@
 				<SimbodyCoordinate name="pelvis_ry">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -135,7 +135,7 @@
 				<SimbodyCoordinate name="rhip_rz">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -145,7 +145,7 @@
 				<SimbodyCoordinate name="lhip_rz">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>

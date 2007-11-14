@@ -1137,7 +1137,7 @@ void AbstractMuscle::computeMomentArms(Array<double> &rMomentArms)
 double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 {
    double delta, originalValue, x[3], y[3];
-	bool clampedSave, lockedSave;
+	bool lockedSave;
 
 	// Make an array to hold the model's configuration.
 	Array<double> config(0.0, _model->getNumConfigurations());
@@ -1150,25 +1150,47 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 	else
 		delta = 0.00005; /* model units, assume meters (TODO) */
 
-	// Unclamp and unlock the gencoord so you can change it by +/- delta
-	// without worrying about hitting the end of the range.
-	clampedSave = aCoord.getClamped();
+	// Unlock the gencoord so you can change it by +/- delta
 	lockedSave = aCoord.getLocked();
 	aCoord.setClamped(false);
 	aCoord.setLocked(false);
 	originalValue = aCoord.getValue();
 
-	x[1] = originalValue;
-	y[1] = getLength();
+	double min, mid, max;
 
-	aCoord.setValue(originalValue - delta);
+	// Determine the 3 data points that will form the muscle-length spline
+	// which is used to calculate moment arm. These are usually +/- delta
+	// from the coordinate's original value, but you have to look out for
+	// hitting the ends of the coordinate's range of motion.
+	if (originalValue - delta < aCoord.getRangeMin()) {
+		min = originalValue;
+		mid = originalValue + delta;
+		max = mid + delta;
+	} else if (originalValue + delta > aCoord.getRangeMax()) {
+		max = originalValue;
+		mid = originalValue - delta;
+		min = mid - delta;
+	} else {
+		min = originalValue - delta;
+		mid = originalValue;
+		max = originalValue + delta;
+	}
+
+	aCoord.setValue(min);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[0] = aCoord.getValue();
 	y[0] = getLength();
 
-	aCoord.setValue(originalValue + 2.0 * delta);
+	aCoord.setValue(mid);
+	_model->getDynamicsEngine().getConfiguration(&config[0]);
+	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
+	_model->getDynamicsEngine().setConfiguration(&config[0]);
+	x[1] = aCoord.getValue();
+	y[1] = getLength();
+
+	aCoord.setValue(max);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
@@ -1180,7 +1202,6 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
-	aCoord.setClamped(clampedSave);
 	aCoord.setLocked(lockedSave);
 
 	// Make a spline function with room for 3 points, to hold the muscle

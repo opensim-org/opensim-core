@@ -30,8 +30,9 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/SimmMacros.h>
 //#include <OpenSim/Common/SimmIO.h>
-//#include <OpenSim/Common/SimmMacros.h>
 
 //=============================================================================
 // STATICS
@@ -220,7 +221,7 @@ void SimbodyCoordinate::setupProperties(void)
 	_propertySet.append(&_initialValueProp);
 
 	_toleranceProp.setName("tolerance");
-	_toleranceProp.setValue(0.0);
+	_toleranceProp.setValue(rdMath::SMALL);
 	_propertySet.append(&_toleranceProp);
 
 	_stiffnessProp.setName("stiffness");
@@ -386,21 +387,39 @@ double SimbodyCoordinate::getValue() const
 bool SimbodyCoordinate::setValue(double aValue) { return setValue(aValue, true); }
 bool SimbodyCoordinate::setValue(double aValue, bool aRealize)
 {
-	if (_locked) {
-		cout<<"SimbodyCoordinate.setValue: WARN- coordinate "<<getName();
-		cout<<" is locked. Unable to change its value." << endl;
-		if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
-		return false;
+	// pull value into range if it's off by tolerance due to roundoff
+	if (_clamped) {
+		if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+			aValue = _range[0];
+		else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+			aValue = _range[1];
 	}
-	_engine->resetBodyAndMobilityForceVectors();
-	_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
-	if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
 
-	// TODO: use Observer mechanism for _jointList, _pathList, and muscles
-	ActuatorSet* act = _engine->getModel()->getActuatorSet();
-	for(int i=0; i<act->getSize(); i++) {
-		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
-		if(sm) sm->invalidatePath();
+	if ((aValue >= _range[0] && aValue <= _range[1]) || !_clamped) {
+		// Check if the value is sufficiently different
+		if (DABS(aValue - getValue()) > _tolerance)
+		{
+			if (_locked) {
+				cout<<"SimbodyCoordinate.setValue: WARN- coordinate "<<getName();
+				cout<<" is locked. Unable to change its value." << endl;
+				if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
+				return false;
+			}
+			_engine->resetBodyAndMobilityForceVectors();
+			_engine->_matter->setMobilizerQ(*(_engine->_s),_bodyId,_mobilityIndex,aValue);
+			if(aRealize) _engine->_matter->realize(*(_engine->_s),Stage::Velocity);
+
+			// TODO: use Observer mechanism for _jointList, _pathList, and muscles
+			ActuatorSet* act = _engine->getModel()->getActuatorSet();
+			for(int i=0; i<act->getSize(); i++) {
+				AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
+				if(sm) sm->invalidatePath();
+			}
+		}
+	} else {
+		cout << "SimbodyCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
+			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
+		return false;
 	}
 
 	return true;

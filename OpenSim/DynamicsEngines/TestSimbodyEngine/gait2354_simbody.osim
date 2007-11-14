@@ -1574,7 +1574,7 @@
 				<SimbodyCoordinate name="pelvis_tx">
 					<range>-5.000000000000 5.000000000000</range>
 					<default_value>0.120000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>p_key</keys>
 					<clamped>true</clamped>
@@ -1584,7 +1584,7 @@
 				<SimbodyCoordinate name="pelvis_ty">
 					<range>-1.000000000000 2.000000000000</range>
 					<default_value>0.930000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1594,7 +1594,7 @@
 				<SimbodyCoordinate name="pelvis_tz">
 					<range>-3.000000000000 3.000000000000</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1604,7 +1604,7 @@
 				<SimbodyCoordinate name="pelvis_list">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1614,7 +1614,7 @@
 				<SimbodyCoordinate name="pelvis_rotation">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1624,7 +1624,7 @@
 				<SimbodyCoordinate name="pelvis_tilt">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1634,7 +1634,7 @@
 				<SimbodyCoordinate name="hip_flexion_r">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1644,7 +1644,7 @@
 				<SimbodyCoordinate name="hip_adduction_r">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1654,7 +1654,7 @@
 				<SimbodyCoordinate name="hip_rotation_r">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1664,7 +1664,7 @@
 				<SimbodyCoordinate name="knee_angle_r">
 					<range>-2.094395102393 0.174532925199</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>k_key</keys>
 					<clamped>true</clamped>
@@ -1674,7 +1674,7 @@
 				<SimbodyCoordinate name="ankle_angle_r">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>a_key</keys>
 					<clamped>true</clamped>
@@ -1684,7 +1684,7 @@
 				<SimbodyCoordinate name="subtalar_angle_r">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>a_key</keys>
 					<clamped>true</clamped>
@@ -1694,7 +1694,7 @@
 				<SimbodyCoordinate name="mtp_angle_r">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>t_key</keys>
 					<clamped>true</clamped>
@@ -1704,7 +1704,7 @@
 				<SimbodyCoordinate name="hip_flexion_l">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1714,7 +1714,7 @@
 				<SimbodyCoordinate name="hip_adduction_l">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1724,7 +1724,7 @@
 				<SimbodyCoordinate name="hip_rotation_l">
 					<range>-2.094395102393 2.094395102393</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>h_key leftmouse_button</keys>
 					<clamped>true</clamped>
@@ -1734,7 +1734,7 @@
 				<SimbodyCoordinate name="knee_angle_l">
 					<range>-2.094395102393 0.174532925199</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>k_key</keys>
 					<clamped>true</clamped>
@@ -1744,7 +1744,7 @@
 				<SimbodyCoordinate name="ankle_angle_l">
 					<range>-1.047197551197 1.047197551197</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>a_key</keys>
 					<clamped>true</clamped>
@@ -1754,7 +1754,7 @@
 				<SimbodyCoordinate name="subtalar_angle_l">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>a_key</keys>
 					<clamped>true</clamped>
@@ -1764,7 +1764,7 @@
 				<SimbodyCoordinate name="mtp_angle_l">
 					<range>-1.047197551197 1.047197551197</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>t_key</keys>
 					<clamped>true</clamped>
@@ -1774,7 +1774,7 @@
 				<SimbodyCoordinate name="lumbar_extension">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1784,7 +1784,7 @@
 				<SimbodyCoordinate name="lumbar_bending">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -1794,7 +1794,7 @@
 				<SimbodyCoordinate name="lumbar_rotation">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>

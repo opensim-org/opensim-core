@@ -192,7 +192,8 @@ bool MuscleViaPoint::isActive() const
 	if (_coordinate)
 	{
 		double value = _coordinate->getValue();
-		if (value >= _range[0] && value <= _range[1])
+		if (value >= _range[0] - _coordinate->getTolerance() &&
+			 value <= _range[1] + _coordinate->getTolerance())
 			return true;
 	}
 

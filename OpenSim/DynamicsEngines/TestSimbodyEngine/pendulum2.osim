@@ -121,7 +121,7 @@
 					<SimbodyCoordinate name="PendulumAxis">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -137,7 +137,7 @@
 					<SimbodyCoordinate name="Pendulum2Axis">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>

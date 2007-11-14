@@ -130,7 +130,7 @@
 					<SimbodyCoordinate name="Pendulum_tx">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -145,7 +145,7 @@
 					<SimbodyCoordinate name="Pendulum_ty">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -161,7 +161,7 @@
 					<SimbodyCoordinate name="Pendulum_tz">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -176,7 +176,7 @@
 					<SimbodyCoordinate name="Pendulum_r1">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.10000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -191,7 +191,7 @@
 					<SimbodyCoordinate name="Pendulum_r2">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>
@@ -206,7 +206,7 @@
 					<SimbodyCoordinate name="Pendulum_r3">
 						<default_value>       0.00000000 </default_value>
 						<initial_value>       0.00000000 </initial_value>
-						<tolerance>       0.00000000 </tolerance>
+						<tolerance>       0.00000001 </tolerance>
 						<stiffness>       0.00000000 </stiffness>
 						<range> -999999.90000000  999999.90000000 </range>
 						<keys> </keys>

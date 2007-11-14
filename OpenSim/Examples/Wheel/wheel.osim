@@ -58,7 +58,7 @@
 				<SimbodyCoordinate name="wheel_tx">
 					<range>-5.000000000000 5.000000000000</range>
 					<default_value>0.0</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>p_key</keys>
 					<clamped>true</clamped>
@@ -68,7 +68,7 @@
 				<SimbodyCoordinate name="wheel_ty">
 					<range>-1.000000000000 2.000000000000</range>
 					<default_value>1.0</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -78,7 +78,7 @@
 				<SimbodyCoordinate name="wheel_tz">
 					<range>-3.000000000000 3.000000000000</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -88,7 +88,7 @@
 				<SimbodyCoordinate name="wheel_rz">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -98,7 +98,7 @@
 				<SimbodyCoordinate name="wheel_rx">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
@@ -108,7 +108,7 @@
 				<SimbodyCoordinate name="wheel_ry">
 					<range>-1.570796326795 1.570796326795</range>
 					<default_value>0.000000000000</default_value>
-					<tolerance>0.000000000000</tolerance>
+					<tolerance>0.000000010000</tolerance>
 					<stiffness>0.000000000000</stiffness>
 					<keys>q_key</keys>
 					<clamped>true</clamped>
