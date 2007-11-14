@@ -270,30 +270,37 @@ void MovingMusclePoint::update()
 void MovingMusclePoint::getVelocity(double aVelocity[3])
 {
     // Get the generalized speed associated with moving muscle point
-	double speed;
+	AbstractSpeed* speed;
+	double speedValue;
 	
 	SpeedSet *speeds = _body->getDynamicsEngine()->getSpeedSet();
 
 	if (_xCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_xCoordinateName))->getValue();
+		speed = speeds->get(AbstractSpeed::getSpeedName(_xCoordinateName));
+		if (speed) speedValue = speed->getValue();
+		else speedValue = 0.0;
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[0] = _xAttachment->evaluate(1, _xCoordinate->getValue(), 0.0, 0.0)*speed;
+		aVelocity[0] = _xAttachment->evaluate(1, _xCoordinate->getValue(), 0.0, 0.0)*speedValue;
 	}
 	else
 		aVelocity[0] = 0.0;
 
 	if (_yCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_yCoordinateName))->getValue();
+		speed = speeds->get(AbstractSpeed::getSpeedName(_yCoordinateName));
+		if (speed) speedValue = speed->getValue();
+		else speedValue = 0.0;
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[1] = _yAttachment->evaluate(1, _yCoordinate->getValue(), 0.0, 0.0)*speed;
+		aVelocity[1] = _yAttachment->evaluate(1, _yCoordinate->getValue(), 0.0, 0.0)*speedValue;
 	}
 	else
 		aVelocity[1] = 0.0;
 
 	if (_zCoordinate){
-		speed = speeds->get(AbstractSpeed::getSpeedName(_zCoordinateName))->getValue();
+		speed = speeds->get(AbstractSpeed::getSpeedName(_zCoordinateName));
+		if (speed) speedValue = speed->getValue();
+		else speedValue = 0.0;
 		//Multiply the partial (derivative of point coordinate w.r.t. gencoord) by genspeed
-		aVelocity[2] = _zAttachment->evaluate(1, _zCoordinate->getValue(), 0.0, 0.0);
+		aVelocity[2] = _zAttachment->evaluate(1, _zCoordinate->getValue(), 0.0, 0.0)*speedValue;
 	}
 	else
 		aVelocity[2] = 0.0;
