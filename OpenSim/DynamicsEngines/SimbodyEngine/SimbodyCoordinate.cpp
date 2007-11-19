@@ -397,7 +397,12 @@ bool SimbodyCoordinate::setValue(double aValue, bool aRealize)
 
 	if ((aValue >= _range[0] && aValue <= _range[1]) || !_clamped) {
 		// Check if the value is sufficiently different
-		if (DABS(aValue - getValue()) > _tolerance)
+		// JPL 11/19/07: For some reason, when solving a frame of marker data,
+		// Ipopt needs to be able to set a coordinate to its current value
+		// or it will crash (so even a tolerance of 0.0 does not work). So
+		// for now, do not check against tolerance.
+		//	if (DABS(aValue - getValue()) > _tolerance)
+		if (1)
 		{
 			if (_locked) {
 				cout<<"SimbodyCoordinate.setValue: WARN- coordinate "<<getName();
