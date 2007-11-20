@@ -1,4 +1,8 @@
 function compute_netMuscleMoments( resultsMuscleAnalysisDir, name )
+%
+% The output file will be
+% resultsMuscleAnalysisDir\name_NET_Muscle_Moments.sto
+%
 
 % These are the column labels for all generalized coordinates.
 gencoordColumnLabels = { 'pelvis_tx' 'pelvis_ty' 'pelvis_tz' ...
