@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.5.0_06" class="java.beans.XMLDecoder"> 
+ <object class="org.opensim.view.ModelSettings"> 
+  <void property="poses"> 
+   <void method="add"> 
+    <object class="org.opensim.view.ModelPose"> 
+     <void property="coordinateNames"> 
+      <void method="add"> 
+       <string>pelvis_tx</string> 
+      </void> 
+      <void method="add"> 
+       <string>pelvis_ty</string> 
+      </void> 
+      <void method="add"> 
+       <string>pelvis_tz</string> 
+      </void> 
+      <void method="add"> 
+       <string>pelvis_tilt</string> 
+      </void> 
+      <void method="add"> 
+       <string>pelvis_list</string> 
+      </void> 
+      <void method="add"> 
+       <string>pelvis_rotation</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_flexion_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_adduction_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_rotation_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>knee_angle_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>ankle_angle_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>subtalar_angle_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>mtp_angle_r</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_flexion_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_adduction_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>hip_rotation_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>knee_angle_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>ankle_angle_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>subtalar_angle_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>mtp_angle_l</string> 
+      </void> 
+      <void method="add"> 
+       <string>lumbar_extension</string> 
+      </void> 
+      <void method="add"> 
+       <string>lumbar_bending</string> 
+      </void> 
+      <void method="add"> 
+       <string>lumbar_rotation</string> 
+      </void> 
+     </void> 
+     <void property="coordinateValues"> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.93</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+      <void method="add"> 
+       <double>0.0</double> 
+      </void> 
+     </void> 
+     <void property="poseName"> 
+      <string>Default</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+ </object> 
+</java> 
