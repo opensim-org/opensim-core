@@ -831,7 +831,7 @@ bool ForwardTool::run()
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
 
 	// CORRECTIVE SPRINGS
-	if(_yStore!=NULL) {
+	if(_yStore!=NULL && !( _externalLoadsBody1=="") && !( _externalLoadsBody2=="")) {
 		Storage qStore,uStore;
 		_model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
 		AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
