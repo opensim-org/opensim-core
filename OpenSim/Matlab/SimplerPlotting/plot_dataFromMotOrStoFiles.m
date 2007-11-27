@@ -104,6 +104,11 @@ if plotSettings.plotLiteratureMoments
     leftAnkleFlexionCappozzo = momentDataArray(4:25, 21);
     rightAnkleFlexionInman    = leftAnkleFlexionInman;
     rightAnkleFlexionCappozzo = leftAnkleFlexionCappozzo;
+    
+    % Lumbar bending and lumbar rotation in Cappozzo (1983) use opposite
+    % sign conventions to our simulations.
+    origLumbarBending = -origLumbarBending;
+    origLumbarRotation = -origLumbarRotation;
 
     % Scale and interpolate back moment data columns to go from being expressed
     % as functions of cappozzoTimesH and cappozzoTimesB to gaitCycleTimes.  Do
