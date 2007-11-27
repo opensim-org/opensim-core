@@ -76,6 +76,19 @@
 	    usually necessary to being a simulation from an exact set of states.
 	    Instead, the closest earlier set of states is used.-->
 	<states_file> ResultsCMC/subject01_standing_states.sto </states_file>
+	<!--Storage file (.sto) containing the initial pseudo states for the forward simulation.
+	    Pseudostates are quantities that are not integrated, but never-the-less are dependent
+	    on the time history of simulation.  Examples, are the spring zeros for contact elements.
+	    This file often contains multiple rows of data, each row being a time-stamped array of pseudostates.
+	    The first column contains the time.  The rest of the columns contain the states in the order
+	    appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing
+	    is allowed.  If the user-specified initial time for a simulation does not correspond exactly to
+	    one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to
+	    being a simulation from an exact set of states.  Instead, the closest earlier set of pseudostates is used.
+	    Having a pseudostates file that contains the entire trajectory of a simulations allows for corrective
+	    springs for perturbation analysis to be added. The time stamps in a pseudostates file should
+	    match the time stamps in its companion states file.-->
+	<pseudo_states_file> ResultsCMC/subject01_standing_pseudo.sto </pseudo_states_file>
 	<!--Flag (true or false) indicating whether or not the integrator should
 	    use a particular time stepping.  If true, the time stepping is
 	    extracted from the initial states file.  In this situation, therefore,
@@ -85,7 +98,7 @@
 	    previous forward simulation with as little drift as possible.  If this
 	    flag is false, the integrator is left to determine its own time
 	    stepping.-->
-	<use_specified_dt> false </use_specified_dt>
+	<use_specified_dt> true </use_specified_dt>
 		
 </ForwardTool>
 
