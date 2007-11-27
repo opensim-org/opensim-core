@@ -53,8 +53,8 @@
 #include "rdActuatorForceTarget.h"
 
 using namespace std;
-using namespace OpenSim;
 using SimTK::Vector;
+using namespace OpenSim;
 
 
 //=============================================================================
@@ -880,7 +880,7 @@ computeControls(double &rDT,double aT,const double *aY,
 	// OPTIMIZER ERROR TRAP
 	_f.setSize(N);
 	bool success=false;
-	const int optTryLimit=3;
+	const int optTryLimit=0;	//try at most 3 times
 	for(int optTrys=0;!success;optTrys++) {
 
 		if(!_target->prepareToOptimize(&_f[0])) {
@@ -907,7 +907,7 @@ computeControls(double &rDT,double aT,const double *aY,
 			break;
 
 		// Too many trys
-		} else if(optTrys>=optTryLimit) {
+		} else if(optTrys>optTryLimit) {
 			cout<<endl;
 			char tmp[1024],msg[1024];
 			strcpy(msg,"rdCMC.computeControls:  WARN- The optimizer could not find ");
@@ -915,9 +915,10 @@ computeControls(double &rDT,double aT,const double *aY,
 			strcat(msg,tmp);
 			strcat(msg,"If using the fast target, try using the slow target.\n");
 			strcat(msg,"Starting at a slightly different initial time may also help.\n");
-			strcat(msg,tmp);
+			
 			cout<<"\n"<<msg<<endl<<endl;
-			throw(new Exception(msg));
+			string msgString = string(msg);
+			throw(new Exception(msg, __FILE__,__LINE__));
 
 		// Try again
 		} else {
