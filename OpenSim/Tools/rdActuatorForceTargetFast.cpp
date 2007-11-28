@@ -34,9 +34,16 @@
 #include <iostream>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+
+#include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Simulation/Model/AbstractActuator.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+
 #include "rdActuatorForceTargetFast.h"
 #include "rdCMC_TaskSet.h"
 #include "rdCMC.h"
+
+#include <OpenSim/Common/Storage.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -90,7 +97,10 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	_dqdt.setSize(nq);
 	_dudt.setSize(nu);
 	_recipAreaSquared.setSize(na);
+	_recipOptForceSquared.setSize(na);
+	_recipAvgActForceRangeSquared.setSize(na);
 
+	
 	int nConstraints = _controller->getTaskSet()->getNumActiveTaskFunctions();
 
 	// NUMBERS OF CONSTRAINTS
@@ -119,6 +129,7 @@ bool rdActuatorForceTargetFast::
 prepareToOptimize(double *x)
 {
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
+	//cout<<"Computing linear constraint matrix..."<<endl;
 	Model *model = _controller->getModel();
 	int nf = model->getNumActuators();
 	int nc = getNumConstraints();
@@ -139,6 +150,29 @@ prepareToOptimize(double *x)
 		f[j] = 0;
 	}
 #endif
+
+	// COMPUTE MAX ISOMETRIC FORCE
+	ActuatorSet *actSet = model->getActuatorSet();
+	Array<double> y(0.0,model->getNumStates());
+	model->getStates(&y[0]);
+	AbstractActuator *act;
+	AbstractMuscle *mus;
+	double fOpt;
+	int na = model->getNumActuators();
+	for(int i=0;i<na;i++) {
+		act = actSet->get(i);
+		mus = dynamic_cast<AbstractMuscle*>(act);
+		if(mus==NULL) {
+			fOpt = 1.0e-4;
+		} else {
+			double activation = 1.0;
+			fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(activation);
+			if(rdMath::IsZero(fOpt)) fOpt = 1.0e-4;
+		}
+		_recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);
+	}
+	model->setStates(&y[0]);
+
 
 	// return false to indicate that we still need to proceed with optimization (did not do a lapack direct solve)
 	return false;
@@ -166,10 +200,20 @@ prepareToOptimize(double *x)
 int rdActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-	int nx = getNumParameters();
-	double p = 0;
-	for(int i=0;i<nx;i++) {
-		p += _recipAreaSquared[i] * aF[i] * aF[i];
+	Model *model = _controller->getModel();
+	ActuatorSet *actSet = model->getActuatorSet();
+	AbstractActuator *act;
+	AbstractMuscle *mus;
+	int na = model->getNumActuators();
+	double p = 0.0;
+	for(int i=0;i<na;i++) {
+		act = actSet->get(i);
+		mus = dynamic_cast<AbstractMuscle*>(act);
+		if(mus==NULL) {
+			p +=  aF[i] * aF[i] *  _recipAreaSquared[i];
+		} else {
+			p +=  aF[i] * aF[i] * _recipOptForceSquared[i];
+		}
 	}
 	rP = p;
 
@@ -186,9 +230,19 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int rdActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-	int nx = getNumParameters();
-	for(int i=0;i<nx;i++) {
-		gradient[i] = 2.0 * _recipAreaSquared[i] * x[i];
+	Model *model = _controller->getModel();
+	ActuatorSet *actSet = model->getActuatorSet();
+	AbstractActuator *act;
+	AbstractMuscle *mus;
+	int na = model->getNumActuators();
+	for(int i=0;i<na;i++) {
+		act = actSet->get(i);
+		mus = dynamic_cast<AbstractMuscle*>(act);
+		if(mus==NULL) {
+			gradient[i] =  2.0 * x[i] * _recipAreaSquared[i];
+		} else {
+			gradient[i] =  2.0 * x[i] * _recipOptForceSquared[i];
+		}
 	}
 
 	return(0);
@@ -218,6 +272,7 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 #else
 
 	// Use precomputed constraint matrix
+	//cout<<"Computing constraints assuming linear dependence..."<<endl;
 	constraints = _constraintMatrix * x + _constraintVector;
 
 #endif
@@ -293,6 +348,7 @@ constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::M
 #else
 
 	// Use precomputed constraint matrix (works if constraint is linear)
+	//cout<<"Computing constraint gradient assuming linear dependence..."<<endl;
 	jac = _constraintMatrix;
 
 #endif

@@ -36,6 +36,7 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/rdOptimizationTarget.h>
 #include <SimTKcommon.h>
+#include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
 
@@ -87,6 +88,10 @@ private:
 	Array<double> _dudt;
 	/** Reciprocal of actuator area squared. */
 	Array<double> _recipAreaSquared;
+	/** Reciprocal of optimal force squared accounting for force-length curve if actuator is a muscle. */
+	Array<double> _recipOptForceSquared;
+	
+	Array<double> _recipAvgActForceRangeSquared;
 
 	SimTK::Matrix _constraintMatrix;
 	SimTK::Vector _constraintVector;

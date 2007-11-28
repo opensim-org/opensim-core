@@ -474,13 +474,19 @@ computeInitialStates(double &rTI,double *rYI)
 	ControlSet *predictorControlSet = (_predictor && _predictor->getIntegrand()) ? _predictor->getIntegrand()->getControlSet() : 0;
 	for(i=0;i<nx;i++) {
 		ControlConstant *x = new ControlConstant();
+		//ControlLinear *x = new ControlLinear();
 		x->setName(_model->getControlName(i));
 		x->setIsModelControl(true);
 		// This is not a very good way to set the bounds on the controls because ConrtolConstant only supports constant
 		// min/max bounds but we may have time-dependent min/max curves specified in the controls constraints file
 		if(predictorControlSet) {
-			x->setDefaultParameterMin(predictorControlSet->get(i)->getDefaultParameterMin());
-			x->setDefaultParameterMax(predictorControlSet->get(i)->getDefaultParameterMax());
+			Control *xPredictor = predictorControlSet->get(i);
+			x->setDefaultParameterMin(xPredictor->getDefaultParameterMin());
+			x->setDefaultParameterMax(xPredictor->getDefaultParameterMax());
+			double xmin = xPredictor->getControlValueMin(tiReal);
+			if(xmin != rdMath::NAN) x->setControlValueMin(tiReal,xmin);
+			double xmax = xPredictor->getControlValueMax(tiReal);
+			if(xmax != rdMath::NAN) x->setControlValueMax(tiReal,xmax);
 		}
 		xiSet.append(x);
 	}
@@ -492,6 +498,7 @@ computeInitialStates(double &rTI,double *rYI)
 
 	// ACTUATOR EQUILIBRIUM
 	// 1
+
 	obtainActuatorEquilibrium(tiReal,0.200,xmin,y,true);
 	restoreConfiguration(nqnu,&yi[0],&y[0]);
 	_model->setInitialStates(&y[0]);
@@ -886,7 +893,8 @@ computeControls(double &rDT,double aT,const double *aY,
 		if(!_target->prepareToOptimize(&_f[0])) {
 			// No direct solution, need to run optimizer
 			Vector fVector(N,&_f[0],true);
-			success=true;
+
+			 success=true;
 			try {
 				_optimizer->optimize(fVector);
 			}

@@ -910,14 +910,10 @@ double Thelen2003Muscle::
 computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation)
 {
 	double isometricForce = computeIsometricForce(aActivation);
-
 	double normalizedLength = _fiberLength / _optimalFiberLength;
 	double normalizedVelocity = - _speed / (_vmax * _optimalFiberLength);
-	cout<<getName()<<"normVel="<<normalizedVelocity;
 	normalizedVelocity *= cos(_pennationAngle);
-	cout<<"  normVelWithPenn="<<normalizedVelocity;
-	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,normalizedLength,normalizedVelocity);
-	cout<<"  fvFactor="<<normalizedForceVelocity<<endl;
-
+	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
+	
 	return isometricForce * normalizedForceVelocity;
 }
