@@ -925,7 +925,6 @@ updateDefaultObjectsFromXMLNode()
 		object->setXMLNode(elmt);
 		object->updateFromXMLNode();
 		object->setName(DEFAULT_NAME);
-		object->clearXMLStructures();
 		RegisterType(*object);
 		delete object;
 	}
