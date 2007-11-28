@@ -78,7 +78,7 @@ Object::~Object()
 {
 	delete _observable;
 	if(_node) XMLNode::RemoveElementFromParent(_node);
-	delete _document;
+	//delete _document;
 }
 
 //_____________________________________________________________________________
@@ -925,7 +925,7 @@ updateDefaultObjectsFromXMLNode()
 		object->setXMLNode(elmt);
 		object->updateFromXMLNode();
 		object->setName(DEFAULT_NAME);
-		//object->clearXMLStructures();
+		object->clearXMLStructures();
 		RegisterType(*object);
 		delete object;
 	}
