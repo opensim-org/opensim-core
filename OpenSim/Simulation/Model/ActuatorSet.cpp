@@ -355,10 +355,8 @@ append(AbstractActuator *aActuator)
 	bool success = Set<AbstractActuator>::append(aActuator);
 
 
-	if(success) {
-		// individual actuators keep pointers to model as well!! 
+	if((success)&&(_model!=NULL)) {
 		aActuator->setModel(_model);
-
 		constructMaps();
 	}
 
