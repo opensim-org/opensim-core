@@ -35,6 +35,8 @@ using namespace std;
  */
 ForwardTool::~ForwardTool()
 {
+	if(_yStore!=NULL) delete _yStore;
+	if(_ypStore!=NULL) delete _ypStore;
 	delete _integrand;
 }
 //_____________________________________________________________________________
@@ -45,6 +47,7 @@ ForwardTool::ForwardTool() :
 	AbstractTool(),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
+	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
@@ -90,6 +93,7 @@ ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
+	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
@@ -165,6 +169,7 @@ ForwardTool(const ForwardTool &aTool) :
 	AbstractTool(aTool),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
+	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
@@ -222,6 +227,7 @@ setNull()
 	// BASIC
 	_controlsFileName = "";
 	_statesFileName = "";
+	_pseudoFileName = "";
 	_useSpecifiedDt = false;
 	_printResultFiles = true;
 
@@ -259,7 +265,8 @@ setNull()
 
 	// INTERNAL WORK VARIABLES
 	_integrand = NULL;
-	_yStore = NULL;	
+	_yStore = NULL;
+	_ypStore = NULL;
 	_body1Lin = NULL;
 	_body2Lin = NULL;
 	_body1Tor = NULL;
@@ -291,6 +298,22 @@ void ForwardTool::setupProperties()
 	_statesFileNameProp.setComment(comment);
 	_statesFileNameProp.setName("states_file");
 	_propertySet.append( &_statesFileNameProp );
+
+	comment = "Storage file (.sto) containing the initial pseudo states for the forward simulation. "
+				 "Pseudostates are quantities that are not integrated, but never-the-less are dependent "
+				 "on the time history of simulation.  Examples, are the spring zeros for contact elements. "
+				 "This file often contains multiple rows of data, each row being a time-stamped array of pseudostates. "
+				 "The first column contains the time.  The rest of the columns contain the states in the order "
+				 "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
+				 "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
+				 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
+				 "being a simulation from an exact set of states.  Instead, the closest earlier set of pseudostates is used. "
+				 "Having a pseudostates file that contains the entire trajectory of a simulations allows for corrective "
+				 "springs for perturbation analysis to be added. The time stamps in a pseudostates file should "
+				 "match the time stamps in its companion states file.";
+	_pseudoFileNameProp.setComment(comment);
+	_pseudoFileNameProp.setName("pseudo_states_file");
+	_propertySet.append( &_pseudoFileNameProp );
 
 	comment = "Flag (true or false) indicating whether or not the integrator should "
 				 "use a particular time stepping.  If true, the time stepping is extracted "
@@ -695,6 +718,7 @@ operator=(const ForwardTool &aTool)
 	// BASIC INPUT
 	_controlsFileName = aTool._controlsFileName;
 	_statesFileName = aTool._statesFileName;
+	_pseudoFileName = aTool._pseudoFileName;
 	_useSpecifiedDt = aTool._useSpecifiedDt;
 
 	// EXTERNAL LOADS
@@ -780,6 +804,13 @@ bool ForwardTool::run()
 		cout<<"Found "<<_yStore->getSize()<<" state vectors with time stamps ranging"<<endl;
 		cout<<"from "<<_yStore->getFirstTime()<<" to "<<_yStore->getLastTime()<<"."<<endl;
 	}
+	// Initial pseudo states
+	if(_pseudoFileName!="") {
+		cout<<"\nLoading pseudo states from file "<<_pseudoFileName<<"."<<endl;
+		_ypStore = new Storage(_pseudoFileName);
+		cout<<"Found "<<_ypStore->getSize()<<" rows with time stamps ranging"<<endl;
+		cout<<"from "<<_ypStore->getFirstTime()<<" to "<<_ypStore->getLastTime()<<"."<<endl;
+	}
 
 	// INITIAL AND FINAL TIMES
 	// From initial states...
@@ -799,6 +830,24 @@ bool ForwardTool::run()
 				cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<_ti<<endl;
 				cout<<"to agree exactly with the time stamp of the closest initial states in file ";
 				cout<<_statesFileName<<".\n\n";
+			}
+		}
+	}
+
+	// Check pseudo states...
+	int pIndex = -1;
+	bool interpolatePseudo = false;
+	if(_ypStore!=NULL) {
+		pIndex = _ypStore->findIndex(_ti);
+		if(pIndex<0) {
+			cout<<"\n\nWARN- The pseudo states file does not contain a time range that overlaps\n";
+			cout<<"the time range of the states file.  RUNNING without pseudo sates.\n\n";
+		} else {
+			_ypStore->getTime(pIndex,ti);
+			if(ti!=_ti) {
+				cout<<"\n\nWARN- The time stamp in the pseudo states file does not match the time stamp\n";
+				cout<<"in the states file.  Interpolating to get the pseudo states.\n\n";
+				interpolatePseudo = true;
 			}
 		}
 	}
@@ -824,6 +873,7 @@ bool ForwardTool::run()
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
+	int nyp = _model->getNumPseudoStates();
 
 	// GROUND REACTION FORCES
 	ForceApplier *body1Force,*body2Force;
@@ -892,15 +942,26 @@ bool ForwardTool::run()
 		}
 	}
 
-	// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
-	Array<double> yi(0.0,ny);
-	if(_yStore!=NULL) _yStore->getData(index,ny,&yi[0]);
+	// SET INITIAL AND FINAL TIME
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
-	if (index >= 0) {
+
+	// SET THE INITIAL STATES and PSEUDO STATES
+	Array<double> yi(0.0,ny);
+	if(_yStore!=NULL) _yStore->getData(index,ny,&yi[0]);
+	if(index >= 0) {
 		Array<double> yi(0.0,ny);
 		_yStore->getData(index,ny,&yi[0]);
 		_model->setInitialStates(&yi[0]);
+	}
+	if(pIndex >= 0) {
+		Array<double> ypi(0.0,nyp);
+		if(!interpolatePseudo) {
+			_ypStore->getData(pIndex,nyp,&ypi[0]);
+		} else {
+			_ypStore->getData(_ti,nyp,&ypi[0]);
+		}
+		_model->setInitialPseudoStates(&ypi[0]);
 	}
 
 	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)

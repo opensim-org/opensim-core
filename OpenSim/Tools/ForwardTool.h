@@ -53,6 +53,14 @@ protected:
 	springs, which allow perturbations, can be added to the simulation. */
 	PropertyStr _statesFileNameProp;
 	std::string &_statesFileName;
+	/** Name of the pseudostates file. Pseudostates are variables that are not
+	integrated but that are dependent on the time history of a simulation.
+	Typically, these are things like the set points for contact elements
+	for example.  The pseudostates file must at a minimum contain the
+	initial pseudostates for a simulation.  The time stamp on these
+	states should match the time stamp in the states file exactly. */
+	PropertyStr _pseudoFileNameProp;
+	std::string &_pseudoFileName;
 	/** If true, the time steps from the states file are used during
 	current integration. */
 	OpenSim::PropertyBool _useSpecifiedDtProp;
@@ -158,6 +166,8 @@ protected:
 	ModelIntegrand *_integrand;
 	/** Storage for the input states. */
 	Storage *_yStore;
+	/** Storage for the input pseudo states. */
+	Storage *_ypStore;
 	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
 	bool _printResultFiles;
 	/** Pointer to the linear and torsional corrective springs. */
