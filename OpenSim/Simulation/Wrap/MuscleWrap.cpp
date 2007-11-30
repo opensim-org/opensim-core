@@ -227,6 +227,7 @@ void MuscleWrap::setStartPoint(int aIndex)
 	{
 		_range[0] = aIndex;
 		_muscle->invalidatePath();
+		_rangeProp.setUseDefault(false);
 	}
 }
 
@@ -236,6 +237,7 @@ void MuscleWrap::setEndPoint(int aIndex)
 	{
 		_range[1] = aIndex;
 		_muscle->invalidatePath();
+		_rangeProp.setUseDefault(false);
 	}
 }
 
