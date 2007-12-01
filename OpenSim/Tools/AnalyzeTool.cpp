@@ -575,7 +575,7 @@ loadPseudoStatesFromFile()
 	int nyp = _model->getNumPseudoStates();
 	delete _pseudoStore; _pseudoStore = NULL;
 	if(nyp > 0) {
-		if(_pseudoStatesFileNameProp.isValidFileName()) {
+		if(!_pseudoStatesFileNameProp.isValidFileName()) {
 			string msg = "AnalyzeTool.initializeFromFiles: A pseudo states file must be specified.";
 			throw Exception(msg,__FILE__,__LINE__);
 		}
