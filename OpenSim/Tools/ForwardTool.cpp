@@ -89,7 +89,7 @@ ForwardTool::ForwardTool() :
  *
  * @param aFileName File name of the document.
  */
-ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
+ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
@@ -125,7 +125,7 @@ ForwardTool::ForwardTool(const string &aFileName, bool aLoadModel) :
 {
 	setType("ForwardTool");
 	setNull();
-	updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
 	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
 }
 //_____________________________________________________________________________
@@ -790,86 +790,18 @@ bool ForwardTool::run()
 	IO::chDir(directoryOfSetupFile);
 
 	// INPUT
-	// Controls
-	ControlSet *controlSet=NULL;
-	if(_controlsFileName!="") {
-		cout<<"\n\nLoading controls from file "<<_controlsFileName<<"."<<endl;
-		controlSet = new ControlSet(_controlsFileName);
-		cout<<"Found "<<controlSet->getSize()<<" controls."<<endl<<endl;
-	}
-	// Initial states
-	if(_statesFileName!="") {
-		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
-		_yStore = new Storage(_statesFileName);
-		cout<<"Found "<<_yStore->getSize()<<" state vectors with time stamps ranging"<<endl;
-		cout<<"from "<<_yStore->getFirstTime()<<" to "<<_yStore->getLastTime()<<"."<<endl;
-	}
-	// Initial pseudo states
-	if(_pseudoFileName!="") {
-		cout<<"\nLoading pseudo states from file "<<_pseudoFileName<<"."<<endl;
-		_ypStore = new Storage(_pseudoFileName);
-		cout<<"Found "<<_ypStore->getSize()<<" rows with time stamps ranging"<<endl;
-		cout<<"from "<<_ypStore->getFirstTime()<<" to "<<_ypStore->getLastTime()<<"."<<endl;
-	}
+	ControlSet *controlSet = NULL;
+	inputControlsStatesAndPseudoStates(controlSet,_yStore,_ypStore);
 
-	// INITIAL AND FINAL TIMES
-	// From initial states...
-	int index=-1;
-	double ti,tf;
-	if(_yStore!=NULL) {
-		index = _yStore->findIndex(_ti);
-		if(index<0) {
-			_ti = _yStore->getFirstTime();
-			cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
-			cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
-			cout<<"in the initial states file (ti = "<<_ti<<").\n\n";
-		} else {
-			_yStore->getTime(index,ti);
-			if(_ti!=ti) {
-				_ti = ti;
-				cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<_ti<<endl;
-				cout<<"to agree exactly with the time stamp of the closest initial states in file ";
-				cout<<_statesFileName<<".\n\n";
-			}
-		}
-	}
+	// INITIAL AND FINAL TIMES AND STATES INDEX
+	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
 
-	// Check pseudo states...
-	int pIndex = -1;
-	bool interpolatePseudo = false;
-	if(_ypStore!=NULL) {
-		pIndex = _ypStore->findIndex(_ti);
-		if(pIndex<0) {
-			cout<<"\n\nWARN- The pseudo states file does not contain a time range that overlaps\n";
-			cout<<"the time range of the states file.  RUNNING without pseudo sates.\n\n";
-		} else {
-			_ypStore->getTime(pIndex,ti);
-			if(ti!=_ti) {
-				cout<<"\n\nWARN- The time stamp in the pseudo states file does not match the time stamp\n";
-				cout<<"in the states file.  Interpolating to get the pseudo states.\n\n";
-				interpolatePseudo = true;
-			}
-		}
-	}
+	// PSEUDO STATES INDEX
+	bool interpolatePseudoStates;
+	int startIndexForYPStore = determinePseudoStatesIndex(_ti,interpolatePseudoStates);
 
-	// Check controls...
-	if(controlSet!=NULL) {
-		int first = 0;
-		Control *control = controlSet->get(first);
-		ti = control->getFirstTime();
-		tf = control->getLastTime();
-		if(_ti<ti) {
-			cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-			cout<<"overlap the requested initial time of the simulation.  Controls are being extrapolated\n";
-			cout<<"rather than interpolated.\n";
-		}
-		if(_tf>tf) {
-			cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-			cout<<"overlap the requested final time of the simulation.  Changing the final time of the\n";
-			cout<<"forward integration from "<<_tf<<" to "<<tf<<".\n";
-			_tf = tf;
-		}
-	}
+	// CHECK CONTROLS
+	checkControls(controlSet);
 
 	// ASSIGN NUMBERS OF THINGS
 	int ny = _model->getNumStates();
@@ -881,32 +813,7 @@ bool ForwardTool::run()
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
 
 	// CORRECTIVE SPRINGS
-	if(_yStore!=NULL && !( _externalLoadsBody1=="") && !( _externalLoadsBody2=="")) {
-		Storage qStore,uStore;
-		_model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
-		AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-		AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-		// Body1 Linear
-		if(_body1LinSpringActive) {
-			_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*body1Force);
-		}
-		// Body1 Torsional
-		if(_body1TorSpringActive) {
-			double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
-			double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-			_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
-		}
-		// Body2 Linear
-		if(_body2LinSpringActive) {
-			_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*body1Force);
-		}
-		// Body2 Torsional
-		if(_body2TorSpringActive) {
-			double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
-			double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-			_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
-		}
-	}
+	addCorrectiveSprings(body1Force,body2Force);
 
 	// SETUP SIMULATION
 	// Manager
@@ -948,16 +855,16 @@ bool ForwardTool::run()
 
 	// SET THE INITIAL STATES and PSEUDO STATES
 	Array<double> yi(0.0,ny);
-	if(_yStore!=NULL) _yStore->getData(index,ny,&yi[0]);
-	if(index >= 0) {
+	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,ny,&yi[0]);
+	if(startIndexForYStore >= 0) {
 		Array<double> yi(0.0,ny);
-		_yStore->getData(index,ny,&yi[0]);
+		_yStore->getData(startIndexForYStore,ny,&yi[0]);
 		_model->setInitialStates(&yi[0]);
 	}
-	if(pIndex >= 0) {
+	if(startIndexForYPStore >= 0) {
 		Array<double> ypi(0.0,nyp);
-		if(!interpolatePseudo) {
-			_ypStore->getData(pIndex,nyp,&ypi[0]);
+		if(!interpolatePseudoStates) {
+			_ypStore->getData(startIndexForYPStore,nyp,&ypi[0]);
 		} else {
 			_ypStore->getData(_ti,nyp,&ypi[0]);
 		}
@@ -1048,9 +955,183 @@ getStateStorage()
 {
 	return _integrand ? _integrand->getStateStorage() : 0;
 }
+
+
 //=============================================================================
-// EXTERNAL LOADS
+// UTILITY
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Add corrective springs.
+ *
+ * @return Index into the pseudo states storage for the initial pseudo
+ * states for the simulation.  A return of -1 indicates no valid pseudo states.
+ */
+void ForwardTool::
+addCorrectiveSprings(const ForceApplier *aBody1Force,const ForceApplier *aBody2Force)
+{
+	if(_yStore!=NULL && !( _externalLoadsBody1=="") && !( _externalLoadsBody2=="")) {
+		Storage qStore,uStore;
+		_model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
+		AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
+		AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+
+		// Body1 Linear
+		if(_body1LinSpringActive) {
+			_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody1Force);
+		}
+		// Body1 Torsional
+		if(_body1TorSpringActive) {
+			double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
+			double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
+			_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
+		}
+
+		// Body2 Linear
+		if(_body2LinSpringActive) {
+			_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody2Force);
+		}
+		// Body2 Torsional
+		if(_body2TorSpringActive) {
+			double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
+			double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
+			_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
+		}
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Check the controls.  This method just prints out warning messages.  It
+ * doesn't change anything important.
+ */
+void ForwardTool::
+checkControls(const ControlSet *aControlSet)
+{
+	if(aControlSet==NULL) {
+		cout<<"\n"<<getName()<<": WARN- No controls were specified.\n";	
+		return;
+	}
+
+	int first = 0;
+	Control *control = aControlSet->get(first);
+	double ti = control->getFirstTime();
+	double tf = control->getLastTime();
+	if(_ti<ti) {
+		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
+		cout<<"overlap the requested initial time of the simulation.  Controls are being extrapolated.\n";
+	}
+	if(_tf>tf) {
+		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
+		cout<<"overlap the requested final time of the simulation.  Changing the final time of the\n";
+		cout<<"forward integration from "<<_tf<<" to "<<tf<<".\n";
+		_tf = tf;
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Determine the index into the pseudo states storage for the initial
+ * pseudo states.
+ *
+ * @return Index into the pseudo states storage for the initial pseudo
+ * states for the simulation.  A return of -1 indicates no valid pseudo states.
+ */
+int ForwardTool::
+determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates)
+{
+	int index = -1;
+	double ti;
+	if(_ypStore!=NULL) {
+		index = _ypStore->findIndex(aTI);
+		if(index<0) {
+			cout<<"\n\nWARN- The pseudo states file does not contain a time range that overlaps\n";
+			cout<<"the time range of the states file.  RUNNING without pseudo sates.\n\n";
+		} else {
+			_ypStore->getTime(index,ti);
+			if(ti!=aTI) {
+				cout<<"\n\nWARN- The time stamp in the pseudo states file does not match the time stamp\n";
+				cout<<"in the states file.  Interpolating to get the pseudo states.\n\n";
+				interpolatePseudoStates = true;
+			}
+		}
+	}
+	return index;
+}
+//_____________________________________________________________________________
+/**
+ * Determine initial time for a simulation and find the index into the
+ * states storage for that time.
+ *
+ * @param rTI Requested initial time for the simulation.  If the time does not
+ * match a time in the states storage exactly, the initial time is altered so
+ * that there is an exact match.
+ * @return Index into the states storage corresponding to the initial states
+ * for the simulation.  A return of -1 indicates no valid states.
+ */
+int ForwardTool::
+determineInitialTimeFromStatesStorage(double &rTI)
+{
+	int index = 1;
+	double ti;
+	if(_yStore!=NULL) {
+		index = _yStore->findIndex(rTI);
+		if(index<0) {
+			rTI = _yStore->getFirstTime();
+			cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
+			cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
+			cout<<"in the initial states file (ti = "<<rTI<<").\n\n";
+			index = 0;
+		} else {
+			_yStore->getTime(index,ti);
+			if(rTI!=ti) {
+				rTI = ti;
+				cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<rTI<<endl;
+				cout<<"to agree exactly with the time stamp of the closest initial states in file ";
+				cout<<_statesFileName<<".\n\n";
+			}
+		}
+	}
+
+	return(index);
+}
+
+//_____________________________________________________________________________
+/**
+ * Read in the controls, states, and pseudo states.
+ *
+ * @param rContolSet Control set for the simulation.
+ * @param rYStore Storage containing the initial states for the simulation.
+ * @param rYPStore Storage containing the initial pseudo states for the simulation.
+ */
+void ForwardTool::
+inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,Storage*& rYPStore)
+{
+	// Controls
+	rControlSet = NULL;
+	if(_controlsFileName!="") {
+		cout<<"\n\nLoading controls from file "<<_controlsFileName<<"."<<endl;
+		rControlSet = new ControlSet(_controlsFileName);
+		cout<<"Found "<<rControlSet->getSize()<<" controls."<<endl<<endl;
+	}
+
+	// Initial states
+	rYStore = NULL;
+	if(_statesFileName!="") {
+		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
+		rYStore = new Storage(_statesFileName);
+		cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
+		cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
+	}
+
+	// Initial pseudo states
+	rYPStore = NULL;
+	if(_pseudoFileName!="") {
+		cout<<"\nLoading pseudo states from file "<<_pseudoFileName<<"."<<endl;
+		rYPStore = new Storage(_pseudoFileName);
+		cout<<"Found "<<rYPStore->getSize()<<" rows with time stamps ranging"<<endl;
+		cout<<"from "<<rYPStore->getFirstTime()<<" to "<<rYPStore->getLastTime()<<"."<<endl;
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Initialize the external loads applied to the model.  Currently, the loads

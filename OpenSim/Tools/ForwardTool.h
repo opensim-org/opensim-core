@@ -183,7 +183,7 @@ protected:
 public:
 	virtual ~ForwardTool();
 	ForwardTool();
-	ForwardTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
+	ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	ForwardTool(const ForwardTool &aObject);
 	virtual Object* copy() const;
 private:
@@ -253,6 +253,12 @@ public:
 		ForceApplier **rLeftForceApp=0,
 		TorqueApplier **rRightTorqueApp=0,
 		TorqueApplier **rLeftTorqueApp=0);
+protected:
+	void inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,Storage*& rYPStore);
+	int determineInitialTimeFromStatesStorage(double &rTI);
+	int determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates);
+	void checkControls(const ControlSet *aControlSet);
+	void addCorrectiveSprings(const ForceApplier *aBody1Force,const ForceApplier *aBody2Force);
 
 //=============================================================================
 };	// END of class ForwardTool
