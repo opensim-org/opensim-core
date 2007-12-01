@@ -508,7 +508,8 @@ bool SdfastCoordinate::setValue(double aValue)
 
 	if ((aValue >= _range[0] && aValue <= _range[1]) || !_clamped) {
 		// Check if the value is sufficiently different
-		if (DABS(aValue - getValue()) > _tolerance)
+		// if (DABS(aValue - getValue()) > _tolerance)
+		if (1)
 		{
 			if (_locked) {
 				cout << "SdfastCoordinate.setValue: WARN- Coordinate " << getName() << " is locked. Unable to change its value." << endl;
