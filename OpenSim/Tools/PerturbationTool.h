@@ -65,7 +65,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	PerturbationTool();
-	PerturbationTool(const std::string &aFileName);
+	PerturbationTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true);
 	virtual ~PerturbationTool();
 	// Copy constrctor and virtual copy 
 	PerturbationTool(const PerturbationTool &aObject);

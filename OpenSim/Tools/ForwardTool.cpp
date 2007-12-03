@@ -404,7 +404,7 @@ void ForwardTool::setupProperties()
 
 	comment = "Force magnitude past which linear springs are fully activated.";
 	_springTransitionEndForceProp.setComment(comment);
-	_springTransitionEndForceProp.setName("spring_transition_end_force");
+	_springTransitionEndForceProp.setName("linear_spring_transition_end_force");
 	_propertySet.append( &_springTransitionEndForceProp );
 
 	comment = "Rise time for scaling functions for the torsional corrective springs. "

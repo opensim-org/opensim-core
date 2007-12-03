@@ -66,8 +66,8 @@ PerturbationTool::PerturbationTool() :
  *
  * @param aFileName File name of the document.
  */
-PerturbationTool::PerturbationTool(const string &aFileName):
-	ForwardTool(aFileName, false),
+PerturbationTool::PerturbationTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel):
+	ForwardTool(aFileName,false,false),
 	_pertWindow(_pertWindowProp.getValueDbl()),
 	_pertIncrement(_pertIncrementProp.getValueDbl()),
 	_pertDF(_pertDFProp.getValueDbl()),
@@ -76,8 +76,8 @@ PerturbationTool::PerturbationTool(const string &aFileName):
 {
 	setType("PerturbationTool");
 	setNull();
-	updateFromXMLNode();
-	loadModel(aFileName);
+	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
 }
 //_____________________________________________________________________________
 /**
@@ -244,6 +244,29 @@ bool PerturbationTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
+	// INPUT
+	ControlSet *controlSet;
+	inputControlsStatesAndPseudoStates(controlSet,_yStore,_ypStore);  // Is using _yStore the right thing to do?
+
+	// INITIAL AND FINAL TIMES AND STATES INDEX
+	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
+
+	// PSEUDO STATES INDEX
+	bool interpolatePseudoStates;
+	int startIndexForYPStore = determinePseudoStatesIndex(_ti,interpolatePseudoStates);
+
+	// CHECK CONTROLS
+	checkControls(controlSet);
+
+	// GROUND REACTION FORCES
+	ForceApplier *body1Force,*body2Force;
+	initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
+
+	// CORRECTIVE SPRINGS
+	addCorrectiveSprings(body1Force,body2Force);
+
+
 	// Gather actuators to perturb
 	ActuatorSet *as = _model->getActuatorSet();
 	ArrayPtrs<AbstractActuator> actuators;
@@ -270,45 +293,6 @@ bool PerturbationTool::run()
 		//throw Exception("PerturbationTool: ERR- Nothing to perturb (no actuators selected and gravity perturbation disabled).",__FILE__,__LINE__);
 		cout << "PerturbationTool: WARNING- Nothing will be perturbed (no actuators to perturb and gravity perturbation is off)" << endl;
 
-	// GROUND REACTION FORCES
-	ForceApplier *rightGRFApp, *leftGRFApp;
-	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&rightGRFApp,&leftGRFApp);
-
-	// CORRECTIVE SPRINGS
-	Storage qStore,uStore;
-	_model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
-	AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-	AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-	// Body1 Linear
-	if(_body1LinSpringActive) {
-		_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*rightGRFApp);
-	}
-	// Body1 Torsional
-	if(_body1TorSpringActive) {
-		double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
-		double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-		_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
-	}
-	// Body2 Linear
-	if(_body2LinSpringActive) {
-		_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*leftGRFApp);
-	}
-	// Body2 Torsional
-	if(_body2TorSpringActive) {
-		double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
-		double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-		_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
-	}
-
-	// INPUT
-	// Controls
-	cout<<endl<<endl<<"Loading controls from file "<<_controlsFileName<<".\n";
-	ControlSet *controlSet = new ControlSet(_controlsFileName);
-	cout<<"Found "<<controlSet->getSize()<<" controls.\n\n";
-	// States
-	Storage *yStore = new Storage(_statesFileName);
-
 	// Add actuation analysis -- needed in order to evaluate unperturbed forces
 	// Actuation
 	Actuation *actuation = new Actuation(_model);
@@ -316,11 +300,11 @@ bool PerturbationTool::run()
 
 	Kinematics *kin=0;
 	BodyKinematics *bodyKin=0;
-	AnalysisSet &ans=getAnalysisSet();
-	for(int i=0;i<ans.getSize();i++) {
-		if(!ans.get(i)->getOn()) continue;
-		if(dynamic_cast<Kinematics*>(ans.get(i))) kin=dynamic_cast<Kinematics*>(ans.get(i));
-		else if(dynamic_cast<BodyKinematics*>(ans.get(i))) bodyKin=dynamic_cast<BodyKinematics*>(ans.get(i));
+	AnalysisSet *analysisSet = _model->getAnalysisSet();
+	for(int i=0;i<analysisSet->getSize();i++) {
+		if(!analysisSet->get(i)->getOn()) continue;
+		if(dynamic_cast<Kinematics*>(analysisSet->get(i))) kin=dynamic_cast<Kinematics*>(analysisSet->get(i));
+		else if(dynamic_cast<BodyKinematics*>(analysisSet->get(i))) bodyKin=dynamic_cast<BodyKinematics*>(analysisSet->get(i));
 	}
 
 	// SETUP SIMULATION
@@ -478,13 +462,13 @@ bool PerturbationTool::run()
 	double lastPertTime = _tf - _pertWindow;
 	for(double t=_ti;t<=lastPertTime;t+=_pertIncrement) {
 		// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
-		int index = yStore->findIndex(t);
+		int index = _yStore->findIndex(t);
 		double tiPert;
-		yStore->getTime(index,tiPert);
+		_yStore->getTime(index,tiPert);
 		double tfPert = tiPert + _pertWindow;
 		manager.setInitialTime(tiPert);
 		manager.setFinalTime(tfPert);
-		const Array<double> &yi = yStore->getStateVector(index)->getData();
+		const Array<double> &yi = _yStore->getStateVector(index)->getData();
 		_model->setInitialStates(&yi[0]);
 
 		// RESET ANALYSES
