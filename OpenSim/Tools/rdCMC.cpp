@@ -886,30 +886,35 @@ computeControls(double &rDT,double aT,const double *aY,
 
 	// OPTIMIZER ERROR TRAP
 	_f.setSize(N);
-	bool success=false;
-	const int optTryLimit=0;	//try at most 3 times
-	for(int optTrys=0;!success;optTrys++) {
 
-		if(!_target->prepareToOptimize(&_f[0])) {
-			// No direct solution, need to run optimizer
-			Vector fVector(N,&_f[0],true);
+	if(!_target->prepareToOptimize(&_f[0])) {
+		// No direct solution, need to run optimizer
+		Vector fVector(N,&_f[0],true);
 
-			 success=true;
-			try {
-				_optimizer->optimize(fVector);
-			}
-			catch (const SimTK::Exception::Base &ex) {
-				cout << ex.getMessage() << endl;
-				cout << "OPTIMIZATION FAILED..." << endl;
-				success=false;
-			}
-		} else {
-			// Got a direct solution, don't need to run optimizer
-			success=true;
+		try {
+			_optimizer->optimize(fVector);
 		}
+		catch (const SimTK::Exception::Base &ex) {
+			cout << ex.getMessage() << endl;
+			cout << "OPTIMIZATION FAILED..." << endl;
+			cout<<endl;
+			char tmp[1024],msg[1024];
+			strcpy(msg,"rdCMC.computeControls:  WARN- The optimizer could not find ");
+			sprintf(tmp,"a solution at time = %lf.\n",aT);
+			strcat(msg,tmp);
+			strcat(msg,"If using the fast target, try using the slow target.\n");
+			strcat(msg,"Starting at a slightly different initial time may also help.\n");
+			
+			cout<<"\n"<<msg<<endl<<endl;
+			string msgString = string(msg);
+         throw(new OpenSim::Exception(msg, __FILE__,__LINE__));
+		}
+	} else {
+		// Got a direct solution, don't need to run optimizer
+	}
 
-		if(_verbose) _target->printPerformance(&_f[0]);
-
+	if(_verbose) _target->printPerformance(&_f[0]);
+/*
 		// Solution
 		if(success) {
 			break;
@@ -943,7 +948,7 @@ computeControls(double &rDT,double aT,const double *aY,
 			}
 		}
 	}
-
+*/
 	if(_verbose) {
 		cout<<"\nDesired actuator forces:\n";
 		cout<<_f<<endl;
