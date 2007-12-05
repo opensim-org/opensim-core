@@ -24,8 +24,8 @@ using namespace std;
  */
 AbstractTool::~AbstractTool()
 {
-	if (_toolOwnsModel)
-		delete _model;
+	//if (_toolOwnsModel)
+	//	delete _model;
 }
 //_____________________________________________________________________________
 /**
