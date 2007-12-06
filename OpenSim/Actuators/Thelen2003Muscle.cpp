@@ -102,6 +102,7 @@ Thelen2003Muscle::Thelen2003Muscle(const Thelen2003Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
+	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -242,12 +243,16 @@ void Thelen2003Muscle::setup(Model* aModel)
 	// Base class
 	AbstractMuscle::setup(aModel);
 
+	// aModel will be NULL when objects are being registered.
+	if (aModel == NULL)
+		return;
+
 	// Reasonable initial activation value
 	_activation = 0.01;
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
-	computeEquilibrium();
+   computeEquilibrium();
 }
 
 //_____________________________________________________________________________
@@ -322,6 +327,8 @@ Thelen2003Muscle& Thelen2003Muscle::operator=(const Thelen2003Muscle &aMuscle)
 	AbstractMuscle::operator=(aMuscle);
 
 	copyData(aMuscle);
+
+	setup(aMuscle.getModel());
 
 	return(*this);
 }

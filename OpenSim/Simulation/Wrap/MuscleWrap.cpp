@@ -207,6 +207,8 @@ MuscleWrap& MuscleWrap::operator=(const MuscleWrap& aMuscleWrap)
 	// BASE CLASS
 	Object::operator=(aMuscleWrap);
 
+	copyData(aMuscleWrap);
+
 	return(*this);
 }
 

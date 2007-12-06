@@ -98,6 +98,7 @@ Schutte1993Muscle::Schutte1993Muscle(const Schutte1993Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
+	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -224,6 +225,10 @@ void Schutte1993Muscle::setup(Model* aModel)
 	// Base class
 	AbstractMuscle::setup(aModel);
 
+	// aModel will be NULL when objects are being registered.
+	if (aModel == NULL)
+		return;
+
 	if(!getActiveForceLengthCurve()) 
 		throw Exception("Schutte1993Muscle.setup: ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getPassiveForceLengthCurve())
@@ -317,6 +322,8 @@ Schutte1993Muscle& Schutte1993Muscle::operator=(const Schutte1993Muscle &aMuscle
 	AbstractMuscle::operator=(aMuscle);
 
 	copyData(aMuscle);
+
+	setup(aMuscle.getModel());
 
 	return(*this);
 }

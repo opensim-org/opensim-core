@@ -169,6 +169,10 @@ void AbstractMuscle::setup(Model* aModel)
 
 	AbstractActuator::setup(aModel);
 
+	// aModel will be NULL when objects are being registered.
+	if (aModel == NULL)
+		return;
+
 	nameAttachmentPoints(0);
 
 	for (i = 0; i < _attachmentSet.getSize(); i++){
