@@ -283,7 +283,7 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 
 	if(algorithm != SimTK::BestAvailiable) {
 	
-		SimTK::Optimizer *optimizer = new SimTK::Optimizer(aSystem, algorithm);
+		optimizer = new SimTK::Optimizer(aSystem, algorithm);
 
 		optimizer->setDiagnosticsLevel(0);
 		optimizer->setConvergenceTolerance(1e-4);
