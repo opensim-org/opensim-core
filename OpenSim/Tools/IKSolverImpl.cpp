@@ -115,6 +115,17 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	Array<double> emptyX(0.0,_ikTarget.getModel().getNumControls());
 	Array<double> emptyY(0.0,_ikTarget.getModel().getNumStates());
 
+	// Invoke optimization mechanism to solve for Qs
+	//Vector results(numParameters); // initialize with initial guess
+	SimTK::Vector results(numParameters); // initialize with initial guess
+
+	//LARGE_INTEGER start;
+	//LARGE_INTEGER stop;
+	//LARGE_INTEGER frequency;
+
+	//QueryPerformanceFrequency(&frequency);
+	//QueryPerformanceCounter(&start);
+
 	for (int index = startFrame; index <= endFrame; index++)
 	{
 		// Get time associated with index
@@ -124,14 +135,30 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		_ikTarget.prepareToSolve(index, &unprescribedQGuess[0]);
 
 		// Invoke optimization mechanism to solve for Qs
-		Vector results(numParameters, &unprescribedQGuess[0]); // initialize with initial guess
-		try {
-			optimizer->optimize(results);
+		if(index == startFrame) { 
+			for(int i=0;i<numParameters;i++) {
+				results[i]=unprescribedQGuess[i]; 
+			}
 		}
-		catch (const SimTK::Exception::Base &ex) {
-			cout << ex.getMessage() << endl;
-			cout << "OPTIMIZATION FAILED..." << endl;
+		else { 
+			for(int i=0;i<numParameters;i++) {
+				results[i]=unprescribedQSol[i]; 
+			}
 		}
+
+		if(optimizer){
+			try {
+				optimizer->optimize(results);
+			}
+			catch (const SimTK::Exception::Base &ex) {
+				cout << ex.getMessage() << endl;
+				cout << "OPTIMIZATION FAILED..." << endl;
+			}
+		}
+		else {
+           _ikTarget.iterativeOptimization(results);
+		}
+
 		for(int i=0;i<numParameters;i++) unprescribedQSol[i]=results[i];
 
 		/* Output variables include unprescribed (solved) Qs... */
@@ -175,6 +202,10 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		if(analysisSet!=NULL)
 			analysisSet->step(&emptyX[0],&emptyY[0],NULL,index-startFrame+1,0,currentTime,&emptyX[0],&emptyY[0]);
 	}
+
+	//QueryPerformanceCounter(&stop);
+	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
+	//cout << "IK solution time = " << (duration*1.0e3) << " milliseconds" << endl;
 
 	} catch (...) { // e.g. may get InterruptedException from the callbackSet
 		delete optimizer;
@@ -241,24 +272,32 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "IPOPT") {
 		std::cout << "Using Ipopt optimizer algorithm." << std::endl;
 		algorithm = SimTK::InteriorPoint;
+	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "JACOB") {
+		std::cout << "Using Jacobian with Linear Least Squares Solver." << std::endl;
+		algorithm = SimTK::BestAvailiable;
 	} else {
 		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);
 	}
 
-	SimTK::Optimizer *optimizer = new SimTK::Optimizer(aSystem, algorithm);
+	SimTK::Optimizer *optimizer = NULL();
 
-	optimizer->setDiagnosticsLevel(0);
-	optimizer->setConvergenceTolerance(1e-4);
-	optimizer->setMaxIterations(1000);
-	optimizer->useNumericalGradient(false); // Use our own central difference approximations
-	optimizer->useNumericalJacobian(false);
+	if(algorithm != SimTK::BestAvailiable) {
+	
+		SimTK::Optimizer *optimizer = new SimTK::Optimizer(aSystem, algorithm);
 
-	if(algorithm == SimTK::InteriorPoint) {
-		// Some IPOPT-specific settings
-		optimizer->setLimitedMemoryHistory(500); // works well for our small systems
-		optimizer->setAdvancedBoolOption("warm_start",true);
-		optimizer->setAdvancedRealOption("obj_scaling_factor",1);
-		optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",1);
+		optimizer->setDiagnosticsLevel(0);
+		optimizer->setConvergenceTolerance(1e-4);
+		optimizer->setMaxIterations(1000);
+		optimizer->useNumericalGradient(false); // Use our own central difference approximations
+		optimizer->useNumericalJacobian(false);
+
+		if(algorithm == SimTK::InteriorPoint) {
+			// Some IPOPT-specific settings
+			optimizer->setLimitedMemoryHistory(500); // works well for our small systems
+			optimizer->setAdvancedBoolOption("warm_start",true);
+			optimizer->setAdvancedRealOption("obj_scaling_factor",1);
+			optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",1);
+		}
 	}
 
 	return optimizer;

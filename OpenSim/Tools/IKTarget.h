@@ -126,6 +126,8 @@ private:
 	void buildCoordinateMap(const Array<std::string>& aNameArray);
 	void setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
 									const double& aCoordinateError, const std::string& aCoordinateName) const;
+	void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J);
+	void IKTarget::createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv);
 public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
@@ -159,6 +161,7 @@ public:
 	//--------------------------------------------------------------------------
 	int objectiveFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Real &f) const;
 	int gradientFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Vector &gradient) const;
+	int iterativeOptimization(SimTK::Vector &results);
 	//--------------------------------------------------------------------------
 	// DEBUG & REPORTING SUPPORT FOR GUI
 	//--------------------------------------------------------------------------

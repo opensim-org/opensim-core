@@ -35,6 +35,7 @@
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
 #include "IKTarget.h"
+#include <SimTKlapack.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -206,6 +207,303 @@ int IKTarget::gradientFunc(const SimTK::Vector &x, const bool new_parameters, Si
 
 	return (status);
 }
+//_____________________________________________________________________________
+/**
+ * Compute derivative of objective function using finite differences
+ */
+int IKTarget::iterativeOptimization(SimTK::Vector &results)
+{
+	// Iterative optimization method
+	//
+    //    de = J*dQ , which can be rearranged as: dQ = J^-1 * de , where J^-1 = (J'*J)^-1*J'
+	//
+	SimTK::Matrix J((3*_markers.getSize()+_unprescribedWeightedQs.getSize()), getNumParameters());
+	//SimTK::Matrix Jinv(getNumParameters(), (3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
+
+	// Tally the square of the errors from markers
+	double totalWeightedSquaredErrors = 0.0;
+	double totalMarkerSquaredErrors = 0.0;
+	double totalCoordinateSquaredErrors = 0.0;
+	double maxMarkerError = 0.0, maxCoordinateError = 0.0; // these are the max unweighted errors
+	int worstMarker = -1, worstCoordinate = -1;
+
+	// Compute the change in Q's to reduce error in Marker Positions
+	SimTK::Matrix dQ(getNumParameters(), 1); 
+	SimTK::Matrix dError((3*_markers.getSize()+_unprescribedWeightedQs.getSize()), 1);
+	SimTK::Real errorTol = 1e-4;
+	int maxIter = 1000;
+	int iter = 0;
+
+	int info;
+	SimTK::Matrix performanceMatrixCopy;
+	SimTK::Vector performanceVectorCopy;
+	int m = (3*_markers.getSize()+_unprescribedWeightedQs.getSize());
+	int n = getNumParameters();
+	int nrhs = 1;
+	int lwork = max(min(m, n)+3*n+1, 2*min(m, n)+nrhs);
+	SimTK::Vector lapackWork(lwork);
+	double rcond = 1.0e-9;
+	int rank = getNumParameters();
+	int *jpvt = new int[n];
+
+	SimTK::Real previousDErrorNorm = 0.0;
+	SimTK::Real currentDErrorNorm = 0.0;
+	SimTK::Real tempDErrorNorm = 0.0;
+	SimTK::Real deltaDErrorNorm = 100.0;
+
+	// Set matrices and vectors to zero
+	J = 0;
+	dQ = 0;
+	dError = 0;
+	lapackWork = 0;
+
+	// Compute first dError
+	for (int i = 0; i < getNumParameters(); i++)
+	{
+		_unprescribedQs[i]->coord->setValue(results[i], i==(getNumParameters()-1));
+	}
+
+	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
+
+	for (int i = 0; i < _markers.getSize(); i++)
+	{
+		if(!_markers[i]->validExperimentalPosition) continue;
+
+		// Get marker offset in local frame
+		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+
+		// transform local marker to world frame
+		double globalPos[3];
+		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+
+		for (int r=0; r<3; r++)
+		{
+			dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+		}
+	}
+
+	// Q ERRORS
+	int row = 3*_markers.getSize();
+	for (int i = 0; i < getNumParameters(); i++) {
+		if(_unprescribedQs[i]->weight) {
+			dError(row, 0) = sqrt(_unprescribedQs[i]->weight) * (_unprescribedQs[i]->experimentalValue - _unprescribedQs[i]->coord->getValue());
+			row++;
+		}
+	}
+
+	currentDErrorNorm = dError.norm();
+
+	// Change configuration by dQ until dError is small
+	while(deltaDErrorNorm>errorTol && iter<maxIter)
+	{
+		previousDErrorNorm = currentDErrorNorm;
+
+		//// Pseudo-inverse method
+		//J = 0;
+		//Jinv = 0;
+		//createJacobian(results, J);
+		//createPseudoInverseJacobian(J, Jinv);
+		//dQ = Jinv*dError;
+
+		// Linear least squares method
+        createJacobian(results, J);
+		performanceMatrixCopy = J;
+		performanceVectorCopy = dError.col(0);
+		for(int i=0; i<n; i++) { jpvt[i] = 0; }
+		dgelsy_(m, n, nrhs, &performanceMatrixCopy(0,0), m, &performanceVectorCopy[0], m, &jpvt[0], &rcond, &rank, &lapackWork[0], lapackWork.size(), info);
+		dQ.updCol(0) = performanceVectorCopy(0, getNumParameters());
+
+		// Compute temporary change in marker error
+		for (int i = 0; i < getNumParameters(); i++)
+		{
+			_unprescribedQs[i]->coord->setValue(results[i]+dQ(i, 0), i==(getNumParameters()-1));
+		}
+
+		for (int i = 0; i < _markers.getSize(); i++)
+		{
+			if(!_markers[i]->validExperimentalPosition) continue;
+
+			// Get marker offset in local frame
+			_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+
+			// transform local marker to world frame
+			double globalPos[3];
+			de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+
+			for (int r=0; r<3; r++)
+			{
+				dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+			}
+		}
+
+		// Q ERRORS
+		int row = 3*_markers.getSize();
+		for (int i = 0; i < getNumParameters(); i++) {
+			if(_unprescribedQs[i]->weight) {
+				////cout << _unprescribedQs[i]->coord->getName() << " w = " << _unprescribedQs[i]->weight << endl;
+				dError(row, 0) = sqrt(_unprescribedQs[i]->weight) * (_unprescribedQs[i]->experimentalValue - _unprescribedQs[i]->coord->getValue());
+				row++;
+			}
+		}
+
+		tempDErrorNorm = dError.norm();
+
+		// Check if temporary change in error exceeds the previous change in error
+		if(tempDErrorNorm > previousDErrorNorm)
+		{
+			// Reduce the change in configuration by half until temporary change in error is less than the previous change in error
+			while(tempDErrorNorm > previousDErrorNorm)
+			{
+			//	dError = dError*0.5;
+			//	cout << "dQ reduced by a 10 percent" << "   dError.norm " << dError.norm() << "   dQ.norm " << dQ.norm() << endl;
+				dQ = dQ*0.5;
+				cout << "dQ reduced by a 50 percent" << "   dError.norm " << dError.norm() << "   dQ.norm " << dQ.norm() << endl;
+
+				for (int i = 0; i < getNumParameters(); i++)
+				{
+					_unprescribedQs[i]->coord->setValue(results[i]+dQ(i, 0), i==(getNumParameters()-1));
+				}
+
+				for (int i = 0; i < _markers.getSize(); i++)
+				{
+					if(!_markers[i]->validExperimentalPosition) continue;
+
+					// Get marker offset in local frame
+					_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+
+					// transform local marker to world frame
+					double globalPos[3];
+					de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+
+					for (int r=0; r<3; r++)
+					{
+						dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+					}
+				}
+
+				// Q ERRORS
+				int row = 3*_markers.getSize();
+				for (int i = 0; i < getNumParameters(); i++) {
+					if(_unprescribedQs[i]->weight) {
+						////cout << _unprescribedQs[i]->coord->getName() << " w = " << _unprescribedQs[i]->weight << endl;
+						dError(row, 0) = sqrt(_unprescribedQs[i]->weight) * (_unprescribedQs[i]->experimentalValue - _unprescribedQs[i]->coord->getValue());
+						row++;
+					}
+				}
+
+				tempDErrorNorm = dError.norm();
+
+			}
+		}
+
+		// Update error records
+		currentDErrorNorm = dError.norm();
+		deltaDErrorNorm = abs(currentDErrorNorm - previousDErrorNorm);
+		
+		// Make the change in configuration
+		results.updCol(0) += dQ.col(0);
+
+		//// Limit joint range of motion
+		//for (int p=0; p<getNumParameters(); p++)
+		//{
+		//	if(results[p] >= _unprescribedQs[p]->coord->getRangeMin())
+		//	{
+		//		if(results[p] <= _unprescribedQs[p]->coord->getRangeMax()) { /* do nothing */ }
+		//		else { results[p] = _unprescribedQs[p]->coord->getRangeMax(); cout << "MAX exceeded" << endl; }
+		//	}
+		//	else { results[p] = _unprescribedQs[p]->coord->getRangeMin(); cout << "MIN exceeded" << endl; }
+		//}
+
+		// Increment iteration
+		iter++;
+
+	}
+
+	delete[] jpvt;
+
+	// Assemble model in new configuration
+	// x contains values only for unprescribed coordinates
+	for (int i = 0; i < getNumParameters(); i++)
+	{
+		_unprescribedQs[i]->coord->setValue(results[i], i==(getNumParameters()-1));
+	}
+
+	// We keep track of worst marker for debugging/tuning purposes
+	for (int i = 0; i < _markers.getSize(); i++)
+	{
+		if(!_markers[i]->validExperimentalPosition) continue;
+
+		// Get marker offset in local frame
+		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+
+		// transform local marker to world frame
+		double globalPos[3];
+		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+
+		double markerError = 0.0;
+		for (int j = 0; j < 3; j++)
+		{
+			double err = _markers[i]->experimentalPosition[j] - globalPos[j];
+			markerError += (err * err);
+		}
+
+		totalMarkerSquaredErrors += markerError;
+		if (markerError > maxMarkerError)
+		{
+			maxMarkerError = markerError;
+			worstMarker = i;
+		}
+
+		totalWeightedSquaredErrors += _markers[i]->weight * markerError;
+
+		if (debug)
+			cout << _markers[i]->marker->getName() << " w = " << _markers[i]->weight 
+				<< " exp = " << _markers[i]->experimentalPosition[0] << " " << _markers[i]->experimentalPosition[1] << " " << _markers[i]->experimentalPosition[2]
+				<< " comp + " << globalPos[0] << " " << globalPos[1] << " " << globalPos[2] << endl;
+	}
+
+	for (int i = 0; i < _unprescribedWeightedQs.getSize(); i++)
+	{
+		double experimentalValue = _unprescribedWeightedQs[i]->experimentalValue;
+		double computedValue = _unprescribedWeightedQs[i]->coord->getValue();
+		double err = experimentalValue - computedValue;
+		double coordinateError = err * err;
+
+		totalCoordinateSquaredErrors += coordinateError;
+		if (coordinateError > maxCoordinateError)
+		{
+			maxCoordinateError = coordinateError;
+			worstCoordinate = i;
+		}
+
+		totalWeightedSquaredErrors += _unprescribedWeightedQs[i]->weight * coordinateError;
+
+		if (debug)
+			cout << _unprescribedWeightedQs[i]->coord->getName() << " w = " << _unprescribedWeightedQs[i]->weight << " exp = " << experimentalValue << " comp + " << computedValue << endl;
+	}
+
+	if (_printPerformanceValues || (!calcDerivs && debug))
+	{
+		cout << "total weighted squared error = " << totalWeightedSquaredErrors;
+		if(totalMarkerSquaredErrors>0) {
+			cout << ", marker error: RMS=" << sqrt(totalMarkerSquaredErrors/_markers.getSize());
+			if (worstMarker >= 0) cout << ", max=" << sqrt(maxMarkerError) << " (" << _markers[worstMarker]->marker->getName() << ")";
+		}
+		if(totalCoordinateSquaredErrors>0) {
+			cout << ", coord error: RMS=" << sqrt(totalCoordinateSquaredErrors/_unprescribedWeightedQs.getSize());
+			if (worstCoordinate >= 0) cout << ", max=" << sqrt(maxCoordinateError) << " (" << _unprescribedWeightedQs[worstCoordinate]->coord->getName() << ")";
+		}
+		cout << endl;
+		setErrorReportingQuantities(
+			maxMarkerError, 
+			(worstMarker<0)?"":_markers[worstMarker]->marker->getName(),
+			maxCoordinateError, 
+			(worstCoordinate<0)?"":_unprescribedWeightedQs[worstCoordinate]->coord->getName());
+	}
+
+	return 0;
+}
+
 
 //=============================================================================
 // Helper methods for book keeping
@@ -362,6 +660,7 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 		info->weight = 0;
 
 		allCoordinates.append(info);
+		//cout << i << "   " << info->coord->getName() << endl;
 	}
 
 	// Update info structures based on user-specified IKCoordinateTasks
@@ -511,4 +810,140 @@ void IKTarget::setErrorReportingQuantities(const double& aMarkerError, const std
 	_nameOfWorstMarker=aMarkerName;
 	_worstCoordinateError=aCoordinateError;
 	_nameOfWorstCoordinate=aCoordinateName;
+}
+
+
+void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J)
+{
+	// Compute the Jacobian using central differences
+	SimTK::Vector xp=jointQs.col(0);
+	SimTK::Vector pf((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
+	SimTK::Vector pb((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
+	double globalPos[3];
+	SimTK::Real rdx;
+	int row = 3*_markers.getSize();
+
+	AbstractDynamicsEngine& de = _model.getDynamicsEngine();
+
+	SimTK::Vector markerWeights(_markers.getSize());
+	markerWeights = 0;
+	for (int m=0; m<_markers.getSize(); m++)
+	{
+		if(!_markers[m]->validExperimentalPosition) continue;
+		// Get marker offset in local frame
+		_markers[m]->marker->getOffset(_markers[m]->computedPosition);
+		markerWeights(m) = sqrt(_markers[m]->weight);
+	}
+
+	pf = 0;
+	pb = 0;
+
+	// LOOP OVER CONTROLS
+	for(int i=0;i<getNumParameters();i++) {
+
+		//actualDX = 0.0;
+
+		bool clampedState = _unprescribedQs[i]->coord->getClamped();
+		_unprescribedQs[i]->coord->setClamped(false);
+
+		// PERTURB FORWARD
+		xp[i] = jointQs[i] + _dx[i];
+
+		// Assemble model in new configuration
+		// xp contains values only for unprescribed coordinates
+		_unprescribedQs[i]->coord->setValue(xp[i], true);
+
+		// Compute marker position in world frame
+		for (int m=0; m<_markers.getSize(); m++)
+		{
+			if(!_markers[m]->validExperimentalPosition) continue;
+			// transform local marker to world frame
+			de.transformPosition(*_markers[m]->body, _markers[m]->computedPosition, globalPos);
+			for (int r=0; r<3; r++)
+			{
+                pf(m*3+r) = markerWeights(m) * globalPos[r];
+			}
+		}
+
+		// PERTURB BACKWARD
+		xp[i] = jointQs[i] - _dx[i];
+
+		// Assemble model in new configuration
+		// xp contains values only for unprescribed coordinates
+		_unprescribedQs[i]->coord->setValue(xp[i], true);
+
+		// Compute marker position in world frame	
+		for (int m=0; m<_markers.getSize(); m++)
+		{
+			if(!_markers[m]->validExperimentalPosition) continue;
+			// transform local marker to world frame
+			de.transformPosition(*_markers[m]->body, _markers[m]->computedPosition, globalPos);
+			for (int r=0; r<3; r++)
+			{
+                pb(m*3+r) = markerWeights(m) * globalPos[r];
+			}
+		}
+
+		// DERIVATIVES OF PERFORMANCE
+		rdx = 0.5 / _dx[i];
+		J.updCol(i) = (rdx*(pf-pb));
+
+		// RESTORE CONTROLS
+		xp[i] = jointQs[i];
+		_unprescribedQs[i]->coord->setValue(xp[i], false);
+		_unprescribedQs[i]->coord->setClamped(clampedState);
+
+		// Q ERRORS
+		if(_unprescribedQs[i]->weight) {
+			J(row, i) = sqrt(_unprescribedQs[i]->weight);
+			row++;
+		}
+	}
+}
+
+
+void IKTarget::createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv)
+{
+	////Compute the pseudo-inverse of the Jacobian
+	//Jinv = ((~J*J).invert())*(~J);
+
+	char jobu, jobvt;
+	int m, n, lda, ldu, ldvt, lwork, info;
+ 
+	jobu = 'S';		// tell LAPACK the first min(m,n) columns of U are returned in the array U
+	jobvt = 'S';	// tell LAPACK the first min(m,n) rows of VT are returned in the array VT
+	m = (3*_markers.getSize()+_unprescribedWeightedQs.getSize());
+	n = getNumParameters();
+	lda = m;
+	SimTK::Vector S(n);
+	SimTK::Matrix Smat(n, n);
+	SimTK::Matrix Sinv(n, n);
+	SimTK::Matrix U(m, n);
+	ldu = m;
+	SimTK::Matrix VT(n, n);
+	ldvt = n;
+	SimTK::Vector WORK;
+	lwork = max(3*min(m, n)+max(m, n), 5*min(m, n));
+	WORK.resize(lwork);
+
+	/* 
+	   From SimTKlapack.h:
+
+	   dgesvd_(SimTK_FOPT_(jobu), char *jobvt, 
+	           SimTK_FDIM_(m), SimTK_FDIM_(n), double *a, SimTK_FDIM_(lda), 
+	           double *s, double *u, SimTK_FDIM_(ldu), double *vt, SimTK_FDIM_(ldvt), 
+			   double *work, SimTK_FDIM_(lwork), SimTK_INFO_, SimTK_FLEN_(jobu), SimTK_FLEN_(jobvt));
+	*/
+
+	SimTK::Matrix copyJ = J;
+	dgesvd_(jobu, &jobvt, m, n, &copyJ(0,0), lda, &S(0), &U(0,0), ldu, &VT(0,0), ldvt, &WORK(0), lwork, info, 1, 1);
+
+	Sinv = 0;
+
+	for(int i=0; i<n; i++)
+	{
+		Sinv(i, i) = 1.0/S(i);
+	}
+
+	Jinv = ~VT*Sinv*~U;
 }
