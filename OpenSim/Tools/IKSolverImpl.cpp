@@ -89,7 +89,7 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 	int numParameters = _ikTarget.getNumUnprescribedCoordinates();
 	Array<double> unprescribedQGuess(0.0, numParameters);	// Initial guess and work array
 	Array<double> unprescribedQSol(0.0, numParameters);	// Solution array
-	Array<double> experimentalMarkerLocations(0.0, _ikTarget.getNumOutputMarkers() * 3);
+	Array<double> computedMarkerLocations(0.0, _ikTarget.getNumOutputMarkers() * 3);
 
 	int startFrame = aIKOptions.getStartFrame(), endFrame = aIKOptions.getEndFrame();
 
@@ -172,8 +172,8 @@ void IKSolverImpl::solveFrames(const IKTrial& aIKOptions, Storage& inputData, St
 		/* ... then, optionally, computed marker locations. */
 		if (aIKOptions.getIncludeMarkers())
 		{
-			_ikTarget.getExperimentalMarkerLocations(experimentalMarkerLocations);
-			qsAndMarkersArray.append(experimentalMarkerLocations);
+			_ikTarget.getComputedMarkerLocations(computedMarkerLocations);
+			qsAndMarkersArray.append(computedMarkerLocations);
 		}
 
 		double currentTime;
@@ -272,7 +272,7 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "IPOPT") {
 		std::cout << "Using Ipopt optimizer algorithm." << std::endl;
 		algorithm = SimTK::InteriorPoint;
-	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "JACOB") {
+	} else if(IO::Uppercase(aIKOptions.getOptimizerAlgorithm()) == "JACOBIAN") {
 		std::cout << "Using Jacobian with Linear Least Squares Solver." << std::endl;
 		algorithm = SimTK::BestAvailiable;
 	} else {

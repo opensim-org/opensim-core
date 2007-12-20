@@ -123,16 +123,18 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+		double localPos[3];
+		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
 		double globalPos[3];
-		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		double markerError = 0.0;
 		for (int j = 0; j < 3; j++)
 		{
-			double err = _markers[i]->experimentalPosition[j] - globalPos[j];
+			_markers[i]->computedPosition[j] = globalPos[j];
+			double err = _markers[i]->experimentalPosition[j] - _markers[i]->computedPosition[j];
 			markerError += (err * err);
 		}
 
@@ -270,15 +272,17 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+		double localPos[3];
+		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
 		double globalPos[3];
-		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		for (int r=0; r<3; r++)
 		{
-			dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+			_markers[i]->computedPosition[r] = globalPos[r];
+			dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
 		}
 	}
 
@@ -324,15 +328,17 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 			if(!_markers[i]->validExperimentalPosition) continue;
 
 			// Get marker offset in local frame
-			_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+			double localPos[3];
+			_markers[i]->marker->getOffset(localPos);
 
 			// transform local marker to world frame
 			double globalPos[3];
-			de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+			de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 			for (int r=0; r<3; r++)
 			{
-				dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+				_markers[i]->computedPosition[r] = globalPos[r];
+				dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
 			}
 		}
 
@@ -369,15 +375,17 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 					if(!_markers[i]->validExperimentalPosition) continue;
 
 					// Get marker offset in local frame
-					_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+					double localPos[3];
+					_markers[i]->marker->getOffset(localPos);
 
 					// transform local marker to world frame
 					double globalPos[3];
-					de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+					de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 					for (int r=0; r<3; r++)
 					{
-						dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - globalPos[r]); 
+						_markers[i]->computedPosition[r] = globalPos[r];
+						dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
 					}
 				}
 
@@ -434,16 +442,17 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		_markers[i]->marker->getOffset(_markers[i]->computedPosition);
+		double localPos[3];
+		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
 		double globalPos[3];
-		de.transformPosition(*_markers[i]->body, _markers[i]->computedPosition, globalPos);
+		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		double markerError = 0.0;
 		for (int j = 0; j < 3; j++)
 		{
-			double err = _markers[i]->experimentalPosition[j] - globalPos[j];
+			double err = _markers[i]->experimentalPosition[j] - _markers[i]->computedPosition[j];
 			markerError += (err * err);
 		}
 
@@ -820,6 +829,7 @@ void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J)
 	SimTK::Vector pf((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
 	SimTK::Vector pb((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
 	double globalPos[3];
+	double localPos[3];
 	SimTK::Real rdx;
 	int row = 3*_markers.getSize();
 
@@ -830,8 +840,6 @@ void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J)
 	for (int m=0; m<_markers.getSize(); m++)
 	{
 		if(!_markers[m]->validExperimentalPosition) continue;
-		// Get marker offset in local frame
-		_markers[m]->marker->getOffset(_markers[m]->computedPosition);
 		markerWeights(m) = sqrt(_markers[m]->weight);
 	}
 
@@ -857,36 +865,49 @@ void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J)
 		for (int m=0; m<_markers.getSize(); m++)
 		{
 			if(!_markers[m]->validExperimentalPosition) continue;
+
+			// Get marker offset in local frame
+			_markers[m]->marker->getOffset(localPos);
+
 			// transform local marker to world frame
-			de.transformPosition(*_markers[m]->body, _markers[m]->computedPosition, globalPos);
+			de.transformPosition(*_markers[m]->body, localPos, globalPos);
+
 			for (int r=0; r<3; r++)
 			{
-                pf(m*3+r) = markerWeights(m) * globalPos[r];
+                //pf(m*3+r) = markerWeights(m) * globalPos[r];
+				pf(m*3+r) = markerWeights(m) * (globalPos[r] - _markers[m]->computedPosition[r]); // Forward difference only
 			}
 		}
 
-		// PERTURB BACKWARD
-		xp[i] = jointQs[i] - _dx[i];
+		//// PERTURB BACKWARD
+		//xp[i] = jointQs[i] - _dx[i];
 
-		// Assemble model in new configuration
-		// xp contains values only for unprescribed coordinates
-		_unprescribedQs[i]->coord->setValue(xp[i], true);
+		//// Assemble model in new configuration
+		//// xp contains values only for unprescribed coordinates
+		//_unprescribedQs[i]->coord->setValue(xp[i], true);
 
-		// Compute marker position in world frame	
-		for (int m=0; m<_markers.getSize(); m++)
-		{
-			if(!_markers[m]->validExperimentalPosition) continue;
-			// transform local marker to world frame
-			de.transformPosition(*_markers[m]->body, _markers[m]->computedPosition, globalPos);
-			for (int r=0; r<3; r++)
-			{
-                pb(m*3+r) = markerWeights(m) * globalPos[r];
-			}
-		}
+		//// Compute marker position in world frame	
+		//for (int m=0; m<_markers.getSize(); m++)
+		//{
+		//	if(!_markers[m]->validExperimentalPosition) continue;
+
+		//	// Get marker offset in local frame
+		//	_markers[m]->marker->getOffset(localPos);
+
+		//	// transform local marker to world frame
+		//	de.transformPosition(*_markers[m]->body, localPos, globalPos);
+
+		//	for (int r=0; r<3; r++)
+		//	{
+		//		pb(m*3+r) = markerWeights(m) * globalPos[r];
+		//	}
+		//}
 
 		// DERIVATIVES OF PERFORMANCE
-		rdx = 0.5 / _dx[i];
-		J.updCol(i) = (rdx*(pf-pb));
+		//rdx = 0.5 / _dx[i];
+		//J.updCol(i) = (rdx*(pf-pb));
+		rdx = 1 / _dx[i];
+		J.updCol(i) = (rdx*pf);
 
 		// RESTORE CONTROLS
 		xp[i] = jointQs[i];
