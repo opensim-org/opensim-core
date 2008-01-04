@@ -29,6 +29,11 @@
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/Common/StepFunction.h>
+#include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/version.h>
 
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
@@ -89,8 +94,6 @@
 #include <OpenSim/Simulation/Model/BodyScale.h>
 #include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
@@ -250,7 +253,7 @@ using namespace OpenSim;
         System.loadLibrary("osimSimbodyEngine");	//to load sdfast based models
       }
       catch(UnsatisfiedLinkError e){
-           TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
+           TheApp.exitApp("Required library failed to load. Check that the dynamic libraries osimJavaJNI, osimSdfastEngine, and osimSimbodyEngine are in your PATH\n"+e);
       }
   }
 %}
@@ -364,6 +367,13 @@ using namespace OpenSim;
 %include <OpenSim/Common/Units.h>
 %include <OpenSim/Common/rdMath.h>
 %include <OpenSim/Common/IO.h>
+%include <OpenSim/Common/Function.h>
+%template(ArrayXYPoint) OpenSim::Array<XYPoint>;
+%include <OpenSim/Common/Constant.h>
+%include <OpenSim/Common/NatCubicSpline.h>
+%include <OpenSim/Common/StepFunction.h>
+%include <OpenSim/Common/LinearFunction.h>
+
 %include <OpenSim/version.h>
 
 %include <OpenSim/Simulation/osimSimulationDLL.h>
@@ -441,9 +451,6 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/BodyScale.h>
 %template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
-
-%include <OpenSim/Common/Function.h>
-%include <OpenSim/Common/Constant.h>
 
 %include <OpenSim/Simulation/Model/AbstractDof.h>
 %include <OpenSim/Simulation/Model/AbstractCoordinate.h>

@@ -16,6 +16,8 @@
 #include "Scale.h"
 #include "NatCubicSpline.h"
 #include "Constant.h"
+#include "StepFunction.h"
+#include "LinearFunction.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
 
@@ -45,6 +47,8 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( Scale() );
 	Object::RegisterType( NatCubicSpline() );
 	Object::RegisterType( Constant() );
+	Object::RegisterType( StepFunction() );
+	Object::RegisterType( LinearFunction() );
 	Object::RegisterType( VisibleObject() );
 	Object::RegisterType( ObjectGroup() );
 }

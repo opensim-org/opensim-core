@@ -137,6 +137,21 @@ void Constant::copyData(const Constant &aConstant)
 {
 	_value = aConstant._value;
 }
+//_____________________________________________________________________________
+/**
+ * Initialize the constant with a value. This method is a virtual one in
+ * Function, so it has arguments for arrays of X and Y values. The constant's
+ * new value is stored in the first element of the Y array.
+ *
+ * @param aN the number of X and Y values
+ * @param aXValues the X values
+ * @param aYValues the Y values
+ */
+void Constant::init(int aN, const double *aXValues, const double *aYValues)
+{
+	if (aYValues)
+		_value = aYValues[0];
+}
 
 //=============================================================================
 // OPERATORS

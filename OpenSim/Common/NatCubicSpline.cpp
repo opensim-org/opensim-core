@@ -186,7 +186,20 @@ void NatCubicSpline::setEqual(const NatCubicSpline &aSpline)
 	_c = aSpline._c;
 	_d = aSpline._d;
 }
+//_____________________________________________________________________________
+/**
+ * Initialize the spline with X and Y values.
+ *
+ * @param aN the number of X and Y values
+ * @param aXValues the X values
+ * @param aYValues the Y values
+ */
+void NatCubicSpline::init(int aN, const double *aXValues, const double *aYValues)
+{
+	NatCubicSpline newSpline = NatCubicSpline(aN, aXValues, aYValues);
 
+	*this = newSpline;
+}
 
 //=============================================================================
 // OPERATORS
@@ -280,6 +293,28 @@ const Array<double>& NatCubicSpline::getX() const
 const Array<double>& NatCubicSpline::getY() const
 {
 	return(_y);
+}
+//_____________________________________________________________________________
+/**
+ * Get the array of independent variables used to construct the spline.
+ * For the number of independent variable data points use getN().
+ *
+ * @return Pointer to the independent variable data points.
+ * @see getN();
+ */
+const double* NatCubicSpline::getXValues() const
+{
+	return(&_x[0]);
+}
+//_____________________________________________________________________________
+/**
+ * Get the array of dependent variables used to construct the spline.
+ *
+ * @return Pointer to the independent variable data points.
+ */
+const double* NatCubicSpline::getYValues() const
+{
+	return(&_y[0]);
 }
 
 
@@ -567,6 +602,46 @@ double NatCubicSpline::evaluate(double aX, double velocity,
 
 }
 
+double NatCubicSpline::getX(int aIndex) const
+{
+	if (aIndex >= 0 && aIndex < _x.getSize())
+		return _x.get(aIndex);
+	else {
+		throw Exception("NatCubicSpline::getX(): index out of bounds.");
+		return 0.0;
+	}
+}
+
+double NatCubicSpline::getY(int aIndex) const
+{
+	if (aIndex >= 0 && aIndex < _y.getSize())
+		return _y.get(aIndex);
+	else {
+		throw Exception("NatCubicSpline::getY(): index out of bounds.");
+		return 0.0;
+	}
+}
+
+void NatCubicSpline::setX(int aIndex, double aValue)
+{
+	if (aIndex >= 0 && aIndex < _x.getSize()) {
+		_x[aIndex] = aValue;
+	   calcCoefficients();
+	} else {
+		throw Exception("NatCubicSpline::setX(): index out of bounds.");
+	}
+}
+
+void NatCubicSpline::setY(int aIndex, double aValue)
+{
+	if (aIndex >= 0 && aIndex < _y.getSize()) {
+		_y[aIndex] = aValue;
+	   calcCoefficients();
+	} else {
+		throw Exception("NatCubicSpline::setY(): index out of bounds.");
+	}
+}
+
 void NatCubicSpline::scaleY(double aScaleFactor)
 {
 	for (int i = 0; i < _y.getSize(); i++)
@@ -574,4 +649,50 @@ void NatCubicSpline::scaleY(double aScaleFactor)
 
 	// Recalculate the coefficients
 	calcCoefficients();
+}
+
+void NatCubicSpline::deletePoint(int aIndex)
+{
+	_x.remove(aIndex);
+	_y.remove(aIndex);
+
+	// Recalculate the coefficients
+	calcCoefficients();
+}
+
+void NatCubicSpline::addPoint(double aX, double aY)
+{
+	for (int i=0; i<_x.getSize(); i++)
+		if (_x[i] > aX)
+			break;
+
+	_x.insert(i, aX);
+	_y.insert(i, aY);
+
+	// Recalculate the slopes
+	calcCoefficients();
+}
+
+Array<XYPoint>* NatCubicSpline::renderAsLineSegments(double aStart, double aEnd)
+{
+	Array<XYPoint>* foo = new Array<XYPoint>(XYPoint());
+
+	return foo;
+}
+
+Array<XYPoint>* NatCubicSpline::renderAsLineSegments(int aIndex)
+{
+	if (aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
+		return NULL;
+
+	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
+
+	int numSegs = 20;
+	for (int i=0; i<numSegs; i++) {
+		double x = _x[aIndex] + (double)i * (_x[aIndex + 1] - _x[aIndex]) / ((double)numSegs - 1.0);
+		double y = evaluate(x, 0.0, 0.0, 0);
+		xyPts->append(XYPoint(x, y));
+	}
+
+	return xyPts;
 }

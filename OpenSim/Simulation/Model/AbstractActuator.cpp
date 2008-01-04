@@ -561,6 +561,29 @@ void AbstractActuator::getPseudoStates(double rY[]) const
 
 //_____________________________________________________________________________
 /**
+ * Replace one of the actuator's functions in the property array.
+ *
+ * @param aOldFunction the function being replaced.
+ * @param aNewFunction the new function.
+ */
+void AbstractActuator::replaceFunction(Function* aOldFunction, Function* aNewFunction)
+{
+	if (aOldFunction && aNewFunction) {
+		PropertySet& propSet = getPropertySet();
+
+		for (int i=0; i <propSet.getSize(); i++) {
+			Property* prop = propSet.get(i);
+			if (prop->getType() == Property::ObjPtr) {
+				if (prop->getValueObjPtr() == aOldFunction) {
+					prop->setValue(aNewFunction);
+				}
+			}
+		}
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * getStress needs to be overridden by derived classes to be usable
  */
 double AbstractActuator::getStress() const

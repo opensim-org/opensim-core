@@ -85,7 +85,7 @@ GCVSpline() :
  * (x,f(x)). A name for the spline may be specified.
  *
  * @param aDegree Degree of the spline.  Only the following degrees
- * are supported: 1 = linear, 3 = cubic, 5 = qunitic, and 7 = heptic.
+ * are supported: 1 = linear, 3 = cubic, 5 = quintic, and 7 = heptic.
  * @param aN Number of data points.
  * @param aX Array of independent values- should be aN long.
  * @param aF Array of function values- should be aN long.
@@ -281,7 +281,21 @@ setEqual(const GCVSpline &aSpline)
 	_wk = aSpline._wk;
 	_workEval = aSpline._workEval;
 }
+//_____________________________________________________________________________
+/**
+ * Initialize the spline with X and Y values.
+ *
+ * @param aN the number of X and Y values
+ * @param aXValues the X values
+ * @param aYValues the Y values
+ */
+void GCVSpline::
+init(int aN, const double *aXValues, const double *aYValues)
+{
+	GCVSpline newGCVSpline = GCVSpline(5, aN, aXValues, aYValues);
 
+	*this = newGCVSpline;
+}
 
 //=============================================================================
 // OPERATORS
@@ -317,7 +331,7 @@ operator=(const GCVSpline &aSpline)
  * Set the degree of this spline.
  *
  * @param aDegree Degree of spline.  Legal values: 1 = linear, 3 = cubic,
- * 5 = qunitic, 7 = heptic.
+ * 5 = quintic, 7 = heptic.
  */
 void GCVSpline::
 setDegree(int aDegree)
@@ -344,7 +358,7 @@ setDegree(int aDegree)
 /**
  * Get the degree of this spline.
  *
- * @return Degree of spline: 1 = linear, 3 = cubic, 5 = qunitic, 7 = heptic.
+ * @return Degree of spline: 1 = linear, 3 = cubic, 5 = quintic, 7 = heptic.
  */
 int GCVSpline::
 getDegree() const
@@ -360,7 +374,7 @@ getDegree() const
 /**
  * Get the order of this spline.
  *
- * @return Order of spline: 2 = linear, 4 = cubic, 6 = qunitic, 8 = heptic.
+ * @return Order of spline: 2 = linear, 4 = cubic, 6 = quintic, 8 = heptic.
  */
 int GCVSpline::
 getOrder() const
@@ -376,7 +390,7 @@ getOrder() const
 /**
  * Get the half order of this spline.
  *
- * @return Half order of spline: 1 = linear, 2 = cubic, 3 = qunitic, 4 = heptic.
+ * @return Half order of spline: 1 = linear, 2 = cubic, 3 = quintic, 4 = heptic.
  */
 int GCVSpline::
 getHalfOrder() const
@@ -446,6 +460,30 @@ getX() const
 }
 //_____________________________________________________________________________
 /**
+ * Get the array of independent variables used to construct the spline.
+ * For the number of independent variable data points use getN().
+ *
+ * @return Pointer to the independent variable data points.
+ * @see getN();
+ */
+const double* GCVSpline::
+getXValues() const
+{
+	return(&_x[0]);
+}
+//_____________________________________________________________________________
+/**
+ * Get the array of dependent variables used to construct the spline.
+ *
+ * @return Pointer to the dependent variable data points.
+ */
+const double* GCVSpline::
+getYValues() const
+{
+	return(&_y[0]);
+}
+//_____________________________________________________________________________
+/**
  * Get the array of coefficients for the spline.
  * For the number of coefficients use getNX().
  *
@@ -493,10 +531,100 @@ updateBoundingBox()
 	setMaxX(_x.getLast());
 }
 
-void GCVSpline::scaleY(double aScaleFactor)
+double GCVSpline::
+getX(int aIndex) const
+{
+	if (aIndex >= 0 && aIndex < _x.getSize())
+		return _x.get(aIndex);
+	else {
+		throw Exception("GCVSpline::getX(): index out of bounds.");
+		return 0.0;
+	}
+}
+
+double GCVSpline::
+getY(int aIndex) const
+{
+	if (aIndex >= 0 && aIndex < _y.getSize())
+		return _y.get(aIndex);
+	else {
+		throw Exception("GCVSpline::getY(): index out of bounds.");
+		return 0.0;
+	}
+}
+
+void GCVSpline::
+setX(int aIndex, double aValue)
+{
+	if (aIndex >= 0 && aIndex < _x.getSize()) {
+		_x[aIndex] = aValue;
+	   int ierr=0;
+	   gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		   _coefficients.get(),_errorVariance,_wk.get(),ierr);
+	} else {
+		throw Exception("GCVSpline::setX(): index out of bounds.");
+	}
+}
+
+void GCVSpline::
+setY(int aIndex, double aValue)
+{
+	if (aIndex >= 0 && aIndex < _y.getSize()) {
+		_y[aIndex] = aValue;
+	   int ierr=0;
+	   gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		   _coefficients.get(),_errorVariance,_wk.get(),ierr);
+	} else {
+		throw Exception("GCVSpline::setY(): index out of bounds.");
+	}
+}
+
+void GCVSpline::
+scaleY(double aScaleFactor)
 {
 	for (int i = 0; i < _y.getSize(); i++)
 		_y[i] *= aScaleFactor;
+
+	// Recalculate the coefficients
+	int ierr=0;
+	gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		_coefficients.get(),_errorVariance,_wk.get(),ierr);
+}
+
+void GCVSpline::
+deletePoint(int aIndex)
+{
+	_x.remove(aIndex);
+	_y.remove(aIndex);
+	_weights.remove(aIndex);
+	_coefficients.remove(aIndex);
+	int nwk = _x.getSize() + 6*(_x.getSize()*_halfOrder+1);
+	_wk.setSize(nwk);
+
+	// Recalculate the coefficients
+	int ierr=0;
+	gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		_coefficients.get(),_errorVariance,_wk.get(),ierr);
+}
+
+void GCVSpline::
+addPoint(double aX, double aY)
+{
+	for (int i=0; i<_x.getSize(); i++)
+		if (_x[i] > aX)
+			break;
+
+	_x.insert(i, aX);
+	_y.insert(i, aY);
+	if (i == _x.getSize()) {
+	   _weights.insert(i, _weights[i-1]);
+	   _coefficients.insert(i, _coefficients[i-1]);
+	} else {
+	   _weights.insert(i, _weights[i]);
+	   _coefficients.insert(i, _coefficients[i]);
+	}
+	int nwk = _x.getSize() + 6*(_x.getSize()*_halfOrder+1);
+	_wk.setSize(nwk);
 
 	// Recalculate the coefficients
 	int ierr=0;
@@ -546,3 +674,19 @@ evaluate(int aDerivOrder,double aX,double aY,double aZ)
 	return(value);
 }
 
+Array<XYPoint>* GCVSpline::renderAsLineSegments(int aIndex)
+{
+	if (aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
+		return NULL;
+
+	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
+
+	int numSegs = 20;
+	for (int i=0; i<numSegs; i++) {
+		double x = _x[aIndex] + (double)i * (_x[aIndex + 1] - _x[aIndex]) / ((double)numSegs - 1.0);
+		double y = evaluate(0, x, 0.0, 0.0);
+		xyPts->append(XYPoint(x, y));
+	}
+
+	return xyPts;
+}

@@ -72,6 +72,7 @@ public:
 	Constant(const Constant &aSpline);
 	virtual ~Constant();
 	virtual Object* copy() const;
+	virtual void init(int aN, const double *aXValues, const double *aYValues);
 
 private:
 	void setNull();
@@ -91,6 +92,11 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	virtual int getNumberOfPoints() const { return 0; }
+	virtual double getX(int aIndex) const { return 0.0; }
+	virtual double getY(int aIndex) const { return 0.0; }
+	virtual double getZ(int aIndex) const { return 0.0; }
+	virtual void deletePoint(int aIndex) { }
+	virtual void addPoint(double aX, double aY) { }
 	void setValue(double aValue) { _value = aValue; }
 
 	//--------------------------------------------------------------------------

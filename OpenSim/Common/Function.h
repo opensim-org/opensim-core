@@ -40,6 +40,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
+#include "SimmPoint.h"
 
 
 //=============================================================================
@@ -59,6 +60,18 @@
  * @author Frank C. Anderson
  */
 namespace OpenSim { 
+
+class OSIMCOMMON_API XYPoint
+{
+public:
+	double _x;
+	double _y;
+	XYPoint() { _x = _y = 0.0; }
+	XYPoint(double aX, double aY) { _x = aX; _y = aY; }
+	bool operator==(const XYPoint &aXYPoint) const { return false; }
+	bool operator<(const XYPoint &aXYPoint) const { return false; }
+
+};
 
 class OSIMCOMMON_API Function : public Object
 {
@@ -99,6 +112,7 @@ public:
 	Function(const Function &aFunction);
 	virtual ~Function();
 	virtual Object* copy() const = 0;
+	virtual void init(int aN, const double *aXValues, const double *aYValues) { }
 
 private:
 	void setNull();
@@ -128,6 +142,20 @@ public:
 	double getMinZ() const;
 	void setMaxZ(double aMaxZ);
 	double getMaxZ() const;
+	virtual int getNumberOfPoints() const = 0;
+	virtual const double* getXValues() const { return NULL; }
+	virtual const double* getYValues() const { return NULL; }
+	virtual double getX(int aIndex) const = 0;
+	virtual double getY(int aIndex) const = 0;
+	virtual double getZ(int aIndex) const = 0;
+	virtual void setX(int aIndex, double aValue) { }
+	virtual void setY(int aIndex, double aValue) { }
+	virtual void setZ(int aIndex, double aValue) { }
+	virtual void deletePoint(int aIndex) = 0;
+	virtual void addPoint(double aX, double aY) = 0;
+	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd) { return NULL; }
+	virtual Array<XYPoint>* renderAsLineSegments(int aIndex) { return NULL; }
+	static void deleteXYPointArray(Array<XYPoint>* aArray) { if (aArray) delete aArray; }
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -137,12 +165,12 @@ public:
 				double aMinX,double aMaxX,double &rMX,
 				double aMinY,double aMaxY,double &rMY,
 				double aMinZ,double aMaxZ,double &rMZ);
+	static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
 
 	//--------------------------------------------------------------------------
 	// EVALUATE
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox() = 0;
-	virtual int getNumberOfPoints() const = 0;
 	virtual double
 		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) = 0;
 	virtual double
