@@ -28,6 +28,7 @@ int main(int argc,char **argv)
 	//----------------------
 
 	LoadOpenSimLibrary("osimSdfastEngine");
+	LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE
 	string option = "";
