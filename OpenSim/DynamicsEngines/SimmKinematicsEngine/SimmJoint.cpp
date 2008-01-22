@@ -34,12 +34,13 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include "SimmJoint.h"
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
 #include "SimmRotationDof.h"
 #include "SimmTranslationDof.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include "SimmPath.h"
 
 //=============================================================================
 // STATICS
@@ -60,7 +61,8 @@ SimmJoint::SimmJoint() :
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj()),
 	_childBody(NULL),
-	_parentBody(NULL)
+	_parentBody(NULL),
+	_pathList(0)
 {
 	setNull();
 	setupProperties();
@@ -86,7 +88,8 @@ SimmJoint::SimmJoint(const SimmJoint &aJoint) :
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj()),
 	_childBody(NULL),
-	_parentBody(NULL)
+	_parentBody(NULL),
+	_pathList(0)
 {
 	setNull();
 	setupProperties();
@@ -122,6 +125,8 @@ void SimmJoint::copyData(const SimmJoint &aJoint)
 
 	_childBody = aJoint._childBody;
 	_parentBody = aJoint._parentBody;
+
+	_pathList = aJoint._pathList;
 }
 
 //_____________________________________________________________________________
@@ -282,6 +287,27 @@ void SimmJoint::calcTransforms()
 //=============================================================================
 // UTILITY
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Invalidate the joint and all of the paths that use it.
+ *
+ */
+void SimmJoint::invalidate()
+{
+	AbstractJoint::invalidate();
+
+	for (int i = 0; i < _pathList.getSize(); i++)
+		_pathList[i]->invalidate();
+
+	// TODO: use Observer mechanism for _pathList, and muscles
+	ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
+	for (int i = 0; i < act->getSize(); i++) {
+		AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
+		if (sm)
+			sm->invalidatePath();
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Check is a coordinate is used in the SimmJoint.

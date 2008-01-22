@@ -95,6 +95,8 @@ public:
 	virtual bool hasXYZAxes() const = 0;
 	virtual void scale(const ScaleSet& aScaleSet) = 0;
 
+	OPENSIM_DECLARE_DERIVED(AbstractJoint, Object);
+
 private:
 	void setNull();
 

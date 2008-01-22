@@ -49,8 +49,7 @@ using namespace OpenSim;
  */
 AbstractDof::AbstractDof(void) :
 	_function(_functionProp.getValueObjPtrRef()),
-	_coordinateName((std::string&)_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
+	_coordinateName((std::string&)_coordinateNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -65,8 +64,7 @@ AbstractDof::AbstractDof(void) :
 AbstractDof::AbstractDof(const AbstractDof &aDof) :
    Object(aDof),
 	_function(_functionProp.getValueObjPtrRef()),
-	_coordinateName((std::string&)_coordinateNameProp.getValueStr()),
-	_coordinate(NULL)
+	_coordinateName((std::string&)_coordinateNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -95,6 +93,7 @@ void AbstractDof::copyData(const AbstractDof &aDof)
 	_function = (Function*)Object::SafeCopy(aDof._function);
 	_coordinateName = aDof._coordinateName;
 	_coordinate = aDof._coordinate;
+	_joint = aDof._joint;
 }
 
 //_____________________________________________________________________________
@@ -103,6 +102,8 @@ void AbstractDof::copyData(const AbstractDof &aDof)
  */
 void AbstractDof::setNull(void)
 {
+	_coordinate = NULL;
+	_joint = NULL;
 	setType("AbstractDof");
 }
 
@@ -130,9 +131,14 @@ void AbstractDof::setup(AbstractDynamicsEngine* aEngine, AbstractJoint* aJoint)
 {
 	string errorMessage;
 
+	_joint = aJoint;
+
 	// Look up the coordinate by name in the kinematics
 	// engine and store a pointer to it.
-	_coordinate = aEngine->getCoordinateSet()->get(_coordinateName);
+	if (aEngine != NULL)
+	   _coordinate = aEngine->getCoordinateSet()->get(_coordinateName);
+	else
+		_coordinate = NULL;
 
 	// _coordinate will be NULL if _coordinateName is not the
 	// name of a valid model coordinate. This is OK, unless
@@ -178,14 +184,27 @@ setCoordinateName(const string& aName)
 {
 	_coordinateName = aName;
 }
+
 //_____________________________________________________________________________
 /**
- * Utility function to return the function that this dof uses.
- * NULL is returned if the dof is a constant.
+ * Utility to return the function that this dof uses.
  *
  * @return Function used by this dof.
  */
 Function* AbstractDof::getFunction() const
 {
 	return _function;
+}
+
+//_____________________________________________________________________________
+/**
+ * Utility to change the function that this dof uses.
+ *
+ * @param aFunction the function to change to.
+ */
+void AbstractDof::setFunction(Function* aFunction)
+{
+	_function = aFunction;
+	if (_joint)
+	   _joint->invalidate();
 }

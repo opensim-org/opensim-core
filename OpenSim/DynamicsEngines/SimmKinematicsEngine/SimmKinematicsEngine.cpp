@@ -180,6 +180,9 @@ void SimmKinematicsEngine::setup(Model* aModel)
 	/* For each coordinate, generate a list of the paths that use it. */
 	createCoordinatePathLists();
 
+	/* For each joint, generate a list of the paths that use it. */
+	createJointPathLists();
+
 	// Now that the coordinate-joint lists have been created, you can
 	// use them to determine the type (rotational/translational) of each
 	// coordinate.
@@ -1754,6 +1757,35 @@ void SimmKinematicsEngine::createCoordinatePathLists()
 						// Make sure we didn't already append this path to this coordinate (through another dof)
 						if(coordinate->getPathList().getSize()==0 || coordinate->getPathList().getLast()!=sp) coordinate->addPathToList(sp);
 					}
+				}
+			}
+		}
+   }
+}
+
+//_____________________________________________________________________________
+/**
+ * For each joint, create a list of the paths that use it. These lists
+ * are used to mark transform paths dirty when a joint is marked dirty.
+ */
+void SimmKinematicsEngine::createJointPathLists()
+{
+	// Clear current path lists!!
+	for (int i=0; i<_jointSet.getSize(); i++) {
+		SimmJoint* joint = dynamic_cast<SimmJoint*>(_jointSet.get(i));
+		if (joint)
+			joint->clearPathList();
+	}
+
+	for (int i=0; i<_bodySet.getSize(); i++) {
+		for (int j=0; j<_bodySet.getSize(); j++) {
+			SimmPath* sp = _path.getSimmPath(_bodySet.get(i), _bodySet.get(j));
+			if (sp != NULL) {
+			   const JointPath& p = sp->getPath();
+				for (unsigned int k = 0; k < p.size(); k++) {
+					SimmJoint* joint = dynamic_cast<SimmJoint*>(p[k].getJoint());
+					if (joint)
+				      joint->addPathToList(sp);
 				}
 			}
 		}

@@ -77,6 +77,8 @@ protected:
 
 	const AbstractCoordinate *_coordinate;
 
+	AbstractJoint *_joint;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -105,6 +107,10 @@ public:
 	virtual double getValue() = 0;
 	virtual const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	virtual Function* getFunction() const;
+	virtual void setFunction(Function* aFunction);
+	AbstractJoint* getJoint() { return _joint; }
+
+	OPENSIM_DECLARE_DERIVED(AbstractDof, Object);
 
 private:
 	void setNull();

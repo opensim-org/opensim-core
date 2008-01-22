@@ -47,6 +47,7 @@
 namespace OpenSim {
 
 class AbstractDynamicsEngine;
+class SimmPath;
 
 //=============================================================================
 //=============================================================================
@@ -75,6 +76,8 @@ protected:
 	Transform _forwardTransform;
 	Transform _inverseTransform;
 
+	Array<SimmPath*> _pathList; // list of paths that use this joint
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -99,10 +102,13 @@ public:
 	virtual AbstractBody* getParentBody() const { return _parentBody; }
 	virtual const Transform& getForwardTransform();
 	virtual const Transform& getInverseTransform();
+	virtual void invalidate();
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const;
 	virtual bool hasXYZAxes() const;
 	virtual void scale(const ScaleSet& aScaleSet);
 	virtual void scale(const Array<double> &aScaleFactors);
+   void addPathToList(SimmPath* aPath) { _pathList.append(aPath); }
+	void clearPathList() { _pathList.setSize(0); }
 
 private:
 	void setNull();

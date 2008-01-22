@@ -99,6 +99,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 #include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/DofSet.h>
 
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
@@ -453,6 +454,9 @@ using namespace OpenSim;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %include <OpenSim/Simulation/Model/AbstractDof.h>
+%template(SetDofs) OpenSim::Set<OpenSim::AbstractDof>;
+%include <OpenSim/Simulation/Model/DofSet.h>
+
 %include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::AbstractCoordinate>;

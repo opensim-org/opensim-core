@@ -107,6 +107,8 @@ public:
 	double evaluate() { return _value; }
 	virtual void scaleY(double aScaleFactor) { _value *= aScaleFactor; }
 
+	OPENSIM_DECLARE_DERIVED(Constant, Function);
+
 //=============================================================================
 };	// END class Constant
 //=============================================================================

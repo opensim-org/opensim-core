@@ -119,6 +119,7 @@ private:
 protected:
 	void createCoordinateJointLists();
 	void createCoordinatePathLists();
+	void createJointPathLists();
 
 public:
 	virtual void setup(Model* aModel);

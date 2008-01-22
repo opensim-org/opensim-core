@@ -464,17 +464,17 @@ bool SimmCoordinate::setValue(double aValue)
 			for (int i = 0; i < _jointList.getSize(); i++)
 				_jointList[i]->invalidate();
 
-			int pListSize = _pathList.getSize();
-			for (int i = 0; i < pListSize; i++)
-				_pathList[i]->invalidate();
-
-			// TODO: use Observer mechanism for _jointList, _pathList, and muscles
-			ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
-			for (int i = 0; i < act->getSize(); i++) {
-				AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
-				if (sm)
-					sm->invalidatePath();
-			}
+			// JPL 1/11/08: this should no longer be necessary.
+			// When a joint is invalidated it invalidates all of the paths that use it, and all of the muscles.
+			//int pListSize = _pathList.getSize();
+			//for (int i = 0; i < pListSize; i++)
+			//	_pathList[i]->invalidate();
+			//ActuatorSet* act = getDynamicsEngine()->getModel()->getActuatorSet();
+			//for (int i = 0; i < act->getSize(); i++) {
+			//	AbstractMuscle* sm = dynamic_cast<AbstractMuscle*>(act->get(i));
+			//	if (sm)
+			//		sm->invalidatePath();
+			//}
 		}
 	} else {
 		cout << "SimmCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
