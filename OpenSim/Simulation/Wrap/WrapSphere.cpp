@@ -553,8 +553,8 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	// Each muscle segment on the surface of the sphere should be
 	// 0.002 meters long. This assumes the model is in meters, of course.
 	int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
-	if (numWrapSegments < 0)
-		numWrapSegments = 0;
+	if (numWrapSegments < 1)
+		numWrapSegments = 1;
 
 	SimmPoint sp1(aWrapResult.r1);
 	aWrapResult.wrap_pts.append(sp1);

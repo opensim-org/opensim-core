@@ -727,8 +727,8 @@ restart_spiral_wrap:
 	// Each muscle segment on the surface of the cylinder should be
 	// 0.002 meters long. This assumes the model is in meters, of course.
 	int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
-	if (numWrapSegments < 0)
-		numWrapSegments = 0;
+	if (numWrapSegments < 1)
+		numWrapSegments = 1;
 
 	for (i = 0; i < numWrapSegments; i++)
 	{
