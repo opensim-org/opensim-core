@@ -1170,14 +1170,18 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 	// which is used to calculate moment arm. These are usually +/- delta
 	// from the coordinate's original value, but you have to look out for
 	// hitting the ends of the coordinate's range of motion.
+	// JPL 1/23/08: some curves exhibit undesireable end effects when
+	// derivatives are taken at the ends of the range of motion. To
+	// lessen these effects, increase delta when computing the two
+	// endpoints.
 	if (originalValue - delta < aCoord.getRangeMin()) {
 		min = originalValue;
-		mid = originalValue + delta;
-		max = mid + delta;
+		mid = originalValue + (delta * 10.0);
+		max = mid + (delta * 10.0);
 	} else if (originalValue + delta > aCoord.getRangeMax()) {
 		max = originalValue;
-		mid = originalValue - delta;
-		min = mid - delta;
+		mid = originalValue - (delta * 10.0);
+		min = mid - (delta * 10.0);
 	} else {
 		min = originalValue - delta;
 		mid = originalValue;
