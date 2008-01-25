@@ -142,7 +142,7 @@ Object* NatCubicSpline::copy() const
  */
 void NatCubicSpline::setNull()
 {
-	setType("NatCubicSpline");
+	setType("natCubicSpline");
 	setupProperties();
 }
 //_____________________________________________________________________________
