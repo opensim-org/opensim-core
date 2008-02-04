@@ -450,10 +450,16 @@ void StepFunction::scaleY(double aScaleFactor)
 		_y[i] *= aScaleFactor;
 }
 
-void StepFunction::deletePoint(int aIndex)
+bool StepFunction::deletePoint(int aIndex)
 {
-	_x.remove(aIndex);
-	_y.remove(aIndex);
+	if (_x.getSize() > 1 && _y.getSize() > 1 &&
+		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
+	   _x.remove(aIndex);
+	   _y.remove(aIndex);
+		return true;
+	}
+
+	return false;
 }
 
 void StepFunction::addPoint(double aX, double aY)

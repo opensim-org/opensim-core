@@ -124,6 +124,12 @@ public:
 	const std::string& getXCoordinateName() const { return _xCoordinateName; }
 	const std::string& getYCoordinateName() const { return _yCoordinateName; }
 	const std::string& getZCoordinateName() const { return _zCoordinateName; }
+	virtual Function* getXFunction() const { return _xAttachment; }
+	virtual Function* getYFunction() const { return _yAttachment; }
+	virtual Function* getZFunction() const { return _zAttachment; }
+	void setXFunction(Function& aFunction);
+	void setYFunction(Function& aFunction);
+	void setZFunction(Function& aFunction);
 	
 	virtual	void scale(Array<double>& aScaleFactors);
 	virtual bool isActive() const { return true; }

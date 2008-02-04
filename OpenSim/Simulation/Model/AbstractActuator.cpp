@@ -566,7 +566,7 @@ void AbstractActuator::getPseudoStates(double rY[]) const
  * @param aOldFunction the function being replaced.
  * @param aNewFunction the new function.
  */
-void AbstractActuator::replaceFunction(Function* aOldFunction, Function* aNewFunction)
+void AbstractActuator::replacePropertyFunction(Function* aOldFunction, Function* aNewFunction)
 {
 	if (aOldFunction && aNewFunction) {
 		PropertySet& propSet = getPropertySet();

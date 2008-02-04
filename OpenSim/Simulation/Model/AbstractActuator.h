@@ -154,7 +154,7 @@ public:
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return NULL; }
 	virtual void updateDisplayer() { }
-	virtual void replaceFunction(Function* aOldFunction, Function* aNewFunction);
+	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
 	OPENSIM_DECLARE_DERIVED(AbstractActuator, Object);
 
 protected:

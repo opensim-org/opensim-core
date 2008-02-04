@@ -591,20 +591,28 @@ scaleY(double aScaleFactor)
 		_coefficients.get(),_errorVariance,_wk.get(),ierr);
 }
 
-void GCVSpline::
+bool GCVSpline::
 deletePoint(int aIndex)
 {
-	_x.remove(aIndex);
-	_y.remove(aIndex);
-	_weights.remove(aIndex);
-	_coefficients.remove(aIndex);
-	int nwk = _x.getSize() + 6*(_x.getSize()*_halfOrder+1);
-	_wk.setSize(nwk);
+	if (_x.getSize() > 2 && _y.getSize() > 2 &&
+		 _weights.getSize() > 2 && _coefficients.getSize() > 2 &&
+		 aIndex < _x.getSize() && aIndex < _y.getSize() &&
+		 aIndex < _weights.getSize() && aIndex < _coefficients.getSize()) {
+      _x.remove(aIndex);
+	   _y.remove(aIndex);
+	   _weights.remove(aIndex);
+	   _coefficients.remove(aIndex);
+	   int nwk = _x.getSize() + 6*(_x.getSize()*_halfOrder+1);
+	   _wk.setSize(nwk);
 
-	// Recalculate the coefficients
-	int ierr=0;
-	gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
-		_coefficients.get(),_errorVariance,_wk.get(),ierr);
+	   // Recalculate the coefficients
+	   int ierr=0;
+	   gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		       _coefficients.get(),_errorVariance,_wk.get(),ierr);
+		return true;
+   }
+
+   return false;
 }
 
 void GCVSpline::

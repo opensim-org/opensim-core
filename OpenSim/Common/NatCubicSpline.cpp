@@ -651,13 +651,19 @@ void NatCubicSpline::scaleY(double aScaleFactor)
 	calcCoefficients();
 }
 
-void NatCubicSpline::deletePoint(int aIndex)
+bool NatCubicSpline::deletePoint(int aIndex)
 {
-	_x.remove(aIndex);
-	_y.remove(aIndex);
+	if (_x.getSize() > 2 && _y.getSize() > 2 &&
+		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
+	   _x.remove(aIndex);
+	   _y.remove(aIndex);
 
-	// Recalculate the coefficients
-	calcCoefficients();
+	   // Recalculate the coefficients
+	   calcCoefficients();
+		return true;
+   }
+
+   return false;
 }
 
 void NatCubicSpline::addPoint(double aX, double aY)

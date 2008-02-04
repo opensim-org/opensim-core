@@ -519,13 +519,19 @@ void LinearFunction::scaleY(double aScaleFactor)
    calcCoefficients();
 }
 
-void LinearFunction::deletePoint(int aIndex)
+bool LinearFunction::deletePoint(int aIndex)
 {
-	_x.remove(aIndex);
-	_y.remove(aIndex);
+	if (_x.getSize() > 1 && _y.getSize() > 1 &&
+		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
+	   _x.remove(aIndex);
+	   _y.remove(aIndex);
 
-	// Recalculate the slopes
-   calcCoefficients();
+	   // Recalculate the slopes
+      calcCoefficients();
+		return true;
+	}
+
+   return false;
 }
 
 void LinearFunction::addPoint(double aX, double aY)

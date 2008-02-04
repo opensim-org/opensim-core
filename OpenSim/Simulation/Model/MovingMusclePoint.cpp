@@ -165,7 +165,7 @@ void MovingMusclePoint::setupProperties()
 /**
  * Set the coordinate used for the X attachment function.
  *
- * @param The coordinate to set to.
+ * @param aCoordinate the coordinate to set to.
  */
 void MovingMusclePoint::setXCoordinate(AbstractCoordinate& aCoordinate)
 {
@@ -180,7 +180,7 @@ void MovingMusclePoint::setXCoordinate(AbstractCoordinate& aCoordinate)
 /**
  * Set the coordinate used for the Y attachment function.
  *
- * @param The coordinate to set to.
+ * @param aCoordinate the coordinate to set to.
  */
 void MovingMusclePoint::setYCoordinate(AbstractCoordinate& aCoordinate)
 {
@@ -195,7 +195,7 @@ void MovingMusclePoint::setYCoordinate(AbstractCoordinate& aCoordinate)
 /**
  * Set the coordinate used for the Z attachment function.
  *
- * @param The coordinate to set to.
+ * @param aCoordinate the coordinate to set to.
  */
 void MovingMusclePoint::setZCoordinate(AbstractCoordinate& aCoordinate)
 {
@@ -204,6 +204,48 @@ void MovingMusclePoint::setZCoordinate(AbstractCoordinate& aCoordinate)
 	   _zCoordinateName = _zCoordinate->getName();
 		_muscle->invalidatePath();
 	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the function used for the X attachment.
+ *
+ * @param aFunction the function to set to.
+ */
+void MovingMusclePoint::setXFunction(Function& aFunction)
+{
+	_xAttachment = &aFunction;
+
+	// Invalidate the path
+	_muscle->invalidatePath();
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the function used for the Y attachment.
+ *
+ * @param aFunction the function to set to.
+ */
+void MovingMusclePoint::setYFunction(Function& aFunction)
+{
+	_yAttachment = &aFunction;
+
+	// Invalidate the path
+	_muscle->invalidatePath();
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the function used for the Z attachment.
+ *
+ * @param aFunction the function to set to.
+ */
+void MovingMusclePoint::setZFunction(Function& aFunction)
+{
+	_zAttachment = &aFunction;
+
+	// Invalidate the path
+	_muscle->invalidatePath();
 }
 
 //_____________________________________________________________________________

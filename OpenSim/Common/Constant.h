@@ -95,7 +95,7 @@ public:
 	virtual double getX(int aIndex) const { return 0.0; }
 	virtual double getY(int aIndex) const { return 0.0; }
 	virtual double getZ(int aIndex) const { return 0.0; }
-	virtual void deletePoint(int aIndex) { }
+	virtual bool deletePoint(int aIndex) { return false; }
 	virtual void addPoint(double aX, double aY) { }
 	void setValue(double aValue) { _value = aValue; }
 

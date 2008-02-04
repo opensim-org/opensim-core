@@ -151,7 +151,7 @@ public:
 	virtual void setX(int aIndex, double aValue) { }
 	virtual void setY(int aIndex, double aValue) { }
 	virtual void setZ(int aIndex, double aValue) { }
-	virtual void deletePoint(int aIndex) = 0;
+	virtual bool deletePoint(int aIndex) = 0;
 	virtual void addPoint(double aX, double aY) = 0;
 	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd) { return NULL; }
 	virtual Array<XYPoint>* renderAsLineSegments(int aIndex) { return NULL; }
