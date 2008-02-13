@@ -2,11 +2,18 @@ function plot_dataFromMotOrStoFiles( plotSettings )
 
 % Set the figure position and background color.
 figure( plotSettings.figureNumber );
-clf;
 set( gcf, ...
-    'Units',    plotSettings.figureUnits, ...
+    'Units',    plotSettings.figureUnits,    ...
     'Position', plotSettings.figurePosition, ...
-    'Color',    plotSettings.figureBgColor );
+    'Color',    plotSettings.figureBgColor   );
+
+% Set the figure axis position and background color.
+axesPosition = get( gcf, 'DefaultAxesPosition' );
+axesPosition = [ ...
+    axesPosition(1) - 0.01, axesPosition(2) + 0.05, ...
+    axesPosition(3) + 0.06, axesPosition(4) - 0.12  ];
+set( gca, 'Position', axesPosition );
+set( gca, 'Color', plotSettings.figureBgColor );
 
 % Set the plot title.
 title( plotSettings.figureTitle );
@@ -16,14 +23,6 @@ set( t, ...
     'FontSize',          plotSettings.titleFontSize,          ...
     'VerticalAlignment', plotSettings.titleVerticalAlignment, ...
     'Interpreter',       'none'                               );
-
-% Set the figure axis position and background color.
-axesPosition = get( gcf, 'DefaultAxesPosition' );
-axesPosition = [ ...
-    axesPosition(1) - 0.05, axesPosition(2) - 0.05, ...
-    axesPosition(3) + 0.12, axesPosition(4) + 0.12 ];
-set( gcf, 'DefaultAxesPosition', axesPosition );
-set( gca, 'Color', plotSettings.figureBgColor );
 
 % Set axis foreground colors.
 set( get( gca, 'Title'  ), 'Color', plotSettings.figureFgColor );
@@ -47,6 +46,9 @@ if strcmpi( plotSettings.timeOrPercent, 'Percent' )
     time = convert_timeToCycle( time, tInfo.gcLimb, tInfo, ...
         ictoEvents, tInfo.analogRate, tInfo.tZeroAtFirstIC );
 end
+
+% Shift time axis if user said to do so.
+time = time + plotSettings.shiftTimeAxisBy;
 
 % Remove background color for plot.
 set( gca, 'Color', 'none' );
@@ -360,6 +362,7 @@ if plotSettings.plotLiteratureMoments
             timesScaled = leftTimesScaled;
             momentsScaled = leftMomentsScaled;
         end
+        timesScaled = timesScaled + plotSettings.shiftTimeAxisBy;
         momentsScaledDimensions = size( momentsScaled );
         numCurves = momentsScaledDimensions(2);
         for i = 1 : numCurves
@@ -489,7 +492,7 @@ set( leftAxis, ...
     'FontName', plotSettings.axisFontName,     ...
     'FontSize', plotSettings.axisFontSize,     ...
     'TickDir',  plotSettings.axisTickDirection );
-xlabel( leftAxis, plotSettings.xAxisLabel );
+%xlabel( leftAxis, plotSettings.xAxisLabel );
 a = get( leftAxis, 'XLabel' );
 set( a, ...
     'FontName', plotSettings.axisFontName, ...
