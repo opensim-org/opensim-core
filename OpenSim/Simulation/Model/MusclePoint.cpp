@@ -289,6 +289,24 @@ void MusclePoint::getVelocity(double aVelocity[3])
 	aVelocity[0] = aVelocity[1] = aVelocity[2] = 0.0;
 }
 
+MusclePoint* MusclePoint::makeMusclePointOfType(MusclePoint* aPoint, const string& aNewTypeName)
+{
+	MusclePoint* newPoint = NULL;
+
+	if (aPoint != NULL) {
+		Object* newObject = Object::newInstanceOfType(aNewTypeName);
+		if (newObject) {
+			newPoint = MusclePoint::safeDownCast(newObject);
+			if (newPoint) {
+				// Copy the contents from aPoint.
+				newPoint->init(*aPoint);
+			}
+		}
+	}
+
+	return newPoint;
+}
+
 //=============================================================================
 // SCALING
 //=============================================================================

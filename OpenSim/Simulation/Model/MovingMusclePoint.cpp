@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Common/NatCubicSpline.h>
 
 //=============================================================================
 // STATICS
@@ -121,6 +122,35 @@ void MovingMusclePoint::copyData(const MovingMusclePoint &aPoint)
 	_yCoordinateName = aPoint._yCoordinateName;
 	_zAttachment = (Function*)Object::SafeCopy(aPoint._zAttachment);
 	_zCoordinateName = aPoint._zCoordinateName;
+}
+
+//_____________________________________________________________________________
+/**
+ * Initialize a MovingMusclePoint with data from a MusclePoint.
+ *
+ * @param aPoint MusclePoint to be copied.
+ */
+void MovingMusclePoint::init(const MusclePoint& aPoint)
+{
+	MusclePoint::copyData(aPoint);
+
+	// If aPoint is a MovingMusclePoint, then you can copy all of its members over.
+	// Otherwise, create new functions for X, Y, and Z so that the point starts
+	// out in a reasonable state.
+   const MovingMusclePoint* mmp = dynamic_cast<const MovingMusclePoint*>(&aPoint);
+	if (mmp) {
+		copyData(*mmp);
+	} else {
+		double x[2], y[2];
+		x[0] = 0.0;
+		x[1] = 1.0;
+		y[0] = y[1] = aPoint.getAttachment()[0];
+		_xAttachment = new NatCubicSpline(2, x, y);
+		y[0] = y[1] = aPoint.getAttachment()[1];
+		_yAttachment = new NatCubicSpline(2, x, y);
+		y[0] = y[1] = aPoint.getAttachment()[2];
+		_zAttachment = new NatCubicSpline(2, x, y);
+	}
 }
 
 //_____________________________________________________________________________

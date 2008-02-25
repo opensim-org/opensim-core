@@ -52,12 +52,19 @@ public:
 	MusclePointSet();
 	MusclePointSet(const MusclePointSet& aSimmMusclePointSet);
 	~MusclePointSet(void);
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
 	MusclePointSet& operator=(const MusclePointSet &aSimmMusclePointSet);
 #endif
+
+	//--------------------------------------------------------------------------
+	// UTILITY
+	//--------------------------------------------------------------------------
+   void replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint);
+
 //=============================================================================
 };	// END of class MusclePointSet
 //=============================================================================

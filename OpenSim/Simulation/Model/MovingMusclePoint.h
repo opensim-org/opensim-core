@@ -114,6 +114,7 @@ public:
 	MovingMusclePoint& operator=(const MovingMusclePoint &aPoint);
 #endif
    void copyData(const MovingMusclePoint &aPoint);
+	virtual void init(const MusclePoint& aPoint);
 
 	const AbstractCoordinate* getXCoordinate() const { return _xCoordinate; }
 	const AbstractCoordinate* getYCoordinate() const { return _yCoordinate; }

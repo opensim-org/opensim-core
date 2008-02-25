@@ -106,6 +106,7 @@ public:
 	MusclePoint& operator=(const MusclePoint &aPoint);
 #endif
    void copyData(const MusclePoint &aPoint);
+	virtual void init(const MusclePoint& aPoint) { }
 
 	Array<double>& getAttachment() const { return _attachment; }
 	void setAttachment(double aAttachment[3]);
@@ -113,9 +114,9 @@ public:
 	const AbstractBody* getBody() const { return _body; }
 	void setBody(AbstractBody& aBody, bool preserveLocation = false);
 	const std::string& getBodyName() const { return _bodyName; }
-	const AbstractMuscle* getMuscle() const { return _muscle; }
+	AbstractMuscle* getMuscle() const { return _muscle; }
 
-	virtual	void scale(Array<double>& aScaleFactors);
+	virtual void scale(Array<double>& aScaleFactors);
 	virtual bool isActive() const { return true; }
 	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
@@ -125,6 +126,9 @@ public:
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry();
+
+	// Utility
+	static MusclePoint* makeMusclePointOfType(MusclePoint* aPoint, const std::string& aNewTypeName);
 
 	OPENSIM_DECLARE_DERIVED(MusclePoint, Object);
 protected:

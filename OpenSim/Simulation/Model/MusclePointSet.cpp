@@ -27,6 +27,7 @@
  */
 
 #include "MusclePointSet.h"
+#include "AbstractMuscle.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -90,3 +91,29 @@ MusclePointSet& MusclePointSet::operator=(const MusclePointSet &aSimmMusclePoint
 	return (*this);
 }
 #endif
+
+//=============================================================================
+// UTILITY
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Replace a muscle point in the set with another point. The new one is made a
+ * member of all the same groups as the old one, and is inserted in the same
+ * place the old one occupied.
+ *
+ *	@param aOldMusclePoint Muscle point to remove.
+ *	@param aNewMusclePoint Muscle point to add.
+ */
+void MusclePointSet::replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint)
+{
+	if (aOldMusclePoint != NULL && aNewMusclePoint != NULL) {
+		AbstractMuscle* muscle = aOldMusclePoint->getMuscle();
+		Model* model = muscle->getModel();
+	   int index = getIndex(aOldMusclePoint);
+		if (index >= 0) {
+			replace(index, aNewMusclePoint);
+			aNewMusclePoint->setup(model, muscle);
+			muscle->invalidatePath();
+		}
+	}
+}
