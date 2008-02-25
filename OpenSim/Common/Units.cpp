@@ -37,6 +37,12 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+// DTOR and RTOD are defined in rdMath.cpp, but they use PI, which is defined
+// in that file as acos(-1.0). But maybe because of a prior definition it ends
+// up truncated as 3.1415926538, which is not accurate enough for very small
+// angles. So in this file DTOR and RTOD are replaced with these:
+#define DEG_TO_RAD  0.017453292519943295769
+#define RAD_TO_DEG 57.295779513082320876846
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -153,14 +159,14 @@ double Units::convertTo(UnitType aType) const
 	if (_type == simmRadians)
 	{
 		if (aType == simmDegrees)
-			return rdMath::RTD;
+			return RAD_TO_DEG;
 		else
 			return rdMath::NAN;
 	}
 	else if (_type == simmDegrees)
 	{
 		if (aType == simmRadians)
-			return rdMath::DTR;
+			return DEG_TO_RAD;
 		else
 			return rdMath::NAN;
 	}
@@ -222,7 +228,7 @@ string Units::getLabel() const
 	   case simmRadians:
 		   return "radians";
 	   case simmDegrees:
-		   return "radians";
+		   return "degrees";
 	   case simmMillimeters:
 		   return "millimeters";
 	   case simmCentimeters:
@@ -252,7 +258,7 @@ string Units::getAbbreviation() const
 	   case simmRadians:
 		   return "rad";
 	   case simmDegrees:
-		   return "rad"; // ???
+		   return "deg";
 	   case simmMillimeters:
 		   return "mm";
 	   case simmCentimeters:
