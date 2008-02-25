@@ -111,6 +111,7 @@ public:
 	virtual ~AbstractMuscle();
 	virtual Object* copy() const = 0;
 	virtual void setup(Model *aModel);
+	void setName(const std::string &aName);
 #ifndef SWIG
 	AbstractMuscle& operator=(const AbstractMuscle &aMuscle);
 #endif

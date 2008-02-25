@@ -198,6 +198,22 @@ void AbstractMuscle::setup(Model* aModel)
 
 //_____________________________________________________________________________
 /**
+ * Set the name of the muscle. This method overrides the one in Object
+ * so that the attachment points can be [re]named accordingly.
+ *
+ * @param aName the new name of the muscle.
+ */
+void AbstractMuscle::setName(const string &aName)
+{
+	// BASE CLASS
+	AbstractActuator::setName(aName);
+
+	// Rename all of the attachment points.
+	nameAttachmentPoints(0);
+}
+
+//_____________________________________________________________________________
+/**
  * Name the attachment points based on their position in the set.
  *
  * @param aStartingIndex the index of the first attachment point to name.
@@ -475,6 +491,19 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 	// rename the attachment points starting at this new one
 	nameAttachmentPoints(aIndex);
 
+	// Update start point and end point in the wrap instances so that they
+	// refer to the same attachment points they did before the new point
+	// was added. These indices are 1-based.
+	aIndex++;
+	for (int i=0; i<_muscleWrapSet.getSize(); i++) {
+		int startPoint = _muscleWrapSet.get(i)->getStartPoint();
+		int endPoint = _muscleWrapSet.get(i)->getEndPoint();
+		if (startPoint != -1 && aIndex <= startPoint)
+			_muscleWrapSet.get(i)->setStartPoint(startPoint + 1);
+		if (endPoint != -1 && aIndex <= endPoint)
+			_muscleWrapSet.get(i)->setEndPoint(endPoint + 1);
+	}
+
 	invalidatePath();
 
 	return newPoint;
@@ -557,6 +586,20 @@ bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
 
 		// rename the attachment points starting at the deleted position
 		nameAttachmentPoints(aIndex);
+
+	   // Update start point and end point in the wrap instances so that they
+	   // refer to the same attachment points they did before the point was
+	   // deleted. These indices are 1-based. If the point deleted is start
+		// point or end point, the muscle wrap range is made smaller by one point.
+		aIndex++;
+	   for (int i=0; i<_muscleWrapSet.getSize(); i++) {
+	   	int startPoint = _muscleWrapSet.get(i)->getStartPoint();
+	   	int endPoint = _muscleWrapSet.get(i)->getEndPoint();
+			if ((startPoint != -1 && aIndex < startPoint) || (startPoint > _attachmentSet.getSize()))
+				_muscleWrapSet.get(i)->setStartPoint(startPoint - 1);
+			if (endPoint > 1 && aIndex <= endPoint && ((endPoint > startPoint) || (endPoint > _attachmentSet.getSize())))
+				_muscleWrapSet.get(i)->setEndPoint(endPoint - 1);
+	   }
 
 		invalidatePath();
 		return true;
