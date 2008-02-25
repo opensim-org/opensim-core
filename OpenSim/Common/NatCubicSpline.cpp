@@ -29,6 +29,7 @@
 
 // C++ INCLUDES
 #include "NatCubicSpline.h"
+#include "Constant.h"
 #include "rdMath.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -194,11 +195,36 @@ void NatCubicSpline::setEqual(const NatCubicSpline &aSpline)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void NatCubicSpline::init(int aN, const double *aXValues, const double *aYValues)
+void NatCubicSpline::init(Function* aFunction)
 {
-	NatCubicSpline newSpline = NatCubicSpline(aN, aXValues, aYValues);
+	if (aFunction == NULL)
+		return;
 
-	*this = newSpline;
+	NatCubicSpline* ncs = dynamic_cast<NatCubicSpline*>(aFunction);
+	if (ncs != NULL) {
+		setEqual(*ncs);
+	} else if (aFunction->getNumberOfPoints() == 0) {
+		// A NatCubicSpline must have at least 2 data points.
+		// If aFunction is a Constant, use its Y value for both data points.
+		// If it is not, make up two data points.
+		double x[2] = {0.0, 0.0}, y[2];
+		Constant* cons = dynamic_cast<Constant*>(aFunction);
+		if (cons != NULL) {
+			y[0] = y[1] = cons->evaluate();
+		} else {
+			y[0] = y[1] = 1.0;
+		}
+		*this = NatCubicSpline(2, x, y);
+	} else if (aFunction->getNumberOfPoints() == 1) {
+		double x[2], y[2];
+		x[0] = aFunction->getXValues()[0];
+		x[1] = x[0] + 1.0;
+		y[0] = y[1] = aFunction->getYValues()[0];
+		*this = NatCubicSpline(2, x, y);
+	} else {
+		*this = NatCubicSpline(aFunction->getNumberOfPoints(),
+			aFunction->getXValues(), aFunction->getYValues());
+	}
 }
 
 //=============================================================================
@@ -679,13 +705,6 @@ void NatCubicSpline::addPoint(double aX, double aY)
 	calcCoefficients();
 }
 
-Array<XYPoint>* NatCubicSpline::renderAsLineSegments(double aStart, double aEnd)
-{
-	Array<XYPoint>* foo = new Array<XYPoint>(XYPoint());
-
-	return foo;
-}
-
 Array<XYPoint>* NatCubicSpline::renderAsLineSegments(int aIndex)
 {
 	if (aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
@@ -693,12 +712,14 @@ Array<XYPoint>* NatCubicSpline::renderAsLineSegments(int aIndex)
 
 	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
 
+   // X sometimes goes slightly beyond the range due to roundoff error,
+	// so do the last point separately.
 	int numSegs = 20;
-	for (int i=0; i<numSegs; i++) {
+	for (int i=0; i<numSegs-1; i++) {
 		double x = _x[aIndex] + (double)i * (_x[aIndex + 1] - _x[aIndex]) / ((double)numSegs - 1.0);
-		double y = evaluate(x, 0.0, 0.0, 0);
-		xyPts->append(XYPoint(x, y));
+		xyPts->append(XYPoint(x, evaluate(0, x, 0.0, 0.0)));
 	}
+	xyPts->append(XYPoint(_x[aIndex + 1], evaluate(0, _x[aIndex + 1], 0.0, 0.0)));
 
 	return xyPts;
 }

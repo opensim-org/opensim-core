@@ -147,10 +147,22 @@ void Constant::copyData(const Constant &aConstant)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void Constant::init(int aN, const double *aXValues, const double *aYValues)
+void Constant::init(Function* aFunction)
 {
-	if (aYValues)
-		_value = aYValues[0];
+	if (aFunction == NULL)
+		return;
+
+	Constant* cons = dynamic_cast<Constant*>(aFunction);
+	if (cons != NULL) {
+		copyData(*cons);
+	} else if (aFunction->getNumberOfPoints() > 0) {
+		double ySum = 0.0;
+		for (int i=0; i<aFunction->getNumberOfPoints(); i++)
+			ySum += aFunction->getYValues()[i];
+		setValue(ySum / aFunction->getNumberOfPoints());
+	} else {
+		setValue(0.0);
+	}
 }
 
 //=============================================================================

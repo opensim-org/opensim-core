@@ -30,6 +30,7 @@
 
 // C++ INCLUDES
 #include "StepFunction.h"
+#include "Constant.h"
 #include "rdMath.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -186,11 +187,36 @@ void StepFunction::setEqual(const StepFunction &aFunction)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void StepFunction::init(int aN, const double *aXValues, const double *aYValues)
+void StepFunction::init(Function* aFunction)
 {
-	StepFunction newStepFunction = StepFunction(aN, aXValues, aYValues);
+	if (aFunction == NULL)
+		return;
 
-	*this = newStepFunction;
+	StepFunction* sf = dynamic_cast<StepFunction*>(aFunction);
+	if (sf != NULL) {
+		setEqual(*sf);
+	} else if (aFunction->getNumberOfPoints() == 0) {
+		// A StepFunction must have at least 2 data points.
+		// If aFunction is a Constant, use its Y value for both data points.
+		// If it is not, make up two data points.
+		double x[2] = {0.0, 1.0}, y[2];
+		Constant* cons = dynamic_cast<Constant*>(aFunction);
+		if (cons != NULL) {
+			y[0] = y[1] = cons->evaluate();
+		} else {
+			y[0] = y[1] = 1.0;
+		}
+		*this = StepFunction(2, x, y);
+	} else if (aFunction->getNumberOfPoints() == 1) {
+		double x[2], y[2];
+		x[0] = aFunction->getXValues()[0];
+		x[1] = x[0] + 1.0;
+		y[0] = y[1] = aFunction->getYValues()[0];
+		*this = StepFunction(2, x, y);
+	} else {
+		*this = StepFunction(aFunction->getNumberOfPoints(),
+			aFunction->getXValues(), aFunction->getYValues());
+	}
 }
 
 //=============================================================================

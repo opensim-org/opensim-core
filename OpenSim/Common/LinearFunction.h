@@ -86,7 +86,7 @@ public:
 	LinearFunction(const LinearFunction &aFunction);
 	virtual ~LinearFunction();
 	virtual Object* copy() const;
-	virtual void init(int aN, const double *aXValues, const double *aYValues);
+	virtual void init(Function* aFunction);
 
 private:
 	void setNull();

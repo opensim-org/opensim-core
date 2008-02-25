@@ -87,7 +87,7 @@ public:
 	NatCubicSpline(const NatCubicSpline &aSpline);
 	virtual ~NatCubicSpline();
 	virtual Object* copy() const;
-	virtual void init(int aN, const double *aXValues, const double *aYValues);
+	virtual void init(Function* aFunction);
 
 private:
 	void setNull();
@@ -120,7 +120,6 @@ public:
 	virtual void scaleY(double aScaleFactor);
 	virtual bool deletePoint(int aIndex);
 	virtual void addPoint(double aX, double aY);
-	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd);
 	virtual Array<XYPoint>* renderAsLineSegments(int aIndex);
 
 	//--------------------------------------------------------------------------

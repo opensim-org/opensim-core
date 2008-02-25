@@ -144,7 +144,7 @@ private:
 	void setNull();
 	void setupProperties();
 	void setEqual(const GCVSpline &aSpline);
-	virtual void init(int aN, const double *aXValues, const double *aYValues);
+	virtual void init(Function* aFunction);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

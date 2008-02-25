@@ -34,6 +34,7 @@
 
 // C++ INCLUDES
 #include "GCVSpline.h"
+#include "Constant.h"
 #include "rdMath.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -118,9 +119,9 @@ GCVSpline(int aDegree,int aN,const double *aX,const double *aF,
 	setDegree(aDegree);
 
 	// NUMBER OF DATA POINTS
-	if(aN < (2*getOrder())) {
+	if(aN < getOrder()) {
 		printf("GCVSpline: ERROR- there must be %d or more data points.\n",
-			2*getOrder());
+			getOrder());
 		return;
 	}
 
@@ -290,11 +291,61 @@ setEqual(const GCVSpline &aSpline)
  * @param aYValues the Y values
  */
 void GCVSpline::
-init(int aN, const double *aXValues, const double *aYValues)
+init(Function* aFunction)
 {
-	GCVSpline newGCVSpline = GCVSpline(5, aN, aXValues, aYValues);
+	if (aFunction == NULL)
+		return;
 
-	*this = newGCVSpline;
+	int degree = 5;
+	int order = degree + 1;
+	GCVSpline* gcv = dynamic_cast<GCVSpline*>(aFunction);
+	if (gcv != NULL) {
+		setEqual(*gcv);
+	} else if (aFunction->getNumberOfPoints() == 0) {
+		// A GCVSpline must have at least getOrder() data points.
+		// If aFunction is a Constant, use its Y value for all data points.
+		// If it is not, make up the data points.
+		double* x = new double[order];
+		double* y = new double[order];
+		for (int i=0; i<order; i++)
+			x[i] = i;
+		Constant* cons = dynamic_cast<Constant*>(aFunction);
+		if (cons != NULL) {
+			for (int i=0; i<order; i++)
+				y[i] = cons->evaluate();
+		} else {
+			for (int i=0; i<order; i++)
+				y[i] = 1.0;
+		}
+		*this = GCVSpline(degree, order, x, y);
+		delete x;
+		delete y;
+	} else if (aFunction->getNumberOfPoints() < order) {
+		// A GCVSpline must have at least getOrder() data points.
+		// Use as many data points as aFunction has, and then fill
+		// in the rest by copying the last Y value, and incrementing
+		// the X value by the step between the last two real data points.
+		double* x = new double[order];
+		double* y = new double[order];
+		double step = 1.0;
+		if (aFunction->getNumberOfPoints() >= 2)
+			step = aFunction->getXValues()[aFunction->getNumberOfPoints()-1] -
+			   aFunction->getXValues()[aFunction->getNumberOfPoints()-2];
+		for (int i=0; i<aFunction->getNumberOfPoints(); i++) {
+			x[i] = aFunction->getXValues()[i];
+			y[i] = aFunction->getYValues()[i];
+		}
+		for (int i=aFunction->getNumberOfPoints(); i<order; i++) {
+			x[i] = x[i-1] + step;
+			y[i] = y[i-1];
+		}
+		*this = GCVSpline(degree, order, x, y);
+		delete x;
+		delete y;
+	} else {
+		*this = GCVSpline(degree, aFunction->getNumberOfPoints(),
+			aFunction->getXValues(), aFunction->getYValues());
+	}
 }
 
 //=============================================================================
@@ -689,12 +740,14 @@ Array<XYPoint>* GCVSpline::renderAsLineSegments(int aIndex)
 
 	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
 
+   // X sometimes goes slightly beyond the range due to roundoff error,
+	// so do the last point separately.
 	int numSegs = 20;
-	for (int i=0; i<numSegs; i++) {
+	for (int i=0; i<numSegs-1; i++) {
 		double x = _x[aIndex] + (double)i * (_x[aIndex + 1] - _x[aIndex]) / ((double)numSegs - 1.0);
-		double y = evaluate(0, x, 0.0, 0.0);
-		xyPts->append(XYPoint(x, y));
+		xyPts->append(XYPoint(x, evaluate(0, x, 0.0, 0.0)));
 	}
+	xyPts->append(XYPoint(_x[aIndex + 1], evaluate(0, _x[aIndex + 1], 0.0, 0.0)));
 
 	return xyPts;
 }

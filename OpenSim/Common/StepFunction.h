@@ -85,7 +85,7 @@ public:
 	StepFunction(const StepFunction &aFunction);
 	virtual ~StepFunction();
 	virtual Object* copy() const;
-	virtual void init(int aN, const double *aXValues, const double *aYValues);
+	virtual void init(Function* aFunction);
 
 private:
 	void setNull();
