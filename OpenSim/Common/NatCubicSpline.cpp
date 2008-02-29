@@ -207,7 +207,7 @@ void NatCubicSpline::init(Function* aFunction)
 		// A NatCubicSpline must have at least 2 data points.
 		// If aFunction is a Constant, use its Y value for both data points.
 		// If it is not, make up two data points.
-		double x[2] = {0.0, 0.0}, y[2];
+		double x[2] = {0.0, 1.0}, y[2];
 		Constant* cons = dynamic_cast<Constant*>(aFunction);
 		if (cons != NULL) {
 			y[0] = y[1] = cons->evaluate();

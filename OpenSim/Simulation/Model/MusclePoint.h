@@ -106,7 +106,7 @@ public:
 	MusclePoint& operator=(const MusclePoint &aPoint);
 #endif
    void copyData(const MusclePoint &aPoint);
-	virtual void init(const MusclePoint& aPoint) { }
+	virtual void init(const MusclePoint& aPoint);
 
 	Array<double>& getAttachment() const { return _attachment; }
 	void setAttachment(double aAttachment[3]);
@@ -129,6 +129,7 @@ public:
 
 	// Utility
 	static MusclePoint* makeMusclePointOfType(MusclePoint* aPoint, const std::string& aNewTypeName);
+	static void deleteMusclePoint(MusclePoint* aPoint) { if (aPoint) delete aPoint; }
 
 	OPENSIM_DECLARE_DERIVED(MusclePoint, Object);
 protected:

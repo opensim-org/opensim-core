@@ -120,6 +120,17 @@ void MusclePoint::copyData(const MusclePoint &aPoint)
 
 //_____________________________________________________________________________
 /**
+ * Initialize a MusclePoint with data from another MusclePoint.
+ *
+ * @param aPoint MusclePoint to be copied.
+ */
+void MusclePoint::init(const MusclePoint& aPoint)
+{
+	copyData(aPoint);
+}
+
+//_____________________________________________________________________________
+/**
  * Set the data members of this MusclePoint to their null values.
  */
 void MusclePoint::setNull()

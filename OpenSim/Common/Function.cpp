@@ -413,7 +413,7 @@ Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTy
 			newFunction = Function::safeDownCast(newObject);
 			if (newFunction) {
 				newFunction->init(aFunction);
-				// newFunction's type will usually written over by aFunction's type,
+				// newFunction's type will usually be written over by aFunction's type,
 				// so set it back here.
 				newFunction->setType(aNewTypeName);
 			}

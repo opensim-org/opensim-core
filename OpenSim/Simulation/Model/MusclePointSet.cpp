@@ -28,6 +28,7 @@
 
 #include "MusclePointSet.h"
 #include "AbstractMuscle.h"
+#include "MuscleViaPoint.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -104,16 +105,35 @@ MusclePointSet& MusclePointSet::operator=(const MusclePointSet &aSimmMusclePoint
  *	@param aOldMusclePoint Muscle point to remove.
  *	@param aNewMusclePoint Muscle point to add.
  */
-void MusclePointSet::replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint)
+bool MusclePointSet::replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint)
 {
 	if (aOldMusclePoint != NULL && aNewMusclePoint != NULL) {
 		AbstractMuscle* muscle = aOldMusclePoint->getMuscle();
 		Model* model = muscle->getModel();
-	   int index = getIndex(aOldMusclePoint);
-		if (index >= 0) {
-			replace(index, aNewMusclePoint);
-			aNewMusclePoint->setup(model, muscle);
-			muscle->invalidatePath();
+		if (muscle != NULL && model != NULL) {
+			int count = 0;
+	      int index = getIndex(aOldMusclePoint);
+			// If you're switching from non-via to via, check to make sure that the muscle
+			// will be left with at least 2 non-via points.
+			MuscleViaPoint* oldVia = dynamic_cast<MuscleViaPoint*>(aOldMusclePoint);
+			MuscleViaPoint* newVia = dynamic_cast<MuscleViaPoint*>(aNewMusclePoint);
+			if (oldVia == NULL && newVia != NULL) {
+			   for (int i=0; i<getSize(); i++) {
+				   if (i != index) {
+				      if (dynamic_cast<MuscleViaPoint*>(get(i)) == NULL)
+					      count++;
+				   }
+				}
+			} else {
+				count = 2;
+			}
+		   if (count >= 2 && index >= 0) {
+			   replace(index, aNewMusclePoint);
+			   aNewMusclePoint->setup(model, muscle);
+			   muscle->invalidatePath();
+				return true;
+		   }
 		}
 	}
+	return false;
 }

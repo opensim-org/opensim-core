@@ -115,6 +115,28 @@ void MuscleViaPoint::copyData(const MuscleViaPoint &aPoint)
 
 //_____________________________________________________________________________
 /**
+ * Initialize a MuscleViaPoint with data from a MusclePoint.
+ * This function should not do anything to invalidate the muscle's path,
+ * because the via point may not be added to the muscle.
+ *
+ * @param aPoint MusclePoint to be copied.
+ */
+void MuscleViaPoint::init(const MusclePoint& aPoint)
+{
+	MusclePoint::copyData(aPoint);
+
+	// If aPoint is a MuscleViaPoint, then you can copy all of its members over.
+	// Otherwise, set the range to default values and leave the coordinate unassigned.
+   const MuscleViaPoint* mmp = dynamic_cast<const MuscleViaPoint*>(&aPoint);
+	if (mmp) {
+		copyData(*mmp);
+	} else {
+		_range[0] = _range[1] = 0.0;
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * Set the data members of this MuscleViaPoint to their null values.
  */
 void MuscleViaPoint::setNull()

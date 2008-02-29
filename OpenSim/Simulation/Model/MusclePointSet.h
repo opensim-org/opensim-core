@@ -63,7 +63,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-   void replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint);
+   bool replaceMusclePoint(MusclePoint* aOldMusclePoint, MusclePoint* aNewMusclePoint);
 
 //=============================================================================
 };	// END of class MusclePointSet

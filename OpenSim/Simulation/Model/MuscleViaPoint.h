@@ -97,6 +97,7 @@ public:
 	MuscleViaPoint& operator=(const MuscleViaPoint &aPoint);
 #endif
    void copyData(const MuscleViaPoint &aPoint);
+	virtual void init(const MusclePoint& aPoint);
 
 	Array<double>& getRange() const { return _range; }
 	const AbstractCoordinate* getCoordinate() const { return _coordinate; }
