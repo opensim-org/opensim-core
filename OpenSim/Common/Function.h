@@ -68,8 +68,11 @@ public:
 	double _y;
 	XYPoint() { _x = _y = 0.0; }
 	XYPoint(double aX, double aY) { _x = aX; _y = aY; }
+
+#ifndef SWIG
 	bool operator==(const XYPoint &aXYPoint) const { return false; }
 	bool operator<(const XYPoint &aXYPoint) const { return false; }
+#endif
 
 };
 

@@ -65,7 +65,7 @@ class OSIMSIMULATION_API ControlLinearNode : public Object
 //=============================================================================
 public:
 	/** Equality tolerance. */
-	static double _EqualityTolerance;
+	//static double _EqualityTolerance;
 
 protected:
 	// PROPERTIES
@@ -106,8 +106,8 @@ public:
 	//--------------------------------------------------------------------------
 	// SET AND GET
 	//--------------------------------------------------------------------------
-	static void SetEqualityTolerance(double aTol);
-	static double GetEqualityTolerance();
+	//static void SetEqualityTolerance(double aTol);
+	//static double GetEqualityTolerance();
 	void setTime(double aT);
 	double getTime() const;
 	void setValue(double aValue);

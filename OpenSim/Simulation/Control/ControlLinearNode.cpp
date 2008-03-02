@@ -42,7 +42,7 @@
 
 
 using namespace OpenSim;
-double ControlLinearNode::_EqualityTolerance = rdMath::ZERO;
+//double ControlLinearNode::_EqualityTolerance = rdMath::ZERO;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -166,8 +166,8 @@ operator=(const ControlLinearNode &aNode)
 bool ControlLinearNode::
 operator==(const ControlLinearNode &aNode) const
 {
-	if((_t-_EqualityTolerance) > aNode._t) return(false);
-	if((_t+_EqualityTolerance) < aNode._t) return(false);
+	if((_t) > aNode._t) return(false);
+	if((_t) < aNode._t) return(false);
 	return(true);
 }
 
@@ -210,7 +210,7 @@ operator<(const ControlLinearNode &aNode) const
  * positive.  If a negative tolerance is sent in, the equality tolerance
  * is set to 0.0.
  * @see ==
- */
+ *
 void ControlLinearNode::
 SetEqualityTolerance(double aTol)
 {
@@ -230,7 +230,7 @@ SetEqualityTolerance(double aTol)
  *
  * @return Equality tolerance.
  * @see ==
- */
+ *
 double ControlLinearNode::
 GetEqualityTolerance()
 {

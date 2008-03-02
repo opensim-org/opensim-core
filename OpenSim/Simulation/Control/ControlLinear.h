@@ -92,7 +92,6 @@ protected:
 	a node up front, and then just alter the time. */
 	ControlLinearNode _searchNode;
 
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -161,10 +160,18 @@ public:
 	virtual void setControlValueMin(double aT,double aX);
 	virtual double getControlValueMax(double aT=0.0);
 	virtual void setControlValueMax(double aT,double aX);
-
+	
 	// NODE ARRAY
 	void clearControlNodes();
-
+	ArrayPtrs<ControlLinearNode>& getControlValues() {
+		return (_xNodes);
+	}
+	ArrayPtrs<ControlLinearNode>& getControlMinValues() {
+		return (_minNodes);
+	}
+	ArrayPtrs<ControlLinearNode>& getControlMaxValues() {
+		return (_maxNodes);
+	}
 	// Convenience methods
 	virtual const double getFirstTime() const;
 	virtual const double getLastTime() const;
@@ -178,6 +185,7 @@ private:
 	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
 	double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
 	double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
+	OPENSIM_DECLARE_DERIVED(ControlLinear, Control);
 
 //=============================================================================
 };	// END of class ControlLinear
