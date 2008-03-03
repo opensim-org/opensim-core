@@ -35,6 +35,7 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -73,10 +74,10 @@ public:
 	AbstractMarker& operator=(const AbstractMarker &aMarker);
 #endif
 	virtual void updateFromMarker(const AbstractMarker &aMarker) = 0;
-	virtual void getOffset(double *rOffset) const = 0;
-	virtual const double* getOffset() const = 0;
-	virtual bool setOffset(Array<double>& aOffset) = 0;
-	virtual bool setOffset(const double aPoint[3]) = 0;
+	virtual void getOffset(SimTK::Vec3& rOffset) const = 0;
+	virtual const SimTK::Vec3& getOffset() const = 0;
+	virtual bool setOffset(const SimTK::Vec3& aOffset) = 0;
+	//virtual bool setOffset(const double aPoint[3]) = 0;
 	virtual bool getOffsetUseDefault() const = 0;
 	virtual bool getFixed() const = 0;
 	virtual bool setFixed(bool aFixed) = 0;
@@ -87,7 +88,7 @@ public:
 	virtual bool setBodyNameUseDefault(bool aValue) = 0;
 	virtual AbstractBody* getBody() const = 0;
 	virtual void setBody(AbstractBody* aBody) = 0;
-	virtual void scale(const Array<double>& aScaleFactors) = 0;
+	virtual void scale(const SimTK::Vec3& aScaleFactors) = 0;
 	virtual void setup(AbstractDynamicsEngine *aEngine) = 0;
 	virtual void removeSelfFromDisplay() = 0;
 	virtual VisibleObject* getDisplayer() const { return NULL; }

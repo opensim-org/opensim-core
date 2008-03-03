@@ -311,7 +311,7 @@ updatePseudoStates()
 	computeActuation();
 
 	// COMPUTE A NEW SET POINT
-	double pA[3];
+	SimTK::Vec3 pA;
 	bool changed = computeNewSetPoint(_fnMag,pA);
 	if(changed) setPointA(pA);
 }
@@ -357,32 +357,32 @@ updatePseudoStates()
  * @return Magnitude of the tangential force.
  */
 double SetPoint::
-computeTangentialForce(double aNormalForce,double rFT[3],
-	double rDFFric[3])
+computeTangentialForce(double aNormalForce,SimTK::Vec3& rFT,
+	SimTK::Vec3& rDFFric)
 {
 	// ELASTIC FORCE
 	double f = -_ktp * getTangentialDistance();
-	Mtx::Multiply(1,3,_tA,f,_ftp);
+	_ftp=f*_tA;
 
 	// VISCOUS FORCE
-	Mtx::Multiply(1,3,_vtA,-_ktv,_ftv);
+	_ftv= -_ktv*_vtA;
 
 	// RESULTS
-	Mtx::Add(1,3,_ftv,_ftp,rFT);
+	rFT=_ftv+_ftp;
 	rDFFric[0] = rDFFric[1] = rDFFric[2] = 0.0;
 
 	// LIMIT
 	// ut = unit vector in the direction of the tangent force
 	// df = change in tangential force to enforce friction constraints
 	double df;
-	double ut[3];
+	SimTK::Vec3 ut;
 	double limit = _mu * fabs(aNormalForce);
 	f = Mtx::Normalize(3,rFT,ut);
 	if(f>limit) {
 		df = limit - f;
 		f = limit;
-		Mtx::Multiply(1,3,ut,f,rFT);
-		Mtx::Multiply(1,3,ut,df,rDFFric);
+		rFT=f*ut;
+		rDFFric=df*ut;
 	}
 
 	return(f);
@@ -398,13 +398,11 @@ computeTangentialForce(double aNormalForce,double rFT[3],
  * @return True if a new set point was computed, False otherwise.
  */
 bool SetPoint::
-computeNewSetPoint(double aNormalForce,double rSetPoint[3]) const
+computeNewSetPoint(double aNormalForce,SimTK::Vec3& rSetPoint) const
 {
-	if(rSetPoint==NULL) return(false);
-
 	// CHECK FOR ZERO STIFFNESS
 	if(_ktp==0.0) {
-		Mtx::Add(1,3,&_pA[0],_rtA,rSetPoint);
+		rSetPoint=_rtA+_pA;
 		return(true);
 	}
 
@@ -421,10 +419,11 @@ computeNewSetPoint(double aNormalForce,double rSetPoint[3]) const
 	// _tA = tangent displacement unit vector
 	// _dtA = vector change needed to PointA
 	// _pA = PointA
-	double dt,dtA[3];
+	double dt;
+	SimTK::Vec3 dtA;
 	dt = getTangentialDistance() - f/_ktp;
-	Mtx::Multiply(1,3,_tA,dt,dtA);
-	Mtx::Add(1,3,&_pA[0],dtA,rSetPoint);
+	dtA=dt*_tA;
+	rSetPoint=_pA+dtA;
 	return(true);
 }
 

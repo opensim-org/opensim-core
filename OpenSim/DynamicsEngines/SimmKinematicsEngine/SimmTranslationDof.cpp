@@ -179,11 +179,9 @@ double SimmTranslationDof::getValue()
  *
  * @param aAxis Translation axis.
  */
-void SimmTranslationDof::setAxis(const double aAxis[3])
+void SimmTranslationDof::setAxis(const SimTK::Vec3& aAxis)
 {
-	_axis[0] = aAxis[0];
-	_axis[1] = aAxis[1];
-	_axis[2] = aAxis[2];
+	_axis = aAxis;
 }
 //_____________________________________________________________________________
 /**
@@ -191,11 +189,9 @@ void SimmTranslationDof::setAxis(const double aAxis[3])
  *
  * @param rAxis the translation axis is returned here.
  */
-void SimmTranslationDof::getAxis(double rAxis[3]) const
+void SimmTranslationDof::getAxis(SimTK::Vec3& rAxis) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+	rAxis = _axis;
 }
 
 //_____________________________________________________________________________

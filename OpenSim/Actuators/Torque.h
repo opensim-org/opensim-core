@@ -78,7 +78,7 @@ protected:
 	/** Unit vector expressed in the local frame of BodyA that
 	specifies the direction a positive torque is applied to BodyA.
 	(serialized) */
-	PropertyDblArray _propUnitVectorA;
+	PropertyDblVec3 _propUnitVectorA;
 	/** name of BodyB. */
 	PropertyStr _propBodyBName;
 	/** Optimal force. */
@@ -86,7 +86,7 @@ protected:
 
 	// REFERENCES
 	std::string& _bodyAName;
-	Array<double> &_uA;
+	SimTK::Vec3 &_uA;
 	std::string& _bodyBName;
 	double &_optimalForce;
 
@@ -95,7 +95,7 @@ protected:
 
 	/** Unit vector expressed in the local frame of BodyB that
 	specifies the direction a positive actuator force is applied to BodyB. */
-	double _uB[3];
+	SimTK::Vec3 _uB;
 
 	/** Excitation (control 0). */
 	double _excitation;
@@ -132,13 +132,13 @@ public:
 	void setBodyA(AbstractBody* aBody);
 	AbstractBody* getBodyA() const;
 	// DIRECTION A
-	void setDirectionA(const double aDirection[3]);
-	void getDirectionA(double rDirection[3]) const;
+	void setDirectionA(const SimTK::Vec3& aDirection);
+	void getDirectionA(SimTK::Vec3& rDirection) const;
 	// BODY B
 	void setBodyB(AbstractBody* aBody);
 	AbstractBody* getBodyB() const;
 	// DIRECTION B
-	void getDirectionB(double rDirection[3]) const;
+	void getDirectionB(SimTK::Vec3& rDirection) const;
 	// OPTIMAL FORCE
 	void setOptimalForce(double aOptimalForce);
 	double getOptimalForce() const;

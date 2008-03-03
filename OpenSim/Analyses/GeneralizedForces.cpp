@@ -37,6 +37,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 /**
  * Destructor.
  */
@@ -395,8 +396,8 @@ record(double aT,double *aX,double *aY)
 	int nu = _model->getNumSpeeds();
 	int ny = _model->getNumStates();
 
-	double zeroGrav[3] = {0.0, 0.0, 0.0};
-	double grav[3];
+	SimTK::Vec3 zeroGrav(0.0, 0.0, 0.0);
+	SimTK::Vec3 grav;
 
 	// COMPUTE ACCELERATIONS OF GENERALIZED COORDINATES
 	// ----------------------------------

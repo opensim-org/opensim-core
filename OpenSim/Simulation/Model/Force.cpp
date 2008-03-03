@@ -49,6 +49,7 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 
 //=============================================================================
@@ -73,10 +74,10 @@ Force::~Force()
 Force::Force(const string &aBodyAName,const string &aBodyBName) :
 	AbstractActuator(),
 	_bodyAName(_propBodyAName.getValueStr()),
-	_pA(_propPointA.getValueDblArray()),
-	_uA(_propUnitVectorA.getValueDblArray()),
+	_pA(_propPointA.getValueDblVec3()),
+	_uA(_propUnitVectorA.getValueDblVec3()),
 	_bodyBName(_propBodyBName.getValueStr()),
-	_pB(_propPointB.getValueDblArray()),
+	_pB(_propPointB.getValueDblVec3()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bA(NULL),
 	_bB(NULL)
@@ -103,10 +104,10 @@ Force::Force(const string &aBodyAName,const string &aBodyBName) :
 Force::Force(const Force &aForce) :
 	AbstractActuator(aForce),
 	_bodyAName(_propBodyAName.getValueStr()),
-	_pA(_propPointA.getValueDblArray()),
-	_uA(_propUnitVectorA.getValueDblArray()),
+	_pA(_propPointA.getValueDblVec3()),
+	_uA(_propUnitVectorA.getValueDblVec3()),
 	_bodyBName(_propBodyBName.getValueStr()),
-	_pB(_propPointB.getValueDblArray()),
+	_pB(_propPointB.getValueDblVec3()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bA(NULL),
 	_bB(NULL)
@@ -173,28 +174,28 @@ setNull()
 void Force::
 setupProperties()
 {
-	double origin[3] = { 0.0, 0.0, 0.0 };
-	double x_axis[3] = { 1.0, 0.0, 0.0 };
+	SimTK::Vec3 origin(0.0);
+	SimTK::Vec3 x_axis(1.0, 0.0, 0.0 );
 
 	_propBodyAName.setName("body_A");
 	_propertySet.append( &_propBodyAName );
 
 	_propPointA.setName("point_A");
-	_propPointA.setValue(3,origin);
-	_propPointA.setAllowableArraySize(3);
+	_propPointA.setValue(origin);
+	//_propPointA.setAllowableArraySize(3);
 	_propertySet.append( &_propPointA );
 
 	_propUnitVectorA.setName("direction_A");
-	_propUnitVectorA.setValue(3,x_axis);
-	_propUnitVectorA.setAllowableArraySize(3);
+	_propUnitVectorA.setValue(x_axis);
+	//_propUnitVectorA.setAllowableArraySize(3);
 	_propertySet.append( &_propUnitVectorA );
 
 	_propBodyBName.setName("body_B");
 	_propertySet.append( &_propBodyBName );
 
 	_propPointB.setName("point_B");
-	_propPointB.setValue(3,origin);
-	_propPointB.setAllowableArraySize(3);
+	_propPointB.setValue(origin);
+	//_propPointB.setAllowableArraySize(3);
 	_propertySet.append( &_propPointB );
 
 	_propOptimalForce.setName("optimal_force");
@@ -227,17 +228,17 @@ operator=(const Force &aForce)
 	setBodyA(aForce.getBodyA());
 
 	// POINT A
-	aForce.getPointA(&_pA[0]);
+	aForce.getPointA(_pA);
 
 	// DIRCTION A
-	aForce.getForceDirectionA(&_uA[0]);
+	aForce.getForceDirectionA(_uA);
 
 	// BODY B
 	_bodyBName = aForce._bodyBName;
 	setBodyB(aForce.getBodyB());
 
 	// POINT B
-	aForce.getPointB(&_pB[0]);
+	aForce.getPointB(_pB);
 
 	// DIRECTION B
 	aForce.getForceDirectionB(_uB);
@@ -290,11 +291,9 @@ getBodyA() const
  * @param aPoint Point x, y, and z values.
  */
 void Force::
-setPointA(const double aPoint[3])
+setPointA(const SimTK::Vec3& aPoint)
 {
-	_pA[0] = aPoint[0];
-	_pA[1] = aPoint[1];
-	_pA[2] = aPoint[2];
+	_pA = aPoint;
 }
 //_____________________________________________________________________________
 /**
@@ -303,11 +302,9 @@ setPointA(const double aPoint[3])
  * @param rPoint Point x, y, and z values.
  */
 void Force::
-getPointA(double rPoint[3]) const
+getPointA(SimTK::Vec3& rPoint) const
 {
-	rPoint[0] = _pA[0];
-	rPoint[1] = _pA[1];
-	rPoint[2] = _pA[2];
+	rPoint = _pA;
 }
 //_____________________________________________________________________________
 /**
@@ -352,9 +349,9 @@ getPointAFunction() const
  * from being applied.
  */
 void Force::
-setForceDirectionA(const double aDirection[3])
+setForceDirectionA(const SimTK::Vec3& aDirection)
 {
-	double mag = Mtx::Normalize(3,aDirection,&_uA[0]);
+	double mag = Mtx::Normalize(3,aDirection,_uA);
 	if(mag==rdMath::ZERO) {
 		printf("Force.setForceDirection: WARN- direction has a magnitude ");
 		printf("of less than %lf.\n",rdMath::ZERO);
@@ -369,11 +366,9 @@ setForceDirectionA(const double aDirection[3])
  * @param rPoint Point x, y, and z values.
  */
 void Force::
-getForceDirectionA(double rDirection[3]) const
+getForceDirectionA(SimTK::Vec3& rDirection) const
 {
-	rDirection[0] = _uA[0];
-	rDirection[1] = _uA[1];
-	rDirection[2] = _uA[2];
+	rDirection = _uA;
 }
 
 //-----------------------------------------------------------------------------
@@ -414,11 +409,9 @@ getBodyB() const
  * @param aPoint Point x, y, and z values.
  */
 void Force::
-setPointB(const double aPoint[3])
+setPointB(const SimTK::Vec3& aPoint)
 {
-	_pB[0] = aPoint[0];
-	_pB[1] = aPoint[1];
-	_pB[2] = aPoint[2];
+	_pB = aPoint;
 }
 //_____________________________________________________________________________
 /**
@@ -427,11 +420,9 @@ setPointB(const double aPoint[3])
  * @param rPoint Point x, y, and z values.
  */
 void Force::
-getPointB(double rPoint[3]) const
+getPointB(SimTK::Vec3& rPoint) const
 {
-	rPoint[0] = _pB[0];
-	rPoint[1] = _pB[1];
-	rPoint[2] = _pB[2];
+	rPoint = _pB;
 }
 //_____________________________________________________________________________
 /**
@@ -471,11 +462,9 @@ getPointBFunction() const
  * @param rPoint Point x, y, and z values.
  */
 void Force::
-getForceDirectionB(double rDirection[3]) const
+getForceDirectionB(SimTK::Vec3& rDirection) const
 {
-	rDirection[0] = _uB[0];
-	rDirection[1] = _uB[1];
-	rDirection[2] = _uB[2];
+	rDirection = _uB;
 }
 
 //-----------------------------------------------------------------------------
@@ -597,8 +586,8 @@ computeActuation()
 void Force::
 computeForceDirectionForBodyB()
 {
-	_model->getDynamicsEngine().transform(*_bA,&_uA[0],*_bB,_uB);
-	Mtx::Multiply(1,3,_uB,-1.0,_uB);
+	_model->getDynamicsEngine().transform(*_bA,_uA,*_bB,_uB);
+	_uB*= -1.0;
 }
 //_____________________________________________________________________________
 /**
@@ -607,12 +596,13 @@ computeForceDirectionForBodyB()
 void Force::
 computeSpeed()
 {
-	double vA[3],vB[3],v[3];
-	_model->getDynamicsEngine().getVelocity(*_bA,&_pA[0],vA);
-	_model->getDynamicsEngine().getVelocity(*_bA,&_pB[0],vB);
-	Mtx::Subtract(1,3,vB,vA,v);
+	SimTK::Vec3 vA,vB,v;
+	_model->getDynamicsEngine().getVelocity(*_bA,_pA,vA);
+	_model->getDynamicsEngine().getVelocity(*_bA,_pB,vB);
+	
+	v=vB-vA;
 	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),v,*_bA,v);
-	_speed = -Mtx::DotProduct(3,&_uA[0],v);
+	_speed = -Mtx::DotProduct(3,_uA,v);
 }
 //_____________________________________________________________________________
 /**
@@ -656,18 +646,16 @@ apply()
 	
 	// FORCE ON BODY A
 	if(_bA!=&_model->getDynamicsEngine().getGroundBody()) {
-		double fA[3];
-		Mtx::Multiply(1,3,&_uA[0],_force,fA);
-		Mtx::Multiply(1,3,fA,_scaleFactor,fA);
-		_model->getDynamicsEngine().applyForceBodyLocal(*_bA,&_pA[0],fA);
+		SimTK::Vec3 fA=_force*_uA;
+		fA *=_scaleFactor;
+		_model->getDynamicsEngine().applyForceBodyLocal(*_bA,_pA,fA);
 	}
 
 	// FORCE ON BODY B
 	if(_bB!=&_model->getDynamicsEngine().getGroundBody()) {
-		double fB[3];
-		Mtx::Multiply(1,3,_uB,_force,fB);
-		Mtx::Multiply(1,3,fB,_scaleFactor,fB);
-		_model->getDynamicsEngine().applyForceBodyLocal(*_bB,&_pB[0],fB);
+		SimTK::Vec3 fB=_force*_uB;
+		fB *= _scaleFactor;
+		_model->getDynamicsEngine().applyForceBodyLocal(*_bB,_pB,fB);
 	}
 }
 
@@ -741,21 +729,20 @@ setup(Model* aModel)
  * @todo Check that the line of action is expressed in the proper frame.
  */
 void Force::
-computeLineOfAction(double rLineOfAction[3]) const
+computeLineOfAction(SimTK::Vec3& rLineOfAction) const
 {
-	if(rLineOfAction==NULL) return;
 	if(_model==NULL) {
 		printf("Force.computeLineOfAction: ERROR- no model.\n");
 		return;
 	}
 
 	// GET INERTIAL POSITONS
-	double pB[3],pA[3];
-	_model->getDynamicsEngine().getPosition(*_bB,&_pB[0],pB);
-	_model->getDynamicsEngine().getPosition(*_bA,&_pA[0],pA);
+	SimTK::Vec3 pB,pA;
+	_model->getDynamicsEngine().getPosition(*_bB,_pB,pB);
+	_model->getDynamicsEngine().getPosition(*_bA,_pA,pA);
 
 	// SUBTRACT
-	Mtx::Subtract(1,3,pB,pA,rLineOfAction);
+	rLineOfAction=pB-pA;
 
 	// TRANSFORM
 	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),rLineOfAction,*_bA,rLineOfAction);

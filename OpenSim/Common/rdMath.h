@@ -34,22 +34,12 @@
 
 
 #include <math.h>
+#include "SimTKcommon.h"
 #include "osimCommonDLL.h"
-
-// Need these undefined to make this work on linux
-#ifdef NAN
-#undef NAN
-#endif
-#ifdef INFINITY
-#undef INFINITY
-#endif
+#include "SimTKcommon.h"
 
 
 namespace OpenSim { 
-
-class Line;
-class Plane;
-
 
 //=============================================================================
 //=============================================================================
@@ -62,10 +52,7 @@ class OSIMCOMMON_API rdMath
 // DATA
 //=============================================================================
 public:
-	static const double PI;
 	static const double PI_2;
-	static const double RTD;
-	static const double DTR;
 	static const double SMALL;
 	static const double ZERO;
 	static const double NAN; // TODO: eventually want to use std::numeric_limits<double>::quiet_NaN()
@@ -85,13 +72,13 @@ public:
 	// incorrectly round it off to zero (e.g. if comparing it to zero using IsEqual)
 	// Should use isNAN instead of hcecking rdMath::NAN because once we switch to a real NaN value the
 	// == check will fail even if it is set to NaN!
-	static bool isNAN(double val) { return val == rdMath::NAN; }
+	static bool isNAN(double val) { return !(val ==val); }
 
 	//--------------------------------------------------------------------------
 	// MIN / MAX
 	//--------------------------------------------------------------------------
-	template<class T> static inline T Min(T a,T b) { return a <= b ? a : b; }
-	template<class T> static inline T Max(T a,T b) { return a >= b ? a : b; }
+	//template<class T> static inline T Min(T a,T b) { return a <= b ? a : b; }
+	//template<class T> static inline T Max(T a,T b) { return a >= b ? a : b; }
 	template<class T> static inline T Clamp(T x,T xmin,T xmax) { return x<xmin ? xmin : (x>xmax ? xmax : x); }
 
 	//--------------------------------------------------------------------------
@@ -124,38 +111,35 @@ public:
 	//--------------------------------------------------------------------------
 	// GEOMETRY
 	//--------------------------------------------------------------------------
-	static int
-		ComputeIntersection(const Line *aLine,const Plane *aPlane,
-		double rPoint[3]);
 	static void
 		ComputeNormal(double aP1X,double aP1Y,double aP1Z,
 		double aP2X,double aP2Y,double aP2Z,
 		double aP3X,double aP3Y,double aP3Z,
-		double rNormal[3]);
+				  SimTK::Vec3& rNormal);
 	static bool
-		IntersectLines(double p1[3], double p2[3],
-		double p3[3], double p4[3],
-		double pInt1[3], double& s,
-		double pInt2[3], double& t);
+		IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2,
+		SimTK::Vec3& p3, SimTK::Vec3& p4,
+		SimTK::Vec3& pInt1, double& s,
+		SimTK::Vec3& pInt2, double& t);
 	static bool
-		IntersectLineSegPlane(double pt1[3], double pt2[3],
-		double plane[3], double d, double inter[3]);
+		IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
+		SimTK::Vec3& plane, double d, SimTK::Vec3& inter);
 	static void
-		ConvertAxisAngleToQuaternion(const double axis[3],
+		ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis,
 		double angle, double quat[4]);
 	static void
-		GetClosestPointOnLineToPoint(double pt[3], double linePt[3],
-		double line[3], double closestPt[3], double& t);
+		GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
+									  SimTK::Vec3& closestPt, double& t);
 	static void
 		Make3x3DirCosMatrix(double angle, double mat[][3]);
 	static void
-		ConvertAxisAngleTo4x4DirCosMatrix(const double axis[3], double angle, double mat[][4]);
+		ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4]);
 	static double
-		CalcDistanceSquaredBetweenPoints(double point1[], double point2[]);
+		CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2);
 	static double
-		CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[]);
+		CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line);
 	static void
-		RotateMatrixAxisAngle(double matrix[][4], const double axis[3], double angle);
+		RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle);
 	static void
 		ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]);
 	static void

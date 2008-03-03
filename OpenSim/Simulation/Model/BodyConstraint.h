@@ -56,7 +56,7 @@ public:
 	void setValues(int aN,int aID[],double aV[][3]);
 	void constructConstraintsForPoint1();
 	void constructConstraintsForPoint2();
-	double* findMostOrthogonal(OpenSim::PointConstraint *aPC,double aV[3]);
+	double* findMostOrthogonal(OpenSim::PointConstraint *aPC,SimTK::Vec3& aV);
 
 	//---------------------------------------------------------------------------
 	// UTILITY

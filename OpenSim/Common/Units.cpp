@@ -159,14 +159,14 @@ double Units::convertTo(UnitType aType) const
 	if (_type == simmRadians)
 	{
 		if (aType == simmDegrees)
-			return RAD_TO_DEG;
+			return SimTK_RADIAN_TO_DEGREE;
 		else
 			return rdMath::NAN;
 	}
 	else if (_type == simmDegrees)
 	{
 		if (aType == simmRadians)
-			return DEG_TO_RAD;
+			return SimTK_DEGREE_TO_RADIAN;
 		else
 			return rdMath::NAN;
 	}

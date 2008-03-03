@@ -43,11 +43,13 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+
 static char* wrapTypeName = "cylinder";
-static double p0[] = {0.0, 0.0, -1.0};
-static double dn[] = {0.0, 0.0, 1.0};
+static Vec3 p0(0.0, 0.0, -1.0);
+static Vec3 dn(0.0, 0.0, 1.0);
 #define MAX_ITERATIONS    100
-#define TANGENCY_THRESHOLD (0.1 * DTOR) // find tangency to within 1 degree
+#define TANGENCY_THRESHOLD (0.1 * SimTK_DEGREE_TO_RADIAN) // find tangency to within 1 degree
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -230,16 +232,18 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 									const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-	double dist, pp[3], vv[3], uu[3], r1a[3], r1b[3], r2a[3], r2b[3],
-		r1am[3], r1bm[3], r2am[3], r2bm[3], p11_dist, p22_dist, t, apex[3],
-		dot1, dot2, dot3, dot4, plane_normal[3], d, sum_musc[3], sin_theta,
-		p11[3], p22[3], *r11, *r22, r1p[3], r2p[3], alpha, beta, r_squared = _radius * _radius;
-	double dist1, dist2, axispt[3], vert1[3], vert2[3], mpt[3], apex1[3], apex2[3], l1[3], l2[3];
-	double near12[3], t12,
-		near00[3], t00;
+	double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
+		*r11, *r22, alpha, beta, r_squared = _radius * _radius;
+	double dist1, dist2;
+	double t12, t00;
+
+	Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
+		r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
+		vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
+
 	int i, return_code = wrapped;
 	bool r1_inter, r2_inter;
 	bool constrained   = (bool) (_wrapSign != 0);
@@ -263,8 +267,8 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	aWrapResult.wrap_pts.setSize(0);
 
 	// abort if aPoint1 or aPoint2 is inside the cylinder.
-	if (rdMath::CalcDistanceSquaredPointToLine(&aPoint1[0], p0, dn) < r_squared ||
-		rdMath::CalcDistanceSquaredPointToLine(&aPoint2[0], p0, dn) < r_squared)
+	if (rdMath::CalcDistanceSquaredPointToLine(aPoint1, p0, dn) < r_squared ||
+		rdMath::CalcDistanceSquaredPointToLine(aPoint2, p0, dn) < r_squared)
 	{
 		return insideRadius;
 	}
@@ -273,13 +277,13 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	// segment from one end of the cylinder to the other. This intersection is
 	// used in several places further down in the code to check for various
 	// wrapping conditions.
-	double cylStart[3], cylEnd[3];
+	SimTK::Vec3 cylStart, cylEnd;
 	cylStart[0] = cylEnd[0] = 0.0;
 	cylStart[1] = cylEnd[1] = 0.0;
 	cylStart[2] = -0.5 * _length;
 	cylEnd[2] = 0.5 * _length;
 
-	rdMath::IntersectLines(&aPoint1[0], &aPoint2[0], cylStart, cylEnd, near12, t12, near00, t00);
+	rdMath::IntersectLines(aPoint1, aPoint2, cylStart, cylEnd, near12, t12, near00, t00);
 
 	// abort if the cylinder is unconstrained and p1p2 misses the cylinder.
 	// Use the return values from the above call to IntersectLines()
@@ -297,8 +301,8 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	}
 
 	// find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2
-	rdMath::GetClosestPointOnLineToPoint(&aPoint1[0], p0, dn, p11, t);
-	rdMath::GetClosestPointOnLineToPoint(&aPoint2[0], p0, dn, p22, t);
+	rdMath::GetClosestPointOnLineToPoint(aPoint1, p0, dn, p11, t);
+	rdMath::GetClosestPointOnLineToPoint(aPoint2, p0, dn, p22, t);
 
 	// find preliminary tangent point candidates r1a & r1b
 	MAKE_3DVECTOR(p11, aPoint1, vv);
@@ -347,7 +351,7 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	// choose the best preliminary tangent points r1 & r2 from the 4 candidates.
 	if (constrained)
 	{
-		double sum_r[3];
+		SimTK::Vec3 sum_r;
 
 		if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
 		{
@@ -493,29 +497,29 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		{
 			COPY_1X3VECTOR(r1a, aWrapResult.r1);
 			COPY_1X3VECTOR(r2a, aWrapResult.r2);
-			r11 = r1b;
-			r22 = r2b;
+			r11 = &r1b[0];
+			r22 = &r2b[0];
 		}
 		else if (dot2 > dot3 && dot2 > dot4)
 		{
 			COPY_1X3VECTOR(r1a, aWrapResult.r1);
 			COPY_1X3VECTOR(r2b, aWrapResult.r2);
-			r11 = r1b;
-			r22 = r2a;
+			r11 = &r1b[0];
+			r22 = &r2a[0];
 		}
 		else if (dot3 > dot4)
 		{
 			COPY_1X3VECTOR(r1b, aWrapResult.r1);
 			COPY_1X3VECTOR(r2a, aWrapResult.r2);
-			r11 = r1a;
-			r22 = r2b;
+			r11 = &r1a[0];
+			r22 = &r2b[0];
 		}
 		else
 		{
 			COPY_1X3VECTOR(r1b, aWrapResult.r1);
 			COPY_1X3VECTOR(r2b, aWrapResult.r2);
-			r11 = r1a;
-			r22 = r2a;
+			r11 = &r1a[0];
+			r22 = &r2a[0];
 		}
 	}
 
@@ -649,7 +653,7 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 		return noWrap;
 
 	// make the path and calculate the muscle length:
-	_make_spiral_path(&aPoint1[0], &aPoint2[0], long_wrap, aWrapResult);
+	_make_spiral_path(aPoint1, aPoint2, long_wrap, aWrapResult);
 
 	aFlag = true;
 
@@ -668,12 +672,13 @@ int WrapCylinder::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
  * @param far_side_wrap Boolean indicating if the wrap is the long way around
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(double aPoint1[3],
-												 double aPoint2[3],
+void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
+												 SimTK::Vec3& aPoint2,
 												 bool far_side_wrap,
 												 WrapResult& aWrapResult) const
 {
-	double r1a[3], r2a[3], uu[3], vv[3], ax[3], x, y, t, axial_vec[3], axial_dist, theta, wrap_pt[3];
+	double x, y, t, axial_dist, theta;
+	Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
 	double sense = far_side_wrap ? -1.0 : 1.0;
 	double m[4][4];
 	int i, iterations = 0;
@@ -704,7 +709,7 @@ restart_spiral_wrap:
 	theta = Mtx::Angle(uu,vv);
 
 	if (far_side_wrap)
-		theta = 2.0 * rdMath::PI - theta;
+		theta = 2.0 * SimTK_PI - theta;
 
 	// use pythagorus to calculate the length of the spiral path (imaging
 	// a right triangle wrapping around the surface of a cylinder)
@@ -743,7 +748,7 @@ restart_spiral_wrap:
 			bool did_adjust_r2 = false;
 			bool did_adjust_r1 = _adjust_tangent_point(aPoint1, dn, aWrapResult.r1, wrap_pt);
 
-			double temp_wrap_pt[3];
+			SimTK::Vec3 temp_wrap_pt;
 
 			_calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t, theta, temp_wrap_pt);
 
@@ -773,14 +778,14 @@ restart_spiral_wrap:
  * @param theta The total angle of the spiral on the cylinder
  * @param wrap_pt The new point on the spiral path
  */
-void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
-														 const double axial_vec[3],
+void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
+														 const SimTK::Vec3& axial_vec,
 														 double m[4][4],
-														 const double axis[3],
+														 const SimTK::Vec3& axis,
 														 double sense,
 														 double t,
 														 double theta,
-														 double wrap_pt[3]) const
+														 SimTK::Vec3& wrap_pt) const
 {
 	double n[4][4];
 	int i, j;
@@ -814,12 +819,13 @@ void WrapCylinder::_calc_spiral_wrap_point(const double	r1a[3],
  * @param w1 A wrapping point (?)
  * @return Whether or not the point was adjusted
  */
-bool WrapCylinder::_adjust_tangent_point(double pt1[3],
-													  double dn[3],
-													  double r1[3],
-													  double w1[3]) const
+bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
+													  SimTK::Vec3& dn,
+													  SimTK::Vec3& r1,
+													  SimTK::Vec3& w1) const
 {
-	double pr_vec[3], rw_vec[3], alpha, omega, t;
+	SimTK::Vec3 pr_vec, rw_vec;
+	double alpha, omega, t;
 	int i;
 	bool did_adust = false;
 
@@ -834,8 +840,8 @@ bool WrapCylinder::_adjust_tangent_point(double pt1[3],
 
 	if (fabs(alpha - omega) > TANGENCY_THRESHOLD)
 	{
-		double p1a[3], w1a[3], p1w1_int[3], p1w1_t, p1aw1a_int[3], p1aw1a_t;
-		double save[3];
+		double p1w1_t, p1aw1a_t;
+		SimTK::Vec3 save, p1a, w1a, p1w1_int, p1aw1a_int;
 
 		rdMath::GetClosestPointOnLineToPoint(pt1, r1, dn, p1a, t);
 		rdMath::GetClosestPointOnLineToPoint(w1, r1, dn, w1a, t);

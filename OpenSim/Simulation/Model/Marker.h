@@ -65,8 +65,8 @@ class OSIMSIMULATION_API Marker : public AbstractMarker
 private:
 
 protected:
-	PropertyDblArray _offsetProp;
-	Array<double> &_offset;
+	PropertyDblVec3 _offsetProp;
+	SimTK::Vec3 &_offset;
 
 	PropertyBool _fixedProp;
 	bool &_fixed;
@@ -105,10 +105,10 @@ public:
 	void copyData(const Marker &aMarker);
 
 	virtual void updateFromMarker(const AbstractMarker &aMarker);
-	virtual void getOffset(double *rOffset) const;
-	virtual const double* getOffset() const { return &_offset[0]; }
-	virtual bool setOffset(Array<double>& aOffset);
-	virtual bool setOffset(const double aPoint[3]);
+	virtual void getOffset(SimTK::Vec3& rOffset) const;
+	virtual const SimTK::Vec3& getOffset() const { return _offset; }
+	virtual bool setOffset(const SimTK::Vec3& aOffset);
+	//virtual bool setOffset(const double aPoint[3]);
 	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
 	virtual bool getFixed() const { return _fixed; }
 	virtual bool setFixed(bool aFixed);
@@ -119,7 +119,7 @@ public:
 	virtual bool setBodyNameUseDefault(bool aValue);
 	virtual AbstractBody* getBody() const { return _body; }
 	virtual void setBody(AbstractBody* aBody);
-	virtual void scale(const Array<double>& aScaleFactors);
+	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void setup(AbstractDynamicsEngine* aEngine);
 	virtual void updateGeometry();
 

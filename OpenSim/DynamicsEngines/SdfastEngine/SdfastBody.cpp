@@ -41,7 +41,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Mat33;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -51,7 +51,7 @@ using namespace OpenSim;
  */
 SdfastBody::SdfastBody() :
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
@@ -80,7 +80,7 @@ SdfastBody::~SdfastBody()
 SdfastBody::SdfastBody(const SdfastBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
@@ -101,7 +101,7 @@ SdfastBody::SdfastBody(const SdfastBody &aBody) :
 SdfastBody::SdfastBody(const AbstractBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj()),
@@ -158,10 +158,10 @@ void SdfastBody::copyData(const AbstractBody &aBody)
 	_mass = aBody.getMass();
 
 	// Mass center
-	aBody.getMassCenter(&_massCenter[0]);
+	aBody.getMassCenter(_massCenter);
 
 	// Inertia tensor
-	double inertia[3][3];
+	Mat33 inertia;
 	aBody.getInertia(inertia);
 	for(int i=0; i<3; i++)
 		for(int j=0; j<3; j++)
@@ -195,10 +195,10 @@ void SdfastBody::setupProperties()
 	_massProp.setValue(mass);
 	_propertySet.append(&_massProp);
 
-	const double defaultMC[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultMC(0.0, 0.0, 0.0);
 	_massCenterProp.setName("mass_center");
-	_massCenterProp.setValue(3, defaultMC);
-	_massCenterProp.setAllowableArraySize(3);
+	_massCenterProp.setValue(defaultMC);
+	//_massCenterProp.setAllowableArraySize(3);
 	_propertySet.append(&_massCenterProp);
 
 	const double inertia[] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
@@ -224,8 +224,12 @@ void SdfastBody::setupProperties()
 void SdfastBody::updateSdfast()
 {
 	setMass(_mass);
-	setMassCenter(&_massCenter[0]);
-	setInertia(_inertia);
+	setMassCenter(_massCenter);
+	Mat33 inertiaMat;
+	for(int i=0; i<3; i++)
+		for(int j=0; j<3; j++)
+			inertiaMat[i][j]=_inertia[i*3+j];
+	setInertia(inertiaMat);
 }
 
 //_____________________________________________________________________________
@@ -319,11 +323,9 @@ bool SdfastBody::setMass(double aMass)
  *
  * @param rVec XYZ coordinates of mass center are returned here.
  */
-void SdfastBody::getMassCenter(double rVec[3]) const
+void SdfastBody::getMassCenter(SimTK::Vec3& rVec) const
 {
-	rVec[0] = _massCenter[0];
-	rVec[1] = _massCenter[1];
-	rVec[2] = _massCenter[2];
+	rVec = _massCenter;
 }
 //_____________________________________________________________________________
 /**
@@ -332,11 +334,9 @@ void SdfastBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SdfastBody::setMassCenter(const double aVec[3])
+bool SdfastBody::setMassCenter(const SimTK::Vec3& aVec)
 {
-	_massCenter[0] = aVec[0];
-	_massCenter[1] = aVec[1];
-	_massCenter[2] = aVec[2];
+	_massCenter = aVec;
 
 	SdfastEngine* engine = dynamic_cast<SdfastEngine*>(_dynamicsEngine);
 	if(engine)
@@ -369,15 +369,11 @@ void SdfastBody::getInertia(double rInertia[3][3]) const
  *
  * @param 3x3 inertia matrix.
  */
-void SdfastBody::getInertia(Array<double> &rInertia) const
+void SdfastBody::getInertia(Mat33 &rInertia) const
 {
 	double inertia[3][3];
 	getInertia(inertia);
-	for(int i=0; i<3; i++) {
-		for(int j=0; j<3; j++) {
-			rInertia[i*3+j] = inertia[i][j];
-		}
-	}
+	memcpy(&rInertia[0],&inertia[0][0],9*sizeof(double));
 }
 //_____________________________________________________________________________
 /**
@@ -386,19 +382,13 @@ void SdfastBody::getInertia(Array<double> &rInertia) const
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SdfastBody::setInertia(const Array<double>& aInertia)
+bool SdfastBody::setInertia(const Mat33& aInertia)
 {
-	if(aInertia.getSize()<9) {
-		cerr<<"SdfastBody.setInertia: ERROR- inertia requires 9 elements.\n";
-		return false;
-	}
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		_inertia[i*3 + j] = aInertia[i][j];
 
-	double inertia[3][3];
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			inertia[i][j] = aInertia[3*i+j];
-
-	return setInertia(inertia);
+	return true;
 }
 //_____________________________________________________________________________
 /**
@@ -462,11 +452,11 @@ void SdfastBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SdfastBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
+void SdfastBody::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
-	double oldScaleFactors[3];
+	SimTK::Vec3 oldScaleFactors;
 	getDisplayer()->getScaleFactors(oldScaleFactors);
 
 	for(i=0; i<3; i++) {
@@ -474,7 +464,7 @@ void SdfastBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
 		oldScaleFactors[i] *= aScaleFactors[i];
 	}
 	// Update scale factors for displayer
-	getDisplayer()->setScaleFactors(aScaleFactors.get());
+	getDisplayer()->setScaleFactors(aScaleFactors);
 
 	scaleInertialProperties(aScaleFactors, aScaleMass);
 }
@@ -487,13 +477,15 @@ void SdfastBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SdfastBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
+void SdfastBody::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
-	double mass, inertia[3][3];
+	double mass;
+	double inertia[3][3];
 
 	_SdfastEngine->_sdgetmass(_index, &mass);
 	_SdfastEngine->_sdgetiner(_index, inertia);
 
+	for(int i=0; i<3; i++) for (int j=0; j<3; j++) 
 	// Scales assuming mass stays the same
 	scaleInertiaTensor(mass, aScaleFactors, inertia);
 
@@ -559,10 +551,9 @@ void SdfastBody::transformToSdfastFrame(const double aPos[3],double rPos[3]) con
  * @param aPos The point in the body frame to transform
  * @param rPos The point transformed into the SD/FAST frame
  */
-void SdfastBody::transformToSdfastFrame(const Array<double>& aPos, double rPos[3]) const
+void SdfastBody::transformToSdfastFrame(const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const
 {
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] - _massCenter[i];
+	rPos = aPos - _massCenter;
 }
 
 //_____________________________________________________________________________
@@ -591,8 +582,7 @@ void SdfastBody::transformFromSdfastFrame(const double aPos[3], double rPos[3]) 
  * @param aPos The point in the body's SD/FAST frame to transform
  * @param rPos The point transformed into the body's frame
  */
-void SdfastBody::transformFromSdfastFrame(const Array<double>& aPos, double rPos[3]) const
+void SdfastBody::transformFromSdfastFrame(const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const
 {
-	for(int i=0; i<3; i++)
-		rPos[i] = aPos[i] + _massCenter[i];
+	rPos = aPos + _massCenter;
 }

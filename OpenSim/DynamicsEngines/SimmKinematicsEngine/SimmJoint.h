@@ -106,7 +106,7 @@ public:
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const;
 	virtual bool hasXYZAxes() const;
 	virtual void scale(const ScaleSet& aScaleSet);
-	virtual void scale(const Array<double> &aScaleFactors);
+	virtual void scale(const SimTK::Vec3& aScaleFactors);
    void addPathToList(SimmPath* aPath) { _pathList.append(aPath); }
 	void clearPathList() { _pathList.setSize(0); }
 

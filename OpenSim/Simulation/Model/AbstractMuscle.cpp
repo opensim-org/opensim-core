@@ -49,6 +49,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -280,20 +281,19 @@ void AbstractMuscle::updateGeometrySize()
  */
 void AbstractMuscle::updateGeometryLocations()
 {
-	double globalLocation[3];
-	double previousPointGlobalLocation[3];
+	SimTK::Vec3 globalLocation;
+	SimTK::Vec3 previousPointGlobalLocation;
 
 	for (int i = 0; i < _currentPath.getSize(); i++){
 		MusclePoint* nextPoint = _currentPath.get(i);
 		// xform point to global frame
-		Array<double>& location=nextPoint->getAttachment();
+		const Vec3& location=nextPoint->getAttachment();
 		const AbstractBody* body = nextPoint->getBody();
 		AbstractDynamicsEngine* engine = (const_cast<AbstractBody*> (body))->getDynamicsEngine();
 		if (i > 0){
-			for(int j=0; j < 3; j++)
-				previousPointGlobalLocation[j] = globalLocation[j];
+			previousPointGlobalLocation = globalLocation;
 		}
-		engine->transformPosition(*body, location.get(), globalLocation);
+		engine->transformPosition(*body, location, globalLocation);
 		// Make a segment between globalLocation, previousPointGlobalLocation
 		if (i > 0){
 			// Geometry will be deleted when the object is deleted.
@@ -483,7 +483,7 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 {
 	MusclePoint* newPoint = new MusclePoint();
 	newPoint->setBody(aBody);
-	Array<double>& location = newPoint->getAttachment();
+	Vec3& location = newPoint->getAttachment();
 	placeNewAttachment(location, aIndex, aBody);
 	newPoint->setup(getModel(), this);
 	_attachmentSet.insert(aIndex, newPoint);
@@ -517,7 +517,7 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
  * @param aIndex The position in the attachmentSet to put the new point in.
  * @param aBody The body to attach the point to.
  */
-void AbstractMuscle::placeNewAttachment(Array<double>& aOffset, int aIndex, AbstractBody& aBody)
+void AbstractMuscle::placeNewAttachment(SimTK::Vec3& aOffset, int aIndex, AbstractBody& aBody)
 {
 	// The location of the point is determined by moving a 'distance' from 'base' along
 	// a vector from 'start' to 'end.' 'base' is the existing attachment point that is
@@ -545,20 +545,18 @@ void AbstractMuscle::placeNewAttachment(Array<double>& aOffset, int aIndex, Abst
 			base = start;
 			distance = 0.5;
 		}
-	   Array<double>& startPt = _attachmentSet.get(start)->getAttachment();
-	   Array<double>& endPt = _attachmentSet.get(end)->getAttachment();
-	   Array<double>& basePt = _attachmentSet.get(base)->getAttachment();
-		Array<double> startPt2(0.0, 3);
-		Array<double> endPt2(0.0, 3);
+	   const Vec3& startPt = _attachmentSet.get(start)->getAttachment();
+	   const Vec3& endPt = _attachmentSet.get(end)->getAttachment();
+	   const Vec3& basePt = _attachmentSet.get(base)->getAttachment();
+		Vec3 startPt2(0.0);
+		Vec3 endPt2(0.0);
 	   getModel()->getDynamicsEngine().transformPosition(*_attachmentSet.get(start)->getBody(), startPt, aBody, startPt2);
 	   getModel()->getDynamicsEngine().transformPosition(*_attachmentSet.get(end)->getBody(), endPt, aBody, endPt2);
-		aOffset[0] = basePt[0] + distance * (endPt2[0] - startPt2[0]);
-		aOffset[1] = basePt[1] + distance * (endPt2[1] - startPt2[1]);
-		aOffset[2] = basePt[2] + distance * (endPt2[2] - startPt2[2]);
+		aOffset = basePt + distance * (endPt2 - startPt2);
 	} else {
 		int foo = 0;
 		for (int i = 0; i < 3; i++) {
-         aOffset[i] = _attachmentSet.get(foo)->getAttachment().get(i) + 0.01;
+         aOffset[i] = _attachmentSet.get(foo)->getAttachment()[i] + 0.01;
 		}
 	}
 }
@@ -709,7 +707,7 @@ void AbstractMuscle::scale(const ScaleSet& aScaleSet)
 			Scale *aScale = aScaleSet.get(j);
 			if (bodyName == aScale->getSegmentName())
 			{
-				Array<double> scaleFactors(1.0, 3);
+				Vec3 scaleFactors(1.0);
 				aScale->getScaleFactors(scaleFactors);
 				_attachmentSet.get(i)->scale(scaleFactors);
 			}
@@ -747,9 +745,9 @@ void AbstractMuscle::postScale(const ScaleSet& aScaleSet)
  */
 void AbstractMuscle::computeActuation()
 {
-	double posRelative[3], velRelative[3];
-	double posStartInertial[3], posEndInertial[3], velStartInertial[3], velEndInertial[3];
-	double velStartLocal[3], velEndLocal[3], velStartMoving[3], velEndMoving[3];
+	SimTK::Vec3 posRelative, velRelative;
+	SimTK::Vec3 posStartInertial, posEndInertial, velStartInertial, velEndInertial;
+	SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
 	MusclePoint *start, *end;
 
 	computePath();
@@ -764,10 +762,10 @@ void AbstractMuscle::computeActuation()
 		end = _currentPath[i+1];
 
 		// Find the positions and velocities in the inertial frame.
-		engine.getPosition(*(start->getBody()), start->getAttachment().get(), posStartInertial);
-		engine.getPosition(*(end->getBody()), end->getAttachment().get(), posEndInertial);
-		engine.getVelocity(*(start->getBody()), start->getAttachment().get(), velStartInertial);
-		engine.getVelocity(*(end->getBody()), end->getAttachment().get(), velEndInertial);
+		engine.getPosition(*(start->getBody()), start->getAttachment(), posStartInertial);
+		engine.getPosition(*(end->getBody()), end->getAttachment(), posEndInertial);
+		engine.getVelocity(*(start->getBody()), start->getAttachment(), velStartInertial);
+		engine.getVelocity(*(end->getBody()), end->getAttachment(), velEndInertial);
 
 		// The points might be moving in their local bodies' reference frames
 		// (MovingMusclePoints and possibly MuscleWrapPoints) so find their
@@ -778,10 +776,8 @@ void AbstractMuscle::computeActuation()
 		engine.transform(*(end->getBody()), velEndLocal, engine.getGroundBody(), velEndMoving);
 
 		// Calculate the relative positions and velocities.
-		for (int j = 0; j < 3; j++) {
-			posRelative[j] = posEndInertial[j] - posStartInertial[j];
-			velRelative[j] = (velEndInertial[j] + velEndMoving[j]) - (velStartInertial[j] + velStartMoving[j]);
-		}
+		posRelative = posEndInertial - posStartInertial;
+		velRelative = (velEndInertial + velEndMoving) - (velStartInertial + velStartMoving);
 
 		// Normalize the vector from start to end.
 		Mtx::Normalize(3, posRelative, posRelative);
@@ -1106,8 +1102,8 @@ double AbstractMuscle::_calc_muscle_length_change(AbstractWrapObject& wo, WrapRe
    double straight_length = getModel()->getDynamicsEngine().calcDistance(*pt1->getBody(), pt1->getAttachment(),
 		*pt2->getBody(), pt2->getAttachment());
 
-	double* p1 = &pt1->getAttachment()[0];
-	double* p2 = &pt2->getAttachment()[0];
+	const Vec3& p1 = pt1->getAttachment();
+	const Vec3& p2 = pt2->getAttachment();
    double wrap_length = getModel()->getDynamicsEngine().calcDistance(*pt1->getBody(), p1, *wo.getBody(), wr.r1);
    wrap_length += wr.wrap_path_length;
    wrap_length += getModel()->getDynamicsEngine().calcDistance(*wo.getBody(), wr.r2, *pt2->getBody(), p2);
@@ -1327,15 +1323,14 @@ void AbstractMuscle::apply()
 
 		if (startBody != endBody)
 		{
-			double posStart[3], posEnd[3], forceVector[3], bodyForce[3];
+			Vec3 posStart, posEnd, forceVector, bodyForce;
 
 			/* Find the positions of start and end in the inertial frame. */
-			engine.getPosition(*(start->getBody()), start->getAttachment().get(), posStart);
-			engine.getPosition(*(end->getBody()), end->getAttachment().get(), posEnd);
+			engine.getPosition(*(start->getBody()), start->getAttachment(), posStart);
+			engine.getPosition(*(end->getBody()), end->getAttachment(), posEnd);
 
 			/* Form a vector from start to end, in the inertial frame. */
-			for (int j = 0; j < 3; j++)
-				forceVector[j] = posEnd[j] - posStart[j];
+			forceVector = posEnd - posStart;
 
 			/* Normalize the vector from start to end. */
 			Mtx::Normalize(3, forceVector, forceVector);
@@ -1343,12 +1338,12 @@ void AbstractMuscle::apply()
 			double muscleForce = getForce();
 
 			/* The force on the start body is in the direction of forceVector. */
-			Mtx::Multiply(1, 3, forceVector, muscleForce, bodyForce);
-			engine.applyForce(*(start->getBody()), start->getAttachment().get(), bodyForce);
+			bodyForce = muscleForce * forceVector;
+			engine.applyForce(*(start->getBody()), start->getAttachment(), bodyForce);
 
 			/* The force on the end body is in the opposite direction of forceVector. */
-			Mtx::Multiply(1, 3, forceVector, -muscleForce, bodyForce);
-			engine.applyForce(*(end->getBody()), end->getAttachment().get(), bodyForce);
+			bodyForce = -muscleForce * forceVector;
+			engine.applyForce(*(end->getBody()), end->getAttachment(), bodyForce);
 		}
 	}
 }

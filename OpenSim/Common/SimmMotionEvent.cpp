@@ -46,7 +46,7 @@ using namespace OpenSim;
  */
 SimmMotionEvent::SimmMotionEvent() :
 	_time(_timeProp.getValueDbl()),
-	_color(_colorProp.getValueDblArray())
+	_color(_colorProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();
@@ -69,7 +69,7 @@ SimmMotionEvent::~SimmMotionEvent()
 SimmMotionEvent::SimmMotionEvent(const SimmMotionEvent &aEvent) :
    Object(aEvent),
 	_time(_timeProp.getValueDbl()),
-	_color(_colorProp.getValueDblArray())
+	_color(_colorProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();

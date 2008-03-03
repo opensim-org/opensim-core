@@ -93,7 +93,7 @@ int main()
 
 	// Setup model
 	model->setup();
-	OpenSim::Array<double> inertia(0.0,9);
+	Mat33 inertia(0.0);
 	model->getDynamicsEngine().getBodySet()->get("ground")->setInertia(inertia);
 	model->printDetailedInfo(cout);
 
@@ -106,7 +106,7 @@ int main()
 
 	// STEP 5
 	// Set the acceleration due to gravity.
-	double g[] = { 0.0, -10.0, 0.0 };
+	Vec3 g(0.0, -10.0, 0.0 );
 	model->setGravity(g);
 
 	// STEP 6
@@ -121,13 +121,13 @@ int main()
 	kin->setStepInterval(stepInterval);
 	model->addAnalysis(kin);
 	// Point Kinematics
-	OpenSim::Array<double> point(0.0,3);
+	Vec3 point(0.0);
 	BodySet *bodySet = model->getDynamicsEngine().getBodySet();
 	int nb = bodySet->getSize();
 	for(int i=0;i<nb;i++) {
 		PointKinematics *pointKin = new PointKinematics(model);
 		AbstractBody *body = bodySet->get(i);
-		pointKin->setBodyPoint(body->getName(),&point[0]);
+		pointKin->setBodyPoint(body->getName(),point);
 		pointKin->setPointName(body->getName().c_str());
 		model->addAnalysis(pointKin);
 	}

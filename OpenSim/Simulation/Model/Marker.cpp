@@ -39,6 +39,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 Geometry *Marker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
 //=============================================================================
@@ -49,7 +50,7 @@ Geometry *Marker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
  * Default constructor.
  */
 Marker::Marker() :
-   _offset(_offsetProp.getValueDblArray()),
+   _offset(_offsetProp.getValueDblVec3()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -76,7 +77,7 @@ Marker::~Marker()
  */
 Marker::Marker(const Marker &aMarker) :
    AbstractMarker(aMarker),
-   _offset(_offsetProp.getValueDblArray()),
+   _offset(_offsetProp.getValueDblVec3()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -141,10 +142,10 @@ void Marker::setupProperties()
 	_propertySet.append(&_bodyNameProp);
 
 	_offsetProp.setComment("Location of a marker on the body segment.");
-	const double defaultAttachment[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultAttachment(0.0);
 	_offsetProp.setName("location");
-	_offsetProp.setValue(3, defaultAttachment);
-	_offsetProp.setAllowableArraySize(3);
+	_offsetProp.setValue(defaultAttachment);
+	//_offsetProp.setAllowableArraySize(3);
 	_propertySet.append(&_offsetProp);
 
 	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "
@@ -253,7 +254,7 @@ void Marker::updateFromMarker(const AbstractMarker &aMarker)
 {
 	if (!aMarker.getOffsetUseDefault())
 	{
-		const double* off = aMarker.getOffset();
+		const Vec3& off = aMarker.getOffset();
 		setOffset(off);
 		_offsetProp.setUseDefault(false);
 	}
@@ -280,13 +281,9 @@ void Marker::updateFromMarker(const AbstractMarker &aMarker)
  *
  * @param rOffset XYZ offset is returned here.
  */
-void Marker::getOffset(double *rOffset) const
+void Marker::getOffset(SimTK::Vec3& rOffset) const
 {
-	if (rOffset)
-	{
-		for (int i = 0; i < 3; i++)
-			rOffset[i] = _offset[i];
-	}
+	rOffset = _offset;
 }
 
 //_____________________________________________________________________________
@@ -296,27 +293,9 @@ void Marker::getOffset(double *rOffset) const
  * @param aOffset XYZ offset to set to.
  * @return Whether or not the offset was set.
  */
-bool Marker::setOffset(Array<double>& aOffset)
+bool Marker::setOffset(const SimTK::Vec3& aOffset)
 {
-	_offset[0] = aOffset[0];
-	_offset[1] = aOffset[1];
-	_offset[2] = aOffset[2];
-
-	updateGeometry();
-	return true;
-}
-
-//_____________________________________________________________________________
-/**
- * Set the marker's XYZ offset from the body it's attached to.
- *
- * @param aPoint XYZ offset to set to.
- * @return Whether or not the offset was set.
- */
-bool Marker::setOffset(const double aPoint[3])
-{
-	for (int i = 0; i < 3; i++)
-		_offset[i] = aPoint[i];
+	_offset = aOffset;
 
 	updateGeometry();
 	return true;
@@ -399,7 +378,7 @@ void Marker::setBody(AbstractBody* aBody)
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void Marker::scale(const Array<double>& aScaleFactors)
+void Marker::scale(const SimTK::Vec3& aScaleFactors)
 {
 	for (int i = 0; i < 3; i++)
 		_offset[i] *= aScaleFactors[i];

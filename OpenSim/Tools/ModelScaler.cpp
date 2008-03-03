@@ -43,7 +43,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -266,7 +266,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 
 	int i;
 	ScaleSet theScaleSet;
-	Array<double> unity(1.0, 3);
+	Vec3 unity(1.0);
 
 	cout << endl << "Step 2: Scaling generic model" << endl;
 
@@ -331,7 +331,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 					if (_scaleSet[j]->getApply())
 					{
 						const string& bodyName = _scaleSet[j]->getSegmentName();
-						Array<double> factors(1.0, 3);
+						Vec3 factors(1.0);
 						_scaleSet[j]->getScaleFactors(factors);
 						for (int k = 0; k < theScaleSet.getSize(); k++)
 						{
@@ -449,9 +449,9 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 		aMarkerData.findFrameRange(_timeRange[0], _timeRange[1], startIndex, endIndex);
 		double length = 0;
 		for(int i=startIndex; i<=endIndex; i++) {
-			double* p1 = aMarkerData.getFrame(i)->getMarker(marker1).get();
-			double* p2 = aMarkerData.getFrame(i)->getMarker(marker2).get();
-			length += sqrt((p2[0]-p1[0])*(p2[0]-p1[0]) + (p2[1]-p1[1])*(p2[1]-p1[1]) + (p2[2]-p1[2])*(p2[2]-p1[2]));
+			Vec3& p1 = aMarkerData.getFrame(i)->getMarker(marker1).get();
+			Vec3& p2 = aMarkerData.getFrame(i)->getMarker(marker2).get();
+			length += (p2 - p1).norm();
 		}
 		return length/(endIndex-startIndex+1);
 	} else {

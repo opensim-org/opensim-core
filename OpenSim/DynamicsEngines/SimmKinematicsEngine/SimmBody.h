@@ -44,6 +44,7 @@
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Simulation/Model/BoneSet.h>
 
+//using SimTK::Mat33;
 namespace OpenSim {
 
 class AbstractDynamicsEngine;
@@ -66,8 +67,8 @@ protected:
 	PropertyDbl _massProp;
 	double &_mass;
 
-	PropertyDblArray _massCenterProp;
-	Array<double> &_massCenter;
+	PropertyDblVec3 _massCenterProp;
+	SimTK::Vec3 &_massCenter;
 
 	PropertyDblArray _inertiaProp;
 	Array<double> &_inertia;
@@ -97,15 +98,15 @@ public:
 
 	virtual double getMass() const { return _mass; }
 	virtual bool setMass(double aMass);
-	virtual void getMassCenter(double rVec[3]) const;
-	virtual bool setMassCenter(const double aVec[3]);
-	virtual void getInertia(double rInertia[3][3]) const;
-	virtual bool setInertia(const Array<double>& aInertia);
-	virtual void scale(const Array<double>& aScaleFactors, bool aScaleMass = false);
-	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true);
+	virtual void getMassCenter(SimTK::Vec3& rVec) const;
+	virtual bool setMassCenter(const SimTK::Vec3& aVec);
+	virtual void getInertia(SimTK::Mat33& rMat) const;
+	virtual bool setInertia(const SimTK::Mat33& aInertia);
+	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
+	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
-	void getScaleFactors(Array<double>& aScaleFactors) const;
+	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
 private:
 	void setNull();

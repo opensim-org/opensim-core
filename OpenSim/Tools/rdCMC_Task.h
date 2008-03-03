@@ -35,6 +35,7 @@
 #include <OpenSim/Common/PropertyBoolArray.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -77,11 +78,11 @@ protected:
 	/** Feedforward acceleration gain. */
 	PropertyDblArray _propKA;
 	/** Directions of the task goal 0. */
-	PropertyDblArray _propR0;
+	PropertyDblVec3 _propR0;
 	/** Directions of the task goal 1. */
-	PropertyDblArray _propR1;
+	PropertyDblVec3 _propR1;
 	/** Directions of the task goal 2. */
-	PropertyDblArray _propR2;
+	PropertyDblVec3 _propR2;
 
 	// REFERENCES TO PROPERTY VALUES
 	// NOTE- These refrence variables must be listed in the class after
@@ -106,11 +107,11 @@ protected:
 	/** Reference to the value of the KA property. */
 	Array<double> &_ka;
 	/** Reference to the value of the R0 property. */
-	Array<double> &_r0;
+	SimTK::Vec3 &_r0;
 	/** Reference to the value of the R1 property. */
-	Array<double> &_r1;
+	SimTK::Vec3 &_r1;
 	/** Reference to the value of the R2 property. */
-	Array<double> &_r2;
+	SimTK::Vec3 &_r2;
 
 
 	/** Model. */
@@ -130,17 +131,17 @@ protected:
 	not specified, derivatives of the position task function are used. */
 	Function *_aTrk[3];
 	/** Last position error. */
-	double _pErrLast[3];
+	SimTK::Vec3 _pErrLast;
 	/** Position error. */
-	double _pErr[3];
+	SimTK::Vec3 _pErr;
 	/** Last velocity error. */
-	double _vErrLast[3];
+	SimTK::Vec3 _vErrLast;
 	/** Velocity error. */
-	double _vErr[3];
+	SimTK::Vec3 _vErr;
 	/** Desired accelerations. */
-	double _aDes[3];
+	SimTK::Vec3 _aDes;
 	/** Accelerations. */
-	double _a[3];
+	SimTK::Vec3 _a;
 	/** Jacobian. */
 	double *_j;
 	/** Effective mass matrix. */
@@ -202,14 +203,14 @@ public:
 	void setKA(double aK0,double aK1=0.0,double aK2=0.0);
 	double getKA(int aWhich) const;
 	// DIRECTION OF TASK 0
-	void setDirection_0(const double aR[3]);
-	void getDirection_0(double rR[3]) const;
+	void setDirection_0(const SimTK::Vec3& aR);
+	void getDirection_0(SimTK::Vec3& rR) const;
 	// DIRECTION OF TASK 1
-	void setDirection_1(const double aR[3]);
-	void getDirection_1(double rR[3]) const;
+	void setDirection_1(const SimTK::Vec3& aR);
+	void getDirection_1(SimTK::Vec3& rR) const;
 	// DIRECTION OF TASK 2
-	void setDirection_2(const double aR[3]);
-	void getDirection_2(double rR[3]) const;
+	void setDirection_2(const SimTK::Vec3& aR);
+	void getDirection_2(SimTK::Vec3& rR) const;
 	// TASK FUNCTIONS
 	int getNumTaskFunctions() const;
 	void setTaskFunctions(Function *aF0,

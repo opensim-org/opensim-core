@@ -314,7 +314,7 @@ bool OpenSim::readVectorFromString(string &aString, SimmPoint &rVec)
 {
    bool ok = true;
 
-	double* vecPtr = rVec.get();
+	SimTK::Vec3& vecPtr = rVec.get();
 	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
    ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);

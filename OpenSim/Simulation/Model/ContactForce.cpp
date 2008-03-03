@@ -46,6 +46,7 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 
 //=============================================================================
@@ -71,8 +72,8 @@ ContactForce::~ContactForce()
  */
 ContactForce::ContactForce(string aBodyA,string aBodyB) :
 	Force(aBodyA,aBodyB),
-	_nA(_propNormalA.getValueDblArray()),
-	_nB(_propNormalB.getValueDblArray())
+	_nA(_propNormalA.getValueDblVec3()),
+	_nB(_propNormalB.getValueDblVec3())
 {
 	// NULL
 	setNull();
@@ -85,18 +86,18 @@ ContactForce::ContactForce(string aBodyA,string aBodyB) :
  */
 ContactForce::ContactForce(const ContactForce &aContact) :
 	Force(aContact),
-	_nA(_propNormalA.getValueDblArray()),
-	_nB(_propNormalB.getValueDblArray())
+	_nA(_propNormalA.getValueDblVec3()),
+	_nB(_propNormalB.getValueDblVec3())
 {
 	setNull();
 
 	// NORM A
-	aContact.getNormalA(&_nA[0]);
-	setNormalA(&_nA[0]);
+	aContact.getNormalA(_nA);
+	setNormalA(_nA);
 
 	// NORM B
-	aContact.getNormalB(&_nB[0]);
-	setNormalB(&_nB[0]);
+	aContact.getNormalB(_nB);
+	setNormalB(_nB);
 }
 
 
@@ -172,16 +173,16 @@ setNull()
 void ContactForce::
 setupProperties()
 {
-	double origin[3] = { 0.0, 0.0, 0.0 };
+	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 
 	_propNormalA.setName("normal_A");
-	_propNormalA.setValue(3,origin);
-	_propNormalA.setAllowableArraySize(3);
+	_propNormalA.setValue(origin);
+	//_propNormalA.setAllowableArraySize(3);
 	_propertySet.append( &_propNormalA );
 
 	_propNormalB.setName("normal_B");
-	_propNormalB.setValue(3,origin);
-	_propNormalB.setAllowableArraySize(3);
+	_propNormalB.setValue(origin);
+	//_propNormalB.setAllowableArraySize(3);
 	_propertySet.append( &_propNormalB );
 }
 
@@ -206,10 +207,10 @@ operator=(const ContactForce &aContact)
 	Force::operator=(aContact);
 
 	// NORM A
-	aContact.getNormalA(&_nA[0]);
+	aContact.getNormalA(_nA);
 
 	// NORM B
-	aContact.getNormalB(&_nB[0]);
+	aContact.getNormalB(_nB);
 
 	return(*this);
 }
@@ -234,9 +235,9 @@ operator=(const ContactForce &aContact)
  * @see setNormalA()
  */
 void ContactForce::
-setNormalB(const double aNormal[3])
+setNormalB(const SimTK::Vec3& aNormal)
 {
-	double mag = Mtx::Normalize(3,aNormal,&_nB[0]);
+	double mag = Mtx::Normalize(3,aNormal,_nB);
 	if(mag<=rdMath::ZERO) _nB[0] = _nB[1] = _nB[2] = 0.0;
 }
 //_____________________________________________________________________________
@@ -247,11 +248,9 @@ setNormalB(const double aNormal[3])
  * @param rNormal Surface normal of BodyB.
  */
 void ContactForce::
-getNormalB(double rNormal[3]) const
+getNormalB(SimTK::Vec3& rNormal) const
 {
-	rNormal[0] = _nB[0];
-	rNormal[1] = _nB[1];
-	rNormal[2] = _nB[2];
+	rNormal = _nB;
 }
 
 //-----------------------------------------------------------------------------
@@ -269,9 +268,9 @@ getNormalB(double rNormal[3]) const
  * @see setNormalB()
  */
 void ContactForce::
-setNormalA(const double aNormal[3])
+setNormalA(const SimTK::Vec3& aNormal)
 {
-	double mag = Mtx::Normalize(3,aNormal,&_nA[0]);
+	double mag = Mtx::Normalize(3,aNormal,_nA);
 	if(mag<=rdMath::ZERO) _nA[0] = _nA[1] = _nA[2] = 0.0;
 }
 //_____________________________________________________________________________
@@ -282,11 +281,9 @@ setNormalA(const double aNormal[3])
  * @param rNormal Surface normal of BodyA.
  */
 void ContactForce::
-getNormalA(double rNormal[3]) const
+getNormalA(SimTK::Vec3& rNormal) const
 {
-	rNormal[0] = _nA[0];
-	rNormal[1] = _nA[1];
-	rNormal[2] = _nA[2];
+	rNormal = _nA;
 }
 
 //-----------------------------------------------------------------------------
@@ -303,11 +300,9 @@ getNormalA(double rNormal[3]) const
  * @param rDisplacment Normal displacement vector.
  */
 void ContactForce::
-getNormalDisplacement(double rDisplacment[3]) const
+getNormalDisplacement(SimTK::Vec3& rDisplacment) const
 {
-	rDisplacment[0] = _rnA[0];
-	rDisplacment[1] = _rnA[1];
-	rDisplacment[2] = _rnA[2];
+	rDisplacment = _rnA;
 }
 
 //-----------------------------------------------------------------------------
@@ -342,11 +337,9 @@ getNormalDistance() const
  * @param rVelocity Normal velocity vector.
  */
 void ContactForce::
-getNormalVelocity(double rVelocity[3]) const
+getNormalVelocity(SimTK::Vec3& rVelocity) const
 {
-	rVelocity[0] = _rnA[0];
-	rVelocity[1] = _rnA[1];
-	rVelocity[2] = _rnA[2];
+	rVelocity = _rnA;
 }
 
 //-----------------------------------------------------------------------------
@@ -383,11 +376,9 @@ getNormalSpeed() const
  * @param rTangent expressed as a unit vector in the local frame of BodyA.
  */
 void ContactForce::
-getTangent(double rTangent[3]) const
+getTangent(SimTK::Vec3& rTangent) const
 {
-	rTangent[0] = _tA[0];
-	rTangent[1] = _tA[1];
-	rTangent[2] = _tA[2];
+	rTangent = _tA;
 }
 
 //-----------------------------------------------------------------------------
@@ -404,11 +395,9 @@ getTangent(double rTangent[3]) const
  * @param rDisplacement Tangential displacement vector.
  */
 void ContactForce::
-getTangentialDisplacement(double rDisplacement[3]) const
+getTangentialDisplacement(SimTK::Vec3& rDisplacement) const
 {
-	rDisplacement[0] = _rtA[0];
-	rDisplacement[1] = _rtA[1];
-	rDisplacement[2] = _rtA[2];
+	rDisplacement = _rtA;
 }
 
 //-----------------------------------------------------------------------------
@@ -444,11 +433,9 @@ getTangentialDistance() const
  * @param rVelocity Tangential velocity vector.
  */
 void ContactForce::
-getTangentialVelocity(double rVelocity[3]) const
+getTangentialVelocity(SimTK::Vec3& rVelocity) const
 {
-	rVelocity[0] = _vtA[0];
-	rVelocity[1] = _vtA[1];
-	rVelocity[2] = _vtA[2];
+	rVelocity = _vtA;
 }
 
 //-----------------------------------------------------------------------------
@@ -467,11 +454,11 @@ getTangentialVelocity(double rVelocity[3]) const
  * @param rF Total normal force.
  */
 void ContactForce::
-getNormalForce(double rFP[3],double rFV[3],double rF[3]) const
+getNormalForce(SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const
 {
-	Mtx::Assign(1,3,_fnp,rFP);
-	Mtx::Assign(1,3,_fnv,rFV);
-	Mtx::Assign(1,3,_fn,rF);
+	rFP=_fnp;
+	rFV=_fnv;
+	rF=_fn;
 }
 //_____________________________________________________________________________
 /**
@@ -489,11 +476,11 @@ getNormalForce(double rFP[3],double rFV[3],double rF[3]) const
  * This force is the actual force applied to BodyB.
  */
 void ContactForce::
-getTangentialForce(double rFP[3],double rFV[3],double rF[3]) const
+getTangentialForce(SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const
 {
-	Mtx::Assign(1,3,_ftp,rFP);
-	Mtx::Assign(1,3,_ftv,rFV);
-	Mtx::Assign(1,3,_ft,rF);
+	rFP=_ftp;
+	rFV=_ftv;
+	rF=_ft;
 }
 
 //-----------------------------------------------------------------------------
@@ -513,11 +500,9 @@ getTangentialForce(double rFP[3],double rFV[3],double rF[3]) const
  * the local frame of BodyA. 
  */
 void ContactForce::
-getFrictionCorrection(double rDF[3]) const
+getFrictionCorrection(SimTK::Vec3& rDF) const
 {
-	rDF[0] = _dfFric[0];
-	rDF[1] = _dfFric[1];
-	rDF[2] = _dfFric[2];
+	rDF = _dfFric;
 }
 
 //-----------------------------------------------------------------------------
@@ -673,7 +658,7 @@ computeDisplacements()
 	computeLineOfActionComponents(_rnA,_rtA);
 
 	// NORMAL
-	_rn = Mtx::DotProduct(3,_rnA,&_nA[0]);
+	_rn = Mtx::DotProduct(3,_rnA,_nA);
 
 	// TANGENTIAL
 	_rt = Mtx::Normalize(3,_rtA,_tA);
@@ -692,26 +677,26 @@ computeVelocities()
 	double time = _model->getTime()*_model->getTimeNormConstant();
 
 	// VELOCITY
-	double va[3],vb[3],v[3];
+	SimTK::Vec3 va,vb,v;
 	if(_vAFunction == NULL){
-		_model->getDynamicsEngine().getVelocity(*_bA,&_pA[0],va);
+		_model->getDynamicsEngine().getVelocity(*_bA,_pA,va);
 	} else {
-		_vAFunction->evaluate(&time,va);
+		_vAFunction->evaluate(&time,&va[0]);
 	}
 	if(_vBFunction == NULL){
-		_model->getDynamicsEngine().getVelocity(*_bB,&_pB[0],vb);
+		_model->getDynamicsEngine().getVelocity(*_bB,_pB,vb);
 	} else {
-		_vBFunction->evaluate(&time,vb);
+		_vBFunction->evaluate(&time,&vb[0]);
 	}
-	Mtx::Subtract(1,3,vb,va,v);
+	v=vb-va;
 	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),v,*_bA,v);
 
 	// NORMAL
-	_vn = Mtx::DotProduct(3,v,&_nA[0]);
-	Mtx::Multiply(1,3,&_nA[0],_vn,_vnA);
+	_vn = Mtx::DotProduct(3,v,_nA);
+	_vnA=_vn*_nA;
 
 	// TANGENTIAL
-	Mtx::Subtract(1,3,v,_vnA,_vtA);
+	_vtA=v-_vnA;
 }
 
 
@@ -746,20 +731,20 @@ computeVelocities()
  * in the local frame of BodyA.
  */
 void ContactForce::
-computeLineOfActionComponents(double rNormal[3],
-	double rTangential[3]) const
+computeLineOfActionComponents(SimTK::Vec3& rNormal,
+	SimTK::Vec3& rTangential) const
 {
 	// LINE OF ACTION
-	double r[3];
+	SimTK::Vec3 r;
 	computeLineOfAction(r);
 	_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),r,*_bA,r);
 
 	// NORMAL COMPONENT
-	double rn = Mtx::DotProduct(3,r,&_nA[0]);
-	Mtx::Multiply(1,3,&_nA[0],rn,rNormal);
+	double rn = Mtx::DotProduct(3,r,_nA);
+	rNormal=rn*_nA;
 
 	// TANGENTIAL COMPONENT
-	Mtx::Subtract(1,3,r,rNormal,rTangential);
+	rTangential=r-rNormal;
 }
 
 
@@ -776,14 +761,14 @@ check() const
 	Force::check();
 
 	// NORMAL A
-	if(Mtx::Magnitude(3,&_nA[0])<rdMath::ZERO) {
+	if(Mtx::Magnitude(3,_nA)<rdMath::ZERO) {
 		printf("ContactForce.check: WARN- BodyA of contact %s has an invalid ",
 			getName().c_str());
 		printf("surface normal:\n\t  nA = %lf %lf %lf.\n",_nA[0],_nA[1],_nA[2]);
 	}
 
 	// NORMAL B
-	if(Mtx::Magnitude(3,&_nB[0])<rdMath::ZERO) {
+	if(Mtx::Magnitude(3,_nB)<rdMath::ZERO) {
 		printf("ContactForce.check: WARN- BodyB of contact %s has an invalid ",
 			getName().c_str());
 		printf("surface normal:\n\t  nB = %lf %lf %lf.\n",_nB[0],_nB[1],_nB[2]);
@@ -811,6 +796,6 @@ void ContactForce::
 updateFromXMLNode()
 {
 	Force::updateFromXMLNode();
-	setNormalA(&_nA[0]);
-	setNormalB(&_nB[0]);
+	setNormalA(_nA);
+	setNormalB(_nB);
 }	

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Model name="Muscle Editor Test Model">
 	<defaults>
-		<SimmZajacHill name="defaultmuscle">
+		<Schutte1993Muscle name="defaultmuscle">
 			<pennation_angle>0.000000000000</pennation_angle>
 			<max_contraction_velocity>10.000000000000</max_contraction_velocity>
 			<muscle_model>4</muscle_model>
@@ -34,7 +34,7 @@
 					<y>0.000000000000 0.000000000000 0.010417000000 0.021739000000 0.034091000000 0.047619000000 0.062500000000 0.078947000000 0.097222000000 0.117647000000 0.140625000000 0.166667000000 0.196429000000 0.230769000000 0.270833000000 0.318182000000 0.375000000000 0.444444000000 0.531250000000 0.642857000000 0.791667000000 1.000000000000 1.482014000000 1.601571000000 1.655791000000 1.686739000000 1.706751000000 1.720753000000 1.731099000000 1.739055000000 1.745365000000 1.750490000000 1.754736000000 1.758312000000 1.761364000000 1.763999000000 1.766298000000 1.768321000000 1.770115000000 1.771717000000 1.773155000000 1.774455000000 </y>
 				</natCubicSpline>
 			</force_velocity_curve>
-		</SimmZajacHill>
+		</Schutte1993Muscle>
 		<SimmDarrylMuscle name="defaultmuscle">
 			<pennation_angle>0.000000000000</pennation_angle>
 			<max_contraction_velocity>10.000000000000</max_contraction_velocity>
@@ -189,7 +189,7 @@
 			<coordinate> ankle_flex_l </coordinate>
 			<optimal_force> 1.0 </optimal_force>
 		</GeneralizedForce>
-		<SimmZajacHill name="test_muscle">
+		<Schutte1993Muscle name="test_muscle">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -227,8 +227,8 @@
 				</MuscleWrap>
 			</objects>
 			</MuscleWrapSet>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max1_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max1_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -254,8 +254,8 @@
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max2_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max2_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -281,8 +281,8 @@
 			<tendon_slack_length>0.127000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max3_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max3_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -308,8 +308,8 @@
 			<tendon_slack_length>0.114000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med1_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med1_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -327,8 +327,8 @@
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med2_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med2_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -346,8 +346,8 @@
 			<tendon_slack_length>0.037000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med3_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med3_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -365,8 +365,8 @@
 			<tendon_slack_length>0.053000000000</tendon_slack_length>
 			<pennation_angle>0.331612557879</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min1_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min1_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -384,8 +384,8 @@
 			<tendon_slack_length>0.016000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min2_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min2_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -403,8 +403,8 @@
 			<tendon_slack_length>0.026000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min3_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min3_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -422,8 +422,8 @@
 			<tendon_slack_length>0.051000000000</tendon_slack_length>
 			<pennation_angle>0.366519142919</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_long_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_long_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -441,8 +441,8 @@
 			<tendon_slack_length>0.110500000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_brev_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_brev_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -460,8 +460,8 @@
 			<tendon_slack_length>0.013000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag1_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag1_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -479,8 +479,8 @@
 			<tendon_slack_length>0.060000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag2_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag2_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -498,8 +498,8 @@
 			<tendon_slack_length>0.130000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag3_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag3_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -517,8 +517,8 @@
 			<tendon_slack_length>0.260000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="pectineus_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="pectineus_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -536,8 +536,8 @@
 			<tendon_slack_length>0.001000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="iliacus_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="iliacus_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -563,8 +563,8 @@
 			<tendon_slack_length>0.090000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="psoas_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="psoas_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -590,8 +590,8 @@
 			<tendon_slack_length>0.113000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="quad_fem_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="quad_fem_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -609,8 +609,8 @@
 			<tendon_slack_length>0.024000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gemellus_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gemellus_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -628,8 +628,8 @@
 			<tendon_slack_length>0.039000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="piri_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="piri_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -651,8 +651,8 @@
 			<tendon_slack_length>0.106000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="TFL_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="TFL_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -678,8 +678,8 @@
 			<tendon_slack_length>0.425000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gracilis_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gracilis_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -701,8 +701,8 @@
 			<tendon_slack_length>0.140000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="semimem_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="semimem_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -720,8 +720,8 @@
 			<tendon_slack_length>0.359000000000</tendon_slack_length>
 			<pennation_angle>0.261799387799</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="semiten_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="semiten_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -747,8 +747,8 @@
 			<tendon_slack_length>0.262000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="bi_fem_lh_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="bi_fem_lh_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -766,8 +766,8 @@
 			<tendon_slack_length>0.341000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="bi_fem_sh_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="bi_fem_sh_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -785,8 +785,8 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.401425727959</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="sartorius_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="sartorius_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -816,8 +816,8 @@
 			<tendon_slack_length>0.040000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="rectus_fem_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="rectus_fem_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -841,8 +841,8 @@
 			<tendon_slack_length>0.346000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_med_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_med_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -876,8 +876,8 @@
 			<tendon_slack_length>0.126000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_int_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_int_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -905,8 +905,8 @@
 			<tendon_slack_length>0.136000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_lat_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_lat_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -940,8 +940,8 @@
 			<tendon_slack_length>0.157000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="pat_lig_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="pat_lig_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -959,8 +959,8 @@
 			<tendon_slack_length>0.005000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gas_med_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gas_med_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -988,8 +988,8 @@
 			<tendon_slack_length>0.408000000000</tendon_slack_length>
 			<pennation_angle>0.296705972839</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gas_lat_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gas_lat_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1017,8 +1017,8 @@
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="soleus_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="soleus_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1036,8 +1036,8 @@
 			<tendon_slack_length>0.268000000000</tendon_slack_length>
 			<pennation_angle>0.436332312999</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="tib_post_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="tib_post_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1063,8 +1063,8 @@
 			<tendon_slack_length>0.310000000000</tendon_slack_length>
 			<pennation_angle>0.209439510239</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="tib_ant_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="tib_ant_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1086,8 +1086,8 @@
 			<tendon_slack_length>0.223000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="ext_dig_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ext_dig_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1121,8 +1121,8 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="ext_hal_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ext_hal_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1160,8 +1160,8 @@
 			<tendon_slack_length>0.305000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="flex_dig_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="flex_dig_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1203,8 +1203,8 @@
 			<tendon_slack_length>0.400000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="flex_hal_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="flex_hal_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1242,8 +1242,8 @@
 			<tendon_slack_length>0.380000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_brev_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_brev_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1273,8 +1273,8 @@
 			<tendon_slack_length>0.161000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_long_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_long_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1312,8 +1312,8 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_tert_r">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_tert_r">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1335,8 +1335,8 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.226892802759</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max1_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max1_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1362,8 +1362,8 @@
 			<tendon_slack_length>0.125000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max2_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max2_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1389,8 +1389,8 @@
 			<tendon_slack_length>0.127000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_max3_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_max3_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1416,8 +1416,8 @@
 			<tendon_slack_length>0.114000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med1_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med1_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1435,8 +1435,8 @@
 			<tendon_slack_length>0.078000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med2_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med2_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1454,8 +1454,8 @@
 			<tendon_slack_length>0.037000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_med3_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_med3_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1473,8 +1473,8 @@
 			<tendon_slack_length>0.053000000000</tendon_slack_length>
 			<pennation_angle>0.331612557879</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min1_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min1_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1492,8 +1492,8 @@
 			<tendon_slack_length>0.016000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min2_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min2_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1511,8 +1511,8 @@
 			<tendon_slack_length>0.026000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="glut_min3_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="glut_min3_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1530,8 +1530,8 @@
 			<tendon_slack_length>0.051000000000</tendon_slack_length>
 			<pennation_angle>0.366519142919</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_long_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_long_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1549,8 +1549,8 @@
 			<tendon_slack_length>0.110500000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_brev_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_brev_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1568,8 +1568,8 @@
 			<tendon_slack_length>0.013000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag1_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag1_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1587,8 +1587,8 @@
 			<tendon_slack_length>0.060000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag2_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag2_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1606,8 +1606,8 @@
 			<tendon_slack_length>0.130000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="add_mag3_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="add_mag3_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1625,8 +1625,8 @@
 			<tendon_slack_length>0.260000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="pectineus_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="pectineus_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1644,8 +1644,8 @@
 			<tendon_slack_length>0.001000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="iliacus_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="iliacus_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1671,8 +1671,8 @@
 			<tendon_slack_length>0.090000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="psoas_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="psoas_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1698,8 +1698,8 @@
 			<tendon_slack_length>0.113000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="quad_fem_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="quad_fem_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1717,8 +1717,8 @@
 			<tendon_slack_length>0.024000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gemellus_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gemellus_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1736,8 +1736,8 @@
 			<tendon_slack_length>0.039000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="piri_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="piri_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1759,8 +1759,8 @@
 			<tendon_slack_length>0.106000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="TFL_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="TFL_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1786,8 +1786,8 @@
 			<tendon_slack_length>0.425000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gracilis_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gracilis_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1809,8 +1809,8 @@
 			<tendon_slack_length>0.140000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="semimem_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="semimem_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1828,8 +1828,8 @@
 			<tendon_slack_length>0.359000000000</tendon_slack_length>
 			<pennation_angle>0.261799387799</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="semiten_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="semiten_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1855,8 +1855,8 @@
 			<tendon_slack_length>0.262000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="bi_fem_lh_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="bi_fem_lh_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1874,8 +1874,8 @@
 			<tendon_slack_length>0.341000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="bi_fem_sh_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="bi_fem_sh_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1893,8 +1893,8 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.401425727959</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="sartorius_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="sartorius_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1924,8 +1924,8 @@
 			<tendon_slack_length>0.040000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="rectus_fem_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="rectus_fem_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1949,8 +1949,8 @@
 			<tendon_slack_length>0.346000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_med_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_med_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -1984,8 +1984,8 @@
 			<tendon_slack_length>0.126000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_int_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_int_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2013,8 +2013,8 @@
 			<tendon_slack_length>0.136000000000</tendon_slack_length>
 			<pennation_angle>0.052359877560</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="vas_lat_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="vas_lat_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2048,8 +2048,8 @@
 			<tendon_slack_length>0.157000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="pat_lig_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="pat_lig_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2067,8 +2067,8 @@
 			<tendon_slack_length>0.005000000000</tendon_slack_length>
 			<pennation_angle>0.000000000000</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gas_med_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gas_med_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2096,8 +2096,8 @@
 			<tendon_slack_length>0.408000000000</tendon_slack_length>
 			<pennation_angle>0.296705972839</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="gas_lat_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="gas_lat_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2125,8 +2125,8 @@
 			<tendon_slack_length>0.385000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="soleus_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="soleus_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2144,8 +2144,8 @@
 			<tendon_slack_length>0.268000000000</tendon_slack_length>
 			<pennation_angle>0.436332312999</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="tib_post_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="tib_post_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2171,8 +2171,8 @@
 			<tendon_slack_length>0.310000000000</tendon_slack_length>
 			<pennation_angle>0.209439510239</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="tib_ant_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="tib_ant_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2194,8 +2194,8 @@
 			<tendon_slack_length>0.223000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="ext_dig_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ext_dig_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2229,8 +2229,8 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.139626340160</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="ext_hal_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="ext_hal_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2268,8 +2268,8 @@
 			<tendon_slack_length>0.305000000000</tendon_slack_length>
 			<pennation_angle>0.104719755120</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="flex_dig_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="flex_dig_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2311,8 +2311,8 @@
 			<tendon_slack_length>0.400000000000</tendon_slack_length>
 			<pennation_angle>0.122173047640</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="flex_hal_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="flex_hal_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2350,8 +2350,8 @@
 			<tendon_slack_length>0.380000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_brev_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_brev_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2381,8 +2381,8 @@
 			<tendon_slack_length>0.161000000000</tendon_slack_length>
 			<pennation_angle>0.087266462600</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_long_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_long_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2420,8 +2420,8 @@
 			<tendon_slack_length>0.345000000000</tendon_slack_length>
 			<pennation_angle>0.174532925199</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
-		<SimmZajacHill name="per_tert_l">
+		</Schutte1993Muscle>
+		<Schutte1993Muscle name="per_tert_l">
 			<MusclePointSet>
 			<objects>
 				<MusclePoint>
@@ -2443,7 +2443,7 @@
 			<tendon_slack_length>0.100000000000</tendon_slack_length>
 			<pennation_angle>0.226892802759</pennation_angle>
 			<muscle_model>4</muscle_model>
-		</SimmZajacHill>
+		</Schutte1993Muscle>
 	</objects>
 	</ActuatorSet>
 	<DynamicsEngine>

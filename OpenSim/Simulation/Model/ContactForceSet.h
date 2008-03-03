@@ -98,43 +98,43 @@ public:
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void setContactPointA(int aID,const double aPoint[3])
+	void setContactPointA(int aID,const SimTK::Vec3& aPoint)
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactPointA(int aID,double rPoint[3]) const
+	void getContactPointA(int aID,SimTK::Vec3& rPoint) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void setContactPointB(int aID,const double aPoint[3])
+	void setContactPointB(int aID,const SimTK::Vec3& aPoint)
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactPointB(int aID,double rPoint[3]) const
+	void getContactPointB(int aID,SimTK::Vec3& rPoint) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactForce(int aID,double rF[3]) const
+	void getContactForce(int aID,SimTK::Vec3& rF) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactNormalForce(int aID,double rFP[3],double rFV[3],double rF[3]) const
+	void getContactNormalForce(int aID,SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactTangentForce(int aID,double rFP[3],double rFV[3],double rF[3]) const
+	void getContactTangentForce(int aID,SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactStiffness(int aID,const double aDX[3],double rDF[3]) const
+	void getContactStiffness(int aID,const SimTK::Vec3& aDX,SimTK::Vec3& rDF) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactViscosity(int aID,const double aDV[3],double rDF[3]) const
+	void getContactViscosity(int aID,const SimTK::Vec3& aDV,SimTK::Vec3& rDF) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}
-	void getContactFrictionCorrection(int aID,double aDFFric[3]) const
+	void getContactFrictionCorrection(int aID,SimTK::Vec3& aDFFric) const
 	{
 		throw Exception("Not implemented yet", __FILE__, __LINE__);
 	}

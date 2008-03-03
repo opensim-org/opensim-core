@@ -717,9 +717,14 @@ evaluate(int aDerivOrder,double aX,double aY,double aZ)
 	// The following seemingly innocent line cost 70% of the compute time
 	// for this method.  It was constructing and destructing an Array<double>
 	//if(_coefficients==NULL) return(rdMath::NAN);
-	if(aX<_x[0]) return(rdMath::NAN);
-	if(aX>_x.getLast()) return(rdMath::NAN);
-	if(aDerivOrder<0) return(rdMath::NAN);
+	if(aX<_x[0] || aX>_x.getLast()){
+		char msg[256];
+		sprintf(msg, "ERROR - Evaluating GCVSpline at %g outside its domain [%g, %g]", 
+						aX, _x[0], _x.getLast());
+		throw(Exception(msg, __FILE__,__LINE__));
+	}
+	if(aDerivOrder<0)
+		throw(Exception("ERROR - Evaluating GCVSpline with negative derivative order", __FILE__,__LINE__));
 
 	// EVALUATE
 	double value;

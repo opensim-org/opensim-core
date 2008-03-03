@@ -30,6 +30,8 @@
 
 
 using namespace OpenSim;
+using SimTK::Vec3;
+
 /**
  * Destructor.
  */
@@ -499,8 +501,8 @@ compute(double *aXPrev,double *aYPrev,
 	// LOOP OVER ACTUATORS
 	int c,j,I;
 	AbstractBody *a;
-	static double com[] = { 0.0, 0.0, 0.0 };
-	double pcom[3],pctx[3];
+	static SimTK::Vec3 com(0.0, 0.0, 0.0);
+	SimTK::Vec3 pcom,pctx;
 	char outName[Object::NAME_LENGTH];
 	StateVector *vec;
 	Storage *forces,*forcesNom;
@@ -522,7 +524,8 @@ compute(double *aXPrev,double *aYPrev,
 			// CONTACT POINT A
 			a = _model->getContactSet()->getContactBodyA(i);
 			_model->getDynamicsEngine().getPosition(*a,com,pcom);
-			Mtx::Subtract(1,3,&_pctx[I],pcom,pctx);
+			//Mtx::Subtract(1,3,&_pctx[I],pcom,pctx);
+			pctx = Vec3::getAs(&_pctx[I]) - pcom;
 			_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),pctx,*a,pctx);
 			_model->getContactSet()->setContactPointA(i,pctx);
 

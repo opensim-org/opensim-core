@@ -38,6 +38,8 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+using SimTK::Mat33;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -48,7 +50,7 @@ using namespace OpenSim;
  */
 SimmBody::SimmBody() :
    _mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -74,7 +76,7 @@ SimmBody::~SimmBody()
 SimmBody::SimmBody(const SimmBody &aBody) :
    AbstractBody(aBody),
    _mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
    _inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -133,10 +135,10 @@ void SimmBody::setupProperties()
 	_massProp.setValue(0.0);
 	_propertySet.append(&_massProp);
 
-	const double defaultMC[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultMC(0.0, 0.0, 0.0);
 	_massCenterProp.setName("mass_center");
-	_massCenterProp.setValue(3, defaultMC);
-	_massCenterProp.setAllowableArraySize(3);
+	_massCenterProp.setValue(defaultMC);
+	//_massCenterProp.setAllowableArraySize(3);
 	_propertySet.append(&_massCenterProp);
 
 	const double defaultInertia[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -214,11 +216,9 @@ bool SimmBody::setMass(double aMass)
  *
  * @param rVec XYZ coordinates of mass center are returned here.
  */
-void SimmBody::getMassCenter(double rVec[3]) const
+void SimmBody::getMassCenter(SimTK::Vec3& rVec) const
 {
-	rVec[0] = _massCenter[0];
-	rVec[1] = _massCenter[1];
-	rVec[2] = _massCenter[2];
+	rVec = _massCenter;
 }
  
 //_____________________________________________________________________________
@@ -228,11 +228,9 @@ void SimmBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SimmBody::setMassCenter(const double aVec[3])
+bool SimmBody::setMassCenter(const SimTK::Vec3& aVec)
 {
-	_massCenter[0] = aVec[0];
-	_massCenter[1] = aVec[1];
-	_massCenter[2] = aVec[2];
+	_massCenter = aVec;
 
 	return true;
 }
@@ -243,7 +241,7 @@ bool SimmBody::setMassCenter(const double aVec[3])
  *
  * @param rInertia 3x3 inertia matrix.
  */
-void SimmBody::getInertia(double rInertia[3][3]) const
+void SimmBody::getInertia(Mat33& rInertia) const
 {
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
@@ -257,17 +255,13 @@ void SimmBody::getInertia(double rInertia[3][3]) const
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SimmBody::setInertia(const Array<double>& aInertia)
+bool SimmBody::setInertia(const Mat33& aInertia)
 {
-	if (aInertia.getSize() >= 9)
-	{
-		for (int i = 0; i < 9; i++)
-			_inertia[i] = aInertia[i];
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		_inertia[i*3 + j] = aInertia[i][j];
 
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 //=============================================================================
@@ -297,9 +291,9 @@ void SimmBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SimmBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimmBody::scale(const Vec3& aScaleFactors, bool aScaleMass)
 {
-	double displayerScaleFactors[3];
+	SimTK::Vec3 displayerScaleFactors;
 	getDisplayer()->getScaleFactors(displayerScaleFactors);
 
 	for (int i = 0; i < 3; i++)
@@ -323,7 +317,7 @@ void SimmBody::scale(const Array<double>& aScaleFactors, bool aScaleMass)
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SimmBody::scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass)
+void SimmBody::scaleInertialProperties(const Vec3& aScaleFactors, bool aScaleMass)
 {
 	double inertia[3][3];
 	for(int i=0;i<3;i++)
@@ -372,13 +366,12 @@ BoneIterator* SimmBody::newBoneIterator() const
 //=============================================================================
 // I/O
 //=============================================================================
-void SimmBody::getScaleFactors(Array<double>& scales) const
+void SimmBody::getScaleFactors(SimTK::Vec3& scales) const
 {
 
-	double scaleFactors[3];
+	SimTK::Vec3 scaleFactors;
 	_displayer.getScaleFactors(scaleFactors);
 
-	for (int i=0; i<3; i++)
-		scales[i] = scaleFactors[i];
+	scales = scaleFactors;
 
 }

@@ -32,6 +32,7 @@
 #include <string>
 #include <math.h>
 #include <float.h>
+#include "SimTKcommon.h"
 #include "SdfastFileWriter.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
@@ -55,6 +56,8 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
+using SimTK::Mat33;
 
 //=============================================================================
 // CONSTANTS
@@ -514,7 +517,7 @@ void SdfastFileWriter::makeSdfastJointOrder()
 void SdfastFileWriter::makeSdfastModel()
 {
 	// Copy gravity from SimmKinematicsEngine
-	double gravity[3];
+	SimTK::Vec3 gravity;
 	_model->getDynamicsEngine().getGravity(gravity);
 	_simulationModel->getDynamicsEngine().setGravity(gravity);
 
@@ -528,7 +531,7 @@ void SdfastFileWriter::makeSdfastModel()
 	sdfastGround->name = _groundBody->getName();
 	convertString(sdfastGround->name, true);
 	sdfastGround->bodyInfo = &_modelBodies[0]; // TODO always 0?
-	_groundBody->getMassCenter(sdfastGround->massCenter);
+	_groundBody->getMassCenter(Vec3::updAs(sdfastGround->massCenter));
 	sdfastGround->mass = 0.0;
 	for (i = 0; i < 3; i++)
 		for (j = 0; j < 3; j++)
@@ -599,7 +602,7 @@ AbstractDof* SdfastFileWriter::getTranslationDof(int aAxis, DofSet* aDofSet) con
 	{
 		if (aDofSet->get(i)->getMotionType() == AbstractDof::Translational)
 		{
-			double vec[3];
+			SimTK::Vec3 vec;
 			aDofSet->get(i)->getAxis(vec);
 			if (EQUAL_WITHIN_ERROR(vec[aAxis], 1.0))
 				return aDofSet->get(i);
@@ -612,7 +615,7 @@ AbstractDof* SdfastFileWriter::getTranslationDof(int aAxis, DofSet* aDofSet) con
 void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rConstrainedCount)
 {
 	int i, body2Index;
-	double body1MassCenter[3], body2MassCenter[3];
+	SimTK::Vec3 body1MassCenter, body2MassCenter;
 	AbstractDof* transDof;
 	AbstractBody *body1, *body2;
 	ModelBodyInfo* body2Info;
@@ -660,12 +663,12 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 	 * bodies).
 	 */
 	sdfastBody->mass = body2->getMass() / body2Info->massFactor;
-	double inertia[3][3];
+	Mat33 inertia;
 	body2->getInertia(inertia);
 	for (i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 			sdfastBody->inertia[i][j] = inertia[i][j] / body2Info->massFactor;
-	body2->getMassCenter(sdfastBody->massCenter);
+	body2->getMassCenter(Vec3::updAs(sdfastBody->massCenter));
 
 	DofSet* dofs = _joints[aJointIndex].modelJoint->getDofSet();
 
@@ -833,8 +836,8 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 
 	// SET THE LOCATION OF THE JOINT IN THE PARENT AND CHILD
 	// The location in the child should always be the zero vector.
-	Mtx::Add(1,3,body1MassCenter,sdfastBody->inboardToJoint,_joints[aJointIndex].locationInParent);
-	Mtx::Add(1,3,body2MassCenter,sdfastBody->bodyToJoint,_joints[aJointIndex].locationInChild);
+	Vec3::updAs(_joints[aJointIndex].locationInParent)=body1MassCenter+Vec3(sdfastBody->inboardToJoint);
+	Vec3::updAs(_joints[aJointIndex].locationInChild)=body2MassCenter+Vec3(sdfastBody->bodyToJoint);
 
 	/* Now add the sdfastBody to the array of others. */
    _sdfastBodies.append(*sdfastBody);
@@ -859,7 +862,7 @@ void SdfastFileWriter::addBodyToSimulationModel(SdfastBodyInfo& aSdfastBody)
 		body = new SdfastBody();
 
 	body->setName(aSdfastBody.name);
-	body->setMassCenter(aSdfastBody.massCenter);
+	body->setMassCenter(Vec3::updAs(aSdfastBody.massCenter));
 	_simulationEngine->addBody(body);
 }
 
@@ -890,11 +893,11 @@ void SdfastFileWriter::addJointToSimulationModel(JointInfo& aJointInfo)
 
 	// Location in parent (inboard) body
 	// This is the position of the center of mass
-	joint->setLocationInParent(aJointInfo.locationInParent);
+	joint->setLocationInParent(Vec3::updAs(aJointInfo.locationInParent));
 
 	// Location in child (outboard) body
 	// The location of the joint is always conincident with the body reference frame
-	joint->setLocationInChild(aJointInfo.locationInChild);
+	joint->setLocationInChild(Vec3::updAs(aJointInfo.locationInChild));
 
 	// ------------------------------------
 	// END  Added by Clay 2007_01_18
@@ -990,7 +993,7 @@ void SdfastFileWriter::writeSdfastFile(const string& aFileName)
 
 	out << "language = c" << endl << endl;
 
-	double gravity[3];
+	SimTK::Vec3 gravity;
 	_model->getGravity(gravity);
 	out << "gravity = " << gravity[0] << "? " << gravity[1] << "? " << gravity[2] << "?" << endl << endl;
 
@@ -1181,8 +1184,8 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
       {
 			if (jointInfo->dofs[j].modelDof->getCoordinate() != NULL && jointInfo->dofs[j].constrained)
 			{
-				double scaleX = (jointInfo->dofs[j].modelDof->getCoordinate()->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
-				double scaleY = (jointInfo->dofs[j].modelDof->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
+				double scaleX = (jointInfo->dofs[j].modelDof->getCoordinate()->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
+				double scaleY = (jointInfo->dofs[j].modelDof->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
 				Function* func = jointInfo->dofs[j].modelDof->getFunction();
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 				if (cubicSpline)
@@ -1343,7 +1346,7 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
 		{
 			const AbstractCoordinate* coord = dof->modelDof->getCoordinate();
 			CoordinateInfo* coordInfo = getCoordinateInfo(coord);
-			double conversion = dof->modelDof->getMotionType() == AbstractDof::Rotational ? RTOD : 1;
+			double conversion = dof->modelDof->getMotionType() == AbstractDof::Rotational ? SimTK_RADIAN_TO_DEGREE : 1;
 
 			out << "   mstrcpy(&sdm->q[" << dof->name << "].name,\"" << dof->name << "\");" << endl;
 			if (dof->fixed)
@@ -1907,7 +1910,7 @@ void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, co
 		JointInfo* joint;
 		DofInfo* dof = findNthSdfastQ(i, joint);
 		if (dof) {
-			double scale = (dof->modelDof->getMotionType() == AbstractDof::Rotational) ? RTOD : 1;
+			double scale = (dof->modelDof->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
 			out << "#" << dof->name << " " << dof->initialValue * scale << " 0.0" << endl;
 		}
 	}
@@ -2376,7 +2379,7 @@ void SdfastFileWriter::makeSdfastPin(int aJointIndex, int& rDofCount, int& rCons
 {
 	char buffer[200];
 	int rdIndex;
-	double axis[3];
+	SimTK::Vec3 axis;
 	AbstractDof* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
 	const AbstractCoordinate* coord = rotDof->getCoordinate();
 
@@ -2434,7 +2437,7 @@ void SdfastFileWriter::makeSdfastSlider(int aJointIndex, int& rDofCount, int& rC
 {
 	char buffer[200];
 	int tdIndex = -1;
-	double axis[3];
+	SimTK::Vec3 axis;
 	AbstractDof* transDof = findNthFunctionTranslation(_joints[aJointIndex], 0, tdIndex);
 	const AbstractCoordinate* coord = transDof->getCoordinate();
 
@@ -2478,7 +2481,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 {
 	char buffer[200];
 	int i, axisNum = 0;
-	double axis[3];
+	SimTK::Vec3 axis;
 	AbstractCoordinate *newCoord;
 	string speedName;
 
@@ -2665,7 +2668,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 void SdfastFileWriter::makeSdfastUniversal(int aJointIndex, int& rDofCount, int& rConstrainedCount)
 {
 	int axisCount = 0;
-	double axis[3];
+	SimTK::Vec3 axis;
 	AbstractDof* dof;
 	DofInfo* dofInfo;
 	char buffer[200];
@@ -2736,7 +2739,7 @@ void SdfastFileWriter::makeSdfastUniversal(int aJointIndex, int& rDofCount, int&
 
 void SdfastFileWriter::makeSdfastCylindrical(int aJointIndex, int& rDofCount, int& rConstrainedCount)
 {
-	double axis[3];
+	SimTK::Vec3 axis;
 	char buffer[200];
 	AbstractCoordinate *newCoord;
 	string speedName;
@@ -2822,7 +2825,7 @@ void SdfastFileWriter::makeSdfastCylindrical(int aJointIndex, int& rDofCount, in
 
 void SdfastFileWriter::makeSdfastGimbal(int aJointIndex, int& rDofCount, int& rConstrainedCount)
 {
-	double axis[3];
+	SimTK::Vec3 axis;
 	char buffer[200];
 	int axisCount = 0;
 	AbstractDof* dof;
@@ -2895,7 +2898,7 @@ void SdfastFileWriter::makeSdfastGimbal(int aJointIndex, int& rDofCount, int& rC
 void SdfastFileWriter::makeSdfastBushing(int aJointIndex, int& rDofCount, int& rConstrainedCount)
 {
 	int i, axisNum = 0;
-	double axis[3];
+	SimTK::Vec3 axis;
 	char buffer[200];
 	AbstractDof* rotDofs[3];
 	int rdIndices[3];
@@ -3151,7 +3154,7 @@ AbstractDof* SdfastFileWriter::findNthFunctionTranslation(JointInfo& aJointInfo,
  */
 AbstractDof* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo, AbstractDof* aRotDof, int& rIndex) const
 {
-	double rotAxis[3], transAxis[3];
+	SimTK::Vec3 rotAxis, transAxis;
 
 	aRotDof->getAxis(rotAxis);
 
@@ -3160,7 +3163,7 @@ AbstractDof* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo,
 		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Translational)
 		{
 			aJointInfo.dofs[i].modelDof->getAxis(transAxis);
-			if (axesAreParallel(rotAxis, transAxis, false))
+			if (axesAreParallel(&rotAxis[0], &transAxis[0], false))
 			{
 				rIndex = i;
 				return aJointInfo.dofs[i].modelDof;
@@ -3310,7 +3313,7 @@ bool SdfastFileWriter::checkDynamicParameters() const
 			}
 
 			// Check inertia matrix of body
-			double inertia[3][3];
+			Mat33 inertia;
 			body->getInertia(inertia);
 			double inertiaSum = 0.0;
 			for (int i = 0; i < 3; i++)

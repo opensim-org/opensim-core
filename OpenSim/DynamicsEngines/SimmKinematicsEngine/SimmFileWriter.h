@@ -34,6 +34,7 @@
 #include <fstream>
 #include <string>
 #include "osimSimmKinematicsEngineDLL.h"
+#include "SimTKcommon.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMMKINEMATICSENGINE_API
@@ -89,7 +90,7 @@ private:
 	bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
 	bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
 	bool writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aActuatorSet, std::ofstream& aStream) const;
-	const std::string& getGravityLabel(double aGravity[3]) const;
+	const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
 //=============================================================================
 };	// END of class SimmFileWriter
 //=============================================================================

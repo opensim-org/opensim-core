@@ -12,6 +12,7 @@
 #include <OpenSim/Common/rdMath.h>
 #include "osimAnalysesDLL.h"
 #include "IndAcc.h"
+#include "SimTKcommon.h"
 
 const int BodyPointIndAcc_BUFFER_LENGTH = 2048;
 
@@ -39,7 +40,7 @@ public:
 	static const int BUFFER_LENGTH;
 protected:
 	AbstractBody *_body;
-	double _point[3];
+	SimTK::Vec3 _point;
 	std::string _pointName;
 	Storage *_axPointStore;
 	Storage *_ayPointStore;
@@ -55,8 +56,8 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3]);
-	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3],
+	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,SimTK::Vec3& aPoint);
+	BodyPointIndAcc(Model *aModel,AbstractBody *aBody,SimTK::Vec3& aPoint,
 		Storage *aStates,Storage *aControls,char *aBaseName,
 		char *aDir=NULL,char *aExtension=NULL);
 	virtual ~BodyPointIndAcc();
@@ -72,8 +73,8 @@ public:
 	//--------------------------------------------------------------------------
 	void setBody(AbstractBody* aBody);
 	AbstractBody* getBody();
-	void setPoint(double aPoint[3]);
-	void getPoint(double rPoint[3]);
+	void setPoint(const SimTK::Vec3& aPoint);
+	void getPoint(SimTK::Vec3& rPoint);
 	void setPointName(const std::string &aName);
 	const std::string &getPointName();
 	virtual void setStorageCapacityIncrements(int aIncrement);

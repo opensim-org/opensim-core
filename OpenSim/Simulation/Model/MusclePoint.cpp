@@ -41,6 +41,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 Geometry *MusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
 
@@ -52,7 +53,7 @@ Geometry *MusclePoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
  * Default constructor.
  */
 MusclePoint::MusclePoint() :
-   _attachment(_attachmentProp.getValueDblArray()),
+   _attachment(_attachmentProp.getValueDblVec3()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -77,7 +78,7 @@ MusclePoint::~MusclePoint()
  */
 MusclePoint::MusclePoint(const MusclePoint &aPoint) :
    Object(aPoint),
-   _attachment(_attachmentProp.getValueDblArray()),
+   _attachment(_attachmentProp.getValueDblVec3()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -147,10 +148,10 @@ void MusclePoint::setNull()
  */
 void MusclePoint::setupProperties()
 {
-	const double defaultAttachment[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultAttachment(0.0);
 	_attachmentProp.setName("location");
-	_attachmentProp.setValue(3, defaultAttachment);
-	_attachmentProp.setAllowableArraySize(3);
+	_attachmentProp.setValue(defaultAttachment);
+	//_attachmentProp.setAllowableArraySize(3);
 	_propertySet.append(&_attachmentProp);
 
 	_displayerProp.setName("display");
@@ -205,7 +206,7 @@ void MusclePoint::setup(Model* aModel, AbstractMuscle* aMuscle)
 void MusclePoint::updateGeometry()
 {
 	Transform position;
-	position.translate(_attachment.get());
+	position.translate(_attachment);
 	getDisplayer()->setTransform(position);
 }
 //=============================================================================
@@ -243,7 +244,7 @@ void MusclePoint::setBody(AbstractBody& aBody, bool preserveLocation)
 	if (preserveLocation) {
 	   AbstractDynamicsEngine* engine = aBody.getDynamicsEngine();
 	   if (engine)
-		   engine->transformPosition(*_body, _attachment, aBody, _attachment);
+		   engine->transformPosition(*_body, &_attachment[0], aBody, &_attachment[0]);
 	}
 
 	_body = &aBody;
@@ -261,11 +262,9 @@ void MusclePoint::setBody(AbstractBody& aBody, bool preserveLocation)
  *
  * @param aAttachment The XYZ coordinates.
  */
-void MusclePoint::setAttachment(double aAttachment[3])
+void MusclePoint::setAttachment(SimTK::Vec3& aAttachment)
 {
-	_attachment[0] = aAttachment[0];
-	_attachment[1] = aAttachment[1];
-	_attachment[2] = aAttachment[2];
+	_attachment = aAttachment;
 
 	// Invalidate the path
 	_muscle->invalidatePath();
@@ -295,7 +294,7 @@ void MusclePoint::setAttachment(int aCoordIndex, double aAttachment)
  * @param aVelocity The velocity.
  */
 
-void MusclePoint::getVelocity(double aVelocity[3])
+void MusclePoint::getVelocity(SimTK::Vec3& aVelocity)
 {
 	aVelocity[0] = aVelocity[1] = aVelocity[2] = 0.0;
 }
@@ -327,7 +326,7 @@ MusclePoint* MusclePoint::makeMusclePointOfType(MusclePoint* aPoint, const strin
  *
  * @param aScaleFactors the XYZ scale factors to scale the point by.
  */
-void MusclePoint::scale(Array<double>& aScaleFactors)
+void MusclePoint::scale(const SimTK::Vec3& aScaleFactors)
 {
 	for (int i = 0; i < 3; i++)
 		_attachment[i] *= aScaleFactors[i];

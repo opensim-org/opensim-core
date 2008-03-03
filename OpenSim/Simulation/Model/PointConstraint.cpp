@@ -10,9 +10,10 @@
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include "PointConstraint.h"
+#include "SimTKcommon.h"
 
 using namespace OpenSim;
-
+using SimTK::Vec3;
 
 //==============================================================================
 // CONSTRUCTION
@@ -38,8 +39,8 @@ PointConstraint::PointConstraint(int aID)
  * Constructor.
  */
 PointConstraint::
-PointConstraint(double aP[3],double aV[3],
-	double aC0[3],double aC1[3],double aC2[3],int aID)
+PointConstraint(SimTK::Vec3& aP,SimTK::Vec3& aV,
+	SimTK::Vec3& aC0,SimTK::Vec3& aC1,SimTK::Vec3& aC2,int aID)
 {
 	clear();
 
@@ -116,11 +117,9 @@ getID()
  * Set the value of the point.
  */
 void PointConstraint::
-setPoint(double aP[3])
+setPoint(const SimTK::Vec3& aP)
 {
-	_p[0] = aP[0];
-	_p[1] = aP[1];
-	_p[2] = aP[2];
+	_p = aP;
 }
 //______________________________________________________________________________
 /**
@@ -138,17 +137,15 @@ setPoint(double aP0,double aP1,double aP2)
  * Get the value of the point.
  */
 void PointConstraint::
-getPoint(double aP[3])
+getPoint(SimTK::Vec3& aP)
 {
-	aP[0] = _p[0];
-	aP[1] = _p[1];
-	aP[2] = _p[2];
+	aP = _p;
 }
 //______________________________________________________________________________
 /**
  * Get the value of the point.
  */
-double* PointConstraint::
+Vec3& PointConstraint::
 getPoint()
 {
 	return(_p);
@@ -162,11 +159,9 @@ getPoint()
  * Set the value of the constraint.
  */
 void PointConstraint::
-setValue(double aV[3])
+setValue(const SimTK::Vec3& aV)
 {
-	_v[0] = aV[0];
-	_v[1] = aV[1];
-	_v[2] = aV[2];
+	_v = aV;
 }
 //______________________________________________________________________________
 /**
@@ -184,17 +179,15 @@ setValue(double aV0,double aV1,double aV2)
  * Get the value of the constraint.
  */
 void PointConstraint::
-getValue(double aV[3])
+getValue(SimTK::Vec3& aV)
 {
-	aV[0] = _v[0];
-	aV[1] = _v[1];
-	aV[2] = _v[2];
+	aV = _v;
 }
 //______________________________________________________________________________
 /**
  * Get the value of the constraint.
  */
-double* PointConstraint::
+Vec3& PointConstraint::
 getValue()
 {
 	return(_v);
@@ -208,11 +201,9 @@ getValue()
  * Set constraint direction 0.
  */
 void PointConstraint::
-setC0(double aC[3])
+setC0(const SimTK::Vec3& aC)
 {
-	_c0[0] = aC[0];
-	_c0[1] = aC[1];
-	_c0[2] = aC[2];
+	_c0 = aC;
 }
 //______________________________________________________________________________
 /**
@@ -230,17 +221,15 @@ setC0(double aC0,double aC1,double aC2)
  * Get the constraint direction.
  */
 void PointConstraint::
-getC0(double aC[3])
+getC0(SimTK::Vec3& aC)
 {
-	aC[0] = _c0[0];
-	aC[1] = _c0[1];
-	aC[2] = _c0[2];
+	aC = _c0;
 }
 //______________________________________________________________________________
 /**
  * Get the constraint direction.
  */
-double* PointConstraint::
+Vec3& PointConstraint::
 getC0()
 {
 	return(_c0);
@@ -254,11 +243,9 @@ getC0()
  * Set the constraint direction.
  */
 void PointConstraint::
-setC1(double aC[3])
+setC1(const SimTK::Vec3& aC)
 {
-	_c1[0] = aC[0];
-	_c1[1] = aC[1];
-	_c1[2] = aC[2];
+	_c1 = aC;
 }
 //______________________________________________________________________________
 /**
@@ -276,17 +263,15 @@ setC1(double aC0,double aC1,double aC2)
  * Get the constraint direction.
  */
 void PointConstraint::
-getC1(double aC[3])
+getC1(SimTK::Vec3& aC)
 {
-	aC[0] = _c1[0];
-	aC[1] = _c1[1];
-	aC[2] = _c1[2];
+	aC = _c1;
 }
 //______________________________________________________________________________
 /**
  * Get the constraint direction.
  */
-double* PointConstraint::
+Vec3& PointConstraint::
 getC1()
 {
 	return(_c1);
@@ -300,11 +285,9 @@ getC1()
  * Set the constraint direction.
  */
 void PointConstraint::
-setC2(double aC[3])
+setC2(const SimTK::Vec3& aC)
 {
-	_c2[0] = aC[0];
-	_c2[1] = aC[1];
-	_c2[2] = aC[2];
+	_c2 = aC;
 }
 //______________________________________________________________________________
 /**
@@ -322,17 +305,15 @@ setC2(double aC0,double aC1,double aC2)
  * Get the constraint direction.
  */
 void PointConstraint::
-getC2(double aC[3])
+getC2(SimTK::Vec3& aC)
 {
-	aC[0] = _c2[0];
-	aC[1] = _c2[1];
-	aC[2] = _c2[2];
+	aC = _c2;
 }
 //______________________________________________________________________________
 /**
  * Get the constraint direction.
  */
-double* PointConstraint::
+Vec3& PointConstraint::
 getC2()
 {
 	return(_c2);
@@ -350,10 +331,9 @@ getC2()
  * @return Dot product of (aV - Value) with C0.
  */
 double PointConstraint::
-evaluateC0(double aV[3])
+evaluateC0(SimTK::Vec3& aV)
 {
-	double v[3];
-	Mtx::Subtract(1,3,aV,_v,v);
+	SimTK::Vec3 v = aV - _v;
 	double result = Mtx::DotProduct(3,_c0,v);
 	return(result);
 }
@@ -365,10 +345,9 @@ evaluateC0(double aV[3])
  * @return Dot product of (aV - Value) with C0.
  */
 double PointConstraint::
-evaluateC1(double aV[3])
+evaluateC1(SimTK::Vec3& aV)
 {
-	double v[3];
-	Mtx::Subtract(1,3,aV,_v,v);
+	SimTK::Vec3 v = aV - _v;
 	double result = Mtx::DotProduct(3,_c1,v);
 	return(result);
 }
@@ -380,10 +359,9 @@ evaluateC1(double aV[3])
  * @return Dot product of (aV - Value) with C0.
  */
 double PointConstraint::
-evaluateC2(double aV[3])
+evaluateC2(SimTK::Vec3& aV)
 {
-	double v[3];
-	Mtx::Subtract(1,3,aV,_v,v);
+	SimTK::Vec3 v = aV - _v;
 	double result = Mtx::DotProduct(3,_c2,v);
 	return(result);
 }
@@ -404,10 +382,9 @@ evaluateC2(double aV[3])
  * @param aC0 Direction for C0.
  */
 void PointConstraint::
-constructOrthoNormalConstraints(double aV[3],double aC0[3])
+constructOrthoNormalConstraints(SimTK::Vec3& aV,SimTK::Vec3& aC0)
 {
 	zeroConstraints();
-	if((aV==NULL)||(aC0==NULL)) return;
 	setC0(aC0);  Mtx::Normalize(3,_c0,_c0);
 	constructOrthoNormalC1(aV);
 	constructOrthoNormalC2();
@@ -422,10 +399,9 @@ constructOrthoNormalConstraints(double aV[3],double aC0[3])
  * @param aV Specified vector.
  */
 void PointConstraint::
-constructOrthoNormalC1(double aV[3])
+constructOrthoNormalC1(SimTK::Vec3& aV)
 {
 	setC1(0.0,0.0,0.0);
-	if(aV==NULL) return;
 	Mtx::CrossProduct(aV,_c0,_c1);
 	Mtx::Normalize(3,_c1,_c1);
 }

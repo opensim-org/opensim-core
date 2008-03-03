@@ -66,8 +66,8 @@ SimbodyJoint::~SimbodyJoint()
 SimbodyJoint::SimbodyJoint() :
 	AbstractJoint(),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_locationInParent(_locationInParentProp.getValueDblArray()),
-	_locationInChild(_locationInChildProp.getValueDblArray()),
+	_locationInParent(_locationInParentProp.getValueDblVec3()),
+	_locationInChild(_locationInChildProp.getValueDblVec3()),
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj())
 
@@ -85,8 +85,8 @@ SimbodyJoint::SimbodyJoint() :
 SimbodyJoint::SimbodyJoint(const SimbodyJoint &aJoint) :
    AbstractJoint(aJoint),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_locationInParent(_locationInParentProp.getValueDblArray()),
-	_locationInChild(_locationInChildProp.getValueDblArray()),
+	_locationInParent(_locationInParentProp.getValueDblVec3()),
+	_locationInChild(_locationInChildProp.getValueDblVec3()),
 	_dofSetProp(PropertyObj("", DofSet())),
 	_dofSet((DofSet&)_dofSetProp.getValueObj())
 {
@@ -121,8 +121,8 @@ void SimbodyJoint::copyData(const SimbodyJoint &aJoint)
 {
 	_bodies = aJoint._bodies;
 	_dofSet = aJoint._dofSet;
-	setLocationInParent(&(aJoint._locationInParent[0]));
-	setLocationInChild(&(aJoint._locationInChild[0]));
+	setLocationInParent(aJoint._locationInParent);
+	setLocationInChild(aJoint._locationInChild);
 	_childBody = aJoint._childBody;
 	_parentBody = aJoint._parentBody;
 }
@@ -151,13 +151,13 @@ void SimbodyJoint::setupProperties()
 	_dofSetProp.setName("DofSet");
 	_propertySet.append(&_dofSetProp);
 
-	double origin[] = {0.0, 0.0, 0.0};
+	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 	_locationInParentProp.setName("location_in_parent");
-	_locationInParentProp.setValue(3,origin);
+	_locationInParentProp.setValue(origin);
 	_propertySet.append(&_locationInParentProp);
 
 	_locationInChildProp.setName("location_in_child");
-	_locationInChildProp.setValue(3,origin);
+	_locationInChildProp.setValue(origin);
 	_propertySet.append(&_locationInChildProp);
 }
 
@@ -170,8 +170,8 @@ void SimbodyJoint::setupProperties()
  */
 void SimbodyJoint::updateSimbody()
 {
-	setLocationInParent(&_locationInParent[0]);
-	setLocationInChild(&_locationInChild[0]);
+	setLocationInParent(_locationInParent);
+	setLocationInChild(_locationInChild);
 }
 
 //_____________________________________________________________________________
@@ -239,7 +239,7 @@ SimbodyJoint& SimbodyJoint::operator=(const SimbodyJoint &aJoint)
  *
  * @param aLocation New location specified in the parent body frame.
  */
-void SimbodyJoint::setLocationInParent(const double aLocation[3])
+void SimbodyJoint::setLocationInParent(const SimTK::Vec3& aLocation)
 {
 	// Update Simbody
 	if(_parentBody!=NULL) {
@@ -247,7 +247,7 @@ void SimbodyJoint::setLocationInParent(const double aLocation[3])
 	}
 
 	// Update property
-	for(int i=0; i<3; i++) _locationInParent[i] = aLocation[i];
+	_locationInParent = aLocation;
 }
 //_____________________________________________________________________________
 /**
@@ -255,9 +255,9 @@ void SimbodyJoint::setLocationInParent(const double aLocation[3])
  *
  * @param rLocation Currnt location specified in the parent body frame.
  */
-void SimbodyJoint::getLocationInParent(double rLocation[3]) const
+void SimbodyJoint::getLocationInParent(SimTK::Vec3& rLocation) const
 {
-	Mtx::Assign(1,3,&_locationInParent[0],rLocation);
+	rLocation=_locationInParent;
 }
 
 //-----------------------------------------------------------------------------
@@ -270,14 +270,14 @@ void SimbodyJoint::getLocationInParent(double rLocation[3]) const
  *
  * @param aLocation New location specified in the child body frame.
  */
-void SimbodyJoint::setLocationInChild(const double aLocation[3])
+void SimbodyJoint::setLocationInChild(const SimTK::Vec3& aLocation)
 {
 	if(_childBody!=NULL) {
 		// TODO:  Find out what needs to be done to update Simbody.
 	}
 
 	// UPDATE PROPERTY
-	for(int i=0; i<3; i++) _locationInChild[i] = aLocation[i];
+	_locationInChild = aLocation;
 }
 //_____________________________________________________________________________
 /**
@@ -285,9 +285,9 @@ void SimbodyJoint::setLocationInChild(const double aLocation[3])
  *
  * @param rLocation Current location specified in the child body frame.
  */
-void SimbodyJoint::getLocationInChild(double rLocation[3]) const
+void SimbodyJoint::getLocationInChild(SimTK::Vec3& rLocation) const
 {
-	Mtx::Assign(1,3,&_locationInChild[0],rLocation);
+	rLocation=_locationInChild;
 }
 
 
@@ -386,7 +386,7 @@ bool SimbodyJoint::isTreeJoint() const
  */
 void SimbodyJoint::scale(const ScaleSet& aScaleSet)
 {
-	Array<double> scaleFactors(1.0, 3);
+	Vec3 scaleFactors(1.0);
 
 	// SCALING TO DO WITH THE PARENT BODY -----
 	// Joint kinematics are scaled by the scale factors for the

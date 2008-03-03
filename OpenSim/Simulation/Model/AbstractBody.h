@@ -38,6 +38,7 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -87,12 +88,12 @@ public:
 
 	virtual double getMass() const = 0;
 	virtual bool setMass(double aMass) = 0;
-	virtual void getMassCenter(double rVec[3]) const = 0;
-	virtual bool setMassCenter(const double aVec[3]) = 0;
-	virtual void getInertia(double rInertia[3][3]) const = 0;
-	virtual bool setInertia(const Array<double>& aInertia) = 0;
-	virtual void scale(const Array<double>& aScaleFactors, bool aScaleMass = false) = 0;
-	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true) = 0;
+	virtual void getMassCenter(SimTK::Vec3& rVec) const = 0;
+	virtual bool setMassCenter(const SimTK::Vec3& aVec) = 0;
+	virtual void getInertia(SimTK::Mat33& rInertia) const = 0;
+	virtual bool setInertia(const SimTK::Mat33& aInertia) = 0;
+	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false) = 0;
+	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true) = 0;
 	virtual void scaleMass(double aScaleFactor) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
 	AbstractWrapObject* getWrapObject(const std::string& aName) const;
@@ -105,7 +106,7 @@ private:
 	void setupProperties();
 
 protected:
-	static void scaleInertiaTensor(double aMass, const Array<double> &aScaleFactors, double rInertia[3][3]);
+	static void scaleInertiaTensor(double aMass, const SimTK::Vec3& aScaleFactors, double rInertia[3][3]);
 //=============================================================================
 };	// END of class AbstractBody
 //=============================================================================

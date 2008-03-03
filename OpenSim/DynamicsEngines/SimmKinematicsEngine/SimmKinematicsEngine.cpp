@@ -64,6 +64,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 static char simmGroundName[] = "ground";
 
@@ -564,7 +565,7 @@ double SimmKinematicsEngine::getMass() const
  * @param rCOM
  * @param rI
  */
-void SimmKinematicsEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
+void SimmKinematicsEngine::getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const
 {
 	throw Exception("SimmKinematicsEngine::getSystemInertia() not implemented.");
 }
@@ -598,11 +599,9 @@ void SimmKinematicsEngine::getSystemInertia(double *rM, double *rCOM, double *rI
  *
  * @see setConfiguration()
  */
-void SimmKinematicsEngine::getPosition(const AbstractBody& aBody, const double aPoint[3], double rPos[3]) const
+void SimmKinematicsEngine::getPosition(const AbstractBody& aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const
 {
-	rPos[0] = aPoint[0];
-	rPos[1] = aPoint[1];
-	rPos[2] = aPoint[2];
+	rPos = aPoint;
 
 	AbstractBody& groundBody = getGroundBody();
 
@@ -632,7 +631,7 @@ void SimmKinematicsEngine::getPosition(const AbstractBody& aBody, const double a
  * @param rVel
  * Ayman: Per Pete & Clay returning 0.0 for now (Kluge for 0.9 until we resolve in general way like SIMM or throw).
  */
-void SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const
+void SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const
 {
 	rVel[0]=rVel[1]=rVel[2]=0.0;
 }
@@ -645,7 +644,7 @@ void SimmKinematicsEngine::getVelocity(const AbstractBody &aBody, const double a
  * @param aPoint
  * @param rAcc
  */
-void SimmKinematicsEngine::getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const
+void SimmKinematicsEngine::getAcceleration(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const
 {
 	throw Exception("SimmKinematicsEngine::getAcceleration(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -740,7 +739,7 @@ void SimmKinematicsEngine::getDirectionCosines(const AbstractBody &aBody, double
  * @param aBody
  * @param rAngVel
  */
-void SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const
+void SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	throw Exception("SimmKinematicsEngine::getAngularVelocity() not implemented.");
 }
@@ -752,7 +751,7 @@ void SimmKinematicsEngine::getAngularVelocity(const AbstractBody &aBody, double 
  * @param aBody
  * @param rAngVel
  */
-void SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const
+void SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	throw Exception("SimmKinematicsEngine::getAngularVelocityBodyLocal() not implemented.");
 }
@@ -764,7 +763,7 @@ void SimmKinematicsEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody
  * @param aBody
  * @param rAngAcc
  */
-void SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const
+void SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	throw Exception("SimmKinematicsEngine::getAngularAcceleration(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -776,7 +775,7 @@ void SimmKinematicsEngine::getAngularAcceleration(const AbstractBody &aBody, dou
  * @param aBody
  * @param rAngAcc
  */
-void SimmKinematicsEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const
+void SimmKinematicsEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	throw Exception("SimmKinematicsEngine::getAngularAccelerationBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -820,7 +819,7 @@ Transform SimmKinematicsEngine::getTransform(const AbstractBody &aBody)
  * @param aPoint
  * @param aForce
  */
-void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SimmKinematicsEngine::applyForce(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
 	//throw Exception("SimmKinematicsEngine::applyForce(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -862,7 +861,7 @@ void SimmKinematicsEngine::applyForces(int aN, const AbstractBody *aBodies[], co
  * @param aForce
  */
 // FORCES EXPRESSED IN BODY-LOCAL FRAME
-void SimmKinematicsEngine::applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SimmKinematicsEngine::applyForceBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
 #if 0
 	something like this
@@ -915,7 +914,7 @@ void SimmKinematicsEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBod
  * @param aTorque
  */
 // TORQUES EXPRESSED IN INERTIAL FRAME
-void SimmKinematicsEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3])
+void SimmKinematicsEngine::applyTorque(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
 	throw Exception("SimmKinematicsEngine::applyTorque(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -954,7 +953,7 @@ void SimmKinematicsEngine::applyTorques(int aN, const AbstractBody *aBodies[], c
  * @param aBody
  * @param aTorque
  */
-void SimmKinematicsEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3])
+void SimmKinematicsEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
 	throw Exception("SimmKinematicsEngine::applyTorquesBodyLocal(): SimmKinematicsEngine does not support dynamics.");
 }
@@ -1098,7 +1097,7 @@ void SimmKinematicsEngine::formEulerTransform(const AbstractBody &aBody, double 
  * @param rJ
  * @param aRefBody
  */
-void SimmKinematicsEngine::formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody) const
+void SimmKinematicsEngine::formJacobianTranslation(const AbstractBody &aBody, const SimTK::Vec3& aPoint, double *rJ, const AbstractBody *aRefBody) const
 {
 	throw Exception("SimmKinematicsEngine::formJacobianTranslation() not yet implemented.");
 }
@@ -1190,7 +1189,7 @@ void SimmKinematicsEngine::transform(const AbstractBody &aBodyFrom, const double
  * @param aBodyTo the body the vector will be transformed into
  * @param rVec the vector in the aBodyTo frame is returned here
  */
-void SimmKinematicsEngine::transform(const AbstractBody &aBodyFrom, const Array<double>& aVec, const AbstractBody &aBodyTo, Array<double>& rVec) const
+void SimmKinematicsEngine::transform(const AbstractBody &aBodyFrom, const Vec3& aVec, const AbstractBody &aBodyTo, Vec3& rVec) const
 {
 	int i;
 
@@ -1256,7 +1255,7 @@ void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, cons
  * @param aBodyTo the body the point will be transformed into
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
-void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, const AbstractBody &aBodyTo, Array<double>& rPos) const
+void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, const Vec3& aPos, const AbstractBody &aBodyTo, Vec3& rPos) const
 {
 	int i;
 
@@ -1322,7 +1321,7 @@ void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, cons
  * @param aPos the XYZ coordinates of the point
  * @param rPos the XYZ coordinates of the point in the ground frame are returned here
  */
-void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, Array<double>& rPos) const
+void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, const Vec3& aPos, Vec3& rPos) const
 {
 	int i;
 
@@ -1358,9 +1357,9 @@ void SimmKinematicsEngine::transformPosition(const AbstractBody &aBodyFrom, cons
  * @param aPoint2 the XYZ coordinates of the second point
  * @return the distance between aPoint1 and aPoint2
  */
-double SimmKinematicsEngine::calcDistance(const AbstractBody& aBody1, const Array<double>& aPoint1, const AbstractBody& aBody2, const Array<double>& aPoint2) const
+double SimmKinematicsEngine::calcDistance(const AbstractBody& aBody1, const SimTK::Vec3& aPoint1, const AbstractBody& aBody2, const SimTK::Vec3& aPoint2) const
 {
-	Array<double> pt1copy = aPoint1;
+	SimTK::Vec3 pt1copy = aPoint1;
 
 	transformPosition(aBody1, aPoint1, aBody2, pt1copy);
 

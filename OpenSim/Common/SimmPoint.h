@@ -35,6 +35,7 @@
 #include <string>
 #include "osimCommonDLL.h"
 #include "Object.h"
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -53,7 +54,7 @@ class OSIMCOMMON_API SimmPoint : public Object
 // DATA
 //=============================================================================
 private:
-	double _location[3];
+	SimTK::Vec3 _location;
 
 //=============================================================================
 // METHODS
@@ -63,7 +64,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	SimmPoint();
-	SimmPoint(double coords[3]);
+	SimmPoint(const SimTK::Vec3& coords);
 	SimmPoint(const SimmPoint& aPoint);
 	virtual ~SimmPoint();
 	virtual Object* copy() const;
@@ -73,7 +74,7 @@ public:
 	SimmPoint& operator/=(double factor);
 #endif
 	void set(double x, double y, double z);
-	double* get() { return _location; }
+	SimTK::Vec3& get() { return _location; }
 	void scale(double aScaleFactor);
 	bool isVisible() const;
 

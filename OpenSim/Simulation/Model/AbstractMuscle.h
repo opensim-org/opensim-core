@@ -213,7 +213,7 @@ private:
 	void updateGeometrySize();
 	void updateGeometryLocations();
 	void nameAttachmentPoints(int aStartingIndex);
-   void placeNewAttachment(Array<double>& aOffset, int aIndex, AbstractBody& aBody);
+   void placeNewAttachment(SimTK::Vec3& aOffset, int aIndex, AbstractBody& aBody);
 
 protected:
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments

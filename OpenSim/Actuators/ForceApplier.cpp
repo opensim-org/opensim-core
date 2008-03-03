@@ -22,9 +22,11 @@
 #include <OpenSim/Common/VectorFunction.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include "ForceApplier.h"
+#include "SimTKcommon.h"
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -266,11 +268,9 @@ getBody() const
  * @param aPoint Point at which an external force should be applied.
  */
 void ForceApplier::
-setPoint(double aPoint[3])
+setPoint(const SimTK::Vec3& aPoint)
 {
-	_point[0] = aPoint[0];
-	_point[1] = aPoint[1];
-	_point[2] = aPoint[2];
+	_point = aPoint;
 
 }
 //_____________________________________________________________________________
@@ -281,11 +281,9 @@ setPoint(double aPoint[3])
  * @return aPoint Point at which an external force should be applied.
  */
 void ForceApplier::
-getPoint(double rPoint[3]) const
+getPoint(SimTK::Vec3& rPoint) const
 {
-	rPoint[0] = _point[0];
-	rPoint[1] = _point[1];
-	rPoint[2] = _point[2];
+	rPoint = _point;
 }
 
 //-----------------------------------------------------------------------------
@@ -328,11 +326,9 @@ getInputForcesInGlobalFrame() const
  * @param aForce External force to be applied.
  */
 void ForceApplier::
-setForce(double aForce[3])
+setForce(const SimTK::Vec3& aForce)
 {
-	_force[0] = aForce[0];
-	_force[1] = aForce[1];
-	_force[2] = aForce[2];
+	_force = aForce;
 }
 //_____________________________________________________________________________
 /**
@@ -341,11 +337,9 @@ setForce(double aForce[3])
  * @return aForce
  */
 void ForceApplier::
-getForce(double rForce[3]) const
+getForce(SimTK::Vec3& rForce) const
 {
-	rForce[0] = _force[0];
-	rForce[1] = _force[1];
-	rForce[2] = _force[2];
+	rForce = _force;
 }
 //-----------------------------------------------------------------------------
 // POINT FUNCTION
@@ -511,9 +505,10 @@ computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunctio
 	int size = aQStore.getSize();
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
-	Array<double> originGlobal(0.0,3),origin(0.0,3);
-	Array<double> pGlobal(0.0,3),pLocal(0.0,3);
-	Array<double> vGlobal(0.0,3),vLocal(0.0,3);
+	Vec3 originGlobal(0.0),origin(0.0);
+	Vec3 pGlobal(0.0, 0.0, 0.0);
+	Vec3 pLocal(0.0);
+	Vec3 vGlobal(0.0),vLocal(0.0);
 	Storage pStore,vStore;
 	for(i=0;i<size;i++) {
 		// Set the model state
@@ -523,9 +518,9 @@ computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunctio
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Position in local frame (i.e. with respect to body's origin, not center of mass)
-		_model->getDynamicsEngine().getPosition(*_body,&origin[0],&originGlobal[0]);
-		aPGlobal.evaluate(t,pGlobal);
-		Mtx::Subtract(1,3,&pGlobal[0],&originGlobal[0],&pLocal[0]);
+		_model->getDynamicsEngine().getPosition(*_body,origin,originGlobal);
+		aPGlobal.evaluate(&t[0],&pGlobal[0]);
+		pLocal=pGlobal-originGlobal; //Mtx::Subtract(1,3,&pGlobal[0],&originGlobal[0],&pLocal[0]);
 		_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),&pLocal[0],*_body,&pLocal[0]);
 		pStore.append(t[0],3,&pLocal[0]);
 	}
@@ -573,8 +568,8 @@ computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunctio
 void ForceApplier::
 applyActuation(double aT,double *aX,double *aY)
 {
-	double force[3] = {0,0,0};
-	double point[3] = {0,0,0};
+	SimTK::Vec3 force(0,0,0);
+	SimTK::Vec3 point(0,0,0);
 	double treal = aT*_model->getTimeNormConstant();
 	
 	if(_model==NULL) {
@@ -586,11 +581,11 @@ applyActuation(double aT,double *aX,double *aY)
 	if((aT>=getStartTime()) && (aT<getEndTime())){
 
 		if(_forceFunction!=NULL) {
-			_forceFunction->evaluate(&treal,force);
+			_forceFunction->evaluate(&treal,&force[0]);
 			setForce(force);
 		}
 		if(_pointFunction!=NULL) {
-			_pointFunction->evaluate(&treal,point);
+			_pointFunction->evaluate(&treal,&point[0]);
 			setPoint(point);
 		}
 
@@ -599,7 +594,7 @@ applyActuation(double aT,double *aX,double *aY)
 		} else {
 			_model->getDynamicsEngine().applyForce(*_body,_point,_force);
 		}
-		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
+		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,&_force[0]);
 	}
 }
 	

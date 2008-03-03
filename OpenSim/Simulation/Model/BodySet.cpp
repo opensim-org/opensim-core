@@ -31,6 +31,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
@@ -117,7 +118,7 @@ void BodySet::scale(const ScaleSet& aScaleSet, bool aScaleMass)
 		for(int j=0; j<aScaleSet.getSize(); j++) {
 			Scale *scale = aScaleSet.get(j);
 			if (get(i)->getName() == scale->getSegmentName()) {
-				Array<double> scaleFactors(1.0, 3);
+				Vec3 scaleFactors(1.0);
 				scale->getScaleFactors(scaleFactors);
 				get(i)->scale(scaleFactors, aScaleMass);
 			}

@@ -39,6 +39,8 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+using SimTK::Mat33;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -171,7 +173,7 @@ AbstractWrapObject* AbstractBody::getWrapObject(const string& aName) const
 /**
  * Computes scaled inertia tensor (assuming mass stays fixed -- i.e. the density changes!)
  */
-void AbstractBody::scaleInertiaTensor(double aMass, const Array<double> &aScaleFactors, double rInertia[3][3])
+void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, double rInertia[3][3])
 {
 	/* If the mass is zero, then make the inertia tensor zero as well.
 	 * If the X, Y, Z scale factors are equal, then you can scale the
@@ -184,7 +186,7 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Array<double> &aScaleF
 	if (aMass <= ROUNDOFF_ERROR) {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
-				rInertia[i][j] = 0.0;
+				rInertia[i][j]=0.0;
 
 	} else if (EQUAL_WITHIN_ERROR(DABS(aScaleFactors[0]), DABS(aScaleFactors[1])) &&
 		      EQUAL_WITHIN_ERROR(DABS(aScaleFactors[1]), DABS(aScaleFactors[2]))) {

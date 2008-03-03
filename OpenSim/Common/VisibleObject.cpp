@@ -47,6 +47,7 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 
 //============================================================================
@@ -77,7 +78,7 @@ _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _dependents(0)
 {
 	// NULL STATES
@@ -103,7 +104,7 @@ _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _dependents(0)
 {
 	// NULL STATES
@@ -153,7 +154,7 @@ _geometryFileNames(_propGeometryFileNames.getValueStrArray()),
 _allGeometry(0),
 _propVisibleProp(PropertyObj("", VisibleProperties())),
 _visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _dependents(0)
 {
 	// NULL MEMBER VARIABLES
@@ -176,8 +177,7 @@ setNull()
 {
 	setupProperties();
 
-	Array<double> unit3(1.0, 3);
-	_scaleFactors = unit3;
+	_scaleFactors = 1.0;
 
 	_owner = 0;
 	_dependents.setMemoryOwner(false);
@@ -209,7 +209,7 @@ void VisibleObject::setupProperties()
 	_propertySet.append(&_propVisibleProp);
 
 	_propScaleFactors.setName("scale_factors");
-	_propScaleFactors.setAllowableArraySize(3);
+	//_propScaleFactors.setAllowableArraySize(3);
 	_propertySet.append(&_propScaleFactors);
 }
 
@@ -319,11 +319,10 @@ getVisibleProperties()
  *
  */
 void VisibleObject::
-setScaleFactors(const double aScaleFactors[3])
+setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
 	_propScaleFactors.setUseDefault(false);
-	for(int i=0; i < 3; i++)
-		_scaleFactors[i]=(aScaleFactors[i]);
+	_scaleFactors=aScaleFactors;
 }
 //_____________________________________________________________________________
 /**
@@ -331,10 +330,9 @@ setScaleFactors(const double aScaleFactors[3])
  *
  */
 void VisibleObject::
-getScaleFactors(double aScaleFactors[3]) const
+getScaleFactors(SimTK::Vec3& aScaleFactors) const
 {
-	for(int i=0; i < 3; i++)
-		aScaleFactors[i] = _scaleFactors[i];
+	aScaleFactors = _scaleFactors;
 }
 //------------- Transform -----------------------------------------------------
 /**
@@ -404,7 +402,7 @@ rotateRadiansZ(const double rR)
  * Rotate a visible object by an angle in radians around an axis
  */
 void VisibleObject::
-rotateRadiansAxis(const double rR, const double axis[3])
+rotateRadiansAxis(const double rR, const SimTK::Vec3& axis)
 {
 	getTransform().rotateAxis(rR, Transform::Radians, axis);
 }
@@ -454,7 +452,7 @@ rotateDegreesZ(const double rD)
  * Rotate a visible object by an angle in degrees around an axis
  */
 void VisibleObject::
-rotateDegreesAxis(const double rD, const double axis[3])
+rotateDegreesAxis(const double rD, const SimTK::Vec3& axis)
 {
 	getTransform().rotateAxis(rD, Transform::Degrees, axis);
 }
@@ -462,7 +460,7 @@ rotateDegreesAxis(const double rD, const double axis[3])
  * Translate a visible object by a translation vector
  */
 void VisibleObject::
-translate(const double t[3])
+translate(const SimTK::Vec3& t)
 {
 	getTransform().translate(t);
 }

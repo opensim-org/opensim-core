@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/SimmPoint.h>
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -58,10 +59,10 @@ public:
 	int endPoint;              // second point in muscle line that is wrapped
 	Array<SimmPoint> wrap_pts; // array of wrapping path points
    double wrap_path_length;   // distance along curved r1->r2 path
-   double r1[3];              // wrap tangent point nearest to p1
-   double r2[3];              // wrap tangent point nearest to p2
-	double c1[3];              // intermediate point used by some wrap objects
-	double sv[3];              // intermediate point used by some wrap objects
+   SimTK::Vec3 r1;              // wrap tangent point nearest to p1
+   SimTK::Vec3 r2;              // wrap tangent point nearest to p2
+	SimTK::Vec3 c1;              // intermediate point used by some wrap objects
+	SimTK::Vec3 sv;              // intermediate point used by some wrap objects
 	double factor;             // scale factor used to normalize parameters
 
 //=============================================================================

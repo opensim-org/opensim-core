@@ -31,6 +31,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
@@ -151,7 +152,7 @@ void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
  */
 void MarkerSet::scale(const ScaleSet& scaleSet)
 {
-	Array<double>	scaleFactors(1.0, 3);
+	Vec3	scaleFactors(1.0);
 
 	for (int i = 0; i < getSize(); i++)
 	{

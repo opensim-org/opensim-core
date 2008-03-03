@@ -51,7 +51,7 @@ using namespace OpenSim;
  */
 SimbodyBody::SimbodyBody() :
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -78,7 +78,7 @@ SimbodyBody::~SimbodyBody()
 SimbodyBody::SimbodyBody(const SimbodyBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -97,7 +97,7 @@ SimbodyBody::SimbodyBody(const SimbodyBody &aBody) :
 SimbodyBody::SimbodyBody(const AbstractBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
-   _massCenter(_massCenterProp.getValueDblArray()),
+   _massCenter(_massCenterProp.getValueDblVec3()),
 	_inertia(_inertiaProp.getValueDblArray()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -152,10 +152,10 @@ void SimbodyBody::copyData(const AbstractBody &aBody)
 	_mass = aBody.getMass();
 
 	// Mass center
-	aBody.getMassCenter(&_massCenter[0]);
+	aBody.getMassCenter(_massCenter);
 
 	// Inertia tensor
-	double inertia[3][3];
+	Mat33 inertia;
 	aBody.getInertia(inertia);
 	for(int i=0; i<3; i++)
 		for(int j=0; j<3; j++)
@@ -189,10 +189,10 @@ void SimbodyBody::setupProperties()
 	_massProp.setValue(mass);
 	_propertySet.append(&_massProp);
 
-	const double defaultMC[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultMC(0.0, 0.0, 0.0);
 	_massCenterProp.setName("mass_center");
-	_massCenterProp.setValue(3, defaultMC);
-	_massCenterProp.setAllowableArraySize(3);
+	_massCenterProp.setValue(defaultMC);
+	//_massCenterProp.setAllowableArraySize(3);
 	_propertySet.append(&_massCenterProp);
 
 	const double inertia[] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
@@ -291,9 +291,9 @@ bool SimbodyBody::setMass(double aMass)
  *
  * @param rVec XYZ coordinates of mass center are returned here.
  */
-void SimbodyBody::getMassCenter(double rVec[3]) const
+void SimbodyBody::getMassCenter(SimTK::Vec3& rVec) const
 {
-	memcpy(rVec,&_massCenter[0],3*sizeof(double));
+	memcpy(&rVec[0],&_massCenter[0],3*sizeof(double));
 }
 //_____________________________________________________________________________
 /**
@@ -302,11 +302,9 @@ void SimbodyBody::getMassCenter(double rVec[3]) const
  * @param aVec XYZ coordinates of mass center.
  * @return Whether mass center was successfully changed.
  */
-bool SimbodyBody::setMassCenter(const double aVec[3])
+bool SimbodyBody::setMassCenter(const SimTK::Vec3& aVec)
 {
-	_massCenter[0] = aVec[0];
-	_massCenter[1] = aVec[1];
-	_massCenter[2] = aVec[2];
+	_massCenter=aVec;
 	_engine->constructMultibodySystem();
 
 	return true;
@@ -345,7 +343,7 @@ void SimbodyBody::getInertia(double rInertia[3][3]) const
  *
  * @param 3x3 inertia matrix.
  */
-void SimbodyBody::getInertia(OpenSim::Array<double> &rInertia) const
+void SimbodyBody::getInertia(Mat33 &rInertia) const
 {
 	double inertia[3][3];
 	getInertia(inertia);
@@ -358,9 +356,11 @@ void SimbodyBody::getInertia(OpenSim::Array<double> &rInertia) const
  * @param aInertia 9-element inertia matrix.
  * @return Whether inertia matrix was successfully changed.
  */
-bool SimbodyBody::setInertia(const OpenSim::Array<double>& aInertia)
+bool SimbodyBody::setInertia(const Mat33& aInertia)
 {
-	_inertia = aInertia;
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			_inertia[3*i+j] = aInertia[i][j];
 	_engine->constructMultibodySystem();
 
 	return true;
@@ -407,11 +407,11 @@ void SimbodyBody::addBone(VisibleObject* aBone)
  * @param aScaleFactors XYZ scale factors.
  * @param aScaleMass whether or not to scale mass properties
  */
-void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
 	int i;
 
-	double oldScaleFactors[3];
+	SimTK::Vec3 oldScaleFactors;
 	getDisplayer()->getScaleFactors(oldScaleFactors);
 
 	for(i=0; i<3; i++) {
@@ -419,7 +419,7 @@ void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScale
 		oldScaleFactors[i] *= aScaleFactors[i];
 	}
 	// Update scale factors for displayer
-	getDisplayer()->setScaleFactors(aScaleFactors.get());
+	getDisplayer()->setScaleFactors(aScaleFactors);
 
 	scaleInertialProperties(aScaleFactors, aScaleMass);
 }
@@ -432,7 +432,7 @@ void SimbodyBody::scale(const OpenSim::Array<double>& aScaleFactors, bool aScale
  *
  * @param aScaleFactors XYZ scale factors.
  */
-void SimbodyBody::scaleInertialProperties(const OpenSim::Array<double>& aScaleFactors, bool aScaleMass)
+void SimbodyBody::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
 	double inertia[3][3];
 	for(int i=0;i<3;i++)
@@ -473,13 +473,12 @@ void SimbodyBody::scaleMass(double aScaleFactor)
 //=============================================================================
 // I/O
 //=============================================================================
-void SimbodyBody::getScaleFactors(OpenSim::Array<double>& scales) const
+void SimbodyBody::getScaleFactors(Vec3& scales) const
 {
 
-	double scaleFactors[3];
+	SimTK::Vec3 scaleFactors;
 	_displayer.getScaleFactors(scaleFactors);
 
-	for (int i=0; i<3; i++)
-		scales[i] = scaleFactors[i];
+	scales = scaleFactors;
 
 }

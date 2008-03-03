@@ -34,7 +34,7 @@
 #include <iostream>
 #include <math.h>
 #include "osimSimbodyEngineDLL.h"
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AbstractDof.h>
 #include <SimTKsimbody.h>
@@ -56,8 +56,8 @@ class OSIMSIMBODYENGINE_API SimbodyRotationDof : public AbstractDof
 // DATA
 //=============================================================================
 protected:
-	PropertyDblArray _axisProp;
-	Array<double> &_axis;
+	PropertyDblVec3 _axisProp;
+	SimTK::Vec3 &_axis;
 
 //=============================================================================
 // METHODS
@@ -76,9 +76,9 @@ public:
 #endif
    void copyData(const SimbodyRotationDof &aDof);
 
-	virtual void setAxis(const double aAxis[3]);
-	virtual void getAxis(double rAxis[3]) const;
-	const Array<double>& getAxis() const { return _axis; }
+	virtual void setAxis(const SimTK::Vec3& aAxis);
+	virtual void getAxis(SimTK::Vec3& rAxis) const;
+	const SimTK::Vec3& getAxis() const { return _axis; }
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
 	virtual DofType getMotionType() const { return Rotational; }

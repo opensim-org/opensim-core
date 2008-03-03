@@ -44,7 +44,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -55,8 +55,8 @@ using namespace OpenSim;
 SdfastJoint::SdfastJoint() :
 	AbstractJoint(),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_locationInParent(_locationInParentProp.getValueDblArray()),
-	_locationInChild(_locationInChildProp.getValueDblArray()),
+	_locationInParent(_locationInParentProp.getValueDblVec3()),
+	_locationInChild(_locationInChildProp.getValueDblVec3()),
 	_index(_indexProp.getValueInt()),
 	_SdfastTypeName(_SdfastTypeNameProp.getValueStr()),
 	_childBody(NULL),
@@ -84,8 +84,8 @@ SdfastJoint::~SdfastJoint()
 SdfastJoint::SdfastJoint(const SdfastJoint &aJoint) :
    AbstractJoint(aJoint),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_locationInParent(_locationInParentProp.getValueDblArray()),
-	_locationInChild(_locationInChildProp.getValueDblArray()),
+	_locationInParent(_locationInParentProp.getValueDblVec3()),
+	_locationInChild(_locationInChildProp.getValueDblVec3()),
 	_index(_indexProp.getValueInt()),
 	_SdfastTypeName(_SdfastTypeNameProp.getValueStr()),
 	_childBody(NULL),
@@ -121,8 +121,8 @@ Object* SdfastJoint::copy() const
 void SdfastJoint::copyData(const SdfastJoint &aJoint)
 {
 	_bodies = aJoint._bodies;
-	setLocationInParent(&(aJoint._locationInParent[0]));
-	setLocationInChild(&(aJoint._locationInChild[0]));
+	setLocationInParent(aJoint._locationInParent);
+	setLocationInChild(aJoint._locationInChild);
 	_childBody = aJoint._childBody;
 	_parentBody = aJoint._parentBody;
 	_index = aJoint._index;
@@ -150,15 +150,15 @@ void SdfastJoint::setupProperties()
 	_bodiesProp.setName("bodies");
 	_propertySet.append(&_bodiesProp);
 
-	double origin[] = {0.0, 0.0, 0.0};
+	SimTK::Vec3 origin(0.0);
 	_locationInParentProp.setName("location_in_parent");
-	_locationInParentProp.setValue(3,origin);
-	_locationInParentProp.setAllowableArraySize(3);
+	_locationInParentProp.setValue(origin);
+	//_locationInParentProp.setAllowableArraySize(3);
 	_propertySet.append(&_locationInParentProp);
 
 	_locationInChildProp.setName("location_in_child");
-	_locationInChildProp.setValue(3,origin);
-	_locationInChildProp.setAllowableArraySize(3);
+	_locationInChildProp.setValue(origin);
+	//_locationInChildProp.setAllowableArraySize(3);
 	_propertySet.append(&_locationInChildProp);
 
 	_indexProp.setName("index");
@@ -177,8 +177,8 @@ void SdfastJoint::setupProperties()
  */
 void SdfastJoint::updateSdfast()
 {
-	setLocationInParent(&_locationInParent[0]);
-	setLocationInChild(&_locationInChild[0]);
+	setLocationInParent(_locationInParent);
+	setLocationInChild(_locationInChild);
 }
 
 //_____________________________________________________________________________
@@ -245,32 +245,32 @@ SdfastJoint& SdfastJoint::operator=(const SdfastJoint &aJoint)
  *
  * @param aLocation New location specified in the parent body frame.
  */
-void SdfastJoint::setLocationInParent(const double aLocation[3])
+void SdfastJoint::setLocationInParent(const SimTK::Vec3& aLocation)
 {
 	if(_parentBody!=NULL) {
 		// COMPUTE NEW InboardToJoint (itj)
-		double com[3],itjNew[3];
+		SimTK::Vec3 com,itjNew;
 		_parentBody->getMassCenter(com);
-		Mtx::Subtract(1,3,&aLocation[0],com,itjNew);
+		itjNew=aLocation-com;
 
 		// COMPARE TO CURRENT
 		bool different = false;
-		double itjCurrent[3];
-		_SdfastEngine->_sdgetitj(_index,itjCurrent);
+		SimTK::Vec3 itjCurrent;
+		_SdfastEngine->_sdgetitj(_index,&itjCurrent[0]);
 		for(int i=0; i<3; i++) {
 			if(!rdMath::IsEqual(itjNew[i],itjCurrent[i],rdMath::ZERO)) different = true;
 		}
 		if(!different) return;
 
 		// SET NEW ITJ
-		_SdfastEngine->_sditj(_index,itjNew);
+		_SdfastEngine->_sditj(_index,&itjNew[0]);
 		_SdfastEngine->_sdinit();
 
 		// TODO: check for SDFast errors.
 	}
 
 	// Update property
-	for(int i=0; i<3; i++) _locationInParent[i] = aLocation[i];
+	_locationInParent = aLocation;
 }
 //_____________________________________________________________________________
 /**
@@ -278,9 +278,9 @@ void SdfastJoint::setLocationInParent(const double aLocation[3])
  *
  * @param rLocation Currnt location specified in the parent body frame.
  */
-void SdfastJoint::getLocationInParent(double rLocation[3]) const
+void SdfastJoint::getLocationInParent(SimTK::Vec3& rLocation) const
 {
-	Mtx::Assign(1,3,&_locationInParent[0],rLocation);
+	rLocation=_locationInParent;
 }
 
 //-----------------------------------------------------------------------------
@@ -293,17 +293,17 @@ void SdfastJoint::getLocationInParent(double rLocation[3]) const
  *
  * @param aLocation New location specified in the child body frame.
  */
-void SdfastJoint::setLocationInChild(const double aLocation[3])
+void SdfastJoint::setLocationInChild(const SimTK::Vec3& aLocation)
 {
 	if(_childBody!=NULL) {
 		// COMPUTE NEW BodyToJoint (btj)
-		double com[3],btjNew[3];
+		SimTK::Vec3 com,btjNew;
 		_childBody->getMassCenter(com);
-		Mtx::Subtract(1,3,aLocation,com,btjNew);
+		btjNew=aLocation-com;
 
 		// COMPARE TO CURRENT
-		double btjCurrent[3];
-		_SdfastEngine->_sdgetbtj(_index,btjCurrent);
+		SimTK::Vec3 btjCurrent;
+		_SdfastEngine->_sdgetbtj(_index,&btjCurrent[0]);
 		bool different = false;
 		for(int i=0; i<3; i++) {
 			if(!rdMath::IsEqual(btjNew[i],btjCurrent[i],rdMath::ZERO)) different=true;
@@ -311,7 +311,7 @@ void SdfastJoint::setLocationInChild(const double aLocation[3])
 		if(!different) return;
 
 		// SET NEW ITJ
-		_SdfastEngine->_sdbtj(_index,btjNew);
+		_SdfastEngine->_sdbtj(_index,&btjNew[0]);
 		_SdfastEngine->_sdinit();
 
 		// TODO: check for SDFast errors.
@@ -326,9 +326,9 @@ void SdfastJoint::setLocationInChild(const double aLocation[3])
  *
  * @param rLocation Current location specified in the child body frame.
  */
-void SdfastJoint::getLocationInChild(double rLocation[3]) const
+void SdfastJoint::getLocationInChild(SimTK::Vec3& rLocation) const
 {
-	Mtx::Assign(1,3,&_locationInChild[0],rLocation);
+	rLocation=_locationInChild;
 }
 
 
@@ -342,9 +342,9 @@ void SdfastJoint::getLocationInChild(double rLocation[3]) const
 const Transform& SdfastJoint::getForwardTransform()
 {
 	int i;
-	double parentDirCos[3][3], parentOrigin[3], parentOriginGrnd[3];
-	double childDirCos[3][3], childOrigin[3], childOriginGrnd[3];
-
+	double parentDirCos[3][3];
+	double childDirCos[3][3];
+	Vec3  parentOrigin, parentOriginGrnd, childOrigin, childOriginGrnd;
 	// Get the mass centers of the parent and child bodies, and negate them.
 	// This gives you the coordinates of the OpenSim body's origin in the
 	// reference frame of the SD/FAST body.
@@ -357,8 +357,8 @@ const Transform& SdfastJoint::getForwardTransform()
 		parentOrigin[i] = -parentOrigin[i];
 		childOrigin[i] = -childOrigin[i];
 	}
-	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(), parentOrigin, parentOriginGrnd);
-	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(), childOrigin, childOriginGrnd);
+	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(), &parentOrigin[0], &parentOriginGrnd[0]);
+	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(), &childOrigin[0], &childOriginGrnd[0]);
 
 	// Now get the direction cosine matrices for the bodies.
 	_SdfastEngine->_sdorient(_parentBody->getSdfastIndex(), parentDirCos);
@@ -414,8 +414,9 @@ const Transform& SdfastJoint::getForwardTransform()
 const Transform& SdfastJoint::getInverseTransform()
 {
 	int i;
-	double parentDirCos[3][3], parentOrigin[3], parentOriginGrnd[3];
-	double childDirCos[3][3], childOrigin[3], childOriginGrnd[3];
+	double parentDirCos[3][3];
+	double childDirCos[3][3];
+	Vec3  parentOrigin, parentOriginGrnd, childOrigin, childOriginGrnd;
 
 	// Get the mass centers of the parent and child bodies, and negate them.
 	// This gives you the coordinates of the OpenSim body's origin in the
@@ -426,8 +427,8 @@ const Transform& SdfastJoint::getInverseTransform()
 		parentOrigin[i] = -parentOrigin[i];
 		childOrigin[i] = -childOrigin[i];
 	}
-	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(),parentOrigin,parentOriginGrnd);
-	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(),childOrigin,childOriginGrnd);
+	_SdfastEngine->_sdpos(_parentBody->getSdfastIndex(),&parentOrigin[0],&parentOriginGrnd[0]);
+	_SdfastEngine->_sdpos(_childBody->getSdfastIndex(),&childOrigin[0],&childOriginGrnd[0]);
 
 	// Now get the direction cosine matrices for the bodies.
 	_SdfastEngine->_sdorient(_parentBody->getSdfastIndex(), parentDirCos);
@@ -535,7 +536,7 @@ bool SdfastJoint::isTreeJoint() const
  */
 void SdfastJoint::scale(const ScaleSet& aScaleSet)
 {
-	Array<double> scaleFactors(1.0, 3);
+	Vec3 scaleFactors(1.0);
 
 	// SCALING TO DO WITH THE PARENT BODY -----
 	// Joint kinematics are scaled by the scale factors for the
@@ -556,7 +557,7 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))) 
 	{
 		// Location in parent
-		double scaledLocationInParent[3];
+		SimTK::Vec3 scaledLocationInParent;
 		for(int i=0; i<3; i++) scaledLocationInParent[i] = scaleFactors[i] * _locationInParent[i];
 		setLocationInParent(scaledLocationInParent);
 	}
@@ -579,7 +580,7 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0)))
 	{
 		// Location in child
-		double scaledLocationInChild[3];
+		SimTK::Vec3 scaledLocationInChild;
 		for(int i=0; i<3; i++) scaledLocationInChild[i] = scaleFactors[i] * _locationInChild[i];
 		setLocationInChild(scaledLocationInChild);
 	}

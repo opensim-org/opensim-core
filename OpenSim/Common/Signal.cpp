@@ -92,8 +92,8 @@ double *sigr;
 	}
 
 	// INITIALIZE SOME VARIABLES
-	ws = 2*rdMath::PI*fs;
-	wc = 2*rdMath::PI*fc;
+	ws = 2*SimTK_PI*fs;
+	wc = 2*SimTK_PI*fc;
 
 	// CALCULATE THE FREQUENCY WARPING
 	wa = tan(wc*T/2.0);
@@ -189,14 +189,14 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
 	if(s==NULL) return(-1);
 
 	// CALCULATE THE ANGULAR CUTOFF FREQUENCY
-	w = 2.0*rdMath::PI*f;
+	w = 2.0*SimTK_PI*f;
 
 	// FILTER THE DATA
 	for(n=0;n<N;n++) {
 		sigf[n] = 0.0;
 		for(k=-M;k<=M;k++) {   
 			x = (double)k*w*T;
-			sigf[n] = sigf[n] + (sinc(x)*T*w/rdMath::PI)*hamming(k,M)*s[M+n-k];
+			sigf[n] = sigf[n] + (sinc(x)*T*w/SimTK_PI)*hamming(k,M)*s[M+n-k];
 		}
 	}
 
@@ -253,8 +253,8 @@ double *s;
 	}
 
 	// CALCULATE THE ANGULAR CUTOFF FREQUENCY
-	w1 = 2*rdMath::PI*f1;
-	w2 = 2*rdMath::PI*f2;
+	w1 = 2*SimTK_PI*f1;
+	w2 = 2*SimTK_PI*f2;
 
 	// PAD THE SIGNAL SO FILTERING CAN BEGIN AT THE FIRST DATA POINT
 	for (i=0,j=M;i<M;i++,j--)          s[i] = sig[j];
@@ -269,7 +269,7 @@ double *s;
 			x1 = (double)k*w1*T;
 			x2 = (double)k*w2*T;
 			sigf[n] = sigf[n] +
-			 (sinc(x2)*T*w2/rdMath::PI - sinc(x1)*T*w1/rdMath::PI)*
+			 (sinc(x2)*T*w2/SimTK_PI - sinc(x1)*T*w1/SimTK_PI)*
 			 hamming(k,M)*s[M+n-k];
 		}
 	}
@@ -421,11 +421,12 @@ ReduceNumberOfPoints(double aDistance,
 
 	// REMOVE POINTS
 	int i,imid;
-	double p1[3] = {0.0,0.0,0.0};
-	double p2[3] = {0.0,0.0,0.0};
-	double p3[3] = {0.0,0.0,0.0};
-	double v1[3] = {0.0,0.0,0.0};
-	double v2[3] = {0.0,0.0,0.0};
+	SimTK::Vec3 p1(0.0,0.0,0.0);
+	SimTK::Vec3 p2(0.0,0.0,0.0);
+	SimTK::Vec3 p3(0.0,0.0,0.0);
+	SimTK::Vec3 v1(0.0,0.0,0.0);
+	SimTK::Vec3 v2(0.0,0.0,0.0);
+
 	double tmid,mv1,mv2,cos,dsq;
 	for(i=1;i<(size-1);i++) {
 
@@ -446,8 +447,8 @@ ReduceNumberOfPoints(double aDistance,
 		p2[0] = rTime[imid];
 		p2[1] = rSignal[imid];
 
-		Mtx::Subtract(1,3,p2,p1,v1);
-		Mtx::Subtract(1,3,p3,p1,v2);
+		v1 = p2 - p1; //Mtx::Subtract(1,3,p2,p1,v1);
+		v2 = p3 - p1; //Mtx::Subtract(1,3,p3,p1,v2);
 
 		mv1 = Mtx::Magnitude(3,v1);
 		mv2 = Mtx::Magnitude(3,v2);
@@ -500,7 +501,7 @@ sinc(double x)
 double Signal::
 hamming(int k,int M)
 {
-  double x = (double)k * rdMath::PI / (double)M;
+  double x = (double)k * SimTK_PI / (double)M;
   double d = 0.54 + 0.46*cos(x);
   return(d); 
 }

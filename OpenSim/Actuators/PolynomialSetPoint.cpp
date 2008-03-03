@@ -374,9 +374,9 @@ computeActuation()
 	}
 	_fnMag = fnp + fnv;
 	if(_fnMag<0.0) _fnMag = 0.0;
-	Mtx::Multiply(1,3,&_nA[0],fnp,_fnp);
-	Mtx::Multiply(1,3,&_nA[0],fnv,_fnv);
-	Mtx::Multiply(1,3,&_nA[0],_fnMag,_fn);
+	_fnp=fnp*_nA;
+	_fnv=fnv*_nA;
+	_fn=_fnMag*_nA;
 
 	// INSTANTANEOUS NORMAL STIFFNESS
 	_knp = 0.0;
@@ -394,12 +394,12 @@ computeActuation()
 	_ftMag = computeTangentialForce(_fnMag,_ft,_dfFric);
 
 	// RESULTANT FORCE
-	double fA[3],uA[3];
-	Mtx::Add(1,3,_fn,_ft,fA);
+	SimTK::Vec3 fA,uA;
+	fA=_fn+_ft;
 	double f = Mtx::Normalize(3,fA,uA);
-	Mtx::Multiply(1,3,uA,-1.0,uA);
+	uA*= -1.0;
 	if(f==0.0) {
-		Mtx::Add(1,3,_rtA,_rnA,uA);
+		uA=_rtA+_rnA;
 		Mtx::Normalize(3,uA,uA);
 	}
 
@@ -408,8 +408,7 @@ computeActuation()
 	setForceDirectionA(uA);
 
 	// SPEED
-	double v[3];
-	Mtx::Add(1,3,_vnA,_vtA,v);
+	SimTK::Vec3 v=_vnA+_vtA;
 	_speed = -Mtx::DotProduct(3,uA,v);
 
 	// BODY B

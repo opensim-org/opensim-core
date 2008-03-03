@@ -34,7 +34,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Object.h>
 
@@ -92,8 +92,8 @@ protected:
 	Model* _model;
 
 	/** Array containg the acceleration due to gravity. */
-	PropertyDblArray _gravityProp;
-	Array<double> &_gravity;
+	PropertyDblVec3 _gravityProp;
+	SimTK::Vec3 &_gravity;
 
 	/** Set containing the bodies in this model. */
 	PropertyObj _bodySetProp;
@@ -156,8 +156,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GRAVITY
 	//--------------------------------------------------------------------------
-	virtual void getGravity(double rGrav[3]) const;
-	virtual bool setGravity(double aGrav[3]);
+	virtual void getGravity(SimTK::Vec3& rGrav) const;
+	virtual bool setGravity(const SimTK::Vec3& aGrav);
 
 	//--------------------------------------------------------------------------
 	// BODIES
@@ -239,43 +239,43 @@ public:
 	// INERTIA
 	//--------------------------------------------------------------------------
 	virtual double getMass() const = 0;
-	virtual void getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const = 0;
+	virtual void getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const = 0;
 	virtual void getSystemInertia(double *rM, double *rCOM, double *rI) const = 0;
 
 	//--------------------------------------------------------------------------
 	// KINEMATICS
 	//--------------------------------------------------------------------------
-	virtual void getPosition(const AbstractBody &aBody, const double aPoint[3], double rPos[3]) const = 0;
-	virtual void getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const = 0;
-	virtual void getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const = 0;
+	virtual void getPosition(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const = 0;
+	virtual void getVelocity(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const = 0;
+	virtual void getAcceleration(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const = 0;
 	virtual void getDirectionCosines(const AbstractBody &aBody, double rDirCos[3][3]) const = 0;
 	virtual void getDirectionCosines(const AbstractBody &aBody, double *rDirCos) const = 0;
-	virtual void getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const = 0;
-	virtual void getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const = 0;
-	virtual void getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const = 0;
-	virtual void getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const = 0;
+	virtual void getAngularVelocity(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const = 0;
+	virtual void getAngularVelocityBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const = 0;
+	virtual void getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const = 0;
+	virtual void getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const = 0;
 	virtual Transform getTransform(const AbstractBody &aBody) = 0;
 
 	//--------------------------------------------------------------------------
 	// LOAD APPLICATION
 	//--------------------------------------------------------------------------
 	// FORCES EXPRESSED IN INERTIAL FRAME
-	virtual void applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]) = 0;
+	virtual void applyForce(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce) = 0;
 	virtual void applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]) = 0;
 	virtual void applyForces(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces) = 0;
 
 	// FORCES EXPRESSED IN BODY-LOCAL FRAME
-	virtual void applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3]) = 0;
+	virtual void applyForceBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce) = 0;
 	virtual void applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3]) = 0;
 	virtual void applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aPoints, const double *aForces) = 0;
 
 	// TORQUES EXPRESSED IN INERTIAL FRAME
-	virtual void applyTorque(const AbstractBody &aBody, const double aTorque[3]) = 0;
+	virtual void applyTorque(const AbstractBody &aBody, const SimTK::Vec3& aTorque) = 0;
 	virtual void applyTorques(int aN, const AbstractBody *aBodies[], const double aTorques[][3]) = 0;
 	virtual void applyTorques(int aN, const AbstractBody *aBodies[], const double *aTorques) = 0;
 
 	// TORQUES EXPRESSED IN BODY-LOCAL FRAME
-	virtual void applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3]) = 0;
+	virtual void applyTorqueBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aTorque) = 0;
 	virtual void applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double aTorques[][3]) = 0;
 	virtual void applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double *aTorques) = 0;
 
@@ -303,7 +303,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void formMassMatrix(double *rI) = 0;
 	virtual void formEulerTransform(const AbstractBody &aBody, double *rE) const = 0;
-	virtual void formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody=NULL) const = 0;
+	virtual void formJacobianTranslation(const AbstractBody &aBody, const SimTK::Vec3& aPoint, double *rJ, const AbstractBody *aRefBody=NULL) const = 0;
 	virtual void formJacobianOrientation(const AbstractBody &aBody, double *rJ0, const AbstractBody *aRefBody=NULL) const = 0;
 	virtual void formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody=NULL) const = 0;
 
@@ -316,14 +316,14 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	virtual void transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const = 0;
-	virtual void transform(const AbstractBody &aBodyFrom, const Array<double>& aVec, const AbstractBody &aBodyTo, Array<double>& rVec) const = 0;
+	virtual void transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const = 0;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const = 0;
-	virtual void transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, const AbstractBody &aBodyTo, Array<double>& rPos) const = 0;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos, const AbstractBody &aBodyTo, SimTK::Vec3& rPos) const = 0;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], double rPos[3]) const = 0;
-	virtual void transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, Array<double>& rPos) const = 0;
+	virtual void transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const = 0;
 
 	virtual double calcDistance(const AbstractBody &aBody1, const double aPoint1[3], const AbstractBody &aBody2, const double aPoint2[3]) const = 0;
-	virtual double calcDistance(const AbstractBody &aBody1, const Array<double>& aPoint1, const AbstractBody &aBody2, const Array<double>& aPoint2) const = 0;
+	virtual double calcDistance(const AbstractBody &aBody1, const SimTK::Vec3& aPoint1, const AbstractBody &aBody2, const SimTK::Vec3& aPoint2) const = 0;
 
 	virtual void convertQuaternionsToAngles(double *aQ, double *rQAng) const = 0;
 	virtual void convertQuaternionsToAngles(Storage *rQStore) const = 0;

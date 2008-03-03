@@ -137,11 +137,9 @@ getTargetVelocity() const
  * @param aK Vector of three values of k.
  */
 void TorsionalSpring::
-setKValue(double aK[3])
+setKValue(const SimTK::Vec3& aK)
 {
-	int i;
-	for(i=0;i<3;i++)
-		_k[i] = aK[i];
+	_k = aK;
 }
 //_____________________________________________________________________________
 /**
@@ -150,7 +148,7 @@ setKValue(double aK[3])
  * @return aK.
  */
 void TorsionalSpring::
-getKValue(double aK[3])
+getKValue(SimTK::Vec3& aK)
 {
 	aK = _k;
 }
@@ -165,11 +163,9 @@ getKValue(double aK[3])
  * @param aK Vector of three values of b.
  */
 void TorsionalSpring::
-setBValue(double aB[3])
+setBValue(const SimTK::Vec3& aB)
 {
-	int i;
-	for(i=0;i<3;i++)
-		_b[i] = aB[i];
+	_b = aB;
 
 }
 //_____________________________________________________________________________
@@ -179,7 +175,7 @@ setBValue(double aB[3])
  * @return aB.
  */
 void TorsionalSpring::
-getBValue(double aB[3])
+getBValue(SimTK::Vec3& aB)
 {
 	aB = _b;
 }
@@ -291,7 +287,8 @@ computeTargetFunctions(const Storage &aQStore,const Storage &aUStore)
 	int nu = _model->getNumSpeeds();
 	double t;
 	Array<double> q(0.0,nq),u(0.0,nu);
-	double dirCos[9],ang[3],angVel[3];
+	double dirCos[9];
+	SimTK::Vec3 ang,angVel;
 	Storage angStore,angVelStore;
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
@@ -309,8 +306,8 @@ computeTargetFunctions(const Storage &aQStore,const Storage &aUStore)
 		_model->getDynamicsEngine().getAngularVelocity(*_body,angVel);
 
 		// Append to storage
-		angStore.append(t,3,ang);
-		angVelStore.append(t,3,angVel);
+		angStore.append(t,ang);
+		angVelStore.append(t,angVel);
 	}
 
 	// CREATE TARGET FUNCTIONS
@@ -361,7 +358,7 @@ void TorsionalSpring::
 applyActuation(double aT,double *aX,double *aY)
 {
 	int i;
-	double torque[3] = {0,0,0};
+	SimTK::Vec3 torque(0,0,0);
 
 	if(_model==NULL) {
 		printf("TorsionalSpring.applyActuation: WARN- no model.\n");
@@ -390,18 +387,18 @@ applyActuation(double aT,double *aX,double *aY)
 
 		// Calculate difference between current angular velocity and nominal ang velocity,
 		//  expressed in body-fixed 1-2-3 rotational velocities
-		double nomAngVel[3];
-		double curAngVel[3];
-		double difAngVel[3];
+		SimTK::Vec3 nomAngVel;
+		SimTK::Vec3 curAngVel;
+		SimTK::Vec3 difAngVel;
 		double difQDot[3];
 		double eulerTransform[9];
-		_targetVelocity->evaluate(&time,nomAngVel); //NEEDS TO BE IN GLOBAL COORDS
+		_targetVelocity->evaluate(&time,&nomAngVel[0]); //NEEDS TO BE IN GLOBAL COORDS
 		_model->getDynamicsEngine().getAngularVelocity(*_body,curAngVel);  //EXPRESSED IN GLOBAL COORDS
-		Mtx::Subtract(3,1,curAngVel,nomAngVel,difAngVel);
+		difAngVel=curAngVel-nomAngVel;
 //		Mtx::Subtract(3,1,nomAngVel,curAngVel,difAngVel);
 		_model->getDynamicsEngine().transform(_model->getDynamicsEngine().getGroundBody(),difAngVel,*_body,difAngVel);
 		_model->getDynamicsEngine().formEulerTransform(*_body, eulerTransform);
-		Mtx::Multiply(3,3,1,eulerTransform,difAngVel,difQDot);
+		Mtx::Multiply(3,3,1,eulerTransform,&difAngVel[0],difQDot);
 		
 		// Calculate torque to apply to body, expressed in global reference frame
 		double scaleFactor;
@@ -411,7 +408,7 @@ applyActuation(double aT,double *aX,double *aY)
 		}
 		for(i=0;i<3;i++)
 			torque[i] = _scaleFactor*(-_k[i]*difAng[i] - _b[i]*difQDot[i]);
-		Mtx::Multiply(3,3,1,eulerTransform,torque,torque);
+		Mtx::Multiply(3,3,1,eulerTransform,&torque[0],&torque[0]);
 		_model->getDynamicsEngine().transform(*_body,torque,_model->getDynamicsEngine().getGroundBody(),torque);
 
 		// Apply torque to body
@@ -425,7 +422,7 @@ applyActuation(double aT,double *aX,double *aY)
 		if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
 			//cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
 			_model->getDynamicsEngine().applyTorque(*_body,_torque);
-			if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
+			if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
 		}
 
 	}	

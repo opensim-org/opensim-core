@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTANTS
@@ -710,15 +710,15 @@ computeAccelerations()
 	int n = nq + nu;
 
 	// GRAVITY
-	double g[3];
-	double g0[] = { 0.0, 0.0, 0.0 };
+	SimTK::Vec3 g;
+	SimTK::Vec3 g0(0.0, 0.0, 0.0);
 	_model->getGravity(g);
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
 	int i,j,c,J,k;
 	AbstractBody *bodyB;
-	double pointB[3];
+	SimTK::Vec3 pointB;
 	double t, actuatorForce;
 	double *fe = new double[3*np];
 	double *y = new double[ny];
@@ -780,7 +780,7 @@ computeAccelerations()
 					J = Mtx::ComputeIndex(j,3,0);
 					bodyB = _model->getContactSet()->getContactBodyB(j);
 					_model->getContactSet()->getContactPointB(j,pointB);
-					_model->getDynamicsEngine().applyForce(*bodyB,pointB,&fe[J]);
+					_model->getDynamicsEngine().applyForce(*bodyB,pointB,Vec3::getAs(&fe[J]));
 				}
 			}
 
@@ -831,7 +831,7 @@ computeAccelerations()
 	
 		//CONVERT STATE RDSTORAGE TO DEGREES
 		double *rtd = new double[n];
-		for(i=0;i<n;i++) rtd[i] = rdMath::RTD;
+		for(i=0;i<n;i++) rtd[i] = SimTK_RADIAN_TO_DEGREE;
 		rtd[0] = rtd[1] = rtd[2] = 1.0;
 		rtd[nu] = rtd[nu+1] = rtd[nu+2] = rtd[nu+3] = 1.0;
 		_yStore->multiply(n,rtd);

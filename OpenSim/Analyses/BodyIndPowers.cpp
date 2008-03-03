@@ -26,6 +26,9 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+using SimTK::Mat33;
+
 #define MAXLEN 2048
 
 
@@ -267,14 +270,14 @@ computeBodyPowers()
 	int np = _model->getNumContacts();
 
 	// GRAVITY
-	double g0[] = { 0.0, 0.0, 0.0 };
-	double g[3],grav[3];
+	SimTK::Vec3 g, grav;
+	SimTK::Vec3 g0(0.0, 0.0, 0.0);
 	_model->getGravity(g);
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
 	int i,J,c;
-	double pointB[3];
+	SimTK::Vec3 pointB;
 	double t;
 	double *y = new double[ny];
 	double *fe = new double[3*np];
@@ -282,8 +285,8 @@ computeBodyPowers()
 	double *dudt = new double[nu];
 	int npwr = nb + 1;
 	double *indPower = new double[npwr];
-	double com[] = { 0.0, 0.0, 0.0 };
-	double acc[3],angAcc[3];
+	SimTK::Vec3 com(0.0, 0.0, 0.0);
+	SimTK::Vec3 acc,angAcc;
 	double *vel = new double[nb*3];
 	double *angVel = new double[nb*3];
 	StateVector *yVec;
@@ -312,8 +315,8 @@ computeBodyPowers()
 		{
 			body = bs->get(j);
 			int k = Mtx::ComputeIndex(bodyIndex++,3,0);
-			_model->getDynamicsEngine().getVelocity(*body,com,&vel[k]);
-			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,&angVel[k]);
+			_model->getDynamicsEngine().getVelocity(*body,com,Vec3::updAs(&vel[k]));
+			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,Vec3::updAs(&angVel[k]));
 		}
 
 		// LOOP OVER INDEPENDENT COMPONENTS
@@ -354,7 +357,7 @@ computeBodyPowers()
 				J = Mtx::ComputeIndex(j,3,0);
 				bodyB = _model->getContactSet()->getContactBodyB(j);
 				_model->getContactSet()->getContactPointB(j,pointB);
-				_model->getDynamicsEngine().applyForce(*bodyB,pointB,&fe[J]);
+				_model->getDynamicsEngine().applyForce(*bodyB,pointB,Vec3::getAs(&fe[J]));
 			}
 
 			// COMPUTE THE ACCELERATIONS
@@ -374,22 +377,22 @@ computeBodyPowers()
 	
 				// COMPUTE POWER
 				double gravPower, linPower, angPower, power;
-				double inertia[3][3];
-				double result[3];
+				Mat33 inertia;
+				SimTK::Vec3 result;
 				
 				int k = Mtx::ComputeIndex(bodyIndex,3,0);
 
 				// GRAVITY
 				_model->getGravity(grav);
-				gravPower = -body->getMass() * Mtx::DotProduct(3,grav,&vel[k]);
+				gravPower = -body->getMass() * Mtx::DotProduct(3,grav,Vec3::getAs(&vel[k]));
 
 				// LINEAR KINETIC
-				linPower = body->getMass() * Mtx::DotProduct(3,&vel[k],acc);
+				linPower = body->getMass() * Mtx::DotProduct(3,Vec3::getAs(&vel[k]),acc);
 
 				// ANGULAR KINETIC
 				body->getInertia(inertia);
-				Mtx::Multiply(3,3,1,&inertia[0][0],angAcc,result);
-				angPower =  Mtx::DotProduct(3,&angVel[k],result);
+				Mtx::Multiply(3,3,1,&inertia[0][0],&angAcc[0],&result[0]);
+				angPower =  Mtx::DotProduct(3,Vec3::getAs(&angVel[k]),result);
 
 				// TOTAL
 				power = gravPower + linPower + angPower;

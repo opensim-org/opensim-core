@@ -47,7 +47,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 SimbodyRotationDof::SimbodyRotationDof() :
-   _axis(_axisProp.getValueDblArray())
+   _axis(_axisProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();
@@ -69,7 +69,7 @@ SimbodyRotationDof::~SimbodyRotationDof()
  */
 SimbodyRotationDof::SimbodyRotationDof(const SimbodyRotationDof &aDof) :
    AbstractDof(aDof),
-   _axis(_axisProp.getValueDblArray())
+   _axis(_axisProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();
@@ -118,9 +118,9 @@ void SimbodyRotationDof::setNull()
  */
 void SimbodyRotationDof::setupProperties()
 {
-	const double defaultAxis[] = {1.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultAxis(1.0, 0.0, 0.0);
 	_axisProp.setName("axis");
-	_axisProp.setValue(3, defaultAxis);
+	_axisProp.setValue(defaultAxis);
 	_propertySet.append(&_axisProp);
 }
 
@@ -153,11 +153,9 @@ SimbodyRotationDof& SimbodyRotationDof::operator=(const SimbodyRotationDof &aDof
  * @param aAxis Rotation axis.
  */
 void SimbodyRotationDof::
-setAxis(const double aAxis[3])
+setAxis(const SimTK::Vec3& aAxis)
 {
-	_axis[0] = aAxis[0];
-	_axis[1] = aAxis[1];
-	_axis[2] = aAxis[2];
+	_axis = aAxis;
 }
 //_____________________________________________________________________________
 /**
@@ -166,11 +164,9 @@ setAxis(const double aAxis[3])
  * @param rAxis the rotation axis is returned here.
  */
 void SimbodyRotationDof::
-getAxis(double rAxis[3]) const
+getAxis(SimTK::Vec3& rAxis) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+	rAxis = _axis;
 }
 
 //_____________________________________________________________________________

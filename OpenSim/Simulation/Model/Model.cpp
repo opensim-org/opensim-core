@@ -46,7 +46,7 @@
 
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Mat33;
 
 //=============================================================================
 // STATICS
@@ -380,7 +380,7 @@ Model& Model::operator=(const Model &aModel)
  *
  * @param rGrav the XYZ gravity vector in the global frame is returned here.
  */
-void Model::getGravity(double rGrav[3]) const
+void Model::getGravity(SimTK::Vec3& rGrav) const
 {
 	getDynamicsEngine().getGravity(rGrav);
 }
@@ -391,7 +391,7 @@ void Model::getGravity(double rGrav[3]) const
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool Model::setGravity(double aGrav[3])
+bool Model::setGravity(SimTK::Vec3& aGrav)
 {
 	return getDynamicsEngine().setGravity(aGrav);
 }
@@ -1303,7 +1303,7 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 		if(body==NULL) continue;
 		aOStream << "body[" << i << "] = " << body->getName();
 		aOStream << " (mass: "<<body->getMass()<<")";
-		double inertia[3][3];
+		Mat33 inertia;
 		body->getInertia(inertia);
 		aOStream << " (inertia:";
 		for(int j=0; j<3; j++) for(int k=0; k<3; k++) aOStream<<" "<<inertia[j][k];
@@ -1405,13 +1405,13 @@ void Model::kinTest()
 	   getDynamicsEngine().setConfiguration(&config[0]);
 
 		cout << ms2->getName() << endl;
-		for (double angle = 0.0 * rdMath::DTR; angle < 121.0 * rdMath::DTR; angle += 30.0 * rdMath::DTR)
+		for (double angle = 0.0 * SimTK_DEGREE_TO_RADIAN; angle < 121.0 * SimTK_DEGREE_TO_RADIAN; angle += 30.0 * SimTK_DEGREE_TO_RADIAN)
 		{
 			knee_flex_r->setValue(angle);
 	      getDynamicsEngine().getConfiguration(&config[0]);
 	      getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	      getDynamicsEngine().setConfiguration(&config[0]);
-			cout << "knee_flex_r = " << angle * rdMath::RTD << ", len = " << ms2->getLength() << ", ma = "
+			cout << "knee_flex_r = " << angle * SimTK_RADIAN_TO_DEGREE << ", len = " << ms2->getLength() << ", ma = "
 				  << ms2->computeMomentArm(*knee_flex_r) << endl;
 		}
 	}

@@ -36,12 +36,14 @@
 #include "MarkerData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
+#include "SimTKcommon.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -115,7 +117,8 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
    ifstream in;
    string line, buffer;
    int frameNum, coordsRead;
-   double time, coords[3];
+   double time;
+	SimTK::Vec3 coords;
 
 	if (aFileName.empty())
 		throw Exception("MarkerData.readTRCFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
@@ -178,7 +181,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
        * return an error.
        */
       coordsRead = 0;
-      while (readCoordinatesFromString(line, coords))
+      while (readCoordinatesFromString(line, &coords[0]))
       {
          if (coordsRead >= aSMD._numMarkers)
          {
@@ -604,7 +607,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 			SimmPoint& pt = _frames[j]->getMarker(i);
 			if (pt.isVisible())
 			{
-				double* coords = pt.get();
+				Vec3& coords = pt.get();
 				avePt += pt;
 				numFrames++;
 				if (aThreshold > 0.0)
@@ -715,7 +718,7 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 	{
 		for (int j = 0, index = 0; j < _numMarkers; j++)
 		{
-			double* marker = _frames[i]->getMarker(j).get();
+			SimTK::Vec3& marker = _frames[i]->getMarker(j).get();
 			for (int k = 0; k < 3; k++)
 				row[index++] = marker[k];
 		}

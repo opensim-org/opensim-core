@@ -165,7 +165,7 @@ void SimbodyEngine::constructMultibodySystem()
 	resetBodyAndMobilityForceVectors();
 
 	// Gravity
-	setGravity(&_gravity[0]);
+	setGravity(_gravity);
 }
 
 //_____________________________________________________________________________
@@ -285,7 +285,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 
 			// GET AXIS
 			Vec3 axis;
-			dof->getAxis(&axis[0]);
+			dof->getAxis(axis);
 			UnitVec3 unitVec(axis);
 
 			// TRAP ON TYPE OF DOF
@@ -313,12 +313,12 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 					dofFunction->isLinear(1.0e-3,-1,1,mx,-1,1,my,-1,1,mz);
 
 					// Linear (slider or pin mobilizer)
-					if(mx!=rdMath::NAN) {
+					if(!rdMath::isNAN(mx)) {
 						//cout<<"SimbodyEngine.addRigidBodies: dof depends linearly on its gen coord ";
 						//cout<<"with a slope of "<<mx<<"."<<endl;
 
 					// Non-linear (custom mobilizer)
-					} else if(mx==rdMath::NAN) {
+					} else if(rdMath::isNAN(mx)) {
 						//cout<<"SimbodyEngine.addRigidBodies: "<<joint->getName()<<" is a custom joint."<<endl;
 						custom = true;
 						if(dofName=="tx") {
@@ -338,7 +338,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			// Only the last axis gets a potentially non-zero location in the child frame.
 			Vec3 childTranslation(0,0,0);
 			if(i==dofIndexForLastCoordinate) {
-				joint->getLocationInChild(&childTranslation[0]);
+				joint->getLocationInChild(childTranslation);
 			}
 			Rotation childRotation;
 			if(translation) {
@@ -361,7 +361,7 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			// The "parentTranslationSet" flag is used to make sure this is the case.
 			Vec3 parentTranslation(0,0,0);
 			if(!parentTranslationSet) {
-				joint->getLocationInParent(&parentTranslation[0]);
+				joint->getLocationInParent(parentTranslation);
 				parentTranslation += locationInParent;
 				parentTranslationSet = true;
 			}
@@ -373,8 +373,8 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			// INERTIAL PROPERTIES
 			// Only the real child body (i.e., the last body) gets mass
 			double mass = 0.0;
-			double com[3] = { 0.0, 0.0, 0.0 };
-			double inertia[3][3];  Mtx::Assign(3,3,0.0,&inertia[0][0]);
+			SimTK::Vec3 com(0.0, 0.0, 0.0);
+			Mat33 inertia(0.0);
 			if(i==dofIndexForLastCoordinate) {
 				mass = child->getMass();
 				child->getMassCenter(com);
@@ -492,9 +492,9 @@ void SimbodyEngine::addRigidBodies(SimbodyBody *aBody)
 			if(q->_locked) {
 				cout<<"Handling locked coordinate."<<endl;
 				Vec3 axis,d,pParent,pChild;
-				dof->getAxis(&axis[0]);
+				dof->getAxis(axis);
 				if(rotation) {
-					Mtx::PerpendicularUnitVector(&axis[0],&pParent[0]);
+					Mtx::PerpendicularUnitVector(axis,pParent);
 					d = axis % pParent;
 				} else {
 					pParent = 0.0;
@@ -568,7 +568,7 @@ void SimbodyEngine::constructPendulum()
 	// Parameters
 	double length = 1.0;
 	double mass = 2.0;
-	double g[] = { 0.0, -9.8, 0.0 };
+	SimTK::Vec3 g(0.0, -9.8, 0.0);
 
 	// Add pendulum mass to matter subsystem
 	SimTK::Transform GroundFrame;
@@ -642,15 +642,15 @@ void SimbodyEngine::constructPendulum()
 	joint->_engine = this;
 	joint->setParentBodyName(simbodyGroundName);
 	joint->setChildBodyName("Pendulum");
-	OpenSim::Array<double> jointLocationInParent(0.0,3);
-	joint->setLocationInParent(&jointLocationInParent[0]);
-	joint->setLocationInChild(&jointLocation[0]);
+	Vec3 jointLocationInParent(0.0);
+	joint->setLocationInParent(jointLocationInParent);
+	joint->setLocationInChild(jointLocation);
 	DofSet *dofSet = joint->getDofSet();
 	SimbodyRotationDof *dof = new SimbodyRotationDof();
 	dof->setName("r1");
 	dof->setCoordinateName("PendulumAxis");
-	OpenSim::Array<double> zAxis(0.0,3);  zAxis[2] = 1.0;
-	dof->setAxis(&zAxis[0]);
+	Vec3 zAxis(0.0);  zAxis[2] = 1.0;
+	dof->setAxis(zAxis);
 	dofSet->append(dof);
 }
 //_____________________________________________________________________________
@@ -741,7 +741,7 @@ createGroundBodyIfNecessary()
 	// Mass
 	ground->_mass = 0.0;
 	// Mass center
-	OpenSim::Array<double> massCenter(0.0,3);
+	Vec3 massCenter(0.0);
 	ground->_massCenter = massCenter;
 	// Inertia
 	OpenSim::Array<double> inertia(0.0,9);
@@ -1087,9 +1087,9 @@ void SimbodyEngine::applyDefaultConfiguration()
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool SimbodyEngine::setGravity(double aGrav[3])
+bool SimbodyEngine::setGravity(const SimTK::Vec3& aGrav)
 {
-	_gravitySubsystem->setGravity(*_s,Vec3(aGrav[0],aGrav[1],aGrav[2]));
+	_gravitySubsystem->setGravity(*_s,aGrav);
 	AbstractDynamicsEngine::setGravity(aGrav);
 	return true;
 }
@@ -1100,10 +1100,9 @@ bool SimbodyEngine::setGravity(double aGrav[3])
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-void SimbodyEngine::getGravity(double aGrav[3]) const
+void SimbodyEngine::getGravity(SimTK::Vec3& aGrav) const
 {
-	// TODO:  Is there a better way to do this?
-	Vec3::updAs(&aGrav[0]) = _gravitySubsystem->getGravity(*_s);
+	aGrav = _gravitySubsystem->getGravity(*_s);
 }
 
 
@@ -1231,10 +1230,10 @@ double SimbodyEngine::getMass() const
  * @param rCOM
  * @param rI
  */
-void SimbodyEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
+void SimbodyEngine::getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const
 {
 	*rM = _matter->calcSystemMass(*_s);
-	Vec3::updAs(&rCOM[0]) = _matter->calcSystemMassCenterLocationInGround(*_s);
+	rCOM = _matter->calcSystemMassCenterLocationInGround(*_s);
 	Mat33::updAs(&rI[0][0]) = _matter->calcSystemCentralInertiaInGround(*_s).toMat33();
 	//throw Exception("SimbodyEngine.getSystemInertia: not yet implemented.");
 }
@@ -1270,10 +1269,10 @@ void SimbodyEngine::getSystemInertia(double *rM, double *rCOM, double *rI) const
  *
  * @see setConfiguration()
  */
-void SimbodyEngine::getPosition(const AbstractBody &aBody, const double aPoint[3], double rPos[3]) const
+void SimbodyEngine::getPosition(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rPos[0]) = _matter->locateBodyPointOnGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
+	rPos = _matter->locateBodyPointOnGround(*_s, b->_id, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -1289,10 +1288,10 @@ void SimbodyEngine::getPosition(const AbstractBody &aBody, const double aPoint[3
  *
  * @see setConfiguration()
  */
-void SimbodyEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const
+void SimbodyEngine::getVelocity(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rVel[0]) = _matter->calcBodyFixedPointVelocityInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
+	rVel = _matter->calcBodyFixedPointVelocityInGround(*_s, b->_id, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -1309,10 +1308,10 @@ void SimbodyEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3
  * @see set()
  * @see computeAccelerations()
  */
-void SimbodyEngine::getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const
+void SimbodyEngine::getAcceleration(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const
 {
 	const SimbodyBody* b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rAcc[0]) = _matter->calcBodyFixedPointAccelerationInGround(*_s, b->_id, Vec3::getAs(&aPoint[0]));
+	rAcc = _matter->calcBodyFixedPointAccelerationInGround(*_s, b->_id, aPoint);
 }
 
 //_____________________________________________________________________________
@@ -1348,10 +1347,10 @@ void SimbodyEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirC
  * @param aBody Pointer to body.
  * @param rAngVel Angular velocity of the body.
  */
-void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const
+void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rAngVel[0]) = _matter->getBodyAngularVelocity(*_s, b->_id);
+	rAngVel = _matter->getBodyAngularVelocity(*_s, b->_id);
 }
 
 //_____________________________________________________________________________
@@ -1361,10 +1360,10 @@ void SimbodyEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel
  * @param aBody Pointer to body.
  * @param rAngVel Angular velocity of the body.
  */
-void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const
+void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(rAngVel) = _matter->getBodyAngularVelocity(*_s, b->_id);
+	rAngVel = _matter->getBodyAngularVelocity(*_s, b->_id);
 }
 
 //_____________________________________________________________________________
@@ -1375,10 +1374,10 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, doubl
  * @param aBody Pointer to body.
  * @param rAngAcc Angular acceleration of the body.
  */
-void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const
+void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
+	rAngAcc = _matter->getBodyAngularAcceleration(*_s, b->_id);
 }
 
 //_____________________________________________________________________________
@@ -1388,10 +1387,10 @@ void SimbodyEngine::getAngularAcceleration(const AbstractBody &aBody, double rAn
  * @param aBody Pointer to body.
  * @param rAngAcc Angular acceleration of the body.
  */
-void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const
+void SimbodyEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	const SimbodyBody *b = (SimbodyBody*)(&aBody);
-	Vec3::updAs(&rAngAcc[0]) = _matter->getBodyAngularAcceleration(*_s, b->_id);
+	rAngAcc = _matter->getBodyAngularAcceleration(*_s, b->_id);
 }
 
 //_____________________________________________________________________________
@@ -1422,7 +1421,7 @@ OpenSim::Transform SimbodyEngine::getTransform(const AbstractBody &aBody)
  * @param aPoint Point on body at which force is applied
  * @param aForce Force vector, expressed in inertial frame
  */
-void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SimbodyEngine::applyForce(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
 	const SimbodyBody* body = (const SimbodyBody*)&aBody;
 	Vec3 point,force;
@@ -1443,7 +1442,7 @@ void SimbodyEngine::applyForce(const AbstractBody &aBody, const double aPoint[3]
 void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const double aPoints[][3], const double aForces[][3])
 {
 	for(int i=0; i<aN; i++) {
-		applyForce(*aBodies[i],aPoints[i],aForces[i]);
+		applyForce(*aBodies[i],Vec3::getAs(aPoints[i]),Vec3::getAs(aForces[i]));
 	}
 }
 
@@ -1461,7 +1460,7 @@ void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const dou
 	int I;
 	for(int i=0; i<aN; i++) {
 		I = Mtx::ComputeIndex(i, 3, 0);
-		applyForce(*aBodies[i], &aPoints[I], &aForces[I]);
+		applyForce(*aBodies[i], Vec3::getAs(&aPoints[I]), Vec3::getAs(&aForces[I]));
 	}
 }
 
@@ -1473,7 +1472,7 @@ void SimbodyEngine::applyForces(int aN, const AbstractBody *aBodies[], const dou
  * @param aPoint Point on body at which to apply force
  * @param aForce Force to apply, expressed in body frame
  */
-void SimbodyEngine::applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SimbodyEngine::applyForceBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
 	const SimbodyBody* body = (const SimbodyBody*)&aBody;
 
@@ -1482,7 +1481,7 @@ void SimbodyEngine::applyForceBodyLocal(const AbstractBody &aBody, const double 
 	forceInB = aForce;
 	Vec3 forceInG;
 	forceInG = _matter->expressBodyVectorInGround(*_s,body->_id,forceInB);
-	applyForce(aBody,aPoint,&forceInG[0]);
+	applyForce(aBody,aPoint,forceInG);
 }
 
 //_____________________________________________________________________________
@@ -1499,7 +1498,7 @@ void SimbodyEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], 
 	int i;
 
 	for (i = 0; i < aN; i++)
-		applyForce(*aBodies[i], aPoints[i], aForces[i]);
+		applyForce(*aBodies[i], Vec3::getAs(aPoints[i]), Vec3::getAs(aForces[i]));
 }
 
 //_____________________________________________________________________________
@@ -1518,7 +1517,7 @@ void SimbodyEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], 
 		return;
 
 	int i;
-	double point[3], force[3];
+	SimTK::Vec3 point, force;
 
 	for (i = 0; i < aN; i++)
 	{
@@ -1541,7 +1540,7 @@ void SimbodyEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], 
  * @param aBody Pointer to body.
  * @param aTorque Torque expressed in the inertial frame.
  */
-void SimbodyEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3])
+void SimbodyEngine::applyTorque(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
 	const SimbodyBody* b = (SimbodyBody*)&aBody;
 	Vec3 torque;
@@ -1560,7 +1559,7 @@ void SimbodyEngine::applyTorque(const AbstractBody &aBody, const double aTorque[
 void SimbodyEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double aTorques[][3])
 {
 	for (int i=0; i<aN; i++) {
-		applyTorque(*aBodies[i], aTorques[i]);
+		applyTorque(*aBodies[i], Vec3::getAs(aTorques[i]));
 	}
 }
 
@@ -1576,7 +1575,7 @@ void SimbodyEngine::applyTorques(int aN, const AbstractBody *aBodies[], const do
 void SimbodyEngine::applyTorques(int aN, const AbstractBody *aBodies[], const double *aTorques)
 {
 	if(aTorques) {
-		double torque[3];
+		SimTK::Vec3 torque;
 
 		for (int i=0; i<aN; i++) {
 			torque[0] = *(aTorques++);
@@ -1595,9 +1594,9 @@ void SimbodyEngine::applyTorques(int aN, const AbstractBody *aBodies[], const do
  * @param aBody Pointer to body.
  * @param aTorque Torque expressed in the body-local frame.
  */
-void SimbodyEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3])
+void SimbodyEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
-	double torqueInG[3];
+	SimTK::Vec3 torqueInG;
 	transform(aBody, aTorque, *_groundBody, torqueInG);
 	applyTorque(aBody, torqueInG);
 }
@@ -1614,7 +1613,7 @@ void SimbodyEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double
 void SimbodyEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], const double aTorques[][3])
 {
 	for(int i=0; i<aN; i++) {
-		applyTorqueBodyLocal(*aBodies[i], aTorques[i]);
+		applyTorqueBodyLocal(*aBodies[i], Vec3::getAs(aTorques[i]));
 	}
 }
 
@@ -1631,7 +1630,7 @@ void SimbodyEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[],
 {
 	if (aTorques) {
 		int i;
-		double torque[3];
+		SimTK::Vec3 torque;
 
 		for (i = 0; i < aN; i++)
 		{
@@ -1823,14 +1822,14 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3
  * @param aBodyTo the body the vector will be transformed into
  * @param rPos the vector in the aBodyTo frame is returned here
  */
-void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aVec, const AbstractBody &aBodyTo, OpenSim::Array<double>& rVec) const
+void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const
 {
 	if(&aBodyFrom == &aBodyTo) return;
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	Vec3::updAs(&rVec[0]) = _matter->expressBodyVectorInBody(*_s, bFrom->_id, Vec3::getAs(&aVec[0]), bTo->_id);
+	rVec = _matter->expressBodyVectorInBody(*_s, bFrom->_id, aVec, bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1866,8 +1865,8 @@ transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const Abs
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& aPos,
-	const AbstractBody &aBodyTo, OpenSim::Array<double>& rPos) const
+transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos,
+	const AbstractBody &aBodyTo, SimTK::Vec3& rPos) const
 {
 	if(&aBodyFrom == &aBodyTo) {
 	   for (int i=0; i<3; i++) rPos[i] = aPos[i];
@@ -1877,7 +1876,7 @@ transformPosition(const AbstractBody &aBodyFrom, const OpenSim::Array<double>& a
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
 	//Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-	Vec3::updAs(&rPos[0]) = _matter->locateBodyPointOnBody(*_s, bFrom->_id, Vec3::getAs(&aPos[0]), bTo->_id);
+	rPos = _matter->locateBodyPointOnBody(*_s, bFrom->_id, aPos, bTo->_id);
 }
 
 //_____________________________________________________________________________
@@ -1905,11 +1904,11 @@ void SimbodyEngine::transformPosition(const AbstractBody &aBodyFrom, const doubl
  * @param rPos the XYZ coordinates of the point in the ground frame are returned here
  */
 void SimbodyEngine::
-transformPosition(const AbstractBody &aBodyFrom,const OpenSim::Array<double>& aPos,
-	OpenSim::Array<double>& rPos) const
+transformPosition(const AbstractBody &aBodyFrom,const SimTK::Vec3& aPos,
+	SimTK::Vec3& rPos) const
 {
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
-	Vec3::updAs(&rPos[0]) = _matter->locateBodyPointOnGround(*_s, bFrom->_id, Vec3::getAs(&aPos[0]));
+	rPos = _matter->locateBodyPointOnGround(*_s, bFrom->_id, aPos);
 }
 
 //_____________________________________________________________________________
@@ -1923,12 +1922,12 @@ transformPosition(const AbstractBody &aBodyFrom,const OpenSim::Array<double>& aP
  * @return the distance between aPoint1 and aPoint2
  */
 double SimbodyEngine::
-calcDistance(const AbstractBody& aBody1, const OpenSim::Array<double>& aPoint1,
-	const AbstractBody& aBody2, const OpenSim::Array<double>& aPoint2) const
+calcDistance(const AbstractBody& aBody1, const SimTK::Vec3& aPoint1,
+	const AbstractBody& aBody2, const SimTK::Vec3& aPoint2) const
 {
 	const SimbodyBody* b1 = (SimbodyBody*)(&aBody1);
 	const SimbodyBody* b2 = (SimbodyBody*)(&aBody2);
-	return _matter->calcPointToPointDistance(*_s, b1->_id, Vec3::getAs(&aPoint1[0]), b2->_id, Vec3::getAs(&aPoint2[0]));
+	return _matter->calcPointToPointDistance(*_s, b1->_id, aPoint1, b2->_id, aPoint2);
 }
 
 //_____________________________________________________________________________

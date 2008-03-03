@@ -31,6 +31,8 @@
 
 
 using namespace OpenSim;
+using SimTK::Vec3;
+
 /**
  * Destructor.
  */
@@ -297,8 +299,8 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 	// CONTACT POINTS
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->getContactPointA(i,&_pa[I]);
-		_model->getContactSet()->getContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->getContactPointA(i,Vec3::updAs(&_pa[I]));
+		_model->getContactSet()->getContactPointA(i,Vec3::updAs(&_paPrev[I]));
 	}
 
 	// FORCES AND VELOCITIES
@@ -388,12 +390,12 @@ compute(double *aXPrev,double *aYPrev,
 			// INITIALIZE VISCOUS CONTACT FORCES
 			// The contact force needs to be broken up into its elastic and
 			// viscous components.
-			double fnp[3],fnv[3],fn[3];
-			double ftp[3],ftv[3],ft[3];
+			SimTK::Vec3 fnp,fnv,fn;
+			SimTK::Vec3 ftp,ftv,ft;
 			_model->getContactSet()->getContactNormalForce(i,fnp,fnv,fn);
 			_model->getContactSet()->getContactTangentForce(i,ftp,ftv,ft);
 			J = Mtx::ComputeIndex(_cVel,np,i,3,0);
-			Mtx::Add(1,3,fnv,ftv,&_fv[J]);
+			Vec3::updAs(&_fv[J])=fnv+ftv;
 			printf("damp force = %lf %lf %lf\n",_fv[J+0],_fv[J+1],_fv[J+2]);
 		}
 	}
@@ -402,19 +404,19 @@ compute(double *aXPrev,double *aYPrev,
 	// INTEGRATE
 	//--------------------------------------------------------------------------
 	AbstractBody *bod;
-	double pnt[3];
-	double dfp[3],dfv[3];
+	SimTK::Vec3 pnt;
+	SimTK::Vec3 dfp,dfv;
 	double ddt = aDT*aDT/2.0;
 	double dddt = aDT*aDT*aDT/6.0;
 	double dud,dudd,duddd;
-	double dv[3],dvTmp[3],dp[3];
-	double g[3];  _model->getGravity(g);
+	SimTK::Vec3 dv,dvTmp,dp;
+	SimTK::Vec3 g;  _model->getGravity(g);
 
 	// RESTORE MODEL TO PREVIOUS STATES
 	_model->set(aT-aDT,aXPrev,aYPrev);
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->setContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->setContactPointA(i,Vec3::getAs(&_paPrev[I]));
 	}
 	_model->getContactSet()->computeContact();
 
@@ -436,7 +438,7 @@ compute(double *aXPrev,double *aYPrev,
 			// ?? In what frame is the force expressed?  I believe BodyA
 			bod = _model->getContactSet()->getContactBodyB(i);
 			_model->getContactSet()->getContactPointB(i,pnt);
-			_model->getDynamicsEngine().applyForce(*bod,pnt,_f[c][i]);
+			_model->getDynamicsEngine().applyForce(*bod,pnt,Vec3::getAs(_f[c][i]));
 		}
 
 		// COMPUTE INDUCED ACCELERATIONS
@@ -445,7 +447,7 @@ compute(double *aXPrev,double *aYPrev,
 			bod = _model->getContactSet()->getContactBodyB(i);
 			_model->getContactSet()->getContactPointB(i,pnt);
 			I = Mtx::ComputeIndex(c,np,i,3,0);
-			_model->getDynamicsEngine().getAcceleration(*bod,pnt,&_a[I]);
+			_model->getDynamicsEngine().getAcceleration(*bod,pnt,Vec3::updAs(&_a[I]));
 		}
 
 		// COMPUTE HIGHER ORDER DERIVATIVES
@@ -498,13 +500,16 @@ compute(double *aXPrev,double *aYPrev,
 			_model->getDynamicsEngine().formJacobianTranslation(*bod,pnt,_J);
 
 			// ACCELERATION-BASED CHANGES IN SPRING POINT VELOCITIES
-			Mtx::Multiply(3,nu,1,_J,_du,dv);
+			Mtx::Multiply(3,nu,1,_J,_du,&dv[0]);
  
 			// VELOCITY BASED CHANGES IN VELOCITY
 			if(c==getVelocityIndex()) {
-				Mtx::Subtract(3,nu,_J,_JPrev,_JDiff);
-				Mtx::Multiply(3,nu,1,_JDiff,_uPrev,dvTmp);
-				Mtx::Add(1,3,dv,dvTmp,dv);
+				//Mtx::Subtract(3,nu,_J,_JPrev,_JDiff);
+				for(j=0; j<nu; j++)
+					_JDiff[j]=_J[j]-_JPrev[j];
+
+				Mtx::Multiply(3,nu,1,_JDiff,_uPrev,&dvTmp[0]);
+				dv += dvTmp;
 			}
 
 			// CHANGES IN POSITION
@@ -555,7 +560,7 @@ compute(double *aXPrev,double *aYPrev,
 	_model->set(aT,aX,aY);
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->setContactPointA(i,&_pa[I]);
+		_model->getContactSet()->setContactPointA(i,Vec3::getAs(&_pa[I]));
 	}
 	_model->getContactSet()->computeContact();
 	for(i=0;i<3*np;i++) _paPrev[i] = _pa[i];
@@ -589,8 +594,8 @@ applyActionForce(int aC,double aT,double *aX,double *aY)
 	memcpy(_xTmp,aX,nx*sizeof(double));
 
 	// GRAVITY
-	double g0[3] = { 0.0, 0.0, 0.0 };
-	double g[3];  _model->getGravity(g);
+	SimTK::Vec3 g0(0.0, 0.0, 0.0);
+	SimTK::Vec3 g;  _model->getGravity(g);
 
 	// ZERO GRAVITY
 	_model->setGravity(g0);
@@ -777,7 +782,7 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// so this is unncessesary.
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->getContactPointA(i,&_pa[I]);
+		_model->getContactSet()->getContactPointA(i,Vec3::updAs(&_pa[I]));
 	}
 
 	// COMPUTE CONTACT FORCES
@@ -787,23 +792,23 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// CORRECTION IN VISCOUS PART OF CONTACT FORCES
 	// All reductions in contact forces should be due to reductions in damping
 	// forces since the model has presumable been brought up-to-date.
-	double fv[3],fp[3],f[3];
-	double fnp[3],fnv[3],fn[3];
-	double ftp[3],ftv[3],ft[3];
+	Vec3 fv,fp,f;
+	Vec3 fnp,fnv,fn;
+	Vec3 ftp,ftv,ft;
 	for(i=0;i<np;i++) {
 
 		// COMPUTE DAMPING CORRECTION
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->getContactFrictionCorrection(i,&_dfvFric[I]);
+		_model->getContactSet()->getContactFrictionCorrection(i,Vec3::updAs(&_dfvFric[I]));
 
 		// COMPUTE FORCE BEFORE CORRECTION
 		//Mtx::Add(1,3,&_sfrc[I],&_dfvFric[I],f);
 		_model->getContactSet()->getContactNormalForce(i,fnp,fnv,fn);
 		_model->getContactSet()->getContactTangentForce(i,ftp,ftv,ft);
-		Mtx::Add(1,3,fnv,ftv,fv);
-		Mtx::Add(1,3,fnp,ftp,fp);
-		Mtx::Add(1,3,fn,ft,f);
-		Mtx::Subtract(1,3,f,fp,f);
+		fv = fnv+ftv;
+		fp = fnp+ftp;
+		f = fn+ft;
+		f -= fp;
 
 		//Mtx::Add(1,3,fnp,fnv,fn);
 		//Mtx::Add(1,3,ftp,ftv,ft);
@@ -845,14 +850,14 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// COMPUTE ELASTIC PART OF CONTACT FORCES
 	//_model->computeContact();
 	//computeContactForces(_pfrc);
-	double fPrev[3];
-	double fnpPrev[3],fnvPrev[3],fnPrev[3];
-	double ftpPrev[3],ftvPrev[3],ftPrev[3];
+	SimTK::Vec3 fPrev;
+	SimTK::Vec3 fnpPrev,fnvPrev,fnPrev;
+	SimTK::Vec3 ftpPrev,ftvPrev,ftPrev;
 
 	// RESTORE PREVIOUS CONTACT POINTS
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->setContactPointA(i,&_paPrev[I]);
+		_model->getContactSet()->setContactPointA(i,Vec3::getAs(&_paPrev[I]));
 	}
 	_model->getContactSet()->computeContact();
 
@@ -868,8 +873,8 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 		//Mtx::Add(1,3,&_sfrc[I],&_dfpFric[I],f);
 		_model->getContactSet()->getContactNormalForce(i,fnpPrev,fnvPrev,fnPrev);
 		_model->getContactSet()->getContactTangentForce(i,ftpPrev,ftvPrev,ftPrev);
-		Mtx::Add(1,3,fnp,ftp,f);
-		Mtx::Add(1,3,fnpPrev,ftpPrev,fPrev);
+		f=fnp+ftp;
+		fPrev=fnpPrev+ftpPrev;
 
 		// COMPUTE ALPHA
 		for(j=0;j<3;j++) {
@@ -897,7 +902,7 @@ computeFrictionFactors(double aT,double *aX,double *aY)
 	// RESET CONTACT POINTS TO CURRENT VALUES
 	for(i=0;i<np;i++) {
 		I = Mtx::ComputeIndex(i,3,0);
-		_model->getContactSet()->setContactPointA(i,&_pa[I]);
+		_model->getContactSet()->setContactPointA(i,Vec3::getAs(&_pa[I]));
 	}
 	_model->getContactSet()->computeContact();
 }
@@ -927,7 +932,7 @@ computeContactForces(double *rForces)
 
 	// COMPUTE
 	int i,j,I;
-	double f[3];
+	SimTK::Vec3 f;
 	for(i=0;i<np;i++) {
 
 		_model->getContactSet()->getContactForce(i,f);
@@ -960,9 +965,9 @@ computeContactVelocities(double *rVels)
 	// COMPUTE CONTACT VELOCITIES
 	int i,j,I;
 	AbstractBody *a, *b;
-	double pa[3],pb[3];
-	double va[3],vb[3];
-	double v[3];
+	SimTK::Vec3 pa,pb;
+	SimTK::Vec3 va,vb;
+	SimTK::Vec3 v;
 	for(i=0;i<np;i++) {
 		a = _model->getContactSet()->getContactBodyA(i);
 		b = _model->getContactSet()->getContactBodyB(i);
@@ -1009,8 +1014,9 @@ computeHigherOrderDerivatives(int c,double t,double *dudt,
 	}
 
 	// CHECK FOR VALID HISTORY
-	if((_at[J+0]==rdMath::NAN)||(_at[J+1]==rdMath::NAN)||
-															(_at[J+2]==rdMath::NAN)) {
+	if(rdMath::isNAN(_at[J+0])||
+           rdMath::isNAN(_at[J+1])||
+           rdMath::isNAN(_at[J+2])) {
 		for(i=0;i<nu;i++) {
 			ddudt[i] = 0.0;
 			dddudt[i] = 0.0;

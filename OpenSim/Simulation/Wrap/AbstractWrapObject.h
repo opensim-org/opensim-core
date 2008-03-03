@@ -90,8 +90,8 @@ protected:
 	PropertyDblArray _xyzBodyRotationProp;
 	Array<double>& _xyzBodyRotation;
 
-	PropertyDblArray _translationProp;
-	Array<double>& _translation;
+	PropertyDblVec3 _translationProp;
+	SimTK::Vec3 & _translation;
 
 	PropertyBool _activeProp;
 	bool& _active;
@@ -128,7 +128,7 @@ public:
 #endif
    void copyData(const AbstractWrapObject& aWrapObject);
 
-	virtual void scale(Array<double>& aScaleFactors) = 0;
+	virtual void scale(const SimTK::Vec3& aScaleFactors) = 0;
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
 
 	AbstractBody* getBody() const { return _body; }
@@ -143,7 +143,7 @@ public:
 	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
 	int wrapMuscleSegment(MusclePoint& aPoint1, MusclePoint& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult) const;
-	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const = 0;
 
 	// Visible Object Support

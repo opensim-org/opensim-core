@@ -294,7 +294,7 @@ computeErrors(double aT)
 void rdCMC_Joint::
 computeDesiredAccelerations(double aT)
 {
-	Mtx::Assign(1,3,rdMath::NAN,_aDes);
+	_aDes=rdMath::NAN;
 
 	// CHECK
 	if(_model==NULL) return;
@@ -332,7 +332,7 @@ computeDesiredAccelerations(double aT)
 void rdCMC_Joint::
 computeDesiredAccelerations(double aTI,double aTF)
 {
-	Mtx::Assign(1,3,rdMath::NAN,_aDes);
+	_aDes=rdMath::NAN;
 
 	// CHECK
 	if(_model==NULL) return;
@@ -373,7 +373,7 @@ computeDesiredAccelerations(double aTI,double aTF)
 void rdCMC_Joint::
 computeAccelerations()
 {
-	Mtx::Assign(1,3,rdMath::NAN,_a);
+	_a=rdMath::NAN;
 
 	// CHECK
 	if(_model==NULL) return;

@@ -61,7 +61,7 @@ protected:
 	AbstractBody *_body;
 	/** Location of the tracked point on the body expressed in the body-local
 	coordinate frame. */
-	double _point[3];
+	SimTK::Vec3 _point;
 
 //=============================================================================
 // METHODS
@@ -70,7 +70,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	rdCMC_Point(AbstractBody *aBody,double aPoint[]);
+	rdCMC_Point(AbstractBody *aBody,SimTK::Vec3& aPoint);
 	virtual ~rdCMC_Point();
 	void setNull();
 
@@ -81,9 +81,9 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computePositionError(double time,double posErr[]);
-	virtual void computeVelocityError(double time,double velErr[]);
-	virtual void computeDesiredAccelerations(double time,double acc[]);
+	virtual void computePositionError(double time,SimTK::Vec3& posErr);
+	virtual void computeVelocityError(double time,SimTK::Vec3& velErr);
+	virtual void computeDesiredAccelerations(double time,SimTK::Vec3& acc);
 	virtual void computeJacobian();
 	virtual void computeEffectiveMassMatrix();
 

@@ -484,7 +484,7 @@ record(double aT,double *aX,double *aY)
 
 	// VARIABLES
 	double dirCos[3][3];
-	double vec[3],angVec[3];
+	SimTK::Vec3 vec,angVec;
 	double Mass = 0.0;
 
 	// POSITION
@@ -492,7 +492,7 @@ record(double aT,double *aX,double *aY)
 
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		AbstractBody *body = bs->get(_bodyIndices[i]);
-		double com[3];
+		SimTK::Vec3 com;
 		body->getMassCenter(com);
 		// GET POSITIONS AND EULER ANGLES
 		_model->getDynamicsEngine().getPosition(*body,com,vec);
@@ -502,22 +502,22 @@ record(double aT,double *aX,double *aY)
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
-			angVec[0] *= rdMath::RTD;
-			angVec[1] *= rdMath::RTD;
-			angVec[2] *= rdMath::RTD;
+			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
 		}			
 
 		// FILL KINEMATICS ARRAY
 		int I=6*i;
-		memcpy(&_kin[I],vec,3*sizeof(double));
-		memcpy(&_kin[I+3],angVec,3*sizeof(double));
+		memcpy(&_kin[I],&vec[0],3*sizeof(double));
+		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
 	}
 
 	if(_recordCenterOfMass) {
 		double rP[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs->getSize();i++) {
 			AbstractBody *body = bs->get(i);
-			double com[3];
+			SimTK::Vec3 com;
 			body->getMassCenter(com);
 			_model->getDynamicsEngine().getPosition(*body,com,vec);
 			// ADD TO WHOLE BODY MASS
@@ -540,7 +540,7 @@ record(double aT,double *aX,double *aY)
 	// VELOCITY
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		AbstractBody *body = bs->get(_bodyIndices[i]);
-		double com[3];
+		SimTK::Vec3 com;
 		body->getMassCenter(com);
 		// GET VELOCITIES AND ANGULAR VELOCITIES
 		_model->getDynamicsEngine().getVelocity(*body,com,vec);
@@ -552,22 +552,22 @@ record(double aT,double *aX,double *aY)
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
-			angVec[0] *= rdMath::RTD;
-			angVec[1] *= rdMath::RTD;
-			angVec[2] *= rdMath::RTD;
+			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
 		}			
 
 		// FILL KINEMATICS ARRAY
 		int I = 6*i;
-		memcpy(&_kin[I],vec,3*sizeof(double));
-		memcpy(&_kin[I+3],angVec,3*sizeof(double));
+		memcpy(&_kin[I],&vec[0],3*sizeof(double));
+		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
 	}
 
 	if(_recordCenterOfMass) {
 		double rV[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs->getSize();i++) {
 			AbstractBody *body = bs->get(i);
-			double com[3];
+			SimTK::Vec3 com;
 			body->getMassCenter(com);
 			_model->getDynamicsEngine().getVelocity(*body,com,vec);
 			rV[0] += body->getMass() * vec[0];
@@ -588,7 +588,7 @@ record(double aT,double *aX,double *aY)
 	// ACCELERATIONS
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 		AbstractBody *body = bs->get(_bodyIndices[i]);
-		double com[3];
+		SimTK::Vec3 com;
 		body->getMassCenter(com);
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
 		_model->getDynamicsEngine().getAcceleration(*body,com,vec);
@@ -596,22 +596,22 @@ record(double aT,double *aX,double *aY)
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
-			angVec[0] *= rdMath::RTD;
-			angVec[1] *= rdMath::RTD;
-			angVec[2] *= rdMath::RTD;
+			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
+			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
 		}			
 
 		// FILL KINEMATICS ARRAY
 		int I = 6*i;
-		memcpy(&_kin[I],vec,3*sizeof(double));
-		memcpy(&_kin[I+3],angVec,3*sizeof(double));
+		memcpy(&_kin[I],&vec[0],3*sizeof(double));
+		memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
 	}
 
 	if(_recordCenterOfMass) {
 		double rA[3] = { 0.0, 0.0, 0.0 };
 		for(int i=0;i<bs->getSize();i++) {
 			AbstractBody *body = bs->get(i);
-			double com[3];
+			SimTK::Vec3 com;
 			body->getMassCenter(com);
 			_model->getDynamicsEngine().getAcceleration(*body,com,vec);
 			rA[0] += body->getMass() * vec[0];

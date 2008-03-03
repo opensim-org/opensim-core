@@ -44,6 +44,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -55,7 +56,7 @@ using namespace OpenSim;
 AbstractWrapObject::AbstractWrapObject() :
 	Object(),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblArray()),
+   _translation(_translationProp.getValueDblVec3()),
 	_active(_activeProp.getValueBool()),
 	_quadrantName(_quadrantNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -83,7 +84,7 @@ AbstractWrapObject::~AbstractWrapObject()
 AbstractWrapObject::AbstractWrapObject(const AbstractWrapObject& aWrapObject) :
 	Object(aWrapObject),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblArray()),
+   _translation(_translationProp.getValueDblVec3()),
 	_active(_activeProp.getValueBool()),
 	_quadrantName(_quadrantNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -119,10 +120,10 @@ void AbstractWrapObject::setupProperties()
 	_xyzBodyRotationProp.setValue(3, defaultRotations);
 	_propertySet.append(&_xyzBodyRotationProp);
 
-	const double defaultTranslations[] = {0.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultTranslations(0.0);
 	_translationProp.setName("translation");
-	_translationProp.setValue(3, defaultTranslations);
-	_translationProp.setAllowableArraySize(3);
+	_translationProp.setValue(defaultTranslations);
+	//_translationProp.setAllowableArraySize(3);
 	_propertySet.append(&_translationProp);
 
 	_activeProp.setName("active");
@@ -157,7 +158,7 @@ void AbstractWrapObject::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aB
 	_pose.rotateXBodyFixed(_xyzBodyRotation[0], Transform::Radians);
 	_pose.rotateYBodyFixed(_xyzBodyRotation[1], Transform::Radians);
 	_pose.rotateZBodyFixed(_xyzBodyRotation[2], Transform::Radians);
-	_pose.translate(&_translation[0]);
+	_pose.translate(_translation);
 
 	/* Invert the forward transform and store the inverse. */
 	Mtx::Invert(4, _pose.getMatrix(), _inversePose.getMatrix());
@@ -297,8 +298,8 @@ int AbstractWrapObject::wrapMuscleSegment(MusclePoint& aPoint1, MusclePoint& aPo
 {
    int return_code = noWrap;
 	bool p_flag;
-	Array<double> pt1(0.0, 3);
-	Array<double> pt2(0.0, 3);
+	Vec3 pt1(0.0);
+	Vec3 pt2(0.0);
 
 	// Convert the muscle points from the frames of the bodies they are attached
 	// to to the frame of the wrap object's body

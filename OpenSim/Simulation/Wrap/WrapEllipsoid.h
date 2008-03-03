@@ -92,10 +92,10 @@ public:
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 
-	virtual void scale(Array<double>& aScaleFactors) { }
+	virtual void scale(const SimTK::Vec3& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
 
-	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
 	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, AbstractWrapObject);
@@ -104,11 +104,11 @@ protected:
 
 private:
 	void setNull();
-	int calcTangentPoint(double p1e, double r1[], double p1[], double m[],
-		double a[], double vs[], double vs4) const;
-	void CalcDistanceOnEllipsoid(double r1[], double r2[], double m[], double a[], 
-		double vs[], double vs4, bool far_side_wrap,
-		WrapResult& aWrapResult) const;
+	int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
+												SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
+	void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+														  SimTK::Vec3& vs, double vs4, bool far_side_wrap,
+														  WrapResult& aWrapResult) const;
 	double findClosestPoint(double a, double b, double c,
 		double u, double v, double w,
 		double* x, double* y, double* z,

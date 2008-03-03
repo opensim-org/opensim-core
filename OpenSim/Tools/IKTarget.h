@@ -85,9 +85,9 @@ private:
 		double weight; // always nonzero
 		// set each frame before optimization
 		bool validExperimentalPosition;
-		double experimentalPosition[3];
+		SimTK::Vec3 experimentalPosition;
 		// set each frame during optimization
-		double computedPosition[3];
+		SimTK::Vec3 computedPosition;
 	} markerToSolve;
 
 	// Coordinate Map information

@@ -41,6 +41,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/MusclePoint.h>
+#include "SimTKcommon.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -132,11 +133,11 @@ public:
 	void setYFunction(Function& aFunction);
 	void setZFunction(Function& aFunction);
 	
-	virtual	void scale(Array<double>& aScaleFactors);
+	virtual	void scale(const SimTK::Vec3& aScaleFactors);
 	virtual bool isActive() const { return true; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 	virtual void update();
-	virtual void getVelocity(double aVelocity[3]);
+	virtual void getVelocity(SimTK::Vec3& aVelocity);
 
 
 	OPENSIM_DECLARE_DERIVED(MovingMusclePoint, MusclePoint);

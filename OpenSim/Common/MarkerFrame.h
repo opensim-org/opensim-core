@@ -73,7 +73,7 @@ public:
 	MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
 	MarkerFrame(const MarkerFrame& aFrame);
 	virtual ~MarkerFrame();
-	void addMarker(double aCoords[3]);
+	void addMarker(const SimTK::Vec3& aCoords);
 	SimmPoint& getMarker(int aIndex) { return *_markers[aIndex]; }
 	int getFrameNumber() const { return _frameNumber; }
 	void setFrameNumber(int aNumber) { _frameNumber = aNumber; }

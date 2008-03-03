@@ -60,6 +60,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -1028,7 +1029,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	assert(aFAve.getSize()==3 && aMAve.getSize()==3);
 
 	// GRAVITY
-	double g[3];
+	SimTK::Vec3 g;
 	_model->getGravity(g);
 
 	// COMPUTE SEGMENT WEIGHT
@@ -1055,15 +1056,15 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	cout<<"dx="<<dx<<", dz="<<dz<<endl;
 
 	// GET EXISTING COM
-	Array<double> com(0.0,3);
-	body->getMassCenter(&com[0]);
+	Vec3 com(0.0);
+	body->getMassCenter(com);
 
 	// COMPUTE ALTERED COM
 	com[0] -= dx;
 	com[2] -= dz;
 
 	// ALTHER THE MODEL
-	body->setMassCenter(&com[0]);
+	body->setMassCenter(com);
 
 	//---- MASS CHANGE ----
 	// Get recommended mass change.

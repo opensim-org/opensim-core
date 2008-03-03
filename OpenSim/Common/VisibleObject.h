@@ -41,6 +41,7 @@
 #include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
+#include "PropertyDblVec3.h"
 #include "Geometry.h"
 
 namespace OpenSim { 
@@ -80,8 +81,8 @@ private:
 	VisibleProperties&	_visibleProp;
 
 	/** Scale factors for geometry. unserialized */
-	PropertyDblArray	_propScaleFactors;
-	Array<double>&		_scaleFactors;
+	PropertyDblVec3	_propScaleFactors;
+	SimTK::Vec3&		_scaleFactors;
 
 	// In general these can use the Observable mechanism but that would be slow 
 	// for display purposes.
@@ -141,23 +142,29 @@ public:
 	void setTransform(const Transform &aTransform);
 	virtual Transform& getTransform();
 
-	void setScaleFactors(const double aScaleFactors[3]);
-	void getScaleFactors(double aScaleFactors[3]) const;
-
+	void setScaleFactors(const SimTK::Vec3& aScaleFactors);
+	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
+	// A variation that uses raw arrays for use from GUI only.
+	void setScaleFactors(const double aScaleFactors[]){
+		setScaleFactors(SimTK::Vec3::getAs(aScaleFactors));
+	}
+	void getScaleFactors(double aScaleFactors[]) const {
+		getScaleFactors(SimTK::Vec3::updAs(aScaleFactors));
+	}
 	// More interfaces for transform as other interfaces (Angles based) are needed
 	void rotateRadians(const double rR[3]);
 	void rotateRadians(const double rR[3], const Transform::RotationOrder order);
 	void rotateRadiansX(const double rR);
 	void rotateRadiansY(const double rR);
 	void rotateRadiansZ(const double rR);
-	void rotateRadiansAxis(const double rR, const double axis[3]);
+	void rotateRadiansAxis(const double rR, const SimTK::Vec3& axis);
 	void rotateDegrees(const double rR[3]);
 	void rotateDegrees(const double rR[3], const Transform::RotationOrder order);
 	void rotateDegreesX(const double rR);
 	void rotateDegreesY(const double rR);
 	void rotateDegreesZ(const double rR);
-	void rotateDegreesAxis(const double rR, const double axis[3]);
-	void translate(const double t[3]);
+	void rotateDegreesAxis(const double rR, const SimTK::Vec3& axis);
+	void translate(const SimTK::Vec3& t);
 	// DEPENDENTS
 	void addDependent(VisibleObject *aChild){ _dependents.append(aChild); };
 	bool hasDependent(VisibleObject *aChild){ // Check if dependency already added

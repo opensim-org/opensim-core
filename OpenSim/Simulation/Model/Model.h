@@ -202,8 +202,8 @@ public:
 	//--------------------------------------------------------------------------
 	// GRAVITY
 	//--------------------------------------------------------------------------
-	virtual void getGravity(double rGrav[3]) const;
-	virtual bool setGravity(double aGrav[3]);
+	virtual void getGravity(SimTK::Vec3& rGrav) const;
+	virtual bool setGravity(SimTK::Vec3& aGrav);
 
 	//--------------------------------------------------------------------------
 	// NUMBERS

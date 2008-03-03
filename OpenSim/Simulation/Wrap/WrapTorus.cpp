@@ -44,6 +44,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 static char* wrapTypeName = "torus";
 
@@ -235,11 +236,11 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+int WrapTorus::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 								const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	int i;
-	double closestPt[3];
+	SimTK::Vec3 closestPt;
 	bool constrained = (bool) (_wrapSign != 0);
 	bool far_side_wrap = false;
 	aFlag = true;
@@ -249,18 +250,15 @@ int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 	// Now put a cylinder at closestPt and call the cylinder wrap code.
 	WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
-	double cylXaxis[3], cylYaxis[3], cylZaxis[3]; // cylinder axes in torus reference frame
+	SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
 	cyl.setRadius(_innerRadius);
 	cyl.setLength(CYL_LENGTH);
 	cyl.setQuadrantName("+x");
 
-	for (i = 0; i < 3; i++)
-		closestPt[i] = -closestPt[i];
+	closestPt *= -1;
 
-	cylXaxis[0] = closestPt[0];
-	cylXaxis[1] = closestPt[1];
-	cylXaxis[2] = closestPt[2];
+	cylXaxis = closestPt;
 	Mtx::Normalize(3, cylXaxis, cylXaxis);
 	cylYaxis[0] = 0.0;
 	cylYaxis[1] = 0.0;
@@ -283,7 +281,7 @@ int WrapTorus::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	Mtx::Invert(4, torusToCylinder.getMatrix(), cylinderToTorus.getMatrix());
 
 	mat = cylinderToTorus.getMatrix();
-	Array<double> p1(aPoint1), p2(aPoint2);
+	Vec3 p1(aPoint1), p2(aPoint2);
 	torusToCylinder.transformPoint(p1);
 	torusToCylinder.transformPoint(p2);
 

@@ -572,7 +572,7 @@ integrate(double aStartTime)
 		// GET TIME STEP
 		int step = _integ->getTimeArrayStep(t);
 		dt = _integ->getDTArrayDT(step);
-		if(dt<=rdMath::NAN) dt = 1.0e-8;
+      if (rdMath::isNAN(dt))     throw Exception("delta t is NaN... Aborting.");
 
 		// GET DATA
 		double *y=NULL,*yp=NULL;

@@ -20,7 +20,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTANTS
@@ -52,7 +52,7 @@ PointKinematics::PointKinematics(Model *aModel) :
 Analysis(aModel),
 _body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblArray()),
+_point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
 	// NULL
@@ -100,7 +100,7 @@ PointKinematics::PointKinematics(const std::string &aFileName):
 Analysis(aFileName, false),
 _body(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblArray()),
+_point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
 	setNull();
@@ -128,7 +128,7 @@ PointKinematics::PointKinematics(const PointKinematics &aPointKinematics):
 Analysis(aPointKinematics),
 _body(aPointKinematics._body),
 _bodyName(_bodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblArray()),
+_point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
 	setNull();
@@ -169,8 +169,8 @@ setNull()
 	setName("PointKinematics");
 
 	// POINT INFORMATION
-	_point.setSize(3);
-	Array<double> zero3(0.0, 3);	
+	//_point.setSize(3);
+	Vec3 zero3(0.0);	
 
 	_bodyNameProp.setName("body_name");
 	_bodyNameProp.setValue("ground");
@@ -329,7 +329,7 @@ setModel(Model *aModel)
  * @double[3] aPoint point coordinates
  */
 void PointKinematics::
-setBodyPoint(const std::string& aBody, double aPoint[3])
+setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
 {
 	if (_model == 0)
 		return;
@@ -391,11 +391,9 @@ getBody()
  * @param aPoint X-Y-Z Point
  */
 void PointKinematics::
-setPoint(double aPoint[3])
+setPoint(const SimTK::Vec3& aPoint)
 {
-	_point[0] = aPoint[0];
-	_point[1] = aPoint[1];
-	_point[2] = aPoint[2];
+	_point = aPoint;
 
 	// RESET STORAGE
 	if(_aStore!=NULL) {
@@ -415,11 +413,9 @@ setPoint(double aPoint[3])
  * @param rPoint X-Y-Z Point
  */
 void PointKinematics::
-getPoint(double rPoint[3])
+getPoint(SimTK::Vec3& rPoint)
 {
-	rPoint[0] = _point[0];
-	rPoint[1] = _point[1];
-	rPoint[2] = _point[2];
+	rPoint = _point;
 }
 
 //-----------------------------------------------------------------------------
@@ -544,19 +540,19 @@ record(double aT,double *aX,double *aY)
 	// ----------------------------------
 
 	// VARIABLES
-	double vec[3];
+	SimTK::Vec3 vec;
 
 	// POSITION
-	de.getPosition(*_body,_point.get(),vec);
-	_pStore->append(aT,3,vec);
+	de.getPosition(*_body,_point,vec);
+	_pStore->append(aT,vec);
 
 	// VELOCITY
-	de.getVelocity(*_body,_point.get(),vec);
-	_vStore->append(aT,3,vec);
+	de.getVelocity(*_body,_point,vec);
+	_vStore->append(aT,vec);
 
 	// ACCELERATIONS
-	de.getAcceleration(*_body,_point.get(),vec);
-	_aStore->append(aT,3,vec);
+	de.getAcceleration(*_body,_point,vec);
+	_aStore->append(aT,vec);
 
 	return(0);
 }

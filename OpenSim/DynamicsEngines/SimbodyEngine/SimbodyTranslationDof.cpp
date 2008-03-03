@@ -167,11 +167,9 @@ SimbodyTranslationDof& SimbodyTranslationDof::operator=(const SimbodyTranslation
  * @param aAxis Translation axis.
  */
 void SimbodyTranslationDof::
-setAxis(const double aAxis[3])
+setAxis(const SimTK::Vec3& aAxis)
 {
-	_axis[0] = aAxis[0];
-	_axis[1] = aAxis[1];
-	_axis[2] = aAxis[2];
+	_axis = aAxis;
 }
 //_____________________________________________________________________________
 /**
@@ -180,11 +178,9 @@ setAxis(const double aAxis[3])
  * @param rAxis Translation axis.
  */
 void SimbodyTranslationDof::
-getAxis(double rAxis[3]) const
+getAxis(SimTK::Vec3& rAxis) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+	rAxis = _axis;
 }
 
 //_____________________________________________________________________________

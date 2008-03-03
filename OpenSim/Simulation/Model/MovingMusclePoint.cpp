@@ -44,6 +44,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -343,7 +344,7 @@ void MovingMusclePoint::update()
  * @param aVelocity The velocity.
  */
 
-void MovingMusclePoint::getVelocity(double aVelocity[3])
+void MovingMusclePoint::getVelocity(SimTK::Vec3& aVelocity)
 {
     // Get the generalized speed associated with moving muscle point
 	AbstractSpeed* speed;
@@ -382,7 +383,7 @@ void MovingMusclePoint::getVelocity(double aVelocity[3])
 		aVelocity[2] = 0.0;
 }
 
-void MovingMusclePoint::scale(Array<double>& aScaleFactors)
+void MovingMusclePoint::scale(const SimTK::Vec3& aScaleFactors)
 {
 	if (_xCoordinate)
 		_xAttachment->scaleY(aScaleFactors[0]);

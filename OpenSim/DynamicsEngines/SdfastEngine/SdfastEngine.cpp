@@ -62,6 +62,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 const int SdfastEngine::GROUND = -1;
 
@@ -181,7 +182,7 @@ void SdfastEngine::init(Model *aModel)
 	// before setConfiguration because they call sdinit which would clear
 	// the state set in setConfiguration...
 
-	setGravity(&_gravity[0]); // force sdgrav to be called
+	setGravity(_gravity); // force sdgrav to be called
 
 	// Center of mass locations
 	// This adjusts the SDFast body-to-joint and inboard-to-joint vectors
@@ -996,10 +997,11 @@ void SdfastEngine::assemble()
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool SdfastEngine::setGravity(double aGrav[3])
+bool SdfastEngine::setGravity(const SimTK::Vec3& aGrav)
 {
 	AbstractDynamicsEngine::setGravity(aGrav);
-	_sdgrav(aGrav);
+	Vec3 nonConstGrav = aGrav;	// Needed to make a nonConst copy otherwise devStudio fails to compile next line!! -Ayman 1/08
+	_sdgrav(&nonConstGrav[0]);
 	_sdinit(); // it is imporant to call this after sdgrav
 	return true;
 }
@@ -1087,30 +1089,30 @@ bool SdfastEngine::adjustJointVectorsForNewMassCenter(SdfastBody* aBody)
 	// in all SIMM models, this is not generally true.
 	// A body could have a reference frame that does not coincide with its joint.
 	// The code below accounts for this possibility.
-	double newMassCenter[3],jointLocation[3],btj[3];
+	SimTK::Vec3 newMassCenter,jointLocation,btj;
 	aBody->getMassCenter(newMassCenter);
 	SdfastJoint *btjJoint = getInboardTreeJoint(aBody);
 	if(btjJoint!=NULL) {
-		_sdgetbtj(btjJoint->getSdfastIndex(),btj);
+		_sdgetbtj(btjJoint->getSdfastIndex(),&btj[0]);
 		cout<<"Joint "<<btjJoint->getName()<<": origBTJ="<<btj[0]<<","<<btj[1]<<","<<btj[2];
 		btjJoint->getLocationInChild(jointLocation);
-		Mtx::Subtract(1,3,jointLocation,newMassCenter,btj);
-		_sdbtj(btjJoint->getSdfastIndex(),btj);
-		_sdgetbtj(btjJoint->getSdfastIndex(),btj);
+		btj=jointLocation-newMassCenter;
+		_sdbtj(btjJoint->getSdfastIndex(),&btj[0]);
+		_sdgetbtj(btjJoint->getSdfastIndex(),&btj[0]);
 		cout<<"  scaledBTJ = "<<btj[0]<<","<<btj[1]<<","<<btj[2]<<endl;
 	}
 
 	// COMPUTE NEW INBOARD TO JOINT VECTORS FOR ALL CHILD BODIES
 	for (int i=0; i<_jointSet.getSize(); i++) {
 		if(aBody != _jointSet.get(i)->getParentBody()) continue;
-		double itj[3];
+		SimTK::Vec3 itj;
 		SdfastJoint *itjJoint = (SdfastJoint*)_jointSet.get(i);
-		_sdgetitj(itjJoint->getSdfastIndex(),itj);
+		_sdgetitj(itjJoint->getSdfastIndex(),&itj[0]);
 		cout<<"Joint "<<itjJoint->getName()<<": origITJ="<<itj[0]<<","<<itj[1]<<","<<itj[2];
 		itjJoint->getLocationInParent(jointLocation);
-		Mtx::Subtract(1,3,jointLocation,newMassCenter,itj);
-		_sditj(itjJoint->getSdfastIndex(),itj);
-		_sdgetitj(itjJoint->getSdfastIndex(),itj);
+		itj=jointLocation-newMassCenter;
+		_sditj(itjJoint->getSdfastIndex(),&itj[0]);
+		_sdgetitj(itjJoint->getSdfastIndex(),&itj[0]);
 		cout<<"  scaledITJ = "<<itj[0]<<","<<itj[1]<<","<<itj[2]<<endl;
 	}
 
@@ -1155,7 +1157,7 @@ double SdfastEngine::getMass() const
  * @param rCOM
  * @param rI
  */
-void SdfastEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) const
+void SdfastEngine::getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const
 {
 	throw Exception("SdfastEngine::getSystemInertia(double *rM, double rCOM[3], double rI[3][3]) not yet implemented.");
 }
@@ -1189,14 +1191,14 @@ void SdfastEngine::getSystemInertia(double *rM, double *rCOM, double *rI) const
  *
  * @see setConfiguration()
  */
-void SdfastEngine::getPosition(const AbstractBody &aBody, const double aPoint[3], double rPos[3]) const
+void SdfastEngine::getPosition(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const
 {
 	const SdfastBody* b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b) {
-		double sdpt[3];
+		SimTK::Vec3 sdpt;
 		b->transformToSdfastFrame(aPoint, sdpt);
-		_sdpos(b->getSdfastIndex(), sdpt, rPos);
+		_sdpos(b->getSdfastIndex(), &sdpt[0], &rPos[0]);
 	}
 }
 
@@ -1213,14 +1215,14 @@ void SdfastEngine::getPosition(const AbstractBody &aBody, const double aPoint[3]
  *
  * @see setConfiguration()
  */
-void SdfastEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3], double rVel[3]) const
+void SdfastEngine::getVelocity(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const
 {
 	const SdfastBody* b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b) {
-		double sdpt[3];
+		SimTK::Vec3 sdpt;
 		b->transformToSdfastFrame(aPoint, sdpt);
-		_sdvel(b->getSdfastIndex(), sdpt, rVel);
+		_sdvel(b->getSdfastIndex(), &sdpt[0], &rVel[0]);
 	}
 }
 
@@ -1238,14 +1240,14 @@ void SdfastEngine::getVelocity(const AbstractBody &aBody, const double aPoint[3]
  * @see set()
  * @see computeAccelerations()
  */
-void SdfastEngine::getAcceleration(const AbstractBody &aBody, const double aPoint[3], double rAcc[3]) const
+void SdfastEngine::getAcceleration(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const
 {
 	const SdfastBody* b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b) {
-		double sdpt[3];
+		SimTK::Vec3 sdpt;
 		b->transformToSdfastFrame(aPoint, sdpt);
-		_sdacc(b->getSdfastIndex(), sdpt, rAcc);
+		_sdacc(b->getSdfastIndex(), &sdpt[0], &rAcc[0]);
 	}
 }
 
@@ -1296,14 +1298,14 @@ void SdfastEngine::getDirectionCosines(const AbstractBody &aBody, double *rDirCo
  * @param aBody Pointer to body.
  * @param rAngVel Angular velocity of the body.
  */
-void SdfastEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[3]) const
+void SdfastEngine::getAngularVelocity(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
 	{
-		_sdangvel(b->getSdfastIndex(), rAngVel);
-		_sdtrans(b->getSdfastIndex(), rAngVel, getGroundBodyIndex(), rAngVel);
+		_sdangvel(b->getSdfastIndex(), &rAngVel[0]);
+		_sdtrans(b->getSdfastIndex(), &rAngVel[0], getGroundBodyIndex(), &rAngVel[0]);
 	}
 }
 
@@ -1314,12 +1316,12 @@ void SdfastEngine::getAngularVelocity(const AbstractBody &aBody, double rAngVel[
  * @param aBody Pointer to body.
  * @param rAngVel Angular velocity of the body.
  */
-void SdfastEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double rAngVel[3]) const
+void SdfastEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const
 {
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
-		_sdangvel(b->getSdfastIndex(), rAngVel);
+		_sdangvel(b->getSdfastIndex(), &rAngVel[0]);
 }
 
 //_____________________________________________________________________________
@@ -1330,14 +1332,14 @@ void SdfastEngine::getAngularVelocityBodyLocal(const AbstractBody &aBody, double
  * @param aBody Pointer to body.
  * @param rAngAcc Angular acceleration of the body.
  */
-void SdfastEngine::getAngularAcceleration(const AbstractBody &aBody, double rAngAcc[3]) const
+void SdfastEngine::getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
 	{
-		_sdangacc(b->getSdfastIndex(), rAngAcc);
-		_sdtrans(b->getSdfastIndex(), rAngAcc, getGroundBodyIndex(), rAngAcc);
+		_sdangacc(b->getSdfastIndex(), &rAngAcc[0]);
+		_sdtrans(b->getSdfastIndex(), &rAngAcc[0], getGroundBodyIndex(), &rAngAcc[0]);
 	}
 }
 
@@ -1348,12 +1350,12 @@ void SdfastEngine::getAngularAcceleration(const AbstractBody &aBody, double rAng
  * @param aBody Pointer to body.
  * @param rAngAcc Angular acceleration of the body.
  */
-void SdfastEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, double rAngAcc[3]) const
+void SdfastEngine::getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const
 {
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
 	if (b)
-		_sdangacc(b->getSdfastIndex(), rAngAcc);
+		_sdangacc(b->getSdfastIndex(), &rAngAcc[0]);
 }
 
 //_____________________________________________________________________________
@@ -1382,7 +1384,7 @@ Transform SdfastEngine::getTransform(const AbstractBody &aBody)
 		_sdorient(sdb->getSdfastIndex(), dirCos);
 
 		// 4. Fill in the transform with the translation and rotation.
-		t.setPosition(opos2);
+		t.setPosition(Vec3::getAs(opos2));
 		Mtx::Transpose(3, 3, (double*)dirCos, (double*)dirCos);
 		t.setOrientation(dirCos);
 	}
@@ -1402,20 +1404,17 @@ Transform SdfastEngine::getTransform(const AbstractBody &aBody)
  * @param aPoint Point on body at which force is applied
  * @param aForce Force vector, expressed in inertial frame
  */
-void SdfastEngine::applyForce(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SdfastEngine::applyForce(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
-	int i;
-	double p[3], f[3];
+	SimTK::Vec3 p, f;
 	const SdfastBody* sdBody = (const SdfastBody*)&aBody;
 
 	sdBody->transformToSdfastFrame(aPoint,p);
-	for (i=0; i<3; i++) {
-		f[i] = aForce[i];
-	}
+	f = aForce;
 
-	double force[3];
-	_sdtrans(GROUND, f, sdBody->getSdfastIndex(), force);
-	_sdpointf(sdBody->getSdfastIndex(), p, force);
+	SimTK::Vec3 force;
+	_sdtrans(GROUND, &f[0], sdBody->getSdfastIndex(), &force[0]);
+	_sdpointf(sdBody->getSdfastIndex(), &p[0], &force[0]);
 }
 
 //_____________________________________________________________________________
@@ -1432,7 +1431,7 @@ void SdfastEngine::applyForces(int aN, const AbstractBody *aBodies[], const doub
 	int i;
 
 	for (i = 0; i < aN; i++)
-		applyForce(*aBodies[i], aPoints[i], aForces[i]);
+		applyForce(*aBodies[i], Vec3::getAs(aPoints[i]), Vec3::getAs(aForces[i]));
 }
 
 //_____________________________________________________________________________
@@ -1455,7 +1454,7 @@ void SdfastEngine::applyForces(int aN, const AbstractBody *aBodies[], const doub
 	for (i = 0; i < aN; i++)
 	{
 		I = Mtx::ComputeIndex(i, 3, 0);
-		applyForce(*aBodies[i], &aPoints[I], &aForces[I]);
+		applyForce(*aBodies[i], Vec3::getAs(&aPoints[I]), Vec3::getAs(&aForces[I]));
 	}
 }
 
@@ -1467,23 +1466,19 @@ void SdfastEngine::applyForces(int aN, const AbstractBody *aBodies[], const doub
  * @param aPoint Point on body at which to apply force
  * @param aForce Force to apply, expressed in body frame
  */
-void SdfastEngine::applyForceBodyLocal(const AbstractBody &aBody, const double aPoint[3], const double aForce[3])
+void SdfastEngine::applyForceBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce)
 {
 	const SdfastBody* sdBody = dynamic_cast<const SdfastBody*>(&aBody);
 
 	// aBody must be an SdfastBody in order to apply a force to it
 	if (sdBody)
 	{
-		int i;
-		double p[3], f[3];
+		SimTK::Vec3 p, f;
 
 		sdBody->transformToSdfastFrame(aPoint, p);
-		for (i = 0; i < 3; i++)
-		{
-			f[i] = aForce[i];
-		}
+		f = aForce;
 
-		_sdpointf(sdBody->getSdfastIndex(), p, f);
+		_sdpointf(sdBody->getSdfastIndex(), &p[0], &f[0]);
 	}
 }
 
@@ -1501,7 +1496,7 @@ void SdfastEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], c
 	int i;
 
 	for (i = 0; i < aN; i++)
-		applyForce(*aBodies[i], aPoints[i], aForces[i]);
+		applyForce(*aBodies[i], Vec3::getAs(aPoints[i]), Vec3::getAs(aForces[i]));
 }
 
 //_____________________________________________________________________________
@@ -1520,7 +1515,7 @@ void SdfastEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], c
 		return;
 
 	int i;
-	double point[3], force[3];
+	SimTK::Vec3 point, force;
 
 	for (i = 0; i < aN; i++)
 	{
@@ -1543,7 +1538,7 @@ void SdfastEngine::applyForcesBodyLocal(int aN, const AbstractBody *aBodies[], c
  * @param aBody Pointer to body.
  * @param aTorque Torque expressed in the inertial frame.
  */
-void SdfastEngine::applyTorque(const AbstractBody &aBody, const double aTorque[3])
+void SdfastEngine::applyTorque(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
 	const SdfastBody* b = dynamic_cast<const SdfastBody*>(&aBody);
 
@@ -1574,7 +1569,7 @@ void SdfastEngine::applyTorques(int aN, const AbstractBody *aBodies[], const dou
 	int i;
 
 	for (i = 0; i < aN; i++)
-		applyTorque(*aBodies[i], aTorques[i]);
+		applyTorque(*aBodies[i], Vec3::getAs(aTorques[i]));
 }
 
 //_____________________________________________________________________________
@@ -1591,7 +1586,7 @@ void SdfastEngine::applyTorques(int aN, const AbstractBody *aBodies[], const dou
 	if (aTorques)
 	{
 		int i;
-		double torque[3];
+		SimTK::Vec3 torque;
 
 		for (i = 0; i < aN; i++)
 		{
@@ -1612,7 +1607,7 @@ void SdfastEngine::applyTorques(int aN, const AbstractBody *aBodies[], const dou
  * @param aBody Pointer to body.
  * @param aTorque Torque expressed in the body-local frame.
  */
-void SdfastEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const double aTorque[3])
+void SdfastEngine::applyTorqueBodyLocal(const AbstractBody &aBody, const SimTK::Vec3& aTorque)
 {
 	const SdfastBody *b = dynamic_cast<const SdfastBody*>(&aBody);
 
@@ -1642,7 +1637,7 @@ void SdfastEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], 
 	int i;
 
 	for (i = 0; i< aN; i++)
-		applyTorqueBodyLocal(*aBodies[i], aTorques[i]);
+		applyTorqueBodyLocal(*aBodies[i], Vec3::getAs(aTorques[i]));
 }
 
 //_____________________________________________________________________________
@@ -1659,7 +1654,7 @@ void SdfastEngine::applyTorquesBodyLocal(int aN, const AbstractBody *aBodies[], 
 	if (aTorques)
 	{
 		int i;
-		double torque[3];
+		SimTK::Vec3 torque;
 
 		for (i = 0; i < aN; i++)
 		{
@@ -1879,7 +1874,7 @@ void SdfastEngine::formEulerTransform(const AbstractBody &aBody, double *rE) con
  * @param rJ
  * @param aRefBody
  */
-void SdfastEngine::formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody) const
+void SdfastEngine::formJacobianTranslation(const AbstractBody &aBody, const SimTK::Vec3& aPoint, double *rJ, const AbstractBody *aRefBody) const
 {
 	throw Exception("SdfastEngine::formJacobianTranslation(const AbstractBody &aBody, const double aPoint[3], double *rJ, const AbstractBody *aRefBody) not yet implemented.");
 }
@@ -1967,7 +1962,7 @@ void SdfastEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3]
  * @param aBodyTo the body the vector will be transformed into
  * @param rPos the vector in the aBodyTo frame is returned here
  */
-void SdfastEngine::transform(const AbstractBody &aBodyFrom, const Array<double>& aVec, const AbstractBody &aBodyTo, Array<double>& rVec) const
+void SdfastEngine::transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const
 {
 	int i;
 
@@ -2051,18 +2046,15 @@ void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const double
  * @param aBodyTo the body the point will be transformed into
  * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
  */
-void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, const AbstractBody &aBodyTo, Array<double>& rPos) const
+void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos, const AbstractBody &aBodyTo, SimTK::Vec3& rPos) const
 {
-	int i;
-	double aPos2[3], rPos2[3];
+	SimTK::Vec3 aPos2, rPos2;
 
-	for (i = 0; i < 3; i++)
-		aPos2[i] = aPos[i];
+	aPos2 = aPos;
 
 	transformPosition(aBodyFrom, aPos2, aBodyTo, rPos2);
 
-	for (i = 0; i < 3; i++)
-		rPos[i] = rPos2[i];
+	rPos = rPos2;
 }
 
 //_____________________________________________________________________________
@@ -2108,18 +2100,15 @@ void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const double
  * @param aPos the XYZ coordinates of the point
  * @param rPos the XYZ coordinates of the point in the ground frame are returned here
  */
-void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const Array<double>& aPos, Array<double>& rPos) const
+void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const
 {
-	int i;
-	double aPos2[3], rPos2[3];
+	SimTK::Vec3 aPos2, rPos2;
 
-	for (i = 0; i < 3; i++)
-		aPos2[i] = aPos[i];
+	aPos2 = aPos;
 
 	transformPosition(aBodyFrom, aPos2, rPos2);
 
-	for (i = 0; i < 3; i++)
-		rPos[i] = rPos2[i];
+	rPos = rPos2;
 }
 
 //_____________________________________________________________________________
@@ -2132,23 +2121,22 @@ void SdfastEngine::transformPosition(const AbstractBody &aBodyFrom, const Array<
  * @param aPoint2 the XYZ coordinates of the second point
  * @return the distance between aPoint1 and aPoint2
  */
-double SdfastEngine::calcDistance(const AbstractBody& aBody1, const Array<double>& aPoint1, const AbstractBody& aBody2, const Array<double>& aPoint2) const
+double SdfastEngine::calcDistance(const AbstractBody& aBody1, const SimTK::Vec3& aPoint1, const AbstractBody& aBody2, const SimTK::Vec3& aPoint2) const
 {
 	const SdfastBody* b1 = dynamic_cast<const SdfastBody*>(&aBody1);
 	const SdfastBody* b2 = dynamic_cast<const SdfastBody*>(&aBody2);
 
 	if (b1 && b2)
 	{
-		double sdpt1[3], sdpt2[3], pos1[3], pos2[3];
+		SimTK::Vec3 sdpt1, sdpt2, pos1, pos2;
 
 		b1->transformToSdfastFrame(aPoint1, sdpt1);
 		b2->transformToSdfastFrame(aPoint2, sdpt2);
 
-		_sdpos(b1->getSdfastIndex(), sdpt1, pos1);
-		_sdpos(b2->getSdfastIndex(), sdpt2, pos2);
+		_sdpos(b1->getSdfastIndex(), &sdpt1[0], &pos1[0]);
+		_sdpos(b2->getSdfastIndex(), &sdpt2[0], &pos2[0]);
 
-		return sqrt((pos1[0] - pos2[0])*(pos1[0] - pos2[0]) + (pos1[1] - pos2[1])*(pos1[1] - pos2[1]) +
-			         (pos1[2] - pos2[2])*(pos1[2] - pos2[2]));
+		return (pos1 - pos2).normSqr();
 	}
 
 	return 0.0;

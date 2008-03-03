@@ -66,7 +66,7 @@ public:
 // DATA
 //=============================================================================
 protected:
-	double _axis[3];
+	SimTK::Vec3 _axis;
 	AxisIndex _axisIndex;
 
 //=============================================================================
@@ -87,8 +87,8 @@ public:
 #endif
    void copyData(const SimmTranslationDof &aDof);
 
-	virtual void setAxis(const double rAxis[3]);
-	virtual void getAxis(double rAxis[3]) const;
+	virtual void setAxis(const SimTK::Vec3& rAxis);
+	virtual void getAxis(SimTK::Vec3& rAxis) const;
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
 	virtual DofType getMotionType() const { return Translational; }

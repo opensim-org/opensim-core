@@ -37,7 +37,7 @@
 #include "osimCommonDLL.h"
 #include <math.h>
 #include <stdio.h>
-
+#include "SimTKcommon.h"
 
 //=============================================================================
 //=============================================================================
@@ -72,12 +72,76 @@ public:
 	//--------------------------------------------------------------------------
 	// VECTOR
 	//--------------------------------------------------------------------------
-	static double Angle(const double *aV1,const double *aV2);
-	static double Normalize(int aN,const double aV[],double rV[]);
-	static double Magnitude(int aN,const double aV[]);
-	static double DotProduct(int aN,const double aV1[],const double aV2[]);
-	static int CrossProduct(double *aV1,double *aV2,double *aV);
-	static void PerpendicularUnitVector(double *aV,double *rV);
+	//_____________________________________________________________________________
+	/**
+	* Find the angle between two vectors:  theta = acos( aV1*aV2/(|aV1|*|aV2|)).
+	*
+	* @param aV1 Vector 1.
+	* @param aV2 Vector 2.
+	* @return Angle between two vectors in radians.
+	*/
+	inline static double Angle(const SimTK::Vec3& aV1, const SimTK::Vec3& aV2){
+		SimTK::Vec3 v1(aV1);	v1.normalize();
+		SimTK::Vec3 v2(aV2);	v2.normalize();
+		return (acos( ~v1 * v2));
+	}
+	//_____________________________________________________________________________
+	/**
+	* Normalize a vector.
+	*
+	* If aV has a magnitude of zero, all elements of rV are set to 0.0.
+	* It is permissible for aV and rV to coincide in memory.
+	*
+	* @param aV Vector to be normalized.
+	* @param rV Result of the normalization.
+	* @return Magnitude of aV.
+	*/
+	inline static double Normalize(int aN,const SimTK::Vec3& aV,SimTK::Vec3& rV){
+		double mag = aV.norm();
+		if (mag ==0) rV = 0.0; else rV = 1/mag * aV;
+		return mag;
+	}
+	/**
+	* Compute the magnitude of a vector.
+	*
+	* @param aV Vector.
+	* @return Square root of the dot product aV*aV.
+	*/
+	inline static double Magnitude(int aN,const SimTK::Vec3& aV){
+		return aV.norm();
+	}
+	//_____________________________________________________________________________
+	/**
+	* Compute the dot product of two vectors.
+	*
+	* If the arguments are not valid (aV1=aV2=NULL), 0.0 is returned.
+	*/
+	//_____________________________________________________________________________
+	inline static double DotProduct(int aN,const SimTK::Vec3& aV1,const SimTK::Vec3& aV2){
+		return ~aV1 * aV2;
+	}
+	//_____________________________________________________________________________
+	/**
+	* Compute the cross product of two vectors.
+	*
+	* If the arguments are not valid (aR=aS=NULL), -1 is returned.
+	*/
+	inline static void CrossProduct(SimTK::Vec3& aV1,SimTK::Vec3& aV2,SimTK::Vec3& aV){
+		 aV = aV1 % aV2;
+	};
+	/**
+	* Get a unit vector that is perpendicular to a specified vector.  The unit
+	* vector is arbitrary, in the sense that it is one of an infinite number of
+	* vectors that are perpendicular to the original specified vector.
+	*
+	* @param aV Input vector.
+	* @param rV Perpendicular unit vector.
+	*/
+	static void PerpendicularUnitVector(SimTK::Vec3& aV, SimTK::Vec3& rV)
+	{
+		SimTK::UnitVec3 unit(aV);
+		rV = unit.perp().asVec3();
+	}
 	static void
 	 Interpolate(int aN,double aT1,double *aY1,double aT2,double *aY2,
 	 double t,double *aY);
@@ -105,9 +169,9 @@ public:
 	// MATRIX
 	//--------------------------------------------------------------------------
 	static int Identity(int aNR,double *rI);
-	static int Assign(int aNR,int aNC,double aScalar,double *rM);
-	static int Assign(int aNR,int aNC,const double *aM,double *rM);
-	static int Add(int aNR,int aNC,const double *aM1,double aScalar,double *aM);
+	//static int Assign(int aNR,int aNC,double aScalar,double *rM);
+	//static int Assign(int aNR,int aNC,const double *aM,double *rM);
+	//static int Add(int aNR,int aNC,const double *aM1,double aScalar,double *aM);
 	static int Add(int aNR,int aNC,const double *aM1,const double *aM2,double *aM);
 	static int Subtract(int aNR,int aNC,const double *aM1,const double *aM2,
 		double *aM);

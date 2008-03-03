@@ -43,6 +43,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 static char* wrapTypeName = "sphere";
 //=============================================================================
@@ -219,18 +220,18 @@ WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 								 const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
- 	ri[3], p2m[3], p1m[3], mp[3], r1n[3], r2n[3],
-	p1p2[3], np2[3], hp2[3], r1m[3], r2m[3], y[3], z[3], n[3],
-	ra[3][3], rrx[3][3], aa[3][3], r1a[3], r2a[3],
-	r1b[3], r2b[3], r1am[3], r2am[3], r1bm[3], r2bm[3],
-        mat[4][4], axis[4], vec[4], rotvec[4], angle, *r11, *r22;
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
+			axis[4], vec[4], rotvec[4], angle, *r11, *r22;
+ 	Vec3 ri, p2m, p1m, mp, r1n, r2n,
+			p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
+			r1b, r2b, r1am, r2am, r1bm, r2bm;
+			
    int i, j, maxit, return_code = wrapped;
    bool far_side_wrap = false;
-   static double origin[] = {0,0,0};
+   static SimTK::Vec3 origin(0,0,0);
 
 	// In case you need any variables from the previous wrap, copy them from
 	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
@@ -399,8 +400,8 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				aWrapResult.r1[i] = r1a[i];
 				aWrapResult.r2[i] = r2a[i];
 			}
-         r11 = r1b;
-         r22 = r2b;
+         r11 = &r1b[0];
+         r22 = &r2b[0];
       }
       else if (j2 > j3 && j2 > j4)
       {
@@ -408,8 +409,8 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				aWrapResult.r1[i] = r1a[i];
 				aWrapResult.r2[i] = r2b[i];
 			}
-         r11 = r1b;
-         r22 = r2a;
+         r11 = &r1b[0];
+         r22 = &r2a[0];
       }
       else if (j3 > j4)
       {
@@ -417,8 +418,8 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				aWrapResult.r1[i] = r1b[i];
 				aWrapResult.r2[i] = r2a[i];
 			}
-         r11 = r1a;
-         r22 = r2b;
+         r11 = &r1a[0];
+         r22 = &r2b[0];
       }
       else
       {
@@ -426,8 +427,8 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 				aWrapResult.r1[i] = r1b[i];
 				aWrapResult.r2[i] = r2b[i];
 			}
-         r11 = r1a;
-         r22 = r2a;
+         r11 = &r1a[0];
+         r22 = &r2a[0];
       }
    }
 
@@ -435,18 +436,18 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
    {
       if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
       {
-         double tt, mm[3], r_squared = _radius * _radius;
-
+         double tt, r_squared = _radius * _radius;
+			Vec3 mm;
          // If either muscle point is on the constrained side, then check for intersection
          // of the muscle line and the cylinder. If there is an intersection, then
          // you've found a mandatory wrap. If not, then if one point is not on the constrained
          // side and the closest point on the line is not on the constrained side, you've
          // found a potential wrap. Otherwise, there is no wrap.
-         rdMath::GetClosestPointOnLineToPoint(&origin[0], &aPoint1[0], p1p2, mm, tt);
+         rdMath::GetClosestPointOnLineToPoint(origin, aPoint1, p1p2, mm, tt);
 
          tt = -tt; // because p1p2 is actually aPoint2->aPoint1
 
-         if (rdMath::CalcDistanceSquaredBetweenPoints(&origin[0], mm) < r_squared && tt > 0.0 && tt < 1.0)
+         if (rdMath::CalcDistanceSquaredBetweenPoints(origin, mm) < r_squared && tt > 0.0 && tt < 1.0)
          {
             return_code = mandatoryWrap;
          }
@@ -465,7 +466,7 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
       if (DSIGN(aPoint1[_wrapAxis]) != _wrapSign || DSIGN(aPoint2[_wrapAxis]) != _wrapSign)
       {
-         double wrapaxis[3], sum_musc[3], sum_r[3];
+         SimTK::Vec3 wrapaxis, sum_musc, sum_r;
 
          for (i = 0; i < 3; i++)
             wrapaxis[i] = (i == _wrapAxis) ? (double) _wrapSign : 0.0;
@@ -480,26 +481,26 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
          {
 				for (i = 0; i < 3; i++)
 					aWrapResult.r1[i] = r1a[i];
-            r11 = r1b;
+            r11 = &r1b[0];
          }
          else
          {
 				for (i = 0; i < 3; i++)
 					aWrapResult.r1[i] = r1b[i];
-            r11 = r1a;
+            r11 = &r1a[0];
          }
 
 			if (Mtx::DotProduct(3, r2am, sum_musc) > Mtx::DotProduct(3, r2bm, sum_musc))
          {
 				for (i = 0; i < 3; i++)
 					aWrapResult.r2[i] = r2a[i];
-            r22 = r2b;
+            r22 = &r2b[0];
          }
          else
          {
 				for (i = 0; i < 3; i++)
 					aWrapResult.r2[i] = r2b[i];
-            r22 = r2a;
+            r22 = &r2a[0];
          }
 
          // flip if necessary:
@@ -539,13 +540,16 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 	angle = acos(Mtx::DotProduct(3, r1n, r2n));
    
    if (far_side_wrap)
-		angle = -(2 * rdMath::PI - angle);
+		angle = -(2 * SimTK_PI - angle);
    
    r1r2 = _radius * angle;
    aWrapResult.wrap_path_length = r1r2;
 
-	Mtx::CrossProduct(r1n, r2n, axis);
-	Mtx::Normalize(3, axis, axis);
+	Vec3 axis3;
+	Mtx::CrossProduct(r1n, r2n, axis3);
+	Mtx::Normalize(3, axis3, axis3);
+
+   for(int ii=0; ii<3; ii++) axis[ii]=axis3[ii];
    axis[3] = 1.0;
 
 	aWrapResult.wrap_pts.setSize(0);
@@ -565,12 +569,12 @@ int WrapSphere::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
    vec[3] = 1.0;
 
    for (i = 0; i < numWrapSegments - 2; i++) {
-		double wangle = angle * (i+1) / (numWrapSegments - 1) * rdMath::DTR;
+		double wangle = angle * (i+1) / (numWrapSegments - 1) * SimTK_DEGREE_TO_RADIAN;
 
-		rdMath::ConvertAxisAngleTo4x4DirCosMatrix(axis, wangle, mat);
+		rdMath::ConvertAxisAngleTo4x4DirCosMatrix(Vec3::getAs(axis), wangle, mat);
 		Mtx::Multiply(4, 4, 1, (double*)mat, (double*)vec, (double*)rotvec);
 
-		double wp[3];
+		SimTK::Vec3 wp;
 		for (j = 0; j < 3; j++)
 			wp[j] = origin[j] + rotvec[j];
 		SimmPoint wppt(wp);

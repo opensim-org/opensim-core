@@ -43,6 +43,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 static char* wrapTypeName = "ellipsoid";
 #define ELLIPSOID_TOLERANCE_1 1e-4     // tolerance for pt_to_ellipsoid() special case detection
@@ -229,17 +230,16 @@ WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 									 const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	int i, j, bestMu;
-	double p1[3], p2[3], m[3], a[3];
-	double p1p2[3], p1m[3], p2m[3], ppm, f1[3], f2[3], aa, bb, cc, disc, l1, l2,
-		vs[3], p1e, p2e, p1c1[3], vs4, dist, t[3], fanWeight = rdMath::MINUS_INFINITY;
-	double r1r2[3], t_sv[3][3], t_c1[3][3];
-	double mu[3];
+	SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;
+	double ppm, aa, bb, cc, disc, l1, l2,
+		p1e, p2e, vs4, dist, fanWeight = rdMath::MINUS_INFINITY;
+	double t_sv[3][3], t_c1[3][3];
 	bool far_side_wrap = false;
-   static double origin[] = {0,0,0};
+   static SimTK::Vec3 origin(0,0,0);
 
 	// In case you need any variables from the previous wrap, copy them from
 	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
@@ -452,14 +452,15 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 			// fan "blade" vectors together to determine c1.  This only works when
 			// the fan is smoothly continuous.  The sharper the discontinuity, the
 			// more jumpy c1 becomes.
-			double v_sum[3] = {0,0,0};
+			SimTK::Vec3 v_sum(0,0,0);
 
 			for (i = 0; i < 3; i++)
 				t_sv[2][i] = aWrapResult.r1[i] + 0.5 * r1r2[i];
 
 			for (i = 1; i < NUM_FAN_SAMPLES - 1; i++)
 			{
-				double v[3], tt = (double) i / NUM_FAN_SAMPLES;
+				SimTK::Vec3 v;
+				double tt = (double) i / NUM_FAN_SAMPLES;
 
 				for (j = 0; j < 3; j++)
 					t_sv[0][j] = aWrapResult.r1[j] + tt * r1r2[j];
@@ -547,15 +548,12 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 		if (DSIGN(dist) != _wrapSign)
 		{
-			double orig_c1[3];
+			SimTK::Vec3 orig_c1=aWrapResult.c1;
 
-			for (i = 0; i < 3; i++)
-				orig_c1[i] = aWrapResult.c1[i];
 
 			aWrapResult.c1[_wrapAxis] = - aWrapResult.c1[_wrapAxis];
 
-			for (i = 0; i < 3; i++)
-				aWrapResult.r1[i] = aWrapResult.r2[i] = aWrapResult.c1[i];
+			aWrapResult.r1 = aWrapResult.r2 = aWrapResult.c1;
 
 			if (EQUAL_WITHIN_ERROR(fanWeight, rdMath::MINUS_INFINITY))
 				fanWeight = 1.0 - (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
@@ -565,12 +563,12 @@ int WrapEllipsoid::wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
 
 			if (fanWeight > 0.0)
 			{
-				double tc1[3], bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
+				SimTK::Vec3 tc1; 
+				double bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
 
 				aWrapResult.c1[_wrapAxis] = aWrapResult.c1[_wrapAxis] + fanWeight * (bisection - aWrapResult.c1[_wrapAxis]);
 
-				for (i = 0; i < 3; i++)
-					tc1[i] = aWrapResult.c1[i];
+				tc1 = aWrapResult.c1;
 
 				findClosestPoint(a[0], a[1], a[2], tc1[0], tc1[1], tc1[2], &aWrapResult.c1[0], &aWrapResult.c1[1], &aWrapResult.c1[2]);
 			}
@@ -596,10 +594,10 @@ calc_wrap_path:
 
 	if (_wrapSign != 0 && aWrapResult.wrap_pts.getSize() > 2 && ! far_side_wrap)
 	{
-		double r1p1[3], r2p2[3], r1w1[3], r2w2[3];
+		SimTK::Vec3 r1p1, r2p2, r1w1, r2w2;
 
-		double *w1 = aWrapResult.wrap_pts.get(1).get();
-		double *w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2).get();
+		SimTK::Vec3& w1 = aWrapResult.wrap_pts.get(1).get();
+		SimTK::Vec3& w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2).get();
 
 		// check for wrong-way wrap by testing angle of first and last
 		// wrap path segments:
@@ -657,11 +655,12 @@ calc_wrap_path:
  * @param vs4 Plane coefficient
  * @return '1' if the point was adjusted, '0' otherwise
  */
-int WrapEllipsoid::calcTangentPoint(double p1e, double r1[], double p1[], double m[],
-												double a[], double vs[], double vs4) const
+int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
+												SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const
 {
 	int i, j, k, nit, nit2, maxit=50, maxit2=1000;
-	double nr1[3], d1, v[4], ee[4], ssqo, ssq, pcos, p1r1[3], p1m[3], dedth[4][4];
+	Vec3 nr1, p1r1, p1m;
+	double d1, v[4], ee[4], ssqo, ssq, pcos, dedth[4][4];
 	double fakt, alpha=0.01, dedth2[4][4], diag[4], ddinv2[4][4], vt[4], dd;
 
 	if (fabs(p1e) < 0.0001)
@@ -856,15 +855,13 @@ int WrapEllipsoid::calcTangentPoint(double p1e, double r1[], double p1[], double
  * @param far_side_wrap Whether or not the wrapping is the long way around
  * @param aWrapResult The wrapping results (tangent points, etc.)
  */
-void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[], double a[], 
-														  double vs[], double vs4, bool far_side_wrap,
+void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+														  SimTK::Vec3& vs, double vs4, bool far_side_wrap,
 														  WrapResult& aWrapResult) const
 {
 	int i, j, k, l, imax, numPathSegments;
-	double u[3], ux[3], mu, a0[3], ar1[3], ar2[3], phi, dphi, phi0, len,
-		r0[3][3], vsy[3], vsz[3], rphi[3][3], t[3], r[3], f1[3], f2[3], dr[3],
-		aa, bb, cc, mu3, s[500][3], dv[3];
-	double desiredSegLength = 0.001;
+	SimTK::Vec3 u, ux, a0, ar1, ar2, vsy, vsz, t, r, f1, f2, dr, dv;
+	double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
 	MAKE_3DVECTOR21(r1, r2, dr);
 	len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
@@ -926,7 +923,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 	phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
 
 	if (far_side_wrap)
-		dphi = - (2 * rdMath::PI - phi0) / (double) numPathSegments;
+		dphi = - (2 * SimTK_PI - phi0) / (double) numPathSegments;
 	else
 		dphi = phi0 / (double) numPathSegments;
 
@@ -996,7 +993,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(double r1[], double r2[], double m[]
 
 	for (i = 0; i < numInteriorPts; i++)
 	{
-		SimmPoint spt(&s[i][0]);
+		SimmPoint spt(Vec3::getAs(&s[i][0]));
 		aWrapResult.wrap_pts.append(spt);
 	}
 

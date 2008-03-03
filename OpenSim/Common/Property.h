@@ -99,7 +99,8 @@ public:
 	enum PropertyType
 	{
 		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
-		BoolArray, IntArray, DblArray, StrArray, ObjArray
+		BoolArray, IntArray, DblArray, StrArray, ObjArray,
+		DblVec3
 	};
 
 private:

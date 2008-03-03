@@ -20,7 +20,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -448,7 +448,7 @@ record(double aT,double *aX,double *aY)
 	int p,I,j;
 	int np = _model->getNumContacts();
 	int n = 6*np;
-	double vec[3];
+	SimTK::Vec3 vec;
 	AbstractBody *a, *b;
 	for(p=0;p<np;p++) {
 
@@ -457,12 +457,12 @@ record(double aT,double *aX,double *aY)
 		// A
 		a = _model->getContactSet()->getContactBodyA(p);
 		_model->getContactSet()->getContactPointA(p,vec);
-		_model->getDynamicsEngine().getPosition(*a,vec,&_points[I]);
+		_model->getDynamicsEngine().getPosition(*a,vec,Vec3::updAs(&_points[I]));
 
 		// B
 		b = _model->getContactSet()->getContactBodyB(p);
 		_model->getContactSet()->getContactPointB(p,vec);
-		_model->getDynamicsEngine().getPosition(*b,vec,&_points[I+3]);
+		_model->getDynamicsEngine().getPosition(*b,vec,Vec3::updAs(&_points[I+3]));
 	}
 	_pStore->append(tReal,n,_points);
 
@@ -474,12 +474,12 @@ record(double aT,double *aX,double *aY)
 		// A
 		a = _model->getContactSet()->getContactBodyA(p);
 		_model->getContactSet()->getContactPointA(p,vec);
-		_model->getDynamicsEngine().getVelocity(*a,vec,&_velocities[I]);
+		_model->getDynamicsEngine().getVelocity(*a,vec,Vec3::updAs(&_velocities[I]));
 
 		// B
 		b = _model->getContactSet()->getContactBodyB(p);
 		_model->getContactSet()->getContactPointB(p,vec);
-		_model->getDynamicsEngine().getVelocity(*b,vec,&_velocities[I+3]);
+		_model->getDynamicsEngine().getVelocity(*b,vec,Vec3::updAs(&_velocities[I+3]));
 	}
 	_vStore->append(tReal,n,_velocities);
 
@@ -492,10 +492,9 @@ record(double aT,double *aX,double *aY)
 		a = _model->getContactSet()->getContactBodyA(p);
 		_model->getContactSet()->getContactForce(p,vec);
 		_model->getDynamicsEngine().transform(*a,vec,_model->getDynamicsEngine().getGroundBody(),vec);
-		Mtx::Assign(1,3,vec,&_forces[I+3]);
-
+		Vec3::updAs(&_forces[I+3]) = vec;
 		// FORCE ON BodyA IN GROUND FRAME
-		Mtx::Multiply(1,3,vec,-1.0,&_forces[I]);
+		Vec3::updAs(&_forces[I]) = -vec;
 	}
 	_fStore->append(tReal,n,_forces);
 
@@ -509,15 +508,15 @@ record(double aT,double *aX,double *aY)
 	int g, index;
 	AbstractBody *bodyA, *bodyB;
 	double resultantForcePoint[3];
-	double totContactForce[3];
-	double totContactTorque[3];
-	double contactForce[3];
-	double contactPosRelCOMLocal[3];
-	double contactPosRelCOMGlobal[3];
+	SimTK::Vec3 totContactForce;
+	SimTK::Vec3 totContactTorque;
+	SimTK::Vec3 contactForce;
+	SimTK::Vec3 contactPosRelCOMLocal;
+	SimTK::Vec3 contactPosRelCOMGlobal;
 	//double contactPosGlobal[3];
 	//double posBodyCOMLocal[3] = {0,0,0};
 	//double posBodyCOMGlobal[3];
-	double contactTorque[3];
+	SimTK::Vec3 contactTorque;
 
 	for(g=0;g<_nResultantForcePointGroups;g++){
 		for(j=0;j<3;j++){
@@ -530,7 +529,7 @@ record(double aT,double *aX,double *aY)
 				bodyB = _model->getContactSet()->getContactBodyB(p);
 				_model->getContactSet()->getContactForce(p,contactForce);
 				_model->getDynamicsEngine().transform(*bodyA,contactForce,_model->getDynamicsEngine().getGroundBody(),contactForce);
-				Mtx::Add(1,3,totContactForce,contactForce,totContactForce);
+				totContactForce+=contactForce;
 				_model->getContactSet()->getContactPointB(p, contactPosRelCOMLocal);
 
 				_model->getDynamicsEngine().transformPosition(*bodyB,contactPosRelCOMLocal,contactPosRelCOMGlobal);
@@ -540,7 +539,7 @@ record(double aT,double *aX,double *aY)
 //				Mtx::Subtract(1,3,contactPosGlobal,posBodyCOMGlobal,contactPosRelCOMGlobal);
 
 				Mtx::CrossProduct(contactPosRelCOMGlobal,contactForce,contactTorque);
-				Mtx::Add(1,3,contactTorque,totContactTorque,totContactTorque);
+				totContactTorque +=contactTorque;
 			}
 		}
 		if(fabs(totContactForce[1])>rdMath::ZERO) {

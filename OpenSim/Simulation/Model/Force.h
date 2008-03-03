@@ -34,7 +34,7 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/VectorFunction.h>
 #include "AbstractActuator.h"
@@ -66,25 +66,25 @@ protected:
 	PropertyStr _propBodyAName;
 	/** Point on BodyA expressed in the body-local frame at which the
 	force is applied. */
-	PropertyDblArray _propPointA;
+	PropertyDblVec3 _propPointA;
 	/** Unit vector expressed in the local frame of BodyA that
 	specifies the direction a positive actuator force is applied to BodyA.
 	(serialized) */
-	PropertyDblArray _propUnitVectorA;
+	PropertyDblVec3 _propUnitVectorA;
 	/** name of BodyB. */
 	PropertyStr _propBodyBName;
 	/** Point on BodyB expressed in the body-local frame at which the
 	force is applied. */
-	PropertyDblArray _propPointB;
+	PropertyDblVec3 _propPointB;
 	/** Optimal force. */
 	PropertyDbl _propOptimalForce;
 
 	// REFERENCES
 	std::string& _bodyAName;
-	Array<double> &_pA;
-	Array<double> &_uA;
+	SimTK::Vec3 &_pA;
+	SimTK::Vec3 &_uA;
 	std::string& _bodyBName;
-	Array<double> &_pB;
+	SimTK::Vec3 &_pB;
 	double &_optimalForce;
 
 	AbstractBody *_bA;
@@ -92,7 +92,7 @@ protected:
 
 	/** Unit vector expressed in the local frame of BodyB that
 	specifies the direction a positive actuator force is applied to BodyB. */
-	double _uB[3];
+	SimTK::Vec3 _uB;
 	/** Pointer to a vector function that contains coordinates of point on
 	BodyA (express in the body-local frame) where force should be applied
 	as a function of time. */
@@ -141,19 +141,19 @@ public:
 	void setBodyA(AbstractBody* aBody);
 	AbstractBody* getBodyA() const;
 	// POINT A
-	void setPointA(const double aPoint[3]);
-	void getPointA(double rPoint[3]) const;
+	void setPointA(const SimTK::Vec3& aPoint);
+	void getPointA(SimTK::Vec3& rPoint) const;
 	// DIRECTION A
-	void setForceDirectionA(const double aDirection[3]);
-	void getForceDirectionA(double rDirection[3]) const;
+	void setForceDirectionA(const SimTK::Vec3& aDirection);
+	void getForceDirectionA(SimTK::Vec3& rDirection) const;
 	// BODY B
 	void setBodyB(AbstractBody* aBody);
 	AbstractBody* getBodyB() const;
 	// POINT B
-	void setPointB(const double aPoint[3]);
-	void getPointB(double rPoint[3]) const;
+	void setPointB(const SimTK::Vec3& aPoint);
+	void getPointB(SimTK::Vec3& rPoint) const;
 	// DIRECTION B
-	void getForceDirectionB(double rDirection[3]) const;
+	void getForceDirectionB(SimTK::Vec3& rDirection) const;
 	// POINT A FUNCTION
 	void setPointAFunction(VectorFunction* aVectorFunction);
 	const VectorFunction* getPointAFunction() const;
@@ -195,7 +195,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	void computeLineOfAction(double aLineOfAction[3]) const;
+	void computeLineOfAction(SimTK::Vec3& aLineOfAction) const;
 
 	OPENSIM_DECLARE_DERIVED(Force, AbstractActuator);
 

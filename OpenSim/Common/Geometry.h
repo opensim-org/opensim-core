@@ -1,5 +1,8 @@
 #ifndef _Geometry_h_
 #define _Geometry_h_
+
+#include "SimTKcommon.h"
+
 // Geometry.h
 // Authors: Ayman Habib
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -104,49 +107,49 @@ public:
 class OSIMCOMMON_API LineGeometry : public Geometry
 {	
 protected:
-	double _point1[3];
-	double _point2[3];
+	SimTK::Vec3 _point1;
+	SimTK::Vec3 _point2;
 public:
-	LineGeometry(double aPoint1[3], double aPoint2[3]):
+	LineGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2):
 	  Geometry()
 	{
-		
 		_analyticType=Line;
-		for(int i=0; i<3; i++){
-			_point1[i] = aPoint1[i];
-			_point2[i] = aPoint2[i];
-		}
+		_point1 = aPoint1;
+		_point2 = aPoint2;
 	}
 	LineGeometry():
-	  Geometry()
+	  Geometry(),
+	  _point1(0.0),
+	  _point2(0.0)
 	{
 		_analyticType=Line;
-		for(int i=0; i<3; i++){
-			_point1[i] = _point2[i] =0.0;
-		}
 	}
 	virtual ~LineGeometry() {}
 	// Get & Set end points
-	void getPoints(double rPoint1[3], double rPoint2[3]) const
+	void getPoints(SimTK::Vec3& rPoint1, SimTK::Vec3& rPoint2) const 
 	{
-		for(int i=0; i<3; i++){
-			rPoint1[i] = _point1[i];
-			rPoint2[i] = _point2[i];
-		}
+		rPoint1 = _point1;
+		rPoint2 = _point2;
 	}
-	void setPoints(double aPoint1[3], double aPoint2[3])
+	void getPoints(double rPoint1[], double rPoint2[]) const // A variant that uses basic types for use by GUI
 	{
-		for(int i=0; i<3; i++){
-			_point1[i] = aPoint1[i];
-			_point2[i] = aPoint2[i];
-		}
+		getPoints(SimTK::Vec3::updAs(rPoint1), SimTK::Vec3::updAs(rPoint2));
+	}
+	void setPoints(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2)
+	{
+		_point1 = aPoint1;
+		_point2 = aPoint2;
+	}
+	void setPoints(double aPoint1[], double aPoint2[])	// A variant that uses basic types for use by GUI
+	{
+		setPoints(SimTK::Vec3::updAs(aPoint1), SimTK::Vec3::updAs(aPoint2));
 	}
 };
 
 class OSIMCOMMON_API ArrowGeometry : public LineGeometry
 {	
 public:
-	ArrowGeometry(double aPoint1[3], double aUnitDirTo[3], double aLength):
+	ArrowGeometry(SimTK::Vec3& aPoint1, SimTK::Vec3& aUnitDirTo, double aLength):
 	  LineGeometry(aPoint1, /* aPoint1+aLength* */aUnitDirTo)
 	{
 		_analyticType = Arrow;

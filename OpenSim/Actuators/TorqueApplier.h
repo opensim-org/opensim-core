@@ -41,7 +41,7 @@ protected:
 	/** Which body segment. */
 	AbstractBody* _body;
 	/** Torque to be applied. */
-	double _torque[3];
+	SimTK::Vec3 _torque;
 	/** Vector function containing torque to be applied (t,x,y,z). */
 	VectorFunction* _torqueFunction;
 	/** Flag to set reference frame of input torque */
@@ -75,8 +75,8 @@ public:
 	//--------------------------------------------------------------------------
 	void setBody(AbstractBody *aBody);
 	AbstractBody* getBody() const;
-	void setTorque(double aTorque[3]);
-	void getTorque(double rPoint[3]) const;
+	void setTorque(const SimTK::Vec3& aTorque);
+	void getTorque(SimTK::Vec3& rPoint) const;
 
 	void setTorqueFunction(VectorFunction* aTorqueFunction);
 	VectorFunction* getTorqueFunction() const;

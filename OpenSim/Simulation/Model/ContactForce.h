@@ -58,61 +58,61 @@ class OSIMSIMULATION_API ContactForce : public Force
 protected:
 	// PROPERTIES
 	/** Surface normal on BodyA expressed in the BodyA frame. */
-	PropertyDblArray _propNormalA;
+	PropertyDblVec3 _propNormalA;
 	/** Surface normal on BodyB expressed in the BodyB frame. */
-	PropertyDblArray _propNormalB;
+	PropertyDblVec3 _propNormalB;
 
 	// REFERENCES
-	Array<double> &_nA;
-	Array<double> &_nB;
+	SimTK::Vec3 &_nA;
+	SimTK::Vec3 &_nB;
 
 
 	/** Normal displacement vector expressed in the BodyA frame. */
-	double _rnA[3];
+	SimTK::Vec3 _rnA;
 	/** Normal distance from PointA to PointB. */
 	double _rn;
 	/** Normal velocity of PointB relative to PointA expressed in the BodyA
 	frame. */
-	double _vnA[3];
+	SimTK::Vec3 _vnA;
 	/** Normal speed of PointB relative to PointA. */
 	double _vn;
 	/** Tangent displacement unit vector expressed in the BodyA frame. */
-	double _tA[3];
+	SimTK::Vec3 _tA;
 	/** Tangential displacement vector expressed in the BodyA frame. */
-	double _rtA[3];
+	SimTK::Vec3 _rtA;
 	/** Tangential distance from PointA to PointB. */
 	double _rt;
 	/** Tangential velocity of PointB relative to PointA expressed in the
 	BodyA frame. */
-	double _vtA[3];
+	SimTK::Vec3 _vtA;
 	// FORCE GEOMETRY
 	/** Total normal force magnitude. */
 	double _fnMag;
 	/** Elastic normal force applied to BodyB expressed in the local frame
 	of BodyA. */
-	double _fnp[3];
+	SimTK::Vec3 _fnp;
 	/** Viscous normal force applied to BodyB expressed in the local frame
 	of BodyA. */
-	double _fnv[3];
+	SimTK::Vec3 _fnv;
 	/** Total ormal force applied to BodyB expressed in the local frame of BodyA. */
-	double _fn[3];
+	SimTK::Vec3 _fn;
 	/** Total tangential force magnitude corrected to be consistent with
 	friction constraints. */
 	double _ftMag;
 	/** Elastic tangential force NOT corrected to enforce friction
 	constraints expressed in the local frame of BodyA. */
-	double _ftp[3];
+	SimTK::Vec3 _ftp;
 	/** Viscous tangential force NOT corrected to enforce friction
 	constraints expressed in the local frame of BodyA. */
-	double _ftv[3];
+	SimTK::Vec3 _ftv;
 	/** Total tangential force applied to BodyB expressed in the local frame
 	of BodyA.  Note that _ftA is not necessarily in the same direction as _tA
 	because of the viscosity component. */
-	double _ft[3];
+	SimTK::Vec3 _ft;
 	/** Correction in the spring force in order to enforce friction
 	constraints.  It is the change made to the force applied to
    BodyA and is expressed in the local frame of BodyA. */
-	double _dfFric[3];
+	SimTK::Vec3 _dfFric;
 	/** Pointer to a vector function that contains the velocity of _pA,
 	expressed in the inertial frame, as a function of time. */
 	VectorFunction *_vAFunction;
@@ -147,30 +147,30 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// NORMAL ON BODY A
-	void setNormalA(const double aNormal[3]);
-	void getNormalA(double rNormal[3]) const;
+	void setNormalA(const SimTK::Vec3& aNormal);
+	void getNormalA(SimTK::Vec3& rNormal) const;
 	// NORMAL ON BODY B
-	void setNormalB(const double aNormal[3]);
-	void getNormalB(double rNormal[3]) const;
+	void setNormalB(const SimTK::Vec3& aNormal);
+	void getNormalB(SimTK::Vec3& rNormal) const;
 	// NORMAL DISPLACEMENT VECTOR
-	void getNormalDisplacement(double rDisplacement[3]) const;
+	void getNormalDisplacement(SimTK::Vec3& rDisplacement) const;
 	// NORMAL DISTANCE
 	double getNormalDistance() const;
 	// NORMAL VELOCITY
-	void getNormalVelocity(double rVelocity[3]) const;
+	void getNormalVelocity(SimTK::Vec3& rVelocity) const;
 	// NORMAL SPEED
 	double getNormalSpeed() const;
 	// TANGENT ON BODY A
-	void getTangent(double rTangent[3]) const;
+	void getTangent(SimTK::Vec3& rTangent) const;
 	// TANGENTIAL DISPLACEMENT VECTOR
-	void getTangentialDisplacement(double rDisplacement[3]) const;
+	void getTangentialDisplacement(SimTK::Vec3& rDisplacement) const;
 	// TANGENTIAL DISTANCE
 	double getTangentialDistance() const;
 	// TANGENTIAL VELOCITY
-	void getTangentialVelocity(double rVelocity[3]) const;
+	void getTangentialVelocity(SimTK::Vec3& rVelocity) const;
 	// FORCE
-	void getNormalForce(double rFP[3],double rFV[3],double rF[3]) const;
-	void getTangentialForce(double rFP[3],double rFV[3],double rF[3]) const;
+	void getNormalForce(SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const;
+	void getTangentialForce(SimTK::Vec3& rFP,SimTK::Vec3& rFV,SimTK::Vec3& rF) const;
 	// TANGENTIAL IMPEDANCE
 	virtual double getInstantaneousTangentialStiffness() const;
 	virtual double getInstantaneousTangentialViscosity() const;
@@ -178,7 +178,7 @@ public:
 	virtual double getInstantaneousNormalStiffness() const;
 	virtual double getInstantaneousNormalViscosity() const;
 	// FRICTION CORRECTION
-	void getFrictionCorrection(double rDF[3]) const;
+	void getFrictionCorrection(SimTK::Vec3& rDF) const;
 	// POINT A VELOCITY FUNCTION
 	void setVelPointAFunction(VectorFunction* aVectorFunction);
 	const VectorFunction* getVelPointAFunction() const;
@@ -208,8 +208,8 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	virtual void
-		computeLineOfActionComponents(double rNormal[3],
-		double rTangential[3]) const;
+		computeLineOfActionComponents(SimTK::Vec3& rNormal,
+		SimTK::Vec3& rTangential) const;
 
 	//--------------------------------------------------------------------------
 	// XML

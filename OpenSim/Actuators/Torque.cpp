@@ -49,7 +49,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // STATICS
@@ -73,7 +73,7 @@ Torque::~Torque()
 Torque::Torque(const string &aBodyAName,const string &aBodyBName) :
 	AbstractActuator(),
 	_bodyAName(_propBodyAName.getValueStr()),
-	_uA(_propUnitVectorA.getValueDblArray()),
+	_uA(_propUnitVectorA.getValueDblVec3()),
 	_bodyBName(_propBodyBName.getValueStr()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bA(NULL),
@@ -100,7 +100,7 @@ Torque::Torque(const string &aBodyAName,const string &aBodyBName) :
 Torque::Torque(const Torque &aForce) :
 	AbstractActuator(aForce),
 	_bodyAName(_propBodyAName.getValueStr()),
-	_uA(_propUnitVectorA.getValueDblArray()),
+	_uA(_propUnitVectorA.getValueDblVec3()),
 	_bodyBName(_propBodyBName.getValueStr()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bA(NULL),
@@ -145,7 +145,7 @@ setNull()
 	bindControl(0, _excitation, "excitation");
 
 	// BODY A
-	_uA[0] = _uA[1] = _uA[2] = 0.0;  _uA[0] = 1.0;
+	_uA = Vec3(1.0, 0., 0.);
 
 	// BODY B
 	_uB[0] = _uB[1] = _uB[2] = 0.0;  _uB[0] = 1.0;
@@ -157,14 +157,14 @@ setNull()
 void Torque::
 setupProperties()
 {
-	double x_axis[3] = { 1.0, 0.0, 0.0 };
+	SimTK::Vec3 x_axis(1.0, 0.0, 0.0 );
 
 	_propBodyAName.setName("body_A");
 	_propertySet.append( &_propBodyAName );
 
 	_propUnitVectorA.setName("direction_A");
-	_propUnitVectorA.setValue(3,x_axis);
-	_propUnitVectorA.setAllowableArraySize(3);
+	_propUnitVectorA.setValue(x_axis);
+	//_propUnitVectorA.setAllowableArraySize(3);
 	_propertySet.append( &_propUnitVectorA );
 
 	_propBodyBName.setName("body_B");
@@ -198,7 +198,7 @@ operator=(const Torque &aForce)
 	setBodyA(aForce.getBodyA());
 
 	// DIRCTION A
-	aForce.getDirectionA(&_uA[0]);
+	aForce.getDirectionA(_uA);
 
 	// BODY B
 	setBodyB(aForce.getBodyB());
@@ -260,9 +260,9 @@ getBodyA() const
  * from being applied.
  */
 void Torque::
-setDirectionA(const double aDirection[3])
+setDirectionA(const SimTK::Vec3& aDirection)
 {
-	double mag = Mtx::Normalize(3,aDirection,&_uA[0]);
+	double mag = Mtx::Normalize(3,aDirection,_uA);
 	if(mag==rdMath::ZERO) {
 		printf("Torque.setForceDirection: WARN- direction has a magnitude ");
 		printf("of less than %lf.\n",rdMath::ZERO);
@@ -277,11 +277,9 @@ setDirectionA(const double aDirection[3])
  * @param rPoint Point x, y, and z values.
  */
 void Torque::
-getDirectionA(double rDirection[3]) const
+getDirectionA(SimTK::Vec3& rDirection) const
 {
-	rDirection[0] = _uA[0];
-	rDirection[1] = _uA[1];
-	rDirection[2] = _uA[2];
+	rDirection = _uA;
 }
 
 //-----------------------------------------------------------------------------
@@ -325,11 +323,9 @@ getBodyB() const
  * @param rPoint Point x, y, and z values.
  */
 void Torque::
-getDirectionB(double rDirection[3]) const
+getDirectionB(SimTK::Vec3& rDirection) const
 {
-	rDirection[0] = _uB[0];
-	rDirection[1] = _uB[1];
-	rDirection[2] = _uB[2];
+	rDirection = _uB;
 }
 
 //-----------------------------------------------------------------------------
@@ -399,8 +395,8 @@ computeActuation()
 void Torque::
 computeDirectionForBodyB()
 {
-	_model->getDynamicsEngine().transform(*_bA,&_uA[0],*_bB,_uB);
-	Mtx::Multiply(1,3,_uB,-1.0,_uB);
+	_model->getDynamicsEngine().transform(*_bA,_uA,*_bB,_uB);
+	_uB*=-1.0;
 }
 //_____________________________________________________________________________
 /**
@@ -411,9 +407,9 @@ computeDirectionForBodyB()
 void Torque::
 computeSpeed()
 {
-	double angVel[3];
+	SimTK::Vec3 angVel;
 	_model->getDynamicsEngine().getAngularVelocityBodyLocal(*_bB,angVel);
-	_speed = -Mtx::DotProduct(3,&_uA[0],angVel);
+	_speed = -Mtx::DotProduct(3,_uA,angVel);
 }
 
 
@@ -429,15 +425,13 @@ apply()
 {	
 	// TORQUE ON BODY A
 	if(_bA!=&_model->getDynamicsEngine().getGroundBody()) {
-		double fA[3];
-		Mtx::Multiply(1,3,&_uA[0],_force,fA);
+		SimTK::Vec3 fA=_force*_uA;
 		_model->getDynamicsEngine().applyTorqueBodyLocal(*_bA,fA);
 	}
 
 	// FORCE ON BODY B
 	if(_bB!=&_model->getDynamicsEngine().getGroundBody()) {
-		double fB[3];
-		Mtx::Multiply(1,3,_uB,_force,fB);
+		SimTK::Vec3 fB=_force*_uB;
 		_model->getDynamicsEngine().applyTorqueBodyLocal(*_bB,fB);
 	}
 }

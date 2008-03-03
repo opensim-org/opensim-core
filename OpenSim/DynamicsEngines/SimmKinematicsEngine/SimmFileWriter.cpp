@@ -60,6 +60,8 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
+using SimTK::Mat33;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -101,7 +103,7 @@ SimmFileWriter::~SimmFileWriter()
  * @param aGravity the gravity vector
  * @return Reference to the text label
  */
-const string& SimmFileWriter::getGravityLabel(double aGravity[3]) const
+const string& SimmFileWriter::getGravityLabel(const SimTK::Vec3& aGravity) const
 {
 	static string gravityLabels[] = {"-X","+X","-Y","+Y","-Z","+Z",""};
 
@@ -192,7 +194,7 @@ bool SimmFileWriter::writeJointFile(const string& aFileName) const
    out << "solver_max_iterations " << options.maxIterations << endl;
 #endif
 
-	double gravity[3];
+	SimTK::Vec3 gravity;
 	_model->getGravity(gravity);
 	const string& gravityLabel = getGravityLabel(gravity);
 
@@ -310,11 +312,11 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
 	aStream << "beginsegment " << aBody.getName() << endl;
 	aStream << "mass " << aBody.getMass() << endl;
 
-	double massCenter[3];
+	SimTK::Vec3 massCenter;
 	aBody.getMassCenter(massCenter);
 	aStream << "masscenter " << massCenter[0] << " " << massCenter[1] << " " << massCenter[2] << endl;
 
-	double inertia[3][3];
+	Mat33 inertia;
 	aBody.getInertia(inertia);
 	aStream << "inertia " << inertia[0][0] << " " << inertia[0][1] << " " << inertia[0][2] << endl;
 	aStream << "        " << inertia[1][0] << " " << inertia[1][1] << " " << inertia[1][2] << endl;
@@ -354,7 +356,7 @@ bool SimmFileWriter::writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet,
 		}
 	}
 
-	double scaleFactors[3];
+	SimTK::Vec3 scaleFactors;
 	aBody.getDisplayer()->getScaleFactors(scaleFactors);
 
 	aStream << "scale " << scaleFactors[0] << " " << scaleFactors[1] << " " << scaleFactors[2] << endl;
@@ -387,9 +389,9 @@ void SimmFileWriter::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) co
 			aStream << "active " << (wo->getActive() ? "yes" : "no") << endl;
 		aStream << "translation " << wo->getTranslation()[0] << " " <<
 			wo->getTranslation()[1] << " " << wo->getTranslation()[2] << endl;
-		aStream << "xyz_body_rotation " << wo->getXYZBodyRotation()[0] * rdMath::RTD <<
-			" " << wo->getXYZBodyRotation()[1] * rdMath::RTD <<
-			" " << wo->getXYZBodyRotation()[2] * rdMath::RTD << endl;
+		aStream << "xyz_body_rotation " << wo->getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
+			" " << wo->getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
+			" " << wo->getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
 		aStream << "endwrapobject" << endl << endl;
 	}
 }
@@ -463,12 +465,12 @@ bool SimmFileWriter::writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, ofst
 			if ((spline = dynamic_cast<NatCubicSpline*>(dofs->get(i)->getFunction())))
 			{
 				if (dofs->get(i)->getMotionType() == AbstractDof::Rotational)
-					conversionY = rdMath::RTD;
+					conversionY = SimTK_RADIAN_TO_DEGREE;
 				else
 					conversionY = 1.0;
 				const AbstractCoordinate* coord = dofs->get(i)->getCoordinate();
 				if (coord && (coord->getMotionType() == AbstractDof::Rotational))
-					conversionX = rdMath::RTD;
+					conversionX = SimTK_RADIAN_TO_DEGREE;
 				else
 					conversionX = 1.0;
 				aStream << "beginfunction f" << funcIndex[i] << endl;
@@ -498,7 +500,7 @@ bool SimmFileWriter::writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunc
 	double conversion;
 
 	if (aCoordinate.getMotionType() == AbstractDof::Rotational)
-		conversion = rdMath::RTD;
+		conversion = SimTK_RADIAN_TO_DEGREE;
 	else
 		conversion = 1.0;
 
@@ -678,7 +680,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 	aStream << "beginpoints" << endl;
 	for (int i = 0; i < pts.getSize(); i++)
 	{
-		Array<double>& attachment = pts.get(i)->getAttachment();
+		Vec3& attachment = pts.get(i)->getAttachment();
 		MuscleViaPoint* mvp = dynamic_cast<MuscleViaPoint*>(pts.get(i));
 		aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pts.get(i)->getBody()->getName();
 		if (mvp)
@@ -686,7 +688,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			Array<double>& range = mvp->getRange();
 			const AbstractCoordinate* coord = mvp->getCoordinate();
 			if (coord->getMotionType() == AbstractDof::Rotational)
-				aStream << " ranges 1 " << coord->getName() << " (" << range[0] * rdMath::RTD << ", " << range[1] * rdMath::RTD << ")" << endl;
+				aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
 			else
 				aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
 		}
@@ -713,7 +715,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
 		aStream << "tendon_slack_length " << szh->getTendonSlackLength() << endl;
-		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * rdMath::RTD << endl;
+		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
 		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
 		aStream << "timescale " << szh->getTimeScale() << endl;
 		if (!szh->getMuscleModelIndexUseDefault())
@@ -774,7 +776,7 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		aStream << "max_force " << sdm->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << sdm->getOptimalFiberLength() << endl;
 		aStream << "tendon_slack_length " << sdm->getTendonSlackLength() << endl;
-		aStream << "pennation_angle " << sdm->getPennationAngleAtOptimalFiberLength() * rdMath::RTD << endl;
+		aStream << "pennation_angle " << sdm->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
 		aStream << "activation_time_constant " << sdm->getActivationTimeConstant() << endl;
 		aStream << "deactivation_time_constant " << sdm->getDeactivationTimeConstant() << endl;
 		aStream << "Vmax " << sdm->getVmax() << endl;

@@ -36,24 +36,21 @@
 #include <math.h>
 #include "rdMath.h"
 #include "Mtx.h"
-#include "Line.h"
-#include "Plane.h"
 #include "SimmMacros.h"
 
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
+using SimTK::Mat33;
 
 //=============================================================================
 // EXPORTED STATIC CONSTANTS
 //=============================================================================
-const double rdMath::PI = acos(-1.0);
 const double rdMath::PI_2 = asin(1.0);
-const double rdMath::DTR = PI/180.0;
-const double rdMath::RTD = 180.0/PI;
 const double rdMath::SMALL = 1.0e-8;
 const double rdMath::ZERO = 1.0e-14;
-const double rdMath::NAN = 1.357931415e-29;
+const double rdMath::NAN = SimTK::CNT<SimTK::Real>::getNaN();
 const double rdMath::INFINITY = 1.0e30;
 const double rdMath::MINUS_INFINITY = -INFINITY;
 const double rdMath::PLUS_INFINITY = INFINITY;
@@ -271,7 +268,7 @@ Interpolate(double aX1,double aY1,double aX2,double aY2,double aX)
  * if the line and plane do not intersect.
  * @return -1 if the line and plane do not intersect; 0 if the line and plane
  * intersect at a point; 1 if the line is coincident with the plane.
- */
+ *
 int rdMath::
 ComputeIntersection(const Line *aLine,const Plane *aPlane,double rPoint[3])
 {
@@ -279,7 +276,7 @@ ComputeIntersection(const Line *aLine,const Plane *aPlane,double rPoint[3])
 	if(aPlane==NULL) return(-1);
 
 	// DENOMINATOR- DOT OF LINE DIRECTION AND PLANE NORMAL
-	double direction[3],normal[3];
+	SimTK::Vec3 direction,normal;
 	aLine->getDirection(direction);
 	aPlane->getNormal(normal);
 	double denom = Mtx::DotProduct(3,direction,normal);
@@ -307,7 +304,7 @@ ComputeIntersection(const Line *aLine,const Plane *aPlane,double rPoint[3])
 		return(1);
 	}
 }
-
+*/
 //_____________________________________________________________________________
 /**
  * Compute a normal to the plane described by three points (P1, P2, P3).
@@ -332,18 +329,16 @@ void rdMath::
 ComputeNormal(double aP1X,double aP1Y,double aP1Z,
 				  double aP2X,double aP2Y,double aP2Z,
 				  double aP3X,double aP3Y,double aP3Z,
-				  double rNormal[3])
+				  SimTK::Vec3& rNormal)
 {
-	if(rNormal==NULL) return;
-
 	// VECTOR FROM 1 TO 2
-	double p12[3];
+	SimTK::Vec3 p12;
 	p12[0] = aP2X - aP1X;
 	p12[1] = aP2Y - aP1Y;
 	p12[2] = aP2Z - aP1Z;
 
 	// VECTOR FROM 2 TO 3
-	double p23[3];
+	SimTK::Vec3 p23;
 	p23[0] = aP3X - aP2X;
 	p23[1] = aP3Y - aP2Y;
 	p23[2] = aP3Z - aP2Z;
@@ -379,33 +374,29 @@ ComputeNormal(double aP1X,double aP1Y,double aP1Z,
  * @return false if lines are parallel, true otherwise
  */
 bool rdMath::
-IntersectLines(double p1[3], double p2[3], double p3[3], double p4[3],
-					double pInt1[3], double& s, double pInt2[3], double& t)
+IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p4,
+					SimTK::Vec3& pInt1, double& s, SimTK::Vec3& pInt2, double& t)
 {
-	double cross_prod[3], vec1[3], vec2[3];
+	SimTK::Vec3 cross_prod, vec1, vec2;
 
-	vec1[0] = p2[0] - p1[0];
-	vec1[1] = p2[1] - p1[1];
-	vec1[2] = p2[2] - p1[2];
+	vec1 = p2 - p1;
+
 	double mag1 = Mtx::Normalize(3, vec1, vec1);
 
-	vec2[0] = p4[0] - p3[0];
-	vec2[1] = p4[1] - p3[1];
-	vec2[2] = p4[2] - p3[2];
+	vec2 = p4 - p3;
+
 	double mag2 = Mtx::Normalize(3, vec2, vec2);
 
 	Mtx::CrossProduct(vec1, vec2, cross_prod);
 
-	double denom = cross_prod[0] * cross_prod[0] +
-		cross_prod[1] * cross_prod[1] +
-		cross_prod[2] * cross_prod[2];
+	double denom = cross_prod.normSqr();
 
 	if (EQUAL_WITHIN_ERROR(denom,0.0)) {
 		s = t = rdMath::NAN;
 		return false;
 	}
 
-	double mat[3][3];
+	Mat33 mat;
 
 	mat[0][0] = p3[0] - p1[0];
 	mat[0][1] = p3[1] - p1[1];
@@ -419,9 +410,7 @@ IntersectLines(double p1[3], double p2[3], double p3[3], double p4[3],
 
 	t = CALC_DETERMINANT(mat) / denom;
 
-	pInt2[0] = p3[0] + t * (vec2[0]);
-	pInt2[1] = p3[1] + t * (vec2[1]);
-	pInt2[2] = p3[2] + t * (vec2[2]);
+	pInt2 = p3 + t * (vec2);
 
 	mat[1][0] = vec2[0];
 	mat[1][1] = vec2[1];
@@ -429,9 +418,7 @@ IntersectLines(double p1[3], double p2[3], double p3[3], double p4[3],
 
 	s = CALC_DETERMINANT(mat) / denom;
 
-	pInt1[0] = p1[0] + s * (vec1[0]);
-	pInt1[1] = p1[1] + s * (vec1[1]);
-	pInt1[2] = p1[2] + s * (vec1[2]);
+	pInt1 = p1 + s * (vec1);
 
 	s /= mag1;
 	t /= mag2;
@@ -448,11 +435,11 @@ IntersectLines(double p1[3], double p2[3], double p3[3], double p4[3],
  * @return true if line segment and plane intersect, false otherwise
  */
 bool rdMath::
-IntersectLineSegPlane(double pt1[3], double pt2[3], 
-							 double plane[3], double d,
-							 double inter[3])
+IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2, 
+							 SimTK::Vec3& plane, double d,
+							 SimTK::Vec3& inter)
 {
-	double vec[3];
+	SimTK::Vec3 vec;
 
 	MAKE_3DVECTOR(pt1,pt2,vec);
 	double dotprod = Mtx::DotProduct(3, vec,plane);
@@ -478,7 +465,7 @@ IntersectLineSegPlane(double pt1[3], double pt2[3],
  * @param quat the quaternion
  */
 void rdMath::
-ConvertAxisAngleToQuaternion(const double axis[3], double angle, double quat[4])
+ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis, double angle, double quat[4])
 {
 	quat[0] = axis[0];
 	quat[1] = axis[1];
@@ -509,27 +496,19 @@ ConvertAxisAngleToQuaternion(const double axis[3], double angle, double quat[4])
  * @param t parameterized distance from linePt along line to closestPt
  */
 void rdMath::
-GetClosestPointOnLineToPoint(double pt[3], double linePt[3], double line[3],
-									  double closestPt[3], double& t)
+GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
+									  SimTK::Vec3& closestPt, double& t)
 {
-	double v1[3], v2[3];
+	SimTK::Vec3 v1, v2;
 
-	v1[0] = pt[0] - linePt[0];
-	v1[1] = pt[1] - linePt[1];
-	v1[2] = pt[2] - linePt[2];
+	v1 = pt - linePt;
 
-	v2[0] = line[0];
-	v2[1] = line[1];
-	v2[2] = line[2];
-
+	v2 = line;
 	double mag = Mtx::Normalize(3, v1, v1);
 	double mag2 = Mtx::Normalize(3, v2, v2);
 	t = Mtx::DotProduct(3, v1, v2) * mag;
 
-	closestPt[0] = linePt[0] + t * v2[0];
-	closestPt[1] = linePt[1] + t * v2[1];
-	closestPt[2] = linePt[2] + t * v2[2];
-
+	closestPt = linePt + t * v2;
 	t = t / mag2;
 }
 
@@ -561,11 +540,13 @@ Make3x3DirCosMatrix(double angle, double mat[][3])
  * @param mat the matrix
  */
 void rdMath::
-ConvertAxisAngleTo4x4DirCosMatrix(const double axis[3], double angle, double mat[][4])
+ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4])
 {
-	double normAxis[3];
+	SimTK::Vec3 normAxis;
 
-	Mtx::Identity(4, (double*)mat);
+	//Mtx::Identity(4, (double*)mat);
+	SimTK::Mat44 mat44((double*)mat);
+	mat44 = 1.0;
 	Mtx::Normalize(3, axis, normAxis);
 
 	double cl = cos(angle);
@@ -591,13 +572,9 @@ ConvertAxisAngleTo4x4DirCosMatrix(const double axis[3], double angle, double mat
  * @return the square of the distance
  */
 double rdMath::
-CalcDistanceSquaredBetweenPoints(double point1[], double point2[])
+CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 {
-	double vec[3];
-
-	vec[0] = point2[0] - point1[0];
-	vec[1] = point2[1] - point1[1];
-	vec[2] = point2[2] - point1[2];
+	SimTK::Vec3 vec = point2 - point1;
 
 	return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
 }
@@ -610,9 +587,10 @@ CalcDistanceSquaredBetweenPoints(double point1[], double point2[])
  * @return the square of the distance
  */
 double rdMath::
-CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[])
+CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
 {
-	double ptemp[3], t;
+	double t;
+	Vec3 ptemp;
 
 	// find the closest point on line
 	GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
@@ -626,7 +604,7 @@ CalcDistanceSquaredPointToLine(double point[], double linePt[], double line[])
  * @param angle the amount to rotate, in radians
  */
 void rdMath::
-RotateMatrixAxisAngle(double matrix[][4], const double axis[3], double angle)
+RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle)
 {
     double quat[4];
 
@@ -683,7 +661,7 @@ RotateMatrixXBodyFixed(double matrix[][4], double angle)
    // append rotation about local x-axis to matrix 'matrix'
    double quat[4];
    
-   ConvertAxisAngleToQuaternion(matrix[0], angle, quat);
+   ConvertAxisAngleToQuaternion(Vec3::getAs(matrix[0]), angle, quat);
    RotateMatrixQuaternion(matrix, quat);
 }
 
@@ -697,7 +675,7 @@ RotateMatrixYBodyFixed(double matrix[][4], double angle)
    // append rotation about local y-axis to matrix 'matrix'
    double quat[4];
    
-   ConvertAxisAngleToQuaternion(matrix[1], angle, quat);
+   ConvertAxisAngleToQuaternion(Vec3::getAs(matrix[1]), angle, quat);
    RotateMatrixQuaternion(matrix, quat);
 }
 
@@ -711,7 +689,7 @@ RotateMatrixZBodyFixed(double matrix[][4], double angle)
    // append rotation about local z-axis to matrix 'matrix'
    double quat[4];
    
-   ConvertAxisAngleToQuaternion(matrix[2], angle, quat);
+   ConvertAxisAngleToQuaternion(Vec3::getAs(matrix[2]), angle, quat);
    RotateMatrixQuaternion(matrix, quat);
 }
 

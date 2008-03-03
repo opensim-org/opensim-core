@@ -157,6 +157,7 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 
 using namespace OpenSim;
+using namespace SimTK;
 %}
 
 %feature("director") OpenSim::SimtkAnimationCallback;

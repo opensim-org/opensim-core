@@ -42,11 +42,13 @@
 #include "XMLParsingException.h"
 #include "Property.h"
 #include "PropertyObj.h"
+#include "PropertyDblVec3.h"
 #include "IO.h"
 
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 //=============================================================================
 // STATICS
@@ -681,6 +683,17 @@ template<class T> void UpdateXMLNodeArrayProperty(const Property *aProperty, DOM
 	XMLNode::SetValueArray<T>(elmt,value.getSize(),value.get());
 }
 
+void UpdateXMLNodeVec3(const Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	if(!elmt && !aProperty->getUseDefault()) {
+		elmt = XMLNode::AppendNewElementWithComment(aNode, aName, "", aProperty->getComment());
+	} else if (elmt && !aProperty->getComment().empty()) {
+		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
+	}
+	// The following is a hack to reuse the code in SetValueArray<double> for Vec3
+	XMLNode::SetValueArray<double>(elmt,3,&((PropertyDblVec3*)aProperty)->getValueDblVec3()[0]);
+}
 //-----------------------------------------------------------------------------
 // UPDATE OBJECT
 //-----------------------------------------------------------------------------
@@ -721,7 +734,7 @@ updateFromXMLNode()
 		Property *property = _propertySet.get(i);
 
 		// TYPE
-		Property::PropertyType type = property->getType();
+		Property::PropertyType type = property->getType();	
 
 		// NAME
 		string name = property->getName();
@@ -758,7 +771,9 @@ updateFromXMLNode()
 			break;
 		// DblArray
 		case(Property::DblArray) :
+		case(Property::DblVec3) :
 			UpdateFromXMLNodeArrayProperty<double>(property,_node,name);
+			break;
 			break;
 		// StrArray
 		case(Property::StrArray) :
@@ -1035,6 +1050,10 @@ updateXMLNode(DOMElement *aParent, int aNodeIndex)
 		// DblArray
 		case(Property::DblArray) :
 			UpdateXMLNodeArrayProperty<double>(property,_node,name);
+			break;
+		// DblVec3
+		case(Property::DblVec3) :
+			UpdateXMLNodeVec3(property,_node,name);
 			break;
 		// StrArray
 		case(Property::StrArray) :

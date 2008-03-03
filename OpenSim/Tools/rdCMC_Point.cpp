@@ -60,7 +60,7 @@ rdCMC_Point::~rdCMC_Point()
 /**
  * Constructor.
  */
-rdCMC_Point::rdCMC_Point(AbstractBody *aBody, double aPoint[3]) :
+rdCMC_Point::rdCMC_Point(AbstractBody *aBody, SimTK::Vec3& aPoint) :
 	rdCMC_Task()
 {
 	// NULL
@@ -109,9 +109,9 @@ setNull()
  * Compute the desired accelerations.
  */
 void rdCMC_Point::
-computeDesiredAccelerations(double time,double acc[])
+computeDesiredAccelerations(double time,SimTK::Vec3& acc)
 {
-	double posErr[3], velErr[3];
+	SimTK::Vec3 posErr, velErr;
 	computePositionError(time,posErr);
 	computeVelocityError(time,velErr);
 	for (int i=0;i<3;i++) {
@@ -125,9 +125,9 @@ computeDesiredAccelerations(double time,double acc[])
  * Compute the current position error
  */
 void rdCMC_Point::
-computePositionError(double time,double posErr[])
+computePositionError(double time,SimTK::Vec3& posErr)
 {
-	double pos[3];
+	SimTK::Vec3 pos;
 	_model->getDynamicsEngine().getPosition(*_body,_point,pos);
 	for (int i=0;i<3;i++) {
 		posErr[i] = _pTrk[i]->evaluate(0,time) - pos[i];
@@ -139,9 +139,9 @@ computePositionError(double time,double posErr[])
  * Compute the current velocity error
  */
 void rdCMC_Point::
-computeVelocityError(double time,double velErr[])
+computeVelocityError(double time,SimTK::Vec3& velErr)
 {
-	double vel[3];
+	SimTK::Vec3 vel;
 	_model->getDynamicsEngine().getVelocity(*_body,_point,vel);
 	for (int i=0;i<3;i++) {
 		velErr[i] = _pTrk[i]->evaluate(1,time) - vel[i];

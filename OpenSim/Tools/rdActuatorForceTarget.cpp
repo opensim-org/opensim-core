@@ -171,7 +171,7 @@ prepareToOptimize(double *x)
 		_lapackB = new double[Am];
 		_lapackSingularValues = new double[Am];
 		// based on lapack documentation but multiplied by 10 to make it bigger yet (they recommended it be bigger than the minimum)
-		_lapackLWork = 10*(3*Am + rdMath::Max(2*nf,Am)); 
+		_lapackLWork = 10*(3*Am + max(2*nf,Am)); 
 		_lapackWork = new double[_lapackLWork];
 	}
 

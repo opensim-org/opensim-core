@@ -19,11 +19,11 @@
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/Common/VectorFunction.h>
 #include "LinearSpring.h"
-
+#include "SimTKcommon.h"
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -139,11 +139,9 @@ getTargetVelocity() const
  * @param aK Vector of three values of k.
  */
 void LinearSpring::
-setKValue(double aK[3])
+setKValue(const SimTK::Vec3& aK)
 {
-	int i;
-	for(i=0;i<3;i++)
-		_k[i] = aK[i];
+	_k = aK;
 }
 //_____________________________________________________________________________
 /**
@@ -152,9 +150,9 @@ setKValue(double aK[3])
  * @return aK.
  */
 void LinearSpring::
-getKValue(double aK[3]) const
+getKValue(SimTK::Vec3& aK) const
 {
-	memcpy(aK,_k,3*sizeof(double));
+	memcpy(&aK[0],&_k[0],3*sizeof(double));
 }
 
 //-----------------------------------------------------------------------------
@@ -167,11 +165,9 @@ getKValue(double aK[3]) const
  * @param aK Vector of three values of b.
  */
 void LinearSpring::
-setBValue(double aB[3])
+setBValue(const SimTK::Vec3& aB)
 {
-	int i;
-	for(i=0;i<3;i++)
-		_b[i] = aB[i];
+	_b = aB;
 
 }
 //_____________________________________________________________________________
@@ -181,9 +177,9 @@ setBValue(double aB[3])
  * @return aB.
  */
 void LinearSpring::
-getBValue(double aB[3]) const
+getBValue(SimTK::Vec3& aB) const
 {
-	memcpy(aB,_b,3*sizeof(double));
+	memcpy(&aB[0],&_b[0],3*sizeof(double));
 }
 
 //-----------------------------------------------------------------------------
@@ -302,8 +298,10 @@ computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreFor
 	int nu = _model->getNumSpeeds();
 	Array<double> t(0.0,1);
 	Array<double> q(0.0,nq),u(0.0,nu);
-	Array<double> pGlobal(0.0,3),pLocal(0.0,3);
-	Array<double> vGlobal(0.0,3),vLocal(0.0,3);
+	Vec3 pGlobal(0.0, 0., 0.);
+	Vec3 pLocal(0.0, 0., 0.);
+	Vec3 vGlobal(0.0, 0., 0.);
+	Vec3 vLocal(0.0, 0., 0.);
 	Storage pStore,pGlobalStore,vGlobalStore;
 
 	// CREATE THE TARGET POSITION AND VELOCITY FUNCTIONS
@@ -316,9 +314,9 @@ computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreFor
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);
 
 		// Get global position and velocity
-		_pointFunction->evaluate(t,pLocal);
-		_model->getDynamicsEngine().getPosition(*_body,&pLocal[0],&pGlobal[0]);
-		_model->getDynamicsEngine().getVelocity(*_body,&pLocal[0],&vGlobal[0]);
+		_pointFunction->evaluate(&t[0],&pLocal[0]);
+		_model->getDynamicsEngine().getPosition(*_body,pLocal,pGlobal);
+		_model->getDynamicsEngine().getVelocity(*_body,pLocal,vGlobal);
 
 		// Append to storage
 		pGlobalStore.append(t[0],3,&pGlobal[0]);
@@ -375,8 +373,8 @@ void LinearSpring::
 applyActuation(double aT,double *aX,double *aY)
 {
 	//CALCULATE FORCE AND APPLY
-	double dx[3],dv[3];
-	double force[3];
+	SimTK::Vec3 dx,dv;
+	SimTK::Vec3 force;
 	double scaleFactor;
 
 	int i;
@@ -385,12 +383,12 @@ applyActuation(double aT,double *aX,double *aY)
 	Array<double> vcomGlobal(0.0,3);
 	Array<double> vpGlobal(0.0,3),vLocalGlobal(0.0,3);
 	Array<double> treal(0.0,1);
-	Array<double> pLocal(0.0,3);
+	Vec3 pLocal(0.0);
 	Array<double> vLocal(0.0,3);
 	Array<double> pTarget(0.0,3);
 	Array<double> vTarget(0.0,3);
-	Array<double> pGlobal(0.0,3);
-	Array<double> vGlobal(0.0,3);
+	Vec3 pGlobal(0.0);
+	Vec3 vGlobal(0.0);
 	
 	treal[0] = aT*_model->getTimeNormConstant();
 	
@@ -403,9 +401,9 @@ applyActuation(double aT,double *aX,double *aY)
 	if((aT>=getStartTime()) && (aT<getEndTime())){
 
 		if(_pointFunction!=NULL) {
-			_pointFunction->evaluate(treal,pLocal);
+			_pointFunction->evaluate(&treal[0],&pLocal[0]);
 			_pointFunction->evaluate(treal,vLocal,derivWRT);
-			setPoint(&pLocal[0]);
+			setPoint(pLocal);
 		}
 
 		if(_targetPosition!=NULL) {
@@ -423,15 +421,15 @@ applyActuation(double aT,double *aX,double *aY)
 		}
 
 		// GET GLOBAL POSITION AND VELOCITY
-		_model->getDynamicsEngine().getPosition(*_body,&pLocal[0],&pGlobal[0]);
-		_model->getDynamicsEngine().getVelocity(*_body,&pLocal[0],&vGlobal[0]);
+		_model->getDynamicsEngine().getPosition(*_body,pLocal,pGlobal);
+		_model->getDynamicsEngine().getVelocity(*_body,pLocal,vGlobal);
 	
 		if(_scaleFunction != NULL){
 			scaleFactor = _scaleFunction->evaluate(0,aT*_model->getTimeNormConstant());
 			setScaleFactor(scaleFactor);
 		}
-		Mtx::Subtract(1,3,&pTarget[0],&pGlobal[0],dx);
-		Mtx::Subtract(1,3,&vTarget[0],&vGlobal[0],dv);
+		dx=Vec3::getAs(&pTarget[0])-pGlobal;// Mtx::Subtract(1,3,&pTarget[0],&pGlobal[0],dx);
+		dv=Vec3::getAs(&vTarget[0])-vGlobal;//Mtx::Subtract(1,3,&vTarget[0],&vGlobal[0],dv);
 
 		for(i=0;i<3;i++){
 			force[i] = _scaleFactor*(_k[i]*dx[i] + _b[i]*dv[i]);
@@ -445,8 +443,8 @@ applyActuation(double aT,double *aX,double *aY)
 		//}
 		if(fabs(Mtx::Magnitude(3,force)) >= _threshold) {
 			//cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
-			_model->getDynamicsEngine().applyForce(*_body,&pLocal[0],force);
-			if(_recordAppliedLoads) _appliedForceStore->append(aT,3,_force);
+			_model->getDynamicsEngine().applyForce(*_body,pLocal,force);
+			if(_recordAppliedLoads) _appliedForceStore->append(aT,_force);
 		}
 
 	}	

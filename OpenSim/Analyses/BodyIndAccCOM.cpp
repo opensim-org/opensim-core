@@ -334,8 +334,8 @@ computeBodyCOMAccelerations()
 	double posVec[3];
 	double ivelVec[3];
 	double iposVec[3];
-	double b_velVec[3];
-	double b_posVec[3];
+	SimTK::Vec3 b_velVec;
+	SimTK::Vec3 b_posVec;
 
 	nc = 	getNumComponents();
 	double *accVec = new double[nc*3];
@@ -367,7 +367,7 @@ computeBodyCOMAccelerations()
 			for(body=0;body<_aN;body++) {
 				bodyMass = _aBodyList[body]->getMass();
 				if (c==0){ // only need to do this once for each time step
-					double posCOM[3];
+					SimTK::Vec3 posCOM;
 					_aBodyList[body]->getMassCenter(posCOM);
 					_model->setStates(statedataVec);
 					_model->getDynamicsEngine().getPosition(*_aBodyList[body],posCOM,b_posVec);

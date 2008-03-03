@@ -22,7 +22,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // DEFINES
@@ -289,15 +289,15 @@ computeBodyAccelerations()
 	int np = _model->getNumContacts();
 
 	// GRAVITY
-	double g[3];
-	double g0[] = { 0.0, 0.0, 0.0 };
+	SimTK::Vec3 g;
+	SimTK::Vec3 g0(0.0, 0.0, 0.0);
 	_model->getGravity(g);
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
 	int i,j,c,I,J;
 	AbstractBody *bodyB;
-	double pointB[3];
+	SimTK::Vec3 pointB;
 	double t;
 	StateVector *yVec;
 	double *y = new double[ny];
@@ -308,7 +308,7 @@ computeBodyAccelerations()
 	double *indAcc = new double[6*nb];
 	double *initVel = new double[6*nb];
 	double *initPos = new double[6*nb];
-	double acc[3],angAcc[3], vel[3], angVel[3], pos[3], angPos[3];
+	SimTK::Vec3 acc,angAcc, vel, angVel, pos, angPos;
 	double dirCos[3][3];
 
 	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
@@ -368,7 +368,7 @@ computeBodyAccelerations()
 					{
 						body = bs->get(bsi);
 
-						double com[3];
+						SimTK::Vec3 com;
 						body->getMassCenter(com);
 
 						engine.getVelocity(*body,com,vel);
@@ -382,18 +382,18 @@ computeBodyAccelerations()
 						// DEGREES?
 						if(getInDegrees()) {
 							for(j=0;j<3;j++) {
-								angVel[j] *= rdMath::RTD;
-								angPos[j] *= rdMath::RTD;	
+								angVel[j] *= SimTK_RADIAN_TO_DEGREE;
+								angPos[j] *= SimTK_RADIAN_TO_DEGREE;	
 							}
 						}
 	
 						// FILL ARRAY
 						I = Mtx::ComputeIndex(bodyIndex,6,0);
-						memcpy(&initVel[I],vel,3*sizeof(double));
-						memcpy(&initVel[I+3],angVel,3*sizeof(double));
+						memcpy(&initVel[I],&vel[0],3*sizeof(double));
+						memcpy(&initVel[I+3],&angVel[0],3*sizeof(double));
 					
-						memcpy(&initPos[I],pos,3*sizeof(double));
-						memcpy(&initPos[I+3],angPos,3*sizeof(double));
+						memcpy(&initPos[I],&pos[0],3*sizeof(double));
+						memcpy(&initPos[I+3],&angPos[0],3*sizeof(double));
 						bodyIndex++;
 					}
 
@@ -415,7 +415,7 @@ computeBodyAccelerations()
 					J = Mtx::ComputeIndex(j,3,0);
 					bodyB = _model->getContactSet()->getContactBodyB(j);
 					_model->getContactSet()->getContactPointB(j,pointB);
-					engine.applyForce(*bodyB,pointB,&fe[J]);
+					engine.applyForce(*bodyB,pointB,Vec3::getAs(&fe[J]));
 				}
 			}
 
@@ -429,7 +429,7 @@ computeBodyAccelerations()
 			{
 				body = bs->get(bsi);
 				// COMPUTE
-				double com[3];
+				SimTK::Vec3 com;
 				body->getMassCenter(com);
 				engine.getAcceleration(*body,com,acc);
 				engine.getAngularAccelerationBodyLocal(*body,angAcc);
@@ -437,14 +437,14 @@ computeBodyAccelerations()
 				// DEGREES?
 				if(getInDegrees()) {
 					for(j=0;j<3;j++) {
-						angAcc[j] *= rdMath::RTD;
+						angAcc[j] *= SimTK_RADIAN_TO_DEGREE;
 					}
 				}
 
 				// FILL ARRAY
 				I = Mtx::ComputeIndex(bodyIndex,6,0);
-				memcpy(&indAcc[I],acc,3*sizeof(double));
-				memcpy(&indAcc[I+3],angAcc,3*sizeof(double));
+				memcpy(&indAcc[I],&acc[0],3*sizeof(double));
+				memcpy(&indAcc[I+3],&angAcc[0],3*sizeof(double));
 				bodyIndex++;
 			}
 	

@@ -97,13 +97,13 @@ Transform::Transform(const double aMat44[4][4])
 }
 
 // Construct a transform to rotate around an arbitrary axis with specified angle
-Transform::Transform(const double r, const AnglePreference preference, const double axis[3])
+Transform::Transform(const double r, const AnglePreference preference, const SimTK::Vec3& axis)
 {
 	double aa = axis[X] * axis[X];
 	double bb = axis[Y] * axis[Y];
 	double cc = axis[Z] * axis[Z];
 
-	double rInRadians = (preference==Radians)? r : (r * rdMath::DTR);
+	double rInRadians = (preference==Radians)? r : (r * SimTK_DEGREE_TO_RADIAN);
 	double sinTheta = sin(rInRadians);
 	double cosTheta = cos(rInRadians);
 	double omCos = 1.0 - cosTheta;
@@ -155,7 +155,7 @@ Transform& Transform::operator=(const Transform &aTransform)
  *
  */
 void Transform::
-getPosition(double pos[3]) const
+getPosition(SimTK::Vec3& pos) const
 {
 	for(int i=0; i<3; i++)
 		pos[i] = _matrix4[3][i];  //JPL 9/15/05: moved translation from last column to last row
@@ -166,7 +166,7 @@ getPosition(double pos[3]) const
  *
  */
 void Transform::
-setPosition(const double pos[3])
+setPosition(const SimTK::Vec3& pos)
 {
 	for(int i=0; i<3; i++)
 		_matrix4[3][i]=pos[i];  //JPL 9/15/05: moved translation from last column to last row
@@ -245,7 +245,7 @@ void Transform::
 rotateX(double r, const AnglePreference preference)
 {
 	// Convert angle to radians as this's what low level functions use
-	double rInRadians = (preference==Radians)? r : (r * rdMath::DTR);
+	double rInRadians = (preference==Radians)? r : (r * SimTK_DEGREE_TO_RADIAN);
 	double RotationMatrix[4][4];
 	Mtx::Identity(4, (double *)RotationMatrix);
 		// COMPUTE SIN AND COS
@@ -267,7 +267,7 @@ void Transform::
 rotateY(double r, const AnglePreference preference)
 {
 	// Convert angle to radians as this's what low level functions use
-	double rInRadians = (preference==Radians)? r : (r * rdMath::DTR);
+	double rInRadians = (preference==Radians)? r : (r * SimTK_DEGREE_TO_RADIAN);
 	double RotationMatrix[4][4];
 	Mtx::Identity(4, (double *)RotationMatrix);
 		// COMPUTE SIN AND COS
@@ -276,7 +276,9 @@ rotateY(double r, const AnglePreference preference)
 	RotationMatrix[0][0] = RotationMatrix[2][2] = c;
 	RotationMatrix[2][0] = s;
 	RotationMatrix[0][2] = -s;
+
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, (double *)RotationMatrix, (double *)_matrix4);
+
 	_translationOnly = false;
 }
 //_____________________________________________________________________________
@@ -288,7 +290,7 @@ void Transform::
 rotateZ(double r, const AnglePreference preference)
 {
 	// Convert angle to radians as this's what low level functions use
-	double rInRadians = (preference==Radians)? r : (r * rdMath::DTR);
+	double rInRadians = (preference==Radians)? r : (r * SimTK_DEGREE_TO_RADIAN);
 	double RotationMatrix[4][4];
 	Mtx::Identity(4, (double *)RotationMatrix);
 		// COMPUTE SIN AND COS
@@ -297,7 +299,9 @@ rotateZ(double r, const AnglePreference preference)
 	RotationMatrix[0][0] = RotationMatrix[1][1] = c;
 	RotationMatrix[0][1] = s;
 	RotationMatrix[1][0] = -s;
+
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, (double *)RotationMatrix, (double *)_matrix4);
+
 	_translationOnly = false;
 }
 //_____________________________________________________________________________
@@ -307,10 +311,12 @@ rotateZ(double r, const AnglePreference preference)
  *
  */
 void Transform::
-rotateAxis(double r, const AnglePreference preference, const double axis[3])
+rotateAxis(double r, const AnglePreference preference, const SimTK::Vec3& axis)
 {
 	Transform RotationMatrix(r, preference, axis);
+
 	Mtx::Multiply(4, 4, 4, (double *)_matrix4, RotationMatrix.getMatrix(), (double *)_matrix4);
+
 	_translationOnly = false;
 }
 //_____________________________________________________________________________
@@ -321,7 +327,7 @@ rotateAxis(double r, const AnglePreference preference, const double axis[3])
 void Transform::
 rotateXBodyFixed(double r, const AnglePreference preference)
 {
-	double axis[3];
+	SimTK::Vec3 axis;
 	// the local X axis is the first row in the matrix
 	axis[0] = _matrix4[0][0];
 	axis[1] = _matrix4[0][1];
@@ -336,7 +342,7 @@ rotateXBodyFixed(double r, const AnglePreference preference)
 void Transform::
 rotateYBodyFixed(double r, const AnglePreference preference)
 {
-	double axis[3];
+	SimTK::Vec3 axis;
 	// the local Y axis is the second row in the matrix
 	axis[0] = _matrix4[1][0];
 	axis[1] = _matrix4[1][1];
@@ -351,7 +357,7 @@ rotateYBodyFixed(double r, const AnglePreference preference)
 void Transform::
 rotateZBodyFixed(double r, const AnglePreference preference)
 {
-	double axis[3];
+	SimTK::Vec3 axis;
 	// the local Z axis is the third row in the matrix
 	axis[0] = _matrix4[2][0];
 	axis[1] = _matrix4[2][1];
@@ -395,7 +401,7 @@ translateZ(const double tZ)
  *
  */
 void Transform::
-translate(const double t[3])
+translate(const SimTK::Vec3& t)
 {
 	for (int i=0; i < 3; i++)
 		_matrix4[3][i] += t[i];  //JPL 9/15/05: moved translation from last column to last row
@@ -474,7 +480,7 @@ void Transform::transformPoint(double pt[3]) const
 	pt[Y] = ty;
 }
 
-void Transform::transformPoint(Array<double>& pt) const
+void Transform::transformPoint(SimTK::Vec3& pt) const
 {
 	double tx = pt[X] * _matrix4[0][0] + pt[Y] * _matrix4[1][0] + pt[Z] * _matrix4[2][0] + _matrix4[3][0];
 	double ty = pt[X] * _matrix4[0][1] + pt[Y] * _matrix4[1][1] + pt[Z] * _matrix4[2][1] + _matrix4[3][1];
@@ -494,7 +500,7 @@ void Transform::transformVector(double vec[3]) const
 	vec[Y] = ty;
 }
 
-void Transform::transformVector(Array<double>& vec) const
+void Transform::transformVector(SimTK::Vec3& vec) const
 {
 	double tx = vec[X] * _matrix4[0][0] + vec[Y] * _matrix4[1][0] + vec[Z] * _matrix4[2][0];
 	double ty = vec[X] * _matrix4[0][1] + vec[Y] * _matrix4[1][1] + vec[Z] * _matrix4[2][1];

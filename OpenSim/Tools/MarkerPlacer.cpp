@@ -42,7 +42,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -376,10 +376,10 @@ void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
 				SimmPoint& globalMarker = frame->getMarker(index);
 				if (globalMarker.isVisible())
 				{
-					double pt[3], pt2[3], *globalPt = globalMarker.get();
+					Vec3 pt, pt2;
+					Vec3 globalPt = globalMarker.get();
 					double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
-					for (int k = 0; k < 3; k++)
-						pt[k] = globalPt[k] * conversionFactor;
+					pt = conversionFactor*globalPt;
 					engine.transformPosition(engine.getGroundBody(), pt, *modelMarker->getBody(), pt2);
 					modelMarker->setOffset(pt2);
 				}

@@ -42,9 +42,9 @@ protected:
 	/** Which body segment. */
 	AbstractBody* _body;
 	/** Point of force application. */
-	double _point[3];
+	SimTK::Vec3 _point;
 	/** Force to be applied. */
-	double _force[3];
+	SimTK::Vec3 _force;
 	/** VectorFunction containing points of force application (t,x,y,z). */
 	VectorFunction* _pointFunction;
 	/** VectorFunction containing force to be applied (t,x,y,z). */
@@ -81,10 +81,10 @@ public:
 	//--------------------------------------------------------------------------
 	void setBody(AbstractBody *aBody);
 	AbstractBody* getBody() const;
-	void setPoint(double aPoint[3]);
-	void getPoint(double rPoint[3]) const;
-	void setForce(double aForce[3]);
-	void getForce(double rPoint[3]) const;
+	void setPoint(const SimTK::Vec3& aPoint);
+	void getPoint(SimTK::Vec3& rPoint) const;
+	void setForce(const SimTK::Vec3& aForce);
+	void getForce(SimTK::Vec3& rPoint) const;
 
 	void setForceFunction(VectorFunction* aForceFunction);
 	VectorFunction* getForceFunction() const;

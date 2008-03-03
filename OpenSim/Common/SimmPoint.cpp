@@ -55,12 +55,11 @@ SimmPoint::SimmPoint()
 /**
  * Constructor from a set of XYZ coordinates.
  */
-SimmPoint::SimmPoint(double coords[3])
+SimmPoint::SimmPoint(const SimTK::Vec3& coords)
 {
 	setNull();
 
-	for (int i = 0; i < 3; i++)
-		_location[i] = coords[i];
+	_location = coords;
 }
 
 //_____________________________________________________________________________
@@ -74,8 +73,7 @@ SimmPoint::SimmPoint(const SimmPoint& aPoint) :
 {
 	setNull();
 
-	for (int i = 0; i < 3; i++)
-		_location[i] = aPoint._location[i];
+	_location = aPoint._location;
 }
 
 //_____________________________________________________________________________
@@ -125,8 +123,7 @@ SimmPoint& SimmPoint::operator=(const SimmPoint &aPoint)
 	// BASE CLASS
 	Object::operator=(aPoint);
 
-	for (int i = 0; i < 3; i++)
-		_location[i] = aPoint._location[i];
+	_location = aPoint._location;
 
 	return(*this);
 }
@@ -139,8 +136,7 @@ SimmPoint& SimmPoint::operator=(const SimmPoint &aPoint)
  */
 SimmPoint& SimmPoint::operator+=(const SimmPoint &aPoint)
 {
-	for (int i = 0; i < 3; i++)
-		_location[i] += aPoint._location[i];
+	_location += aPoint._location;
 
 	return(*this);
 }
@@ -153,8 +149,7 @@ SimmPoint& SimmPoint::operator+=(const SimmPoint &aPoint)
  */
 SimmPoint& SimmPoint::operator/=(double factor)
 {
-	for (int i = 0; i < 3; i++)
-		_location[i] /= factor;
+	_location /= factor;
 
 	return(*this);
 }
@@ -185,9 +180,7 @@ void SimmPoint::set(double x, double y, double z)
  */
 void SimmPoint::scale(double aScaleFactor)
 {
-	_location[0] *= aScaleFactor;
-	_location[1] *= aScaleFactor;
-	_location[2] *= aScaleFactor;
+	_location *= aScaleFactor;
 }
 
 //_____________________________________________________________________________
@@ -199,9 +192,9 @@ void SimmPoint::scale(double aScaleFactor)
  */
 bool SimmPoint::isVisible() const
 {
-	if (EQUAL_WITHIN_ERROR(_location[0], rdMath::NAN) ||
-		 EQUAL_WITHIN_ERROR(_location[1], rdMath::NAN) ||
-		 EQUAL_WITHIN_ERROR(_location[2], rdMath::NAN))
+	if (rdMath::isNAN(_location[0]) ||
+		 rdMath::isNAN(_location[1]) ||
+		 rdMath::isNAN(_location[2]))
 	{
 		return false;
 	}

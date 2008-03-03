@@ -31,6 +31,7 @@
 
 #include "osimCommonDLL.h"
 #include "Object.h"
+#include "SimTKcommon.h"
 
 namespace OpenSim { 
 
@@ -89,7 +90,7 @@ public:
 	// Transform from a 4x4 Matrix
 	Transform(const double aMat44[4][4]);
 	// Construct a transform to rotate around an arbitrary axis with specified angle
-	Transform(const double r, const AnglePreference preference, const double axis[3]);
+	Transform(const double r, const AnglePreference preference, const SimTK::Vec3& axis);
 	virtual ~Transform();
 	Transform* copy() const;
 
@@ -108,8 +109,12 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET  
 	//--------------------------------------------------------------------------
-	void getPosition(double pos[3]) const;
-	void setPosition(const double pos[3]);
+	void getPosition(SimTK::Vec3& pos) const;
+	void getPosition(double pos[3]) const
+	{
+		getPosition(SimTK::Vec3::updAs(pos));
+	}
+	void setPosition(const SimTK::Vec3& pos);
 	void getOrientation(double rOrientation[3][3]) const;
 	void setOrientation(const double aOrientation[3][3]);
 	void setIdentity();
@@ -118,19 +123,19 @@ public:
 	void rotateX(double r, const AnglePreference preference);
 	void rotateY(double r, const AnglePreference preference);
 	void rotateZ(double r, const AnglePreference preference);
-	void rotateAxis(double r, const AnglePreference preference, const double axis[3]);
+	void rotateAxis(double r, const AnglePreference preference, const SimTK::Vec3& axis);
 	void rotateXBodyFixed(double r, const AnglePreference preference);
 	void rotateYBodyFixed(double r, const AnglePreference preference);
 	void rotateZBodyFixed(double r, const AnglePreference preference);
 	void translateX(const double t);
 	void translateY(const double t);
 	void translateZ(const double t);
-	void translate(const double t[3]);
+	void translate(const SimTK::Vec3& t);
 
 	void transformPoint(double pt[3]) const;
-	void transformPoint(Array<double>& pt) const;
+	void transformPoint(SimTK::Vec3& pt) const;
 	void transformVector(double vec[3]) const;
-	void transformVector(Array<double>& vec) const;
+	void transformVector(SimTK::Vec3& vec) const;
 
 	double* getMatrix() { return &_matrix4[0][0]; } // Pete
 	void getMatrix(double aMat[]) const;

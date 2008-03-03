@@ -227,11 +227,9 @@ getBody() const
  * @param aTorque External torque to be applied.
  */
 void TorqueApplier::
-setTorque(double aTorque[3])
+setTorque(const SimTK::Vec3& aTorque)
 {
-	_torque[0] = aTorque[0];
-	_torque[1] = aTorque[1];
-	_torque[2] = aTorque[2];
+	_torque = aTorque;
 }
 //_____________________________________________________________________________
 /**
@@ -240,11 +238,9 @@ setTorque(double aTorque[3])
  * @return aTorque
  */
 void TorqueApplier::
-getTorque(double rTorque[3]) const
+getTorque(SimTK::Vec3& rTorque) const
 {
-	rTorque[0] = _torque[0];
-	rTorque[1] = _torque[1];
-	rTorque[2] = _torque[2];
+	rTorque = _torque;
 }
 //-----------------------------------------------------------------------------
 // TORQUE FUNCTION
@@ -396,7 +392,7 @@ getInputTorquesInGlobalFrame() const
 void TorqueApplier::
 applyActuation(double aT,double *aX,double *aY)
 {
-	double torque[3] = {0,0,0};
+	SimTK::Vec3 torque(0,0,0);
 	double treal = aT*_model->getTimeNormConstant();
 
 	if(_model==NULL) {
@@ -408,7 +404,7 @@ applyActuation(double aT,double *aX,double *aY)
 	if((aT>=getStartTime()) && (aT<getEndTime())){
 
 		if(_torqueFunction!=NULL) {
-			_torqueFunction->evaluate(&treal,torque);
+			_torqueFunction->evaluate(&treal,&torque[0]);
 			setTorque(torque);
 		}
 	
@@ -418,7 +414,7 @@ applyActuation(double aT,double *aX,double *aY)
 			_model->getDynamicsEngine().applyTorque(*_body,_torque);
 		}
 
-		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,_torque);
+		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
 
 	}	
 }

@@ -16,7 +16,7 @@
 
 
 using namespace OpenSim;
-
+using SimTK::Vec3;
 
 //==============================================================================
 // CONSTRUCTION
@@ -119,7 +119,10 @@ setValues(int aN,int aID[],double aV[][3])
 	int i,j;
 	for(i=0;i<aN;i++) {
 		for(j=0;j<3;j++) {
-			if(_pc[j].getID() == aID[i])  _pc[j].setValue(aV[i]);
+			if(_pc[j].getID() == aID[i]){  
+				Vec3 aVi = Vec3::getAs(aV[i]);
+				_pc[j].setValue(aVi);
+			}
 		}
 	}
 
@@ -138,15 +141,13 @@ void BodyConstraint::
 constructConstraintsForPoint1()
 {
 	// GET VECTOR FROM P0 to P1.
-	double r1[3];
-	Mtx::Subtract(1,3,_pc[1].getPoint(),_pc[0].getPoint(),r1);
+	SimTK::Vec3 r1=_pc[1].getPoint()-_pc[0].getPoint();
 
 	// FIND CONSTRAINT DIRECTION IN P0 THAT IS MOST ORTHOGONAL TO r
-	double *cs =
-		findMostOrthogonal(&_pc[0],r1);
+	SimTK::Vec3 cs = Vec3::getAs(findMostOrthogonal(&_pc[0],r1));
 
 	// CONSTRAINT DIRECTIONS
-	double c0[3],c1[3];
+	SimTK::Vec3 c0,c1;
 	Mtx::CrossProduct(r1,cs,c0);
 	Mtx::CrossProduct(c0,r1,c1);
 
@@ -170,12 +171,11 @@ void BodyConstraint::
 constructConstraintsForPoint2()
 {
 	// GET VECTOR FROM P0 to P1
-	double r01[3],r12[3];
-	Mtx::Subtract(1,3,_pc[1].getPoint(),_pc[0].getPoint(),r01);
-	Mtx::Subtract(1,3,_pc[2].getPoint(),_pc[1].getPoint(),r12);
+	SimTK::Vec3 r01=_pc[1].getPoint()-_pc[0].getPoint();
+	SimTK::Vec3 r12=_pc[2].getPoint()-_pc[1].getPoint();
 
 	// CONSTRAINT DIRECTIONS
-	double c0[3];
+	SimTK::Vec3 c0;
 	Mtx::CrossProduct(r01,r12,c0);
 	Mtx::Normalize(3,c0,c0);
 
@@ -189,7 +189,7 @@ constructConstraintsForPoint2()
  * orthogonal to the provided vector.
  */
 double* BodyConstraint::
-findMostOrthogonal(PointConstraint *aPC,double aV[3])
+findMostOrthogonal(PointConstraint *aPC,SimTK::Vec3& aV)
 {
 	// CORSS PRODUCTS
 	double theta0 = fabs( Mtx::Angle(aV,aPC->getC0()) );
@@ -197,21 +197,21 @@ findMostOrthogonal(PointConstraint *aPC,double aV[3])
 	double theta2 = fabs( Mtx::Angle(aV,aPC->getC2()) );
 
 	// CLOSSEST TO PI/4
-	double pi4 = rdMath::PI/4.0;
+	double pi4 = SimTK_PI/4.0;
 	double d0 = fabs( theta0 - pi4 );
 	double d1 = fabs( theta1 - pi4 );
 	double d2 = fabs( theta2 - pi4 );
 
 	// COMPARE
-	double *cs = aPC->getC0();
+	double *cs = &aPC->getC0()[0];
 	if(d1<d0) {
-		cs = aPC->getC1();
+		cs = &aPC->getC1()[0];
 		if(d2<d1) {
-			cs = aPC->getC2();
+			cs = &aPC->getC2()[0];
 			return(cs);
 		}
 	} else if(d2<d0) {
-		cs = aPC->getC2();
+		cs = &aPC->getC2()[0];
 		return(cs);
 	}
 

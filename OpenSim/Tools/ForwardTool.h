@@ -8,6 +8,7 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -149,17 +150,17 @@ protected:
 	PropertyDbl _torqueThresholdProp;
 	double &_torqueThreshold;
 	/** Stiffness for linear corrective springs. */
-	PropertyDblArray _kLinProp;
-	Array<double> &_kLin;
+	PropertyDblVec3 _kLinProp;
+	SimTK::Vec3 &_kLin;
 	/** Damping for linear corrective springs. */
-	PropertyDblArray _bLinProp;
-	Array<double> &_bLin;
+	PropertyDblVec3 _bLinProp;
+	SimTK::Vec3 &_bLin;
 	/** Stiffness for torsional corrective springs. */
-	PropertyDblArray _kTorProp;
-	Array<double> &_kTor;
+	PropertyDblVec3 _kTorProp;
+	SimTK::Vec3 &_kTor;
 	/** Damping for torsional corrective springs. */
-	PropertyDblArray _bTorProp;
-	Array<double> &_bTor;
+	PropertyDblVec3 _bTorProp;
+	SimTK::Vec3 &_bTor;
 
 	// INTERNAL WORK ARRAYS
 	/** Model integrand.  Make it a pointer so we can print results from a separate function. */

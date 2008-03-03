@@ -37,6 +37,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -46,7 +47,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 SimmRotationDof::SimmRotationDof() :
-   _axis(_axisProp.getValueDblArray())
+   _axis(_axisProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();
@@ -68,7 +69,7 @@ SimmRotationDof::~SimmRotationDof()
  */
 SimmRotationDof::SimmRotationDof(const SimmRotationDof &aDof) :
    AbstractDof(aDof),
-   _axis(_axisProp.getValueDblArray())
+   _axis(_axisProp.getValueDblVec3())
 {
 	setNull();
 	setupProperties();
@@ -117,10 +118,10 @@ void SimmRotationDof::setNull()
  */
 void SimmRotationDof::setupProperties()
 {
-	const double defaultAxis[] = {1.0, 0.0, 0.0};
+	const SimTK::Vec3 defaultAxis(1.0, 0.0, 0.0);
 	_axisProp.setName("axis");
-	_axisProp.setValue(3, defaultAxis);
-	_axisProp.setAllowableArraySize(3);
+	_axisProp.setValue(defaultAxis);
+	//_axisProp.setAllowableArraySize(3);
 	_propertySet.append(&_axisProp);
 }
 
@@ -152,11 +153,9 @@ SimmRotationDof& SimmRotationDof::operator=(const SimmRotationDof &aDof)
  *
  * @param aAxis Rranslation axis.
  */
-void SimmRotationDof::setAxis(const double aAxis[3])
+void SimmRotationDof::setAxis(const SimTK::Vec3& aAxis)
 {
-	_axis[0] = aAxis[0];
-	_axis[1] = aAxis[1];
-	_axis[2] = aAxis[2];
+	_axis = aAxis;
 }
 //_____________________________________________________________________________
 /**
@@ -164,11 +163,9 @@ void SimmRotationDof::setAxis(const double aAxis[3])
  *
  * @param rAxis the rotation axis is returned here.
  */
-void SimmRotationDof::getAxis(double rAxis[3]) const
+void SimmRotationDof::getAxis(SimTK::Vec3& rAxis) const
 {
-	rAxis[0] = _axis[0];
-	rAxis[1] = _axis[1];
-	rAxis[2] = _axis[2];
+	rAxis = _axis;
 }
 
 //_____________________________________________________________________________

@@ -18,7 +18,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTANTS
@@ -238,7 +238,8 @@ computeContactPowers()
 	int V,F;
 	int nfrc = 3*np;
 	double t;
-	double v[3],*vel;
+	SimTK::Vec3 v;
+	double *vel;
 	double *frc = new double[nfrc];
 	double *pwr = new double[np+1];
 	StateVector *velVec;
@@ -261,8 +262,8 @@ computeContactPowers()
 			for(pwr[np]=0.0,p=0;p<np;p++) {
 				V = Mtx::ComputeIndex(p,6,0);
 				F = Mtx::ComputeIndex(p,3,0);
-				Mtx::Subtract(1,3,&vel[V+3],&vel[V],v);
-				pwr[p] = Mtx::DotProduct(3,v,&frc[F]);
+				v = Vec3::getAs(&vel[V+3]) - Vec3::getAs(&vel[V]); //Mtx::Subtract(1,3,&vel[V+3],&vel[V],&v[0]);
+				pwr[p] = Mtx::DotProduct(3,v,Vec3::getAs(&frc[F]));
 				pwr[np] += pwr[p];
 			}
 

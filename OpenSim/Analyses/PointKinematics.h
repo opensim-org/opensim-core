@@ -20,6 +20,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 
 const int PointKinematicsNAME_LENGTH = 256;
@@ -54,12 +55,12 @@ private:
 protected:
 	// Properties
 	PropertyStr _bodyNameProp;
-	PropertyDblArray _pointProp;
+	PropertyDblVec3 _pointProp;
 	PropertyStr _pointNameProp;
 
 	// References
 	std::string &_bodyName;
-	Array<double> &_point;
+	SimTK::Vec3 &_point;
 	std::string &_pointName;
 
 	double *_dy;
@@ -101,12 +102,12 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// BODY
-	void setBodyPoint(const std::string& aBody, double aPoint[3]);
+	void setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint);
 	void setBody(AbstractBody* aBody);
 	AbstractBody* getBody();
 	// POINT
-	void setPoint(double aPoint[3]);
-	void getPoint(double rPoint[3]);
+	void setPoint(const SimTK::Vec3& aPoint);
+	void getPoint(SimTK::Vec3& rPoint);
 	// POINT NAME
 	void setPointName(const char *aName);
 	const std::string &getPointName();

@@ -84,10 +84,10 @@ public:
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 
-	virtual void scale(Array<double>& aScaleFactors) { }
+	virtual void scale(const SimTK::Vec3& aScaleFactors) { }
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
 
-	virtual int wrapLine(Array<double>& aPoint1, Array<double>& aPoint2,
+	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
 
 protected:

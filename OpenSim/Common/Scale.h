@@ -39,6 +39,7 @@
 #include "PropertyDblArray.h"
 #include "PropertyDbl.h"
 #include "PropertyBool.h"
+#include "PropertyDblVec3.h"
 
 //=============================================================================
 /*
@@ -58,14 +59,14 @@ class OSIMCOMMON_API Scale : public Object
 protected:
 	// PROPERTIES
 	/** A list of 3 scale factors */
-	PropertyDblArray	_propScaleFactors;
+	PropertyDblVec3	_propScaleFactors;
 	/** Name of object to scale */
 	PropertyStr		_propSegmentName;
 	/** Whether or not to apply this scale */
 	PropertyBool		_propApply;
 
 	// REFERENCES
-	Array<double>&	_scaleFactors;
+	SimTK::Vec3&	_scaleFactors;
 	std::string&		_segmentName;
 	bool&					_apply;
 
@@ -99,9 +100,16 @@ public:
 	const std::string& getSegmentName() const;
 	void setSegmentName(const std::string& aSegmentName);
 
-	void getScaleFactors(Array<double>& aScaleFactors) const;
-	Array<double> &getScaleFactors() { return _scaleFactors; }
-	void setScaleFactors(Array<double>& aScaleFactors);
+	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
+	SimTK::Vec3& getScaleFactors() { return _scaleFactors; }
+	void getScaleFactors(double rScaleFactors[]){	// A variant that uses basic types for use by GUI
+		getScaleFactors(SimTK::Vec3::updAs(rScaleFactors));
+	}
+
+	void setScaleFactors(const SimTK::Vec3& aScaleFactors);
+	void setScaleFactors(const double aScaleFactors[]){	// A variant that uses basic types for use by GUI
+		setScaleFactors(SimTK::Vec3::getAs(aScaleFactors));
+	}
 
 	bool getApply(void) const { return _apply; }
 	void setApply(bool state) { _apply = state; }

@@ -46,7 +46,7 @@
 
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -80,9 +80,9 @@ rdCMC_Task::rdCMC_Task() :
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
-	_r0(_propR0.getValueDblArray()),
-	_r1(_propR1.getValueDblArray()),
-	_r2(_propR2.getValueDblArray())
+	_r0(_propR0.getValueDblVec3()),
+	_r1(_propR1.getValueDblVec3()),
+	_r2(_propR2.getValueDblVec3())
 {
 	setNull();
 }
@@ -102,9 +102,9 @@ rdCMC_Task::rdCMC_Task(const rdCMC_Task &aTask) :
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
-	_r0(_propR0.getValueDblArray()),
-	_r1(_propR1.getValueDblArray()),
-	_r2(_propR2.getValueDblArray())
+	_r0(_propR0.getValueDblVec3()),
+	_r1(_propR1.getValueDblVec3()),
+	_r2(_propR2.getValueDblVec3())
 {
 	setNull();
 	copyData(aTask);
@@ -212,7 +212,7 @@ setupProperties()
 	_propKA.setValue(ka);
 	_propertySet.append(&_propKA);
 
-	Array<double> r(0.0,3);
+	Vec3 r(0.0);
 	_propR0.setComment("Direction vector[3] for component 0 of a task. "
 		"Joint tasks do not use this propery.");
 	_propR0.setName("r0");
@@ -250,9 +250,9 @@ copyData(const rdCMC_Task &aTask)
 	for(i=0;i<3;i++) _kp[i] = aTask.getKP(i);
 	for(i=0;i<3;i++) _kv[i] = aTask.getKV(i);
 	for(i=0;i<3;i++) _ka[i] = aTask.getKA(i);
-	aTask.getDirection_0(_r0.get());
-	aTask.getDirection_1(_r1.get());
-	aTask.getDirection_2(_r2.get());
+	aTask.getDirection_0(_r0);
+	aTask.getDirection_1(_r1);
+	aTask.getDirection_2(_r2);
 
 	// FUNCTIONS
 	const Function *func;
@@ -581,13 +581,9 @@ getKA(int aWhich) const
  * @param aR Direction.  This vector is normalized.
  */
 void rdCMC_Task::
-setDirection_0(const double aR[3])
+setDirection_0(const SimTK::Vec3& aR)
 {
-	if(aR==NULL) {
-		_r0[0] = _r0[1] = _r0[2] = 0.0;
-		return;
-	}
-	Mtx::Normalize(3,aR,_r0.get());
+	_r0 = aR; _r0.normalize();
 }
 //_____________________________________________________________________________
 /**
@@ -596,10 +592,9 @@ setDirection_0(const double aR[3])
  * @param aR Direction.
  */
 void rdCMC_Task::
-getDirection_0(double rR[3]) const
+getDirection_0(SimTK::Vec3& rR) const
 {
-	if(rR==NULL) return;
-	Mtx::Assign(1,3,_r0.get(),rR);
+	rR=_r0;
 }
 
 //-----------------------------------------------------------------------------
@@ -612,13 +607,9 @@ getDirection_0(double rR[3]) const
  * @param aR Direction.  This vector is normalized.
  */
 void rdCMC_Task::
-setDirection_1(const double aR[3])
+setDirection_1(const SimTK::Vec3& aR)
 {
-	if(aR==NULL) {
-		_r1[0] = _r1[1] = _r1[2] = 0.0;
-		return;
-	}
-	Mtx::Normalize(3,aR,_r1.get());
+	_r1=aR; _r1.normalize();
 }
 //_____________________________________________________________________________
 /**
@@ -627,10 +618,9 @@ setDirection_1(const double aR[3])
  * @param aR Direction.
  */
 void rdCMC_Task::
-getDirection_1(double rR[3]) const
+getDirection_1(SimTK::Vec3& rR) const
 {
-	if(rR==NULL) return;
-	Mtx::Assign(1,3,_r1.get(),rR);
+	rR=_r1;
 }
 
 //-----------------------------------------------------------------------------
@@ -643,13 +633,9 @@ getDirection_1(double rR[3]) const
  * @param aR Direction.  This vector is normalized.
  */
 void rdCMC_Task::
-setDirection_2(const double aR[3])
+setDirection_2(const SimTK::Vec3& aR)
 {
-	if(aR==NULL) {
-		_r2[0] = _r2[1] = _r2[2] = 0.0;
-		return;
-	}
-	Mtx::Normalize(3,aR,_r2.get());
+	_r2=aR;
 }
 //_____________________________________________________________________________
 /**
@@ -658,10 +644,9 @@ setDirection_2(const double aR[3])
  * @param aR Direction.
  */
 void rdCMC_Task::
-getDirection_2(double rR[3]) const
+getDirection_2(SimTK::Vec3& rR) const
 {
-	if(rR==NULL) return;
-	Mtx::Assign(1,3,_r2.get(),rR);
+	rR=_r2;
 }
 
 //-----------------------------------------------------------------------------
@@ -1076,7 +1061,7 @@ updateFromXMLNode()
 	setKP(_kp[0],_kp[1],_kp[2]);
 	setKV(_kv[0],_kv[1],_kv[2]);
 	setKA(_ka[0],_ka[1],_ka[2]);
-	setDirection_0(_r0.get());
-	setDirection_1(_r1.get());
-	setDirection_2(_r2.get());
+	setDirection_0(_r0);
+	setDirection_1(_r1);
+	setDirection_2(_r2);
 }

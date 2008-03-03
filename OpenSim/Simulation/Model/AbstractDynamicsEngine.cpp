@@ -53,6 +53,7 @@
 
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -70,7 +71,7 @@ AbstractDynamicsEngine::~AbstractDynamicsEngine()
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine() :
 	Object(),
-   _gravity(_gravityProp.getValueDblArray()),
+   _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -92,7 +93,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine() :
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName, bool aUpdateFromXMLNode) :
 	Object(aFileName, false),
-   _gravity(_gravityProp.getValueDblArray()),
+   _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -114,7 +115,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName, bool aUp
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE) :
 	Object(aDE),
-   _gravity(_gravityProp.getValueDblArray()),
+   _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
 	_jointSetProp(PropertyObj("", JointSet())),
@@ -187,11 +188,11 @@ void AbstractDynamicsEngine::setup(Model* aModel)
  */
 void AbstractDynamicsEngine::setupProperties()
 {
-	const double defaultGravity[] = {0.0, -9.80665, 0.0};
+	const SimTK::Vec3 defaultGravity(0.0, -9.80665, 0.0);
 	_gravityProp.setComment("Acceleration due to gravity.");
 	_gravityProp.setName("gravity");
-	_gravityProp.setValue(3, defaultGravity);
-	_gravityProp.setAllowableArraySize(3);
+	_gravityProp.setValue(defaultGravity);
+	//_gravityProp.setAllowableArraySize(3);
 	_propertySet.append(&_gravityProp);
 
 	// Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)
@@ -292,10 +293,9 @@ int AbstractDynamicsEngine::getNumMarkers() const { return _markerSet.getSize();
  *
  * @param rGrav the XYZ gravity vector in the global frame is returned here.
  */
-void AbstractDynamicsEngine::getGravity(double rGrav[3]) const
+void AbstractDynamicsEngine::getGravity(SimTK::Vec3& rGrav) const
 {
-	for (int i = 0; i < 3; i++)
-		rGrav[i] = _gravity[i];
+	rGrav = _gravity;
 }
 
 //_____________________________________________________________________________
@@ -305,10 +305,9 @@ void AbstractDynamicsEngine::getGravity(double rGrav[3]) const
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool AbstractDynamicsEngine::setGravity(double aGrav[3])
+bool AbstractDynamicsEngine::setGravity(const SimTK::Vec3& aGrav)
 {
-	for (int i = 0; i < 3; i++)
-		_gravity[i] = aGrav[i];
+	_gravity = aGrav;
 
 	return true;
 }
@@ -676,7 +675,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rStorage, double
  */
 void AbstractDynamicsEngine::convertDegreesToRadians(Storage &rStorage) const
 {
-	scaleRotationalDofColumns(rStorage, rdMath::DTR);
+	scaleRotationalDofColumns(rStorage, SimTK_DEGREE_TO_RADIAN);
 }
 //_____________________________________________________________________________
 /**
@@ -688,7 +687,7 @@ void AbstractDynamicsEngine::convertDegreesToRadians(Storage &rStorage) const
  */
 void AbstractDynamicsEngine::convertRadiansToDegrees(Storage &rStorage) const
 {
-	scaleRotationalDofColumns(rStorage, rdMath::RTD);
+	scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
 }
 //_____________________________________________________________________________
 /**
@@ -708,7 +707,7 @@ void AbstractDynamicsEngine::convertDegreesToRadians(double *aQDeg, double *rQRa
 	for (int i = 0; i < getNumSpeeds(); i++)
 	{
 		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational)
-			rQRad[i] = aQDeg[i] * rdMath::DTR;
+			rQRad[i] = aQDeg[i] * SimTK_DEGREE_TO_RADIAN;
 		else
 			rQRad[i] = aQDeg[i];
 	}
@@ -731,7 +730,7 @@ void AbstractDynamicsEngine::convertRadiansToDegrees(double *aQRad, double *rQDe
 	for (int i = 0; i < getNumSpeeds(); i++)
 	{
 		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational)
-			rQDeg[i] = aQRad[i] * rdMath::RTD;
+			rQDeg[i] = aQRad[i] * SimTK_RADIAN_TO_DEGREE;
 		else
 			rQDeg[i] = aQRad[i];
 	}

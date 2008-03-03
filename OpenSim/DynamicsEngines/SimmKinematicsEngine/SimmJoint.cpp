@@ -47,6 +47,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -270,13 +271,16 @@ void SimmJoint::calcTransforms()
 		{
 			SimmRotationDof* rd = dynamic_cast<SimmRotationDof*>(_dofSet.get(i));
 			Transform m;
-			m.rotateAxis(rd->getValue(), Transform::Radians, rd->getAxisPtr());
+			Vec3 dAxis;
+			rd->getAxis(dAxis);
+			m.rotateAxis(rd->getValue(), Transform::Radians, dAxis);
 			Mtx::Multiply(4, 4, 4, m.getMatrix(), mat.getMatrix(), mat.getMatrix());
 		}
    }
 
    /* now apply the translation that you calculated earlier */
-   mat.translate(translation);
+	Vec3 translationVec = Vec3::getAs(translation);
+   mat.translate(translationVec);
 
    _forwardTransform = mat;
 	Mtx::Invert(4, mat.getMatrix(), _inverseTransform.getMatrix());
@@ -374,7 +378,7 @@ bool SimmJoint::hasXYZAxes() const
  */
 void SimmJoint::scale(const ScaleSet &aScaleSet)
 {
-	Array<double> scaleFactors(1.0, 3);
+	Vec3 scaleFactors(1.0);
 
 	// Joint kinematics are scaled by the scale factors for the
 	// parent body, so get those body's factors
@@ -398,7 +402,7 @@ void SimmJoint::scale(const ScaleSet &aScaleSet)
  *
  * @param aScaleSet set of XYZ scale factors for the parent body.
  */
-void SimmJoint::scale(const Array<double> &aScaleFactors)
+void SimmJoint::scale(const Vec3& aScaleFactors)
 {
 	// If all three factors are equal to 1.0, do nothing.
 	if (EQUAL_WITHIN_ERROR(aScaleFactors[0], 1.0) &&

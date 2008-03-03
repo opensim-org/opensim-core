@@ -36,7 +36,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
-#include "PropertyDblArray.h"
+#include "PropertyDblVec3.h"
 
 namespace OpenSim {
 
@@ -58,8 +58,8 @@ protected:
 	PropertyDbl _timeProp;
 	double& _time;
 
-	PropertyDblArray _colorProp;
-	Array<double> _color;
+	PropertyDblVec3 _colorProp;
+	SimTK::Vec3& _color;
 
 //=============================================================================
 // METHODS

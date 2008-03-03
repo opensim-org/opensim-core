@@ -126,10 +126,10 @@ public:
 	// UTILITY
 	//--------------------------------------------------------------------------
 	double
-		computeTangentialForce(double aNormalForce,double rTangentForce[3],
-		double rDFFric[3]);
+		computeTangentialForce(double aNormalForce,SimTK::Vec3& rTangentForce,
+		SimTK::Vec3& rDFFric);
 	bool
-		computeNewSetPoint(double aTangentForce,double rSetPoint[3]) const;
+		computeNewSetPoint(double aTangentForce,SimTK::Vec3& rSetPoint) const;
 
 	//--------------------------------------------------------------------------
 	// XML

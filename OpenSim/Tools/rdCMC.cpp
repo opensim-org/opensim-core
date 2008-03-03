@@ -484,9 +484,9 @@ computeInitialStates(double &rTI,double *rYI)
 			x->setDefaultParameterMin(xPredictor->getDefaultParameterMin());
 			x->setDefaultParameterMax(xPredictor->getDefaultParameterMax());
 			double xmin = xPredictor->getControlValueMin(tiReal);
-			if(xmin != rdMath::NAN) x->setControlValueMin(tiReal,xmin);
+			if(!rdMath::isNAN(xmin)) x->setControlValueMin(tiReal,xmin);
 			double xmax = xPredictor->getControlValueMax(tiReal);
-			if(xmax != rdMath::NAN) x->setControlValueMax(tiReal,xmax);
+			if(!rdMath::isNAN(xmax)) x->setControlValueMax(tiReal,xmax);
 		}
 		xiSet.append(x);
 	}
@@ -795,8 +795,8 @@ computeControls(double &rDT,double aT,const double *aY,
 		// For controls whose constraints are constant min/max values we'll just specify
 		// it using the default parameter min/max rather than creating a control curve
 		// (using nodes) in the xml.  So we catch this case here.
-		if(xmin[i] == rdMath::NAN) xmin[i] = x->getDefaultParameterMin();
-		if(xmax[i] == rdMath::NAN) xmax[i] = x->getDefaultParameterMax();
+      if(rdMath::isNAN(xmin[i])) xmin[i] = x->getDefaultParameterMin();
+		if(rdMath::isNAN(xmax[i])) xmax[i] = x->getDefaultParameterMax();
 	}
 
 	/*

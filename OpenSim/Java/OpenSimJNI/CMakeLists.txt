@@ -11,8 +11,8 @@ IF(JAVA_INCLUDE_PATH)
 # Run command to generate OpenSimJNI_wrap.cxx
 SET(swig_generated_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Java/OpenSimJNI/OpenSimJNI_wrap.cxx)
 SET(swig_interface_file_fullname ${OpenSim_SOURCE_DIR}/OpenSim/Java/swig/javaWrapOpenSim.i)
-
-ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Resources/Swig/ -o ${swig_generated_file_fullname} -outdir ${OpenSim_SOURCE_DIR}/OpenSim/Applications/Gui/opensim/modeling/src/org/opensim/modeling ${swig_interface_file_fullname})
+SET(SimTK_INCLUDE_PATH ${SIMTK_DIR}/core/include/)			
+ADD_CUSTOM_TARGET(JavaWrap ${SWIG_EXECUTABLE} -v -c++ -java -package org.opensim.modeling -I${OpenSim_SOURCE_DIR} -I${OpenSim_SOURCE_DIR}/OpenSim/Resources/Swig/ -I${SimTK_INCLUDE_PATH} -o ${swig_generated_file_fullname} -outdir ${OpenSim_SOURCE_DIR}/OpenSim/Applications/Gui/opensim/modeling/src/org/opensim/modeling ${swig_interface_file_fullname})
 
 SET_TARGET_PROPERTIES(JavaWrap PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD on)
 

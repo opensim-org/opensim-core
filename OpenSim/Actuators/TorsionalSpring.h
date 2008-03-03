@@ -50,9 +50,9 @@ protected:
 	/** Scale factor that pre-multiplies the applied torque */
 	double _scaleFactor;
 	/** Stiffness. */
-	double _k[3];
+	SimTK::Vec3 _k;
 	/** Damping. */
-	double _b[3];
+	SimTK::Vec3 _b;
 	/** If the magnitude of the torque is below this threshold, no torque
 	is applied. */
 	double _threshold;
@@ -78,10 +78,10 @@ public:
 	Function* getScaleFunction() const;
 	void setScaleFactor(double aScaleFactor);
 	double getScaleFactor();
-	void setKValue(double aK[3]);
-	void getKValue(double aK[3]);
-	void setBValue(double aB[3]);
-	void getBValue(double aB[3]);
+	void setKValue(const SimTK::Vec3& aK);
+	void getKValue(SimTK::Vec3& aK);
+	void setBValue(const SimTK::Vec3& aB);
+	void getBValue(SimTK::Vec3& aB);
 	void setThreshold(double aThreshold);
 	double getThreshold() const;
 

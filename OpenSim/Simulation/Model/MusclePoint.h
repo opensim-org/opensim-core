@@ -31,6 +31,7 @@
 
 
 // INCLUDE
+#include <assert.h>
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -39,6 +40,7 @@
 #include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/PropertyStr.h>
 
 #ifdef SWIG
@@ -73,8 +75,8 @@ class OSIMSIMULATION_API MusclePoint : public Object
 private:
 
 protected:
-   PropertyDblArray _attachmentProp;
-   Array<double> &_attachment;
+   PropertyDblVec3 _attachmentProp;
+   SimTK::Vec3 &_attachment;
 
 	PropertyStr _bodyNameProp;
    std::string &_bodyName;
@@ -108,20 +110,29 @@ public:
    void copyData(const MusclePoint &aPoint);
 	virtual void init(const MusclePoint& aPoint);
 
-	Array<double>& getAttachment() const { return _attachment; }
-	void setAttachment(double aAttachment[3]);
+	const SimTK::Vec3& getAttachment() const { return _attachment; }
+	SimTK::Vec3& getAttachment()  { return _attachment; }
+
+	const double& getAttachmentCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _attachment[aXYZ]; }
+	void setAttachmentCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _attachment[aXYZ]=aValue; }
+	// A variant that uses basic types for use by GUI
+	void setAttachment(SimTK::Vec3& aAttachment);
    void setAttachment(int aCoordIndex, double aAttachment);
+	void setAttachment(double pt[]){ // A variant that uses basic types for use by GUI
+		setAttachment(SimTK::Vec3::updAs(pt));
+	}
 	const AbstractBody* getBody() const { return _body; }
 	void setBody(AbstractBody& aBody, bool preserveLocation = false);
 	const std::string& getBodyName() const { return _bodyName; }
 	AbstractMuscle* getMuscle() const { return _muscle; }
 
-	virtual void scale(Array<double>& aScaleFactors);
+
+	virtual	void scale(const SimTK::Vec3& aScaleFactors);
 	virtual bool isActive() const { return true; }
 	virtual AbstractWrapObject* getWrapObject() const { return NULL; }
 	virtual void setup(Model* aModel, AbstractMuscle* aMuscle);
 	virtual void update() { }
-	virtual void getVelocity(double aVelocity[3]);
+	virtual void getVelocity(SimTK::Vec3& aVelocity);
 
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };

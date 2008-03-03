@@ -64,8 +64,8 @@ protected:
 	double &_mass;
 
 	/** Mass center of body. */
-	PropertyDblArray _massCenterProp;
-	Array<double> &_massCenter;
+	PropertyDblVec3 _massCenterProp;
+	SimTK::Vec3&	_massCenter;
 
 	/** Inertia tensor of the body about the center of mass when the local body
 	reference frame is aligned with the global reference frame.  This is a
@@ -106,23 +106,23 @@ public:
 
 	virtual double getMass() const;
 	virtual bool setMass(double aMass);
-	virtual void getMassCenter(double rVec[3]) const;
-	virtual bool setMassCenter(const double aVec[3]);
-	virtual void getInertia(Array<double> &rInertia) const;
+	virtual void getMassCenter(SimTK::Vec3& rVec) const;
+	virtual bool setMassCenter(const SimTK::Vec3& aVec);
+	virtual void getInertia(SimTK::Mat33 &rInertia) const;
 	virtual void getInertia(double rInertia[3][3]) const;
-	virtual bool setInertia(const Array<double>& aInertia);
+	virtual bool setInertia(const SimTK::Mat33& aInertia);
 	virtual bool setInertia(const double aInertia[3][3]);
-	virtual void scale(const Array<double>& aScaleFactors, bool aScaleMass = false);
-	virtual void scaleInertialProperties(const Array<double>& aScaleFactors, bool aScaleMass = true);
+	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
+	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
 
 	void setSdfastIndex(int aIndex) { _index = aIndex; }
 	int getSdfastIndex() const { return _index; }
 	void transformToSdfastFrame(const double aPos[3], double rPos[3]) const;
-	void transformToSdfastFrame(const Array<double>& aPos, double rPos[3]) const;
+	void transformToSdfastFrame(const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 	void transformFromSdfastFrame(const double aPos[3], double rPos[3]) const;
-	void transformFromSdfastFrame(const Array<double>& aPos, double rPos[3]) const;
+	void transformFromSdfastFrame(const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
 private:
 	void setNull();

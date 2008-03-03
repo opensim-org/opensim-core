@@ -36,6 +36,7 @@
 #include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
+#include "SimTKcommon.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
 
@@ -192,6 +193,9 @@ public:
 	virtual int append(const StateVector &aVec, bool aCheckForDuplicateTime=true);
 	virtual int append(const Array<StateVector> &aArray);
 	virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
+	int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
+		return append(aT, 3, &aY[0], aCheckForDuplicateTime);
+	}
 	virtual int store(int aStep,double aT,int aN,const double *aY);
 
 	//--------------------------------------------------------------------------

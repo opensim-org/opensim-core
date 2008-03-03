@@ -9,8 +9,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Line.h>
-#include <OpenSim/Common/Plane.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/SIMMUtilities.h>
 #include <OpenSim/Common/Array.h>

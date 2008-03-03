@@ -64,14 +64,14 @@ protected:
 
 	/** Location of the joint in the parent body specified in the parent
 	reference frame. */
-	PropertyDblArray _locationInParentProp;
-	Array<double> &_locationInParent;
+	PropertyDblVec3 _locationInParentProp;
+	SimTK::Vec3 &_locationInParent;
 
 	/** Location of the joint in the child body specified in the child
 	reference frame.  For SIMM models, this vector is always the zero vector
 	(i.e., the body reference frame coincides with the joint).  */
-	PropertyDblArray _locationInChildProp;
-	Array<double> &_locationInChild;
+	PropertyDblVec3 _locationInChildProp;
+	SimTK::Vec3 &_locationInChild;
 
 	/** Index of this joint in the SD/FAST code. */
 	PropertyInt _indexProp;
@@ -116,10 +116,10 @@ public:
 	virtual DofSet* getDofSet() const { return NULL; }
 	virtual SdfastBody* getChildBody() const { return _childBody; }
 	virtual SdfastBody* getParentBody() const { return _parentBody; }
-	virtual void setLocationInParent(const double aLocation[3]);
-	virtual void getLocationInParent(double rLocation[3]) const;
-	virtual void setLocationInChild(const double aLocation[3]);
-	virtual void getLocationInChild(double rLocation[3]) const;
+	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
+	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;
+	virtual void setLocationInChild(const SimTK::Vec3& aLocation);
+	virtual void getLocationInChild(SimTK::Vec3& rLocation) const;
 	virtual const Transform& getForwardTransform();
 	virtual const Transform& getInverseTransform();
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const { return false; }

@@ -4,6 +4,8 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
+
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
 //=============================================================================
@@ -19,7 +21,7 @@ Scale::~Scale(void)
  * Default constructor of an Scale
  */
 Scale::Scale():
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
@@ -33,7 +35,7 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const Scale &aScale) :
 Object(aScale),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
@@ -48,7 +50,7 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const string& scaleFileName):
 Object(scaleFileName, false),
-_scaleFactors(_propScaleFactors.getValueDblArray()),
+_scaleFactors(_propScaleFactors.getValueDblVec3()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
@@ -107,12 +109,12 @@ void Scale::setNull()
 void Scale::
 setupProperties()
 {
-	Array<double> one3(1.0, 3);	
+	Vec3 one3(1.0);	
 
 	// scale factors
 	_propScaleFactors.setName("scales");
 	_propScaleFactors.setValue(one3);
-	_propScaleFactors.setAllowableArraySize(3);
+	//_propScaleFactors.setAllowableArraySize(3);
 	_propertySet.append( &_propScaleFactors );
 
 	// segment name
@@ -142,7 +144,7 @@ getSegmentName() const
  * Set the value of scale factors
  */
 void Scale::
-getScaleFactors(Array<double>& aScaleFactors) const
+getScaleFactors(SimTK::Vec3& aScaleFactors) const
 {
 	aScaleFactors = _scaleFactors;
 }
@@ -161,7 +163,7 @@ setSegmentName(const string& aSegmentName)
  * Set scale factors
  */
 void Scale::
-setScaleFactors(Array<double>& aScaleFactors)
+setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
 	_scaleFactors = aScaleFactors;
 }

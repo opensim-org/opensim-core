@@ -39,7 +39,7 @@
 
 using namespace std;
 using namespace OpenSim;
-
+using SimTK::Vec3;
 const double IKTarget::_perturbation=1e-3; 
 
 //=============================================================================
@@ -123,11 +123,11 @@ int IKTarget::objectiveFunc(const SimTK::Vector &x, const bool new_parameters, S
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		double localPos[3];
+		SimTK::Vec3 localPos;
 		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
-		double globalPos[3];
+		SimTK::Vec3 globalPos;
 		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		double markerError = 0.0;
@@ -272,11 +272,11 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		double localPos[3];
+		Vec3 localPos;
 		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
-		double globalPos[3];
+		Vec3 globalPos;
 		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		for (int r=0; r<3; r++)
@@ -328,11 +328,11 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 			if(!_markers[i]->validExperimentalPosition) continue;
 
 			// Get marker offset in local frame
-			double localPos[3];
+			Vec3 localPos;
 			_markers[i]->marker->getOffset(localPos);
 
 			// transform local marker to world frame
-			double globalPos[3];
+			Vec3 globalPos;
 			de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 			for (int r=0; r<3; r++)
@@ -375,11 +375,11 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 					if(!_markers[i]->validExperimentalPosition) continue;
 
 					// Get marker offset in local frame
-					double localPos[3];
+					Vec3 localPos;
 					_markers[i]->marker->getOffset(localPos);
 
 					// transform local marker to world frame
-					double globalPos[3];
+					Vec3 globalPos;
 					de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 					for (int r=0; r<3; r++)
@@ -442,11 +442,11 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		double localPos[3];
+		Vec3 localPos;
 		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
-		double globalPos[3];
+		Vec3 globalPos;
 		de.transformPosition(*_markers[i]->body, localPos, globalPos);
 
 		double markerError = 0.0;
@@ -593,9 +593,9 @@ void IKTarget::prepareToSolve(int aIndex, double* qGuess)
 		 * IT WOULD BE TRIGGERED AS INVALID!
 		 */
 		_markers[i]->validExperimentalPosition =
-		   (NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[0], rdMath::NAN) &&
-			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[1], rdMath::NAN) &&
-			 NOT_EQUAL_WITHIN_ERROR(_markers[i]->experimentalPosition[2], rdMath::NAN));
+			!(rdMath::isNAN(_markers[i]->experimentalPosition[0]) ||
+			 rdMath::isNAN(_markers[i]->experimentalPosition[1]) ||
+			 rdMath::isNAN(_markers[i]->experimentalPosition[2]));
 	}
 }
 
@@ -766,7 +766,7 @@ void IKTarget::getComputedMarkerLocations(Array<double> &aMarkerLocations) const
 {
 	aMarkerLocations.setSize(0);
 	for (int i = 0; i < _markers.getSize(); i++) 
-		aMarkerLocations.append(3, _markers[i]->computedPosition);
+		aMarkerLocations.append(3, &(_markers[i]->computedPosition)[0]);
 }
 
 //_____________________________________________________________________________
@@ -777,7 +777,7 @@ void IKTarget::getExperimentalMarkerLocations(Array<double> &aMarkerLocations) c
 {
 	aMarkerLocations.setSize(0);
 	for (int i = 0; i < _markers.getSize(); i++) 
-		aMarkerLocations.append(3, _markers[i]->experimentalPosition);
+		aMarkerLocations.append(3, &(_markers[i]->experimentalPosition)[0]);
 }
 
 //_____________________________________________________________________________
@@ -828,8 +828,8 @@ void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J)
 	SimTK::Vector xp=jointQs.col(0);
 	SimTK::Vector pf((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
 	SimTK::Vector pb((3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
-	double globalPos[3];
-	double localPos[3];
+	Vec3 globalPos;
+	Vec3 localPos;
 	SimTK::Real rdx;
 	int row = 3*_markers.getSize();
 

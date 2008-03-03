@@ -42,6 +42,8 @@
 
 
 using namespace OpenSim;
+using SimTK::Vec3;
+
 int Mtx::_PSpaceSize = 0;
 int Mtx::_WSpaceSize = 0;
 double** Mtx::_P1Space = NULL;
@@ -52,151 +54,6 @@ double*  Mtx::_WSpace = NULL;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-
-
-//=============================================================================
-// VECTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Find the angle between two vectors:  theta = acos( aV1*aV2/(|aV1|*|aV2|)).
- *
- * @param aV1 Vector 1.
- * @param aV2 Vector 2.
- * @return Angle between two vectors in radians.
- */
-double Mtx::
-Angle(const double *aV1,const double *aV2)
-{
-	// NORMALIZE VECTORS
-	double n1[3],n2[3];
-	Normalize(3,aV1,n1);
-	Normalize(3,aV2,n2);
-
-	// FIND ANGLE BETWEEN THE TWO VECTORS
-	double theta = acos(DotProduct(3,n1,n2));
-
-	return(theta);
-}
-//_____________________________________________________________________________
-/**
- * Normalize a vector.
- *
- * If aV has a magnitude of zero, all elements of rV are set to 0.0.
- * It is permissible for aV and rV to coincide in memory.
- *
- * @param aV Vector to be normalized.
- * @param rV Result of the normalization.
- * @return Magnitude of aV.
- */
-double Mtx::
-Normalize(int aN,const double aV[],double rV[])
-{
-	if(aN<=0) return(0.0);
-	if(aV==NULL) return(0.0);
-	if(rV==NULL) return(0.0);
-
-	// GET MAGNITUDE
-	int i;
-	double mag = Magnitude(aN,aV);
-	if(mag==0.0) {
-		for(i=0;i<aN;i++) rV[i]=0.0;
-		return(mag);
-	}
-
-	// DIVIDE BY MAGNITUDE
-	double rmag = 1.0 / mag;
-	for(i=0;i<aN;i++) {
-		rV[i] = rmag * aV[i];
-	}
-
-	return(mag);
-}
-//_____________________________________________________________________________
-/**
- * Compute the magnitude of a vector.
- *
- * @param aV Vector.
- * @return Square root of the dot product aV*aV.
- */
-double Mtx::
-Magnitude(int aN,const double aV[])
-{
-	if(aN<=0) return(0.0);
-	if(aV==NULL) return(0.0);
-	return(sqrt(DotProduct(aN,aV,aV)));
-}
-//_____________________________________________________________________________
-/**
- * Compute the dot product of two vectors.
- *
- * If the arguments are not valid (aV1=aV2=NULL), 0.0 is returned.
- */
-double Mtx::
-DotProduct(int aN,const double aV1[],const double aV2[])
-{
-	if(aV1==NULL) return(0.0);
-	if(aV2==NULL) return(0.0);
-
-	double result=0.0;
-	int i;
-	for(i=0;i<aN;i++) {
-		result += aV1[i]*aV2[i];
-	}
-
-	return(result);
-}
-//_____________________________________________________________________________
-/**
- * Compute the cross product of two vectors.
- *
- * If the arguments are not valid (aR=aS=NULL), -1 is returned.
- */
-int Mtx::
-CrossProduct(double *aV1,double *aV2,double *aV)
-{
-	if(aV1==NULL) return(-1);
-	if(aV2==NULL) return(-1);
-	if(aV==NULL) return(-1);
-
-	aV[0] = aV1[1]*aV2[2]-aV1[2]*aV2[1];
-	aV[1] = aV1[2]*aV2[0]-aV1[0]*aV2[2];
-	aV[2] = aV1[0]*aV2[1]-aV1[1]*aV2[0];
-
-	return(0);
-}
-//_____________________________________________________________________________
-/**
- * Get a unit vector that is perpendicular to a specified vector.  The unit
- * vector is arbitrary, in the sense that it is one of an infinite number of
- * vectors that are perpendicular to the original specified vector.
- *
- * @param aV Input vector.
- * @param rV Perpendicular unit vector.
- */
-void Mtx::
-PerpendicularUnitVector(double *aV,double *rV)
-{
-	double u[3];
-	Normalize(3,aV,u);
-	
-	// Which component is smallest?
-	int s0 = 0;
-	for(int i=1;i<3;i++) {
-		if(u[i] < u[s0]) s0=i;
-	}
-
-	// Set the other two components
-	int s1,s2;
-	if(s0==0) { s1=1; s2=2; }
-	if(s0==1) { s1=2; s2=0; }
-	if(s0==2) { s1=0; s2=1; }
-
-	// Set the perpendicular unit vector
-	rV[s0] = 0.0;
-	rV[s1] = u[s2];
-	rV[s2] = -u[s1];
-}
 
 //-----------------------------------------------------------------------------
 // INTERPOLATION
@@ -364,7 +221,7 @@ Rotate(const double aAxis[3],double aRadians,const double aP[3],double rP[3])
 void Mtx::
 RotateDeg(int aXYZ,double aDegrees,const double aP[3],double rP[3])
 {
-	Rotate(aXYZ,rdMath::DTR*aDegrees,aP,rP);
+	Rotate(aXYZ,SimTK_DEGREE_TO_RADIAN*aDegrees,aP,rP);
 }
 //_____________________________________________________________________________
 /**
@@ -378,7 +235,7 @@ RotateDeg(int aXYZ,double aDegrees,const double aP[3],double rP[3])
 void Mtx::
 RotateDeg(const double aAxis[3],double aDegrees,const double aP[3],double rP[3])
 {
-	Rotate(aAxis,rdMath::DTR*aDegrees,aP,rP);
+	Rotate(aAxis,SimTK_DEGREE_TO_RADIAN*aDegrees,aP,rP);
 }
 
 
@@ -427,7 +284,7 @@ Identity(int aN,double *rI)
  * @param rM Ouput matrix (rMij = aScalar for all i,j).
  * @return 0 on success, -1 on error.
  *
- */
+ *
 int Mtx::
 Assign(int aNR,int aNC,double aScalar,double *rM)
 {
@@ -451,7 +308,7 @@ Assign(int aNR,int aNC,double aScalar,double *rM)
  * @param rM Ouput matrix (rM = aM).
  * @return 0 on success, -1 on error.
  *
- */
+ *
 int Mtx::
 Assign(int aNR,int aNC,const double *aM,double *rM)
 {
@@ -474,7 +331,7 @@ Assign(int aNR,int aNC,const double *aM,double *rM)
  * Othersise, 0 is returned.
  *
  * It is permissible for aM to coincide with aM1.
- */
+ *
 int Mtx::
 Add(int aNR,int aNC,const double *aM1,double aScalar,double *aM)
 {
@@ -520,7 +377,7 @@ Add(int aNR,int aNC,const double *aM1,const double *aM2,double *aM)
  * If the arguments are not valid, then a -1 is returned.
  * Othersise, 0 is returned.
  *
- * It is permissible for aM to coincide with either aM1 or aM2.
+ * It is permissible for aM to coincide with either aM1 or aM2. aM1 - aM2
  */
 int Mtx::
 Subtract(int aNR,int aNC,const double *aM1,const double *aM2,double *aM)

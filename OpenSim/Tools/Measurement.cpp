@@ -36,6 +36,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -189,7 +190,7 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 			if (aScaleSet[j]->getSegmentName() == bodyName)
 			{
 				const Array<std::string>& axisNames = _bodyScaleSet[i]->getAxisNames();
-				Array<double> factors(1.0, 3);
+				Vec3 factors(1.0);
 				aScaleSet[j]->getScaleFactors(factors);
 
 				for (int k = 0; k < axisNames.getSize(); k++)

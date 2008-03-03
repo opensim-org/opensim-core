@@ -24,7 +24,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -71,10 +71,10 @@ ForwardTool::ForwardTool() :
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
+	_kLin(_kLinProp.getValueDblVec3()),
+	_bLin(_bLinProp.getValueDblVec3()),
+	_kTor(_kTorProp.getValueDblVec3()),
+	_bTor(_bTorProp.getValueDblVec3()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setType("ForwardTool");
@@ -117,10 +117,10 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
+	_kLin(_kLinProp.getValueDblVec3()),
+	_bLin(_bLinProp.getValueDblVec3()),
+	_kTor(_kTorProp.getValueDblVec3()),
+	_bTor(_bTorProp.getValueDblVec3()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setType("ForwardTool");
@@ -193,10 +193,10 @@ ForwardTool(const ForwardTool &aTool) :
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblArray()),
-	_bLin(_bLinProp.getValueDblArray()),
-	_kTor(_kTorProp.getValueDblArray()),
-	_bTor(_bTorProp.getValueDblArray()),
+	_kLin(_kLinProp.getValueDblVec3()),
+	_bLin(_bLinProp.getValueDblVec3()),
+	_kTor(_kTorProp.getValueDblVec3()),
+	_bTor(_bTorProp.getValueDblVec3()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
 {
 	setType("ForwardTool");
@@ -253,13 +253,13 @@ setNull()
 	_springTransitionEndForce = 50.0;
 	_forceThreshold = 0.0;
 	_torqueThreshold = 0.0;
-	_kLin.setSize(3);
+	//_kLin.setSize(3);
 	_kLin[0] = _kLin[1] = _kLin[2] = 5000000.0;
-	_bLin.setSize(3);
+	//_bLin.setSize(3);
 	_bLin[0] = _bLin[1] = _bLin[2] = 1500.0;
-	_kTor.setSize(3);
+	//_kTor.setSize(3);
 	_kTor[0] = _kTor[1] = _kTor[2] = 100000.0;
-	_bTor.setSize(3);
+	//_bTor.setSize(3);
 	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
 	_outputDetailedResults = false;
 
@@ -638,8 +638,8 @@ addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const Fo
 	// Create scale function
 	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
 		timeScale.append(tScale);
-		double force[3];
-		aAppliedForce.getForceFunction()->evaluate(&tScale,force);
+		SimTK::Vec3 force;
+		aAppliedForce.getForceFunction()->evaluate(&tScale,&force[0]);
 		linearScale.append(rdMath::Step(Mtx::Magnitude(3,force),_springTransitionStartForce,_springTransitionEndForce));
 	}
 	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&linearScale[0]);
@@ -649,8 +649,8 @@ addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const Fo
 	LinearSpring *spring = new LinearSpring(_model,aAppliedForce.getBody());
 	spring->setPointFunction((VectorFunction*)aAppliedForce.getPointFunction()->copy());
 	spring->computeTargetFunctions(aQStore,aUStore);
-	spring->setKValue(&_kLin[0]);
-	spring->setBValue(&_bLin[0]);
+	spring->setKValue(_kLin);
+	spring->setBValue(_bLin);
 	spring->setThreshold(_forceThreshold);
 	spring->setScaleFunction(scaleSpline);
 	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
@@ -688,8 +688,8 @@ addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,Abstr
 
 	TorsionalSpring *spring = new TorsionalSpring(_model,aBody);
 	spring->computeTargetFunctions(aQStore,aUStore);
-	spring->setKValue(&_kTor[0]);
-	spring->setBValue(&_bTor[0]);
+	spring->setKValue(_kTor);
+	spring->setBValue(_bTor);
 	spring->setThreshold(_torqueThreshold);
 	spring->setScaleFunction(scaleSpline);
 	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
@@ -1163,6 +1163,7 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 	}
 	cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
 	Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
+
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
@@ -1187,6 +1188,12 @@ initializeExternalLoads(Model *aModel, const string &aExternalLoadsFileName,
 	// LOAD COP, FORCE, AND TORQUE
 	Storage kineticsStore(aExternalLoadsFileName);
 	int copSize = kineticsStore.getSize();
+	// Keep padding to same start time as qStore
+	while(kineticsStore.getFirstTime() > qStore->getFirstTime()){
+		cout << "Padded kineticsStore to start time of " << kineticsStore.getFirstTime() << std::endl;
+		kineticsStore.pad(60);
+	}
+	double newStartTime=kineticsStore.getFirstTime();
 	if(copSize<=0) return;
 
 	// Read the indices of all the ground reaction data columns.

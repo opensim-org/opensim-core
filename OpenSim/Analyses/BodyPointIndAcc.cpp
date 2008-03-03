@@ -30,6 +30,8 @@
 
 
 using namespace OpenSim;
+using SimTK::Vec3;
+
 const int BodyPointIndAcc::BUFFER_LENGTH = BodyPointIndAcc_BUFFER_LENGTH;
 
 
@@ -60,7 +62,7 @@ BodyPointIndAcc::~BodyPointIndAcc()
  * @point aPoint Point value.
  */
 BodyPointIndAcc::
-BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3])
+BodyPointIndAcc(Model *aModel,AbstractBody *aBody,SimTK::Vec3& aPoint)
 	: IndAcc(aModel)
 {
 	// STATES
@@ -94,7 +96,7 @@ BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3])
  * @todo add initial velocity and ind pos due to init vel and pos to all
  */
 BodyPointIndAcc::
-BodyPointIndAcc(Model *aModel,AbstractBody *aBody,double aPoint[3],
+BodyPointIndAcc(Model *aModel,AbstractBody *aBody,SimTK::Vec3& aPoint,
 	Storage *aStates,Storage *aControls,char *aBaseName,char *aDir,char *aExtension) :
 	IndAcc(aModel,aStates,aControls,aBaseName,aDir,aExtension)
 {
@@ -286,11 +288,9 @@ getBody()
  * @param aPoint X-Y-Z Point
  */
 void BodyPointIndAcc::
-setPoint(double aPoint[3])
+setPoint(const SimTK::Vec3& aPoint)
 {
-	_point[0] = aPoint[0];
-	_point[1] = aPoint[1];
-	_point[2] = aPoint[2];
+	_point = aPoint;
 
 	// RESET STORAGE
 	if(_axPointStore!=NULL) {
@@ -310,11 +310,9 @@ setPoint(double aPoint[3])
  * @param rPoint X-Y-Z Point
  */
 void BodyPointIndAcc::
-getPoint(double rPoint[3])
+getPoint(SimTK::Vec3& rPoint)
 {
-	rPoint[0] = _point[0];
-	rPoint[1] = _point[1];
-	rPoint[2] = _point[2];
+	rPoint = _point;
 }
 
 //-----------------------------------------------------------------------------
@@ -403,15 +401,15 @@ computePointAccelerations()
 	int np = _model->getNumContacts();
 
 	// GRAVITY
-	double g[3];
-	double g0[] = { 0.0, 0.0, 0.0 };
+	SimTK::Vec3 g;
+	SimTK::Vec3 g0(0.0, 0.0, 0.0);
 	_model->getGravity(g);
 	printf("gravity = %lf %lf %lf\n",g[0],g[1],g[2]);
 
 	// LOOP OVER TIME
 	int i,j,c,I,J;
 	AbstractBody *bodyB;
-	double pointB[3];
+	SimTK::Vec3 pointB;
 	double t;
 	double *fe = new double[3*np];
 	double *y = new double[ny];
@@ -421,7 +419,7 @@ computePointAccelerations()
 	double *ax = new double[getNumComponents()];
 	double *ay = new double[getNumComponents()];
 	double *az = new double[getNumComponents()];
-	double acc[3], vel[3], pos[3];
+	SimTK::Vec3 acc, vel, pos;
 	StateVector *yVec;
 
 	AbstractDynamicsEngine &engine = _model->getDynamicsEngine();
@@ -485,7 +483,7 @@ computePointAccelerations()
 							J = Mtx::ComputeIndex(j,3,0);
 							bodyB = _model->getContactSet()->getContactBodyB(j);
 							_model->getContactSet()->getContactPointB(j,pointB);
-							engine.applyForce(*bodyB,pointB,&fe[J]);
+							engine.applyForce(*bodyB,pointB,Vec3::getAs(&fe[J]));
 						}	
 					}
 				}
@@ -501,7 +499,7 @@ computePointAccelerations()
 					J = Mtx::ComputeIndex(j,3,0);
 					bodyB = _model->getContactSet()->getContactBodyB(j);
 					_model->getContactSet()->getContactPointB(j,pointB);
-					engine.applyForce(*bodyB,pointB,&fe[J]);
+					engine.applyForce(*bodyB,pointB,Vec3::getAs(&fe[J]));
 				}
 			}
 

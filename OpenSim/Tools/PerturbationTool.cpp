@@ -354,7 +354,7 @@ bool PerturbationTool::run()
 	_model->addDerivCallback(perturbation);
 
 	int gravity_axis = 1;
-	double original_gravity[3];
+	SimTK::Vec3 original_gravity;
 	int nperturb = actuators.getSize() + (_perturbGravity ? 1 : 0);
 
 	if(_perturbGravity) _model->getGravity(original_gravity);
@@ -558,7 +558,7 @@ bool PerturbationTool::run()
 				cout<<"\nGravity perturbation"<<endl;
 				actuatorName = "gravity";
 				perturbation->setActuator(0); 
-				double grav[3];
+				SimTK::Vec3 grav;
 				for(int i=0;i<3;i++) grav[i]=original_gravity[i];
 				grav[gravity_axis] += _pertDF;
 				_model->setGravity(grav);

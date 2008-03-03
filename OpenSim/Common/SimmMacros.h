@@ -31,11 +31,6 @@
 
 namespace OpenSim {
 
-#define DEG_TO_RAD 0.017453292519943
-#define RAD_TO_DEG 57.295779513082323
-#define DTOR DEG_TO_RAD
-#define RTOD RAD_TO_DEG
-
 #define TINY_NUMBER 0.0000001
 #define ROUNDOFF_ERROR 0.0000000000002
 #define MAX(a,b) ((a)>=(b)?(a):(b))
