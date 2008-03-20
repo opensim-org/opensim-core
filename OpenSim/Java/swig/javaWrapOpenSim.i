@@ -163,6 +163,7 @@ using namespace SimTK;
 %feature("director") OpenSim::SimtkAnimationCallback;
 %feature("director") OpenSim::SimtkLogCallback;
 
+%feature("notabstract") ControlLinear;
 
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
