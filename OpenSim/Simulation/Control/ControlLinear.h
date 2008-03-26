@@ -172,6 +172,17 @@ public:
 	ArrayPtrs<ControlLinearNode>& getControlMaxValues() {
 		return (_maxNodes);
 	}
+	// Insert methods that allocate and insert a copy.
+	// These are called from GUI to work around early garbage collection
+	void insertNewValueNode(int index, const ControlLinearNode& newNode) {
+		_xNodes.insert(index, (ControlLinearNode*) newNode.copy());
+	}
+	void insertNewMinNode(int index, const ControlLinearNode& newNode) {
+		_minNodes.insert(index, (ControlLinearNode*) newNode.copy());
+	}
+	void insertNewMaxNode(int index, const ControlLinearNode& newNode) {
+		_maxNodes.insert(index, (ControlLinearNode*) newNode.copy());
+	}
 	// Convenience methods
 	virtual const double getFirstTime() const;
 	virtual const double getLastTime() const;

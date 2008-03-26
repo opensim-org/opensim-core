@@ -43,8 +43,8 @@
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
+#include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Integrator/Integrand.h>
 #include <OpenSim/Simulation/Integrator/RKF.h>
@@ -312,6 +312,7 @@ using namespace SimTK;
         }
     }
 }
+
 %extend OpenSim::AnalyticGeometry {
     static AnalyticGeometry *dynamic_cast(Geometry *geometry) {
         return dynamic_cast<AnalyticGeometry *>(geometry);
@@ -400,9 +401,9 @@ using namespace SimTK;
 %template(SetControls) OpenSim::Set<OpenSim::Control>;
 %include <OpenSim/Simulation/Control/ControlSet.h>
 %include <OpenSim/Simulation/Control/ControlConstant.h>
-%include <OpenSim/Simulation/Control/ControlLinear.h>
 %include <OpenSim/Simulation/Control/ControlLinearNode.h>
 %template(SetControlNodes) OpenSim::ArrayPtrs<OpenSim::ControlLinearNode>;
+%include <OpenSim/Simulation/Control/ControlLinear.h>
 %include <OpenSim/Simulation/Control/Controller.h>
 
 %include <OpenSim/Simulation/Manager/Manager.h>
