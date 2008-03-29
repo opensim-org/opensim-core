@@ -82,8 +82,8 @@ protected:
 	ArrayPtrs<ControlLinearNode> &_xNodes;
 	ArrayPtrs<ControlLinearNode> &_minNodes;
 	ArrayPtrs<ControlLinearNode> &_maxNodes;
-	double &_kp;
-	double &_kv;
+	//double &_kp;
+	//double &_kv;
 
 
 	/** Utility node for speeding up searches for control values in
