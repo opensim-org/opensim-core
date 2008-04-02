@@ -1267,7 +1267,7 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 										</natCubicSpline>
 									</Value>
 									<coordinate> ankle_angle_l </coordinate>
-									<axis>       0.10501354762200001000      -0.17402245034399999000       0.97912631544299999000 </axis>
+									<axis>       0.10501354762200001000      0.17402245034399999000       0.97912631544299999000 </axis>
 								</SimbodyRotationDof>
 								<SimbodyRotationDof name="r2">
 									<Value>
