@@ -189,6 +189,7 @@ public:
 
 	// SIMPLIFY
 	virtual void simplify(const PropertySet &aProperties);
+	bool simplify(const double& cutoffFrequency, const double& distance);
 	virtual void filter(double aT);
 
 private:

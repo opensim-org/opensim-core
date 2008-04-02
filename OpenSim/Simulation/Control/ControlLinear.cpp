@@ -1073,8 +1073,25 @@ simplify(const PropertySet &aProperties)
 
 	cout<<"ControlLinear.simplify: final size = "<<_xNodes.getSize()<<".\n";
 }
-
-
+/**
+ * Another interface to simplify that:
+ * - Does not require properties
+ * - returns bool on failure for a more graceful batch simplification
+ */
+bool ControlLinear::
+simplify(const double& cutoffFrequency, const double& distance)
+{
+	PropertySet params;
+	params.append(new PropertyDbl("cutoff_frequency", cutoffFrequency));	// Will be deleted by the destructor
+	params.append(new PropertyDbl("distance", distance));
+	try {
+		simplify(params);
+		return true;
+	}
+	catch(Exception x) {
+		return(false);
+	}
+}
 //-----------------------------------------------------------------------------
 // FILTER CONTROL
 //-----------------------------------------------------------------------------
