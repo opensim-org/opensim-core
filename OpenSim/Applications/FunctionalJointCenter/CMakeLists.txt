@@ -1,3 +1,5 @@
+SET(APPNAME fjc)
+
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${XERCES_INCLUDE_DIR})
@@ -14,7 +16,8 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 ADD_EXECUTABLE(fjc ${SOURCE_FILES} ${INCLUDE_FILES})
 
 
-#INSTALL_TARGETS(/bin/ fjc)
+INSTALL_TARGETS(/bin/ ${APPNAME})
+SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
 
 #
 # Testing
