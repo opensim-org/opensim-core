@@ -100,12 +100,12 @@ public:
 	ControlLinear(const ControlLinear &aControl);
 	virtual ~ControlLinear();
 	virtual Object* copy() const;
+	void copyData(const ControlLinear &aControl);
 protected:
 	virtual void setupProperties();
 	
 private:
 	void setNull();
-	void copyData(const ControlLinear &aControl);
 	double extrapolateBefore(double aT) const;
 	double extrapolateAfter(double aT) const;
 	double extrapolateMinBefore(double aT) const;
