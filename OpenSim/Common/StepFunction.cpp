@@ -487,6 +487,26 @@ bool StepFunction::deletePoint(int aIndex)
 	return false;
 }
 
+bool StepFunction::deletePoints(const Array<int>& indices)
+{
+	bool pointsDeleted = false;
+	int numPointsLeft = _x.getSize() - indices.getSize();
+
+	if (numPointsLeft >= 1) {
+		// Assume the indices are sorted highest to lowest
+		for (int i=0; i<indices.getSize(); i++) {
+			int index = indices.get(i);
+			if (index >= 0 && index < _x.getSize()) {
+	         _x.remove(index);
+	         _y.remove(index);
+				pointsDeleted = true;
+			}
+		}
+	}
+
+   return pointsDeleted;
+}
+
 void StepFunction::addPoint(double aX, double aY)
 {
 	for (int i=0; i<_x.getSize(); i++)

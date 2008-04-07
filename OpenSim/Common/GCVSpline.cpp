@@ -645,8 +645,10 @@ scaleY(double aScaleFactor)
 bool GCVSpline::
 deletePoint(int aIndex)
 {
-	if (_x.getSize() > 2 && _y.getSize() > 2 &&
-		 _weights.getSize() > 2 && _coefficients.getSize() > 2 &&
+	int minNumPoints = getOrder();
+
+	if (_x.getSize() > minNumPoints && _y.getSize() > minNumPoints &&
+		 _weights.getSize() > minNumPoints && _coefficients.getSize() > minNumPoints &&
 		 aIndex < _x.getSize() && aIndex < _y.getSize() &&
 		 aIndex < _weights.getSize() && aIndex < _coefficients.getSize()) {
       _x.remove(aIndex);
@@ -664,6 +666,40 @@ deletePoint(int aIndex)
    }
 
    return false;
+}
+
+bool GCVSpline::
+deletePoints(const Array<int>& indices)
+{
+	bool pointsDeleted = false;
+	int minNumPoints = getOrder();
+	int numPointsLeft = _x.getSize() - indices.getSize();
+
+	if (numPointsLeft >= minNumPoints) {
+		// Assume the indices are sorted highest to lowest
+		for (int i=0; i<indices.getSize(); i++) {
+			int index = indices.get(i);
+			if (index >= 0 && index < _x.getSize()) {
+	         _x.remove(index);
+	         _y.remove(index);
+				_weights.remove(index);
+				_coefficients.remove(index);
+				pointsDeleted = true;
+			}
+		}
+
+		if (pointsDeleted) {
+	      int nwk = _x.getSize() + 6*(_x.getSize()*_halfOrder+1);
+	      _wk.setSize(nwk);
+
+	      // Recalculate the coefficients
+	      int ierr=0;
+	      gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
+		          _coefficients.get(),_errorVariance,_wk.get(),ierr);
+		}
+	}
+
+   return pointsDeleted;
 }
 
 void GCVSpline::

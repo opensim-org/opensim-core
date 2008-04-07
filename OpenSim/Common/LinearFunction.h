@@ -119,6 +119,7 @@ public:
 	virtual void setY(int aIndex, double aValue);
 	virtual void scaleY(double aScaleFactor);
 	virtual bool deletePoint(int aIndex);
+	virtual bool deletePoints(const Array<int>& indices);
 	virtual void addPoint(double aX, double aY);
 	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd);
 	virtual Array<XYPoint>* renderAsLineSegments(int aIndex);

@@ -547,7 +547,7 @@ void LinearFunction::scaleY(double aScaleFactor)
 
 bool LinearFunction::deletePoint(int aIndex)
 {
-	if (_x.getSize() > 1 && _y.getSize() > 1 &&
+	if (_x.getSize() > 2 && _y.getSize() > 2 &&
 		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
 	   _x.remove(aIndex);
 	   _y.remove(aIndex);
@@ -558,6 +558,28 @@ bool LinearFunction::deletePoint(int aIndex)
 	}
 
    return false;
+}
+
+bool LinearFunction::deletePoints(const Array<int>& indices)
+{
+	bool pointsDeleted = false;
+	int numPointsLeft = _x.getSize() - indices.getSize();
+
+	if (numPointsLeft >= 2) {
+		// Assume the indices are sorted highest to lowest
+		for (int i=0; i<indices.getSize(); i++) {
+			int index = indices.get(i);
+			if (index >= 0 && index < _x.getSize()) {
+	         _x.remove(index);
+	         _y.remove(index);
+				pointsDeleted = true;
+			}
+		}
+		if (pointsDeleted)
+			calcCoefficients();
+	}
+
+   return pointsDeleted;
 }
 
 void LinearFunction::addPoint(double aX, double aY)
