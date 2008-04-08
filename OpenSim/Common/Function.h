@@ -156,7 +156,7 @@ public:
 	virtual void setZ(int aIndex, double aValue) { }
 	virtual bool deletePoint(int aIndex) = 0;
 	virtual bool deletePoints(const Array<int>& indices) { return false; }
-	virtual void addPoint(double aX, double aY) = 0;
+	virtual int addPoint(double aX, double aY) = 0;
 	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd) { return NULL; }
 	virtual Array<XYPoint>* renderAsLineSegments(int aIndex) { return NULL; }
 	static void deleteXYPointArray(Array<XYPoint>* aArray) { if (aArray) delete aArray; }

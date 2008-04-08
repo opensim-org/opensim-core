@@ -702,7 +702,7 @@ deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-void GCVSpline::
+int GCVSpline::
 addPoint(double aX, double aY)
 {
 	for (int i=0; i<_x.getSize(); i++)
@@ -725,6 +725,8 @@ addPoint(double aX, double aY)
 	int ierr=0;
 	gcvspl(_x.get(),_y.get(),_weights.get(),_halfOrder,_x.getSize(),
 		_coefficients.get(),_errorVariance,_wk.get(),ierr);
+
+	return i;
 }
 
 //_____________________________________________________________________________

@@ -507,7 +507,7 @@ bool StepFunction::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-void StepFunction::addPoint(double aX, double aY)
+int StepFunction::addPoint(double aX, double aY)
 {
 	for (int i=0; i<_x.getSize(); i++)
 		if (_x[i] > aX)
@@ -515,6 +515,8 @@ void StepFunction::addPoint(double aX, double aY)
 
 	_x.insert(i, aX);
 	_y.insert(i, aY);
+
+	return i;
 }
 
 Array<XYPoint>* StepFunction::renderAsLineSegments(double aStart, double aEnd)

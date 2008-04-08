@@ -582,7 +582,7 @@ bool LinearFunction::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-void LinearFunction::addPoint(double aX, double aY)
+int LinearFunction::addPoint(double aX, double aY)
 {
 	for (int i=0; i<_x.getSize(); i++)
 		if (_x[i] > aX)
@@ -593,6 +593,8 @@ void LinearFunction::addPoint(double aX, double aY)
 
 	// Recalculate the slopes
 	calcCoefficients();
+
+	return i;
 }
 
 Array<XYPoint>* LinearFunction::renderAsLineSegments(double aStart, double aEnd)

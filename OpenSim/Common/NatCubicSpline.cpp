@@ -714,7 +714,7 @@ bool NatCubicSpline::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-void NatCubicSpline::addPoint(double aX, double aY)
+int NatCubicSpline::addPoint(double aX, double aY)
 {
 	for (int i=0; i<_x.getSize(); i++)
 		if (_x[i] > aX)
@@ -725,6 +725,8 @@ void NatCubicSpline::addPoint(double aX, double aY)
 
 	// Recalculate the slopes
 	calcCoefficients();
+
+	return i;
 }
 
 Array<XYPoint>* NatCubicSpline::renderAsLineSegments(int aIndex)
