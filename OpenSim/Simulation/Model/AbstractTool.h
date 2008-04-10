@@ -199,7 +199,7 @@ public:
 	// MODEL LOADING
 	//--------------------------------------------------------------------------
 	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
-	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
+	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0)  SWIG_DECLARE_EXCEPTION;
 	void addAnalysisSetToModel();
 	void removeAnalysisSetFromModel();
 	void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
