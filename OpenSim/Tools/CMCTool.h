@@ -245,6 +245,9 @@ public:
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
+	// Target selection
+	bool getUseFastTarget() const { return _useFastTarget;};
+	void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
