@@ -233,6 +233,9 @@ public:
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
+	double getTimeWindow() const { return _targetDT; }
+	void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; }
+
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
