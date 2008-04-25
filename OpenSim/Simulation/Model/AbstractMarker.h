@@ -76,6 +76,7 @@ public:
 	virtual void updateFromMarker(const AbstractMarker &aMarker) = 0;
 	virtual void getOffset(SimTK::Vec3& rOffset) const = 0;
 	virtual const SimTK::Vec3& getOffset() const = 0;
+	virtual void getOffset(double rOffset[]) const = 0;
 	virtual bool setOffset(const SimTK::Vec3& aOffset) = 0;
 	//virtual bool setOffset(const double aPoint[3]) = 0;
 	virtual bool getOffsetUseDefault() const = 0;

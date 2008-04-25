@@ -288,6 +288,19 @@ void Marker::getOffset(SimTK::Vec3& rOffset) const
 
 //_____________________________________________________________________________
 /**
+ * Get the marker's XYZ offset from the body it's attached to.
+ *
+ * @param rOffset XYZ offset is returned here.
+ */
+void Marker::getOffset(double rOffset[]) const
+{
+	rOffset[0] = _offset[0];
+	rOffset[1] = _offset[1];
+	rOffset[2] = _offset[2];
+}
+
+//_____________________________________________________________________________
+/**
  * Set the marker's XYZ offset from the body it's attached to.
  *
  * @param aOffset XYZ offset to set to.

@@ -107,6 +107,7 @@ public:
 	virtual void updateFromMarker(const AbstractMarker &aMarker);
 	virtual void getOffset(SimTK::Vec3& rOffset) const;
 	virtual const SimTK::Vec3& getOffset() const { return _offset; }
+	virtual void getOffset(double rOffset[]) const;
 	virtual bool setOffset(const SimTK::Vec3& aOffset);
 	//virtual bool setOffset(const double aPoint[3]);
 	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
