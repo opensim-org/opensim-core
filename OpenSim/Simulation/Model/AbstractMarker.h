@@ -70,6 +70,7 @@ public:
 	AbstractMarker(const AbstractMarker &aMarker);
 	virtual ~AbstractMarker();
 	virtual Object* copy() const = 0;
+	static void deleteMarker(AbstractMarker* aMarker) { if (aMarker) delete aMarker; }
 #ifndef SWIG
 	AbstractMarker& operator=(const AbstractMarker &aMarker);
 #endif
@@ -78,7 +79,7 @@ public:
 	virtual const SimTK::Vec3& getOffset() const = 0;
 	virtual void getOffset(double rOffset[]) const = 0;
 	virtual bool setOffset(const SimTK::Vec3& aOffset) = 0;
-	//virtual bool setOffset(const double aPoint[3]) = 0;
+	virtual bool setOffset(const double aOffset[3]) = 0;
 	virtual bool getOffsetUseDefault() const = 0;
 	virtual bool getFixed() const = 0;
 	virtual bool setFixed(bool aFixed) = 0;
@@ -88,7 +89,7 @@ public:
 	virtual bool getBodyNameUseDefault() const = 0;
 	virtual bool setBodyNameUseDefault(bool aValue) = 0;
 	virtual AbstractBody* getBody() const = 0;
-	virtual void setBody(AbstractBody* aBody) = 0;
+	virtual void setBody(AbstractBody& aBody, bool preserveLocation) = 0;
 	virtual void scale(const SimTK::Vec3& aScaleFactors) = 0;
 	virtual void setup(AbstractDynamicsEngine *aEngine) = 0;
 	virtual void removeSelfFromDisplay() = 0;

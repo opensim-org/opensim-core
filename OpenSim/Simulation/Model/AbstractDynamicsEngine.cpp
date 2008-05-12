@@ -364,7 +364,7 @@ int AbstractDynamicsEngine::replaceMarkerSet(MarkerSet& aMarkerSet)
 		AbstractBody* body = _bodySet.get(*bodyName);
 		if (body)
 		{
-			marker->setBody(body);
+			marker->setBody(*body, false);
 			_markerSet.append(marker);
 			numAdded++;
 		}

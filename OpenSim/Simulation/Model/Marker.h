@@ -109,7 +109,7 @@ public:
 	virtual const SimTK::Vec3& getOffset() const { return _offset; }
 	virtual void getOffset(double rOffset[]) const;
 	virtual bool setOffset(const SimTK::Vec3& aOffset);
-	//virtual bool setOffset(const double aPoint[3]);
+	virtual bool setOffset(const double aOffset[3]);
 	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
 	virtual bool getFixed() const { return _fixed; }
 	virtual bool setFixed(bool aFixed);
@@ -119,7 +119,7 @@ public:
 	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
 	virtual bool setBodyNameUseDefault(bool aValue);
 	virtual AbstractBody* getBody() const { return _body; }
-	virtual void setBody(AbstractBody* aBody);
+	virtual void setBody(AbstractBody& aBody, bool preserveLocation);
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void setup(AbstractDynamicsEngine* aEngine);
 	virtual void updateGeometry();

@@ -316,6 +316,21 @@ bool Marker::setOffset(const SimTK::Vec3& aOffset)
 
 //_____________________________________________________________________________
 /**
+ * Set the marker's XYZ offset from the body it's attached to.
+ *
+ * @param aOffset XYZ offset to set to.
+ * @return Whether or not the offset was set.
+ */
+bool Marker::setOffset(const double aOffset[3])
+{
+	_offset = aOffset;
+
+	updateGeometry();
+	return true;
+}
+
+//_____________________________________________________________________________
+/**
  * Set the marker's fixed status.
  *
  * @param aFixed boolean value to set to.
@@ -376,10 +391,21 @@ bool Marker::setBodyNameUseDefault(bool aValue)
  *
  * @param aBody Pointer to the body.
  */
-void Marker::setBody(AbstractBody* aBody)
+void Marker::setBody(AbstractBody& aBody, bool preserveLocation)
 {
-	_body = aBody;
-	// TODO: should body and bodyName be synced when either one is changed?
+	if (&aBody == _body)
+		return;
+
+	// Preserve location means to switch bodies without changing
+	// the location of the marker in the inertial reference frame.
+	if (preserveLocation) {
+	   AbstractDynamicsEngine* engine = aBody.getDynamicsEngine();
+	   if (engine)
+		   engine->transformPosition(*_body, _offset, aBody, _offset);
+	}
+
+	_body = &aBody;
+	_bodyName = aBody.getName();
 }
 
 //=============================================================================
