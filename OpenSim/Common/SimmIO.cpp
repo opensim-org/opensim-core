@@ -439,7 +439,7 @@ void OpenSim::convertString(string& aString, bool aPrependUnderscore)
 
    /* If the first character is a number, prepend an underscore. */
    if (aPrependUnderscore && aString[0] >= '0' && aString[0] <= '9')
-		aString.insert(0, '_');
+		aString.insert(0, "_");
 }
 
 string OpenSim::getCurrentTimeString()

@@ -584,7 +584,8 @@ bool LinearFunction::deletePoints(const Array<int>& indices)
 
 int LinearFunction::addPoint(double aX, double aY)
 {
-	for (int i=0; i<_x.getSize(); i++)
+	int i;
+	for (i=0; i<_x.getSize(); i++)
 		if (_x[i] > aX)
 			break;
 

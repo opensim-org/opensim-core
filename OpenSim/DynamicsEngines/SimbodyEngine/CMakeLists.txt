@@ -32,7 +32,8 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES(debug osimCommon_d      optimized osimCommon
                debug osimSimulation_d  optimized osimSimulation
-               debug SimTKsimbody_d    optimized SimTKsimbody )
+               debug SimTKsimbody_d    optimized SimTKsimbody 
+               debug SimTKcommon_d	   optimized SimTKcommon)
 						
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
