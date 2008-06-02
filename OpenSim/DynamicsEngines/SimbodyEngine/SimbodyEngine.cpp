@@ -1804,8 +1804,10 @@ void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const
 {
-
-	if(&aBodyFrom == &aBodyTo) return;
+	if(&aBodyFrom == &aBodyTo) {
+	   for (int i=0; i<3; i++) rVec[i] = aVec[i];
+		return;
+	}
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
@@ -1824,7 +1826,10 @@ void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const double aVec[3
  */
 void SimbodyEngine::transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const
 {
-	if(&aBodyFrom == &aBodyTo) return;
+	if(&aBodyFrom == &aBodyTo) {
+	   rVec = aVec;
+		return;
+	}
 	const SimbodyBody* bFrom = (const SimbodyBody*)&aBodyFrom;
 	const SimbodyBody* bTo = (const SimbodyBody*)&aBodyTo;
 
