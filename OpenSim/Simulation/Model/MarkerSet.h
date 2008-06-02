@@ -78,6 +78,7 @@ public:
 	void scale(const ScaleSet& aScaleSet);
 	/** Add a prefix to marker names for all markers in the set**/
 	void addNamePrefix(const std::string& prefix);
+	AbstractMarker* addMarker(const std::string& aName, const double aOffset[3], AbstractBody& aBody);
 //=============================================================================
 };	// END of class MarkerSet
 //=============================================================================

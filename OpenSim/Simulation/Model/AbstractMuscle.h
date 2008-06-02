@@ -126,6 +126,7 @@ public:
 	// PATH GEOMETRY
 	//--------------------------------------------------------------------------
 	MusclePoint* addAttachmentPoint(int aIndex, AbstractBody& aBody);
+	bool canDeleteAttachmentPoint(int aIndex);
 	bool deleteAttachmentPoint(int aIndex);
 	void addMuscleWrap(AbstractWrapObject& aWrapObject);
 	void moveUpMuscleWrap(int aIndex);

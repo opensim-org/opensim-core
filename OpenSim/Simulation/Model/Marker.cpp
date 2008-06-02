@@ -116,6 +116,7 @@ void Marker::copyData(const Marker &aMarker)
 	_offset = aMarker._offset;
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
+	_body = aMarker._body;
 	_displayer = aMarker._displayer;
 	_virtual = aMarker._virtual;
 }

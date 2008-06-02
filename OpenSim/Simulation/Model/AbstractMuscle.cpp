@@ -563,11 +563,12 @@ void AbstractMuscle::placeNewAttachment(SimTK::Vec3& aOffset, int aIndex, Abstra
 
 //_____________________________________________________________________________
 /**
- * Delete an attachment point.
+ * See if an attachment point can be deleted.
  *
  * @param aIndex The index of the point to delete
+ * @return Whether or not the point can be deleted
  */
-bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
+bool AbstractMuscle::canDeleteAttachmentPoint(int aIndex)
 {
 	// An attachment point can be deleted only if there would remain
 	// at least two other fixed points.
@@ -579,31 +580,46 @@ bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
 		}
 	}
 
-	if (numOtherFixedPoints >= 2) {
-		_attachmentSet.remove(aIndex);
-
-		// rename the attachment points starting at the deleted position
-		nameAttachmentPoints(aIndex);
-
-	   // Update start point and end point in the wrap instances so that they
-	   // refer to the same attachment points they did before the point was
-	   // deleted. These indices are 1-based. If the point deleted is start
-		// point or end point, the muscle wrap range is made smaller by one point.
-		aIndex++;
-	   for (int i=0; i<_muscleWrapSet.getSize(); i++) {
-	   	int startPoint = _muscleWrapSet.get(i)->getStartPoint();
-	   	int endPoint = _muscleWrapSet.get(i)->getEndPoint();
-			if ((startPoint != -1 && aIndex < startPoint) || (startPoint > _attachmentSet.getSize()))
-				_muscleWrapSet.get(i)->setStartPoint(startPoint - 1);
-			if (endPoint > 1 && aIndex <= endPoint && ((endPoint > startPoint) || (endPoint > _attachmentSet.getSize())))
-				_muscleWrapSet.get(i)->setEndPoint(endPoint - 1);
-	   }
-
-		invalidatePath();
+	if (numOtherFixedPoints >= 2)
 		return true;
-	}
 
 	return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Delete an attachment point.
+ *
+ * @param aIndex The index of the point to delete
+ * @return Whether or not the point was deleted
+ */
+bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
+{
+	if (canDeleteAttachmentPoint(aIndex) == false)
+		return false;
+
+	_attachmentSet.remove(aIndex);
+
+	// rename the attachment points starting at the deleted position
+	nameAttachmentPoints(aIndex);
+
+	// Update start point and end point in the wrap instances so that they
+	// refer to the same attachment points they did before the point was
+	// deleted. These indices are 1-based. If the point deleted is start
+	// point or end point, the muscle wrap range is made smaller by one point.
+	aIndex++;
+	for (int i=0; i<_muscleWrapSet.getSize(); i++) {
+	  	int startPoint = _muscleWrapSet.get(i)->getStartPoint();
+	  	int endPoint = _muscleWrapSet.get(i)->getEndPoint();
+		if ((startPoint != -1 && aIndex < startPoint) || (startPoint > _attachmentSet.getSize()))
+			_muscleWrapSet.get(i)->setStartPoint(startPoint - 1);
+		if (endPoint > 1 && aIndex <= endPoint && ((endPoint > startPoint) || (endPoint > _attachmentSet.getSize())))
+			_muscleWrapSet.get(i)->setEndPoint(endPoint - 1);
+	}
+
+	invalidatePath();
+
+	return true;
 }
 
 //_____________________________________________________________________________

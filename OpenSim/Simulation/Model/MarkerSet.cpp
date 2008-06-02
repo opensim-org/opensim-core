@@ -27,6 +27,7 @@
  */
 
 #include "MarkerSet.h"
+#include "Marker.h"
 #include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
@@ -184,4 +185,24 @@ void MarkerSet::addNamePrefix(const string& prefix)
 	// Cycle thru set and add prefix
 	for (i = 0; i < getSize(); i++)
 		get(i)->setName(prefix + get(i)->getName());
+}
+
+//_____________________________________________________________________________
+/**
+ * Create a new marker and add it to the set.
+ */
+AbstractMarker* MarkerSet::addMarker(const string& aName, const double aOffset[3], AbstractBody& aBody)
+{
+	// If a marker by this name already exists, do nothing.
+	if (get(aName) != NULL)
+		return NULL;
+
+	// Create a marker and add it to the set.
+	Marker* m = new Marker();
+	m->setName(aName);
+	m->setOffset(aOffset);
+	m->setBody(aBody, false);
+	append(m);
+
+	return m;
 }
