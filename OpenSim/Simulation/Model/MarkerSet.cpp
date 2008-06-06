@@ -198,11 +198,21 @@ AbstractMarker* MarkerSet::addMarker(const string& aName, const double aOffset[3
 		return NULL;
 
 	// Create a marker and add it to the set.
+	// Note: the GUI keeps track of deleted markers by storing pointers to them,
+	// so that they can be later restored. If a marker is deleted and then another
+	// one is created immediately after, it can sometimes happen that the just-freed
+	// pointer is reused for the new marker. This causes problems for the GUI's
+	// save/restore mechanism because it ends up using the same pointer to refer
+	// to both markers. The inelegant work-around is to 'new' a double before
+	// creating a new marker, which will hopefully result in the new marker
+	// pointer never equaling an old one.
+	double* guiHack = new double();
 	Marker* m = new Marker();
 	m->setName(aName);
 	m->setOffset(aOffset);
 	m->setBody(aBody, false);
 	append(m);
+	delete guiHack;
 
 	return m;
 }
