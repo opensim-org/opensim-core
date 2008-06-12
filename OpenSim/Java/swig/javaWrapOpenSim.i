@@ -107,7 +107,6 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/Simulation/Model/AbstractMarker.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 
 #include <OpenSim/Simulation/Model/MusclePoint.h>
@@ -431,6 +430,7 @@ using namespace SimTK;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 %include <OpenSim/Simulation/Model/AbstractMarker.h>
+%include <OpenSim/Simulation/Model/Marker.h>
 %template(SetMarkers) OpenSim::Set<OpenSim::AbstractMarker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 %include <OpenSim/Common/Range.h>
@@ -475,8 +475,6 @@ using namespace SimTK;
 
 %include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-
-%include <OpenSim/Simulation/Model/AbstractMarker.h>
 
 %include <OpenSim/Simulation/Model/MusclePoint.h>
 %include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
