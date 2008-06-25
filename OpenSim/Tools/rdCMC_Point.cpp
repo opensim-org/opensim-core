@@ -313,7 +313,7 @@ computeErrors(double aT)
 			pVec(i) = _pTrk[i]->evaluate(0,aT);
 		}
 		_model->getDynamicsEngine().getPosition(*_expressBody,pVec,_inertialPTrk);
-		if(_vTrk[i]==NULL) {
+		if(_vTrk[0]==NULL) {
 			_model->getDynamicsEngine().getVelocity(*_expressBody,pVec,_inertialVTrk);
 		} else {
 			for(int i=0;i<3;i++) {
