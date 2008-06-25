@@ -73,6 +73,10 @@ class OSIMTOOLS_API CMCTool: public AbstractTool
 private:
 	/** Name of the file containing the desired kinematic
 	trajectories. */
+	PropertyStr _desiredPointsFileNameProp;
+	std::string &_desiredPointsFileName;
+	/** Name of the file containing the desired kinematic
+	trajectories. */
 	PropertyStr _desiredKinematicsFileNameProp;
 	std::string &_desiredKinematicsFileName;
 	/** Name of the file containing the external loads applied to the model. */
@@ -205,6 +209,9 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+
+	const std::string &getDesiredPointsFileName() { return _desiredPointsFileName; }
+	void setDesiredPointsFileName(const std::string &aFileName) { _desiredPointsFileName = aFileName; }
 
 	const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
 	void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }

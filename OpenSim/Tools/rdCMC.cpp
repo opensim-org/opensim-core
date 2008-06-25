@@ -51,6 +51,7 @@
 #include <OpenSim/Common/rdOptimizationTarget.h>
 #include <simmath/Optimizer.h>
 #include "rdCMC.h"
+#include "rdCMC_Point.h"
 #include "rdCMC_Joint.h"
 #include "rdCMC_TaskSet.h"
 #include "rdActuatorForceTarget.h"
@@ -96,7 +97,11 @@ rdCMC::rdCMC(Model *aModel,rdCMC_TaskSet *aTaskSet) :
 	// STORAGE
 	Array<string> labels;
 	labels.append("time");
-	for(int i=0;i<_taskSet->getSize();i++) labels.append(_taskSet->get(i)->getName());
+	for(int i=0;i<_taskSet->getSize();i++) {
+		for(int j=0;j<_taskSet->get(i)->getNumTaskFunctions();j++) {
+			labels.append(_taskSet->get(i)->getName());
+		}
+	}
 	_pErrStore = new Storage(1000,"PositionErrors");
 	_pErrStore->setColumnLabels(labels);
 	_vErrStore = new Storage(1000,"VelocityErrors");
@@ -693,7 +698,7 @@ computeControls(double &rDT,double aT,const double *aY,
 	cout<<"rdCMC.computeControls:  t = "<<aT<<endl;
 	if(_verbose) cout<<"integration step size = "<<rDT<<",  target time = "<<_tf<<endl;
 
-	int i;
+	int i,j;
 
 	// TURN ANALYSES OFF
 	_model->getAnalysisSet()->setOn(false);
@@ -742,16 +747,21 @@ computeControls(double &rDT,double aT,const double *aY,
 	Array<double> &vErr = _taskSet->getVelocityErrors();
 	if(_verbose) cout<<"\nErrors at time "<<aT<<":"<<endl;
 	rdCMC_Task *task;
-	for(i=0;i<pErr.getSize();i++) {
+	int e=0;
+	for(i=0;i<_taskSet->getSize();i++) {
 		
 		task = _taskSet->get(i);
 		if(task==NULL) continue;
 
 		if(_verbose) {
-			cout<<task->getName()<<":  ";
-			cout<<"pErr="<<pErr[i]<<" vErr="<<vErr[i]<<endl;
+			for(j=0;j<task->getNumTaskFunctions();j++) {
+				cout<<task->getName()<<":  ";
+				cout<<"pErr="<<pErr[e]<<" vErr="<<vErr[e]<<endl;
+				e++;
+			}
 		}
 	}
+
 	double *err = new double[pErr.getSize()];
 	for(i=0;i<pErr.getSize();i++) err[i] = pErr[i];
 	_pErrStore->append(tiReal,pErr.getSize(),err);
@@ -771,7 +781,7 @@ computeControls(double &rDT,double aT,const double *aY,
 	
 		Array<double> &pErr = _taskSet->getPositionErrors();
 		double stressTermWeight = 1;
-		for(i=0;i<pErr.getSize();i++) {
+		for(i=0;i<_taskSet->getSize();i++) {
 			if(dynamic_cast<rdCMC_Joint*>(_taskSet->get(i))) {
 				rdCMC_Joint *jointTask = dynamic_cast<rdCMC_Joint*>(_taskSet->get(i));
 				if(jointTask->getLimit()) {

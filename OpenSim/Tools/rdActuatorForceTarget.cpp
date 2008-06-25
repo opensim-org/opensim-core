@@ -160,6 +160,12 @@ prepareToOptimize(double *x)
 		for(int i=0; i<nacc; i++) _accelPerformanceMatrix(i,j) = (accelVec[i] - _accelPerformanceVector[i]);
 		for(int i=0; i<nf; i++) _forcePerformanceMatrix(i,j) = (forceVec[i] - _forcePerformanceVector[i]);
 		f[j] = 0;
+		//cout<<"nf = "<<j<<endl;
+		//cout<<endl;
+		//accelVec.dump("accelVec");
+		//cout<<endl;
+		//_accelPerformanceVector.dump("_accelPerformanceVector");
+		//cout<<endl;
 	}
 
 #ifdef USE_LAPACK_DIRECT_SOLVE

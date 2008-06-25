@@ -52,6 +52,7 @@
 #include "MeasurementSet.h"
 #include "ModelScaler.h"
 
+#include "rdCMC_Point.h"
 #include "rdCMC_Joint.h"
 #include "rdCMC_TaskSet.h"
 
@@ -90,6 +91,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( ModelScaler() );
 
 	Object::RegisterType( rdCMC_Joint() );
+	Object::RegisterType( rdCMC_Point() );
 	Object::RegisterType( rdCMC_TaskSet() );
 }
 

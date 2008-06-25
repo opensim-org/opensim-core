@@ -277,6 +277,9 @@ void rdCMC_Joint::
 computeErrors(double aT)
 {
 	// COMPUTE ERRORS
+	//std::cout<<_coordinateName<<std::endl;
+	//std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
+	//std::cout<<"_q->getValue() = "<<_q->getValue()<<std::endl;
 	_pErr[0] = _pTrk[0]->evaluate(0,aT) - _q->getValue();
 	if(_vTrk[0]==NULL) {
 		_vErr[0] = _pTrk[0]->evaluate(1,aT) - _u->getValue();

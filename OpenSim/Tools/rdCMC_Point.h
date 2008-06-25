@@ -45,6 +45,8 @@
 
 namespace OpenSim {
 
+class AbstractBody;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -59,14 +61,17 @@ class OSIMTOOLS_API rdCMC_Point : public rdCMC_Task
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-
 protected:
-	/** Body on which the tracked point resides. */
-	AbstractBody *_body;
 	/** Location of the tracked point on the body expressed in the body-local
 	coordinate frame. */
-	SimTK::Vec3 _point;
+	PropertyDblVec3 _propPoint;
+
+	// REFERENCES
+	SimTK::Vec3 &_point;
+
+	// Work Variables
+	SimTK::Vec3 _p,_v,_inertialPTrk,_inertialVTrk;
+	AbstractBody *_wrtBody,*_expressBody;
 
 //=============================================================================
 // METHODS
@@ -75,23 +80,42 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	rdCMC_Point(AbstractBody *aBody,SimTK::Vec3& aPoint);
+	rdCMC_Point(const SimTK::Vec3 &aPoint = SimTK::Vec3(0));
+	rdCMC_Point(const rdCMC_Point &aTask);
 	virtual ~rdCMC_Point();
+	virtual Object* copy() const;
+private:
 	void setNull();
+	void setupProperties();
+	void copyData(const rdCMC_Point &aTask);
+	void updateWorkVariables();
 
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+#ifndef SWIG
+	rdCMC_Point& operator=(const rdCMC_Point &aTask);
+#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	virtual void setModel(Model *aModel);
+	void setPoint(const SimTK::Vec3 &aPoint);
+	SimTK::Vec3 getPoint() const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computePositionError(double time,SimTK::Vec3& posErr);
-	virtual void computeVelocityError(double time,SimTK::Vec3& velErr);
-	virtual void computeDesiredAccelerations(double time,SimTK::Vec3& acc);
-	virtual void computeJacobian();
-	virtual void computeEffectiveMassMatrix();
+	virtual void computeErrors(double aT);
+	virtual void computeDesiredAccelerations(double aT);
+	virtual void computeDesiredAccelerations(double aTI,double aTF);
+	virtual void computeAccelerations();
 
+	//--------------------------------------------------------------------------
+	// XML
+	//--------------------------------------------------------------------------
+	virtual void updateFromXMLNode();
 
 //=============================================================================
 };	// END of class rdCMC_Point

@@ -80,6 +80,7 @@ CMCTool::~CMCTool()
  */
 CMCTool::CMCTool() :
 	AbstractTool(),
+	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -119,6 +120,7 @@ CMCTool::CMCTool() :
  */
 CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
+	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -191,6 +193,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 CMCTool::
 CMCTool(const CMCTool &aTool) :
 	AbstractTool(aTool),
+	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
@@ -246,6 +249,7 @@ setNull()
 {
 	setupProperties();
 
+	_desiredPointsFileName = "";
 	_desiredKinematicsFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
@@ -284,6 +288,11 @@ setNull()
 void CMCTool::setupProperties()
 {
 	string comment;
+
+	comment = "Motion (.mot) or storage (.sto) file containing the desired point trajectories.";
+	_desiredPointsFileNameProp.setComment(comment);
+	_desiredPointsFileNameProp.setName("desired_points_file");
+	_propertySet.append( &_desiredPointsFileNameProp );
 
 	comment = "Motion (.mot) or storage (.sto) file containing the desired kinematic trajectories.";
 	_desiredKinematicsFileNameProp.setComment(comment);
@@ -473,6 +482,7 @@ operator=(const CMCTool &aTool)
 	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
+	_desiredPointsFileName = aTool._desiredPointsFileName;
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
 	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
@@ -561,6 +571,15 @@ bool CMCTool::run()
 
 
 	// ---- INPUT ----
+	// DESIRED POINTS
+	if(_desiredPointsFileName=="") {
+		cout<<"ERROR- a desired points file was not specified.\n\n";
+		IO::chDir(saveWorkingDirectory);
+		return false;
+	}
+	cout<<"\n\nLoading desired points from file "<<_desiredPointsFileName<<" ...\n";
+	Storage desiredPointsStore(_desiredPointsFileName);
+
 	// DESIRED KINEMATICS
 	if(_desiredKinematicsFileName=="") {
 		cout<<"ERROR- a desired kinematics file was not specified.\n\n";
@@ -573,7 +592,23 @@ bool CMCTool::run()
 	// ---- INITIAL AND FINAL TIME ----
 	// NOTE: important to do this before padding (for filtering)
 	// Initial Time
-	double ti = desiredKinStore.getFirstTime();
+	double ti = desiredPointsStore.getFirstTime();
+	if(_ti<ti) {
+		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
+		cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
+		cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+		_ti = ti;
+	}
+	// Final time
+	double tf = desiredPointsStore.getLastTime();
+	if(_tf>tf) {
+		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
+		cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
+		cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+		_tf = tf;
+	}
+	// Initial Time
+	ti = desiredKinStore.getFirstTime();
 	if(_ti<ti) {
 		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
 		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
@@ -581,7 +616,7 @@ bool CMCTool::run()
 		_ti = ti;
 	}
 	// Final time
-	double tf = desiredKinStore.getLastTime();
+    tf = desiredKinStore.getLastTime();
 	if(_tf>tf) {
 		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
 		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
@@ -593,6 +628,17 @@ bool CMCTool::run()
 	// Eran: important to filter *before* calling formCompleteStorages because we need the
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
+	desiredPointsStore.pad(60);
+	desiredPointsStore.print("desiredPoints_padded.sto");
+	if(_lowpassCutoffFrequency>=0) {
+		int order = 50;
+		cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
+		cout<<_lowpassCutoffFrequency<<"...";
+		desiredPointsStore.lowpassFIR(order,_lowpassCutoffFrequency);
+																					desiredPointsStore.print("desiredPoints_padded_filtered.sto");
+	} else {
+		cout<<"\n\nNote- not filtering the desired points.\n\n";
+	}
 	desiredKinStore.pad(60);
 	desiredKinStore.print("desiredKinematics_padded.sto");
 	if(_lowpassCutoffFrequency>=0) {
@@ -633,7 +679,19 @@ bool CMCTool::run()
 	}
 
 	// Spline
-	cout<<"\nConstructing function set for tracking...\n\n";
+	cout<<"\nConstructing function set for tracking desired points...\n\n";
+	GCVSplineSet posSet(5,&desiredPointsStore);
+
+	Storage *velStore=posSet.constructStorage(1);
+	GCVSplineSet velSet(5,velStore);
+	delete velStore; velStore=NULL;
+
+	// Print acc for debugging
+	Storage *accStore=posSet.constructStorage(2);
+	accStore->print("desiredPoints_splinefit_accelerations.sto");
+	delete accStore; accStore=NULL;	
+
+	cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
 	GCVSplineSet qSet(5,qStore);
 	delete qStore; qStore = NULL;
 
@@ -659,7 +717,12 @@ bool CMCTool::run()
 	rdCMC_TaskSet taskSet(_taskSetFileName);
 	cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
 	taskSet.setModel(_model);
-	taskSet.setFunctions(qSet);
+	GCVSplineSet qAndPosSet=qSet;
+	int np=posSet.getSize();
+	for(i=0;i<np;i++) {
+        qAndPosSet.append(posSet.get(i));
+	}
+	taskSet.setFunctions(qAndPosSet);
 
 	// CONSTRAINTS ON THE CONTROLS
 	ControlSet *controlConstraints = NULL;

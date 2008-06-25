@@ -69,9 +69,9 @@ protected:
 	/** Property to indicate on or off state. */
 	PropertyBool _propOn;
 	/** Body with respect to which the task goals are specified. */
-	PropertyInt _propWRTBody;
+	PropertyStr _propWRTBodyName;
 	/** Body frame in which the task goals are expressed. */
-	PropertyInt _propExpressBody;
+	PropertyStr _propExpressBodyName;
 	/** Property to specify the active task goals. */
 	PropertyBoolArray _propActive;
 	/** Weights of the task goals. */
@@ -98,9 +98,9 @@ protected:
 	/** Reference to the value of the on property. */
 	bool &_on;
 	/** Reference to the value of the WRTBody property. */
-	int &_wrtBody;
+	std::string &_wrtBodyName;
 	/** Reference to the value of the ExpressBody property. */
-	int &_expressBody;
+	std::string &_expressBodyName;
 	/** Reference to the value of the Active property. */
 	Array<bool> &_active;
 	/** Reference to the value of the Weight property. */
@@ -187,11 +187,11 @@ public:
 	void setOn(bool aTrueFalse);
 	bool getOn() const;
 	// WRT BODY
-	void setWRTBody(int aBody);
-	int getWRTBody() const;
+	void setWRTBodyName(std::string aBodyName);
+	std::string getWRTBodyName() const;
 	// EXPRESS BODY
-	void setExpressBody(int aBody);
-	int getExpressBody() const;
+	void setExpressBodyName(std::string aBodyName);
+	std::string getExpressBodyName() const;
 	// ACTIVE
 	void setActive(bool a0,bool a1=false,bool a2=false);
 	bool getActive(int aWhich) const;

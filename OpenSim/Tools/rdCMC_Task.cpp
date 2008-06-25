@@ -52,6 +52,11 @@ using namespace OpenSim;
 using SimTK::Vec3;
 
 //=============================================================================
+// CONSTANTS
+//=============================================================================
+#define CENTER_OF_MASS_NAME string("center_of_mass")
+
+//=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
@@ -76,8 +81,8 @@ rdCMC_Task::~rdCMC_Task()
  */
 rdCMC_Task::rdCMC_Task() :
 	_on(_propOn.getValueBool()),
-	_wrtBody(_propWRTBody.getValueInt()),
-	_expressBody(_propExpressBody.getValueInt()),
+	_wrtBodyName(_propWRTBodyName.getValueStr()),
+	_expressBodyName(_propExpressBodyName.getValueStr()),
 	_active(_propActive.getValueBoolArray()),
 	_w(_propW.getValueDblArray()),
 	_kp(_propKP.getValueDblArray()),
@@ -98,8 +103,8 @@ rdCMC_Task::rdCMC_Task() :
 rdCMC_Task::rdCMC_Task(const rdCMC_Task &aTask) :
 	Object(aTask),
 	_on(_propOn.getValueBool()),
-	_wrtBody(_propWRTBody.getValueInt()),
-	_expressBody(_propExpressBody.getValueInt()),
+	_wrtBodyName(_propWRTBodyName.getValueStr()),
+	_expressBodyName(_propExpressBodyName.getValueStr()),
 	_active(_propActive.getValueBoolArray()),
 	_w(_propW.getValueDblArray()),
 	_kp(_propKP.getValueDblArray()),
@@ -129,8 +134,8 @@ setNull()
 	setupProperties();
 
 	_model = NULL;
-	_wrtBody = -1;
-	_expressBody = -1;
+	_wrtBodyName = "";
+	_expressBodyName = "";
 	_on = true;
 	_active[0] = _active[1] = _active[2] = false;
 	_w[0] = _w[1] = _w[2] = 1.0;
@@ -165,17 +170,18 @@ setupProperties()
 	_propOn.setValue(true);
 	_propertySet.append(&_propOn);
 
-	_propWRTBody.setComment("Body frame with respect to which a tracking objective is specified. "
+	_propWRTBodyName.setComment("Name of body frame with respect to which a tracking objective is specified. "
+		"The special name '"+CENTER_OF_MASS_NAME+"' refers to the system center of mass. "
 		"This property is not used for tracking joint angles.");
-	_propWRTBody.setName("wrt_body");
-	_propWRTBody.setValue(-1);
-	_propertySet.append(&_propWRTBody);
+	_propWRTBodyName.setName("wrt_body");
+	_propWRTBodyName.setValue("");
+	_propertySet.append(&_propWRTBodyName);
 
-	_propExpressBody.setComment("Specifies the body frame in which the tracking "
+	_propExpressBodyName.setComment("Name of body frame in which the tracking "
 		"objectives are expressed.  This property is not used for tracking joint angles.");
-	_propExpressBody.setName("express_body");
-	_propExpressBody.setValue(-1);
-	_propertySet.append(&_propExpressBody);
+	_propExpressBodyName.setName("express_body");
+	_propExpressBodyName.setValue("");
+	_propertySet.append(&_propExpressBodyName);
 
 	Array<bool> active(false,3);
 	_propActive.setComment("Array of 3 flags (each true or false) specifying whether a "
@@ -246,8 +252,8 @@ copyData(const rdCMC_Task &aTask)
 {
 	int i;
 	_model = aTask.getModel();
-	setWRTBody(aTask.getWRTBody());
-	setExpressBody(aTask.getExpressBody());
+	setWRTBodyName(aTask.getWRTBodyName());
+	setExpressBodyName(aTask.getExpressBodyName());
 	setOn(aTask.getOn());
 	for(i=0;i<3;i++) _active[i] = aTask.getActive(i);
 	for(i=0;i<3;i++) _kp[i] = aTask.getKP(i);
@@ -367,9 +373,9 @@ getOn() const
  * @param aBody Body ID.
  */
 void rdCMC_Task::
-setWRTBody(int aBody)
+setWRTBodyName(std::string aBodyName)
 {
-	_wrtBody = aBody;
+	_wrtBodyName = aBodyName;
 }
 //_____________________________________________________________________________
 /**
@@ -377,10 +383,10 @@ setWRTBody(int aBody)
  *
  * @return Body ID.
  */
-int rdCMC_Task::
-getWRTBody() const
+std::string rdCMC_Task::
+getWRTBodyName() const
 {
-	return(_wrtBody);
+	return(_wrtBodyName);
 }
 
 //-----------------------------------------------------------------------------
@@ -393,9 +399,9 @@ getWRTBody() const
  * @param aBody Body ID.
  */
 void rdCMC_Task::
-setExpressBody(int aBody)
+setExpressBodyName(std::string aBodyName)
 {
-	_expressBody = aBody;
+	_expressBodyName = aBodyName;
 }
 //_____________________________________________________________________________
 /**
@@ -403,10 +409,10 @@ setExpressBody(int aBody)
  *
  * @return Body ID.
  */
-int rdCMC_Task::
-getExpressBody() const
+std::string rdCMC_Task::
+getExpressBodyName() const
 {
-	return(_expressBody);
+	return(_expressBodyName);
 }
 
 //-----------------------------------------------------------------------------
@@ -1056,8 +1062,8 @@ updateFromXMLNode()
 {
 	Object::updateFromXMLNode();
 
-	setWRTBody(_wrtBody);
-	setExpressBody(_expressBody);
+	setWRTBodyName(_wrtBodyName);
+	setExpressBodyName(_expressBodyName);
 	setOn(_on);
 	setActive(_active[0],_active[1],_active[2]);
 	setWeight(_w[0],_w[1],_w[2]);
