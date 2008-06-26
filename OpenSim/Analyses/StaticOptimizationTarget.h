@@ -35,7 +35,7 @@
 // INCLUDES
 //=============================================================================
 #include "osimAnalysesDLL.h"
-#include "Array.h"
+#include <OpenSim/Common/Array.h>
 #include <simmath/Optimizer.h>
 
 //=============================================================================
