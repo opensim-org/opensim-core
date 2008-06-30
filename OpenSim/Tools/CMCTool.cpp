@@ -571,83 +571,101 @@ bool CMCTool::run()
 
 
 	// ---- INPUT ----
-	// DESIRED POINTS
-	if(_desiredPointsFileName=="") {
-		cout<<"ERROR- a desired points file was not specified.\n\n";
+	// DESIRED POINTS AND KINEMATICS
+	if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
+		cout<<"ERROR- a desired points file and desired kinematics file were not specified.\n\n";
 		IO::chDir(saveWorkingDirectory);
 		return false;
 	}
-	cout<<"\n\nLoading desired points from file "<<_desiredPointsFileName<<" ...\n";
-	Storage desiredPointsStore(_desiredPointsFileName);
 
-	// DESIRED KINEMATICS
-	if(_desiredKinematicsFileName=="") {
-		cout<<"ERROR- a desired kinematics file was not specified.\n\n";
-		IO::chDir(saveWorkingDirectory);
-		return false;
+	Storage *desiredPointsStore=NULL;
+	bool desiredPointsFlag = false;
+	if(_desiredPointsFileName=="") {
+		cout<<"\n\nWARN- a desired points file was not specified.\n\n";
+	} else {
+		cout<<"\n\nLoading desired points from file "<<_desiredPointsFileName<<" ...\n";
+		desiredPointsStore = new Storage(_desiredPointsFileName);
+		desiredPointsFlag = true;
 	}
-	cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-	Storage desiredKinStore(_desiredKinematicsFileName);
+
+	Storage *desiredKinStore=NULL;
+	bool desiredKinFlag = false;
+	if(_desiredKinematicsFileName=="") {
+		cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
+	} else {
+		cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
+		desiredKinStore = new Storage(_desiredKinematicsFileName);
+		desiredKinFlag = true;
+	}
 
 	// ---- INITIAL AND FINAL TIME ----
 	// NOTE: important to do this before padding (for filtering)
 	// Initial Time
-	double ti = desiredPointsStore.getFirstTime();
-	if(_ti<ti) {
-		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-		cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-		cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
-		_ti = ti;
+	if(desiredPointsFlag) {
+		double ti = desiredPointsStore->getFirstTime();
+		if(_ti<ti) {
+			cout<<"\nThe initial time set for the cmc run precedes the first time\n";
+			cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
+			cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+			_ti = ti;
+		}
+		// Final time
+		double tf = desiredPointsStore->getLastTime();
+		if(_tf>tf) {
+			cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
+			cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
+			cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+			_tf = tf;
+		}
 	}
-	// Final time
-	double tf = desiredPointsStore.getLastTime();
-	if(_tf>tf) {
-		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-		cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-		cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
-		_tf = tf;
-	}
+
 	// Initial Time
-	ti = desiredKinStore.getFirstTime();
-	if(_ti<ti) {
-		cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-		cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
-		_ti = ti;
-	}
-	// Final time
-    tf = desiredKinStore.getLastTime();
-	if(_tf>tf) {
-		cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-		cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-		cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
-		_tf = tf;
+	if(desiredKinFlag) {
+		double ti = desiredKinStore->getFirstTime();
+		if(_ti<ti) {
+			cout<<"\nThe initial time set for the cmc run precedes the first time\n";
+			cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
+			cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+			_ti = ti;
+		}
+		// Final time
+		double tf = desiredKinStore->getLastTime();
+		if(_tf>tf) {
+			cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
+			cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
+			cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+			_tf = tf;
+		}
 	}
 
 	// Filter
 	// Eran: important to filter *before* calling formCompleteStorages because we need the
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
-	desiredPointsStore.pad(60);
-	desiredPointsStore.print("desiredPoints_padded.sto");
-	if(_lowpassCutoffFrequency>=0) {
-		int order = 50;
-		cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
-		cout<<_lowpassCutoffFrequency<<"...";
-		desiredPointsStore.lowpassFIR(order,_lowpassCutoffFrequency);
-																					desiredPointsStore.print("desiredPoints_padded_filtered.sto");
-	} else {
-		cout<<"\n\nNote- not filtering the desired points.\n\n";
+	if(desiredPointsFlag) {
+		desiredPointsStore->pad(60);
+		desiredPointsStore->print("desiredPoints_padded.sto");
+		if(_lowpassCutoffFrequency>=0) {
+			int order = 50;
+			cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
+			cout<<_lowpassCutoffFrequency<<"...";
+			desiredPointsStore->lowpassFIR(order,_lowpassCutoffFrequency);
+		} else {
+			cout<<"\n\nNote- not filtering the desired points.\n\n";
+		}
 	}
-	desiredKinStore.pad(60);
-	desiredKinStore.print("desiredKinematics_padded.sto");
-	if(_lowpassCutoffFrequency>=0) {
-		int order = 50;
-		cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
-		cout<<_lowpassCutoffFrequency<<"...\n\n";
-		desiredKinStore.lowpassFIR(order,_lowpassCutoffFrequency);
-	} else {
-		cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
+
+	if(desiredKinFlag) {
+		desiredKinStore->pad(60);
+		desiredKinStore->print("desiredKinematics_padded.sto");
+		if(_lowpassCutoffFrequency>=0) {
+			int order = 50;
+			cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
+			cout<<_lowpassCutoffFrequency<<"...\n\n";
+			desiredKinStore->lowpassFIR(order,_lowpassCutoffFrequency);
+		} else {
+			cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
+		}
 	}
 
 	// Form complete storage objects for the q's and u's
@@ -655,55 +673,66 @@ bool CMCTool::run()
 	// setting constrained coordinates to their valid values.
 	Storage *qStore=NULL;
 	Storage *uStore=NULL;
-	_model->getDynamicsEngine().formCompleteStorages(desiredKinStore,qStore,uStore);
-	_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
-	_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+	if(desiredKinFlag) {
+		_model->getDynamicsEngine().formCompleteStorages(*desiredKinStore,qStore,uStore);
+		_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
+		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+	}
 
 	// GROUND REACTION FORCES
 	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
-	if(_adjustCOMToReduceResiduals) {
-		adjustCOMToReduceResiduals(*qStore,*uStore);
+	if(desiredKinFlag) {
+		if(_adjustCOMToReduceResiduals) {
+			adjustCOMToReduceResiduals(*qStore,*uStore);
 
-		// If not adjusting kinematics, we don't proceed with CMC, and just stop here.
-		if(!_adjustKinematicsToReduceResiduals) {
-			cout << "No kinematics adjustment requested." << endl;
-			delete qStore;
-			delete uStore;
-			writeAdjustedModel();
-			IO::chDir(saveWorkingDirectory);
-			return true;
+			// If not adjusting kinematics, we don't proceed with CMC, and just stop here.
+			if(!_adjustKinematicsToReduceResiduals) {
+				cout << "No kinematics adjustment requested." << endl;
+				delete qStore;
+				delete uStore;
+				writeAdjustedModel();
+				IO::chDir(saveWorkingDirectory);
+				return true;
+			}
 		}
 	}
 
 	// Spline
-	cout<<"\nConstructing function set for tracking desired points...\n\n";
-	GCVSplineSet posSet(5,&desiredPointsStore);
+	GCVSplineSet *posSet=NULL;
+	if(desiredPointsFlag) {
+		cout<<"\nConstructing function set for tracking desired points...\n\n";
+		posSet = new GCVSplineSet(5,desiredPointsStore);
 
-	Storage *velStore=posSet.constructStorage(1);
-	GCVSplineSet velSet(5,velStore);
-	delete velStore; velStore=NULL;
+		Storage *velStore=posSet->constructStorage(1);
+		GCVSplineSet velSet(5,velStore);
+		delete velStore; velStore=NULL;
 
-	// Print acc for debugging
-	Storage *accStore=posSet.constructStorage(2);
-	accStore->print("desiredPoints_splinefit_accelerations.sto");
-	delete accStore; accStore=NULL;	
+		// Print acc for debugging
+		Storage *accStore=posSet->constructStorage(2);
+		accStore->print("desiredPoints_splinefit_accelerations.sto");
+		delete accStore; accStore=NULL;	
+	}
 
-	cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
-	GCVSplineSet qSet(5,qStore);
-	delete qStore; qStore = NULL;
+	GCVSplineSet *qSet=NULL;
+	GCVSplineSet *uSet=NULL;
+	if(desiredKinFlag) {
+		cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
+		qSet = new GCVSplineSet(5,qStore);
+		delete qStore; qStore = NULL;
 
-	delete uStore;
-	uStore = qSet.constructStorage(1);
-	GCVSplineSet uSet(5,uStore);
-	delete uStore; uStore=NULL;
+		delete uStore;
+		uStore = qSet->constructStorage(1);
+		uSet = new GCVSplineSet(5,uStore);
+		delete uStore; uStore=NULL;
 
-	// Print dudt for debugging
-	Storage *dudtStore = qSet.constructStorage(2);
-	dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
-	delete dudtStore; dudtStore=NULL;
+		// Print dudt for debugging
+		Storage *dudtStore = qSet->constructStorage(2);
+		dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
+		delete dudtStore; dudtStore=NULL;
+	}
 
 	// ANALYSES
 	addNecessaryAnalyses();
@@ -717,12 +746,21 @@ bool CMCTool::run()
 	rdCMC_TaskSet taskSet(_taskSetFileName);
 	cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
 	taskSet.setModel(_model);
-	GCVSplineSet qAndPosSet=qSet;
-	int np=posSet.getSize();
-	for(i=0;i<np;i++) {
-        qAndPosSet.append(posSet.get(i));
+	GCVSplineSet *qAndPosSet=NULL;
+	qAndPosSet = new GCVSplineSet();
+	if(desiredPointsFlag) {
+		int nps=posSet->getSize();
+		for(i=0;i<nps;i++) {
+			qAndPosSet->append(posSet->get(i));
+		}
 	}
-	taskSet.setFunctions(qAndPosSet);
+	if(desiredKinFlag) {
+		int nqs=qSet->getSize();
+		for(i=0;i<nqs;i++) {
+			qAndPosSet->append(qSet->get(i));
+		}
+	}
+	taskSet.setFunctions(*qAndPosSet);
 
 	// CONSTRAINTS ON THE CONTROLS
 	ControlSet *controlConstraints = NULL;
@@ -736,12 +774,17 @@ bool CMCTool::run()
 	// ---- INITIAL STATES ----
 	Array<double> yi(0.0,ny);
 	_model->getInitialStates(&yi[0]);
-	cout<<"Using the generalized coordinates specified in "<<_desiredKinematicsFileName;
-	cout<<" to set the initial configuration.\n";
 	Array<double> q(0.0,nq);
 	Array<double> u(0.0,nu);
-	qSet.evaluate(q,0,_ti);
-	uSet.evaluate(u,0,_ti);
+	if(desiredKinFlag) {
+		cout<<"Using the generalized coordinates specified in "<<_desiredKinematicsFileName;
+		cout<<" to set the initial configuration.\n";
+		qSet->evaluate(q,0,_ti);
+		uSet->evaluate(u,0,_ti);
+	} else {
+		cout<<"Using the generalized coordinates specified as zeros ";
+		cout<<" to set the initial configuration.\n";
+	}
 	for(i=0;i<nq;i++) yi[i] = q[i];
 	for(i=0;i<nu;i++) yi[i+nq] = u[i];
 	_model->setInitialStates(&yi[0]);
@@ -759,7 +802,7 @@ bool CMCTool::run()
 	// to be specified.
 	string rraControlName;
 	ModelIntegrandForActuators cmcIntegrand(_model);
-	cmcIntegrand.setCoordinateTrajectories(&qSet);
+	cmcIntegrand.setCoordinateTrajectories(qSet);
 	VectorFunctionForActuators *predictor =
 		new VectorFunctionForActuators(&cmcIntegrand);
 	controller.setActuatorForcePredictor(predictor);
