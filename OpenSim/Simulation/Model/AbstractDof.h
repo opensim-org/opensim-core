@@ -103,6 +103,7 @@ public:
 	virtual DofType getMotionType() const = 0;
 	virtual void setAxis(const SimTK::Vec3& axis) = 0;
 	virtual void getAxis(SimTK::Vec3& axis) const = 0;
+	virtual void getAxis(double rAxis[]) const = 0;
 	virtual const double* getAxisPtr(void) const = 0;
 	virtual double getValue() = 0;
 	virtual const AbstractCoordinate* getCoordinate() const { return _coordinate; }

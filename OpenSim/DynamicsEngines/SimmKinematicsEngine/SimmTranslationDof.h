@@ -89,6 +89,7 @@ public:
 
 	virtual void setAxis(const SimTK::Vec3& rAxis);
 	virtual void getAxis(SimTK::Vec3& rAxis) const;
+	virtual void getAxis(double rAxis[]) const { rAxis[0]=_axis[0]; rAxis[1]=_axis[1]; rAxis[2]=_axis[2]; }
 	virtual const double* getAxisPtr() const { return &_axis[0]; }
 	virtual double getValue();
 	virtual DofType getMotionType() const { return Translational; }

@@ -121,8 +121,10 @@ public:
 	virtual DofSet* getDofSet() const { return &_dofSet; }
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
 	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;
+	virtual void getLocationInParent(double rLocation[]) const;
 	virtual void setLocationInChild(const SimTK::Vec3& aLocation);
 	virtual void getLocationInChild(SimTK::Vec3& rLocation) const;
+	virtual void getLocationInChild(double rLocation[]) const;
 	virtual const Transform& getForwardTransform();
 	virtual const Transform& getInverseTransform();
 

@@ -282,6 +282,18 @@ void SdfastJoint::getLocationInParent(SimTK::Vec3& rLocation) const
 {
 	rLocation=_locationInParent;
 }
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its parent body.
+ *
+ * @param rLocation Currnt location specified in the parent body frame.
+ */
+void SdfastJoint::getLocationInParent(double rLocation[]) const
+{
+	rLocation[0] = _locationInParent[0];
+	rLocation[1] = _locationInParent[1];
+	rLocation[2] = _locationInParent[2];
+}
 
 //-----------------------------------------------------------------------------
 // LOCATION IN CHILD
@@ -329,6 +341,18 @@ void SdfastJoint::setLocationInChild(const SimTK::Vec3& aLocation)
 void SdfastJoint::getLocationInChild(SimTK::Vec3& rLocation) const
 {
 	rLocation=_locationInChild;
+}
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its child body.
+ *
+ * @param rLocation Current location specified in the child body frame.
+ */
+void SdfastJoint::getLocationInChild(double rLocation[]) const
+{
+	rLocation[0] = _locationInChild[0];
+	rLocation[1] = _locationInChild[1];
+	rLocation[2] = _locationInChild[2];
 }
 
 

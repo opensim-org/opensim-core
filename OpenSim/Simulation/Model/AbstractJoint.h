@@ -89,6 +89,12 @@ public:
 	virtual DofSet* getDofSet() const { return NULL; }
 	virtual AbstractBody* getChildBody() const = 0;
 	virtual AbstractBody* getParentBody() const = 0;
+	virtual void setLocationInParent(const SimTK::Vec3& aLocation) = 0;
+	virtual void getLocationInParent(SimTK::Vec3& rLocation) const = 0;
+	virtual void getLocationInParent(double rLocation[]) const = 0;
+	virtual void setLocationInChild(const SimTK::Vec3& aLocation) = 0;
+	virtual void getLocationInChild(SimTK::Vec3& rLocation) const = 0;
+	virtual void getLocationInChild(double rLocation[]) const = 0;
 	virtual const Transform& getForwardTransform() = 0;
 	virtual const Transform& getInverseTransform() = 0;
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const = 0;

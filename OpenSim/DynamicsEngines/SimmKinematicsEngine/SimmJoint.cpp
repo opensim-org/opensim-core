@@ -214,6 +214,94 @@ SimmJoint& SimmJoint::operator=(const SimmJoint &aJoint)
 //=============================================================================
 // GET AND SET
 //=============================================================================
+//-----------------------------------------------------------------------------
+// LOCATION IN PARENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the location of this joint in its parent body.  This method
+ * is not supported by this class.
+ *
+ * @param aLocation New location specified in the parent body frame.
+ */
+void SimmJoint::setLocationInParent(const SimTK::Vec3& aLocation)
+{
+	throw Exception("SimmJoint::setLocationInParent() not implemented.");
+}
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its parent body.
+ *
+ * @param rLocation Currnt location specified in the parent body frame.
+ */
+void SimmJoint::getLocationInParent(SimTK::Vec3& rLocation) const
+{
+	// To find the joint location in the parent body, start at the origin
+	// and add any constant translational DOFs.
+	rLocation[0] = rLocation[1] = rLocation[2] = 0.0;
+	for (int i = 0; i < _dofSet.getSize(); i++) {
+		if (_dofSet.get(i)->getFunction() == NULL &&
+			_dofSet.get(i)->getMotionType() == AbstractDof::Translational) {
+				SimTK::Vec3 vec;
+				_dofSet.get(i)->getAxis(vec);
+				vec *= _dofSet.get(i)->getValue();
+				rLocation += vec;
+	   }
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its parent body.
+ *
+ * @param rLocation Currnt location specified in the parent body frame.
+ */
+void SimmJoint::getLocationInParent(double rLocation[]) const
+{
+	SimTK::Vec3 vec;
+	getLocationInParent(vec);
+	rLocation[0] = vec[0];
+	rLocation[1] = vec[1];
+	rLocation[2] = vec[2];
+}
+
+//-----------------------------------------------------------------------------
+// LOCATION IN CHILD
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the location of this joint in its child body.  This method
+ * is not implemented in this class.
+ *
+ * @param aLocation New location specified in the child body frame.
+ */
+void SimmJoint::setLocationInChild(const SimTK::Vec3& aLocation)
+{
+	throw Exception("SimmJoint::setLocationInChild() not implemented.");
+}
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its child body.
+ *
+ * @param rLocation Current location specified in the child body frame.
+ */
+void SimmJoint::getLocationInChild(SimTK::Vec3& rLocation) const
+{
+	// In SIMM, the joint is always at the origin of the child body.
+	rLocation[0] = rLocation[1] = rLocation[2] = 0.0;
+}
+//_____________________________________________________________________________
+/**
+ * Get the location of this joint in its child body.
+ *
+ * @param rLocation Current location specified in the child body frame.
+ */
+void SimmJoint::getLocationInChild(double rLocation[]) const
+{
+	// In SIMM, the joint is always at the origin of the child body.
+	rLocation[0] = rLocation[1] = rLocation[2] = 0.0;
+}
+
+
 //_____________________________________________________________________________
 /**
  * Get the SimmJoint's forward transform.

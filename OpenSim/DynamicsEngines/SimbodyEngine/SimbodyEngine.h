@@ -168,7 +168,7 @@ public:
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
 	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
-		AbstractJoint*& rJoint) { return NULL; }
+		AbstractJoint*& rJoint);
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
