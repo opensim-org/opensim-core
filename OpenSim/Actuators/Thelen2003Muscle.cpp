@@ -175,62 +175,77 @@ void Thelen2003Muscle::setNull()
 void Thelen2003Muscle::setupProperties()
 {
 	_maxIsometricForceProp.setName("max_isometric_force");
+   _maxIsometricForceProp.setComment("maximum isometric force of the muscle fibers");
 	_maxIsometricForceProp.setValue(0.0);
 	_propertySet.append(&_maxIsometricForceProp, "Parameters");
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
+	_optimalFiberLengthProp.setComment("optimal length of the muscle fibers");
 	_optimalFiberLengthProp.setValue(0.0);
 	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
+	_tendonSlackLengthProp.setComment("resting length of the tendon");
 	_tendonSlackLengthProp.setValue(0.0);
 	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
 
 	_pennationAngleProp.setName("pennation_angle");
+	_pennationAngleProp.setComment("angle between tendon and fibers at optimal fiber length");
 	_pennationAngleProp.setValue(0.0);
 	_propertySet.append(&_pennationAngleProp, "Parameters");
 
 	_activationTimeConstantProp.setName("activation_time_constant");
+	_activationTimeConstantProp.setComment("time constant for ramping up of muscle activation");
 	_activationTimeConstantProp.setValue(0.0);
 	_propertySet.append(&_activationTimeConstantProp, "Parameters");
 
 	_deactivationTimeConstantProp.setName("deactivation_time_constant");
+	_deactivationTimeConstantProp.setComment("time constant for ramping down of muscle activation");
 	_deactivationTimeConstantProp.setValue(0.0);
 	_propertySet.append(&_deactivationTimeConstantProp, "Parameters");
 
 	_vmaxProp.setName("Vmax");
+	_vmaxProp.setComment("maximum contraction velocity at full activation in fiber lengths per second");
 	_vmaxProp.setValue(0.0);
 	_propertySet.append(&_vmaxProp, "Parameters");
 
 	_vmax0Prop.setName("Vmax0");
+	_vmax0Prop.setComment("maximum contraction velocity at low activation in fiber lengths per second");
 	_vmax0Prop.setValue(0.0);
 	_propertySet.append(&_vmax0Prop, "Parameters");
 
 	_fmaxTendonStrainProp.setName("FmaxTendonStrain");
+	_fmaxTendonStrainProp.setComment("tendon strain due to maximum isometric muscle force");
 	_fmaxTendonStrainProp.setValue(0.0);
 	_propertySet.append(&_fmaxTendonStrainProp, "Parameters");
 
 	_fmaxMuscleStrainProp.setName("FmaxMuscleStrain");
+	_fmaxMuscleStrainProp.setComment("passive muscle strain due to maximum isometric muscle force");
 	_fmaxMuscleStrainProp.setValue(0.0);
 	_propertySet.append(&_fmaxMuscleStrainProp, "Parameters");
 
 	_kShapeActiveProp.setName("KshapeActive");
+	_kShapeActiveProp.setComment("shape factor for Gaussian active muscle force-length relationship");
 	_kShapeActiveProp.setValue(0.0);
 	_propertySet.append(&_kShapeActiveProp, "Parameters");
 
 	_kShapePassiveProp.setName("KshapePassive");
+	_kShapePassiveProp.setComment("exponential shape factor for passive force-length relationship");
 	_kShapePassiveProp.setValue(0.0);
 	_propertySet.append(&_kShapePassiveProp, "Parameters");
 
 	_dampingProp.setName("damping");
+	_dampingProp.setComment("passive damping in the force-velocity relationship");
 	_dampingProp.setValue(0.0);
 	_propertySet.append(&_dampingProp, "Parameters");
 
 	_afProp.setName("Af");
+	_afProp.setComment("force-velocity shape factor");
 	_afProp.setValue(0.0);
 	_propertySet.append(&_afProp, "Parameters");
 
 	_flenProp.setName("Flen");
+	_flenProp.setComment("maximum normalized lengthening force");
 	_flenProp.setValue(0.0);
 	_propertySet.append(&_flenProp, "Parameters");
 }

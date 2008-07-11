@@ -66,42 +66,55 @@ class OSIMACTUATORS_API Schutte1993Muscle : public AbstractMuscle
 // DATA
 //=============================================================================
 protected:
+	/** Scale factor for normalizing time */
 	PropertyDbl _timeScaleProp;
 	double &_timeScale;
 
+	/** Parameter used in time constant of ramping up of muscle force */
 	PropertyDbl _activation1Prop;
 	double &_activation1;
 
+	/** Parameter used in time constant of ramping up and ramping down of muscle force */
 	PropertyDbl _activation2Prop;
 	double &_activation2;
 
+	/** Maximum isometric force that the fibers can generate */
 	PropertyDbl _maxIsometricForceProp;
 	double &_maxIsometricForce;
 
+	/** Optimal length of the muscle fibers */
 	PropertyDbl _optimalFiberLengthProp;
 	double &_optimalFiberLength;
 
+	/** Resting length of the tendon */
 	PropertyDbl _tendonSlackLengthProp;
 	double &_tendonSlackLength;
 
+	/** Angle between tendon and fibers at optimal fiber length */
 	PropertyDbl _pennationAngleProp;
 	double &_pennationAngle;
 
+	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
 	PropertyDbl _maxContractionVelocityProp;
 	double &_maxContractionVelocity;
 
+	/** Damping factor related to maximum contraction velocity */
 	PropertyDbl _dampingProp;
 	double &_damping;
 
+	/* Function representing force-length behavior of tendon */
 	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
 	Function *&_tendonForceLengthCurve;
 
+	/* Function representing active force-length behavior of muscle fibers */
 	PropertyObjPtr<Function> _activeForceLengthCurveProp;
 	Function *&_activeForceLengthCurve;
 
+	/* Function representing passive force-length behavior of muscle fibers */
 	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
 	Function *&_passiveForceLengthCurve;
 
+	/* Function representing force-velocity behavior of muscle fibers */
 	PropertyObjPtr<Function> _forceVelocityCurveProp;
 	Function *&_forceVelocityCurve;
 

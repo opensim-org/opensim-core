@@ -62,15 +62,19 @@ class OSIMACTUATORS_API Thelen2003Muscle : public AbstractMuscle
 // DATA
 //=============================================================================
 protected:
+	/** Maximum isometric force that the fibers can generate */
 	PropertyDbl _maxIsometricForceProp;
 	double &_maxIsometricForce;
 
+	/** Optimal length of the muscle fibers */
 	PropertyDbl _optimalFiberLengthProp;
 	double &_optimalFiberLength;
 
+	/** Resting length of the tendon */
 	PropertyDbl _tendonSlackLengthProp;
 	double &_tendonSlackLength;
 
+	/** Angle between tendon and fibers at optimal fiber length */
 	PropertyDbl _pennationAngleProp;
 	double &_pennationAngle;
 

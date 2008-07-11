@@ -697,7 +697,7 @@ void AbstractMuscle::deleteMuscleWrap(int aIndex)
 /**
  * Perform computations that need to happen before the muscle is scaled.
  * For this object, that entails calculating and storing the musculotendon
- * length is the default body position.
+ * length in the current body position.
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */

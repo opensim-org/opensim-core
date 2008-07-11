@@ -169,51 +169,64 @@ void Schutte1993Muscle::setNull()
 void Schutte1993Muscle::setupProperties()
 {
 	_timeScaleProp.setName("time_scale");
+	_timeScaleProp.setComment("Scale factor for normalizing time");
 	_timeScaleProp.setValue(0.0);
 	_propertySet.append(&_timeScaleProp, "Parameters");
 
 	_activation1Prop.setName("activation1");
+	_timeScaleProp.setComment("Parameter used in time constant of ramping up of muscle force");
 	_activation1Prop.setValue(0.0);
 	_propertySet.append(&_activation1Prop, "Parameters");
 
 	_activation2Prop.setName("activation2");
+	_timeScaleProp.setComment("Parameter used in time constant of ramping up and ramping down of muscle force");
 	_activation2Prop.setValue(0.0);
 	_propertySet.append(&_activation2Prop, "Parameters");
 
 	_maxIsometricForceProp.setName("max_isometric_force");
+	_timeScaleProp.setComment("Maximum isometric force that the fibers can generate");
 	_maxIsometricForceProp.setValue(0.0);
 	_propertySet.append(&_maxIsometricForceProp, "Parameters");
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
+	_timeScaleProp.setComment("Optimal length of the muscle fibers");
 	_optimalFiberLengthProp.setValue(0.0);
 	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
+	_timeScaleProp.setComment("Resting length of the tendon");
 	_tendonSlackLengthProp.setValue(0.0);
 	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
 
 	_pennationAngleProp.setName("pennation_angle");
+	_timeScaleProp.setComment("Angle between tendon and fibers at optimal fiber length");
 	_pennationAngleProp.setValue(0.0);
 	_propertySet.append(&_pennationAngleProp, "Parameters");
 
 	_maxContractionVelocityProp.setName("max_contraction_velocity");
+	_timeScaleProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
 	_maxContractionVelocityProp.setValue(0.0);
 	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
 
 	_dampingProp.setName("damping");
+	_timeScaleProp.setComment("Damping factor related to maximum contraction velocity");
 	_dampingProp.setValue(0.0);
 	_propertySet.append(&_dampingProp, "Parameters");
 
 	_tendonForceLengthCurveProp.setName("tendon_force_length_curve");
+	_timeScaleProp.setComment("Function representing force-length behavior of tendon");
 	_propertySet.append(&_tendonForceLengthCurveProp, "Functions");
 
 	_activeForceLengthCurveProp.setName("active_force_length_curve");
+	_timeScaleProp.setComment("Function representing active force-length behavior of muscle fibers");
 	_propertySet.append(&_activeForceLengthCurveProp, "Functions");
 
 	_passiveForceLengthCurveProp.setName("passive_force_length_curve");
+	_timeScaleProp.setComment("Function representing passive force-length behavior of muscle fibers");
 	_propertySet.append(&_passiveForceLengthCurveProp, "Functions");
 
 	_forceVelocityCurveProp.setName("force_velocity_curve");
+	_timeScaleProp.setComment("Function representing force-velocity behavior of muscle fibers");
 	_propertySet.append(&_forceVelocityCurveProp, "Functions");
 }
 
