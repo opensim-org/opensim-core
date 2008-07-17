@@ -329,12 +329,18 @@ void MovingMusclePoint::update()
 {
 	if (_xCoordinate)
 		_attachment[0] = _xAttachment->evaluate(0, _xCoordinate->getValue(), 0.0, 0.0);
+	else // type == Constant
+		_attachment[0] = _xAttachment->evaluate(0, 0.0, 0.0, 0.0);
 
 	if (_yCoordinate)
 		_attachment[1] = _yAttachment->evaluate(0, _yCoordinate->getValue(), 0.0, 0.0);
+	else // type == Constant
+		_attachment[1] = _yAttachment->evaluate(0, 0.0, 0.0, 0.0);
 
 	if (_zCoordinate)
 		_attachment[2] = _zAttachment->evaluate(0, _zCoordinate->getValue(), 0.0, 0.0);
+	else // type == Constant
+		_attachment[2] = _zAttachment->evaluate(0, 0.0, 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
