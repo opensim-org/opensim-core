@@ -34,6 +34,14 @@
 #endif
 
 ENUM {
+   ADD,                              /* add new window to the list */
+   DELETE,                           /* delete window from the list */
+   PUSH,                             /* push window to bottom of the list */
+   POP                               /* pop window to top of the list */
+} WindowAction;                      /* possible window actions */
+
+
+ENUM {
    MODEL,                            /*  */
    PLOT,                             /*  */
    PLOTKEY,                          /*  */
@@ -137,7 +145,7 @@ STRUCT {
 
 typedef void (*title_area_cb)(int selector, TitleAreaCBParams* params);
 
-
+#if ! OPENSIM_BUILD
 STRUCT {
    IntBox surgwin;                  /*  */
    int basewindow;                   /*  */
@@ -175,12 +183,12 @@ STRUCT {
    char* mocap_dir;                  /* base directory of mocap import */
    char* mocap_model;                /* joint file used as MOCAP_MODEL */
    GLStruct gldesc;                  /*  */
-   // Eran: changed to void to remove dependence on glutSysInfo
-   //const glutSysInfo* ginfo;         /*  */
-   const void* ginfo;         /*  */
+   const glutSysInfo* ginfo;         /*  */
    int num_commands;                 /* number of commands in command list */
    char* command[500];               /* list of commands to be parsed */
    HelpStruct messages;              /*  */
+   SBoolean multiple_screens;        /* support for allowing tools to move beyond main SIMM window */
 } RootStruct;                        /*  */
+#endif
 
 #endif /*WINDOWROOT_H*/

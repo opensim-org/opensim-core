@@ -48,18 +48,17 @@
 #include "3d.h"
 #endif
 
-#define ENGINE
-#define TOXML 1
-#define CONVERTER
-// Ayman: Replacement for TOXML macro that was undefined and caused problems locating bone files
-#define SIMM_OPENSIM	
-// Eran: replaced glut dependency with some reasonable(?) typedefs
-//#include "glut.h"     /* GLUT includes GL/gl.h and GL/glu.h for us */
-//#include "glutDialogs.h"
+#if OPENSIM_BUILD
 typedef float GLfloat;
 typedef unsigned int GLuint;
 typedef int GLint;
 typedef double GLdouble;
+typedef unsigned int GLenum;
+typedef unsigned char GLubyte;
+#else
+#include <GL/glut.h>     /* GLUT includes GL/gl.h and GL/glu.h for us */
+#include <GL/glutDialogs.h>
+#endif
 
 #include "sm.h"
 #include "dp.h"
@@ -73,7 +72,9 @@ typedef double GLdouble;
 #include "modelplot.h"
 #include "windowroot.h"
 #include "mathtools.h"
-//#include "glutglue.h"
+#if ! OPENSIM_BUILD
+#include "glutglue.h"
+#endif
 #include "mocap.h"
 
 #endif /*UNIVERSAL_H*/

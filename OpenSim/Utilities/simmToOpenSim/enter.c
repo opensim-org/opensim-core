@@ -104,29 +104,30 @@ int enter_gencoord(int mod, char username[], SBoolean permission_to_add)
  * user-specified number is compared to the existing array of functions to
  * see if that one has already been defined. If it has, the routine just
  * returns the internal number of that function. If it has not yet been
- * defined, it adds the number to a new element in the function list and
- * increments model.numfunctions.
+ * defined, it adds the number to a new element in the function list.
  */
 
-int enter_function(int mod, int usernum)
+int enter_function(int mod, int usernum, SBoolean permission_to_add)
 {
-   
    int i, new_func, old_count;
    ReturnCode rc1, rc2;
-   
+
    if (usernum != -1)
    {
-      for (i=0; i<model[mod]->numfunctions; i++)
+      for (i=0; i<model[mod]->func_array_size; i++)
          if (usernum == model[mod]->function[i].usernum)
-            return (i);
-         new_func = i;
+            return i;
    }
-   else
-   {
-      new_func = model[mod]->numfunctions;
-   }
-   
-   if (model[mod]->numfunctions == model[mod]->func_array_size)
+
+   if (permission_to_add == no)
+      return -1;
+
+   for (i=0; i<model[mod]->func_array_size; i++)
+      if (model[mod]->function[i].defined == no && model[mod]->function[i].used == no)
+         break;
+   new_func = i;
+
+   if (new_func == model[mod]->func_array_size)
    {
       old_count = model[mod]->func_array_size;
       model[mod]->func_array_size += FUNC_ARRAY_INCREMENT;
@@ -137,25 +138,24 @@ int enter_function(int mod, int usernum)
       if (rc1 == code_bad || rc2 == code_bad)
       {
          model[mod]->func_array_size = old_count;
-         return (-1);
+         return -1;
       }
-      
+
       for (i=old_count; i<model[mod]->func_array_size; i++)
       {
          model[mod]->function[i].defined = no;
          model[mod]->function[i].used = no;
+         model[mod]->function[i].usernum = -1;
          model[mod]->save.function[i].defined = no;
          model[mod]->save.function[i].used = no;
+         model[mod]->save.function[i].usernum = -1;
       }
    }
-   
+
    model[mod]->function[new_func].usernum = usernum;
    model[mod]->function[new_func].used = yes;
-   
-   model[mod]->numfunctions++;
-   
-   return (new_func);
-   
+
+   return new_func;
 }
 
 
@@ -165,7 +165,7 @@ ReturnCode load_function(int mod, int usernum, SplineFunction* func)
 {
    int fnum;
 
-   fnum = enter_function(mod,usernum);
+   fnum = enter_function(mod, usernum, yes);
 
    if (fnum == -1)
       return code_bad;

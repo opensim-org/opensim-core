@@ -49,29 +49,29 @@
 #include "globals.h"
 #include "functions.h"
 #include "normio.h"
-//#include "modelviewer.h"
-//#include "authenticate.h"
-//#include "password.h"
+#if ! OPENSIM_BUILD
+#include "modelviewer.h"
+#include "password.h"
+#endif
 
 
 /*************** DEFINES (for this file only) *********************************/
 #define WINDOW_WIDTH 420
 #define WINDOW_MARGIN 160
 
-
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static char* model_deletion_text = "Are you sure that you want to delete this model?";
 static ModelStruct* model_to_confirm;
 static char* rot_label[] = {"X","Y","Z"};
-
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
 extern char badLoopErrorMsg[];
 extern char gencoordResidualErrorMsg[];
 extern char badConstraintErrorMsg[];
 extern char badGencoordErrorMsg2[];
-extern char EngineType[];
-extern char EngineName[];
+
+/*************** GLOBAL VARIABLES (used in only a few files) *****************/
+char archive_password[] = "P.i3h78sw,l1";
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static ModelStruct* get_modelstruct(void);
@@ -80,22 +80,22 @@ static SBoolean joint_uses_segment(ModelStruct* ms, int jointnum, int segmentnum
 static void size_model_display(ModelStruct* ms, int* suggested_width, int* suggested_height);
 
 static ReturnCode make_gencoord_sliders(int mod);
-static void make_world_rot_sliders(int mod);
 static ReturnCode add_model_window(ModelStruct* ms, int suggested_width,
                                    int suggested_height);
-static void post_process_bones(ModelStruct* ms);
 static void make_modelpopups(ModelStruct* ms);
+static double initializeEmgWindowSize();
+static int initializeEmgSmoothingPasses();
 
 
 #ifndef ENGINE
-
+#if ! OPENSIM_CONVERTER
 /* ADD_MODEL: this routine controls the making of a model. It gets a model-file
  * name and a muscle-file name from the user and reads-in the model definition.
  * After some processing and arranging of the definition, it sets up a model
  * window to display it.
  */
 ReturnCode add_model(char jointfilename[], char musclefilename[],
-		     int suggested_win_width, int* modelIndex)
+		     int suggested_win_width, int* modelIndex, SBoolean showTopLevelMessages)
 {
    int i, j, mod, windex, window_width, window_height;
    ModelStruct* ms;
@@ -109,29 +109,32 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
 
    if (ms == NULL)
    {
-      error(none,"Unable to make model structure (perhaps too many models already)");
-      return (code_bad);
+      if (showTopLevelMessages == yes)
+         error(none,"Unable to make model structure (perhaps too many models already)");
+      return code_bad;
    }
 
    mod = ms->modelnum;
 
    if (init_model(ms) == code_bad)
    {
-      error(none,"Unable to add another model.");
-      return (code_bad);
+      if (showTopLevelMessages == yes)
+         error(none,"Unable to add another model.");
+      return code_bad;
    }
-   
+
 #ifdef WIN32
    strcpy(fullpath, jointfilename);
 #else
    build_full_path(root.pref.jointfilepath, jointfilename, fullpath);
 #endif
 
-   if (read_model_file(mod,fullpath) == code_bad)
+   if (read_model_file(mod,fullpath, showTopLevelMessages) == code_bad)
    {
       free_model(mod);
-      error(none,"Unable to load model.");
-      return (code_bad);
+      if (showTopLevelMessages == yes)
+         error(none,"Unable to load model.");
+      return code_bad;
    }
 
    if (check_definitions(ms) == code_bad)
@@ -181,8 +184,11 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
 
    if ( ! is_in_demo_mode())
    {
-      (void)sprintf(buffer,"Read joint file %s", fullpath);
-      message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+      if (showTopLevelMessages == yes)
+      {
+         (void)sprintf(buffer,"Read joint file %s", fullpath);
+         message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+      }
    }
    
    /* try to load muscle file, first check for a muscle file specified
@@ -203,11 +209,13 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
          else
             mname = musclefilename;
 
-         sprintf(buffer, "Overriding muscle file specified in joint file (%s)", ms->musclefilename);
-         error(none, buffer);
-
-         sprintf(buffer, "with muscle file chosen in file browser (%s).", mname);
-         error(none, buffer);
+         if (showTopLevelMessages == yes)
+         {
+            sprintf(buffer, "Overriding muscle file specified in joint file (%s)", ms->musclefilename);
+            error(none, buffer);
+            sprintf(buffer, "with muscle file chosen in file browser (%s).", mname);
+            error(none, buffer);
+         }
 
          FREE_IFNOTNULL(ms->musclefilename);
          mstrcpy(&ms->musclefilename, musclefilename);
@@ -251,11 +259,12 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    
    /* if a muscle file was found, try to load it:
     */
-   if (fullpath[0] && read_muscle_file(ms, fullpath, &muscle_file_exists) == code_bad)
+   if (fullpath[0] && read_muscle_file(ms, fullpath, &muscle_file_exists, showTopLevelMessages) == code_bad)
    {
       free_model(mod);
-      error(none,"Unable to load muscle definitions");
-      return (code_bad);
+      if (showTopLevelMessages == yes)
+         error(none,"Unable to load muscle definitions");
+      return code_bad;
    }
 
    /* If you made it to here, then the joint and muscle files were both valid,
@@ -332,7 +341,7 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    post_process_bones(ms);
 
    /* solve any loops or constraints in the system */
-      solve_initial_loops_and_constraints(ms);
+   solve_initial_loops_and_constraints(ms);
    
    if (make_muscle_menus(mod) == code_bad)
    {
@@ -521,10 +530,10 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
     * read them in now.
     */
    for (i = 0; i < ms->num_motion_files; i++)
-      motion = load_motion(ms->motionfilename[i], mod);
+      motion = load_motion(ms->motionfilename[i], mod, showTopLevelMessages);
 
    if (motion && ms->num_motion_files == 1)
-      apply_motion_to_model(ms, ms->motion[0], ms->motion[0]->min_value, yes);
+      apply_motion_to_model(ms, ms->motion[0], ms->motion[0]->min_value, yes, yes);
 
    if (modelIndex)
      *modelIndex = mod;
@@ -532,7 +541,6 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    return (code_fine);
 
 }
-
 
 
 void resize_model_display(ModelStruct* ms)
@@ -589,30 +597,6 @@ static ReturnCode make_gencoord_sliders(int mod)
    return (code_fine);
 
 }
-
-static void make_world_rot_sliders(int mod)
-{
-   int i;
-   IntBox bbox;
-   SliderArray* sa;
-
-   sa = &model[mod]->rotslider;
-
-   sa->numsliders = 3;
-
-   model[mod]->rotslider.sl = (Slider*)simm_malloc(sa->numsliders*sizeof(Slider));
-
-   for (i=0; i<sa->numsliders; i++)
-   {
-/* PICS      SET_BOX1221(bbox,0,110+2*FORM_FIELD_HEIGHT,-FORM_FIELD_YSPACING*i,*/
-      SET_BOX1221(bbox,0,180+2*FORM_FIELD_HEIGHT,-FORM_FIELD_YSPACING*i,
-		  bbox.y2-FORM_FIELD_HEIGHT);
-      make_slider(&sa->sl[i],horizontal_slider,bbox,FORM_FIELD_HEIGHT,0.0,0.0,
-		  360.0,5.0,rot_label[i],NULL);
-   }
-
-}
-
 
 /* GET_ModelStruct: */
 static ModelStruct* get_modelstruct(void)
@@ -695,42 +679,6 @@ static ReturnCode add_model_window(ModelStruct* ms, int suggested_width, int sug
 }
 
 
-static void post_process_bones(ModelStruct* ms)
-{
-   int i, j, k;
-
-   for (i = 0; i < ms->numsegments; i++)
-   {
-      for (j = 0; j < ms->segment[i].numBones; j++)
-      {
-         /* If the material and/or drawmode were not specified for the
-          * bone, it inherits them from the segment.
-          */
-         if (ms->segment[i].bone[j].drawmode == -1)
-            ms->segment[i].bone[j].drawmode = ms->segment[i].drawmode;
-         if (ms->segment[i].bone[j].material == -1)
-            ms->segment[i].bone[j].material = ms->segment[i].material;
-
-         /* Multiply each bone vertex by the segment's scale factors. */
-         for (k = 0; k < ms->segment[i].bone[j].num_vertices; k++)
-         {
-            ms->segment[i].bone[j].vertex[k].coord[XX] *= ms->segment[i].bone_scale[XX];
-            ms->segment[i].bone[j].vertex[k].coord[YY] *= ms->segment[i].bone_scale[YY];
-            ms->segment[i].bone[j].vertex[k].coord[ZZ] *= ms->segment[i].bone_scale[ZZ];
-         }
-
-         /* Multiply the bone's bounding box by the segment's scale factors. */
-         ms->segment[i].bone[j].bc.x1 *= ms->segment[i].bone_scale[XX];
-         ms->segment[i].bone[j].bc.x2 *= ms->segment[i].bone_scale[XX];
-         ms->segment[i].bone[j].bc.y1 *= ms->segment[i].bone_scale[YY];
-         ms->segment[i].bone[j].bc.y2 *= ms->segment[i].bone_scale[YY];
-         ms->segment[i].bone[j].bc.z1 *= ms->segment[i].bone_scale[ZZ];
-         ms->segment[i].bone[j].bc.z2 *= ms->segment[i].bone_scale[ZZ];
-      }
-   }
-}
-
-
 static void make_modelpopups(ModelStruct* ms)
 {
 
@@ -747,7 +695,7 @@ static void make_modelpopups(ModelStruct* ms)
    for (i=0; i<ms->numgencoords; i++)
        glueAddMenuEntry(ms->gencoordmenu, ms->gencoord[i].name);
    
-   ms->gencoordmenu2 = glueCreateMenu("Gencoords");
+   ms->gencoordmenu2 = glueCreateMenu(NULL);
    for (i = 0; i < ms->numgencoords; i++)
       glueAddMenuEntry(ms->gencoordmenu2, ms->gencoord[i].name);
 
@@ -1138,8 +1086,6 @@ void modelinput(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se
    }
 }
 
-
-
 void model_deletion_confirm(SBoolean answer)
 {
 
@@ -1171,7 +1117,7 @@ void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
 	            break;
 	         }
 	      }
-	      if (used_in_model == yes)
+         if (used_in_model == yes)
          {
             /* If the gencoord was previously unused, turn its slider on */
             if (change_visibility == yes && ms->gencoord[i].used_in_model == no)
@@ -1184,17 +1130,19 @@ void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
                ms->gencslider.sl[i].visible = yes;
                ms->gc_chpanel.checkbox[i].visible = yes;
                ms->gc_lockPanel.checkbox[i].visible = yes;
-               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
             }
-	            ms->gencoord[i].used_in_model = yes;
-	            break;
-	         }
-	      }
+            ms->gencoord[i].used_in_model = yes;
+            break;
+         }
+      }
       if (used_in_model == no)
       {
-	      ms->numunusedgencoords++;
+         ms->numunusedgencoords++;
          if (change_visibility)
          {
+            /* If the gencoord was previously used, turn its slider off */
             if (ms->gencoord[i].used_in_model == yes)
             {
                ms->gencform.option[i].active = no;
@@ -1205,15 +1153,52 @@ void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
                ms->gencslider.sl[i].visible = no;
                ms->gc_chpanel.checkbox[i].visible = no;
                ms->gc_lockPanel.checkbox[i].visible = no;
-               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
             }
          }
          else
          {
-	      (void)sprintf(errorbuffer,"Gencoord %s not used in any joint.", ms->gencoord[i].name);
-	         error(none,errorbuffer);
+            (void)sprintf(errorbuffer,"Gencoord %s not used in any joint.", ms->gencoord[i].name);
+            error(none,errorbuffer);
          }
          ms->gencoord[i].used_in_model = no;
+      }
+   }
+}
+#endif // OPENSIM_CONVERTER
+
+void post_process_bones(ModelStruct* ms)
+{
+   int i, j, k;
+
+   for (i = 0; i < ms->numsegments; i++)
+   {
+      for (j = 0; j < ms->segment[i].numBones; j++)
+      {
+         /* If the material and/or drawmode were not specified for the
+          * bone, it inherits them from the segment.
+          */
+         if (ms->segment[i].bone[j].drawmode == -1)
+            ms->segment[i].bone[j].drawmode = ms->segment[i].drawmode;
+         if (ms->segment[i].bone[j].material == -1)
+            ms->segment[i].bone[j].material = ms->segment[i].material;
+
+         /* Multiply each bone vertex by the segment's scale factors. */
+         for (k = 0; k < ms->segment[i].bone[j].num_vertices; k++)
+         {
+            ms->segment[i].bone[j].vertex[k].coord[XX] *= ms->segment[i].bone_scale[XX];
+            ms->segment[i].bone[j].vertex[k].coord[YY] *= ms->segment[i].bone_scale[YY];
+            ms->segment[i].bone[j].vertex[k].coord[ZZ] *= ms->segment[i].bone_scale[ZZ];
+         }
+
+         /* Multiply the bone's bounding box by the segment's scale factors. */
+         ms->segment[i].bone[j].bc.x1 *= ms->segment[i].bone_scale[XX];
+         ms->segment[i].bone[j].bc.x2 *= ms->segment[i].bone_scale[XX];
+         ms->segment[i].bone[j].bc.y1 *= ms->segment[i].bone_scale[YY];
+         ms->segment[i].bone[j].bc.y2 *= ms->segment[i].bone_scale[YY];
+         ms->segment[i].bone[j].bc.z1 *= ms->segment[i].bone_scale[ZZ];
+         ms->segment[i].bone[j].bc.z2 *= ms->segment[i].bone_scale[ZZ];
       }
    }
 }
@@ -1575,6 +1560,8 @@ static SBoolean _read_token (FILE* file, char* token)
    return didReadToken;
 }
 
+#if ! SIMM_VIEWER
+
 STRUCT {
    int numFrames;
    int dataFrameRate;
@@ -1629,6 +1616,8 @@ static void scan_htr_header (const char* htrFile, HtrHeaderInfo* htrInfo)
    }
 }
 
+#if ! OPENSIM_CONVERTER
+
 /* The mocap options are needed by the real-time analog import,
  * so make them global. This assumes that:
  * (1) A post-processed htr and/or analog file was pre-loaded
@@ -1642,21 +1631,863 @@ glutMocapOptions options;
    open_motion_analysis_file - Win32-specific routine to display mocap
      options and then load mocap files.
 ---------------------------------------------------------------------------- */
-// Eran: REMOVED
+public ReturnCode open_motion_analysis_file(
+   const char htrFile[],
+   int        modelIndex,
+   int         numAnalogFiles,
+   const char* analogFiles[])
+{
+   HtrHeaderInfo htrInfo;
+   char *p, htrPathBuf[1024], *baseName, *extension, *htrPath = htrPathBuf;
+   int i;
+   SBoolean isHtr2 = no;
+   ReturnCode rc = code_fine;
+
+   memset(&options, 0, sizeof(options)); /* build_file_list_from_pattern() depends on this! */
+   
+   /* split the input file name into path and base-name componants:
+    */
+   strcpy(htrPathBuf, htrFile);
+   
+   extension = strrchr(htrPathBuf, '.');
+   
+   if (extension)
+   {
+      lowerstr(extension);
+
+      *extension++ = '\0';
+      
+      isHtr2 = (SBoolean) STRINGS_ARE_EQUAL(extension, "htr2");
+   }
+   p = strrchr(htrPathBuf, DIR_SEP_CHAR);
+   
+   if (p)
+   {
+      baseName = p + 1;
+      *p = '\0';
+   }
+   else
+      baseName = htrPathBuf;
+   
+   /* extract useful information from htr file header:
+    */
+   htrInfo.numFrames = 300;
+   htrInfo.dataFrameRate = 60;
+   htrInfo.numSegments = 0;
+   htrInfo.gravityAxis = POS_Y;
+   
+   scan_htr_header(htrFile, &htrInfo);
+   
+   /* scan the SIMM/Resources/mocap/mappings/ directory for mocap mapping files:
+    */
+   sprintf(buffer, "%s%s*", root.mocap_dir, "mappings" DIR_SEP_STRING);
+   
+   build_file_list_from_pattern(buffer, &options.mappings, &options.numMappings);
+   options.selectedMapping = 0;
+   
+   /* look for a mapping file name that contains the number of segments
+    * that are specified in the htr file's header:
+    */
+   if (htrInfo.numSegments > 0 && options.numMappings > 0)
+   {
+      char numSegs[32];
+      
+      sprintf(numSegs, "%d", htrInfo.numSegments);
+      
+      for (i = 0; i < options.numMappings; i++)
+      {
+         const char* p = strstr(options.mappings[i], numSegs);
+         
+         if (p && (p == options.mappings[i] || ! isdigit(*(p - 1))))
+         {
+            options.selectedMapping = i;
+            break;
+         }
+      }
+   }
+   
+   /* scan the HTR file's directory and SIMM/Resources/mocap/basePositions/
+    * for base position files:
+    */
+   sprintf(buffer, "%s%s*.pose", htrPath, DIR_SEP_STRING);
+   
+   build_file_list_from_pattern(buffer, &options.basePositions, &options.numBasePositions);
+   
+   sprintf(buffer, "%s%s*", root.mocap_dir, "basePositions" DIR_SEP_STRING);
+   
+   build_file_list_from_pattern(buffer, &options.basePositions, &options.numBasePositions);
+   
+   /* look for a base postion file that has the same base name as
+    * the motion file:
+    */
+   options.selectedBasePosition = -1;
+   
+   for (i = 0; i < options.numBasePositions; i++)
+   {
+      /* check if the htr file's base name is part of a base position file:
+       */
+      if (strstr(options.basePositions[i], baseName))
+      {
+         options.selectedBasePosition = i;
+         break;
+      }
+   }
+   
+   if (options.selectedBasePosition == -1)
+   {
+      /* check if the a base position file's base name is part of the htr
+       * file's base name:
+       */
+      for (i = 0; i < options.numBasePositions; i++)
+      {
+         p = strrchr(options.basePositions[i], DIR_SEP_CHAR);
+         
+         strcpy(buffer, p ? p+1 : options.basePositions[i]);
+         
+         if (strrchr(buffer, '.'))
+            *strrchr(buffer, '.') = '\0';
+         
+         if (strstr(baseName, buffer))
+         {
+            options.selectedBasePosition = i;
+            break;
+         }
+      }
+   }
+   
+   if (options.selectedBasePosition == -1)
+   {
+      /* otherwise select the appropriate base position as the default:
+       */
+      for (i = 0; i < options.numBasePositions; i++)
+      {
+         if (strstr(options.basePositions[i], isHtr2 ? "global" : "init"))
+         {
+            options.selectedBasePosition = i;
+            break;
+         }
+      }
+   }
+   
+   if (options.selectedBasePosition == -1)
+      options.selectedBasePosition = 0;
+   
+   /* initialize the list of analog files to be imported with the motion:
+    */
+   if (numAnalogFiles > 0 && analogFiles)
+   {
+      options.numAnalogFiles = numAnalogFiles;
+      options.analogFiles    = (char**) analogFiles;
+   }
+   else
+   {
+      /* scan the HTR file's directory for analog & xls files with the same
+       * base name at the HTR file:
+       */
+      if (options.numAnalogFiles == 0)
+      {
+         sprintf(buffer, "%s%s%s.anb", htrPath, DIR_SEP_STRING, baseName);
+         build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+      }
+      
+      if (options.numAnalogFiles == 0)
+      {
+         sprintf(buffer, "%s%s%s.anc", htrPath, DIR_SEP_STRING, baseName);
+         build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+      }
+      
+      sprintf(buffer, "%s%s%s.xls", htrPath, DIR_SEP_STRING, baseName);
+      build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+   }
+   
+   /* init the remainder of the mocap options record:
+    */
+   options.inputFile = htrFile;
+   options.upDirection = htrInfo.gravityAxis;
+   
+   switch (options.upDirection)
+   {
+     case POS_X: options.faceDirection = POS_Z; break;
+     case POS_Y: options.faceDirection = POS_Z; break;
+     case POS_Z: options.faceDirection = POS_X; break;
+   }
+   options.rightLeg = 1;
+   options.leftLeg = 1;
+   options.upperBody = 1;
+   options.muscles = 1;
+   options.scaleSegments = 1;
+   options.emgSmoothingCycles = 1;
+   options.emgWindowSize = 0.032;
+   options.showBasePosition = 0;
+   options.showZeroFrame = 0;
+   options.autocalibrateForceplates = 1;
+   options.modelName = baseName;
+   options.saveIntermediateFiles = 0;
+   
+   sprintf(buffer, "%s.jnt", baseName);
+   mstrcpy(&options.jntFile, buffer);
+
+   sprintf(buffer, "%s.msl", baseName);
+   mstrcpy(&options.mslFile, buffer);
+
+   sprintf(buffer, "%s.mot", baseName);
+   mstrcpy(&options.motFile, buffer);
+
+   /* initialize the realtime import options:
+    */
+   strcpy(buffer, baseName);
+   lowerstr(buffer);
+
+   if (is_module_present(MOTION_REAL) == no)
+	  options.allowRealtimeImport = -1;
+   else
+      options.allowRealtimeImport = strstr(buffer, "realtime") ? 1 : 0;
+   options.realtimeDuration = (double) htrInfo.numFrames / htrInfo.dataFrameRate;
+   options.realtimeFrequency = htrInfo.dataFrameRate;
+   options.timeScaleMin = - options.realtimeDuration;
+   options.timeScaleMax = 0.0;
+   options.slidingTimeScale = 1;
+   options.deleteOldPlates = 1;
+
+   /* display the mocap options dialog to the user:
+    */
+   if (glutMocapOptionsBox(&options) != GLUT_MSG_OK)
+   {
+      rc = code_bad;
+      goto cleanup;
+   }
+
+   /* translate the specified Motion Analysis HTR file into SIMM joint,
+    * muscle, and motion files:
+    */
+   rc = mocap_to_simm(&options, &modelIndex);
+   
+   if (rc != code_fine)
+      goto cleanup;
+   
+   resize_model_display(model[modelIndex]);
+
+#if 0
+   fprintf(stderr, "@@@ %d segments, %d joints, %d gencoords, %d muscles\n",
+              model[modelIndex]->numsegments,
+              model[modelIndex]->numjoints,
+              model[modelIndex]->numgencoords,
+              model[modelIndex]->nummuscles);
+#endif
+
+  cleanup:
+   if (options.mappings)
+   {
+      for (i = 0; i < options.numMappings; i++)
+         FREE_IFNOTNULL(options.mappings[i]);
+      
+      free(options.mappings);
+   }
+   if (options.basePositions)
+   {
+      for (i = 0; i < options.numBasePositions; i++)
+         FREE_IFNOTNULL(options.basePositions[i]);
+      
+      free(options.basePositions);
+   }
+   if (options.analogFiles != analogFiles)
+   {
+      for (i = 0; i < options.numAnalogFiles; i++)
+         FREE_IFNOTNULL(options.analogFiles[i]);
+      
+      free(options.analogFiles);
+   }
+   FREE_IFNOTNULL(options.jntFile);
+   FREE_IFNOTNULL(options.mslFile);
+   FREE_IFNOTNULL(options.motFile);
+
+   return rc;
+
+} /* open_motion_analysis_file */
+
+#endif // ! OPENSIM_CONVERTER
 
 void readTRBHeader(const char trcFile[], smTRCHeaderInfo *trcInfo, int *size);
+
+public ReturnCode open_opensim_trb_file(glutOpenSimConverterOptions* options)
+{
+   int modelIndex = 0;
+   FILE *fp;
+   smTRCHeaderInfo trcInfo;
+   ReturnCode rc;
+   char *p, trcPathBuf[1024], *baseName, *extension, *trcPath = trcPathBuf;
+   char** analogFileBuf;
+   smC3DStruct* c3d = NULL;
+   glutTRCOptions trcOptions;
+   MocapInfo mi;
+   glutMocapOptions mo;
+
+   /* split the input file name into path and base-name components */
+   strcpy(trcPathBuf, options->motionTRBFile);
+   extension = strrchr(trcPathBuf, '.');
+   if (extension)
+   {
+      lowerstr(extension);
+      *extension++ = '\0';
+   }
+   p = strrchr(trcPathBuf, DIR_SEP_CHAR);
+   if (p)
+   {
+      baseName = p + 1;
+      *p = '\0';
+   }
+   else
+      baseName = trcPathBuf;
+
+   smReadTrackedFileHeader(options->motionTRBFile, &trcInfo);
+
+   if (trcInfo.numFrames <= 0)
+   {
+      sprintf(buffer, "There are no frames of data in %s", options->motionTRBFile);
+      error(none, buffer);
+      return code_bad;
+   }
+
+   /* To the user, firstFrame and lastFrame are w.r.t. the user-defined
+    * frame numbers in the file, which may not start at 1. Once the user
+    * has selected the desired frame sequence, keep them defined this way,
+    * but check to make sure the user hasn't changed them to invalid
+    * numbers.
+    */
+   if (options->firstMotionFrame < trcInfo.firstFrameNum)
+      options->firstMotionFrame = trcInfo.firstFrameNum;
+   else if (options->firstMotionFrame > (trcInfo.firstFrameNum + trcInfo.numFrames - 1))
+      options->firstMotionFrame = trcInfo.firstFrameNum + trcInfo.numFrames - 1;
+
+   if (options->lastMotionFrame < trcInfo.firstFrameNum)
+      options->lastMotionFrame = trcInfo.firstFrameNum;
+   else if (options->lastMotionFrame > (trcInfo.firstFrameNum + trcInfo.numFrames - 1))
+      options->lastMotionFrame = trcInfo.firstFrameNum + trcInfo.numFrames - 1;
+
+   if (options->motionIncrement == 0)
+      options->motionIncrement = 1;
+   else if (options->firstMotionFrame > trcInfo.numFrames && options->motionIncrement > 0)
+      options->motionIncrement = -options->motionIncrement;
+
+   /* These are the only two fields in MocapInfo that are
+    * needed for importing analog data/
+    */
+   mi.model = model[modelIndex];
+   mi.dataFrameRate = trcInfo.dataRate;
+
+   switch (mi.model->gravity)
+   {
+      case smNegX:
+         mo.upDirection = POS_X;
+         break;
+      case smX:
+         mo.upDirection = NEG_X;
+         break;
+      case smNegY:
+         mo.upDirection = POS_Y;
+         break;
+      case smY:
+         mo.upDirection = NEG_Y;
+         break;
+      case smNegZ:
+         mo.upDirection = POS_Z;
+         break;
+      case smZ:
+         mo.upDirection = NEG_Z;
+         break;
+      default:
+         mo.upDirection = NEG_Z;
+         break;
+   }
+
+   mo.emgSmoothingCycles = options->emgSmoothingPasses;
+   mo.emgWindowSize = options->emgWindowSize;
+   mo.muscles = 1;
+   mo.autocalibrateForceplates = options->calibrateForces;
+   mo.deleteOldPlates = 0;
+
+   /* Look for the corresponding analog data files in the chosen folder.
+    * If one or more exists, set the loadAnalogData option to yes;
+    * if none exists, set the option to be grayed out.
+    */
+   if (options->loadAnalog == 1)
+   {
+      analogFileBuf = (char**)simm_malloc(1*sizeof(char*));
+      mstrcpy(&analogFileBuf[0], options->motionTRBFile);
+      extension = strrchr(analogFileBuf[0], '.');
+      strcpy(extension, ".anb");
+      if ((fp = fopen(analogFileBuf[0], "r")) == NULL)
+      {
+         strcpy(extension, ".anc");
+         if ((fp = fopen(analogFileBuf[0], "r")) == NULL)
+         {
+            /* no corresponding analog files are in the folder */
+            options->loadAnalog = 0;
+         }
+      }
+      if (fp != NULL)
+      {
+         fclose(fp);
+
+         /* Load all of the analog data files into the smAnalogStruct struct,
+          * then pass the struct to loadTrackedFile() so it can put the data
+          * into the motion.
+          */
+         if (options->loadAnalog == 1)
+            c3d = read_analog_data_files(1, analogFileBuf, &mi, &mo);
+      }
+   }
+
+   /* If there are no analog files or there was an error reading them,
+    * allocate space for the C3D struct.
+    */
+   if (!c3d)
+      c3d = (smC3DStruct*) simm_calloc(1, sizeof(smC3DStruct));
+
+   trcOptions.inputFile = options->motionTRBFile;
+   trcOptions.firstFrame = options->firstMotionFrame;
+   trcOptions.lastFrame = options->lastMotionFrame;
+   trcOptions.frameIncrement = options->motionIncrement;
+   trcOptions.quickSolve = 0;
+   trcOptions.cropEnds = options->cropEnds;
+   trcOptions.calculateDerivatives = 0;
+   trcOptions.showMarkers = options->showMarkers;
+   trcOptions.xAxisUnits = X_AXIS_TIME;
+   trcOptions.xAxisStartZero = options->startAtZero;
+   trcOptions.saveMOTFile = options->saveMotionFile;
+   trcOptions.motFile = options->motionFile;
+   trcOptions.saveHTRFile = 0;
+
+   rc = loadTrackedFile(model[modelIndex], &trcOptions, c3d);
+   if (rc != code_fine)
+   {
+      sprintf(buffer, "Could not create model");
+      error(none, buffer);
+      return rc;
+   }
+
+   smFreeTRCHeader(&trcInfo);
+   FREE_IFNOTNULL(analogFileBuf[0]);
+   FREE_IFNOTNULL(analogFileBuf);
+
+   return rc;
+}
 
 /* -------------------------------------------------------------------------
    open_tracked_file - Win32-specific routine to display trc import options and
      load a trc file.
 ---------------------------------------------------------------------------- */
-// Eran: REMOVED
+public ReturnCode open_tracked_file(
+   const char trcFile[],
+   int        modelIndex,
+   int         numAnalogFiles,
+   const char* analogFiles[])
+{
+   FILE *fp;
+   glutTRCOptions options;
+   smTRCHeaderInfo trcInfo;
+   ReturnCode rc;
+   char *p, trcPathBuf[1024], analogFileBuf[1024], *baseName, *extension, *trcPath = trcPathBuf;
+
+   if (modelIndex < 0)
+      return code_bad;
+
+   memset(&options, 0, sizeof(options)); /* build_file_list_from_pattern() depends on this! */
+
+   /* split the input file name into path and base-name components */
+   strcpy(trcPathBuf, trcFile);
+
+   extension = strrchr(trcPathBuf, '.');
+
+   if (extension)
+   {
+      lowerstr(extension);
+
+      *extension++ = '\0';
+   }
+   p = strrchr(trcPathBuf, DIR_SEP_CHAR);
+
+   if (p)
+   {
+      baseName = p + 1;
+      *p = '\0';
+   }
+   else
+      baseName = trcPathBuf;
+
+   smReadTrackedFileHeader(trcFile, &trcInfo);
+
+   if (trcInfo.numFrames <= 0)
+   {
+      sprintf(buffer, "There are no frames of data in %s", trcFile);
+      error(none, buffer);
+      return code_bad;
+   }
+
+   options.inputFile = trcFile;
+   options.firstFrame = trcInfo.firstFrameNum;
+   options.lastFrame = trcInfo.firstFrameNum + trcInfo.numFrames - 1;
+   options.frameIncrement = 1;
+   options.calculateDerivatives = 0;
+   options.calibrateForcePlates = 1;
+   if (model[modelIndex]->solver.method == smLevenbergMarquart)
+      options.quickSolve = 0;
+   else
+      options.quickSolve = 1;
+   options.cropEnds = 1;
+   options.showMarkers = 0;
+/*
+   if (model[modelIndex]->solver.orient_body == smYes)
+      options.orientBodyToFrame = 1;
+   else
+      options.orientBodyToFrame = 0;
+*/
+   options.deleteOldPlates = 1;
+   options.emgSmoothingPasses = initializeEmgSmoothingPasses();
+   options.emgWindowSize = initializeEmgWindowSize();
+   options.xAxisUnits = X_AXIS_TIME;
+   options.xAxisStartZero = 0;
+   options.markerNameSource = -1; // not used for TRC files
+   options.saveHTRFile = 0;
+   options.saveMOTFile = 0;
+   options.isC3DFile = 0;
+
+   options.emgWindowSize = initializeEmgWindowSize();
+
+   sprintf(buffer, "markers: %d   frames: %d  (%d to %d)", trcInfo.numMarkers, trcInfo.numFrames,
+      trcInfo.firstFrameNum, trcInfo.numFrames + trcInfo.firstFrameNum - 1);
+   mstrcpy(&options.infoText[0], buffer);
+   sprintf(buffer, "data rate: %.1lf Hz   camera rate: %.1lf Hz", trcInfo.dataRate, trcInfo.cameraRate);
+   mstrcpy(&options.infoText[1], buffer);
+
+   sprintf(buffer, "%s.htr2", baseName);
+   mstrcpy(&options.htrFile, buffer);
+
+   sprintf(buffer, "%s.mot", baseName);
+   mstrcpy(&options.motFile, buffer);
+
+   /* initialize the list of analog files to be imported with the motion */
+   if (numAnalogFiles > 0 && analogFiles)
+   {
+      options.numAnalogFiles = numAnalogFiles;
+      options.analogFiles    = (char**) analogFiles;
+      /* If the user selected one or more analog files, disable the analog auto-load function */
+      options.loadAnalogData = 3; /* auto-load will be inactive, but other analog checkboxes will be active */
+   }
+   else
+   {
+      /* Look for the corresponding analog data files in the chosen folder.
+       * If one or more exists, set the loadAnalogData option to yes;
+       * if none exists, set the option to be grayed out.
+       */
+      options.loadAnalogData = 1; /* default is active and checked */
+      strcpy(analogFileBuf, baseName);
+      strcat(analogFileBuf, ".anb");
+      if ((fp = fopen(analogFileBuf, "r")) == NULL)
+      {
+         strcpy(analogFileBuf, baseName);
+         strcat(analogFileBuf, ".anc");
+         if ((fp = fopen(analogFileBuf, "r")) == NULL)
+         {
+            strcpy(analogFileBuf, baseName);
+            strcat(analogFileBuf, ".xls");
+            if ((fp = fopen(analogFileBuf, "r")) == NULL)
+            {
+               /* no corresponding analog files are in the folder */
+               options.loadAnalogData = 2; /* all analog checkboxes will be inactive */
+            }
+         }
+      }
+      if (fp != NULL)
+         fclose(fp);
+
+      /* scan the HTR file's directory for analog & xls files with the same
+       * base name at the HTR file:
+       */
+      if (options.loadAnalogData == 1)
+      {
+         if (options.numAnalogFiles == 0)
+         {
+            sprintf(buffer, "%s%s%s.anb", trcPath, DIR_SEP_STRING, baseName);
+            build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+         }
+
+         if (options.numAnalogFiles == 0)
+         {
+            sprintf(buffer, "%s%s%s.anc", trcPath, DIR_SEP_STRING, baseName);
+            build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+         }
+
+         sprintf(buffer, "%s%s%s.xls", trcPath, DIR_SEP_STRING, baseName);
+         build_file_list_from_pattern(buffer, &options.analogFiles, &options.numAnalogFiles);
+      }
+   }
+   
+   /* display the trc options dialog to the user */
+   if (glutTRCOptionsBox(&options) != GLUT_MSG_OK)
+   {
+      rc = code_bad;
+   }
+   else
+   {
+      smC3DStruct* c3d = NULL;
+      MocapInfo mi;
+      glutMocapOptions mo;
+
+      /* To the user, firstFrame and lastFrame are w.r.t. the user-defined
+       * frame numbers in the file, which may not start at 1. Once the user
+       * has selected the desired frame sequence, keep them defined this way,
+       * but check to make sure the user hasn't changed them to invalid
+       * numbers.
+       */
+      if (options.firstFrame < trcInfo.firstFrameNum)
+         options.firstFrame = trcInfo.firstFrameNum;
+      else if (options.firstFrame > (trcInfo.firstFrameNum + trcInfo.numFrames - 1))
+         options.firstFrame = trcInfo.firstFrameNum + trcInfo.numFrames - 1;
+
+      if (options.lastFrame < trcInfo.firstFrameNum)
+         options.lastFrame = trcInfo.firstFrameNum;
+      else if (options.lastFrame > (trcInfo.firstFrameNum + trcInfo.numFrames - 1))
+         options.lastFrame = trcInfo.firstFrameNum + trcInfo.numFrames - 1;
+
+      if (options.frameIncrement == 0)
+         options.frameIncrement = 1;
+      else if (options.firstFrame > trcInfo.numFrames && options.frameIncrement > 0)
+         options.frameIncrement = -options.frameIncrement;
+
+      /* These are the only two fields in MocapInfo that are
+       * needed for importing analog data/
+       */
+      mi.model = model[modelIndex];
+      mi.dataFrameRate = trcInfo.dataRate;
+
+      switch (mi.model->gravity)
+      {
+         case smNegX:
+            mo.upDirection = POS_X;
+            break;
+         case smX:
+            mo.upDirection = NEG_X;
+            break;
+         case smNegY:
+            mo.upDirection = POS_Y;
+            break;
+         case smY:
+            mo.upDirection = NEG_Y;
+            break;
+         case smNegZ:
+            mo.upDirection = POS_Z;
+            break;
+         case smZ:
+            mo.upDirection = NEG_Z;
+            break;
+         default:
+            mo.upDirection = NEG_Z;
+            break;
+      }
+      //fooglutif (options.emgSmoothingPasses < 0
+      mo.emgSmoothingCycles = options.emgSmoothingPasses;
+      mo.emgWindowSize = options.emgWindowSize;
+      mo.muscles = 1;
+      mo.autocalibrateForceplates = options.calibrateForcePlates;
+      mo.deleteOldPlates = options.deleteOldPlates;
+
+      /* Load all of the analog data files into the smAnalogStruct struct,
+       * then pass the struct to loadTrackedFile() so it can put the data
+       * into the motion.
+       */
+      if (options.loadAnalogData == 1 && options.numAnalogFiles > 0)
+         c3d = read_analog_data_files(options.numAnalogFiles, options.analogFiles, &mi, &mo);
+
+      /* If there are no analog files or there was an error reading them,
+       * allocate space for the C3D struct.
+       */
+      if (!c3d)
+         c3d = (smC3DStruct*) simm_calloc(1, sizeof(smC3DStruct));
+
+      rc = loadTrackedFile(model[modelIndex], &options, c3d);
+      if (rc != code_fine)
+      {
+      sprintf(buffer, "Could not create model");
+      error(none, buffer);
+         return rc;
+      }
+   }
+
+   smFreeTRCHeader(&trcInfo);
+
+   return rc;
+}
 
 /* -------------------------------------------------------------------------
    open_c3d_file - Win32-specific routine to display c3d import options and
      load a c3d file.
 ---------------------------------------------------------------------------- */
-// Eran: REMOVED
+public ReturnCode open_c3d_file(const char c3dFile[], int modelIndex)
+{
+   int numFrames;
+   glutTRCOptions options;
+   smC3DHeader head;
+   ReturnCode rc;
+   char *p, c3dPathBuf[1024], *baseName, *extension, *c3dPath = c3dPathBuf;
+
+   if (modelIndex < 0)
+      return code_bad;
+
+   memset(&options, 0, sizeof(options)); /* build_file_list_from_pattern() depends on this! */
+
+   /* split the input file name into path and base-name components */
+   strcpy(c3dPathBuf, c3dFile);
+
+   extension = strrchr(c3dPathBuf, '.');
+
+   if (extension)
+   {
+      lowerstr(extension);
+
+      *extension++ = '\0';
+   }
+   p = strrchr(c3dPathBuf, DIR_SEP_CHAR);
+
+   if (p)
+   {
+      baseName = p + 1;
+      *p = '\0';
+   }
+   else
+      baseName = c3dPathBuf;
+
+   smScanC3DHeader(c3dFile, &head);
+
+   numFrames = head.lastFrame - head.firstFrame + 1;
+
+   if (numFrames <= 0)
+   {
+      sprintf(buffer, "There are no frames of data in %s", c3dFile);
+      error(none, buffer);
+      return code_bad;
+   }
+
+   options.inputFile = c3dFile;
+   options.firstFrame = head.firstFrame;
+   options.lastFrame = head.lastFrame;
+   options.frameIncrement = 1;
+   options.calculateDerivatives = 0;
+   options.calibrateForcePlates = 1;
+   if (model[modelIndex]->solver.method == smLevenbergMarquart)
+      options.quickSolve = 0;
+   else
+      options.quickSolve = 1;
+   options.cropEnds = 1;
+   options.showMarkers = 0;
+/*
+   if (model[modelIndex]->solver.orient_body == smYes)
+      options.orientBodyToFrame = 1;
+   else
+      options.orientBodyToFrame = 0;
+*/
+   options.deleteOldPlates = 1;
+   options.emgSmoothingPasses = initializeEmgSmoothingPasses();
+   options.emgWindowSize = initializeEmgWindowSize();
+   options.xAxisUnits = X_AXIS_TIME;
+   options.xAxisStartZero = 0;
+   options.markerNameSource = POINT_LABELS;
+   options.saveHTRFile = 0;
+   options.saveMOTFile = 0;
+   options.isC3DFile = 1;
+
+   sprintf(buffer, "markers: %d   frames: %d", head.num3DPoints, numFrames);
+   mstrcpy(&options.infoText[0], buffer);
+   sprintf(buffer, "data rate: %.1lf Hz", head.pointFrameRate);
+   mstrcpy(&options.infoText[1], buffer);
+
+   sprintf(buffer, "%s.htr2", baseName);
+   mstrcpy(&options.htrFile, buffer);
+
+   sprintf(buffer, "%s.mot", baseName);
+   mstrcpy(&options.motFile, buffer);
+
+   options.numAnalogFiles = 0;
+   options.analogFiles = NULL;
+   options.loadAnalogData = 1; /* default is active and checked */
+   
+   /* display the trc options dialog to the user */
+   if (glutTRCOptionsBox(&options) != GLUT_MSG_OK)
+   {
+      rc = code_bad;
+   }
+   else
+   {
+      int numFrames = head.lastFrame - head.firstFrame + 1;
+      MocapInfo mi;
+      glutMocapOptions mo;
+
+      /* To the user, firstFrame and lastFrame are w.r.t. the user-defined
+       * frame numbers in the file, which may not start at 1. Once the user
+       * has selected the desired frame sequence, keep them defined this way,
+       * but check to make sure the user hasn't changed them to invalid
+       * numbers.
+       */
+      if (options.firstFrame < head.firstFrame)
+         options.firstFrame = head.firstFrame;
+      else if (options.firstFrame > head.lastFrame)
+         options.firstFrame = head.lastFrame;
+
+      if (options.lastFrame < head.firstFrame)
+         options.lastFrame = head.firstFrame;
+      else if (options.lastFrame > head.lastFrame)
+         options.lastFrame = head.lastFrame;
+
+      if (options.frameIncrement == 0)
+         options.frameIncrement = 1;
+      else if (options.firstFrame > options.lastFrame && options.frameIncrement > 0)
+         options.frameIncrement = -options.frameIncrement;
+
+      /* These are the only two fields in MocapInfo that are
+       * needed for importing analog data/
+       */
+      mi.model = model[modelIndex];
+      mi.dataFrameRate = head.pointFrameRate;
+
+      switch (mi.model->gravity)
+      {
+         case smNegX:
+            mo.upDirection = POS_X;
+            break;
+         case smX:
+            mo.upDirection = NEG_X;
+            break;
+         case smNegY:
+            mo.upDirection = POS_Y;
+            break;
+         case smY:
+            mo.upDirection = NEG_Y;
+            break;
+         case smNegZ:
+            mo.upDirection = POS_Z;
+            break;
+         case smZ:
+            mo.upDirection = NEG_Z;
+            break;
+         default:
+            mo.upDirection = NEG_Z;
+            break;
+      }
+      mo.emgSmoothingCycles = options.emgSmoothingPasses;
+      mo.emgWindowSize = options.emgWindowSize;
+      mo.muscles = 1;
+      mo.autocalibrateForceplates = options.calibrateForcePlates;
+      mo.deleteOldPlates = options.deleteOldPlates;
+
+      loadC3DFile(model[modelIndex], &options, &mi, &mo);
+
+      rc = code_fine;
+   }
+
+   return rc;
+}
+
+#endif /* ! SIMM_VIEWER */
 
 #endif /* WIN32 */
 
@@ -1704,9 +2535,9 @@ ReturnCode check_definitions(ModelStruct* ms)
       }
    }
 
-   for (i=0; i<ms->numfunctions; i++)
+   for (i=0; i<ms->func_array_size; i++)
    {
-      if (ms->function[i].defined == no)
+      if (ms->function[i].used == yes && ms->function[i].defined == no)
       {
          (void)sprintf(errorbuffer,"Function f%d referenced but not defined.",
             ms->function[i].usernum);
@@ -1732,43 +2563,34 @@ ReturnCode check_definitions(ModelStruct* ms)
       }
    }
 
-	if (STRINGS_ARE_EQUAL(EngineType,"Simbody"))
-	{
-      if (enter_segment(ms->modelnum,"ground",no) == -1)
-		{
-         (void)sprintf(errorbuffer,"%s requires a body named \"ground\".", EngineName);
-         error(none,errorbuffer);
-         any_errors = yes;
-		}
-
-		// SimbodyEngine does not currently allow joints in which a DOF
-		// is constrained as a function of a coordinate in another joint
-		// (e.g., tibia-patella motion as a function of femur-tibia motion).
-		for (i=0; i<ms->numjoints; i++)
-		{
-			for (j=0; j<6; j++)
-			{
-				if (ms->joint[i].dofs[j].type == function_dof)
-				{
-					int jointnum = -1, dofnum = -1;
-				   if (find_unconstrained_dof(ms, ms->joint[i].dofs[j].gencoord, &jointnum, &dofnum))
-					{
-						if (jointnum != i)
-						{
-							(void)sprintf(errorbuffer,"Joint %s contains a DOF (%s) which is a function of a coordinate (%s) used in a different joint (%s). This is not allowed by %s.",
-								ms->joint[i].name, getjointvarname(j), ms->gencoord[ms->joint[i].dofs[j].gencoord].name,
-								ms->joint[jointnum].name, EngineName);
-							error(none,errorbuffer);
-							any_errors = yes;
-						}
-					}
-				}
-			}
-		}
-	}
+#if NO_LONGER_NECESSARY
+   for (i=0; i<ms->numjoints; i++)
+   {
+      for (j=0; j<6; j++)
+      {
+         if (ms->joint[i].dofs[j].type == constant_dof)
+            continue;
+         gc = ms->joint[i].dofs[j].gencoord;
+         fn = ms->joint[i].dofs[j].funcnum;
+         if (ms->gencoord[gc].clamped == no || ms->function[fn].defined == no)
+            continue;
+         if (ms->function[fn].x[0] > ms->gencoord[gc].range.start ||
+            ms->function[fn].x[ms->function[fn].numpoints-1] <
+            ms->gencoord[gc].range.end)
+         {
+            (void)sprintf(errorbuffer,"Function f%d does not cover full range of gencoord %s",
+               ms->function[fn].usernum, ms->gencoord[gc].name);
+            error(none,errorbuffer);
+            any_errors = yes;
+         }
+      }
+   }
+#endif
 
 #ifndef ENGINE
+#if ! OPENSIM_CONVERTER
    check_gencoord_usage(ms,no);
+#endif
 #endif
 
    for (i=0; i<ms->dis.mat.num_materials; i++)
@@ -1918,3 +2740,106 @@ SBoolean modelHasMuscles(ModelStruct* ms)
 
    return no;
 }
+
+static double initializeEmgWindowSize()
+{
+   const char* value = getpref("EMG_SMOOTHING_WINDOW");
+
+   if (value)
+   {
+      double v = atof(value);
+      if (v > 0.0001 && v < 10.0)
+         return v;
+   }
+
+   return 0.032;
+}
+
+static int initializeEmgSmoothingPasses()
+{
+   const char* value = getpref("EMG_SMOOTHING_PASSES");
+
+   if (value)
+   {
+      int i = atoi(value);
+      if (i >= 0 && i < 50)
+         return i;
+   }
+
+   return 1;
+}
+
+#ifndef ENGINE
+ReturnCode open_model_archive(char archiveFilename[], int* modelIndex)
+{
+   char jointFilename[CHARBUFFER], folder[CHARBUFFER], cwdSave[CHARBUFFER], *buf;
+   int result;
+   ReturnCode rc = code_fine;
+
+   mstrcpy(&buf, glutGetTempFileName("viewer"));
+   // for testing only
+   //strcpy(buf, "C:\\Users\\Simm\\viewerTestModel\\tmpImport");
+
+   strcpy(folder, buf);
+   sprintf(buffer, "mkdir \"%s\"", folder);
+   result = glutSystem(buffer);
+
+   // Temporarily set the current working directory to the tmp
+   // folder, so SIMM will find the motion files. After loading
+   // the model, it should be set back to whatever it was (which
+   // should be the folder containing the archive file.
+   getcwd(cwdSave, CHARBUFFER);
+   chdir(folder);
+
+   sprintf(buffer, "Extracting model from archive %s...", archiveFilename);
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
+
+   // Make the archive
+   sprintf(buffer, "\"%s\\7za\" x -p%s -o\"%s\" -y \"%s\"", root.simm_base_dir, archive_password, folder, archiveFilename);
+   result = glutSystem(buffer);
+
+   // The .jnt file should always be named model.jnt. Try to open
+   // a file by that name and print an error about an invalid
+   // archive if it is not found.
+   sprintf(jointFilename, "%s\\model.jnt", folder);
+   if (file_exists(jointFilename) == no)
+   {
+      sprintf(buffer, "Error opening model archive %s. Archive is invalid or corrupted.", archiveFilename);
+      error(none, buffer);
+      rc = code_bad;
+      goto cleanup;
+   }
+
+   // Load the model
+   rc = add_model(jointFilename, NULL, -1, modelIndex, no);
+   if (rc == code_bad)
+   {
+      sprintf(buffer, "Error reading model from archive %s.", archiveFilename);
+      error(none, buffer);
+      goto cleanup;
+   }
+
+   sprintf(buffer, "Extracting model from archive %s... Done.", archiveFilename);
+   message(buffer, OVERWRITE_LAST_LINE, DEFAULT_MESSAGE_X_OFFSET);
+
+cleanup:
+
+   // Reset the current working directory.
+   chdir(cwdSave);
+
+   // Delete the files in the temporary folder
+   if (1)
+   {
+      OSVERSIONINFO osvi;
+      osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+      GetVersionEx(&osvi);
+      if (osvi.dwMajorVersion < 5) // Windows 95, 98, Me, NT
+         sprintf(buffer, "deltree /y \"%s\"", folder);
+      else // Windows 2000, XP, Vista?
+         sprintf(buffer, "rmdir /s /q \"%s\"", folder);
+      result = glutSystem(buffer);
+   }
+
+   return rc;
+}
+#endif

@@ -56,6 +56,8 @@
 #define MENU_ITEM_HEIGHT 24
 #define FORM_FIELD_HEIGHT 21
 #define FORM_FIELD_YSPACING 27
+#define COMBO_ITEM_HEIGHT 20
+#define COMBO_ITEM_SIZE 135
 
 #define MAX_MGROUP_MENU_HEIGHT 540
 #define MGROUP_MENU_SPACER 20
@@ -505,6 +507,29 @@ STRUCT {
    int y_edge;                       /* pixel size of vertical edge (shadow) of box */
 } CheckBoxPanel;                     /* holds panel of checkboxes */
 
+
+STRUCT {
+   IntBox box;                       /* position of combobox */
+   char* defaultName;                /* name to show when no selected option */
+   const char* currentName;          /* name of currently selected option */
+   int currentMenuIndex;             /* index in menu of currently selected option */
+   SBoolean active;                  /* is this combobox active? */
+   SBoolean visible;                 /* is this combobox visible? */
+   long popupMenu;                   /* the popup menu of options to choose from */
+   void (*menuCallback)(int menuValue, void* userData); /* callback for popup menu */
+   void* userData;                   /* user data for popup menu callback */
+} ComboBox;                          /* a combobox for choosing one of several options */
+
+STRUCT {
+   char *title;
+   int numoptions;
+   IntBox bbox;                     /* bounding box of entire combobox region */
+   ComboBox *combobox;                 /* list of combo boxes */
+   XYIntCoord origin;               /* origin of menu */
+   int x_edge;                      /* */
+   int y_edge;                      /* */
+   int yPosition;
+} ComboBoxPanel;
 
 STRUCT {
    OnOffSwitch state;                /* whether this menu is on or off */

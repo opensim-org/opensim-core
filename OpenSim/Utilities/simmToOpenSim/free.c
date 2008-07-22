@@ -28,7 +28,6 @@
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
-#include "normtools.h"
 
 
 /*************** DEFINES (for this file only) *********************************/
@@ -47,115 +46,122 @@ extern ModelStruct* sMotionModel;
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
 
-
 void free_model(int mod)
 {
+   if (model[mod] != NULL)
+   {
+#ifdef WIN32
+      if (sMotionModel == model[mod])
+         sMotionModel = NULL;
+#endif
 
+      freeModelStruct(model[mod]);
+      model[mod] = NULL;
+   }
+}
+
+void freeModelStruct(ModelStruct* ms)
+{
    int i, j;
 
-#ifdef WIN32
-   if (sMotionModel == model[mod])
-     sMotionModel = NULL;
-#endif
+   FREE_IFNOTNULL(ms->name);
+   FREE_IFNOTNULL(ms->pathptrs);
+   FREE_IFNOTNULL(ms->jointfilename);
+   FREE_IFNOTNULL(ms->musclefilename);
 
-   FREE_IFNOTNULL(model[mod]->name);
-   FREE_IFNOTNULL(model[mod]->pathptrs);
-   FREE_IFNOTNULL(model[mod]->jointfilename);
-   FREE_IFNOTNULL(model[mod]->musclefilename);
-
-   for (i=0; i<model[mod]->numgroups; i++)
+   for (i=0; i<ms->numgroups; i++)
    {
-      FREE_IFNOTNULL(model[mod]->muscgroup[i].name);
-      free_menu(&model[mod]->muscgroup[i].menu);
+      FREE_IFNOTNULL(ms->muscgroup[i].name);
+      free_menu(&ms->muscgroup[i].menu);
    }
-   FREE_IFNOTNULL(model[mod]->muscgroup);
+   FREE_IFNOTNULL(ms->muscgroup);
 
-   free_form(&model[mod]->gencform);
+   free_form(&ms->gencform);
 
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
-      FREE_IFNOTNULL(model[mod]->joint[i].name);
-      FREE_IFNOTNULL(model[mod]->joint[i].solverType);
-      FREE_IFNOTNULL(model[mod]->joint[i].in_seg_ground_path);
+      FREE_IFNOTNULL(ms->joint[i].name);
+      FREE_IFNOTNULL(ms->joint[i].solverType);
+      FREE_IFNOTNULL(ms->joint[i].in_seg_ground_path);
 #if INCLUDE_MOCAP_MODULE
-      FREE_IFNOTNULL(model[mod]->joint[i].mocap_segment);
+      FREE_IFNOTNULL(ms->joint[i].mocap_segment);
 #endif
    }
-   FREE_IFNOTNULL(model[mod]->joint);
+   FREE_IFNOTNULL(ms->joint);
 
-   for (i=0; i<model[mod]->numsegments; i++)
+   for (i=0; i<ms->numsegments; i++)
    {
-      if (model[mod]->segment[i].defined == no)
+      if (ms->segment[i].defined == no)
          continue;
-      FREE_IFNOTNULL(model[mod]->segment[i].name);
-      for (j=0; j<model[mod]->segment[i].numBones; j++)
+      FREE_IFNOTNULL(ms->segment[i].name);
+      for (j=0; j<ms->segment[i].numBones; j++)
       {
-         FREE_IFNOTNULL(model[mod]->segment[i].bone[j].name);
+         FREE_IFNOTNULL(ms->segment[i].bone[j].name);
          /*
-         FREE_IFNOTNULL(model[mod]->segment[i].bone[j].vert);
-         FREE_IFNOTNULL(model[mod]->segment[i].bone[j].poly);
+         FREE_IFNOTNULL(ms->segment[i].bone[j].vert);
+         FREE_IFNOTNULL(ms->segment[i].bone[j].poly);
          */
       }
-      for (j=0; j<model[mod]->segment[i].numSpringPoints; j++)
+      for (j=0; j<ms->segment[i].numSpringPoints; j++)
       {
-         FREE_IFNOTNULL(model[mod]->segment[i].springPoint[j].name);
-         FREE_IFNOTNULL(model[mod]->segment[i].springPoint[j].floorName);
+         FREE_IFNOTNULL(ms->segment[i].springPoint[j].name);
+         FREE_IFNOTNULL(ms->segment[i].springPoint[j].floorName);
       }
-      FREE_IFNOTNULL(model[mod]->segment[i].springPoint);
+      FREE_IFNOTNULL(ms->segment[i].springPoint);
 
-      if (model[mod]->segment[i].springFloor)
+      if (ms->segment[i].springFloor)
       {
-         FREE_IFNOTNULL(model[mod]->segment[i].springFloor->name);
-         FREE_IFNOTNULL(model[mod]->segment[i].springFloor->filename);
-         FREE_IFNOTNULL(model[mod]->segment[i].springFloor->poly);
-         FREE_IFNOTNULL(model[mod]->segment[i].springFloor->points);
-         FREE_IFNOTNULL(model[mod]->segment[i].springFloor);
+         FREE_IFNOTNULL(ms->segment[i].springFloor->name);
+         FREE_IFNOTNULL(ms->segment[i].springFloor->filename);
+         FREE_IFNOTNULL(ms->segment[i].springFloor->poly);
+         FREE_IFNOTNULL(ms->segment[i].springFloor->points);
+         FREE_IFNOTNULL(ms->segment[i].springFloor);
       }
 
-      for (j=0; j<model[mod]->segment[i].numContactObjects; j++)
+      for (j=0; j<ms->segment[i].numContactObjects; j++)
       {
-         FREE_IFNOTNULL(model[mod]->segment[i].contactObject[j].name);
-         FREE_IFNOTNULL(model[mod]->segment[i].contactObject[j].filename);
-         FREE_IFNOTNULL(model[mod]->segment[i].contactObject[j].poly);
+         FREE_IFNOTNULL(ms->segment[i].contactObject[j].name);
+         FREE_IFNOTNULL(ms->segment[i].contactObject[j].filename);
+         FREE_IFNOTNULL(ms->segment[i].contactObject[j].poly);
       }
-      FREE_IFNOTNULL(model[mod]->segment[i].contactObject);
+      FREE_IFNOTNULL(ms->segment[i].contactObject);
 
-      FREE_IFNOTNULL(model[mod]->segment[i].marker);
+      FREE_IFNOTNULL(ms->segment[i].marker);
 
 #if INCLUDE_MOCAP_MODULE
-      FREE_IFNOTNULL(model[mod]->segment[i].gait_scale_segment);
-      FREE_IFNOTNULL(model[mod]->segment[i].mocap_segment);
-      FREE_IFNOTNULL(model[mod]->segment[i].mocap_scale_chain_end1);
-      FREE_IFNOTNULL(model[mod]->segment[i].mocap_scale_chain_end2);
+      FREE_IFNOTNULL(ms->segment[i].gait_scale_segment);
+      FREE_IFNOTNULL(ms->segment[i].mocap_segment);
+      FREE_IFNOTNULL(ms->segment[i].mocap_scale_chain_end1);
+      FREE_IFNOTNULL(ms->segment[i].mocap_scale_chain_end2);
 #endif
    }
-   FREE_IFNOTNULL(model[mod]->segment);
-   FREE_IFNOTNULL(model[mod]->wrapobj);
+   FREE_IFNOTNULL(ms->segment);
+   FREE_IFNOTNULL(ms->wrapobj);
 
-   for (i=0; i<model[mod]->numgencoords; i++)
+   for (i=0; i<ms->numgencoords; i++)
    {
-      if (model[mod]->gencoord[i].defined == yes)
+      if (ms->gencoord[i].defined == yes)
       {
-	      FREE_IFNOTNULL(model[mod]->gencoord[i].name);
-	      FREE_IFNOTNULL(model[mod]->gencoord[i].jointnum);
+	      FREE_IFNOTNULL(ms->gencoord[i].name);
+	      FREE_IFNOTNULL(ms->gencoord[i].jointnum);
 #if INCLUDE_MOCAP_MODULE
-         FREE_IFNOTNULL(model[mod]->gencoord[i].mocap_segment);
+         FREE_IFNOTNULL(ms->gencoord[i].mocap_segment);
 #endif
       }
    }
-   FREE_IFNOTNULL(model[mod]->gencoord);
+   FREE_IFNOTNULL(ms->gencoord);
 
-   for (i = 0; i < model[mod]->num_deformities; i++)
+   for (i = 0; i < ms->num_deformities; i++)
    {
-      if (model[mod]->deformity[i].deform_name)
+      if (ms->deformity[i].deform_name)
       {
-         for (j = 0; j < model[mod]->deformity[i].num_deforms; j++)
-            FREE_IFNOTNULL(model[mod]->deformity[i].deform_name[j]);
+         for (j = 0; j < ms->deformity[i].num_deforms; j++)
+            FREE_IFNOTNULL(ms->deformity[i].deform_name[j]);
 
-         FREE_IFNOTNULL(model[mod]->deformity[i].deform_name);
+         FREE_IFNOTNULL(ms->deformity[i].deform_name);
       }
 
-      FREE_IFNOTNULL(model[mod]->deformity[i].deform);
+      FREE_IFNOTNULL(ms->deformity[i].deform);
    }
 
 #ifndef ENGINE
@@ -163,51 +169,51 @@ void free_model(int mod)
    /* NOTE: the model's window *must* be set as the current GL context, otherwise
     *  the glDeleteList() calls below will produce unpredictable bad results.
     */
-   for (i=0; i<model[mod]->dis.mat.num_materials; i++)
+   for (i=0; i<ms->dis.mat.num_materials; i++)
    {
-      if (model[mod]->dis.mat.materials[i].normal_list != -1)
-         glDeleteLists(model[mod]->dis.mat.materials[i].normal_list,1);
-      if (model[mod]->dis.mat.materials[i].highlighted_list != -1)
-         glDeleteLists(model[mod]->dis.mat.materials[i].highlighted_list,1);
-      FREE_IFNOTNULL(model[mod]->dis.mat.materials[i].name);
+      if (ms->dis.mat.materials[i].normal_list != -1)
+         glDeleteLists(ms->dis.mat.materials[i].normal_list,1);
+      if (ms->dis.mat.materials[i].highlighted_list != -1)
+         glDeleteLists(ms->dis.mat.materials[i].highlighted_list,1);
+      FREE_IFNOTNULL(ms->dis.mat.materials[i].name);
    }
-   FREE_IFNOTNULL(model[mod]->dis.mat.materials);
+   FREE_IFNOTNULL(ms->dis.mat.materials);
 
-   free_muscs(model[mod]->muscle,&model[mod]->default_muscle,model[mod]->nummuscles);
+   free_muscs(ms->muscle,&ms->default_muscle,ms->nummuscles);
 
-   free_defmusc(&model[mod]->default_muscle);
+   free_defmusc(&ms->default_muscle);
 #endif
 
-   for (i=0; i<model[mod]->numfunctions; i++)
-      if (model[mod]->function[i].defined == yes)
-	 nullify_function(&model[mod]->function[i], no);
+   for (i=0; i<ms->func_array_size; i++)
+      if (ms->function[i].defined == yes)
+	 nullify_function(&ms->function[i], no);
 
-   FREE_IFNOTNULL(model[mod]->function);
+   FREE_IFNOTNULL(ms->function);
 
 #ifndef ENGINE
-   free_muscs(model[mod]->save.muscle,&model[mod]->save.default_muscle,model[mod]->save.numsavedmuscs);
-   free_defmusc(&model[mod]->save.default_muscle);
+   free_muscs(ms->save.muscle,&ms->save.default_muscle,ms->save.numsavedmuscs);
+   free_defmusc(&ms->save.default_muscle);
 
-   for (i = 0; i < model[mod]->num_motion_objects; i++)
-      free_motion_object(&model[mod]->motion_objects[i], model[mod]);
+   for (i = 0; i < ms->num_motion_objects; i++)
+      free_motion_object(&ms->motion_objects[i], ms);
    
-   FREE_IFNOTNULL(model[mod]->motion_objects);
+   FREE_IFNOTNULL(ms->motion_objects);
 #endif
    
 /*
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
-      FREE_IFNOTNULL(model[mod]->save.jnts[i].name);
+      FREE_IFNOTNULL(ms->save.jnts[i].name);
       for (j=0; j<6; j++)
-	 FREE_IFNOTNULL(model[mod]->save.jnts[i].dofs[j].element);
+	 FREE_IFNOTNULL(ms->save.jnts[i].dofs[j].element);
    }
-   FREE_IFNOTNULL(model[mod]->save.jnts);
-   for (i=0; i<model[mod]->numgencoords; i++)
-      FREE_IFNOTNULL(model[mod]->save.gencs[i].name);
-   FREE_IFNOTNULL(model[mod]->save.gencs);
+   FREE_IFNOTNULL(ms->save.jnts);
+   for (i=0; i<ms->numgencoords; i++)
+      FREE_IFNOTNULL(ms->save.gencs[i].name);
+   FREE_IFNOTNULL(ms->save.gencs);
 */
 
-   FREE_IFNOTNULL(model[mod]);
+   FREE_IFNOTNULL(ms);
 }
 
 #ifndef ENGINE
@@ -274,7 +280,6 @@ void free_function(SplineFunction* func)
 }
 
 
-#ifndef ENGINE
 /* FREE_MUSCS: */
 
 void free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num)
@@ -384,7 +389,6 @@ void free_defmusc(MuscleStruct* dm)
    dm->tendon_force_len_curve = NULL;
 
 }
-#endif
 
 
 void free_and_nullify(void** ptr)
@@ -440,7 +444,6 @@ public void free_motion_object(MotionObject* mo, ModelStruct* ms)
       FREE_IFNOTNULL(mo->name);
       FREE_IFNOTNULL(mo->filename);
       FREE_IFNOTNULL(mo->materialname);
-      
       free_polyhedron(&mo->shape, no, ms);
    }
 }

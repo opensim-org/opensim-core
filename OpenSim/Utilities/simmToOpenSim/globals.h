@@ -18,7 +18,9 @@
 extern ModelStruct* model[];
 extern PlotStruct* plot[];
 extern ToolStruct tool[];
+#if ! OPENSIM_BUILD
 extern RootStruct root;
+#endif
 
 extern char msg[];
 extern char buffer[];

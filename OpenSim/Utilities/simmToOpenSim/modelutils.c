@@ -39,6 +39,9 @@ static void destroy_model_menus(ModelStruct* ms);
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
+#if OPENSIM_CONVERTER
+#define ENGINE
+#endif
 
 #ifndef ENGINE
 
@@ -60,11 +63,15 @@ void delete_model(ModelStruct* ms)
 
    if (is_model_realtime(ms) == rtMocap)
    {
+#if INCLUDE_EVA_REALTIME
       stop_realtime_mocap_stream();
+#endif
    }
    else if (is_model_realtime(ms) == rtSimulation)
    {
+#if ! SIMM_VIEWER
       // DPTODO
+#endif
    }
 
    glutDeleteMutex(ms->modelLock);
@@ -399,7 +406,19 @@ char* getjointvarname(int num)
 
 }
 
+
 #ifndef ENGINE
+
+SBoolean isVisible(double pt[])
+{
+   if (pt[0] >= UNDEFINED_DOUBLE)
+      return no;
+   if (pt[1] >= UNDEFINED_DOUBLE)
+      return no;
+   if (pt[2] >= UNDEFINED_DOUBLE)
+      return no;
+   return yes;
+}
 
 void hack_tool_updates(ModelStruct* ms)
 {

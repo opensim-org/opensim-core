@@ -23,6 +23,8 @@ ModelStruct* model[2];
 ModelStruct* model[MODELBUFFER];
 PlotStruct* plot[PLOTBUFFER];
 ToolStruct tool[TOOLBUFFER];
+#endif
+#if ! OPENSIM_BUILD
 RootStruct root;
 #endif
 
@@ -36,8 +38,12 @@ double z_axis[] = {0.0, 0.0, 1.0};
 
 char program_full_name[] = "Software for Interactive Musculoskeletal Modeling";
 
+#if SIMM_VIEWER
+char program_name[] = "SIMM Viewer";
+#else
 char program_name[] = "SIMM";
-char program_version[] = "4.1.2a10";
+#endif
+char program_version[] = "4.2.2a2";
 char program_with_version[20];
 
 SBoolean pipe_included = no;
@@ -45,7 +51,7 @@ SBoolean motion_post_included = no;
 SBoolean motion_real_included = no;
 
 char program_date[] = __DATE__;
-char copyright_notice[] = "Copyright (c) 1992-2006 MusculoGraphics (a division of Motion Analysis Corp.)";
+char copyright_notice[] = "Copyright (c) 1992-2008 MusculoGraphics (a division of Motion Analysis Corp.)";
 char memory_message[] = "Ran out of memory.";
 char tool_message[] = "Could not make SIMM tools.";
 

@@ -23,8 +23,9 @@
 #include "universal.h"
 #include "main.h"
 #include "wefunctions.h"
+#if OPENSIM_BUILD
 #include <OpenSim/version.h>
-
+#endif
 
 char EngineType[256];
 char EngineName[256];
@@ -33,11 +34,19 @@ char* markerSetOut = NULL;
 
 
 void write_xml_model(ModelStruct* ms, char filename[], char geometryDirectory[], int angleUnits);
-int makeDir(const char aDirName[]);
 
 static void printUsage(char programName[])
 {
 	printf("Usage: %s -j joints_in [ -m muscles_in] [-e simm | simbody] -x xml_out [-ms markerset_out] [-g geometry_directory] [-a degrees | radians]\n", programName);
+}
+
+int makeDir(const char aDirName[])
+{
+#ifdef __linux__
+	return mkdir(aDirName,S_IRWXU);
+#else
+	return _mkdir(aDirName);
+#endif
 }
 
 // Fix names in the model to take out XML meta characters that cause parsing problems (bug 505). -Ayman
@@ -77,7 +86,9 @@ int main(int argc, char* argv[])
 	strcpy(EngineType,"Simm");
 	strcpy(EngineName,"SimmKinematicsEngine");
 
+#if OPENSIM_BUILD
 	printf("simmToOpenSim, version %s, build date %s %s\n", OpenSimVersion, __TIME__, __DATE__);
+#endif
 
    if (argc < 5)
    {
@@ -171,7 +182,7 @@ int main(int argc, char* argv[])
 
    mstrcpy(&ms->jointfilename, jointIn);
 
-   read_model_file(ms->modelnum, ms->jointfilename);
+   read_model_file(ms->modelnum, ms->jointfilename, yes);
 
    /* If the muscle file name was specified on the command line,
 	 * override the one specified in the joint file (if any).
@@ -196,7 +207,7 @@ int main(int argc, char* argv[])
 	if (ms->musclefilename)
 	{
 		SBoolean foo;
-		read_muscle_file(ms, ms->musclefilename, &foo);
+		read_muscle_file(ms, ms->musclefilename, &foo, yes);
 		// read_muscle_file already prints this message...
 		//printf("Read muscle file %s\n", ms->musclefilename);
 	}

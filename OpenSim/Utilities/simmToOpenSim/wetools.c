@@ -30,6 +30,10 @@
 #include "functions.h"
 #include "wefunctions.h"
 
+#if OPENSIM_CONVERTER || SIMM_VIEWER
+#define ENGINE
+#endif
+
 #ifndef ENGINE
 
 /*************** DEFINES (for this file only) *********************************/
@@ -71,8 +75,6 @@ extern WinUnion*         we_win_union;
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static void setwemenus(void);
-
-
 
 
 int is_current_wrap_object(ModelStruct* ms, WrapObject* wo)
@@ -598,7 +600,7 @@ void we_entervalue(SimmEvent se)
             mstrcpy(&wo->name, form->option[form->selected_item].valuestr);
 
             /* Send simm event to tell Muscle Editor about the name change. */
-            make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
+        //    make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
          }
          break;
 
@@ -616,7 +618,7 @@ void we_entervalue(SimmEvent se)
                  {
                     wo->radius.xyz[0] = rd;
                     wo->display_list_is_stale = yes;
-                    inval_model_wrapping(NULL, -1);
+                    inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
                  {
@@ -631,7 +633,7 @@ void we_entervalue(SimmEvent se)
                     if (wo->wrap_type == wrap_cylinder)
                        wo->height = rd;
                     wo->display_list_is_stale = yes;
-                    inval_model_wrapping(NULL, -1);
+                    inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
                  {
@@ -644,7 +646,7 @@ void we_entervalue(SimmEvent se)
                  {
                     wo->radius.xyz[2] = rd;
                     wo->display_list_is_stale = yes;
-                    inval_model_wrapping(NULL, -1);
+                    inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
                  {
@@ -680,6 +682,9 @@ void we_entervalue(SimmEvent se)
       form->cursor_position = 0;
       form->highlight_start = form->cursor_position;
    }
+   
+   /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
+   make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
    update_we_forms();
    display_wrapeditor(we_win_params,we_win_union);
 }
@@ -803,7 +808,9 @@ void apply_xform_to_wrapobj (double factor)
           */
          wo->xforms_valid = no;
          recalc_xforms(wo);
-         inval_model_wrapping(NULL, -1);
+         inval_model_wrapping(we->model, weop->wrap_object);
+         /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
+         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
          queue_redraw(MODEL, we->model->modelnum);
       }
    }
@@ -859,7 +866,9 @@ void reset_wrapobj_xform ()
          wo->xforms_valid = no;
          
          recalc_xforms(wo);
-         inval_model_wrapping(NULL, -1);
+         inval_model_wrapping(we->model, weop->wrap_object);
+         /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
+         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
          queue_redraw(MODEL, we->model->modelnum);
          display_wrapeditor(we_win_params, we_win_union);
       }
@@ -1088,7 +1097,7 @@ void we_track_cb (void* data, SimmEvent se)
    if (wo->wrap_type == wrap_cylinder && se.field1 == space_key && se.field2 == key_released)
    {
       wo->wrap_algorithm = ! wo->wrap_algorithm;
-      inval_model_wrapping(NULL, -1);
+      inval_model_wrapping(we->model, weop->wrap_object);
       queue_redraw(MODEL, mod);
       return;
    }
@@ -1365,94 +1374,10 @@ void we_track_cb (void* data, SimmEvent se)
    {
       wo->xforms_valid = no;
       recalc_xforms(wo);
-      inval_model_wrapping(ms, -1);
+      inval_model_wrapping(ms, weop->wrap_object);
       queue_redraw(MODEL, mod);
       display_wrapeditor(we_win_params, we_win_union);
    }
-}
-
-
-/* -------------------------------------------------------------------------
-   make_wrap_cylinder - build a GL display list for drawing a cylinder.
----------------------------------------------------------------------------- */
-void make_wrap_cylinder (WrapObject* wo)
-{
-#define NUMPTS 32
-
-   double end1[NUMPTS][3], end2[NUMPTS][3], halfHeight = wo->height / 2.0;
-   int i;
-
-   for (i = 0; i < NUMPTS; i++)
-   {
-      double theta = i * M_PI * 2 / NUMPTS;
-      
-      end1[i][0] = end2[i][0] = wo->radius.xyz[0] * cos(theta);
-      end1[i][1] = end2[i][1] = wo->radius.xyz[0] * sin(theta);
-      
-      end1[i][2] = - halfHeight;
-      end2[i][2] = halfHeight;
-   }
-
-   wo->display_list = glGenLists(1);
-   glNewList(wo->display_list, GL_COMPILE_AND_EXECUTE);
-  
-   for (i = 0; i < NUMPTS - 1; i++)
-   {
-      glBegin(GL_LINE_LOOP);
-        glVertex3dv(end1[i]);
-        glVertex3dv(end1[i+1]);
-        glVertex3dv(end2[i+1]);
-        glVertex3dv(end2[i]);
-      glEnd();
-   }
-   glBegin(GL_LINE_LOOP);
-     glVertex3dv(end1[NUMPTS-1]);
-     glVertex3dv(end1[0]);
-     glVertex3dv(end2[0]);
-     glVertex3dv(end2[NUMPTS-1]);
-   glEnd();
-   
-   glEndList();
-}
-
-/* -------------------------------------------------------------------------
-   make_wrap_torus - build a GL display list for drawing a cylinder.
----------------------------------------------------------------------------- */
-void make_wrap_torus (WrapObject* wo)
-{
-#define NUMSLICES 36
-
-   double end1[NUMPTS][3], end2[NUMPTS][3], halfHeight = wo->height / 2.0;
-   int i;
-
-   wo->display_list = glGenLists(1);
-   glNewList(wo->display_list, GL_COMPILE_AND_EXECUTE);
-
-   for (i = 0; i < NUMSLICES; i++)
-   {
-      double angle = i * (360.0 / NUMSLICES);
-
-      glRotated(angle, 0.0, 0.0, 1.0);
-      glTranslated(wo->radius.xyz[0], 0.0, 0.0);
-   }
-
-   for (i = 0; i < NUMPTS - 1; i++)
-   {
-      glBegin(GL_LINE_LOOP);
-        glVertex3dv(end1[i]);
-        glVertex3dv(end1[i+1]);
-        glVertex3dv(end2[i+1]);
-        glVertex3dv(end2[i]);
-      glEnd();
-   }
-   glBegin(GL_LINE_LOOP);
-     glVertex3dv(end1[NUMPTS-1]);
-     glVertex3dv(end1[0]);
-     glVertex3dv(end2[0]);
-     glVertex3dv(end2[NUMPTS-1]);
-   glEnd();
-   
-   glEndList();
 }
 
 
@@ -1565,87 +1490,6 @@ float* lerp_clr (const float start[3], const float end[3], double t, float color
 
 #endif /* ! ENGINE */
 
-/* ==============================================================================
- * ==== WRAP OBJECT TRANSFORMATION SUPPORT
- */
-
-#define CHECK_XFORMS(_WO) { if ( ! (_WO)->xforms_valid) recalc_xforms(_WO); }
-
-
-void convert_to_wrap_object_frame(WrapObject* wo, double* pt)
-{
-   if (wo && pt)
-   {
-      CHECK_XFORMS(wo);
-   
-      transform_pt(wo->to_local_xform, pt);
-   }
-}
-
-void convert_from_wrap_object_frame(WrapObject* wo, double* pt)
-{
-   if (wo && pt)
-   {
-      CHECK_XFORMS(wo);
-   
-      transform_pt(wo->from_local_xform, pt);
-   }
-}
-
-SBoolean query_muscle_wrap_association (MuscleStruct* muscle, int wrap_object)
-{
-
-   /* See if the given wrap object is used in the given muscle.
-    * You don't care which slot it's in, just that it's there.
-    */
-   if (muscle && wrap_object >= 0)
-   {
-      int i;
-
-      for (i = 0; i < muscle->numWrapStructs; i++)
-         if (muscle->wrapStruct[i]->wrap_object == wrap_object)
-            return yes;
-   }
-
-   return no;
-}
-
-
-void inval_model_wrapping(ModelStruct* ms, int wrap_object)
-{
-   int i, j;
-
-#ifndef ENGINE
-   if (ms == NULL)
-      ms = we->model;
-   
-   if (wrap_object < 0)
-      wrap_object = we->weop[ms->modelnum].wrap_object;
-#endif
-
-   if (ms == NULL || wrap_object < 0)
-      return;
-   
-   /* invalidate muscle wrapping for muscles associated with current wrap obj. */
-   for (i = 0; i < ms->nummuscles; i++)
-   {
-      for (j = 0; j < ms->muscle[i].numWrapStructs; j++)
-      {
-         if (ms->muscle[i].wrapStruct[j]->wrap_object == wrap_object)
-         {
-            ms->muscle[i].wrap_calced = no;
-            break;
-         }
-      }
-   }
-
-#ifndef ENGINE
-   queue_redraw(MODEL, we->model->modelnum);
-#endif
-
-}
-
-
 void recalc_xforms(WrapObject* wo)
 {
    if ( ! wo->xforms_valid)
@@ -1673,99 +1517,20 @@ const char* get_wrap_algorithm_name (int i)
    return NULL;
 }
 
-void update_sphere_path(ModelStruct *ms, MuscleStruct *muscl, WrapObject *wo, int tp1, int tp2)
+SBoolean query_muscle_wrap_association (MuscleStruct* muscle, int wrap_object)
 {
-   int i /*, index, np*/;
-   SBoolean far_side_wrap = no;
-   double angle /*, dangle*/, r1r2, r1m[3], r2m[3], r1n[3], r2n[3], p1[3], p2[3];
-   double m[3] /*, sum_musc[3], sum_r[3]*/, r1[3], r2[3];
-//   double mat[4][4], axis[4], vec[4], rotvec[4];
 
-   m[0] = m[1] = m[2] = 0.0;
-
-   for (i = 0; i < 3; i++)
+   /* See if the given wrap object is used in the given muscle.
+    * You don't care which slot it's in, just that it's there.
+    */
+   if (muscle && wrap_object >= 0)
    {
-      r1[i] = muscl->mp[tp1]->point[i];
-      r2[i] = muscl->mp[tp2]->point[i];
-      p1[i] = muscl->mp[tp1-1]->point[i];
-      p2[i] = muscl->mp[tp2+1]->point[i];
+      int i;
+
+      for (i = 0; i < muscle->numWrapStructs; i++)
+         if (muscle->wrapStruct[i]->wrap_object == wrap_object)
+            return yes;
    }
-   convert(ms->modelnum, p1, muscl->mp[tp1-1]->segment, wo->segment);
-   convert(ms->modelnum, p2, muscl->mp[tp2+1]->segment, wo->segment);
 
-   convert_to_wrap_object_frame(wo, p1);
-   convert_to_wrap_object_frame(wo, p2);
-   convert_to_wrap_object_frame(wo, r1);
-   convert_to_wrap_object_frame(wo, r2);
-
-#if 0
-   for (i = 0; i < 3; i++)
-   {
-      sum_musc[i] = (r1[i] - p1[i]) + (r2[i] - p2[i]);
-      sum_r[i] = (r1[i] - m[i]) + (r2[i] - m[i]);
-   }
-   normalize_vector(sum_musc, sum_musc);
-   normalize_vector(sum_r, sum_r);
-
-   if (DOT_VECTORS(sum_r, sum_musc) < 0.0)
-      far_side_wrap = yes;
-#endif
-
-   MAKE_3DVECTOR21(r1, m, r1m);
-   MAKE_3DVECTOR21(r2, m, r2m);
-
-   normalize_vector(r1m, r1n);
-   normalize_vector(r2m, r2n);
-
-   angle = acos(DOT_VECTORS(r1n, r2n));
-   
-   if (far_side_wrap)
-      angle = -(2 * M_PI - angle);
-
-   r1r2 = wo->radius.xyz[0] * angle;
-   muscl->mp[tp2]->wrap_distance = r1r2;
-   //printf("distance = %lf\n", r1r2);
-
-#if 0
-   cross_vectors(r1n,r2n,axis);
-   normalize_vector(axis,axis);
-   axis[3] = 1.0;
-
-   np = muscl->mp[tp2]->num_wrap_pts;
-
-   muscl->mp[tp2]->wrap_pts[0] = r1[0];
-   muscl->mp[tp2]->wrap_pts[1] = r1[1];
-   muscl->mp[tp2]->wrap_pts[2] = r1[2];
-
-   muscl->mp[tp2]->wrap_pts[(np-1)*3] = r2[0];
-   muscl->mp[tp2]->wrap_pts[(np-1)*3+1] = r2[1];
-   muscl->mp[tp2]->wrap_pts[(np-1)*3+2] = r2[2];
-
-   vec[0] = r1m[0];
-   vec[1] = r1m[1];
-   vec[2] = r1m[2];
-   vec[3] = 1.0;
-
-   for (i = 0; i < np - 2; i++)
-   {
-      index = (i+1) * 3;
-      dangle = angle * (i+1) / (np - 1);
-      
-      make_4x4dircos_matrix(dangle * RTOD, axis, mat);
-      mult_4x4matrix_by_vector(mat, vec, rotvec);
-      
-      muscl->mp[tp2]->wrap_pts[index]   = m[0] + rotvec[0];
-      muscl->mp[tp2]->wrap_pts[index+1] = m[1] + rotvec[1];
-      muscl->mp[tp2]->wrap_pts[index+2] = m[2] + rotvec[2];
-   }
-   
-   for (i = 0; i < muscl->mp[tp2]->num_wrap_pts; i++)
-   {
-      convert_from_wrap_object_frame(wo, &muscl->mp[tp2]->wrap_pts[i * 3]);
-      convert(ms->modelnum, &muscl->mp[tp2]->wrap_pts[i * 3], wo->segment, ms->ground_segment);
-   }
-#endif
+   return no;
 }
-
-
-

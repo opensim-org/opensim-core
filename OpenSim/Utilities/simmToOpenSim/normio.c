@@ -295,7 +295,10 @@ ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_n
    while (start >= 0 && filename[start--] != DIR_SEP_CHAR)
       ;
 
-   start += 2;
+   if (start == -1)
+      start = 0;
+   else
+      start += 2;
    len = end - start;
    ph->name = (char *)simm_malloc((len+1)*sizeof(char));
    if (ph->name == NULL)
@@ -725,14 +728,14 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 				// If they are present, skip over them.
 				if (line[0] == '/')
 				{
-					// skip over the "//"
-					line += 2;
+					// skip over the "/"
+					line++;
 					// read and ignore the index
 					line = parse_string(line, type_int, &junk);
 					if (line[0] == '/')
 					{
-						// skip over the "//"
-						line += 2;
+						// skip over the "/"
+						line++;
 						// read and ignore the index
 						line = parse_string(line, type_int, &junk);
 					}
@@ -1323,7 +1326,7 @@ void build_file_list_from_pattern (const char* pattern, char*** list, int* numFi
  * file exists, but this way works well enough.
  */
 
-SBoolean file_exists(char filename[])
+SBoolean file_exists(const char filename[])
 {
    FILE* fp;
 

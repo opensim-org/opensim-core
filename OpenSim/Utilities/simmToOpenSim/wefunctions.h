@@ -93,8 +93,6 @@ int calc_line_intersect_torus(double p1[], double p2[],
                               int wrap_axis, int wrap_sign,
                               MuscleWrapStruct*, int* p_flag, WrapObject*);
 
-void update_sphere_path(ModelStruct *ms, MuscleStruct *muscl, WrapObject *wo, int tp1, int tp2);
-
 void enable_debug_shapes(SBoolean);
 
 #if VISUAL_WRAPPING_DEBUG

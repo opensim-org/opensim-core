@@ -21,7 +21,9 @@
 /* ---------------------------------------------------------------------------
    PUBLIC MOCAP IMPORT API:
 ------------------------------------------------------------------------------ */
-//public ReturnCode mocap_to_simm(glutMocapOptions*, int* modelIndex);
+#if ! OPENSIM_BUILD
+public ReturnCode mocap_to_simm(glutMocapOptions*, int* modelIndex);
+#endif
 
 public ReturnCode save_pose_file(ModelStruct*, const char* fileName);
 
@@ -169,8 +171,8 @@ STRUCT {                          /* ---- forceplate record: */
 
 #endif
 
-/* Eran: REMOVED
-smAnalogStruct* _init_channel_mapping(SBoolean includeMuscles);
+#if ! OPENSIM_BUILD
+smAnalogStruct* _init_channel_mapping(SBoolean includeMuscles, const char* analogFilePath);
 smC3DStruct* read_analog_data_files(int numFiles, char* const* files, const MocapInfo*,
                                    const glutMocapOptions*);
 SBoolean _map_channel (const char* name, smAnalogChannel* channel, const smAnalogStruct* m);
@@ -181,6 +183,7 @@ void _nuke_forceplate_samples (smAnalogStruct* ad);
 void _autocalibrate_forceplate_channel (smAnalogStruct* ad, int col);
 void free_analog_data(smAnalogStruct*);
 void post_process_c3d_analog_data(smC3DStruct* c3d, const MocapInfo* mi, const glutMocapOptions* mo);
-*/
+void read_critical_marker_names(char* names[]);
+#endif
 
 #endif /* MOCAP_H */

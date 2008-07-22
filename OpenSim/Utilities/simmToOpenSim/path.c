@@ -48,7 +48,6 @@ static ReturnCode setpath(int mod, int list[]);
 
 ReturnCode makepaths(int mod)
 {
-   
    int i, j, k, m, n, jnt, segments, old_count, np;
    ModelStruct* ms;
    int* path;
@@ -128,24 +127,29 @@ ReturnCode makepaths(int mod)
          n = ms->joint[i].to;
          for (j=0; j<segments; j++)
          {
-            for (k=0; k<segments; k++)
+            if (j != m && j != n)
             {
-               if (k == j)
-                  continue;
-               index = j*segments+k;
-               if (ms->pathptrs[index] != NULL && k == m)
+               index = j*segments+m;
+               if (ms->pathptrs[index] != NULL)
                {
-                  if ((np = enterpath(mod,j,k,n)) == -1)
+                  if ((np = enterpath(mod,j,m,n)) == -1)
                      return code_bad;
                   else
+                  {
                      numpaths += np;
+                   //  printf("added %d to path[%d]: %d -> %d\n", n, j*segments + n, j, k);
+                  }
                }
-               if (ms->pathptrs[index] != NULL && k == n)
+               index = j*segments+n;
+               if (ms->pathptrs[index] != NULL)
                {
-                  if ((np = enterpath(mod,j,k,m)) == -1)
+                  if ((np = enterpath(mod,j,n,m)) == -1)
                      return (code_bad);
                   else
+                  {
                      numpaths += np;
+                   //  printf("added %d to path[%d]: %d -> %d\n", m, j*segments+m, j, k);
+                  }
                }
             }
          }
@@ -194,9 +198,9 @@ ReturnCode makepaths(int mod)
 //         ms->pathptrs[index][j] = END_OF_ARRAY;
       }
    }
-/*
-   printpaths(mod);
-*/
+
+   //printpaths(mod);
+
    free(path);
    
   /* For each joint, do the following:
@@ -221,9 +225,7 @@ ReturnCode makepaths(int mod)
                ms->joint[k].in_seg_ground_path[i] = yes;
       }
    }
-   
    return code_fine;
-   
 }
 
 
@@ -327,7 +329,10 @@ static ReturnCode setpath(int mod, int list[])
 
    for (i=0; i<length; i++)
       model[mod]->pathptrs[index][i] = list[i];
-
+   //printf("setpath %d: %d -> %d  :", index, start, finish);
+   //for (i = 0 ; i < length; i++)
+   //   printf(" %d ", list[i]);
+   //printf("\n");
    return (code_fine);
 
 }

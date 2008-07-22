@@ -75,7 +75,7 @@ static void postprocess_muscle(ModelStruct* ms, MuscleStruct* muscl);
  * definition.
  */
 
-ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists)
+ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists, SBoolean showTopLevelMessages)
 {
 
    char tempFile[512];
@@ -99,11 +99,14 @@ strcpy(tempFile,".muscles");
 
    if ((fp = preprocess_file(filename,tempFile)) == NULL)
    {
-      (void)sprintf(buffer,"Unable to open muscle input file %s:", filename);
-      message(buffer,HIGHLIGHT_TEXT,DEFAULT_MESSAGE_X_OFFSET);
-      message("Loading model without muscles.",HIGHLIGHT_TEXT,
-	      DEFAULT_MESSAGE_X_OFFSET+20);
-      return (code_fine);
+      if (showTopLevelMessages == yes)
+      {
+         (void)sprintf(buffer,"Unable to open muscle input file %s:", filename);
+         message(buffer,HIGHLIGHT_TEXT,DEFAULT_MESSAGE_X_OFFSET);
+         message("Loading model without muscles.",HIGHLIGHT_TEXT,
+            DEFAULT_MESSAGE_X_OFFSET+20);
+      }
+      return code_fine;
    }
 
    ms->nummuscles = 0;
@@ -263,8 +266,11 @@ strcpy(tempFile,".muscles");
 
    if ( ! is_in_demo_mode())
    {
-      (void)sprintf(buffer,"Read muscle file %s", filename);
-      message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+      if (showTopLevelMessages == yes)
+      {
+         (void)sprintf(buffer,"Read muscle file %s", filename);
+         message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+      }
    }
    
    if (file_exists)
@@ -618,7 +624,7 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscl,
       else if (STRINGS_ARE_EQUAL(buffer,"wrapobject"))
       {
          char* p;
-         int   i;
+         int   i, j;
          MuscleWrapStruct* wrap = NULL;
          ReturnCode rc;
          SBoolean algorithmSpecified = no;
@@ -656,6 +662,11 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscl,
                      wrap->mp_wrap[i].wrap_pts = NULL;
                      wrap->mp_wrap[i].numranges = 0;
                      wrap->mp_wrap[i].ranges = NULL;
+                     for (j = 0; j < 3; j++)
+                     {
+                        wrap->mp_wrap[i].funcnum[j] = -1;
+                        wrap->mp_wrap[i].gencoord[j] = -1;
+                     }
                   }
 
                   for (i = 0; i < 3; i++)

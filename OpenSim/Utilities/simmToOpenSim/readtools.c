@@ -68,6 +68,7 @@ static char* get_xypair_from_string(char str_buffer[], double* x, double* y);
 static char* parse_string(char str_buffer[], VariableType var_type,
 			  void* dest_var);
 static void acpp(char in_file[], const char out_file[]);
+static void strip_brackets_from_string(char name[]);
 
 
 
@@ -326,10 +327,10 @@ MusclePoint* read_muscle_attachment_points(int mod, FILE** fp, int* numpoints,
 					   SBoolean* has_force_points)
 {
 
-   int i;
+   int i, function_num;
    MusclePoint* mp;
    double range_num_1, range_num_2;
-   char com[CHARBUFFER], segment_name[CHARBUFFER], gencoord_name[CHARBUFFER];
+   char com[CHARBUFFER], segment_name[CHARBUFFER], gencoord_name[CHARBUFFER], line2[CHARBUFFER];
    char* line;
    ReturnCode rc;
 
@@ -366,25 +367,109 @@ MusclePoint* read_muscle_attachment_points(int mod, FILE** fp, int* numpoints,
          }
       }
 
+      // initialize
+      mp[*numpoints].ground_pt[XX] = ERROR_DOUBLE;
+      mp[*numpoints].ground_pt[YY] = ERROR_DOUBLE;
+      mp[*numpoints].ground_pt[ZZ] = ERROR_DOUBLE;
+      mp[*numpoints].undeformed_point[XX] = ERROR_DOUBLE;
+      mp[*numpoints].undeformed_point[YY] = ERROR_DOUBLE;
+      mp[*numpoints].undeformed_point[ZZ] = ERROR_DOUBLE;
+      mp[*numpoints].old_point[XX] = ERROR_DOUBLE;
+      mp[*numpoints].old_point[YY] = ERROR_DOUBLE;
+      mp[*numpoints].old_point[ZZ] = ERROR_DOUBLE;
+      mp[*numpoints].old_seg = -1;
+      mp[*numpoints].funcnum[XX] = -1;
+      mp[*numpoints].funcnum[YY] = -1;
+      mp[*numpoints].funcnum[ZZ] = -1;
+      mp[*numpoints].gencoord[XX] = -1;
+      mp[*numpoints].gencoord[YY] = -1;
+      mp[*numpoints].gencoord[ZZ] = -1;
+      mp[*numpoints].movingpoint = no;
+
       /* If the string you just read was not "endpoints" then it must
-       * be the start of a new point (so it's the x-coordinate).
+       * be the start of a new point (so it's the x-coordinate), either
+       * a number (e.g. "0.0346"), or a function (e.g. "f2(gencoord_name)").
        */
       if (sscanf(buffer,"%lg", &mp[*numpoints].point[XX]) != 1)
-         return (NULL);
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         mp[*numpoints].funcnum[XX] = enter_function(mod, function_num, no);
+         mp[*numpoints].gencoord[XX] = enter_gencoord(mod, gencoord_name, no);
+         mp[*numpoints].movingpoint = yes;
+         if (mp[*numpoints].gencoord[XX] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (mp[*numpoints].funcnum[XX] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
 
-      (void)read_nonempty_line(fp,buffer);
+      (void)read_nonempty_line(fp,line2);
 
-      /* Read the y coordinate */
-
-      line = parse_string(buffer,type_double,(void*)&mp[*numpoints].point[YY]);
-      if (mp[*numpoints].point[YY] == ERROR_DOUBLE)
-         return (NULL);
-
-      /* Read the z coordinate */
-
-      line = parse_string(line,type_double,(void*)&mp[*numpoints].point[ZZ]);
-      if (mp[*numpoints].point[ZZ] == ERROR_DOUBLE)
-         return (NULL);
+      /* Read the y coordinate or function */
+      line = parse_string(line2,type_string,(void*)buffer);
+      if (sscanf(buffer,"%lg", &mp[*numpoints].point[YY]) != 1)
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         mp[*numpoints].funcnum[YY] = enter_function(mod, function_num, no);
+         mp[*numpoints].gencoord[YY] = enter_gencoord(mod, gencoord_name, no);
+         mp[*numpoints].movingpoint = yes;
+         if (mp[*numpoints].gencoord[YY] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (mp[*numpoints].funcnum[YY] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
+      else
+      {
+         if (mp[*numpoints].point[YY] == ERROR_DOUBLE)
+            return (NULL);
+      }
+      /* Read the z coordinate or function */
+      line = parse_string(line,type_string,(void*)buffer);
+      if (sscanf(buffer,"%lg", &mp[*numpoints].point[ZZ]) != 1)
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         mp[*numpoints].funcnum[ZZ] = enter_function(mod, function_num, no);
+         mp[*numpoints].gencoord[ZZ] = enter_gencoord(mod, gencoord_name, no);
+         mp[*numpoints].movingpoint = yes;
+         if (mp[*numpoints].funcnum[ZZ] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (mp[*numpoints].gencoord[ZZ] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
+      else
+      {
+         if (mp[*numpoints].point[ZZ] == ERROR_DOUBLE)
+            return (NULL);
+      }
 
       /* read the keyword "segment" */
 
@@ -484,10 +569,10 @@ LigamentPoint* read_ligament_attachment_points(int mod, FILE** fp, int* numpoint
 					   SBoolean* has_force_points)
 {
 
-   int i;
+   int i, function_num;
    LigamentPoint* lp;
    double range_num_1, range_num_2;
-   char com[CHARBUFFER], segment_name[CHARBUFFER], gencoord_name[CHARBUFFER];
+   char com[CHARBUFFER], segment_name[CHARBUFFER], gencoord_name[CHARBUFFER], line2[CHARBUFFER];
    char* line;
    ReturnCode rc;
 
@@ -524,26 +609,101 @@ LigamentPoint* read_ligament_attachment_points(int mod, FILE** fp, int* numpoint
          }
       }
 
+      // initialize
+      lp[*numpoints].ground_pt[XX] = ERROR_DOUBLE;
+      lp[*numpoints].ground_pt[YY] = ERROR_DOUBLE;
+      lp[*numpoints].ground_pt[ZZ] = ERROR_DOUBLE;
+      lp[*numpoints].undeformed_point[XX] = ERROR_DOUBLE;
+      lp[*numpoints].undeformed_point[YY] = ERROR_DOUBLE;
+      lp[*numpoints].undeformed_point[ZZ] = ERROR_DOUBLE;
+      lp[*numpoints].funcnum[XX] = -1;
+      lp[*numpoints].funcnum[YY] = -1;
+      lp[*numpoints].funcnum[ZZ] = -1;
+      lp[*numpoints].gencoord[XX] = -1;
+      lp[*numpoints].gencoord[YY] = -1;
+      lp[*numpoints].gencoord[ZZ] = -1;
+
       /* If the string you just read was not "endpoints" then it must
-       * be the start of a new point (so it's the x-coordinate), either
-       * a number (e.g. "0.0346"), or a function (e.g. "f2").
-       */
+       * be the start of a new point (so it's the x-coordinate).
+       * DKB Oct. 2007 - could be either a coordinate or a function of a gencoord
+       */      
       if (sscanf(buffer,"%lg", &lp[*numpoints].point[XX]) != 1)
-         return (NULL);
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         lp[*numpoints].funcnum[XX] = enter_function(mod, function_num, no);
+         lp[*numpoints].gencoord[XX] = enter_gencoord(mod, gencoord_name, no);
+         if (lp[*numpoints].funcnum[XX] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (lp[*numpoints].gencoord[XX] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
 
-      (void)read_nonempty_line(fp,buffer);
+      (void)read_nonempty_line(fp,line2);
 
-      /* Read the y coordinate */
-
-      line = parse_string(buffer,type_double,(void*)&lp[*numpoints].point[YY]);
-      if (lp[*numpoints].point[YY] == ERROR_DOUBLE)
-         return (NULL);
-
-      /* Read the z coordinate */
-
-      line = parse_string(line,type_double,(void*)&lp[*numpoints].point[ZZ]);
-      if (lp[*numpoints].point[ZZ] == ERROR_DOUBLE)
-         return (NULL);
+      /* Read the y coordinate or function */
+      line = parse_string(line2,type_string,(void*)buffer);
+      if (sscanf(buffer,"%lg", &lp[*numpoints].point[YY]) != 1)
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         lp[*numpoints].funcnum[YY] = enter_function(mod, function_num, no);
+         lp[*numpoints].gencoord[YY] = enter_gencoord(mod, gencoord_name, no);
+         if (lp[*numpoints].funcnum[YY] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (lp[*numpoints].gencoord[YY] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
+      else
+      {
+         if (lp[*numpoints].point[YY] == ERROR_DOUBLE)
+            return (NULL);
+      }
+      /* Read the z coordinate or function */
+      line = parse_string(line,type_string,(void*)buffer);
+      if (sscanf(buffer,"%lg", &lp[*numpoints].point[ZZ]) != 1)
+      {
+         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+            return (NULL);
+         strip_brackets_from_string(gencoord_name);
+         lp[*numpoints].funcnum[ZZ] = enter_function(mod, function_num, no);
+         lp[*numpoints].gencoord[ZZ] = enter_gencoord(mod, gencoord_name, no);
+         if (lp[*numpoints].funcnum[ZZ] == -1)
+         {
+            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+         if (lp[*numpoints].gencoord[ZZ] == -1)
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            error(none,errorbuffer);
+            return (NULL);
+         }
+      }
+      else
+      {
+         if (lp[*numpoints].point[ZZ] == ERROR_DOUBLE)
+            return (NULL);
+      }
 
       /* read the keyword "segment" */
 
@@ -2280,3 +2440,27 @@ void _strip_outer_whitespace (char* str)
       memmove(str, p, strlen(p) + 1);
 }
 
+static void strip_brackets_from_string(char name[])
+{
+   int i, j;
+   char buffer[CHARBUFFER];
+
+   // strip the () from the gencoord name
+   strcpy(buffer, name);
+   i = 0;
+   j = 0;
+   while (1)
+   {
+      if (buffer[i] == '(')
+      { 
+         i++;
+         continue;
+      }
+      if (buffer[i] == ')')
+      {
+         name[j] = '\0';
+         break;
+      }
+      name[j++] = buffer[i++];
+   }
+}

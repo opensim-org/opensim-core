@@ -24,6 +24,9 @@
 #include "normio.h"
 #include "normtools.h"
 
+#if OPENSIM_CONVERTER
+#define ENGINE
+#endif
 
 /*************** DEFINES (for this file only) *********************************/
 #define ARRAY_INCREMENT 5
@@ -66,10 +69,7 @@ ReturnCode read_world_object(int mod, FILE** fp)
 
    ReturnCode rc;
    WorldObject* obj;
-   char fname[CHARBUFFER], name[CHARBUFFER];
-#ifndef ENGINE
-   char mess[CHARBUFFER];
-#endif
+   char fname[CHARBUFFER], name[CHARBUFFER], mess[CHARBUFFER];
 
    if (model[mod]->numworldobjects >= model[mod]->world_array_size)
    {
@@ -78,8 +78,8 @@ ReturnCode read_world_object(int mod, FILE** fp)
 			     model[mod]->world_array_size*sizeof(WorldObject),&rc);
       if (rc == code_bad)
       {
-	 model[mod]->world_array_size -= ARRAY_INCREMENT;
-	 return (code_bad);
+         model[mod]->world_array_size -= ARRAY_INCREMENT;
+         return (code_bad);
       }
    }
 

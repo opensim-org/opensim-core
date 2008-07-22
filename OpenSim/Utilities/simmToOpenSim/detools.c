@@ -33,10 +33,11 @@ static float* sBoneScale = NULL;
 
 
 /*************** EXTERNED VARIABLES (declared in another .c file) *************/
+#if ! SIMM_VIEWER && ! OPENSIM_CONVERTER
 extern DeformEditorStruct* de;
 extern WindowParams*     de_win_params;
 extern WinUnion*         de_win_union;
-
+#endif
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
@@ -143,6 +144,7 @@ static double calc_transition_factor (DeformObject* dfm, const double pt[3])
 }
 
 #ifndef ENGINE
+#if ! OPENSIM_CONVERTER
 
 /* -------------------------------------------------------------------------
    deform_mesh - apply the specified deformation to the specified polygon mesh.
@@ -216,7 +218,7 @@ static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObjec
    }
 }
 
-#if ! SIMM_DEMO_VERSION
+#if ! SIMM_DEMO_VERSION && ! SIMM_VIEWER
 
 /* -------------------------------------------------------------------------
    de_track_cb - 
@@ -547,7 +549,7 @@ void de_track_cb (void* data, SimmEvent se)
    }
 } /* de_track_cb */
 
-#endif /* SIMM_DEMO_VERSION */
+#endif /* SIMM_DEMO_VERSION && ! SIMM_VIEWER */
 
 #define FOG_DEFORM_BOXES 0
 
@@ -599,7 +601,9 @@ static void set_fog_near_and_far (DisplayStruct* dis, const float* box)
 ---------------------------------------------------------------------------- */
 void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
 {
-#define IS_CUR_DEFORM(DFM) (ms == de->model && DFM == deop->deform)
+#if ! SIMM_VIEWER
+
+   #define IS_CUR_DEFORM(DFM) (ms == de->model && DFM == deop->deform)
 
    int i, j, k, l;
    static const float active_dfm_color[3]   = { 1.0, 0.5, 1.0 };
@@ -615,7 +619,7 @@ void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
    if (de->model != ms)   /* only draw deform boxes for the current model? */
       return;
 #endif
-   
+
    if (seg != &ms->segment[deop->segment])
       return;
    
@@ -719,7 +723,7 @@ void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
       glPopMatrix();
    }
    glPopAttrib();
-
+#endif /* ! SIMM_VIEWER */
 } /* draw_deform_objects */
 
 
@@ -811,14 +815,18 @@ void deform_segment (ModelStruct* ms, int segment)
    /* if 'ms' or 'segment' are unspecified, then use the deform editor's
     * current model and/or segment
     */
+#if ! SIMM_VIEWER
    if (ms == NULL)
       ms = de->model;
-   
+#endif
+
    if (ms == NULL)
       return;
    
+#if ! SIMM_VIEWER
    if (segment < 0)
        segment = de->deop[ms->modelnum].segment;
+#endif
 
    if (segment < 0)
       return;
@@ -992,6 +1000,7 @@ void deform_segment (ModelStruct* ms, int segment)
    queue_redraw(MODEL, ms->modelnum);
 
 }
+#endif /* ! OPENSIM_CONVERTER */
 #endif /* ! ENGINE */
 
 
@@ -1545,3 +1554,102 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
    }
    }
 }
+
+/* ==============================================================================
+ * ==== DEFORM INNER/OUTER BOX REPRESENTATION
+ */
+
+/* -------------------------------------------------------------------------
+   build_deform_box_edge - 
+---------------------------------------------------------------------------- */
+static void build_deform_box_edge (const double* c0, const double* c1,
+                                   float** vert, int** edge, int* nVerts)
+{
+   double delta[3];
+   int i,j;
+   
+   delta[0] = (c1[0] - c0[0]) / SEGMENTS_PER_BOX_EDGE;
+   delta[1] = (c1[1] - c0[1]) / SEGMENTS_PER_BOX_EDGE;
+   delta[2] = (c1[2] - c0[2]) / SEGMENTS_PER_BOX_EDGE;
+   
+   for (i = 0; i <= SEGMENTS_PER_BOX_EDGE; i++)
+   {
+      for (j = 0; j < 3; j++)
+      {
+         *(*vert)++ = c0[j] + i * delta[j];
+         
+         if (edge)
+            *(*edge)++ = (*nVerts)++;
+      }
+   }
+}
+
+/* -------------------------------------------------------------------------
+   init_deform_box_verts - 
+---------------------------------------------------------------------------- */
+void init_deform_box_verts (DeformObject* dfm)
+{
+   enum { MINX, MINY, MINZ, MAXX, MAXY, MAXZ };
+   
+   static const char m[12][6] = { { MINX, MINY, MINZ,  MAXX, MINY, MINZ },
+                                  { MINX, MAXY, MINZ,  MAXX, MAXY, MINZ },
+                                  { MINX, MAXY, MAXZ,  MAXX, MAXY, MAXZ },
+                                  { MINX, MINY, MAXZ,  MAXX, MINY, MAXZ },
+                                  { MAXX, MINY, MINZ,  MAXX, MAXY, MINZ },
+                                  { MAXX, MINY, MAXZ,  MAXX, MAXY, MAXZ },
+                                  { MINX, MINY, MAXZ,  MINX, MAXY, MAXZ },
+                                  { MINX, MINY, MINZ,  MINX, MAXY, MINZ },
+                                  { MAXX, MINY, MINZ,  MAXX, MINY, MAXZ },
+                                  { MAXX, MAXY, MAXZ,  MAXX, MAXY, MINZ },
+                                  { MINX, MAXY, MAXZ,  MINX, MAXY, MINZ },
+                                  { MINX, MINY, MINZ,  MINX, MINY, MAXZ } };
+   
+   double *corner, start[3], end[3];
+   float  *vert;
+   int    i, nBytes = VERTS_PER_BOX * 3 * sizeof(float);
+   
+   /* alloc (if necessary) and init inner box vertices */
+   if (dfm->innerBox == NULL)
+      dfm->innerBox = (float*) simm_malloc(nBytes);
+   
+   if (dfm->innerBoxUndeformed == NULL)
+      dfm->innerBoxUndeformed = (float*) simm_malloc(nBytes);
+   
+   if (dfm->innerBox && dfm->innerBoxUndeformed)
+   {
+      corner = &dfm->innerMin.xyz[0];
+      vert   = dfm->innerBoxUndeformed;
+   	
+      for (i = 0; i < 12; i++)
+      {
+         _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);
+         _SET_VERT(end,   corner[m[i][3]], corner[m[i][4]], corner[m[i][5]]);
+         
+         build_deform_box_edge(start, end, &vert, NULL, NULL);
+      }
+      memcpy(dfm->innerBox, dfm->innerBoxUndeformed, nBytes);
+   }
+   
+   /* alloc (if necessary) and init outer box vertices */
+   if (dfm->outerBox == NULL)
+      dfm->outerBox = (float*) simm_malloc(nBytes);
+   
+   if (dfm->outerBoxUndeformed == NULL)
+      dfm->outerBoxUndeformed = (float*) simm_malloc(nBytes);
+   
+   if (dfm->outerBox && dfm->outerBoxUndeformed)
+   {
+      corner = &dfm->outerMin.xyz[0];
+      vert   = dfm->outerBoxUndeformed;
+   	
+      for (i = 0; i < 12; i++)
+      {
+         _SET_VERT(start, corner[m[i][0]], corner[m[i][1]], corner[m[i][2]]);
+         _SET_VERT(end,   corner[m[i][3]], corner[m[i][4]], corner[m[i][5]]);
+         
+         build_deform_box_edge(start, end, &vert, NULL, NULL);
+      }
+      memcpy(dfm->outerBox, dfm->outerBoxUndeformed, nBytes);
+   }
+}
+

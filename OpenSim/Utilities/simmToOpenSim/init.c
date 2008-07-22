@@ -33,18 +33,12 @@
    #include <unistd.h>
 #endif
 
-#ifdef WIN32
-#include <direct.h>
-#endif
-
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
 
-//#include "wrapeditor.h"
 #include "wefunctions.h"
-//#include "constrainteditor.h"
-//#include "cefunctions.h"
+
 
 /*************** DEFINES (for this file only) *********************************/
 #define EVENT_QUEUE_SIZE 50
@@ -86,6 +80,7 @@ void initialize(void)
    int xtmp, ytmp;
    WindowParams bwin;
    WinUnion wun;
+   const char* p;
 
    strcpy(buffer,get_simm_directory());
    mstrcpy(&root.simm_base_dir,buffer);
@@ -104,17 +99,32 @@ void initialize(void)
    if (root.gldesc.max_screen_y <= 0)
       root.gldesc.max_screen_y = 768;
 
+   p = getpref("MULTIPLE_SCREENS");
+   if (p)
+   {
+      if (STRINGS_ARE_EQUAL(p, "yes") ||
+          STRINGS_ARE_EQUAL(p, "Yes") ||
+          STRINGS_ARE_EQUAL(p, "on") ||
+          STRINGS_ARE_EQUAL(p, "On") ||
+          STRINGS_ARE_EQUAL(p, "true") ||
+          STRINGS_ARE_EQUAL(p, "True"))
+      {
+         root.multiple_screens = yes;
+	  } else {
+         root.multiple_screens = no;
+	  }
+   } else {
+      root.multiple_screens = no;
+   }
+
 #ifdef WIN32
    root.gldesc.max_screen_x -= 10;
    root.gldesc.max_screen_y -= 30;
 
-   glueSetWindowPlacement(GLUT_NORMAL_WINDOW, GLUE_CENTER,
-			  root.gldesc.max_screen_x,
-			  root.gldesc.max_screen_y, 0, 0, NULL);
-
+   if (root.multiple_screens == no)
    glueSetConstrainedWindows(yes);
-
-   init_main_menu();   /* the main menu must be created *before* the SIMM window */
+   else
+      glueSetConstrainedWindows(no);
    
    strcpy(root.pref.bonefilepath,   get_simm_resources_directory());
    strcat(root.pref.bonefilepath,   "bones");
@@ -126,37 +136,9 @@ void initialize(void)
    glueSetPrefWindowPosition(8,root.gldesc.max_screen_x-75,
 			     8,root.gldesc.max_screen_y-32);
 #endif
-   bwin.id = glueOpenWindow("simm",no,GLUE_NO_WINDOW_FLAGS);
 
-   glueSetWindowMinSize(950,700);
-
-#if SIMM_DEMO_VERSION
-   sprintf(buffer,"%s - Tryout Version (%s)", program_name, program_version);
-#elif defined WIN32
-   strcpy(buffer, program_with_version);
-   
-   if (is_in_demo_mode())
-      strcat(buffer, " - Demo Mode");
-#else
-   sprintf(buffer,"%s: %s, %s  %s", program_name, program_full_name,
-	   program_version, copyright_notice);
-#endif
-
-   mstrcpy(&bwin.name,buffer);
-   glutSetIconTitle(program_name);
-   glutSetWindowTitle(bwin.name);
-
-   wun.tool = NULL;
-   root.basewindow = add_window(&bwin,&wun,NOTYPE,-1,no,display_background,
-				update_background,background);
-   if (root.basewindow == -1)
-      error(exit_program,tool_message);
-
-   glutSetWindowData(bwin.id, root.basewindow);
-   glueGetWindowOrigin(&root.surgwin.x1,&root.surgwin.y1);
-   glueGetWindowSize(&xtmp,&ytmp);
-   root.surgwin.x2 = root.surgwin.x1 + xtmp;
-   root.surgwin.y2 = root.surgwin.y1 + ytmp;
+   if (root.multiple_screens == no)
+	   open_main_window();
 
    init_global_lighting();
 
@@ -228,12 +210,60 @@ void initialize(void)
 
    make_mocap_model_filepath();
 
-#if ! SIMM_DEMO_VERSION
+#if ! SIMM_DEMO_VERSION && ! SIMM_VIEWER
 #ifdef WIN32
    init_gm_help();
 #endif
 #endif
 
+}
+
+
+void open_main_window()
+{
+   int xtmp, ytmp;
+   WindowParams bwin;
+   WinUnion wun;
+
+   init_main_menu();   /* the main menu must be created *before* the SIMM window */
+
+   glueSetWindowPlacement(GLUT_NORMAL_WINDOW, GLUE_CENTER,
+			  root.gldesc.max_screen_x,
+			  root.gldesc.max_screen_y, 0, 0, NULL);
+
+   bwin.id = glueOpenWindow("simm",no,GLUE_NO_WINDOW_FLAGS);
+
+   glueSetWindowMinSize(950,700);
+
+#if SIMM_DEMO_VERSION
+   sprintf(buffer,"%s - Tryout Version (%s)", program_name, program_version);
+#elif SIMM_VIEWER
+   sprintf(buffer,"%s (%s)", program_name, program_version);
+#elif defined WIN32
+   strcpy(buffer, program_with_version);
+   
+   if (is_in_demo_mode())
+      strcat(buffer, " - Demo Mode");
+#else
+   sprintf(buffer,"%s: %s, %s  %s", program_name, program_full_name,
+	   program_version, copyright_notice);
+#endif
+
+   mstrcpy(&bwin.name,buffer);
+   glutSetIconTitle(program_name);
+   glutSetWindowTitle(bwin.name);
+
+   wun.tool = NULL;
+   root.basewindow = add_window(&bwin,&wun,NOTYPE,-1,no,display_background,
+				update_background,background);
+   if (root.basewindow == -1)
+      error(exit_program,tool_message);
+
+   glutSetWindowData(bwin.id, root.basewindow);
+   glueGetWindowOrigin(&root.surgwin.x1,&root.surgwin.y1);
+   glueGetWindowSize(&xtmp,&ytmp);
+   root.surgwin.x2 = root.surgwin.x1 + xtmp;
+   root.surgwin.y2 = root.surgwin.y1 + ytmp;
 }
 
 #endif /* ENGINE */
@@ -245,6 +275,7 @@ ReturnCode init_model(ModelStruct* ms)
 {
 
    int i;
+   const char *p;
 
    ms->name = NULL;
    ms->forceUnits = NULL;
@@ -262,7 +293,6 @@ ReturnCode init_model(ModelStruct* ms)
    ms->numgroups = 0;
    ms->numseggroups = 0;
    ms->numgencgroups = 0;
-   ms->numfunctions = 0;
    ms->numgencoords = 0;
    ms->numunusedgencoords = 0;
    ms->numworldobjects = 0;
@@ -295,6 +325,7 @@ ReturnCode init_model(ModelStruct* ms)
    ms->marker_visibility = yes;
    ms->marker_radius = DEFAULT_MARKER_RADIUS;
    ms->loop_tolerance = DEFAULT_LOOP_TOLERANCE;
+   ms->loop_weight = DEFAULT_LOOP_WEIGHT;
    ms->solver.accuracy = DEFAULT_SOLVER_ACCURACY;
    ms->solver.method = smLevenbergMarquart;
    ms->solver.max_iterations = 100;
@@ -419,8 +450,10 @@ ReturnCode init_model(ModelStruct* ms)
    {
       ms->function[i].defined = no;
       ms->function[i].used = no;
+      ms->function[i].usernum = -1;
       ms->save.function[i].defined = no;
       ms->save.function[i].used = no;
+      ms->save.function[i].usernum = -1;
    }
 
 #ifndef ENGINE
@@ -461,7 +494,7 @@ ReturnCode init_model(ModelStruct* ms)
    ms->dis.windowWidth = 400;
 
 #ifndef ENGINE
-   const char* p = getpref("FASTER_MUSCLE_DRAWING");
+   p = getpref("FASTER_MUSCLE_DRAWING");
    
    if (p)
    {
@@ -522,9 +555,9 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
    seg->shadow = no;
    seg->shadow_scale[0] = seg->shadow_scale[1] = seg->shadow_scale[2] = 1.0;
    seg->shadow_trans[0] = seg->shadow_trans[1] = seg->shadow_trans[2] = 0.0;
-   seg->shadow_color.rgb[RD] = 0.1f;
-   seg->shadow_color.rgb[GR] = 0.1f;
-   seg->shadow_color.rgb[BL] = 0.1f;
+   seg->shadow_color.rgb[RD] = 0.1;
+   seg->shadow_color.rgb[GR] = 0.1;
+   seg->shadow_color.rgb[BL] = 0.1;
    seg->shadow_color_spec = no;
    seg->drawmode = gouraud_shading;
    seg->material = ms->dis.mat.default_bone_material;
@@ -563,7 +596,9 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
    seg->mass_specified = no;
    seg->inertia_specified = no;
    seg->masscenter_specified = no;
+#if INCLUDE_MOCAP_MODULE
    seg->lengthstartend_specified = no;
+#endif
    seg->show_masscenter = ms->global_show_masscenter;//no;
    seg->show_inertia = ms->global_show_inertia;//no;
    
@@ -676,7 +711,7 @@ ReturnCode init_model_display(ModelStruct* ms)
    }
 
    for (i=0; i<4; i++)
-      ms->dis.viewport[i] = 0;
+      ms->dis.viewport[i] = 0.0;
 
    for (i=0; i<16; i++)
    {
@@ -1154,52 +1189,6 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
    return 0;
 }
 
-/* This function is similar to mark_unconstrained_dof, but it only finds
- * the unconstrained dof.
- */
-int find_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
-{
-   int i, j, fnum;
-   double slope;
-   SplineFunction* func;
-
-   *jnt = *dof = -1;
-
-   /* This function looks through all the dofs in all the joints which are a
-    * function of the specified gencoord, and tries to find one which should
-    * be treated as the unconstrained dof. If the dof has a function with two
-    * points, the slope of the function is 1.0 or -1.0, and the function
-	 * passes through zero, then it is a good match. If there are
-    * multiple dofs which meet these criteria, the first one is treated as the
-    * unconstrained one, and the others will end up constrained (which will
-    * create a correct model).
-    */
-   for (i = 0; i < ms->numjoints; i++)
-   {
-      for (j = 0; j < 6; j++)
-      {
-	      if (ms->joint[i].dofs[j].type == function_dof &&
-	          ms->joint[i].dofs[j].gencoord == gc)
-	      {
-	         fnum = ms->joint[i].dofs[j].funcnum;
-            func = &ms->function[fnum];
-	         if (func->numpoints == 2 && EQUAL_WITHIN_ERROR(func->x[0], func->y[0]))
-	         {
-               slope = (func->y[1] - func->y[0]) / (func->x[1] - func->x[0]);
-               if (EQUAL_WITHIN_ERROR(slope, 1.0) || EQUAL_WITHIN_ERROR(slope,-1.0))
-               {
-                  *jnt = i;
-                  *dof = j;
-                  return 1;
-               }
-	         }
-	      }
-      }
-   }
-
-   return 0;
-}
-
 
 /* INIT_JOINT: this routine initializes a joint structure before a joint is read
  * from an input file.
@@ -1647,7 +1636,7 @@ const char* get_simm_resources_directory()
    static char  simm_resources_buf[512];
    static char* simm_resources_dir = NULL;
 
-#if !defined(WIN32) && !defined(__linux__)
+#ifndef WIN32
    return root.simm_dir;
 #else
 
@@ -1664,7 +1653,7 @@ const char* get_simm_resources_directory()
 
 #ifndef ENGINE
 static void make_mocap_model_filepath(void)
-{
+   {
    const char* p = getpref("MOCAP_MODEL");
 
    if (p)

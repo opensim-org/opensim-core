@@ -270,7 +270,7 @@ void calc_spline_coefficients(SplineFunction* f)
    int nm1, nm2, i, j;
    double t;
 
-   if (f->numpoints < 2)
+   if (f->numpoints < 2 || f->used == no)
       return;
 
    if (f->numpoints == 2)
@@ -541,14 +541,43 @@ void make_4x4dircos_matrix(double angle, double axis[], double mat[][4])
 }
 
 
-/* intersection between a line (pt1,pt2) and plane (plane,d)
-** will give the intersection point (inter) and where on the line it is (t)
-** ratio t should lie within 0 and 1 
-*/
-SBoolean intersect_line_plane01(double pt1[], double pt2[], 
-				double plane[], double d, double inter[], double* t)
+/* VECTOR_INTERSECTS_POLYHEDRON: This function checks for intersection of a vector
+ * and a polyhedron.
+ */
+SBoolean vector_intersects_polyhedron(double pt[], double vec[], PolyhedronStruct* ph, double inter[])
 {
+   int i;
+   double pt2[3], t;
 
+   pt2[0] = pt[0] + vec[0];
+   pt2[1] = pt[1] + vec[1];
+   pt2[2] = pt[2] + vec[2];
+
+   /* Check to see if the vector intersects any of the polygons in the polyhedron.
+    * intersect_line_plane() is used to get the point of intersection between the
+    * vector and the plane of the polygon, and then this point is checked to see if
+    * it is inside the boundaries of the polygon. Return the first intersection found.
+    */
+   for (i = 0; i < ph->num_polygons; i++)
+   {
+      if (intersect_line_plane(pt, pt2, ph->polygon[i].normal, ph->polygon[i].d, inter, &t) == yes &&
+         point_in_polygon3D(inter, ph, i) == yes)
+      {
+         return yes;
+      }
+   }
+
+   return no;
+}
+
+
+/* intersection between a line (pt1,pt2) and plane (plane,d)
+ * will give the intersection point(inter) and where on the line
+ * it is (t). Ratio t should does not have to lie within 0 and 1 
+ */
+SBoolean intersect_line_plane(double pt1[], double pt2[],
+                              double plane[], double d, double inter[], double* t)
+{
    double dotprod;
    double vec[3];
 
@@ -556,23 +585,164 @@ SBoolean intersect_line_plane01(double pt1[], double pt2[],
    dotprod = DOT_VECTORS(vec,plane);
 
    if (DABS(dotprod) < LINE_EPSILON)
-      return (no);
+      return no;
 
    *t = (-d - plane[0]*pt1[0] - plane[1]*pt1[1] - plane[2]*pt1[2])/dotprod;
-
-   if ((*t < -LINE_EPSILON) || (*t > 1.0 + LINE_EPSILON))
-      return (no);
 
    inter[0] = pt1[0] + ((*t) * vec[0]);
    inter[1] = pt1[1] + ((*t) * vec[1]);
    inter[2] = pt1[2] + ((*t) * vec[2]);
 
-   return (yes);
-
+   return yes;
 }
 
-int polygon_ray_inter3d(PolyhedronStruct* newph,int poly_index, 
-			double pt[3],int axes)
+/* intersection between a line (pt1,pt2) and plane (plane,d)
+** will give the intersection point (inter) and where on the line it is (t)
+** ratio t should lie within 0 and 1 
+*/
+SBoolean intersect_line_plane01(double pt1[], double pt2[], 
+                                double plane[], double d, double inter[], double* t)
+{
+   double dotprod;
+   double vec[3];
+
+   MAKE_3DVECTOR(pt1,pt2,vec);
+   dotprod = DOT_VECTORS(vec,plane);
+
+   if (DABS(dotprod) < LINE_EPSILON)
+      return no;
+
+   *t = (-d - plane[0]*pt1[0] - plane[1]*pt1[1] - plane[2]*pt1[2])/dotprod;
+
+   if ((*t < -LINE_EPSILON) || (*t > 1.0 + LINE_EPSILON))
+      return no;
+
+   inter[0] = pt1[0] + ((*t) * vec[0]);
+   inter[1] = pt1[1] + ((*t) * vec[1]);
+   inter[2] = pt1[2] + ((*t) * vec[2]);
+
+   return yes;
+}
+
+/* POINT_IN_POLYGON3D: determines if a 3D point is inside a 3D polygon. The polygon
+ * is the first one in the PolyhedronStruct, and is assumed to be planar.
+ */
+
+SBoolean point_in_polygon3D(double pt[], PolyhedronStruct* ph, int polygon_index)
+{
+   int i, j, index, skip_coord;
+   double max_value, polygon[50][2], pt2D[2];
+
+   /* if the polygon has more than 50 vertices, abort. */
+   if (ph->polygon[polygon_index].num_vertices > 50)
+      return no;
+
+   /* Project the polygon onto one of the major planes by ignoring one of the
+    * coordinates. Ignore the one most parallel to the plane's normal so that
+    * the area of the projected polygon will be as large as possible.
+    */
+   skip_coord = XX;
+   max_value = DABS(ph->polygon[polygon_index].normal[XX]);
+   if (DABS(ph->polygon[polygon_index].normal[YY]) > max_value)
+   {
+      skip_coord = YY;
+      max_value = DABS(ph->polygon[polygon_index].normal[YY]);
+   }
+   if (DABS(ph->polygon[polygon_index].normal[ZZ]) > max_value)
+      skip_coord = ZZ;
+
+   /* Copy the vertices into a 2D array, skipping the skip_coord */
+   for (i = 0; i < ph->polygon[polygon_index].num_vertices; i++)
+   {
+      for (j = 0, index = 0; j < 3; j++)
+      {
+         if (j != skip_coord)
+            polygon[i][index++] = ph->vertex[ph->polygon[polygon_index].vertex_index[i]].coord[j];
+      }
+   }
+
+   /* Copy the 3D point into a 2D point, skipping the skip_coord */
+   for (i = 0, index = 0; i < 3; i++)
+   {
+      if (i != skip_coord)
+         pt2D[index++] = pt[i];
+   }
+
+   if (point_in_polygon2D(pt2D, polygon, ph->polygon[polygon_index].num_vertices))
+      return yes;
+
+   return no;
+}
+
+
+/* POINT_IN_POLYGON2D: determines if a 2D point is inside a 2D polygon. Uses the
+ * "crossings test" taken from:
+ * Haines, Eric, "Point in Polygon Strategies," Graphics Gems IV, ed. Paul Heckbert,
+ * Academic Press, p. 24-46, 1994.
+ * Shoot a test ray along +X axis. The strategy, from MacMartin, is to
+ * compare vertex Y values to the testing point's Y and quickly discard
+ * edges which are entirely to one side of the test ray.
+ *
+ * Input 2D polygon _pgon_ with _numverts_ number of vertices and test point
+ * _point_, returns 1 if inside, 0 if outside.
+ */
+
+int point_in_polygon2D(double point[], double pgon[][2], int numverts)
+{
+   register int j, yflag0, yflag1, inside_flag, xflag0 ;
+   register double ty, tx, *vtx0, *vtx1 ;
+
+   tx = point[XX];
+   ty = point[YY];
+
+   vtx0 = pgon[numverts-1];
+
+   /* get test bit for above/below X axis */
+   yflag0 = ( vtx0[YY] >= ty );
+   vtx1 = pgon[0];
+
+   inside_flag = 0;
+
+   for (j = numverts+1; --j ;)
+   {
+      yflag1 = ( vtx1[YY] >= ty );
+	   /* check if endpoints straddle (are on opposite sides) of X axis
+	    * (i.e. the Y's differ); if so, +X ray could intersect this edge.
+	    */
+      if (yflag0 != yflag1)
+      {
+         xflag0 = (vtx0[XX] >= tx);
+	     /* check if endpoints are on same side of the Y axis (i.e. X's
+	      * are the same); if so, it's easy to test if edge hits or misses.
+	      */
+         if ( xflag0 == ( vtx1[XX] >= tx ) )
+         {
+      		/* if edge's X values both right of the point, must hit */
+            if ( xflag0 )
+               inside_flag = !inside_flag;
+         }
+         else
+         {
+	 	      /* compute intersection of pgon segment with +X ray, note
+		       * if >= point's X; if so, the ray hits it.
+		       */
+            if ((vtx1[XX] - (vtx1[YY]-ty) * (vtx0[XX]-vtx1[XX])/(vtx0[YY]-vtx1[YY])) >= tx)
+            {
+               inside_flag = !inside_flag;
+            }
+         }
+      }
+
+      /* move to next pair of vertices, retaining info as possible */
+      yflag0 = yflag1;
+      vtx0 = vtx1;
+      vtx1 += 2;
+   }
+
+   return inside_flag;
+}
+
+int polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], int axes)
 {
 
    int i,j, num_inter, numpts;

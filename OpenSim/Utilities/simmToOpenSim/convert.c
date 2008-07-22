@@ -363,8 +363,7 @@ void invalidate_joint_matrix(ModelStruct* ms, int joint)
       if (i == ms->ground_segment)
 	 continue;
       
-	 int* path = GET_PATH(ms->modelnum,ms->ground_segment,i);
-	 int j;
+      path = GET_PATH(ms->modelnum,ms->ground_segment,i);
 
       for (j=0; path[j] != ms->numjoints+1; j++)
       {
@@ -507,11 +506,12 @@ GLfloat* get_float_ground_conversion(int mod, int seg, GroundDirection gd)
 void make_ground_conversion(ModelStruct* ms, int seg)
 {
 
+   int i, j, index;
+
    calc_transformation(ms,ms->ground_segment, seg, ms->segment[seg].from_ground);
    invert_4x4transform(ms->segment[seg].from_ground, ms->segment[seg].to_ground);
 
 #ifndef ENGINE
-   int i, j, index;
    for (i=0,index=0; i<4; i++)
    {
       for (j=0; j<4; j++)
@@ -537,6 +537,7 @@ void make_ground_conversion(ModelStruct* ms, int seg)
 void make_conversion(int mod, int joint)
 {
    JointStruct* jnt = &model[mod]->joint[joint];
+   int i, j, index;
 
    if (jnt->conversion.condition == valid &&
        (jnt->pretransform_active == no || jnt->pretransform_condition == valid))
@@ -583,14 +584,13 @@ void make_conversion(int mod, int joint)
     * row-major.
     */
 #ifndef ENGINE
-   int i,j,index;
    for (i=0, index=0; i<4; i++)
       for (j=0; j<4; j++)
       {
-	 model[mod]->joint[joint].conversion.gl_forward[index] = 
-	    model[mod]->joint[joint].conversion.forward[i][j];
-	 model[mod]->joint[joint].conversion.gl_inverse[index++] = 
-	    model[mod]->joint[joint].conversion.inverse[i][j];
+         model[mod]->joint[joint].conversion.gl_forward[index] = 
+            model[mod]->joint[joint].conversion.forward[i][j];
+         model[mod]->joint[joint].conversion.gl_inverse[index++] = 
+            model[mod]->joint[joint].conversion.inverse[i][j];
       }
 #endif
 }

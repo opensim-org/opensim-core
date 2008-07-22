@@ -23,26 +23,28 @@ void _extract_rotations_for_joint(const DMatrix m, const JointStruct*, double* r
 SBoolean _read_til (FILE* file, int c);
 int  _read_til_tokens (FILE* file, char* buf, const char* delimiters);
 void _strip_outer_whitespace (char* str);
-//void add_default_motion_objects(ModelStruct*);
-ReturnCode add_model(char jointfilename[], char musclefilename[], int suggested_win_width, int* mod);
+void add_default_motion_objects(ModelStruct*);
+ReturnCode add_model(char jointfilename[], char musclefilename[], int suggested_win_width,
+                     int* mod, SBoolean showTopLevelMessages);
 void add_motion_frame(int mod, const char* fullpath);
 PlotStruct* add_plot(void);
 void add_preprocessor_option(SBoolean isDefaultOption, const char* format, ...);
 void add_text_to_help_struct(char line[], HelpStruct* hp, SBoolean new_line,
 			     int text_format, int text_xoffset);
-/*int add_window(WindowParams* win_parameters, WinUnion* win_struct,
+int add_window(WindowParams* win_parameters, WinUnion* win_struct,
 	       WindowType type, int ref, SBoolean iconified,
 	       void (*display_function)(WindowParams*, WinUnion*),
 	       void (*update_function)(WindowParams*, WinUnion*),
-	       void (*input_handler)(WindowParams*, WinUnion*, SimmEvent));*/
+	       void (*input_handler)(WindowParams*, WinUnion*, SimmEvent));
 void   addNameToString(char name[], char string[], int maxStringSize);
 void   adjust_main_menu();
 ReturnCode alloc_func(SplineFunction** func, int pts);
 int    allocate_colormap_entry(GLfloat red, GLfloat green, GLfloat blue);
 void   append_if_necessary (char* str, char c);
+MotionSequence* applyForceMattesToMotion(ModelStruct* ms, MotionSequence* motion, SBoolean addToModel);
 void   apply_bone_scales_to_vertices(ModelStruct*);
 void   apply_material(ModelStruct* ms, int mat, SBoolean highlight);
-int    apply_motion_to_model(ModelStruct* ms, MotionSequence* motion, double value, SBoolean draw_plot);
+int    apply_motion_to_model(ModelStruct* ms, MotionSequence* motion, double value, SBoolean update_modelview, SBoolean draw_plot);
 SBoolean avoid_gl_clipping_planes();
 void   background(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 int    best_fit_color(GLfloat red, GLfloat green, GLfloat blue);
@@ -61,7 +63,8 @@ void   calc_near_and_far_clip_planes(ModelStruct*, double viewVecLength);
 void   calc_numerical_moment_arms(int mod, int musc, int genc);
 double calc_vector_length(int mod, double p1[], int frame1, double p2[], int frame2);
 void   change_filename_suffix(char input[], char output[], char suffix[]);
-int    check_checkboxpanel(CheckBoxPanel* check, int mx, int my);
+void   check_combobox(ComboBoxPanel* cbpanel, int mx, int my);
+int    check_combopanel(ComboBoxPanel* cbpanel, int mx, int my);
 ReturnCode check_definitions(ModelStruct* ms);
 int    check_form(Form* form, int mx, int my);
 void   check_for_model_color_file(const char* jointfilename);
@@ -69,8 +72,7 @@ void   check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility);
 double check_gencoord_wrapping(GeneralizedCoord* gc, double change);
 int    check_menu(Menu* menu, int mx, int my);
 double check_motion_wrapping(ModelStruct* ms, MotionSequence* motion, double change);
-void   calc_segment_arms(int mod, int musc, double p1[], int frame1,
-			 double p2[], int frame2);
+void   calc_segment_arms(int mod, int musc, MusclePoint *mp1, MusclePoint *mp2);
 SBoolean check_slider(Slider* sl, SimmEvent se, void (*callback)(int, double, double), int arg1);
 SBoolean check_slider_array(SliderArray* sa, SimmEvent se, void (*callback)(int, double, double));
 int    check_title_area(int title_mask, int mx, int my, WindowParams* win_params,
@@ -78,6 +80,7 @@ int    check_title_area(int title_mask, int mx, int my, WindowParams* win_params
                         title_area_cb);
 void   check_wrapping_points(ModelStruct *ms, MuscleStruct *muscl);
 void   clear_preprocessor_options();
+void   collect_system_info(const char folder[]);
 void   confirm_action(WindowParams* win_parameters, char mess[],
 		      void (*confirm_callback)(SBoolean));
 void   confirm_input_handler(SimmEvent se);
@@ -85,9 +88,13 @@ int    convert(int mod, double p[], int n1, int n2);
 void   convertSpacesInString(char str[]);
 void   convert_string(char str[], SBoolean prependUnderscore);
 int    convert_vector(int mod, double p[], int n1, int n2);
+ReturnCode copy_default_muscle(MuscleStruct* from, MuscleStruct* to);
 void   copy_dof(DofStruct* from, DofStruct* to);
 void   copy_function(SplineFunction* from, SplineFunction* to);
 void   copy_material(MaterialStruct* src, MaterialStruct* dst);
+ModelStruct* copy_model(ModelStruct* ms);
+MotionSequence* copy_motion(MotionSequence* from);
+MotionSequence** copy_motions(MotionSequence* from[], int num);
 ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom,
 		      MuscleStruct* defto); //dkb
 ReturnCode copy_mps(MusclePoint* from, MusclePoint* to);
@@ -101,12 +108,12 @@ void   copy_point(Coord3D *from, Coord3D *to);
 int    countTokens(char str[]);
 int    count_remaining_lines(FILE*, SBoolean countEmptyLines);
 void   coverpage(void);
-/*
+#if ! OPENSIM_BUILD
 MotionSequence* createMotionFromTRC(ModelStruct* ms, int nq, smGenCoord gcList[], smTRCStruct *trc,
                                     int firstFrame, int lastFrame, int numRows, char motionName[],
                                     glutTRCOptions *options, glutRealtimeOptions *realtimeOptions,
                                     const smC3DStruct *c3d);
-*/
+#endif
 MotionSequence* createMotionStruct(ModelStruct* ms);
 void   cropFormDisplay(FormItem* item, int rule, int cursorPosition);
 int    define_material(ModelStruct* ms, MaterialStruct* mat);
@@ -119,6 +126,7 @@ void   delete_window(int id);
 void   determine_gencoord_type(ModelStruct* ms, int gc);
 void   display_background(WindowParams* win_parameters, WinUnion* win_struct);
 int    divide_string(char string[], char* word_array[], int max_words);
+void   do_combo_box(ComboBox* cb, XYIntCoord origin, int mx, int my);
 void   do_be_help();
 void   do_mv_help();
 void   do_pm_help();
@@ -141,7 +149,8 @@ void   draw_bone(ModelStruct* ms, int seg_num, int bone_num, ModelDrawOptions* m
 void   draw_bones(ModelStruct* ms, ModelDrawOptions* mdo);
 void   draw_bone_polygon(ModelStruct* ms, int seg_num, int bone_num, int polygon_num);
 void   draw_bounding_box_bone(PolyhedronStruct*, int seg_num, int bone_num, ModelDrawOptions*, DisplayStruct*);
-
+//void   draw_combo_box(ComboBox* cb);
+void   draw_combo(ComboBoxPanel *cb);
 void   draw_gouraud_bone(ModelStruct*, PolyhedronStruct*, DisplayStruct*);
 void   draw_flat_bone(ModelStruct*, PolyhedronStruct*, DisplayStruct*);
 void   draw_normals(ModelStruct*, PolyhedronStruct*);
@@ -164,7 +173,7 @@ void   draw_highlighted_object(ModelStruct* ms, int object, SBoolean highlight);
 void   draw_highlighted_polygon(ModelStruct* ms, int seg_num, int bone_num,
 				int polygon_num, SBoolean highlight);
 void   draw_ligament(ModelStruct* ms, int lignum, ModelDrawOptions* mdo);
-//void   draw_me_polygon(ModelStruct* ms, SelectedPolygon* hp, GLenum buffer);
+void   draw_me_polygon(ModelStruct* ms, SelectedPolygon* hp, GLenum buffer);
 void   draw_menu(Menu* ms);
 void   draw_model(ModelStruct* ms, ModelDrawOptions* mdo);
 void   draw_motion_objects(ModelStruct*, ModelDrawOptions*);
@@ -187,10 +196,7 @@ void   draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps
 void   draw_world_object(ModelStruct* ms, int obj_num, ModelDrawOptions* mdo);
 void   drawmodel(WindowParams* win_parameters, WinUnion* win_struct);
 void   drawwindows(void);
-int    find_next_active_field(Form* form, int current_field, TextFieldAction tfa);
-int    find_plot_ordinal(int plotnum);
-ReturnCode find_segment_drawing_order(ModelStruct* ms);
-int    enter_function(int mod, int usernum);
+int    enter_function(int mod, int usernum, SBoolean permission_to_add);
 int    enter_gencoord(int mod, char username[], SBoolean permission_to_add);
 int    enter_gencoord_group(ModelStruct*, const char* username, int genc_num);
 int    enter_group(int mod, char username[], int muscnum);
@@ -200,24 +206,30 @@ int    enter_segment(int mod, char username[], SBoolean permission_to_add);
 int    enter_segment_group(ModelStruct*, const char* username, int seg_num);
 void   error(ErrorAction action, char str_buffer[]);
 double evaluate_dof(int mod, DofStruct* var);
+void   evaluate_active_movingpoints(int mod, MuscleStruct *muscle);
+void   evaluate_orig_movingpoints(int mod, MuscleStruct *muscle);
+void   evaluate_ligament_movingpoints(int mod);
 void   exit_simm_confirm(SBoolean answer);
-SBoolean file_exists(char filename[]);
+SBoolean file_exists(const char filename[]);
 void   fill_rect(int x1, int y1, int x2, int y2);
 int    find_curve_color(PlotStruct* ps, int num_curves);
 void   find_ground_joint(ModelStruct* ms);
 int    find_joint_between_frames(int mod, int from_frame, int to_frame,
 				 Direction* dir);
+int    find_model_ordinal(int modelnum);
+int    find_next_active_field(Form* form, int current_field, TextFieldAction tfa);
 ModelStruct* find_nth_model(int modcount);
 MotionSequence* find_nth_motion(ModelStruct* ms, int motcount);
 PlotStruct* find_nth_plot(int plotcount);
-int    find_model_ordinal(int modelnum);
 DofStruct* find_nth_q_dof(int mod, int n);
-int    find_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof);
+int    find_plot_ordinal(int plotnum);
+ReturnCode find_segment_drawing_order(ModelStruct* ms);
 void   find_world_coords(DisplayStruct* dis, IntBox* vp, int mx, int my,
 			 double z_value, double* wx, double* wy, double* wz);
 int    findfuncnum(DofStruct dof, int gc);
 int    findMarkerInModel(ModelStruct* ms, char name[], int *seg);
 void   frame_rect(int x1, int y1, int x2, int y2);
+void   freeModelStruct(ModelStruct* ms);
 void   free_and_nullify(void** ptr);
 void   free_defmusc(MuscleStruct* defmusc);
 void   free_form(Form* frm);
@@ -269,6 +281,7 @@ char*  getjointvarname(int num);
 int    getjointvarnum(char string[]);
 const char* getpref(const char* variable_name);
 void   hack_tool_updates(ModelStruct* ms);
+void   handle_combo_selection(WindowParams* win_parameters, ComboBoxPanel *panel, int item);
 void   highlight_form_item(Form* form, int selected_item, SBoolean draw_cursor,
 			   SBoolean draw_in_front);
 void   highlight_menu_item(Menu* menu, int num, OnOffSwitch state,
@@ -315,11 +328,13 @@ void   link_derivs_to_model(ModelStruct* ms, MotionSequence* motion);
 void   load_camera_transform(ModelStruct*);
 void   load_double_matrix(double mat[][4]);
 ReturnCode load_function(int mod, int usernum, SplineFunction* func);
-MotionSequence* load_motion(char filename[], int mod);
+MotionSequence* load_motion(char filename[], int mod, SBoolean showTopLevelMessages);
 void   loadgencoord(int mod, GeneralizedCoord* genstruct);
 void   loadfunc(int mod, int usernum, SplineFunction funcstruct);
 ReturnCode load_plot(const char* filename);
-//ReturnCode loadTrackedFile(ModelStruct *ms, glutTRCOptions *options, smC3DStruct *c3d);
+#if ! OPENSIM_BUILD
+ReturnCode loadTrackedFile(ModelStruct *ms, glutTRCOptions *options, smC3DStruct *c3d);
+#endif
 void   lock_model(ModelStruct *ms);
 ReturnCode lookup_polyhedron(PolyhedronStruct*, char filename[], ModelStruct*);
 int    lookup_simm_key(const char* keyname);
@@ -329,7 +344,8 @@ void   simm_event_handler(void);
 void   make_ambient_color(GLfloat old_color[], GLfloat new_color[]);
 void   make_and_queue_simm_event(unsigned int event_code, void* struct_ptr,
 				 int field1, int field2);
-int    makeDir(const char aDirName[]);
+ComboBox* make_combo_box(char* defaultName, int x1, int y1, int x2, int y2, long menu,
+                         void (*menuCallback)(int menuValue, void* userData), void* userData);
 void   make_gencoord_help_text(int mod);
 #endif
 void   make_ground_conversion(ModelStruct* ms, int seg);
@@ -389,14 +405,23 @@ void   nullify_function(SplineFunction* func, SBoolean freeTheFuncToo);
 void   nullify_muscle(MuscleStruct* musc);
 SBoolean onSameWrapObject(ModelStruct* ms, MuscleStruct* muscl, int pt1, int pt2);
 #ifndef ENGINE
-void   open_demo_arm_model();
-void   open_demo_leg_model();
-void   open_demo_neck_model();
-void   open_demo_gcd();
+ReturnCode open_demo_arm_model();
+ReturnCode open_demo_leg_model();
+ReturnCode open_demo_neck_model();
 void   open_demo_mac();
+void   open_main_window();
+#ifndef ENGINE
+ReturnCode open_model_archive(char archiveFilename[], int* modelIndex);
+#endif
+#if INCLUDE_GAIT_LOADER
+void   open_demo_gcd();
 ReturnCode open_vicon_gcd_file(const char* gaitFile, int* modelIndex);
-//ReturnCode open_motion_analysis_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
-//ReturnCode open_tracked_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
+#endif
+ReturnCode open_motion_analysis_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
+ReturnCode open_opensim_converter_gait(glutOpenSimConverterOptions* options);
+ReturnCode open_opensim_trb_file(glutOpenSimConverterOptions* options);
+ReturnCode open_mocap_model(SBoolean mac_demo, char staticFile[]);
+ReturnCode open_tracked_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
 unsigned int pack_bone_value(int seg, int bone);
 unsigned int pack_muscle_value(int musc);
 unsigned int pack_point_value(int musc, int pt);
@@ -405,7 +430,7 @@ void   pack_int_into_color(unsigned int value, GLubyte color_array[]);
 unsigned int pack_world_value(int world_obj);
 #endif
 void   partialvelocity(int mod, double p[], int from, int to, int genc,
-		       double result[]);
+		       MusclePoint *mpt, double result[]);
 #ifndef ENGINE
 SBoolean peek_simm_event(SimmEvent* se);
 int    place_musclemenu(int menunum, int xoffset, int yoffset, int columns[],
@@ -422,6 +447,7 @@ void   plotxadj(WindowParams* win_parameters, PlotStruct* p);
 #endif
 void   popframe(int mod);
 void   post_motion_event(ModelStruct* ms, MotionSequence* motion, int motion_index, int eventCode);
+void   post_process_bones(ModelStruct* ms);
 void   calc_transformation(ModelStruct* ms, int from, int to, DMatrix mat);
 FILE*  preprocess_file(char infile[], const char outfile[]);
 void   print_duration(char text_string[]);
@@ -449,19 +475,20 @@ LigamentPoint* read_ligament_attachment_points(int mod, FILE** fp, int* numpoint
 					   SBoolean* has_force_points);
 int    read_line(FILE** fp, char str_buffer[]);
 ReturnCode read_material(int mod, FILE** fp);
-ReturnCode read_model_file(int mod, char filename[]);
+ReturnCode read_model_file(int mod, char filename[], SBoolean showTopLevelMessages);
 ReturnCode read_motion_object(int mod, FILE**);
 MusclePoint* read_muscle_attachment_points(int mod, FILE** fp, int* numpoints,
 					   int* mp_orig_array_size,
 					   SBoolean* has_wrapping_points,
 					   SBoolean* has_force_points);
-ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists);
+ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists, SBoolean showTopLevelMessages);
 int*   read_muscle_groups(int mod, FILE** fp, int* num_groups, int muscle_number);
 int    read_nonempty_line(FILE** fp, char str_buffer[]);
 CurveStruct* readplotfile(FILE** fp);
 int    read_string(FILE** fp, char str_buffer[]);
 ReturnCode read_world_object(int mod, FILE** fp);
 ReturnCode readfunction(int mod, FILE **fp);
+void   recalc_constraint_xforms(ConstraintObject *co);
 #ifndef ENGINE
 ToolStruct* register_tool(int struct_size, unsigned int event_mask,
 			  void (*event_handler)(SimmEvent),
@@ -480,10 +507,12 @@ ReturnCode restore_muscle_groups(int mod);
 void   save_muscle_groups(int mod);
 void   scale_model(ModelStruct*, const Coord3D* seg_scales, ScaleModelOptions* options);
 void   select_form_region(Form* form, int mx, SimmEvent se);
+void   set_combobox_item(ComboBox* cb, int menuValue);
 void   set_gencoord_info(ModelStruct* ms);
 int    set_gencoord_value(int mod, int genc, double value, SBoolean solveLoops);
 void   set_gencoord_velocity(int mod, int genc, double value);
 void   set_hourglass_cursor(double percent);
+void   set_interpolated_color(int col1, int col2, double factor);
 void   set_ortho2(double x1, double x2, double y1, double y2);
 void   set_ortho2o(Ortho box);
 void   set_plot_ortho(PlotStruct* p);
@@ -524,7 +553,7 @@ int    strings_equal_case_insensitive(const char str1[], const char str2[]);
 int    strings_equal_n_case_insensitive(const char str1[], const char str2[], int n);
 void   strip_trailing_white_space(char string[]);
 int    strrcspn(const char* string, const char* strCharSet);
-SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms);
+SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean showTopLevelMessages);
 void   update_background(WindowParams* win_parameters, WinUnion* win_struct);
 void   update_drawmodel(WindowParams* win_parameters, WinUnion* win_struct);
 void   update_drawmode_menus(ModelStruct* ms);
@@ -537,7 +566,7 @@ void   unpack_bone_value(unsigned int value, int* seg, int* bone);
 void   unpack_muscle_value(unsigned int value, int* musc);
 void   unpack_point_value(unsigned int value, int* musc, int* pt);
 void   unpack_polygon_value(unsigned int value, int* bone, int* polygon);
-//void   unpack_int_from_color(unsigned int *value, GLubyte color_array[]);
+void   unpack_int_from_color(unsigned int *value, GLubyte color_array[]);
 void   unpack_world_value(unsigned int value, int* world_obj);
 void   upperstr(char*);
 void   verify_key(void);
@@ -563,7 +592,7 @@ int find_rotation_axis(JointStruct* jnt, double axis[]);
 int find_nth_rotation(JointStruct* jnt, int n);
 void name_dofs(int mod);
 int find_translation_axis(JointStruct* jnt, double axis[], DofType type, int num);
-ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file);
+ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int addQuestionMarks);
 ReturnCode write_sdheader_file(int mod, char filename[]);
 ReturnCode write_sdforward(int mod, char filename[]);
 ReturnCode write_sdinverse(int mod, char filename[]);
@@ -610,6 +639,18 @@ void draw_me_help_window(WindowParams* win_parameters, WinUnion* win_struct);
 void me_help_input(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 void move_me_help_text(int dummy_int, double slider_value, double delta);
 public void slide_me(int arg1, double value, double delta);
+
+/******* Function Prototypes for MusclePointEditor *******/
+void make_musclepointeditor(int rootWindowX, int rootWindowY, SBoolean iconified);
+void musclepointeditor(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
+void display_musclepointeditor(WindowParams* win_parameters, WinUnion* win_struct);
+void update_musclepointeditor(WindowParams* win_parameters, WinUnion* win_struct);
+void mp_simm_event_handler(SimmEvent se);
+SBoolean mp_query_handler(QueryType, void* data);
+void draw_mp_help_window(WindowParams* win_parameters, WinUnion* win_struct);
+void mp_help_input(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
+void move_mp_help_text(int dummy_int, double slider_value, double delta);
+public void slide_mp(int arg1, double value, double delta);
 
 /******* Function Prototypes for MarkerEditor *******/
 void make_markereditor(int rootWindowX, int rootWindowY, SBoolean iconified);
@@ -691,8 +732,8 @@ void fw_help_input(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent
 void move_fw_help_text(int dummy_int, double slider_value, double delta);
 void write_plot_file(PlotStruct*, PLOTFILEFORMAT, const char* fullpath);
 void write_joints(SBoolean write_them);
-void write_model_joints(ModelStruct*, const char* fullpath);
-void write_model_muscles(ModelStruct*, const char* fullpath);
+void write_model_joints(ModelStruct*, const char* fullpath, SBoolean showMessage);
+void write_model_muscles(ModelStruct*, const char* fullpath, SBoolean showMessage);
 void write_muscles(SBoolean write_them);
 
 
@@ -860,6 +901,7 @@ void        set_simm_state_value(const char* name, const char* value);
 int convertNEW(int mod, double p[], int path[], int len);
 int findUnusedFunctionNumber(int mod);
 int findHighestUserFuncNum(int mod);
+int countUsedFunctions(ModelStruct* ms);
 
 /********************** Function Prototypes in IK_solver *******************/
 int lmdif_(int (*fcn) (void *data, int *m, int *n, double x[], double fvec[],

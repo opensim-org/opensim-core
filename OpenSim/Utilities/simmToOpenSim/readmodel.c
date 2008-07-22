@@ -36,7 +36,6 @@
 #include "globals.h"
 #include "functions.h"
 #include "defunctions.h"
-#include "normtools.h"
 
 #include "wefunctions.h"
 
@@ -86,7 +85,7 @@ static ConstraintPoint* read_constraint_points(int mod, FILE **fp, int *numpoint
 					   int *cp_array_size);
 /* READ_MODEL_FILE: */
 
-ReturnCode read_model_file(int mod, char filename[])
+ReturnCode read_model_file(int mod, char filename[], SBoolean showTopLevelMessages)
 {
 
    char tempFile[512];
@@ -106,9 +105,12 @@ strcpy(tempFile,".model");
 
    if ((fp = preprocess_file(filename,tempFile)) == NULL)
    {
-      (void)sprintf(errorbuffer,"Unable to open model input file %s", filename);
-      error(none,errorbuffer);
-      return (code_bad);
+      if (showTopLevelMessages == yes)
+      {
+         (void)sprintf(errorbuffer,"Unable to open model input file %s", filename);
+         error(none,errorbuffer);
+      }
+      return code_bad;
    }
 
    /* Now that you know the joint file exists, store the full path in the
@@ -351,6 +353,15 @@ strcpy(tempFile,".model");
          {
             error(recover,"Error reading loop_tolerance.");
             model[mod]->loop_tolerance = DEFAULT_LOOP_TOLERANCE;
+            model_errors++;
+         }
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "loop_weight"))
+      {
+         if (fscanf(fp,"%lg", &model[mod]->loop_weight) != 1)
+         {
+            error(recover,"Error reading loop_weight.");
+            model[mod]->loop_weight = DEFAULT_LOOP_WEIGHT;
             model_errors++;
          }
       }
@@ -1206,19 +1217,12 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
       {
          int num = fscanf(*fp,"%lg", &wo->height);
 
-         if (num == 1) 
+         if (num == 1 && wo->height <= 0.0)
          {
-				if (wo->height <= 0.0)
-				{
-					error(none, "Value must be greater than zero.");
-					num = -1;
-				}
-				else	// Good cylinder height
-				{
-					wo->radius.xyz[1]=wo->height;
-				}
+            error(none, "Value must be greater than zero.");
+            num = -1;
          }
-			
+
          if (num != 1)
          {
             (void)sprintf(errorbuffer, "Error reading cylinder height for wrap object %s",
@@ -1263,19 +1267,19 @@ static ReturnCode read_restraint(int mod, FILE** fp, GeneralizedCoord* gc, int m
    {
       if (sscanf(&buffer[1],"%d", &gc->restraint_user_num) != 1)
 	 return (code_bad);
-      gc->restraint_func_num = enter_function(mod,gc->restraint_user_num);
+      gc->restraint_func_num = enter_function(mod,gc->restraint_user_num, yes);
    }
    else if (minmax == 0)
    {
       if (sscanf(&buffer[1],"%d", &gc->min_restraint_user_num) != 1)
 	 return (code_bad);
-      gc->min_restraint_func_num = enter_function(mod,gc->min_restraint_user_num);
+      gc->min_restraint_func_num = enter_function(mod,gc->min_restraint_user_num, yes);
    }
    else
    {
       if (sscanf(&buffer[1],"%d", &gc->max_restraint_user_num) != 1)
 	 return (code_bad);
-      gc->max_restraint_func_num = enter_function(mod,gc->max_restraint_user_num);
+      gc->max_restraint_func_num = enter_function(mod,gc->max_restraint_user_num, yes);
    }
 
    return (code_fine);
@@ -1653,7 +1657,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
                return code_bad;
             }
             seg->shadow_scale[shadow_axis] = 0.0;
-            seg->shadow_trans[shadow_axis] = (GLfloat)shadow_trans;
+            seg->shadow_trans[shadow_axis] = shadow_trans;
             seg->shadow = yes;
          }
       }
@@ -1808,6 +1812,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
          if (read_deform(fp, seg, segmentnum) != code_fine)
             return code_bad;
       }
+#if INCLUDE_MOCAP_MODULE
       else if (STRINGS_ARE_EQUAL(buffer,"lengthstart"))
       {
          if (fscanf(*fp,"%f %f %f", &seg->lengthstart[0], &seg->lengthstart[1],
@@ -1836,6 +1841,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
             seg->lengthstartend_specified = yes;
          }
       }
+#endif
       else if (STRINGS_ARE_EQUAL(buffer, "htr_o"))
       {
          if (fscanf(*fp, "%lg %lg %lg", &seg->htr_o[0], &seg->htr_o[1], &seg->htr_o[2]) != 3)
@@ -1863,6 +1869,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
             return code_bad;
          }
       }
+#if INCLUDE_MOCAP_MODULE
       else if (STRINGS_ARE_EQUAL(buffer,"gait_scale"))
       {
          if (fscanf(*fp, "%s %lf %lf %lf", buffer, &seg->gait_scale_factor[0],
@@ -1874,7 +1881,6 @@ static ReturnCode read_segment(int mod, FILE** fp)
          }
          mstrcpy(&seg->gait_scale_segment, buffer);
       }         
-#if INCLUDE_MOCAP_MODULE
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_segment"))
       {
          if (fscanf(*fp, "%s", buffer) != 1)
@@ -2070,7 +2076,7 @@ static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar)
 	 return (code_bad);
       else
       {
-	 jointvar->funcnum = enter_function(mod,userfuncnum);
+	 jointvar->funcnum = enter_function(mod,userfuncnum, yes);
 	 jointvar->gencoord = enter_gencoord(mod,usergencname,yes);
 	 if (jointvar->gencoord == -1)
 	    return (code_bad);
@@ -2565,6 +2571,7 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
    int segnum, count;
    SegmentStruct* seg;
    char str1[CHARBUFFER], str2[CHARBUFFER], str3[CHARBUFFER];
+   ReturnCode rc;
 
    count = fscanf(*fp, "%s", str1);
    count += _read_til_tokens(*fp, str2, "\t\r\n");
@@ -2604,7 +2611,7 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
       seg->springFloor->pointArraySize = 0;
 #ifndef ENGINE
       seg->springFloor->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
-	  ReturnCode rc = lookup_polyhedron(seg->springFloor->poly, seg->springFloor->filename, ms);
+      rc = lookup_polyhedron(seg->springFloor->poly, seg->springFloor->filename, ms);
       if (rc == code_bad)
       {
          (void)sprintf(errorbuffer,"Unable to read spring_floor from file %s", seg->springFloor->filename);
@@ -2623,6 +2630,7 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
    char str1[CHARBUFFER], str2[CHARBUFFER];
    int count;
    char bufs[3][CHARBUFFER];
+   ReturnCode rc;
 
    if (seg->forceMatte)
    {
@@ -2666,7 +2674,7 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
          
 #ifndef ENGINE
          seg->forceMatte->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
-         ReturnCode rc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
+         rc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
          if (rc == code_bad)
          {
             (void)sprintf(errorbuffer,"Unable to read force_matte from file %s", seg->forceMatte->filename);
@@ -2918,7 +2926,7 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
    ph = &seg->bone[seg->numBones++];
 
 #ifdef ENGINE
-#ifndef SIMM_OPENSIM
+#if !OPENSIM_BUILD
    preread_init_polyhedron(ph);
 #endif
 #endif
@@ -2929,7 +2937,7 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
    if (lookup_polyhedron(ph, filename, ms) == code_bad)
 	   simm_printf(yes, "Unable to find bone file %s\n", filename);
 #else
-#ifdef SIMM_OPENSIM
+#if OPENSIM_BUILD
    if (lookup_polyhedron(ph, filename, ms) == code_bad)
 	   simm_printf(yes, "Unable to find bone file %s\n", filename);
 #endif

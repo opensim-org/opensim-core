@@ -663,28 +663,16 @@ public void copy_material(MaterialStruct* src, MaterialStruct* dst)
 {
    int i;
 
-   dst->ambient_defined = src->ambient_defined;
-   dst->diffuse_defined = src->diffuse_defined;
-   dst->specular_defined = src->specular_defined;
-   dst->emission_defined = src->emission_defined;
-   dst->shininess_defined = src->shininess_defined;
-   dst->alpha_defined = src->alpha_defined;
-   
-   dst->shininess = src->shininess;
-   
-   for (i=0; i<4; i++)
-   {
-      dst->ambient[i] = src->ambient[i];
-      dst->diffuse[i] = src->diffuse[i];
-      dst->specular[i] = src->specular[i];
-      dst->emission[i] = src->emission[i];
-   }
+   FREE_IFNOTNULL(dst->name);
+
+   memcpy(dst, src, sizeof(MaterialStruct));
+
+   mstrcpy(&dst->name, src->name);
+
    dst->normal_list = -1;
    dst->highlighted_list = -1;
    dst->defined_yet = yes;
-   dst->defined_in_file = src->defined_in_file;
 }
-
 
 
 int define_material(ModelStruct* ms, MaterialStruct* mat)

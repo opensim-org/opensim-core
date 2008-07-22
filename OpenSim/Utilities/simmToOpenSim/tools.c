@@ -169,12 +169,14 @@ char* keys[] = {
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static double calc_muscle_segment_velocity(int mod, int musc, double p1[], int frame1,
-					   double p2[], int frame2);
+static double calc_muscle_segment_velocity(int mod, int musc, MusclePoint *mp1, MusclePoint *mp2);
 static void decrypt(char ciphertext[], char cleartext[]);
 static SBoolean verify_date(int day, int month, int year);
 unsigned sysid(unsigned char id[16]);
 
+#if OPENSIM_CONVERTER
+#define ENGINE
+#endif
 
 /* MAKE_STRING_LOWER_CASE: */
 
@@ -205,6 +207,7 @@ double calc_vector_length(int mod, double p1[], int frame1, double p2[], int fra
    p3[1] = p1[1];
    p3[2] = p1[2];
 
+   /* convert the start point into the end point's frame */
    if (frame1 != frame2)
       convert(mod,p3,frame1,frame2);
 
@@ -262,20 +265,22 @@ int find_joint_between_frames(int mod, int from_frame, int to_frame, Direction* 
 
 }
 
-#ifndef CONVERTER
+#if ! OPENSIM_CONVERTER
+#if ! OPENSIM_BUILD
 
 /* CALC_MUSCLE_TENDON_VELOCITY: Finds the velocity of a muscle-tendon unit.
  * Muscle-tendon velocity is the sum of the velocities of each muscle path
  * segment. This routine assumes that all gencoord velocities have already
  * been calculated.
  */
-
 double calc_muscle_tendon_velocity(int mod, int musc)
 {
 
    int end, start;
    double velocity = 0.0;
    MuscleStruct* muscl = &model[mod]->muscle[musc];
+
+   evaluate_orig_movingpoints(mod, muscl);
 
    /* NOTE:  For the time-being, check_wrapping_points() is #ifdef'd for the
     *   GUI version of SIMM only.  This is only because it was going to take
@@ -287,16 +292,16 @@ double calc_muscle_tendon_velocity(int mod, int musc)
     */
    check_wrapping_points(model[mod], muscl);
 
+   evaluate_active_movingpoints(mod, muscl);
+
    if (muscl->num_points < 2)
       return 0.0;
 
    for (start = 0; start < muscl->num_points - 1; start++)
    {
       end = start + 1;
-      velocity += calc_muscle_segment_velocity(mod,musc,muscl->mp[start]->point,
-                                               muscl->mp[start]->segment,
-                                               muscl->mp[end]->point,
-                                               muscl->mp[end]->segment);
+      velocity += calc_muscle_segment_velocity(mod,musc,muscl->mp[start],
+                                               muscl->mp[end]);
    }
 
    /* Normalize the velocity */
@@ -306,7 +311,6 @@ double calc_muscle_tendon_velocity(int mod, int musc)
    return velocity;
 
 }
-
 
 
 /* CALC_MUSCLE_SEGMENT_VELOCITY: calculates the velocity of one segment of a
@@ -368,28 +372,29 @@ double calc_muscle_tendon_velocity(int mod, int musc)
  *         w =  dq/dt
  *   -ma * w =  dl/dt = muscle-tendon velocity
  */
-
-static double calc_muscle_segment_velocity(int mod, int musc, double p1[], int frame1,
-					   double p2[], int frame2)
+static double calc_muscle_segment_velocity(int mod, int musc, MusclePoint *mp1, MusclePoint *mp2)
 {
 
-   int i;
+   int i, frame1, frame2;
    double genc_vel, velocity = 0.0;
 
-   if (frame1 == frame2)
-      return (0.0);
+   frame1 = mp1->segment;
+   frame2 = mp2->segment;
+
+   // DKB Jan. 2008 -  with moving muscle points this is not necessarily = 0
+   //if (frame1 == frame2)
+   //   return (0.0);
 
    for (i=0; i<model[mod]->numgencoords; i++)
       model[mod]->muscle[musc].momentarms[i] = 0.0;
 
-   calc_segment_arms(mod,musc,p1,frame1,p2,frame2);
+   calc_segment_arms(mod, musc, mp1, mp2);
 
    for (i=0; i<model[mod]->numgencoords; i++)
    {
+      genc_vel = model[mod]->gencoord[i].velocity;
       if (model[mod]->gencoord[i].type == rotation_gencoord)
-	 genc_vel = model[mod]->gencoord[i].velocity * DTOR;
-      else
-	 genc_vel = model[mod]->gencoord[i].velocity;
+         genc_vel *= DTOR;
       velocity += (-model[mod]->muscle[musc].momentarms[i] * genc_vel);
    }
 
@@ -397,7 +402,8 @@ static double calc_muscle_segment_velocity(int mod, int musc, double p1[], int f
 
 }
 
-#endif // CONVERTER
+#endif // OPENSIM_BUILD
+#endif // OPENSIM_CONVERTER
 
 /* EVALUATE_DOF: This routine calculates the current value of a dof. It stores
  * the value inside the dof structure, and also returns the value. If the dof
@@ -512,23 +518,83 @@ int find_next_active_field(Form* form, int current_field, TextFieldAction tfa)
  * The matrices which use the dof in question, as stored in the jointnum[]
  * array for that dof, are marked.
  */
-
+#if OPENSIM_CONVERTER
 int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndConstraints)
 {
-#ifndef ENGINE
    int i;
-   SBoolean solveLoops, solveConstraints, sol;
-#endif
    GeneralizedCoord* gc;
+   SBoolean solveLoops, solveConstraints, sol;
 
    gc = &model[mod]->gencoord[genc];
 
+   /* check whether the gencoord value has changed.  If not, don't bother
+    * updating anything. */
+   if ((DABS(value - gc->value) <= gc->tolerance))
+      return 0;
+
+   if (gc->type == rotation_gencoord)
+      checkGencoordRange(model[mod], genc, &value);
+
+   if (gc->clamped == yes)
+   {
+      if (value < gc->range.start)
+	      value = gc->range.start;
+      else if (value > gc->range.end)
+	      value = gc->range.end;
+   }
+
+   /* Resolve any closed loops in the model, then update the gencoord value
+    * (which may have been changed to close the loops).  If any other
+    * gencoord values are changed to close loops, resolveClosedLoops takes
+    * care of changing their values.  If the solver could not find a valid
+    * solution, the gencoord is not updated and the configuration does not
+    * change.
+    */
+   if (solveLoopsAndConstraints == yes)
+   {
+      sol = solveLCAffectedByGC(model[mod], genc, &value);
+      model[mod]->constraintsOK = sol;// && model[mod]->constraintsOK;
+      model[mod]->loopsOK = sol;// && model[mod]->loopsOK;
+      
+      gc->value = value;
+      if (sol == no)
+         return 0;
+   }
+   else
+   {
+      /* loops and constraints are not solved, copy new value into gc */
+      gc->value = value;
+   }
+
+   for (i=0; i<gc->numjoints; i++)
+      invalidate_joint_matrix(model[mod],gc->jointnum[i]);
+
+   /* if the gencoord being changed is a translational dof, then we need to
+    * invalidate the current bounds of the scene to prevent the model from
+    * sliding behind the far clipping plane.  -- added KMS 10/7/99
+    */
+   if (gc->type == translation_gencoord)
+      model[mod]->max_diagonal_needs_recalc = yes;
+
+   return 1;
+}
+#else
+int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndConstraints)
+{
+   int i;
+   GeneralizedCoord* gc;
+   SBoolean sol;
+
+   gc = &model[mod]->gencoord[genc];
+
+#if ! OPENSIM_CONVERTER
    /* check whether the gencoord value has changed.  If not, don't bother
     * updating anything.  Also check the value in the model viewer window
     * to see whether that needs updating */
    if ((DABS(value - gc->value) <= gc->tolerance)
       && (DABS(value - model[mod]->gencslider.sl[genc].value) <= gc->tolerance))
       return 0;
+#endif
 
 #ifndef ENGINE
    if (gc->type == rotation_gencoord)
@@ -603,6 +669,7 @@ int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndCo
    return 1;
 
 }
+#endif /* OPENSIM_CONVERTER */
 
 
 
@@ -614,6 +681,126 @@ void set_gencoord_velocity(int mod, int genc, double value)
 }
 
 
+void evaluate_orig_movingpoints(int mod, MuscleStruct *muscle)
+{
+   int i, funcnum;
+   double value;
+
+   // the original points
+   for (i = 0; i < *muscle->num_orig_points; i++)
+   {
+      funcnum = muscle->mp_orig[i].funcnum[XX];
+      if (funcnum != -1)   // if is a function
+      {
+         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[XX]].value;
+         muscle->mp_orig[i].point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         // if the following line is not included, the muscle_editor crashes trying to display net_move          
+         muscle->mp_orig[i].old_point[XX] = muscle->mp_orig[i].point[XX];
+      }
+      muscle->mp_orig[i].ground_pt[XX] = muscle->mp_orig[i].point[XX];
+
+      funcnum = muscle->mp_orig[i].funcnum[YY];
+      if (funcnum != -1)
+      {
+         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[YY]].value;
+         muscle->mp_orig[i].point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         muscle->mp_orig[i].old_point[YY] = muscle->mp_orig[i].point[YY];
+      }
+      muscle->mp_orig[i].ground_pt[YY] = muscle->mp_orig[i].point[YY];
+
+      funcnum = muscle->mp_orig[i].funcnum[ZZ];
+      if (funcnum != -1)
+      {
+         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[ZZ]].value;
+         muscle->mp_orig[i].point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         muscle->mp_orig[i].old_point[ZZ] = muscle->mp_orig[i].point[ZZ];
+      }
+      muscle->mp_orig[i].ground_pt[ZZ] = muscle->mp_orig[i].point[ZZ];
+   }
+
+}
+
+void evaluate_active_movingpoints(int mod, MuscleStruct *muscle)
+{
+   int i, funcnum;
+   double value;
+
+   // any other points
+   // DKB TODO: check functions 
+   for (i = 0; i < muscle->num_points; i++)
+   {
+      funcnum = muscle->mp[i]->funcnum[XX];
+      if (funcnum != -1)
+      {
+         value = model[mod]->gencoord[muscle->mp[i]->gencoord[XX]].value;
+         muscle->mp[i]->point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         muscle->mp[i]->old_point[XX] = muscle->mp[i]->point[XX];
+      }
+      muscle->mp[i]->ground_pt[XX] = muscle->mp[i]->point[XX];
+
+      funcnum = muscle->mp[i]->funcnum[YY];
+      if (funcnum != -1)
+      {
+         value = model[mod]->gencoord[muscle->mp[i]->gencoord[YY]].value;
+         muscle->mp[i]->point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         muscle->mp[i]->old_point[YY] = muscle->mp[i]->point[YY];
+      }
+      muscle->mp[i]->ground_pt[YY] = muscle->mp[i]->point[YY];
+
+      funcnum = muscle->mp[i]->funcnum[ZZ];
+      if (funcnum != -1)
+      {
+         value = model[mod]->gencoord[muscle->mp[i]->gencoord[ZZ]].value;
+         muscle->mp[i]->point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+         muscle->mp[i]->old_point[ZZ] = muscle->mp[i]->point[ZZ];
+      }
+      muscle->mp[i]->ground_pt[ZZ] = muscle->mp[i]->point[ZZ];
+   }
+
+}
+
+void evaluate_ligament_movingpoints(int mod)
+{
+   int i, j, m, funcnum;
+   double value;
+   ModelStruct* ms = model[mod];
+
+   for (m = 0; m < ms->numligaments; m++)
+   {
+      for (i = 0; i < ms->ligament[m].numlines; i++)
+      {
+         for (j = 0; j < ms->ligament[m].line[i].numpoints; j++)
+         {
+            funcnum = ms->ligament[m].line[i].pt[j].funcnum[XX];
+            if (funcnum != -1)
+            {
+               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[XX]].value;
+               ms->ligament[m].line[i].pt[j].point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+               //ms->ligament[m].line[i].pt[j].old_pt[XX] = ms->ligament[m].line[i].pt[j].point[XX];
+            }
+            ms->ligament[m].line[i].pt[j].ground_pt[XX] = ms->ligament[m].line[i].pt[j].point[XX];
+
+            funcnum = ms->ligament[m].line[i].pt[j].funcnum[YY];
+            if (funcnum != -1)
+            {
+               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[YY]].value;
+               ms->ligament[m].line[i].pt[j].point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+               //ms->ligament[m].line[i].pt[j].old_pt[YY] = ms->ligament[m].line[i].pt[j].point[YY];
+            }
+            ms->ligament[m].line[i].pt[j].ground_pt[YY] = ms->ligament[m].line[i].pt[j].point[YY];
+
+            funcnum = ms->ligament[m].line[i].pt[j].funcnum[ZZ];
+            if (funcnum != -1)
+            {
+               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[ZZ]].value;
+               ms->ligament[m].line[i].pt[j].point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
+               //ms->ligament[m].line[i].pt[j].old_pt[ZZ] = ms->ligament[m].line[i].pt[j].point[ZZ];
+            }
+            ms->ligament[m].line[i].pt[j].ground_pt[ZZ] = ms->ligament[m].line[i].pt[j].point[ZZ];
+         }
+      }
+   }
+}
 
 /* FINDFUNCNUM: given the number of a generalized coordinate (dof), this
  * routine returns the number of the first function which has that dof
@@ -1331,8 +1518,6 @@ void make_time_string(char** time_string)
  * a number. It is assumed that the string already has space for this extra
  * character. The resulting string is one token, and can therefore be used
  * as a variable name in SIMM-written C code.
- *
- * Ayman: modified the function so that only XML meta characters ('<', '>', '&') are converted.
  */
 
 void convert_string(char str[], SBoolean prependUnderscore)
@@ -1342,12 +1527,32 @@ void convert_string(char str[], SBoolean prependUnderscore)
 
    len = strlen(str);
 
+#if OPENSIM_BUILD
    for (i = 0; i < len; i++)
    {
-	 if (str[i]=='>' || str[i]=='<' || str[i]=='&')
-		 str[i]='_';
+	   if (str[i]=='>' || str[i]=='<' || str[i]=='&')
+	 	   str[i]='_';
+   }
+#else
+   for (i = 0; i < len; i++)
+   {
+      if (str[i] >= 97 && str[i] <= 122)  /* lowercase letters */
+         continue;
+      if (str[i] >= 65 && str[i] <= 90)   /* uppercase letters */
+         continue;
+      if (str[i] >= 48 && str[i] <= 57)   /* numbers */
+         continue;
+      str[i] = '_';
    }
 
+   /* If the first character is a number, prepend an underscore. */
+   if (str[0] >= 48 && str[0] <= 57)
+   {
+      for (i = len + 1; i > 0; i--)
+         str[i] = str[i-1];
+      str[0] = '_';
+   }
+#endif
 }
 
 /* convertSpacesInString: this routine scans a string and converts all spaces
@@ -1987,6 +2192,10 @@ PlotStruct* get_associated_plot (int i)
       if (tool && tool->query_handler)
          tool->query_handler(GET_TOOL_PLOT, &plot);
    }
+   else if (root.window[i].type == PLOTKEY)
+   {
+      plot = root.window[i].win_struct->plotkey->plot;
+   }
    return plot;
 }
 
@@ -2020,13 +2229,17 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
 		/* If the joint file name is just a file name with no path,
 		 * make the jointpath empty so the next step will work.
 		 */
-		if (i == -1){
-			jointpath[0] = '.';	// For jnt file name that has no absolute path we need '.'
+		if (i == -1)
+		{
+			jointpath[0] = '.';
 			jointpath[1] = STRING_TERMINATOR;
 		}
    }
 
-   /* (1) first check the bone directory specified in the joint file: */
+   /* (1) First check the bone folder specified in the joint file.
+    * If this is an absolute path, use it as is. If it is a relative
+    * path, it is assumed to be relative to the joint file's folder.
+    */
    if (rc == code_bad && ms && ms->bonepathname)
    {
       if (ms->jointfilename)
@@ -2038,7 +2251,9 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
       rc = read_polyhedron(ph, fullpath, yes);
    }
    
-   /* (2) next check the joint file's local directory (PC only): */
+   /* (2) Next check the folder "bones" under the joint file's
+    * folder (PC only).
+    */
    if (rc == code_bad)
    {
 #ifdef WIN32
@@ -2054,8 +2269,24 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
 #endif
    }
 
+   /* (3) Next check the joint file's folder itself (PC only). */
+   if (rc == code_bad)
+   {
+#ifdef WIN32
+      if (ms->jointfilename)
+         strcpy(tmppath, jointpath);
+      else
+         strcpy(tmppath, ".");
+      strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   
+      rc = read_polyhedron(ph, fullpath, yes);
+#else
+      rc = code_bad;
+#endif
+   }
+
 #ifndef ENGINE
-   /* (3) check the global bones directory: */
+   /* (4) check the global bones folder. */
    if (rc == code_bad)
    {
       build_full_path(root.pref.bonefilepath, filename, fullpath);
@@ -2063,7 +2294,7 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
       rc = read_polyhedron(ph, fullpath, yes);
    }
 
-   /* (4) check the mocap bones directory: */
+   /* (5) check the mocap bones folder. */
    if (rc == code_bad)
    {
       strcat3(tmppath, root.mocap_dir, DIR_SEP_STRING, "bones");
@@ -2091,7 +2322,7 @@ public SBoolean is_absolute_path (const char* path)
 #ifdef WIN32
    if (*path == '/' ||
        *path == DIR_SEP_CHAR ||
-       strlen(path) >= 3 && path[1] == ':' && path[2] == DIR_SEP_CHAR)
+       strlen(path) >= 3 && path[1] == ':' && (path[2] == DIR_SEP_CHAR || path[2] == '/'))
    {
       return yes;
    }
@@ -2319,10 +2550,8 @@ public ReturnCode read_double_tab(FILE* f, double* value)
    return code_fine;
 }
 
-
 #ifndef ENGINE
-/* DRAWPOLYNOMIAL: */
-
+/* DRAWPLOYNOMIAL: */
 void draw_polynomial(double x1, double y1, double x2, double b, double c,
 			            double d, int steps, double lineWidth)
 {
@@ -2350,9 +2579,7 @@ void draw_polynomial(double x1, double y1, double x2, double b, double c,
    glEnd();
 
    glLineWidth(1.0);
-
 }
-
 #endif
 
 /* Find an unused function number in the function array.  If all are used
@@ -2368,12 +2595,9 @@ int findUnusedFunctionNumber(int mod)
 	      break;
 
    if (i == model[mod]->func_array_size)
-      funcnum = enter_function(mod,-1);
+      funcnum = enter_function(mod,-1, yes);
    else
-   {
       funcnum = i;
-      model[mod]->numfunctions++;
-   }
 
    if (funcnum == -1)
    {
@@ -2399,13 +2623,20 @@ int findHighestUserFuncNum(int mod)
 
 }
 
+/* return the number of functions currently being used */
+int countUsedFunctions(ModelStruct* ms)
+{
+   int i, count=0;
+
+   for (i=0; i<ms->func_array_size; i++)
+	   if (ms->function[i].used == yes)
+	      count++;
+
+   return count;
+}
+
 int strings_equal_case_insensitive(const char str1[], const char str2[])
 {
-#if defined(__linux__)
-	return !strcasecmp(str1,str2);
-#elif defined(WIN32)
-	return !stricmp(str1,str2);
-#else
    char buf1[1024];
 
    /* make the strings upper case and compare them */
@@ -2416,19 +2647,13 @@ int strings_equal_case_insensitive(const char str1[], const char str2[])
    _strupr(buf1);
 
    return !strcmp(buffer, buf1);
-#endif
 }
 
 int strings_equal_n_case_insensitive(const char str1[], const char str2[], int n)
 {
-#if defined(__linux__)
-	return !strncasecmp(str1,str2,n);
-#elif defined(WIN32)
-	return !strnicmp(str1,str2,n);
-#else
    char buf1[1024];
 
-   if ((int)strlen(str1) < n || (int)strlen(str2) < n)
+   if (strlen(str1) < n || strlen(str2) < n)
       return 0;
 
    /* make the strings upper case and compare them */
@@ -2441,7 +2666,6 @@ int strings_equal_n_case_insensitive(const char str1[], const char str2[], int n
    _strupr(buf1);
 
    return !strcmp(buffer, buf1);
-#endif
 }
 
 
@@ -2584,7 +2808,6 @@ const char* getpref(const char* prefname)
 }
 
 #ifndef ENGINE
-
 /* -------------------------------------------------------------------------
    lock_model - acquire the realtime mutex, but only if the model is currently
    receiving realtime motion data from EVaRT or from its simulation dll.
@@ -2637,8 +2860,7 @@ void unlock_model(ModelStruct* ms)
       glutReleaseMutex(ms->modelLock);
    }
 }
-
-#endif
+#endif /* ! ENGINE */
 
 /* -------------------------------------------------------------------------
    is_model_realtime - returns the current state of the model's realtime
@@ -2666,13 +2888,4 @@ RTConnection is_model_realtime(ModelStruct* ms)
    {
       return ms->realtimeState;
    }
-}
-
-int makeDir(const char aDirName[])
-{
-#ifdef __linux__
-	return mkdir(aDirName,S_IRWXU);
-#else
-	return _mkdir(aDirName);
-#endif
 }

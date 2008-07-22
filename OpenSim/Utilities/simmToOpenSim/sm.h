@@ -2,11 +2,11 @@
 
   SM.H
 
-  (c) Copyright 2001-6, MusculoGraphics, Inc.
+  (c) Copyright 2001-8, MusculoGraphics, Inc.
       a division of Motion Analysis Corp.
 
-  This version of the Solver header file is for use with Solver 1.2.11,
-  released April 5, 2006.
+  This version of the Solver header file is for use with Solver 1.3.2,
+  released June 24, 2008.
 
   Authors: Peter Loan, Krystyne Blaikie
 
@@ -71,7 +71,9 @@ typedef enum { smMale, smFemale, smNoGender } smGender;
 
 typedef enum { smTRBFile, smTRCFile, smC3DFile, smNoFileType } smMotionFileType;
 
-typedef enum { smFPForcePosition = 1, smFPSixChannel, smFPEightChannel, smFPCalSixChannel, smFPSixEightChannel } smForcePlateType;
+typedef enum { smFPForcePosition = 1, smFPSixChannel, smFPEightChannel, smFPCalSixChannel, smFPSixEightChannel, smKyowaDengyo } smForcePlateType;
+
+typedef enum { smUnsignedShort, smSignedShort } smIntegerFormat;
 
 typedef enum {
    VSacral = 0,
@@ -89,6 +91,7 @@ typedef enum {
    RElbowMed, LElbowMed,
    RWristMed, LWristMed, RWristBack, LWristBack,
    HeadRear, HeadTop, HeadFront,
+   HeadFrontRight, HeadFrontLeft, HeadBackRight, HeadBackLeft,
    RMiddleFinger, LMiddleFinger,
    RThumb, LThumb,
    NumMarkers
@@ -304,6 +307,7 @@ typedef struct
    smBoolean orientBodyToFrame;         /* do you want to orient the body before solving? */
    smBoolean jointLimitsOn;             /* do you want to enforce joint limits? */
    double globalScale;                  /* global scale factor that was used to make this model */
+   smBoolean loopsOn;                   /* do you want to enforce closed loops */
 } smOptions;
 
 typedef struct
@@ -530,6 +534,8 @@ typedef struct
    int type;                     /* type not currently used */
    char *name;                   /* name of this segment */
    int parent;                   /* index of segment with joint to this segment */
+   int child;                    /* index of child segment in joint - unless loop or reverse, equal to index of current segment */
+   int loopSeg;                  /* index of segment that, when jointed to current seg, closes a loop */
    double length;                /* used only in HTR output */
    smJointType jointType;        /* type of joint from parent to this segment */
    smJointUnion joint;           /* joint from parent to this segment */
@@ -598,6 +604,9 @@ typedef struct
    char *forceUnits;                             /* used for display in SIMM */
    char *lengthUnits;                            /* used for display in SIMM */
    smBoolean markerVisibility;                   /* used for display in SIMM */
+   double loopTolerance;                         /* used to check status of loops */
+   double loopWeight;                            /* used to calculate loop residuals when solving */
+   smBoolean solveLoops;                         /* to turn loop solving on and off */
 #if FG_CONTACT
    int numFGMarkers;
    fgMarkerStruct *FGMarkerList;
@@ -788,6 +797,7 @@ typedef struct {
    int* analogChannelOffset;
    smBoolean calMatricesSpecified;
    int numAnalogChannels;
+   smIntegerFormat analogOffsetFormat;
 } ExtraHeaderStuff;
 
 typedef struct {
@@ -983,6 +993,7 @@ DLL const char *smGetGlobalMessage(void);
 DLL const char *smGetGlobalErrorBuffer(void);
 DLL void smSetStandAlone(void);
 DLL double smGetConversion(smUnit from, smUnit to);
+DLL void smSetCriticalMarkerNames(int numNames, const char *names[]);
 
 /**************************** set model parameters ****************************/
 DLL smReturnCode smResetModel(smModelID modelID);
@@ -994,6 +1005,12 @@ DLL smReturnCode smSetSolverMethod(smModelID modelID, smSolverMethod method);
 DLL smReturnCode smSetMarkerWeight(smModelID modelID, const char segName[], 
                                    const char markerName[], double weight);
 DLL smReturnCode smSetGravityDirection(smModelID modelID, smModel *smmodel, smAxes gravity);
+DLL smReturnCode smSetAllSegmentSolveStates(smModelID modelID, int numSegments, smBoolean segmentStates[]);
+DLL smReturnCode smSetSegmentSolveState(smModelID modelID, char *segmentName, smBoolean state);
+DLL smReturnCode smSetSegmentSolveStateIndex(smModelID modelID, int index, smBoolean state);
+DLL smReturnCode smSetAllGencoordSolveStates(smModelID modelID, int numGCs, smBoolean gcStates[]);
+DLL smReturnCode smSetGencoordSolveState(smModelID modelID, char *gcName, smBoolean state);
+DLL smReturnCode smSetGencoordSolveStateIndex(smModelID modelID, int index, smBoolean state);
 
 /**************************** get model parameters ****************************/
 DLL int smGetNumGenCoords(smModelID modelID);
@@ -1021,6 +1038,13 @@ DLL smReturnCode smGetGroundPlane(smModelID modelID, smPlaneStruct *plane);
 DLL smReturnCode smSetGroundPlane(smModelID modelID, smPlaneStruct *plane);
 DLL smReturnCode smGetPoseGenCoords(smModelID modelID, int numGenCoords, double gencoords[]);
 DLL smReturnCode smGetPoseTransforms(smModelID modelID, int numSegments, smTransform segmentTransforms[]);
+DLL int smGetNumSegments(smModelID modelID);
+DLL smReturnCode smGetAllSegmentSolveStates(smModelID modelID, int numSegments, smBoolean segmentStates[]);
+DLL smReturnCode smGetSegmentSolveState(smModelID modelID, char * segmentName, smBoolean * segmentState);
+DLL smReturnCode smGetSegmentSolveStateIndex(smModelID modelID, int index, smBoolean * segmentState);
+DLL smReturnCode smGetAllGencoordSolveStates(smModelID modelID, int numGCs, smBoolean gcStates[]);
+DLL smReturnCode smGetGencoordSolveState(smModelID modelID, char * gcName, smBoolean * gcState);
+DLL smReturnCode smGetGencoordSolveStateIndex(smModelID modelID, int index, smBoolean * gcState);
 
 #if SMDEBUG
 /*** debug ***/

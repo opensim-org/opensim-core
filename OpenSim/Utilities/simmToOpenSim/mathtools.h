@@ -26,10 +26,14 @@ double interpolate_spline(double abscissa, SplineFunction* func, Derivative deri
 void   format_double(double number, char format[]);
 void   reset_4x4matrix(double mat[][4]);
 void   make_4x4dircos_matrix(double angle, double axis[], double mat[][4]);
+SBoolean vector_intersects_polyhedron(double pt[], double vec[], PolyhedronStruct* ph, double inter[]);
+SBoolean intersect_line_plane(double pt1[], double pt2[],
+                              double plane[], double d, double inter[], double* t);
 SBoolean intersect_line_plane01(double pt1[], double pt2[], 
 				double plane[], double d, double inter[], double* t);
-int    polygon_ray_inter3d(PolyhedronStruct* newph,int poly_index, 
-			   double pt[3],int axes);
+SBoolean point_in_polygon3D(double pt[], PolyhedronStruct* ph, int polygon_index);
+int    point_in_polygon2D(double point[], double pgon[][2], int numverts);
+int    polygon_ray_inter3d(PolyhedronStruct* newph, int poly_index, double pt[3], int axes);
 int    polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
 					double ptray[3], int axes);
 int point_ray_relation(double* pt, double ptray[], int axes);

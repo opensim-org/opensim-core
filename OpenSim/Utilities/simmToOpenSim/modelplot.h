@@ -15,9 +15,6 @@
 #ifndef MODELPLOT_H
 #define MODELPLOT_H
 
-#define INCLUDE_MOCAP_MODULE 1
-#define BONE_EDITOR_EXTRAS 0
-
 #define MAX_GENCOORDS 500
 
 #define R1 0
@@ -110,6 +107,7 @@
 #define DEFAULT_CONSTRAINT_TOLERANCE 1e-3
 /* max value of RMS of all residuals.  If RMS > tolerance, loop is broken*/
 #define DEFAULT_LOOP_TOLERANCE 1e-4
+#define DEFAULT_LOOP_WEIGHT 10.0
 #define DEFAULT_SOLVER_ACCURACY 1e-4
 
 #define MAX_EVENTS 12
@@ -137,6 +135,9 @@
 #define ABOVE_RAY 1
 #define BELOW_RAY 2
 
+#define GLOBAL_SEGMENT -1
+#define UNDEFINED_SEGMENT -2
+#define UNDEFINED_MARKER -2
 
 ENUM {
    rtMocap,
@@ -444,6 +445,9 @@ STRUCT {
    SBoolean selected;                /* whether or not point has been selected */
    double point[3];                  /* xyz coordinates of the point */
    double ground_pt[3];              /* coords of point in ground frame */
+   int funcnum[3];                   /* function for moving point (3 coordinates - 3 possible functions) */
+   int gencoord[3];                  /* gencoord for moving point (3 coordinates - 3 possible gencoords) */
+   SBoolean movingpoint;             /* whether the point has non-constant coordinates */
    int numranges;                    /* number of ranges where point is active */
    PointRange* ranges;               /* array of ranges */
    SBoolean is_auto_wrap_point;      /* was this point calc-ed by auto wrapper? */
@@ -461,6 +465,8 @@ STRUCT {
    int state;                        /* is this point on or off */
    double point[3];                  /* xyz coordinates of the point */
    double ground_pt[3];              /* coords of point in ground frame */
+   int funcnum[3];                   /* function for moving point */
+   int gencoord[3];                  /* gencoord for moving point */
    int normal_count;                 /* number of polygons used for this normal */
    float normal[3];                  /* point normal used for ligaments */
    int numranges;                    /* number of ranges where point is active */
@@ -1486,7 +1492,6 @@ STRUCT {
    int modelnum;                     /*  */
    int numgencoords;                 /*  */
    int numunusedgencoords;           /*  */
-   int numfunctions;                 /*  */
    int nummuscles;                   /* number of muscles in this model */
    int numligaments;                 /* number of ligaments in this model */
    int numjoints;                    /*  */
@@ -1543,7 +1548,6 @@ STRUCT {
    double max_diagonal;              /* diagonal dimension of scene bounding box (segments + world objects) */
    SBoolean max_diagonal_needs_recalc;/* do we need to recompute the model's max diagonal? */
    SliderArray gencslider;           /* array of gencoord sliders */
-   SliderArray rotslider;            /* array of world rotation sliders */
    Form gencform;                    /* form for gencoords and current values */
    CheckBoxPanel gc_chpanel;         /* checkbox panel for gencoord clamp/unclamp */
    CheckBoxPanel gc_lockPanel;       /* checkbox panel for gc lock/unlock */
@@ -1563,7 +1567,7 @@ STRUCT {
    SegmentGroup* seggroup;           /* array of segment groups */
    GencoordGroup* gencgroup;         /* array of gencoord groups */
    GeneralizedCoord* gencoord;       /*  */
-   SplineFunction* function;         /* functions used for dofs and gencoords */
+   SplineFunction* function;         /* functions used for dofs and gencoords and muscle points */
    MuscleStruct* muscle;             /*  */
    MuscleStruct default_muscle;      /*  */
    LigamentStruct* ligament;         /* array of ligament structures */
@@ -1596,6 +1600,7 @@ STRUCT {
    ConstraintObject *constraintobj;
 //   double constraint_tolerance;
    double loop_tolerance;
+   double loop_weight;
    SolverOptions solver;
    smAxes gravity;
    SBoolean global_show_masscenter;
