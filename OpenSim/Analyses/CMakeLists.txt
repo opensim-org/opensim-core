@@ -32,7 +32,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
-				debug osimSimulation_d optimized osimSimulation)
+				debug osimSimulation_d optimized osimSimulation
+				debug SimTKcommon_d optimized SimTKcommon
+				debug SimTKmath_d optimized SimTKmath
+				debug SimTKlapack optimized SimTKlapack)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

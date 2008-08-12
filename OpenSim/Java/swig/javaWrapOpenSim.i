@@ -76,6 +76,7 @@
 #include <OpenSim/Analyses/GeneralizedForces.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
+#include <OpenSim/Analyses/StaticOptimization.h>
 
 #include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
@@ -422,6 +423,7 @@ using namespace SimTK;
 %include <OpenSim/Analyses/GeneralizedForces.h>
 %include <OpenSim/Analyses/MuscleAnalysis.h>
 %include <OpenSim/Analyses/InverseDynamics.h>
+%include <OpenSim/Analyses/StaticOptimization.h>
 
 %template(ArrayBool) OpenSim::Array<bool>;
 %template(ArrayDouble) OpenSim::Array<double>;

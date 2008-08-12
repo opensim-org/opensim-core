@@ -590,3 +590,11 @@ double AbstractActuator::getStress() const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
+//_____________________________________________________________________________
+/**
+ * getOptimalForce needs to be overridden by derived classes to be usable
+ */
+double AbstractActuator::getOptimalForce() const
+{
+	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
+}

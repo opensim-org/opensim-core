@@ -210,7 +210,8 @@ void Schutte1993Muscle::setupProperties()
 
 	_dampingProp.setName("damping");
 	_timeScaleProp.setComment("Damping factor related to maximum contraction velocity");
-	_dampingProp.setValue(0.0);
+	_dampingProp.setValue(0.05);
+
 	_propertySet.append(&_dampingProp, "Parameters");
 
 	_tendonForceLengthCurveProp.setName("tendon_force_length_curve");

@@ -170,6 +170,7 @@ public:
 	virtual double getSpeed() const { return _speed; }
 	virtual double getPower() const { return _force*_speed; }
 	virtual double getStress() const;
+	virtual double getOptimalForce() const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

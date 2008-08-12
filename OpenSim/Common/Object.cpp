@@ -1405,6 +1405,7 @@ clearXMLStructures()
 		case(Property::IntArray) :
 		case(Property::DblArray) :
 		case(Property::StrArray) :
+		case(Property::DblVec3) :
 			break; // Nothing to do for the basic types
 
 		// Obj
@@ -1462,6 +1463,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
 		case(Property::IntArray) :
 		case(Property::DblArray) :
 		case(Property::StrArray) :
+		case(Property::DblVec3) :
 			break; // Nothing to do for the basic types
 
 		// Obj

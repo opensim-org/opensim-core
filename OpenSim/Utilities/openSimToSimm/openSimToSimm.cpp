@@ -29,6 +29,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -46,7 +47,13 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 int main(int argc,char **argv)
 {
 	std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
+	LoadOpenSimLibrary("osimActuators");
 
+		Model model("SeparateLegs.osim");
+		model.setup();
+
+		model.clearXMLStructures();
+		model.print("New_SeparateLegs.osim");
 	// PARSE COMMAND LINE
 	string inName = "";
 	string jntName = "";
@@ -72,9 +79,11 @@ int main(int argc,char **argv)
 	}
 
 	try {
-		Model model(inName);
+		Model model("SeparateLegs.osim");
 		model.setup();
 
+		model.clearXMLStructures();
+		model.print("New_"+inName);
 		SimmFileWriter sfw(&model);
 		if(jntName!="") sfw.writeJointFile(jntName);
 		if(mslName!="") sfw.writeMuscleFile(mslName);

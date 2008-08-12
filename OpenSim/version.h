@@ -33,7 +33,7 @@
 namespace OpenSim {
 #endif
 
-	static const char *OpenSimVersion = "1.5.2";
+	static const char *OpenSimVersion = "1.5.5";
 
 #if defined(__cplusplus) || defined(SWIG)
 	std::string GetVersionAndDate() { 

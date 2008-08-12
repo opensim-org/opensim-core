@@ -369,6 +369,7 @@ bool PerturbationTool::run()
 	IntegRKF *integ = manager.getIntegrator();
 	integ->setMaximumNumberOfSteps(_maxSteps);
 	integ->setMaxDT(_maxDT);
+	integ->setMinDT(_minDT);
 	integ->setTolerance(_errorTolerance);
 	integ->setFineTolerance(_fineTolerance);
 

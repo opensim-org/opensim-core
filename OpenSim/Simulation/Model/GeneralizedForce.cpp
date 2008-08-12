@@ -295,7 +295,7 @@ CreateActuatorSetOfGeneralizedForcesForModel(Model *aModel,double aOptimalForce,
 	ActuatorSet *as = new ActuatorSet();
 	CoordinateSet *cs = aModel->getDynamicsEngine().getCoordinateSet();
 	for(int i=0; i<cs->getSize(); i++) {
-		if(!aIncludeLockedAndConstrainedCoordinates && (cs->get(i)->getLocked() || cs->get(i)->isConstrained())) continue;
+		if(!aIncludeLockedAndConstrainedCoordinates && (cs->get(i)->getLocked() || cs->get(i)->getConstrained())) continue;
 		GeneralizedForce *actuator = new GeneralizedForce();
 		actuator->setQ(cs->get(i));
 		actuator->setName(cs->get(i)->getName());

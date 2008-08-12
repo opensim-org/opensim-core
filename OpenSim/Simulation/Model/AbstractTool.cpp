@@ -69,6 +69,7 @@ AbstractTool::AbstractTool():
 	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
+	_minDT(_minDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
@@ -101,6 +102,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
+	_minDT(_minDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
@@ -162,6 +164,7 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
 	_solveForEquilibriumForAuxiliaryStates(_solveForEquilibriumForAuxiliaryStatesProp.getValueBool()),
 	_maxSteps(_maxStepsProp.getValueInt()),
 	_maxDT(_maxDTProp.getValueDbl()),
+	_minDT(_minDTProp.getValueDbl()),
 	_errorTolerance(_errorToleranceProp.getValueDbl()),
 	_fineTolerance(_fineToleranceProp.getValueDbl()),
 	_analysisSetProp(PropertyObj("Analyses",AnalysisSet())),
@@ -192,6 +195,7 @@ setNull()
 	_solveForEquilibriumForAuxiliaryStates = false;
 	_maxSteps = 20000;
 	_maxDT = 1.0;
+	_minDT = 1.0e-8;
 	_errorTolerance = 1.0e-3;
 	_fineTolerance = 1.0e-5;
 	_toolOwnsModel=true;
@@ -268,6 +272,11 @@ void AbstractTool::setupProperties()
 	_maxDTProp.setName("maximum_integrator_step_size");
 	_propertySet.append( &_maxDTProp );
 
+	comment = "Minimum integration step size.";
+	_minDTProp.setComment(comment);
+	_minDTProp.setName("minimum_integrator_step_size");
+	_propertySet.append( &_minDTProp );
+
 	comment = "Integrator error tolerance. When the error is greater, the integrator step size is decreased.";
 	_errorToleranceProp.setComment(comment);
 	_errorToleranceProp.setName("integrator_error_tolerance");
@@ -317,6 +326,8 @@ operator=(const AbstractTool &aTool)
 	_fineTolerance = aTool._fineTolerance;
 	_analysisSet = aTool._analysisSet;
 	_toolOwnsModel = aTool._toolOwnsModel;
+	_maxDT = aTool._maxDT;
+	_minDT = aTool._minDT;
 	return(*this);
 }
 

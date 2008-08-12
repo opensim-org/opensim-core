@@ -63,10 +63,19 @@ protected:
 	PropertyBool _useModelActuatorSetProp;
 	bool &_useModelActuatorSet;
 
-	Storage *_storage;
+	PropertyDbl _activationExponentProp;
+	double &_activationExponent;
+
+	PropertyBool _useMusclePhysiologyProp;
+	bool	&_useMusclePhysiology;
+
+	Storage *_activationStorage;
+	Storage *_forceStorage;
 
 	Array<double> _dydt;
 	Array<int> _accelerationIndices;
+
+	SimTK::Vector _parameters;
 
 	bool _ownsActuatorSet;
 	ActuatorSet *_actuatorSet;
@@ -105,19 +114,23 @@ private:
 	void constructColumnLabels();
 	void allocateStorage();
 	void deleteStorage();
-	void computeAcceleration(double aT,double *aX,double *aY,double *aF,double *rAccel) const;
 
 public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	void setStorageCapacityIncrements(int aIncrement);
-	Storage* getStorage();
+	Storage* getActivationStorage();
+	Storage* getForceStorage();
 
 	bool getUseModelActuatorSet() { return _useModelActuatorSet; }
 	void setUseModelActuatorSet(bool aUseModelActuatorSet) { _useModelActuatorSet = aUseModelActuatorSet; }
 
 	virtual void setModel(Model *aModel);
+	void setActivationExponent(const double aExponent) { _activationExponent=aExponent; }
+	double getActivationExponent() const { return _activationExponent; }
+	void setUseMusclePhysiology(const bool useIt) { _useMusclePhysiology=useIt; }
+	bool getUseMusclePhysiology() const { return _useMusclePhysiology; }
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------

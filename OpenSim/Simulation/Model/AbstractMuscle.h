@@ -160,6 +160,7 @@ public:
 	virtual double getPassiveFiberForce() = 0;
 	virtual double getActiveFiberForceAlongTendon();
 	virtual double getPassiveFiberForceAlongTendon();
+	virtual double getMaxIsometricForce();
 	/*
 	virtual double getTendonPower();
 	virtual double getMusclePower();

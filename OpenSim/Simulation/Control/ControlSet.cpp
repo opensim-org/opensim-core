@@ -36,7 +36,9 @@
 //=============================================================================
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
+#include "ControlLinear.h"
 
 
 
@@ -101,6 +103,36 @@ ControlSet::ControlSet(const ControlSet &aSet) :
 	_ptpMap = aSet._ptpMap;
 }
 
+//_____________________________________________________________________________
+/**
+ * Constructor from a storage
+ *
+ * @param aStorage to get the data from
+ * @param numControls number of columns to convert into controls, 0 for all
+ * @param startIndex or columns to convert, default to all
+ */
+ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
+{
+	setNull();
+	// LOOP THROUGH LIST
+	int j;
+	ControlLinear *control;
+	int nControls = numControls;
+	// If 0 then get all
+	if (nControls==0){
+		nControls = aStorage.getColumnLabels().getSize()-startIndex-1;	//-1 because ExtractControl assumes no time col.
+	}
+	for(j=0;j<nControls;j++) {
+
+		//cout << "Process column number " << j+startIndex << endl;
+		// EXTRACT CONTROL NODE
+		control = ExtractControl(aStorage,j+startIndex);
+
+		// APPEND ON TO CONTROL SET
+		append(control);
+	}
+
+}
 
 //=============================================================================
 // CONSTRUCTION
@@ -1069,4 +1101,43 @@ generateParameterMaps()
 			_ptpMap.append(j);
 		}
 	}
+}
+//_____________________________________________________________________________
+/**
+ * convert a column of a storage column into a ControlLinear object and return it
+ * index is zero based after time (0 for 
+ */
+ControlLinear*
+ControlSet::ExtractControl(const Storage& storage,int index)
+{
+	int i;
+
+	// cout << "index=" << index << endl;
+	// NAME ATTRIBUTE
+	const Array<std::string> &columnLabels = storage.getColumnLabels();
+	// cout << "colabels size=" << columnLabels.getSize() << endl;
+	std::string colName = columnLabels.get(index+1);
+
+	// TIME
+	double *times = NULL;
+	int nTimes = storage.getTimeColumn(times);
+
+	// VALUE
+	int nValues = nTimes;
+	int rValue;
+	double *values = NULL;
+	rValue = storage.getDataColumn(index,values);
+
+	// CONSTRUCT LINEAR CONTROL NODE
+	ControlLinear *control = new ControlLinear;
+	control->setName(colName);
+	control->clearControlNodes();
+
+	// APPEND CONTROL ELEMENTS
+	int n = nTimes;
+	if(n>nValues) n = nValues;
+	for(i=0;i<n;i++) {
+		control->setControlValue(times[i],values[i]);
+	}
+	return(control);
 }

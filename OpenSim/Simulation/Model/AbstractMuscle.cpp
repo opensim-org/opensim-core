@@ -43,6 +43,7 @@
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/Common/DebugUtilities.h>
 
 //=============================================================================
 // STATICS
@@ -1371,4 +1372,12 @@ void AbstractMuscle::apply()
 void AbstractMuscle::updateDisplayer()
 {
 	computePath();
+}
+//_____________________________________________________________________________
+/**
+ * getMaxIsometricForce needs to be overridden by derived classes to be usable
+ */
+double AbstractMuscle::getMaxIsometricForce()
+{
+	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }

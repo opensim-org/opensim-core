@@ -104,6 +104,9 @@ protected:
 	/** Maximum integration step size. */
 	PropertyDbl _maxDTProp;
 	double &_maxDT;
+	/** Minimum integration step size. */
+	PropertyDbl _minDTProp;
+	double &_minDT;
 	/** Integrator error tolerance. When the error is greater, the 
 	integrator step size is decreased. */
 	PropertyDbl _errorToleranceProp;
@@ -181,6 +184,9 @@ public:
 
 	double getMaxDT() const { return _maxDT; }
 	void setMaxDT(double aMaxDT) { _maxDT = aMaxDT; }
+
+	double getMinDT() const { return _minDT; }
+	void setMinDT(double aMinDT) { _minDT = aMinDT; }
 
 	double getErrorTolerance() const { return _errorTolerance; }
 	void setErrorTolerance(double aErrorTolerance) { _errorTolerance = aErrorTolerance; }

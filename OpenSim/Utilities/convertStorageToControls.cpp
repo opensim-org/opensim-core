@@ -109,6 +109,9 @@ int main(int argc,char **argv)
 	// WRITE CONTROL SET TO FILE
 	controlSet.print(outName);
 
+	// Try printing to a different file without copying
+	controlSet.clearXMLStructures();
+	controlSet.print("New_"+outName);
 	return(0);
 }
 
