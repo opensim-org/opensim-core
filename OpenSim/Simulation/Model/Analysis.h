@@ -52,14 +52,14 @@ class Model;
  * An abstract class for specifying the interface for an analysis
  * plugin.
  *
- * @author Frank C. Anderson
+ * @author Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API Analysis: public IntegCallback
 {
 	OPENSIM_DECLARE_DERIVED(Analysis, IntegCallback);
 public:
-	//enum { DESCRIP_LENGTH=8192 };
+
 
 //=============================================================================
 // DATA
@@ -82,20 +82,46 @@ protected:
 private:
 	void setNull();
 	void setupProperties();
+
+public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-public:
+	/**
+	 * Default constructor.
+	 *
+	 * @param aModel Model on which the analysis is to be performed.
+	 */
 	Analysis(Model *aModel=0);
+
+	/**
+	 * Construct an object from file.
+	 * The object is constructed from the root element of the XML document.
+	 * The type of object is the tag name of the XML root element.
+	 * @param aFileName File name of the document.
+	 */
 	Analysis(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+
+	/**
+	 * Copy constructor.
+	 * @param aAnalysis Object to be copied.
+	 * @see Analysis(const XMLDocument *aDocument)
+	 * @see Analysis(const char *aFileName)
+	 * @see generateXMLDocument()
+	 */
+	Analysis(const Analysis &aAnalysis);
+
 	virtual ~Analysis();
-	Analysis(const Analysis &aObject);
 	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
+	/**
+	 * Assignment operator.
+	 * @return Reference to this object.
+	 */
 	Analysis& operator=(const Analysis &aAnalysis);
 #endif
 
@@ -103,11 +129,28 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// MODEL
+	/**
+	 * set pointer to model to be analyzed.
+	 * @param aModel
+	 */
 	virtual void setModel(Model *aModel);
+
 	// DEGREES/RADIANS
+	/**
+	 * Set whether or not to write the output of angles in degrees.
+	 * This flag must be set before an analysis is performed to ensure that
+	 * the results are in the proper format.
+	 * @param aTureFalse Output will be in degrees if "true" and in radians
+	 * if "false".
+	 */
 	void setInDegrees(bool aTrueFalse);
 	bool getInDegrees() const;
+
 	// COLUMN LABLES
+	/**
+	 * Set the column labels for this analysis.
+	 * @param aLabels an Array of strings (labels).
+	 */
 	void setColumnLabels(const Array<std::string> &aLabels);
 	const Array<std::string> &getColumnLabels() const;
 
@@ -124,6 +167,16 @@ public:
 	//--------------------------------------------------------------------------
 	// RESULTS
 	//--------------------------------------------------------------------------
+	/**
+	 * Print the results of the analysis.
+	 *
+	 * @param aFileName File to which to print the data.
+	 * @param aDT Time interval between results (linear interpolation is used).
+	 * If not included as an argument or negative, all time steps are printed
+	 * without interpolation.
+	 *
+	 * @return -1 on error, 0 otherwise.
+	 */	
 	virtual int
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");

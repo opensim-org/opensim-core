@@ -27,7 +27,7 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+ * Author: Frank C. Anderson, Ajay Seth 
  */
 
 
@@ -45,10 +45,10 @@ using namespace std;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  *
- * @param aModel Model on which the analysis is to be performed.
+ * param: aModel Model on which the analysis is to be performed.
  */
 Analysis::Analysis(Model *aModel):
 	IntegCallback(aModel),
@@ -79,7 +79,7 @@ Analysis::~Analysis()
 
 }
 //_____________________________________________________________________________
-/**
+/*
  * Construct an object from file.
  *
  * The object is constructed from the root element of the XML document.
@@ -250,12 +250,9 @@ setModel(Model *aModel)
 // COLUMN LABELS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
+/*
  * Set the column labels for this analysis.
- *
- * The length of the column labels string should be 8191 characters or shorter.
- *
- * @param aLabels String of tab delimited labels.
+ * @param aLabels an Array of strings (labels).
  */
 void Analysis::
 setColumnLabels(const Array<string> &aLabels)
@@ -279,7 +276,7 @@ getColumnLabels() const
 // IO
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Print the results of the analysis.
  *
  * @param aFileName File to which to print the data.
