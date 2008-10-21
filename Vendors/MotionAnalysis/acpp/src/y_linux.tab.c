@@ -127,13 +127,13 @@
 
   /* some external tables of character types */
   extern unsigned char is_idstart[], is_idchar[];
-#if defined sgi || defined WIN32 || defined __linux__
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
 /* table to tell if c is horizontal space.  isspace () thinks that
    newline is space; this is not a good idea for this program. */
 char is_hor_space[256];
 #endif
 
-#if defined WIN32 || defined __linux__
+#if defined WIN32 || defined __linux__ || defined __APPLE__
 #define gettxt(S1,S2) (S1 ## S2)
 #endif
 

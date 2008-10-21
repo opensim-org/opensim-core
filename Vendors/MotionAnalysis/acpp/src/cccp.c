@@ -260,7 +260,7 @@ int dump_macros;
 #endif
 
 int pedantic;
-#if defined sgi || defined WIN32 || defined __linux__
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
 /* value of > 0 means turn warnings off */
 int warnings_off;
 /*
@@ -1488,7 +1488,11 @@ trigraph_pcp (buf)
     bcopy (fptr, bptr, len);
   buf->length -= fptr - bptr;
   buf->buf[buf->length] = '\0';
-  if (warn_trigraphs && fptr != bptr && warnings_off == 0)
+  if (warn_trigraphs && fptr != bptr
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
+                                     && warnings_off == 0
+#endif
+                                                         )
     warning ("%d trigraph(s) encountered", (fptr - bptr) / 2);
 }
 
@@ -1964,7 +1968,11 @@ while2end:
                 while (ibp < limit) {
                    switch (*ibp++) {
                    case '/':
-                      if (warn_comments && ibp < limit && *ibp == '*' && warnings_off == 0)
+                      if (warn_comments && ibp < limit && *ibp == '*'
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
+                                                                      && warnings_off == 0
+#endif
+                                                                                          )
                          warning("`/*' within comment");
                       break;
                    case '*':
@@ -3354,8 +3362,10 @@ get_filename:
     /* For -M, add this file to the dependencies.  */
     if (print_deps > (system_header_p || (system_include_depth > 0))) {
       if (system_header_p) {
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
 	if(warnings_off == 0) 
-	  warning ("nonexistent file <%.*s> omitted from dependency output",
+#endif
+	    warning ("nonexistent file <%.*s> omitted from dependency output",
 		 fend - fbeg, fbeg);
 	}
       else
@@ -3638,7 +3648,11 @@ do_define (buf, limit, op, keyword)
 #endif
       arg_ptrs = temp;
 
-      if (!is_idstart[*bp] && warnings_off == 0)
+      if (!is_idstart[*bp]
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
+                           && warnings_off == 0
+#endif
+                                               )
 	warning ("parameter name starts with a digit in #define");
 
       /* Find the end of the arg name.  */
@@ -3738,7 +3752,9 @@ do_define (buf, limit, op, keyword)
 	msg = (U_CHAR *) alloca (sym_length + 20);
 	bcopy (symname, msg, sym_length);
 	strcpy (msg + sym_length, " redefined");
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
 	if(warnings_off == 0)
+#endif
 		warning (msg);
       }
       /* Replace the old definition.  */
@@ -4540,16 +4556,22 @@ do_xifdef (buf, limit, op, keyword)
   if (end == buf) {
     skip = (keyword->type == T_IFDEF);
     if (! traditional)
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
      if(warnings_off == 0)
+#endif
       warning (end == limit ? "#%s with no argument"
 	       : "#%s argument starts with punctuation",
 	       keyword->name);
   } else {
     if (pedantic && buf[0] >= '0' && buf[0] <= '9') {
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
      if(warnings_off == 0)
+#endif
       warning ("#%s argument starts with a digit", keyword->name);
     } else if (end != limit && !traditional) {
+#if defined sgi || defined WIN32 || defined __linux__ || defined __APPLE__
      if(warnings_off == 0)
+#endif
       warning ("garbage at end of #%s argument", keyword->name);
     }
 
@@ -5734,7 +5756,7 @@ error_from_errno (name)
 {
   int i;
   FILE_BUF *ip = NULL;
-#if !defined WIN32 && !defined __linux__
+#if !defined WIN32 && !defined __linux__ && !defined __APPLE__
   extern int errno, sys_nerr;
   extern char *sys_errlist[];
 #endif
@@ -5748,7 +5770,7 @@ error_from_errno (name)
   if (ip != NULL)
     USER_MESSAGE("%s:%d: ", _get_filename_without_path(ip->fname), ip->lineno);
 
-#if defined WIN32 || defined __linux__
+#if defined WIN32 || defined __linux__ || defined __APPLE__
   perror(name);
 #else
   if (errno < sys_nerr)
@@ -6289,7 +6311,7 @@ deps_output (string, size)
   deps_buffer[deps_size] = 0;
 }
 
-#ifndef BSD
+#if !defined BSD && !defined __APPLE__
 #ifndef BSTRING
 
 void
@@ -6372,14 +6394,14 @@ void
 perror_with_name (name)
      char *name;
 {
-#if !defined WIN32 && !defined __linux__ 
+#if !defined WIN32 && !defined __linux__ && !defined __APPLE__ 
    extern int errno, sys_nerr;
    extern char *sys_errlist[];
 #endif
 
    USER_MESSAGE("%s: ", acpp_progname);
 
-#if defined WIN32 || defined __linux__
+#if defined WIN32 || defined __linux__ || defined __APPLE__
   perror(name);
 #else
    if (errno < sys_nerr)
