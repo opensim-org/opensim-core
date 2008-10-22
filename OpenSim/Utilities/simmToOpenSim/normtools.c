@@ -189,7 +189,6 @@ PolyhedronStruct* combine_polyhedra(PolyhedronStruct** phs, int num_phs)
 
 ReturnCode check_polyhedron(PolyhedronStruct* ph)
 {
-
    int i, j;
 
    for (i=0; i<ph->num_polygons; i++)
@@ -202,13 +201,12 @@ ReturnCode check_polyhedron(PolyhedronStruct* ph)
 	         ph->polygon[i].vertex_index[j] < 0)
 	      {
 	         fprintf(stderr,"Bad polyhedron: vertex index out of range.\n");
-	         return (code_bad);
+	         return code_bad;
 	      }
       }
    }
 
    return code_fine;
-
 }
 
 

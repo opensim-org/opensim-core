@@ -247,17 +247,30 @@ typedef struct
 typedef struct
 {
    int segment;                      /* body segment this point is fixed to */
-   int refpt;                        /* corresponding point in saved muscle */
    dpBoolean selected;               /* whether or not point has been selected */
    double point[3];                  /* xyz coordinates of the point */
-   int numranges;                    /* number of ranges where point is active */
-   dpPointRange* ranges;             /* array of ranges */
+   int fcn_index[3];                   /* function for moving point (3 coordinates - 3 possible functions) */
+   int gencoord[3];                  /* gencoord for moving point (3 coordinates - 3 possible gencoords) */
+   dpBoolean isMovingPoint;           /* whether the point has non-constant coordinates */
+   dpBoolean isVia;                   /* is the point a via point */
+   dpPointRange viaRange;             /* array of ranges */
    dpBoolean is_auto_wrap_point;     /* was this point calc-ed by auto wrapper? */
    double wrap_distance;             /* stores distance of wrap over object surface */
    double* wrap_pts;                 /* points wrapping over surface */
    int num_wrap_pts;                 /* number of points wrapping over surface */
 } dpMusclePoint;                     /* properties of a muscle point */
 
+
+typedef struct
+{
+   int num_orig_points;             /* number of user-defined muscle points */
+   int num_points;                   /* total number of muscle points */
+   dpMusclePoint* mp_orig;             /* list of user-defined muscle points */
+   dpMusclePoint** mp;                 /* list of muscle points after auto wrapping */
+   int mp_orig_array_size;           /* current size of mp_orig[] */
+   int mp_array_size;                /* current size of mp[] */
+   //SaveMusclePath *saved_copy;
+} dpMusclePathStruct;
 
 typedef enum
 {
@@ -356,13 +369,7 @@ typedef struct
    dpBoolean display;                /* whether or not to display this muscle */
    dpBoolean output;                 /* write muscle values to output file? */
    dpBoolean selected;               /* whether or not this muscle is selected */
-   dpBoolean has_wrapping_points;    /* does this muscle have wrapping pts? */
-   dpBoolean has_force_points;       /* does this muscle have force-dependent pts? */
-   int* num_orig_points;             /* number of muscle points */
-   int num_points;                   /* number of muscle points */
-   dpMusclePoint* mp_orig;           /* list of muscle points from muscle file */
-   dpMusclePoint** mp;               /* list of muscle points after auto wrapping */
-   int mp_array_size;                /* current size of muscle point array */
+   dpMusclePathStruct *musclepoints; /* all the muscle path information */
    double* max_isometric_force;      /* maximum isometric force */
    double* pennation_angle;          /* pennation angle of muscle fibers */
    double* optimal_fiber_length;     /* muscle fiber length */
@@ -597,6 +604,9 @@ typedef struct
    dpSimmModelID simmModel;
    int enforce_constraints;    /* enforce constraint objects while integrating? */
 	int newInverseSimulation;   /* new-style inverse with corrective torques? */
+   int num_musclepoint_functions;
+   int musclepoint_function_array_size;
+   dpSplineFunction *musclepoint_function;
 } dpModelStruct;
 
 

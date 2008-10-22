@@ -53,8 +53,8 @@ XForm* get_deform_xform(DeformObject*, int deformMode);
 XForm* get_deform_xform2(DeformObject*, int deformMode, double factor);
 XForm* get_deform_xform3(DeformObject*, int deformMode, double factor);
 
-void save_deform_objects(int mod);
-void restore_deform_objects(int mod);
+void save_all_deform_objects(int mod);
+void restore_all_deform_objects(int mod);
 void delete_deform_object(int deformobj);
 
 void do_de_help();

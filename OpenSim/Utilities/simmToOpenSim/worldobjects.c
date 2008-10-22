@@ -110,6 +110,7 @@ ReturnCode read_world_object(int mod, FILE** fp)
 		}
 		else if (STRINGS_ARE_EQUAL(buffer,"filename"))
 		{
+         FileReturnCode frc;
 			if (fscanf(*fp,"%s", fname) != 1)
 			{
 				(void)sprintf(errorbuffer,"Error reading filename in definition of worldobject %s", obj->name);
@@ -117,9 +118,14 @@ ReturnCode read_world_object(int mod, FILE** fp)
 				return (code_bad);	    
 			}
 #ifndef ENGINE
-			rc = lookup_polyhedron(obj->wobj, fname, model[mod]);
+			frc = lookup_polyhedron(obj->wobj, fname, model[mod]);
 
-			if (rc == code_bad)
+			if (frc == file_missing)
+         {
+				(void)sprintf(mess,"Unable to locate object file %s", fname);
+				error(none,mess);
+         }
+         else if (frc == file_bad)
 			{
 				(void)sprintf(mess,"Unable to read object from file %s", fname);
 				error(none,mess);
@@ -127,7 +133,6 @@ ReturnCode read_world_object(int mod, FILE** fp)
 			else
 			{
 				/* simm_printf(no,"Read object file %s\n", fname); */
-
 				mstrcpy(&obj->filename,fname);
 			}
 #else

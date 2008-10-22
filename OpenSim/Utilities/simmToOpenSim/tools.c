@@ -17,7 +17,6 @@
       finddistance     : computes distance between two points, spans ref frames
       get_path_between_frames   : finds the path betwen any two ref frames
       find_joint_between_frames : finds the joint spanning two ref frames
-      getmuscnumber    : returns a muscle's number, given its name
       findvelocity     : finds the velocity of a musculotendon unit
       evaluate         : finds the current value of a reference equation (dof)
       error            : handles error messages
@@ -294,14 +293,14 @@ double calc_muscle_tendon_velocity(int mod, int musc)
 
    evaluate_active_movingpoints(mod, muscl);
 
-   if (muscl->num_points < 2)
+   if (muscl->musclepoints->num_points < 2)
       return 0.0;
 
-   for (start = 0; start < muscl->num_points - 1; start++)
+   for (start = 0; start < muscl->musclepoints->num_points - 1; start++)
    {
       end = start + 1;
-      velocity += calc_muscle_segment_velocity(mod,musc,muscl->mp[start],
-                                               muscl->mp[end]);
+      velocity += calc_muscle_segment_velocity(mod,musc,muscl->musclepoints->mp[start],
+                                               muscl->musclepoints->mp[end]);
    }
 
    /* Normalize the velocity */
@@ -601,15 +600,28 @@ int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndCo
       checkGencoordRange(model[mod], genc, &value);
 
    model[mod]->gencform.option[genc].use_alternate_colors = no;
+   model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = no;
 #endif
+
 
    if (gc->clamped == yes)
 //   if ((gc->clamped == yes) && (solveLoopsAndConstraints == yes)) //added dkb apr 16 2003
    {
+      // if the value in the motion file for a clamped gencoord is outside the gencoord range,
+      // set the value to the closest range point
+      // DKB TODO: set some kind of flag, colour etc? to let user know what is happening
       if (value < gc->range.start)
+      {
+         //model[mod]->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
+         model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = yes; ///dkb jul 2008
 	      value = gc->range.start;
+      }
       else if (value > gc->range.end)
+      {
+     // model[mod]->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
+         model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = yes;
 	      value = gc->range.end;
+      }
    }
    else
    {
@@ -683,85 +695,90 @@ void set_gencoord_velocity(int mod, int genc, double value)
 
 void evaluate_orig_movingpoints(int mod, MuscleStruct *muscle)
 {
-   int i, funcnum;
+   int i, j, m, func;
    double value;
+   MusclePathStruct *path = muscle->musclepoints;
+
+
+   if (path->num_orig_points < 0)
+      return;
 
    // the original points
-   for (i = 0; i < *muscle->num_orig_points; i++)
+   for (i = 0; i < path->num_orig_points; i++)
    {
-      funcnum = muscle->mp_orig[i].funcnum[XX];
-      if (funcnum != -1)   // if is a function
+      func = path->mp_orig[i].fcn_index[XX];
+      if (func != INVALID_FUNCTION)   // if is a function
       {
-         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[XX]].value;
-         muscle->mp_orig[i].point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         // if the following line is not included, the muscle_editor crashes trying to display net_move          
-         muscle->mp_orig[i].old_point[XX] = muscle->mp_orig[i].point[XX];
+         value = model[mod]->gencoord[path->mp_orig[i].gencoord[XX]].value;
+         path->mp_orig[i].point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp_orig[i].ground_pt[XX] = muscle->mp_orig[i].point[XX];
 
-      funcnum = muscle->mp_orig[i].funcnum[YY];
-      if (funcnum != -1)
+      func = path->mp_orig[i].fcn_index[YY];
+      if (func != INVALID_FUNCTION)
       {
-         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[YY]].value;
-         muscle->mp_orig[i].point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         muscle->mp_orig[i].old_point[YY] = muscle->mp_orig[i].point[YY];
+         value = model[mod]->gencoord[path->mp_orig[i].gencoord[YY]].value;
+         path->mp_orig[i].point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp_orig[i].ground_pt[YY] = muscle->mp_orig[i].point[YY];
 
-      funcnum = muscle->mp_orig[i].funcnum[ZZ];
-      if (funcnum != -1)
+      func = path->mp_orig[i].fcn_index[ZZ];
+      if (func != INVALID_FUNCTION)
       {
-         value = model[mod]->gencoord[muscle->mp_orig[i].gencoord[ZZ]].value;
-         muscle->mp_orig[i].point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         muscle->mp_orig[i].old_point[ZZ] = muscle->mp_orig[i].point[ZZ];
+         value = model[mod]->gencoord[path->mp_orig[i].gencoord[ZZ]].value;
+         path->mp_orig[i].point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp_orig[i].ground_pt[ZZ] = muscle->mp_orig[i].point[ZZ];
+
+      path->mp_orig[i].ground_pt[XX] = path->mp_orig[i].point[XX];
+      path->mp_orig[i].ground_pt[YY] = path->mp_orig[i].point[YY];
+      path->mp_orig[i].ground_pt[ZZ] = path->mp_orig[i].point[ZZ];
+      convert(mod,path->mp_orig[i].ground_pt,path->mp_orig[i].segment, model[mod]->ground_segment);
+
    }
 
 }
 
 void evaluate_active_movingpoints(int mod, MuscleStruct *muscle)
 {
-   int i, funcnum;
+   int i, j, m, func;
    double value;
 
    // any other points
    // DKB TODO: check functions 
-   for (i = 0; i < muscle->num_points; i++)
+   if (muscle->musclepoints == NULL)
+      return;
+
+   for (i = 0; i < muscle->musclepoints->num_points; i++)
    {
-      funcnum = muscle->mp[i]->funcnum[XX];
-      if (funcnum != -1)
+      func = muscle->musclepoints->mp[i]->fcn_index[XX];
+      if (func != INVALID_FUNCTION)
       {
-         value = model[mod]->gencoord[muscle->mp[i]->gencoord[XX]].value;
-         muscle->mp[i]->point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         muscle->mp[i]->old_point[XX] = muscle->mp[i]->point[XX];
+         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[XX]].value;
+         muscle->musclepoints->mp[i]->point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp[i]->ground_pt[XX] = muscle->mp[i]->point[XX];
 
-      funcnum = muscle->mp[i]->funcnum[YY];
-      if (funcnum != -1)
+      func = muscle->musclepoints->mp[i]->fcn_index[YY];
+      if (func != INVALID_FUNCTION)
       {
-         value = model[mod]->gencoord[muscle->mp[i]->gencoord[YY]].value;
-         muscle->mp[i]->point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         muscle->mp[i]->old_point[YY] = muscle->mp[i]->point[YY];
+         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[YY]].value;
+         muscle->musclepoints->mp[i]->point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp[i]->ground_pt[YY] = muscle->mp[i]->point[YY];
 
-      funcnum = muscle->mp[i]->funcnum[ZZ];
-      if (funcnum != -1)
+      func = muscle->musclepoints->mp[i]->fcn_index[ZZ];
+      if (func != INVALID_FUNCTION)
       {
-         value = model[mod]->gencoord[muscle->mp[i]->gencoord[ZZ]].value;
-         muscle->mp[i]->point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-         muscle->mp[i]->old_point[ZZ] = muscle->mp[i]->point[ZZ];
+         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[ZZ]].value;
+         muscle->musclepoints->mp[i]->point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
       }
-      muscle->mp[i]->ground_pt[ZZ] = muscle->mp[i]->point[ZZ];
+      muscle->musclepoints->mp[i]->ground_pt[XX] = muscle->musclepoints->mp[i]->point[XX];
+      muscle->musclepoints->mp[i]->ground_pt[YY] = muscle->musclepoints->mp[i]->point[YY];
+      muscle->musclepoints->mp[i]->ground_pt[ZZ] = muscle->musclepoints->mp[i]->point[ZZ];
+      convert(mod,muscle->musclepoints->mp[i]->ground_pt,muscle->musclepoints->mp[i]->segment, model[mod]->ground_segment);
    }
 
 }
 
 void evaluate_ligament_movingpoints(int mod)
 {
-   int i, j, m, funcnum;
+   int i, j, m, func;
    double value;
    ModelStruct* ms = model[mod];
 
@@ -771,30 +788,27 @@ void evaluate_ligament_movingpoints(int mod)
       {
          for (j = 0; j < ms->ligament[m].line[i].numpoints; j++)
          {
-            funcnum = ms->ligament[m].line[i].pt[j].funcnum[XX];
-            if (funcnum != -1)
+            func = ms->ligament[m].line[i].pt[j].fcn_index[XX];
+            if (func != INVALID_FUNCTION)
             {
                value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[XX]].value;
-               ms->ligament[m].line[i].pt[j].point[XX] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-               //ms->ligament[m].line[i].pt[j].old_pt[XX] = ms->ligament[m].line[i].pt[j].point[XX];
+               ms->ligament[m].line[i].pt[j].point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
             }
             ms->ligament[m].line[i].pt[j].ground_pt[XX] = ms->ligament[m].line[i].pt[j].point[XX];
 
-            funcnum = ms->ligament[m].line[i].pt[j].funcnum[YY];
-            if (funcnum != -1)
+            func = ms->ligament[m].line[i].pt[j].fcn_index[YY];
+            if (func != INVALID_FUNCTION)
             {
                value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[YY]].value;
-               ms->ligament[m].line[i].pt[j].point[YY] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-               //ms->ligament[m].line[i].pt[j].old_pt[YY] = ms->ligament[m].line[i].pt[j].point[YY];
+               ms->ligament[m].line[i].pt[j].point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
             }
             ms->ligament[m].line[i].pt[j].ground_pt[YY] = ms->ligament[m].line[i].pt[j].point[YY];
 
-            funcnum = ms->ligament[m].line[i].pt[j].funcnum[ZZ];
-            if (funcnum != -1)
+            func = ms->ligament[m].line[i].pt[j].fcn_index[ZZ];
+            if (func != INVALID_FUNCTION)
             {
                value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[ZZ]].value;
-               ms->ligament[m].line[i].pt[j].point[ZZ] = interpolate_spline(value, &model[mod]->function[funcnum], zeroth, 1.0, 1.0);
-               //ms->ligament[m].line[i].pt[j].old_pt[ZZ] = ms->ligament[m].line[i].pt[j].point[ZZ];
+               ms->ligament[m].line[i].pt[j].point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
             }
             ms->ligament[m].line[i].pt[j].ground_pt[ZZ] = ms->ligament[m].line[i].pt[j].point[ZZ];
          }
@@ -2206,11 +2220,11 @@ PlotStruct* get_associated_plot (int i)
      file by first checking the current directory, and then checking the
      standard SIMM directory for bones.
 ---------------------------------------------------------------------------- */
-ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct* ms)
+FileReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct* ms)
 {
    int i;
    char jointpath[1024], fullpath[1024], tmppath[1024];
-   ReturnCode rc = code_bad;
+   FileReturnCode rc;
 
    /* (0) strip the joint file name from ms->jointfilename to get just
     * the path to the joint file.
@@ -2240,70 +2254,61 @@ ReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct
     * If this is an absolute path, use it as is. If it is a relative
     * path, it is assumed to be relative to the joint file's folder.
     */
-   if (rc == code_bad && ms && ms->bonepathname)
+   if (ms && ms->bonepathname)
    {
       if (ms->jointfilename)
          build_full_path(jointpath, ms->bonepathname, tmppath);
       else
          build_full_path(NULL, ms->bonepathname, tmppath);
       build_full_path(tmppath, filename, fullpath);
-
       rc = read_polyhedron(ph, fullpath, yes);
+      if (rc == file_good || rc == file_bad)
+         return rc;
    }
-   
+
+#ifdef WIN32
    /* (2) Next check the folder "bones" under the joint file's
     * folder (PC only).
     */
-   if (rc == code_bad)
-   {
-#ifdef WIN32
-      if (ms->jointfilename)
-         strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones");
-      else
-         strcpy(tmppath, "bones");
-      strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
-   
-      rc = read_polyhedron(ph, fullpath, yes);
-#else
-      rc = code_bad;
-#endif
-   }
+   if (ms->jointfilename)
+      strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones");
+   else
+      strcpy(tmppath, "bones");
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   rc = read_polyhedron(ph, fullpath, yes);
+   if (rc == file_good || rc == file_bad)
+      return rc;
 
    /* (3) Next check the joint file's folder itself (PC only). */
-   if (rc == code_bad)
-   {
-#ifdef WIN32
-      if (ms->jointfilename)
-         strcpy(tmppath, jointpath);
-      else
-         strcpy(tmppath, ".");
-      strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
-   
-      rc = read_polyhedron(ph, fullpath, yes);
-#else
-      rc = code_bad;
+   if (ms->jointfilename)
+      strcpy(tmppath, jointpath);
+   else
+      strcpy(tmppath, ".");
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   rc = read_polyhedron(ph, fullpath, yes);
+   if (rc == file_good || rc == file_bad)
+      return rc;
 #endif
-   }
 
 #ifndef ENGINE
    /* (4) check the global bones folder. */
-   if (rc == code_bad)
-   {
-      build_full_path(root.pref.bonefilepath, filename, fullpath);
-      
-      rc = read_polyhedron(ph, fullpath, yes);
-   }
+   build_full_path(root.pref.bonefilepath, filename, fullpath);
+   rc = read_polyhedron(ph, fullpath, yes);
+   if (rc == file_good || rc == file_bad)
+      return rc;
 
    /* (5) check the mocap bones folder. */
-   if (rc == code_bad)
-   {
-      strcat3(tmppath, root.mocap_dir, DIR_SEP_STRING, "bones");
-      strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
-      rc = read_polyhedron(ph, fullpath, yes);
-   }
+   strcat3(tmppath, root.mocap_dir, DIR_SEP_STRING, "bones");
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   rc = read_polyhedron(ph, fullpath, yes);
+   if (rc == file_good || rc == file_bad)
+      return rc;
 #endif
 
-   return rc;
+   /* You only make it to here if the file was not found in
+    * any of the folders.
+    */
+   return file_missing;
 }
 
 
@@ -2588,23 +2593,15 @@ void draw_polynomial(double x1, double y1, double x2, double b, double c,
  */ 
 int findUnusedFunctionNumber(int mod)
 {
-   int i, funcnum;
-
-   for (i=0; i<model[mod]->func_array_size; i++)
-      if (model[mod]->function[i].used == no)
-	      break;
-
-   if (i == model[mod]->func_array_size)
-      funcnum = enter_function(mod,-1, yes);
-   else
-      funcnum = i;
+   int funcnum = enter_function(mod, findHighestUserFuncNum(mod)+1, yes);
 
    if (funcnum == -1)
    {
       sprintf(buffer, "findUnusedFunctionNumber: Could not allocate a new function.\n");
       error(none, buffer);
    }
-   return(funcnum);
+
+   return funcnum;
 }
 
 /* return the highest user function number */
@@ -2888,4 +2885,35 @@ RTConnection is_model_realtime(ModelStruct* ms)
    {
       return ms->realtimeState;
    }
+}
+
+int getMusclePointSegment(MuscleStruct *muscle, int pointIndex)
+{
+   if (muscle == NULL || muscle->musclepoints == NULL)
+      return -1;
+   if (pointIndex < 0 || pointIndex >= muscle->musclepoints->num_orig_points)
+      return -1;
+   if (muscle->musclepoints->mp_orig == NULL)
+      return -1;
+   return muscle->musclepoints->mp_orig[pointIndex].segment;
+}
+
+void setMusclePointSegment(MuscleStruct *muscle, int pointIndex, int newSeg)
+{
+   if (muscle == NULL || muscle->musclepoints == NULL)
+      return;
+   if (pointIndex < 0 || pointIndex >= muscle->musclepoints->num_orig_points)
+      return;
+   if (muscle->musclepoints->mp_orig == NULL)
+      return;
+   muscle->musclepoints->mp_orig[pointIndex].segment = newSeg;
+}
+
+int makeDir(const char aDirName[])
+{
+#ifdef __linux__
+	return mkdir(aDirName,S_IRWXU);
+#else
+	return _mkdir(aDirName);
+#endif
 }

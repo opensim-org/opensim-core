@@ -31,6 +31,8 @@
 *******************************************************************************/
 
 #include <ctype.h>
+#include <direct.h>
+#include <fcntl.h>
 
 #include "universal.h"
 
@@ -44,7 +46,6 @@
    #include <sys/stat.h>
    #include <sys/time.h>
 #endif
-#include <fcntl.h>
 
 #include "globals.h"
 #include "functions.h"
@@ -352,18 +353,10 @@ ReturnCode add_model(char jointfilename[], char musclefilename[],
    make_modelpopups(ms);
 
    /* Now that you know how many of each thing there are (segments, muscle groups, etc.),
-    * realloc the arrays to free unused space. Don't realloc the muscle and function
-    * lists (and world objects) since the user can add more of them interactively.
+    * realloc the arrays to free unused space. Don't realloc the muscle lists, function lists,
+    * muscle groups, and world objects since the user can add more of them interactively.
     * rc should always be code_fine since you're reallocing to a smaller size.
     */
-  /* if (ms->numgroups > 0)
-   {
-      ms->muscgroup = (MuscleGroup*)simm_realloc(ms->muscgroup, ms->numgroups*sizeof(MuscleGroup),&rc);
-   }
-   else
-   {
-      FREE_IFNOTNULL(ms->muscgroup);
-   } */ //don't free since can be added
    if (ms->numsegments > 0)
    {
       ms->segment = (SegmentStruct*)simm_realloc(ms->segment, ms->numsegments*sizeof(SegmentStruct),&rc);
@@ -1092,79 +1085,6 @@ void model_deletion_confirm(SBoolean answer)
    if (answer == yes)
       delete_model(model_to_confirm);
 
-}
-
-void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
-{
-
-   int i, j, k;
-   SBoolean used_in_model;
-
-   ms->numunusedgencoords = 0;
-   for (i=0; i<ms->numgencoords; i++)
-   {
-      used_in_model = no;
-
-      for (j=0; j<ms->numjoints; j++)
-      {
-	      for (k=0; k<6; k++)
-         {
-	         if (ms->joint[j].dofs[k].type == constant_dof)
-	            continue;
-	         if (ms->joint[j].dofs[k].gencoord == i)
-	         {
-	            used_in_model = yes;
-	            break;
-	         }
-	      }
-         if (used_in_model == yes)
-         {
-            /* If the gencoord was previously unused, turn its slider on */
-            if (change_visibility == yes && ms->gencoord[i].used_in_model == no)
-            {
-               ms->gencform.option[i].active = yes;
-               ms->gencslider.sl[i].visible = yes;
-               ms->gc_chpanel.checkbox[i].active = yes;
-               ms->gc_lockPanel.checkbox[i].active = yes;
-               ms->gencform.option[i].visible = yes;
-               ms->gencslider.sl[i].visible = yes;
-               ms->gc_chpanel.checkbox[i].visible = yes;
-               ms->gc_lockPanel.checkbox[i].visible = yes;
-//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
-               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
-            }
-            ms->gencoord[i].used_in_model = yes;
-            break;
-         }
-      }
-      if (used_in_model == no)
-      {
-         ms->numunusedgencoords++;
-         if (change_visibility)
-         {
-            /* If the gencoord was previously used, turn its slider off */
-            if (ms->gencoord[i].used_in_model == yes)
-            {
-               ms->gencform.option[i].active = no;
-               ms->gencslider.sl[i].visible = no;
-               ms->gc_chpanel.checkbox[i].active = no;
-               ms->gc_lockPanel.checkbox[i].active = no;
-               ms->gencform.option[i].visible = no;
-               ms->gencslider.sl[i].visible = no;
-               ms->gc_chpanel.checkbox[i].visible = no;
-               ms->gc_lockPanel.checkbox[i].visible = no;
-//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
-               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
-            }
-         }
-         else
-         {
-            (void)sprintf(errorbuffer,"Gencoord %s not used in any joint.", ms->gencoord[i].name);
-            error(none,errorbuffer);
-         }
-         ms->gencoord[i].used_in_model = no;
-      }
-   }
 }
 #endif // OPENSIM_CONVERTER
 
@@ -1907,7 +1827,6 @@ public ReturnCode open_motion_analysis_file(
 
 #endif // ! OPENSIM_CONVERTER
 
-void readTRBHeader(const char trcFile[], smTRCHeaderInfo *trcInfo, int *size);
 
 public ReturnCode open_opensim_trb_file(glutOpenSimConverterOptions* options)
 {
@@ -2587,11 +2506,7 @@ ReturnCode check_definitions(ModelStruct* ms)
    }
 #endif
 
-#ifndef ENGINE
-#if ! OPENSIM_CONVERTER
    check_gencoord_usage(ms,no);
-#endif
-#endif
 
    for (i=0; i<ms->dis.mat.num_materials; i++)
    {
@@ -2683,6 +2598,88 @@ ReturnCode check_definitions(ModelStruct* ms)
       return code_bad;
 
    return code_fine;
+}
+
+
+void check_gencoord_usage(ModelStruct* ms, SBoolean change_visibility)
+{
+
+   int i, j, k;
+   SBoolean used_in_model;
+
+   ms->numunusedgencoords = 0;
+   for (i=0; i<ms->numgencoords; i++)
+   {
+      used_in_model = no;
+
+      for (j=0; j<ms->numjoints; j++)
+      {
+	      for (k=0; k<6; k++)
+         {
+	         if (ms->joint[j].dofs[k].type == constant_dof)
+	            continue;
+	         if (ms->joint[j].dofs[k].gencoord == i)
+	         {
+	            used_in_model = yes;
+	            break;
+	         }
+	      }
+         if (used_in_model == yes)
+         {
+            /* If the gencoord was previously unused, turn its slider on */
+            if (change_visibility == yes && ms->gencoord[i].used_in_model == no)
+            {
+               ms->gencform.option[i].active = yes;
+               ms->gencslider.sl[i].visible = yes;
+               ms->gc_chpanel.checkbox[i].active = yes;
+               ms->gc_lockPanel.checkbox[i].active = yes;
+               ms->gencform.option[i].visible = yes;
+               ms->gencslider.sl[i].visible = yes;
+               ms->gc_chpanel.checkbox[i].visible = yes;
+               ms->gc_lockPanel.checkbox[i].visible = yes;
+#ifndef ENGINE
+#if ! OPENSIM_CONVERTER
+//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
+#endif
+#endif
+            }
+            ms->gencoord[i].used_in_model = yes;
+            break;
+         }
+      }
+      if (used_in_model == no)
+      {
+         ms->numunusedgencoords++;
+         if (change_visibility)
+         {
+            /* If the gencoord was previously used, turn its slider off */
+            if (ms->gencoord[i].used_in_model == yes)
+            {
+               ms->gencform.option[i].active = no;
+               ms->gencslider.sl[i].visible = no;
+               ms->gc_chpanel.checkbox[i].active = no;
+               ms->gc_lockPanel.checkbox[i].active = no;
+               ms->gencform.option[i].visible = no;
+               ms->gencslider.sl[i].visible = no;
+               ms->gc_chpanel.checkbox[i].visible = no;
+               ms->gc_lockPanel.checkbox[i].visible = no;
+#ifndef ENGINE
+#if ! OPENSIM_CONVERTER
+//changed Feb 2008 - dkb               make_and_queue_simm_event(MODEL_CHANGED,(void*)ms,ZERO,ZERO);
+               make_and_queue_simm_event(GENCOORD_CHANGED,(void*)ms,ZERO,ZERO);
+#endif
+#endif
+            }
+         }
+         else
+         {
+            (void)sprintf(errorbuffer,"Gencoord %s not used in any joint.", ms->gencoord[i].name);
+            error(none,errorbuffer);
+         }
+         ms->gencoord[i].used_in_model = no;
+      }
+   }
 }
 
 
@@ -2788,7 +2785,7 @@ ReturnCode open_model_archive(char archiveFilename[], int* modelIndex)
    // folder, so SIMM will find the motion files. After loading
    // the model, it should be set back to whatever it was (which
    // should be the folder containing the archive file.
-   getcwd(cwdSave, CHARBUFFER);
+   _getcwd(cwdSave, CHARBUFFER);
    chdir(folder);
 
    sprintf(buffer, "Extracting model from archive %s...", archiveFilename);

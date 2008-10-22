@@ -224,13 +224,22 @@ static char* parse_string(char str_buffer[], VariableType var_type, void* dest_v
 
 FileType check_file_type(char filename[])
 {
-
    int fpb, fkb, len;
    char fkey[CHARBUFFER];
    FILE* fpa;
    FileType ft=unknown;
 
-	/* Check suffix to see if it's a Wavefront (.obj) file. */
+   /* First try to open the file. */
+#ifdef WIN32
+   if ((fpb = simm_open(filename, O_RDONLY | O_BINARY | O_RAW)) == -1)
+#else
+   if ((fpb = simm_open(filename, O_RDONLY)) == -1)
+#endif
+   {
+      return file_not_found;
+   }
+
+	/* Check suffix to see if it's a Wavefront .obj file. */
 	len = strlen(filename);
 	if (len > 4)
 	{
@@ -238,34 +247,26 @@ FileType check_file_type(char filename[])
 			return wavefront;
 	}
 
-#ifdef WIN32
-   if ((fpb = simm_open(filename,O_RDONLY | O_BINARY | O_RAW)) == -1)
-#else
-   if ((fpb = simm_open(filename,O_RDONLY)) == -1)
-#endif
-   {
-      return file_not_found;
-   }
+   /* The file exists and it's not a Wavefront .obj, so
+    * read from it to see if it's a binary SIMM bone file.
+    */
+   read_binary(fpb, (char*)&fkb, sizeof(int));
+   if (fkb == filekey)
+	   ft = binary;
    else
-   {
-      read_binary(fpb,(char*)&fkb,sizeof(int));
-      if (fkb == filekey)
-	      ft = binary;
-      else
-	      ft = unknown;
-      close(fpb);
-   }
+	   ft = unknown;
+   close(fpb);
 
    if (ft == unknown)
    {
-      if ((fpa = simm_fopen(filename,"r")) == NULL)
+      if ((fpa = simm_fopen(filename, "r")) == NULL)
       {
 	      return file_not_found;
       }
       else
       {
-	      fscanf(fpa,"%s", fkey);
-	      if (STRINGS_ARE_EQUAL(fkey,new_ascii_label))
+	      fscanf(fpa, "%s", fkey);
+	      if (STRINGS_ARE_EQUAL(fkey, new_ascii_label))
 	         ft = new_ascii;
 	      else
 	         ft = old_ascii;
@@ -274,13 +275,11 @@ FileType check_file_type(char filename[])
    }
 
    return ft;
-
 }
 
 
-ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
+FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
 {
-
    int start, end, len, num_out;
    FileType input_file_type;
    NormOptions opt;
@@ -302,7 +301,7 @@ ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_n
    len = end - start;
    ph->name = (char *)simm_malloc((len+1)*sizeof(char));
    if (ph->name == NULL)
-      return code_bad;
+      return file_missing;
 
    (void)strncpy(ph->name,&filename[start],len);
    ph->name[len] = STRING_TERMINATOR;
@@ -311,49 +310,49 @@ ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_n
 
    if (input_file_type == file_not_found)
    {
-      return code_bad;
+      return file_missing;
    }
    if (input_file_type == binary)
    {
       code = read_binary_file(ph,filename);
-      if (check_polyhedron(ph) == code_bad)
+      if (code == code_bad || check_polyhedron(ph) == code_bad)
       {
 	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
-	      return code_bad;
+	      return file_bad;
       }
       postread_init_polyhedron(ph,no);
    }
    else if (input_file_type == new_ascii)
    {
       code = read_ascii_file(ph,filename);
-      if (check_polyhedron(ph) == code_bad)
+      if (code == code_bad || check_polyhedron(ph) == code_bad)
       {
 	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
-	      return code_bad;
+	      return file_bad;
       }
       postread_init_polyhedron(ph,no);
    }
 	else if (input_file_type == wavefront)
 	{
       code = read_wavefront_file(ph,filename);
-      if (check_polyhedron(ph) == code_bad)
+      if (code == code_bad || check_polyhedron(ph) == code_bad)
       {
 	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
-	      return code_bad;
+	      return file_bad;
       }
-      postread_init_polyhedron(ph,no);
+      postread_init_polyhedron(ph,yes);
 	}
    else /* input_file_type == old_ascii or unknown */
    {
       code = read_old_ascii_file(ph,filename);
-      if (check_polyhedron(ph) == code_bad)
+      if (code == code_bad || check_polyhedron(ph) == code_bad)
       {
 	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
-	      return code_bad;
+	      return file_bad;
       }
       postread_init_polyhedron(ph,no);
       if (run_norm == yes)
@@ -376,16 +375,14 @@ ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_n
          opt.reference_normal[2] = 0.0;
          norm(ph,&opt,&num_out,&ph_out);
          if (num_out == 0)
-            return code_bad;
+            return file_bad;
          free_polyhedron(ph, no, NULL);
          copy_polyhedron(&ph_out[0],ph);
       }
    }
 
-   return code;
-
+   return file_good;
 }
-
 
 
 ReturnCode read_binary_file(PolyhedronStruct* ph, char filename[])
@@ -640,7 +637,7 @@ ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
 
 ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 {
-   int num_normals = 0, v_count = 0, n_count = 0, p_count = 0;
+   int i, num_normals = 0, v_count = 0, n_count = 0, p_count = 0;
    FILE* fp;
 
    fp = simm_fopen(filename,"r");
@@ -672,6 +669,7 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 		(void)sprintf(errorbuffer,"Error: number of vertices (%d) not equal to number of vertex normals (%d) in file %s.",
 			ph->num_vertices, num_normals, filename);
       error(none,errorbuffer);
+      ph->num_vertices = ph->num_polygons = 0;
       return code_bad;
 	}
 
@@ -681,8 +679,15 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
    if (ph->vertex == NULL || ph->polygon == NULL)
    {
       fclose(fp);
+      ph->num_vertices = ph->num_polygons = 0;
       return code_bad;
    }
+
+   for (i=0; i<ph->num_vertices; i++)
+      preread_init_vertex(&ph->vertex[i], i);
+
+   for (i=0; i<ph->num_polygons; i++)
+      preread_init_polygon(&ph->polygon[i]);
 
 	/* Rewind file to beginning. */
 	rewind(fp);
@@ -691,7 +696,6 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 	{
 		if (STRINGS_ARE_EQUAL(buffer, "v"))
 		{
-			preread_init_vertex(&ph->vertex[v_count], v_count);
 			fscanf(fp, "%lg %lg %lg", &ph->vertex[v_count].coord[0],
 				&ph->vertex[v_count].coord[1], &ph->vertex[v_count].coord[2]);
 			v_count++;
@@ -708,7 +712,6 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 			ReturnCode rc;
 			char* line;
 
-			preread_init_polygon(&ph->polygon[p_count]);
 			read_line(&fp, buffer);
 			max_vertices = strlen(buffer);
 			ph->polygon[p_count].vertex_index = (int*)simm_malloc(max_vertices * sizeof(int));

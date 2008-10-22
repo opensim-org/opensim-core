@@ -41,8 +41,8 @@ void   recalc_xforms(WrapObject*);
 void   apply_xform_to_wrapobj(double factor);
 void   clear_we_xform_form();
 
-void   save_wrap_objects(int mod);
-void   restore_wrap_objects(int mod);
+void   save_all_wrap_objects(int mod);
+void   restore_all_wrap_objects(int mod);
 void   delete_wrap_object(ModelStruct*, int wrapobj, SBoolean queue_event);
 
 SBoolean query_muscle_wrap_association(MuscleStruct*, int);

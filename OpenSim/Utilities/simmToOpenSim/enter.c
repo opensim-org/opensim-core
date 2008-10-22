@@ -68,14 +68,14 @@ int enter_gencoord(int mod, char username[], SBoolean permission_to_add)
    ReturnCode rc;
    
    if (username == NULL)
-      return -1;
+      return INVALID_GENCOORD;
    
    for (i = 0; i < model[mod]->numgencoords; i++)
       if (STRINGS_ARE_EQUAL(username,model[mod]->gencoord[i].name))
          return i;
 
    if (permission_to_add == no)
-      return -1;
+      return INVALID_GENCOORD;
 
    new_gc = model[mod]->numgencoords;
 
@@ -87,7 +87,7 @@ int enter_gencoord(int mod, char username[], SBoolean permission_to_add)
       if (rc == code_bad)
       {
          model[mod]->genc_array_size -= GENC_ARRAY_INCREMENT;
-         return -1;
+         return INVALID_GENCOORD;
       }
    }
 
@@ -112,7 +112,7 @@ int enter_function(int mod, int usernum, SBoolean permission_to_add)
    int i, new_func, old_count;
    ReturnCode rc1, rc2;
 
-   if (usernum != -1)
+   if (usernum != UNDEFINED_USERFUNCNUM)
    {
       for (i=0; i<model[mod]->func_array_size; i++)
          if (usernum == model[mod]->function[i].usernum)
@@ -120,7 +120,7 @@ int enter_function(int mod, int usernum, SBoolean permission_to_add)
    }
 
    if (permission_to_add == no)
-      return -1;
+      return INVALID_FUNCTION;
 
    for (i=0; i<model[mod]->func_array_size; i++)
       if (model[mod]->function[i].defined == no && model[mod]->function[i].used == no)
@@ -138,22 +138,24 @@ int enter_function(int mod, int usernum, SBoolean permission_to_add)
       if (rc1 == code_bad || rc2 == code_bad)
       {
          model[mod]->func_array_size = old_count;
-         return -1;
+         return INVALID_FUNCTION;
       }
 
       for (i=old_count; i<model[mod]->func_array_size; i++)
       {
          model[mod]->function[i].defined = no;
          model[mod]->function[i].used = no;
-         model[mod]->function[i].usernum = -1;
+         model[mod]->function[i].usernum = UNDEFINED_USERFUNCNUM;
          model[mod]->save.function[i].defined = no;
          model[mod]->save.function[i].used = no;
-         model[mod]->save.function[i].usernum = -1;
+         model[mod]->save.function[i].usernum = UNDEFINED_USERFUNCNUM;
       }
    }
 
    model[mod]->function[new_func].usernum = usernum;
    model[mod]->function[new_func].used = yes;
+   model[mod]->function[new_func].numpoints = 0;
+   model[mod]->function[new_func].coefficient_array_size = 0;
 
    return new_func;
 }
@@ -167,7 +169,7 @@ ReturnCode load_function(int mod, int usernum, SplineFunction* func)
 
    fnum = enter_function(mod, usernum, yes);
 
-   if (fnum == -1)
+   if (fnum == INVALID_FUNCTION)
       return code_bad;
 
    /* If the function has already been defined, print a warning,

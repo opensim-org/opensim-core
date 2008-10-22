@@ -29,14 +29,11 @@
 
 *******************************************************************************/
 
-#ifdef __MWERKS__
-   #include <unistd.h>
-#endif
+#include <direct.h>
 
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
-
 #include "wefunctions.h"
 
 
@@ -298,8 +295,7 @@ ReturnCode init_model(ModelStruct* ms)
    ms->numworldobjects = 0;
    ms->numclosedloops = 0;
    ms->numligaments = 0;
-//   ms->dis_muscle_array_size = 0;//dkb = MUSCLE_ARRAY_INCREMENT;
-   ms->muscle_array_size = MUSCLE_ARRAY_INCREMENT;//0;//dkbMUSCLE_ARRAY_INCREMENT;
+   ms->muscle_array_size = MUSCLE_ARRAY_INCREMENT;
    ms->ligament_array_size = MUSCLE_ARRAY_INCREMENT;
    ms->muscgroup_array_size = MUSCGROUP_ARRAY_INCREMENT;
    ms->seggroup_array_size = 0;
@@ -367,20 +363,16 @@ ReturnCode init_model(ModelStruct* ms)
    ms->muscgroup = (MuscleGroup*)simm_malloc(ms->muscgroup_array_size*sizeof(MuscleGroup));
    ms->seggroup = NULL;
    ms->gencgroup = NULL;
-   ms->gencoord = (GeneralizedCoord*)simm_malloc(ms->genc_array_size*
-      sizeof(GeneralizedCoord));
-#if 1
+   ms->gencoord = (GeneralizedCoord*)simm_malloc(ms->genc_array_size*sizeof(GeneralizedCoord));
+
    ms->muscle = (MuscleStruct*)simm_malloc(ms->muscle_array_size*sizeof(MuscleStruct));
-   //dkb MUSCLE_ARRAY_SIZE
-#else
-   ms->muscle = NULL;
-#endif
+
    ms->ligament = (LigamentStruct*)simm_malloc(ms->ligament_array_size*sizeof(LigamentStruct));
 
    ms->function = (SplineFunction*)simm_malloc(ms->func_array_size*sizeof(SplineFunction));
 
-   ms->save.function = (SplineFunction*)simm_malloc(ms->func_array_size*
-      sizeof(SplineFunction));
+   ms->save.function = (SplineFunction*)simm_malloc(ms->func_array_size*sizeof(SplineFunction));
+
    ms->worldobj = (WorldObject*)simm_malloc(ms->world_array_size*sizeof(WorldObject));
 
    if (ms->joint == NULL || ms->segment == NULL || ms->muscgroup == NULL ||
@@ -450,19 +442,23 @@ ReturnCode init_model(ModelStruct* ms)
    {
       ms->function[i].defined = no;
       ms->function[i].used = no;
-      ms->function[i].usernum = -1;
+      ms->function[i].usernum = UNDEFINED_USERFUNCNUM;
       ms->save.function[i].defined = no;
       ms->save.function[i].used = no;
-      ms->save.function[i].usernum = -1;
+      ms->save.function[i].usernum = UNDEFINED_USERFUNCNUM;
    }
 
 #ifndef ENGINE
    nullify_muscle(&ms->save.default_muscle);
 #endif
-   ms->save.numsavedmuscs = 0;
    ms->save.numsavedjnts = 0;
    ms->save.numsavedgencs = 0;
    ms->save.numsavedbones = 0;
+
+   ms->save.numsavedmuscs = 0;
+   ms->save.numsavedpaths = 0;
+   ms->save.muscle = NULL;
+   ms->save.musclepath = NULL;
 
    init_materials(ms);
 
@@ -855,74 +851,125 @@ ReturnCode initplot(int plotnum)
  * passive_force_len_curve, and force_vel_curve.
  */
 
-ReturnCode init_muscle(int mod, int musc)
+ReturnCode init_muscle(int mod, int muscleIndex)
 {
-
    int i;
-   MuscleStruct* muscl;
+   MuscleStruct* muscle;
    MuscleStruct* dm;
 
-   muscl = &model[mod]->muscle[musc];
+   muscle = &model[mod]->muscle[muscleIndex];
    dm = &model[mod]->default_muscle;
 
-   muscl->name = dm->name;
-   muscl->display = dm->display;
-   muscl->output = yes;
-   muscl->selected = no;
-   muscl->has_wrapping_points = no;
-   muscl->has_force_points = no;
-   muscl->num_orig_points = dm->num_orig_points;
-   muscl->mp_orig_array_size = 0;
-   muscl->mp_orig = dm->mp_orig;
-   muscl->numgroups = dm->numgroups;
-   muscl->group = dm->group;
-   muscl->max_isometric_force = dm->max_isometric_force;
-   muscl->pennation_angle = dm->pennation_angle;
-   muscl->optimal_fiber_length = dm->optimal_fiber_length;
-   muscl->resting_tendon_length = dm->resting_tendon_length;
-   muscl->min_thickness = dm->min_thickness;
-   muscl->max_thickness = dm->max_thickness;
-   muscl->min_material = dm->min_material;
-   muscl->max_material = dm->max_material;
-   muscl->max_contraction_vel = dm->max_contraction_vel;
-   muscl->force_vel_curve = dm->force_vel_curve;
+   muscle->name = dm->name;
+   muscle->display = dm->display;
+   muscle->output = yes;
+   muscle->selected = no;
+   muscle->numgroups = dm->numgroups;
+   muscle->group = dm->group;
+   muscle->max_isometric_force = dm->max_isometric_force;
+   muscle->pennation_angle = dm->pennation_angle;
+   muscle->optimal_fiber_length = dm->optimal_fiber_length;
+   muscle->resting_tendon_length = dm->resting_tendon_length;
+   muscle->min_thickness = dm->min_thickness;
+   muscle->max_thickness = dm->max_thickness;
+   muscle->min_material = dm->min_material;
+   muscle->max_material = dm->max_material;
+   muscle->max_contraction_vel = dm->max_contraction_vel;
+   muscle->force_vel_curve = dm->force_vel_curve;
 
-   if (init_dynamic_param_array(model[mod],muscl) == code_bad)
+   if (init_dynamic_param_array(model[mod],muscle) == code_bad)
       return (code_bad);
 
-   for (i=0; i<muscl->num_dynamic_params; i++)
-      muscl->dynamic_params[i] = dm->dynamic_params[i];
+   for (i=0; i<muscle->num_dynamic_params; i++)
+      muscle->dynamic_params[i] = dm->dynamic_params[i];
 
-   muscl->muscle_model_index = dm->muscle_model_index;
-   muscl->excitation = dm->excitation;
-   muscl->excitation_format = dm->excitation_format;
-   muscl->excitation_index = 0;
-   muscl->excitation_abscissa = dm->excitation_abscissa;
+   muscle->muscle_model_index = dm->muscle_model_index;
+   muscle->excitation = dm->excitation;
+   muscle->excitation_format = dm->excitation_format;
+   muscle->excitation_index = 0;
+   muscle->excitation_abscissa = dm->excitation_abscissa;
 
-   muscl->nummomentarms = model[mod]->numgencoords;
-   muscl->momentarms = (double *)simm_malloc(muscl->nummomentarms*sizeof(double));
-   if (muscl->momentarms == NULL)
+   muscle->nummomentarms = model[mod]->numgencoords;
+   muscle->momentarms = (double *)simm_malloc(muscle->nummomentarms*sizeof(double));
+   if (muscle->momentarms == NULL)
       return (code_bad);
 
-   for (i=0; i<muscl->nummomentarms; i++)
-      muscl->momentarms[i] = 0.0;
-   muscl->activation = muscl->initial_activation = 1.0;
-   muscl->tendon_force_len_curve = dm->tendon_force_len_curve;
-   muscl->active_force_len_curve = dm->active_force_len_curve;
-   muscl->passive_force_len_curve = dm->passive_force_len_curve;
+   for (i=0; i<muscle->nummomentarms; i++)
+      muscle->momentarms[i] = 0.0;
+   muscle->activation = muscle->initial_activation = 1.0;
+   muscle->tendon_force_len_curve = dm->tendon_force_len_curve;
+   muscle->active_force_len_curve = dm->active_force_len_curve;
+   muscle->passive_force_len_curve = dm->passive_force_len_curve;
 
-   muscl->wrap_calced = no;
-   muscl->numWrapStructs = 0;
-   muscl->wrapStruct = NULL;
+   muscle->muscle_tendon_length = 0.0;
+   muscle->fiber_length = 0.0;        
+   muscle->tendon_length = 0.0;       
+   muscle->muscle_tendon_vel = 0.0;   
+   muscle->fiber_velocity = 0.0;      
+   muscle->tendon_velocity = 0.0;     
+   muscle->force = 0.0;               
+   muscle->generated_power = 0.0;     
+   muscle->applied_power = 0.0; 
+   muscle->excitation_level = 0.0;
+   muscle->dynamic_activation = 0.0;
+   muscle->energy = 0.0;
+
+   muscle->wrap_calced = no;
+   muscle->numWrapStructs = 0;
+   muscle->wrapStruct = NULL;
    
-   muscl->num_points = 0;
-   muscl->mp = NULL;
-   muscl->mp_array_size = 0;
+   muscle->musclepoints = NULL;
+
+   muscle->saved_copy = NULL;
 
    return (code_fine);
 
 }
 
+ReturnCode initMusclePath(MusclePathStruct *musclepoints)
+{
+   musclepoints->num_orig_points = 0;
+   musclepoints->mp_orig_array_size = MUSCLEPOINT_ARRAY_INCREMENT;
+   musclepoints->mp_orig = (MusclePoint *)simm_malloc(musclepoints->mp_orig_array_size * sizeof(MusclePoint));
+   if (musclepoints->mp_orig == NULL)
+      return code_bad;
+
+   musclepoints->num_points = 0;
+   musclepoints->mp_array_size = 0;
+   musclepoints->mp = NULL;
+
+   musclepoints->saved_copy = NULL;
+   
+   return code_fine;
+}
+
+
+
+ReturnCode init_musclepoint(MusclePoint *mp)
+{
+   int i;
+
+   mp->segment = -1;
+   mp->selected = no;
+   mp->isMovingPoint = no;
+   mp->isVia = no;
+   mp->is_auto_wrap_point = no;
+   mp->viaRange.genc = -1;
+   mp->viaRange.start = UNDEFINED_DOUBLE;
+   mp->viaRange.end = UNDEFINED_DOUBLE;
+   mp->num_wrap_pts = 0;
+   mp->wrap_pts = NULL;
+   mp->wrap_distance = 0;
+   for (i = 0; i < 3; i++)
+   {
+      mp->point[i] = ERROR_DOUBLE;
+      mp->ground_pt[i] = ERROR_DOUBLE;
+      mp->undeformed_point[i] = ERROR_DOUBLE;
+      mp->fcn_index[i] = INVALID_FUNCTION;
+      mp->gencoord[i] = INVALID_GENCOORD;
+   }
+   return code_fine;
+}
 
 /* INIT_GENCOORD: this routine initializes a gencoord structure before a gencoord is
  * read from an input file.
@@ -961,10 +1008,10 @@ void init_gencoord(GeneralizedCoord* gc)
    gc->restraint_func_num = -1;
    gc->restraint_sdcode_num = -1;
    gc->min_restraint_user_num = 0;
-   gc->min_restraint_func_num = -1;
+   gc->min_restraint_func_num = INVALID_FUNCTION;//-1;
    gc->min_restraint_sdcode_num = -1;
    gc->max_restraint_user_num = 0;
-   gc->max_restraint_func_num = -1;
+   gc->max_restraint_func_num = INVALID_FUNCTION;//-1;
    gc->max_restraint_sdcode_num = -1;
 
 #if INCLUDE_MOCAP_MODULE
@@ -1225,8 +1272,8 @@ void init_joint(ModelStruct* ms, JointStruct* jointstr)
    {
       jointstr->dofs[i].type = constant_dof;
       jointstr->dofs[i].value = 0.0;
-      jointstr->dofs[i].funcnum = -1;
-      jointstr->dofs[i].gencoord = -1;
+      jointstr->dofs[i].funcnum = INVALID_FUNCTION;//-1;
+      jointstr->dofs[i].gencoord = INVALID_GENCOORD;//-1;
       jointstr->dofs[i].sd.name = NULL;
       jointstr->dofs[i].sd.con_name = NULL;
       jointstr->dofs[i].sd.initial_value = 0.0;
@@ -1426,7 +1473,7 @@ void get_environment_vars(void)
    /* Get environment variables which contain the paths for certain SIMM files */
    char cwd_buf[CHARBUFFER];
 
-   getcwd(cwd_buf, sizeof(cwd_buf));
+   _getcwd(cwd_buf, sizeof(cwd_buf));
 
    if ((tmpptr = getenv("SIMMDIR")) == NULL)
       (void)strcpy(buffer,cwd_buf);
@@ -1625,7 +1672,7 @@ const char* get_simm_directory()
 
    if (simm_directory == NULL)
    {
-      getcwd(simm_buf, sizeof(simm_buf));
+      _getcwd(simm_buf, sizeof(simm_buf));
       simm_directory = simm_buf;
    }
    return simm_directory;

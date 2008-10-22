@@ -17,7 +17,8 @@
       free_plot        : frees a plot structure
       nullify_function : frees all space malloced for a function
       free_function    : frees the space malloced inside a function structure
-      free_muscs       : frees memory malloced for muscle structure elements
+      free_muscles       : frees memory malloced for muscle structure elements
+      free_musclepoints       : frees memory malloced for muscle point structure elements
       free_defmusc     : frees memory malloced for defaultmuscle elements
       free_and_nullify : frees memory and sets the pointer to NULL
       free_menu        : frees a menu structure
@@ -40,7 +41,9 @@
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
 #ifdef WIN32
+#if ! OPENSIM_BUILD
 extern ModelStruct* sMotionModel;
+#endif
 #endif
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
@@ -51,10 +54,11 @@ void free_model(int mod)
    if (model[mod] != NULL)
    {
 #ifdef WIN32
+#if ! OPENSIM_BUILD
       if (sMotionModel == model[mod])
          sMotionModel = NULL;
 #endif
-
+#endif
       freeModelStruct(model[mod]);
       model[mod] = NULL;
    }
@@ -179,7 +183,8 @@ void freeModelStruct(ModelStruct* ms)
    }
    FREE_IFNOTNULL(ms->dis.mat.materials);
 
-   free_muscs(ms->muscle,&ms->default_muscle,ms->nummuscles);
+   free_muscles(ms->muscle,&ms->default_muscle,ms->nummuscles);
+   //free_musclepoints(ms->musclepoints, ms->nummusclepoints)
 
    free_defmusc(&ms->default_muscle);
 #endif
@@ -191,7 +196,8 @@ void freeModelStruct(ModelStruct* ms)
    FREE_IFNOTNULL(ms->function);
 
 #ifndef ENGINE
-   free_muscs(ms->save.muscle,&ms->save.default_muscle,ms->save.numsavedmuscs);
+   free_savedmuscles(ms->save.muscle,&ms->save.default_muscle, ms->save.numsavedmuscs);
+   free_savedmusclepaths(ms->save.musclepath, ms->save.numsavedpaths);
    free_defmusc(&ms->save.default_muscle);
 
    for (i = 0; i < ms->num_motion_objects; i++)
@@ -279,10 +285,77 @@ void free_function(SplineFunction* func)
 
 }
 
+/* FREE_MUSCS: frees the muscle structure, but does NOT free the musclepoints or the saved_copy
+ * since these may be used elswhere */
 
-/* FREE_MUSCS: */
+void free_muscle(MuscleStruct *muscle, MuscleStruct* dm)
+{
+   int i, j;
 
-void free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num)
+   if (muscle == NULL)
+      return;
+
+   if (muscle->name != dm->name && muscle->name != NULL)
+      FREE_IFNOTNULL(muscle->name);
+
+   if (muscle->group != dm->group && muscle->group != NULL)
+      FREE_IFNOTNULL(muscle->group);
+   if (muscle->max_isometric_force != dm->max_isometric_force && muscle->max_isometric_force != NULL)
+      FREE_IFNOTNULL(muscle->max_isometric_force);
+   if (muscle->pennation_angle != dm->pennation_angle && muscle->pennation_angle != NULL)
+      FREE_IFNOTNULL(muscle->pennation_angle);
+   if (muscle->min_thickness != dm->min_thickness && muscle->min_thickness != NULL)
+      FREE_IFNOTNULL(muscle->min_thickness);
+   if (muscle->max_thickness != dm->max_thickness && muscle->max_thickness != NULL)
+      FREE_IFNOTNULL(muscle->max_thickness);
+   if (muscle->min_material != dm->min_material && muscle->min_material != NULL) //dkb apr 2008 
+      FREE_IFNOTNULL(muscle->min_material);
+   if (muscle->max_material != dm->max_material && muscle->max_material != NULL) //dkb apr 2008
+      FREE_IFNOTNULL(muscle->max_material);
+   if (muscle->max_contraction_vel != dm->max_contraction_vel && muscle->max_contraction_vel != NULL)
+      FREE_IFNOTNULL(muscle->max_contraction_vel);
+   if (muscle->force_vel_curve != dm->force_vel_curve)
+      nullify_function(muscle->force_vel_curve, yes);
+   if (muscle->optimal_fiber_length != dm->optimal_fiber_length && muscle->optimal_fiber_length != NULL)
+      FREE_IFNOTNULL(muscle->optimal_fiber_length);
+   if (muscle->resting_tendon_length != dm->resting_tendon_length && muscle->resting_tendon_length != NULL)
+      FREE_IFNOTNULL(muscle->resting_tendon_length);
+   if (muscle->momentarms != dm->momentarms && muscle->momentarms != NULL)
+      FREE_IFNOTNULL(muscle->momentarms);
+   if (muscle->active_force_len_curve != dm->active_force_len_curve)
+      nullify_function(muscle->active_force_len_curve, yes);
+   if (muscle->passive_force_len_curve != dm->passive_force_len_curve)
+      nullify_function(muscle->passive_force_len_curve, yes);
+   if (muscle->tendon_force_len_curve != dm->tendon_force_len_curve)
+      nullify_function(muscle->tendon_force_len_curve, yes);
+   if (muscle->wrapStruct)
+   {
+      for (j = 0; j < muscle->numWrapStructs; j++)
+      {
+         FREE_IFNOTNULL(muscle->wrapStruct[j]->mp_wrap[0].wrap_pts);
+         FREE_IFNOTNULL(muscle->wrapStruct[j]->mp_wrap[1].wrap_pts);
+         FREE_IFNOTNULL(muscle->wrapStruct[j]);
+      }
+      FREE_IFNOTNULL(muscle->wrapStruct);
+   }
+   if (muscle->muscle_model_index != dm->muscle_model_index && muscle->muscle_model_index != NULL) //dkb apr 2008 
+      FREE_IFNOTNULL(muscle->muscle_model_index);
+
+   if (muscle->dynamic_params)
+   {
+      for (j = 0; j < muscle->num_dynamic_params; j++)
+      {
+         if (muscle->dynamic_params[j] != dm->dynamic_params[j] && muscle->dynamic_params[j] != NULL)
+            FREE_IFNOTNULL(muscle->dynamic_params[j]);
+      }
+   }
+
+}
+
+/* FREE_MUSCS: frees the muscle structure, but does NOT free the musclepoints or the saved_copy
+ * since these may be used elswhere */
+
+void free_muscles(MuscleStruct musc[], MuscleStruct* dm, int num)
 {
 
    int i, j;
@@ -294,17 +367,140 @@ void free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num)
    {
       if (musc[i].name != dm->name && musc[i].name != NULL)
          FREE_IFNOTNULL(musc[i].name);
-      if (musc[i].num_orig_points != dm->num_orig_points && musc[i].num_orig_points != NULL)
+
+      if (musc[i].group != dm->group && musc[i].group != NULL)
+         FREE_IFNOTNULL(musc[i].group);
+      if (musc[i].max_isometric_force != dm->max_isometric_force && musc[i].max_isometric_force != NULL)
+         FREE_IFNOTNULL(musc[i].max_isometric_force);
+      if (musc[i].pennation_angle != dm->pennation_angle && musc[i].pennation_angle != NULL)
+         FREE_IFNOTNULL(musc[i].pennation_angle);
+      if (musc[i].min_thickness != dm->min_thickness && musc[i].min_thickness != NULL)
+         FREE_IFNOTNULL(musc[i].min_thickness);
+      if (musc[i].max_thickness != dm->max_thickness && musc[i].max_thickness != NULL)
+         FREE_IFNOTNULL(musc[i].max_thickness);
+      if (musc[i].min_material != dm->min_material && musc[i].min_material != NULL) //dkb apr 2008 
+         FREE_IFNOTNULL(musc[i].min_material);
+      if (musc[i].max_material != dm->max_material && musc[i].max_material != NULL) //dkb apr 2008
+         FREE_IFNOTNULL(musc[i].max_material);
+      if (musc[i].max_contraction_vel != dm->max_contraction_vel && musc[i].max_contraction_vel != NULL)
+         FREE_IFNOTNULL(musc[i].max_contraction_vel);
+      if (musc[i].force_vel_curve != dm->force_vel_curve)
+         nullify_function(musc[i].force_vel_curve, yes);
+      if (musc[i].optimal_fiber_length != dm->optimal_fiber_length && musc[i].optimal_fiber_length != NULL)
+         FREE_IFNOTNULL(musc[i].optimal_fiber_length);
+      if (musc[i].resting_tendon_length != dm->resting_tendon_length && musc[i].resting_tendon_length != NULL)
+         FREE_IFNOTNULL(musc[i].resting_tendon_length);
+      if (musc[i].momentarms != dm->momentarms && musc[i].momentarms != NULL)
+         FREE_IFNOTNULL(musc[i].momentarms);
+      if (musc[i].active_force_len_curve != dm->active_force_len_curve)
+         nullify_function(musc[i].active_force_len_curve, yes);
+      if (musc[i].passive_force_len_curve != dm->passive_force_len_curve)
+         nullify_function(musc[i].passive_force_len_curve, yes);
+      if (musc[i].tendon_force_len_curve != dm->tendon_force_len_curve)
+         nullify_function(musc[i].tendon_force_len_curve, yes);
+      if (musc[i].wrapStruct)
       {
-         for (j=0; j<*musc[i].num_orig_points; j++)
+         for (j = 0; j < musc[i].numWrapStructs; j++)
          {
-            if (musc[i].mp_orig[j].numranges > 0 && musc[i].mp_orig[j].ranges != NULL)
-               FREE_IFNOTNULL(musc[i].mp_orig[j].ranges);
+            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[0].wrap_pts);
+            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[1].wrap_pts);
+            FREE_IFNOTNULL(musc[i].wrapStruct[j]);
          }
-         FREE_IFNOTNULL(musc[i].num_orig_points);
+         FREE_IFNOTNULL(musc[i].wrapStruct);
       }
-      if (musc[i].mp_orig != dm->mp_orig && musc[i].mp_orig != NULL)
-         FREE_IFNOTNULL(musc[i].mp_orig);
+      if (musc[i].muscle_model_index != dm->muscle_model_index && musc[i].muscle_model_index != NULL) //dkb apr 2008 
+         FREE_IFNOTNULL(musc[i].muscle_model_index);
+
+      if (musc[i].dynamic_params)
+      {
+         for (j = 0; j < musc[i].num_dynamic_params; j++)
+         {
+            if (musc[i].dynamic_params[j] != dm->dynamic_params[j] && musc[i].dynamic_params[j] != NULL)
+               FREE_IFNOTNULL(musc[i].dynamic_params[j]);
+         }
+      }
+      // DKB to do - free dynamic parameters ??
+   }
+
+   FREE_IFNOTNULL(musc);
+}
+
+/* FREE_MUSCLEPOINTS: */
+
+void free_musclepoints(MusclePoint mp[], int num)
+{
+   int i, j;
+
+   if (mp == NULL)
+      return;
+
+/*   for (i=0; i<num; i++)
+   {
+      if (mp[i].num_orig_points != NULL)
+      {
+         for (j=0; j<*mp[i].num_orig_points; j++)
+         {
+            if (mp[i].musclepoints->mp_orig[j].numranges > 0 && mp[i].musclepoints->mp_orig[j].ranges != NULL)
+               FREE_IFNOTNULL(mp[i].musclepoints->mp_orig[j].ranges);
+         }
+         FREE_IFNOTNULL(mp[i].num_orig_points);
+      }
+      if (mp[i].musclepoints->mp_orig != NULL)
+         FREE_IFNOTNULL(mp[i].musclepoints->mp_orig);
+
+   }
+*/
+   FREE_IFNOTNULL(mp);
+}
+
+
+
+/* FREE_DEFMUSC: */
+
+void free_defmusc(MuscleStruct* dm)
+{
+
+   int i;
+
+   free_and_nullify((void**)&dm->name);
+   free_and_nullify((void**)&dm->group);
+   free_and_nullify((void**)&dm->max_isometric_force);
+   free_and_nullify((void**)&dm->pennation_angle);
+   free_and_nullify((void**)&dm->min_thickness);
+   free_and_nullify((void**)&dm->max_thickness);
+   free_and_nullify((void**)&dm->min_material);//dm->min_material = NULL; // why not free and nullify??
+   free_and_nullify((void**)&dm->max_material);//dm->max_material = NULL;
+   free_and_nullify((void**)&dm->muscle_model_index);
+   free_and_nullify((void**)&dm->max_contraction_vel);
+   nullify_function(dm->force_vel_curve, yes);
+   dm->force_vel_curve = NULL;
+
+   free_and_nullify((void**)&dm->optimal_fiber_length);
+   free_and_nullify((void**)&dm->resting_tendon_length);
+   free_and_nullify((void**)&dm->momentarms);
+
+   nullify_function(dm->active_force_len_curve, yes);
+   dm->active_force_len_curve = NULL;
+   nullify_function(dm->passive_force_len_curve, yes);
+   dm->passive_force_len_curve = NULL;
+   nullify_function(dm->tendon_force_len_curve, yes);
+   dm->tendon_force_len_curve = NULL;
+
+   // dkb to do free dynamic parameters, moment arms, excitation format
+}
+
+/* FREE_MUSCS: */
+void free_savedmuscles(SaveMuscle musc[], MuscleStruct* dm, int num)
+{
+   int i, j;
+
+   if (musc == NULL)
+      return;
+
+   for (i=0; i<num; i++)
+   {
+      if (musc[i].name != dm->name && musc[i].name != NULL)
+         FREE_IFNOTNULL(musc[i].name);
 
       if (musc[i].group != dm->group && musc[i].group != NULL)
          FREE_IFNOTNULL(musc[i].group);
@@ -337,9 +533,7 @@ void free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num)
          for (j = 0; j < musc[i].numWrapStructs; j++)
          {
             FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[0].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[0].ranges);
             FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[1].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[1].ranges);
             FREE_IFNOTNULL(musc[i].wrapStruct[j]);
          }
          FREE_IFNOTNULL(musc[i].wrapStruct);
@@ -349,47 +543,112 @@ void free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num)
    FREE_IFNOTNULL(musc);
 }
 
-
-
-/* FREE_DEFMUSC: */
-
-void free_defmusc(MuscleStruct* dm)
+/* FREE_MUSCS: */
+void free_savedmuscle(SaveMuscle *saved, MuscleStruct* dm)
 {
+   int i, j;
 
-   int i;
+   if (saved == NULL)
+      return;
 
-   free_and_nullify((void**)&dm->name);
-   if (dm->num_orig_points != NULL)
+   if (saved->name != dm->name && saved->name != NULL)
+      FREE_IFNOTNULL(saved->name);
+
+   if (saved->group != dm->group && saved->group != NULL)
+      FREE_IFNOTNULL(saved->group);
+   if (saved->max_isometric_force != dm->max_isometric_force && saved->max_isometric_force != NULL)
+      FREE_IFNOTNULL(saved->max_isometric_force);
+   if (saved->pennation_angle != dm->pennation_angle && saved->pennation_angle != NULL)
+      FREE_IFNOTNULL(saved->pennation_angle);
+   if (saved->min_thickness != dm->min_thickness && saved->min_thickness != NULL)
+      FREE_IFNOTNULL(saved->min_thickness);
+   if (saved->max_thickness != dm->max_thickness && saved->max_thickness != NULL)
+      FREE_IFNOTNULL(saved->max_thickness);
+   if (saved->max_contraction_vel != dm->max_contraction_vel && saved->max_contraction_vel != NULL)
+      FREE_IFNOTNULL(saved->max_contraction_vel);
+   if (saved->force_vel_curve != dm->force_vel_curve)
+      nullify_function(saved->force_vel_curve, yes);
+   if (saved->optimal_fiber_length != dm->optimal_fiber_length && saved->optimal_fiber_length != NULL)
+      FREE_IFNOTNULL(saved->optimal_fiber_length);
+   if (saved->resting_tendon_length != dm->resting_tendon_length && saved->resting_tendon_length != NULL)
+      FREE_IFNOTNULL(saved->resting_tendon_length);
+   if (saved->momentarms != dm->momentarms && saved->momentarms != NULL)
+      FREE_IFNOTNULL(saved->momentarms);
+   if (saved->active_force_len_curve != dm->active_force_len_curve)
+      nullify_function(saved->active_force_len_curve, yes);
+   if (saved->passive_force_len_curve != dm->passive_force_len_curve)
+      nullify_function(saved->passive_force_len_curve, yes);
+   if (saved->tendon_force_len_curve != dm->tendon_force_len_curve)
+      nullify_function(saved->tendon_force_len_curve, yes);
+   if (saved->wrapStruct)
    {
-      for (i=0; i<*dm->num_orig_points; i++)
-	 free_and_nullify((void**)&dm->mp_orig[i].ranges);
-      free_and_nullify((void**)&dm->num_orig_points);
+      for (j = 0; j < saved->numWrapStructs; j++)
+      {
+         FREE_IFNOTNULL(saved->wrapStruct[j]->mp_wrap[0].wrap_pts);
+         FREE_IFNOTNULL(saved->wrapStruct[j]->mp_wrap[1].wrap_pts);
+         FREE_IFNOTNULL(saved->wrapStruct[j]);
+      }
+      FREE_IFNOTNULL(saved->wrapStruct);
    }
-   free_and_nullify((void**)&dm->mp_orig);
-   free_and_nullify((void**)&dm->group);
-   free_and_nullify((void**)&dm->max_isometric_force);
-   free_and_nullify((void**)&dm->pennation_angle);
-   free_and_nullify((void**)&dm->min_thickness);
-   free_and_nullify((void**)&dm->max_thickness);
-   dm->min_material = NULL;
-   dm->max_material = NULL;
-   free_and_nullify((void**)&dm->max_contraction_vel);
-   nullify_function(dm->force_vel_curve, yes);
-   dm->force_vel_curve = NULL;
 
-   free_and_nullify((void**)&dm->optimal_fiber_length);
-   free_and_nullify((void**)&dm->resting_tendon_length);
-   free_and_nullify((void**)&dm->momentarms);
 
-   nullify_function(dm->active_force_len_curve, yes);
-   dm->active_force_len_curve = NULL;
-   nullify_function(dm->passive_force_len_curve, yes);
-   dm->passive_force_len_curve = NULL;
-   nullify_function(dm->tendon_force_len_curve, yes);
-   dm->tendon_force_len_curve = NULL;
-
+   FREE_IFNOTNULL(saved);
 }
 
+/* FREE_SAVEDMUSCLEPATHS: free all the saved muscle paths */
+void free_savedmusclepaths(SaveMusclePath path[], int num)
+{
+   int i;
+
+   if (path == NULL)
+      return;
+
+   for (i=0; i<num; i++)
+   {
+      if (path[i].mp_orig != NULL)
+         FREE_IFNOTNULL(path[i].mp_orig);
+   }
+   FREE_IFNOTNULL(path);
+}
+
+void free_savedmusclepath(SaveMusclePath *path)
+{
+   int i, j;
+
+   if (path == NULL)
+      return;
+
+   if (path->mp_orig != NULL)
+      FREE_IFNOTNULL(path->mp_orig);
+}
+
+/* FREE_MUSCLEPATHS: free all the muscle paths */
+void free_musclepaths(MusclePathStruct path[], int num)
+{
+   int i;
+
+   if (path == NULL)
+      return;
+
+   for (i=0; i<num; i++)
+   {
+      if (path[i].mp_orig != NULL)
+         FREE_IFNOTNULL(path[i].mp_orig);
+   }
+   FREE_IFNOTNULL(path);
+}
+
+/* FREE_MUSCLEPATHS: free one muscle path */
+void free_musclepath(MusclePathStruct *path)
+{
+
+   if (path == NULL)
+      return;
+
+   if (path->mp_orig != NULL)
+      FREE_IFNOTNULL(path->mp_orig);
+   
+}
 
 void free_and_nullify(void** ptr)
 {

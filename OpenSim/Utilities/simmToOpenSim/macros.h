@@ -51,6 +51,8 @@ root.color.cmap[i].blue=b;}
 #define STRING_IS_NOT_NULL(str) (str[0] != '\0')
 #define STRINGS_ARE_EQUAL(ptr1,ptr2) (!strcmp(ptr1,ptr2))
 #define STRINGS_ARE_NOT_EQUAL(ptr1,ptr2) (strcmp(ptr1,ptr2))
+#define STRINGS_ARE_EQUAL_CI(ptr1,ptr2) (!stricmp(ptr1,ptr2))
+#define STRINGS_ARE_NOT_EQUAL_CI(ptr1,ptr2) (stricmp(ptr1,ptr2))
 #define FORCE_VALUE_INTO_RANGE(a,b,c) if ((a)<(b)) (a)=(b); else if ((a)>(c)) (a)=(c);
 #define MODULATE_VALUE_INTO_RANGE(a,b,c) while ((a)<(b)) (a)+=((c)-(b)); \
 while ((a)>(c)) (a)-=((c)-(b));

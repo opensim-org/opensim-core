@@ -309,19 +309,19 @@ static void setwemenus(void)
 	       ms->option[WE_WRAP_OBJECT].box.x2,ms->option[WE_CHOOSE_SEGMENT].box.y1,
 	       ms->option[WE_MUSCLEGROUPS].box.y2-MENU_ITEM_HEIGHT);
 
-   SET_BOX1221(ms->option[WE_SAVE_WRAPOBJ].box,ms->option[WE_WRAP_OBJECT].box.x1,
+   SET_BOX1221(ms->option[WE_SAVE_ALL].box,ms->option[WE_WRAP_OBJECT].box.x1,
 	       ms->option[WE_WRAP_OBJECT].box.x2,
 	       ms->option[WE_MUSCLEGROUPS].box.y1 - 10,
-	       ms->option[WE_SAVE_WRAPOBJ].box.y2-MENU_ITEM_HEIGHT);
+	       ms->option[WE_SAVE_ALL].box.y2-MENU_ITEM_HEIGHT);
 
-   SET_BOX1221(ms->option[WE_RESTORE_WRAPOBJ].box,ms->option[WE_WRAP_OBJECT].box.x1,
+   SET_BOX1221(ms->option[WE_RESTORE_ALL].box,ms->option[WE_WRAP_OBJECT].box.x1,
 	       ms->option[WE_WRAP_OBJECT].box.x2,
-	       ms->option[WE_SAVE_WRAPOBJ].box.y1 - 5,
-	       ms->option[WE_RESTORE_WRAPOBJ].box.y2-MENU_ITEM_HEIGHT);
+	       ms->option[WE_SAVE_ALL].box.y1 - 5,
+	       ms->option[WE_RESTORE_ALL].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_DELETE_OBJECT].box,ms->option[WE_WRAP_OBJECT].box.x1,
 	       ms->option[WE_WRAP_OBJECT].box.x2,
-	       ms->option[WE_RESTORE_WRAPOBJ].box.y1 - 5,
+	       ms->option[WE_RESTORE_ALL].box.y1 - 5,
 	       ms->option[WE_DELETE_OBJECT].box.y2-MENU_ITEM_HEIGHT);
 
    SET_BOX1221(ms->option[WE_APPLY_POS_XFORM].box,
@@ -875,8 +875,8 @@ void reset_wrapobj_xform ()
    }
 }
 
-
-void save_wrap_objects (int mod)
+/* save all the wrap objects */
+void save_all_wrap_objects (int mod)
 {
    if (model[mod] && model[mod]->num_wrap_objects > 0)
    {
@@ -953,7 +953,7 @@ void save_wrap_objects (int mod)
 
 
 /* restore ALL wrap objects that have been saved */
-void restore_wrap_objects(int mod)
+void restore_all_wrap_objects(int mod)
 {
    if (model[mod])
    {

@@ -80,10 +80,10 @@
 #define TITLETOP 863
 #define TITLEBOT 835
 
-#define MUSCLE_ARRAY_INCREMENT 15 //50
+#define MUSCLE_ARRAY_INCREMENT 15
 #define MUSCGROUP_ARRAY_INCREMENT 10
 #define MUSCINDEX_ARRAY_INCREMENT 20
-#define MP_ARRAY_INCREMENT 12
+#define MUSCLEPOINT_ARRAY_INCREMENT 12
 #define WRAP_OBJECT_ARRAY_INCREMENT 10
 #define DEFORMITY_ARRAY_INCREMENT 10
 #define GENC_ARRAY_INCREMENT 16
@@ -182,13 +182,6 @@ ENUM {
 } ModelAction;                       /* possible actions on model windows */
 
 
-//ENUM
-//{
-//   spline_fit,                       /* interpolate control points with spline */
-//   step_function                     /* treat points as corners of step functions */
-//} ExcitationFormat;                  /* formats for muscle excitation functions */
-
-
 ENUM {
    ASCII_FORMAT,                     /* columns of numbers (raw data) */
    POSTSCRIPT_FORMAT,                /* plain, Postscript format */
@@ -216,8 +209,7 @@ ENUM {
 } PolygonProcess;
 
 
-ENUM
-{
+ENUM {
    old_ascii,
    new_ascii,
    binary,
@@ -226,8 +218,14 @@ ENUM
    file_not_found
 } FileType;
 
-ENUM
-{
+ENUM {
+   file_good,
+   file_bad,
+   file_read_only,
+   file_missing
+} FileReturnCode;
+
+ENUM {
    didNotSolveLoop,
    loopUnchanged,
    loopChanged,
@@ -235,8 +233,7 @@ ENUM
    largeResidinLoop
 } LoopStatus;
 
-ENUM
-{
+ENUM {
    didNotSolveConstraint,
    constraintUnchanged,
    constraintChanged,
@@ -441,22 +438,19 @@ STRUCT {
 
 STRUCT {
    int segment;                      /* segment this muscle point is fixed to */
-   int refpt;                        /* corresponding point in saved muscle */
    SBoolean selected;                /* whether or not point has been selected */
    double point[3];                  /* xyz coordinates of the point */
    double ground_pt[3];              /* coords of point in ground frame */
-   int funcnum[3];                   /* function for moving point (3 coordinates - 3 possible functions) */
-   int gencoord[3];                  /* gencoord for moving point (3 coordinates - 3 possible gencoords) */
-   SBoolean movingpoint;             /* whether the point has non-constant coordinates */
-   int numranges;                    /* number of ranges where point is active */
-   PointRange* ranges;               /* array of ranges */
+   int fcn_index[3];                 /* index of function for moving point (3 coordinates - 3 possible functions) */
+   int gencoord[3];                  /* index of gencoord for moving point (3 coordinates - 3 possible gencoords) */
+   SBoolean isMovingPoint;           /* whether the point has non-constant coordinates */
+   SBoolean isVia;                   /* is the point a via point? */
+   PointRange viaRange;              /* the range of the via point */
    SBoolean is_auto_wrap_point;      /* was this point calc-ed by auto wrapper? */
    double wrap_distance;             /* stores distance of wrap over object surface */
    double* wrap_pts;                 /* points wrapping over surface */
    int num_wrap_pts;                 /* number of points wrapping over surface */
    double undeformed_point[3];       /* 'point' prior to deformation */
-   int old_seg;
-   double old_point[3];//dkb
 } MusclePoint;                       /* properties of a muscle point */
 
 
@@ -465,8 +459,8 @@ STRUCT {
    int state;                        /* is this point on or off */
    double point[3];                  /* xyz coordinates of the point */
    double ground_pt[3];              /* coords of point in ground frame */
-   int funcnum[3];                   /* function for moving point */
-   int gencoord[3];                  /* gencoord for moving point */
+   int fcn_index[3];                 /* index of function for moving point */
+   int gencoord[3];                  /* index ofgencoord for moving point */
    int normal_count;                 /* number of polygons used for this normal */
    float normal[3];                  /* point normal used for ligaments */
    int numranges;                    /* number of ranges where point is active */
@@ -918,20 +912,24 @@ STRUCT {
    MusclePoint mp_wrap[2];           /* the two muscle points created when the muscle wraps */
 } MuscleWrapStruct;                  /* a wrap object instance for a specific muscle */
 
+STRUCT SaveMusclePath SaveMusclePath;
+
+STRUCT {
+   int num_orig_points;             /* number of user-defined muscle points */
+   int num_points;                   /* total number of muscle points */
+   MusclePoint* mp_orig;             /* list of user-defined muscle points */
+   MusclePoint** mp;                 /* list of muscle points after auto wrapping */
+   int mp_orig_array_size;           /* current size of mp_orig[] */
+   int mp_array_size;                /* current size of mp[] */
+   SaveMusclePath *saved_copy;
+} MusclePathStruct;
 
 STRUCT {
    char* name;                       /* name of muscle */
    SBoolean display;                 /* whether or not to display this muscle */
    SBoolean output;                  /* used only in the Dynamics Pipeline */
    SBoolean selected;                /* whether or not this muscle is selected */
-   SBoolean has_wrapping_points;     /* does this muscle have wrapping pts? */
-   SBoolean has_force_points;        /* does this muscle have force-dependent pts? */
-   int* num_orig_points;             /* number of user-defined muscle points auto-wrap pts */
-   int num_points;                   /* total number of muscle points */
-   MusclePoint* mp_orig;             /* list of user-defined muscle points */
-   MusclePoint** mp;                 /* list of muscle points after auto wrapping */
-   int mp_orig_array_size;           /* current size of mp_orig[] */
-   int mp_array_size;                /* current size of mp[] */
+   MusclePathStruct *musclepoints; /* pointer to the musclepoints */
    int numgroups;                    /* number of groups to which musc belongs*/
    int* group;                       /* list of muscle group numbers */
    double* max_isometric_force;      /* maximum isometric force */
@@ -974,6 +972,57 @@ STRUCT {
    SBoolean wrap_calced;             /* has wrapping been calculated/updated? */
    int numWrapStructs;               /* number of wrap objects used for this muscle */
    MuscleWrapStruct** wrapStruct;    /* array of wrap objects to auto-wrap over */
+} SaveMuscle;                      /* properties of a musculotendon unit */
+
+STRUCT {
+   char* name;                       /* name of muscle */
+   SBoolean display;                 /* whether or not to display this muscle */
+   SBoolean output;                  /* used only in the Dynamics Pipeline */
+   SBoolean selected;                /* whether or not this muscle is selected */
+   MusclePathStruct *musclepoints;  /* information about muscle points */
+   int numgroups;                    /* number of groups to which musc belongs*/
+   int* group;                       /* list of muscle group numbers */
+   double* max_isometric_force;      /* maximum isometric force */
+   double* pennation_angle;          /* pennation angle of muscle fibers */
+   double* optimal_fiber_length;     /* muscle fiber length */
+   double* resting_tendon_length;    /* resting length of tendon */
+   double* min_thickness;            /* minimum thickness of muscle line */
+   double* max_thickness;            /* maximum thickness of muscle line */
+   int* min_material;                /* material to draw with for activation = 0.0 */
+   int* max_material;                /* material to draw with for activation = 1.0 */
+   double activation;                /* activation level of muscle */
+   double initial_activation;        /* default/initial activation level of muscle */
+   double muscle_tendon_length;      /* musculotendon length */
+   double fiber_length;              /* muscle fiber length */
+   double tendon_length;             /* tendon length */
+   double muscle_tendon_vel;         /* musculotendon velocity */
+   double fiber_velocity;            /* muscle velocity */
+   double tendon_velocity;           /* tendon velocity */
+   double force;                     /* force in musculotendon unit */
+   double generated_power;           /* power generated by this muscle */
+   double applied_power;             /* power this muscle applies to body segments */
+   int nummomentarms;                /* number of moment arms (= # of gencoords) */
+   double* momentarms;               /* list of moment arm values */
+   SplineFunction* tendon_force_len_curve; /* tendon force-length curve */
+   SplineFunction* active_force_len_curve; /* muscle active force-length curve */
+   SplineFunction* passive_force_len_curve; /* muscle passive force-length curve */
+   double* max_contraction_vel;      /* maximum contraction velocity */
+   SplineFunction* force_vel_curve;  /* muscle force-velocity curve */
+   int num_dynamic_params;           /* size of dynamic_params array */
+   char** dynamic_param_names;       /* list of dynamic parameter names */
+   double** dynamic_params;          /* array of dynamic (muscle model) parameters */
+   double dynamic_activation;        /* dynamic value of muscle activation */
+   double energy;                    /* energy muscle has given to body segments */
+   SplineType* excitation_format;    /* format for excitation function */
+   int excitation_abscissa;          /* excit. is func of this gencoord (-1 = time) */
+   double excitation_level;          /* current level of excitation */
+   int excitation_index;             /* excitation data point used last time */
+   SplineFunction* excitation;       /* excitation (activation) sequence */
+   int* muscle_model_index;          /* index for deriv, init, & assign func arrays */
+   SBoolean wrap_calced;             /* has wrapping been calculated/updated? */
+   int numWrapStructs;               /* number of wrap objects used for this muscle */
+   MuscleWrapStruct** wrapStruct;    /* array of wrap objects to auto-wrap over */
+   SaveMuscle *saved_copy;           /* pointer to the saved version of the muscle */
 } MuscleStruct;                      /* properties of a musculotendon unit */
 
 
@@ -1445,15 +1494,26 @@ STRUCT {
    ConstraintPoint *savedPoints;
 } SaveConstraintPointAssoc;
 
+struct SaveMusclePath {
+   int num_orig_points;             /* number of user-defined muscle points auto-wrap pts */
+   MusclePoint* mp_orig;             /* list of user-defined muscle points */
+   int mp_orig_array_size;           /* current size of mp_orig[] */
+   MuscleStruct *owner;
+   int temp_index;
+};                       /* saved muscle point array */
+
+
 STRUCT {
    int numsavedmuscs;                /*  */
+   int numsavedpaths;                /*  */
    int numsavedjnts;                 /*  */
    int numsavedgencs;                /*  */
    int numsavedbones;                /*  */
    int numsavedsegments;
    int numsavedmuscgroups;
    MuscleStruct default_muscle;      /*  */
-   MuscleStruct* muscle;             /*  */
+   SaveMuscle* muscle;             /*  */
+   SaveMusclePath* musclepath;
    SaveSegments *segment;
    SaveJoints* joint;                /*  */
    SaveGencoords *gencoord;
@@ -1732,6 +1792,20 @@ STRUCT {
    double inboard_to_joint[3];
    int simm_segment;
 } SDSegment;
+
+STRUCT {
+   SBoolean used;
+   Direction dir;
+   char* inbname;
+   char* outbname;
+   SBoolean closes_loop;
+} JointSDF;
+
+STRUCT {
+   SBoolean used;
+   int times_split;
+   double mass_factor;
+} SegmentSDF;
 
 STRUCT {
    SBoolean preserveMassDist;

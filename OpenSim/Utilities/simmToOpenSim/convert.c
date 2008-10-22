@@ -65,7 +65,7 @@
       convert         : converts a 3-D point from one ref. frame to another
       get_conversion  : finds the matrix needed to travel across a joint
       make_conversion : governs the making of the transformation matrices
-      makebftransf    : makes a body-fixed transformation matrix
+      make_body_fixed_transform : makes a body-fixed transformation matrix
 
 *******************************************************************************/
 
@@ -95,9 +95,6 @@ static double world_z[] = {0.0, 0.0, 1.0, 0.0};
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 static void make_joint_conversion(int mod, int joint);
-static void makebftransf(int order[], double dofs[], double rmat[][4], double xaxis[],
-		  double yaxis[], double zaxis[], double axis1[], double axis2[],
-		  double axis3[], int mode, Direction dir, JointStruct* joint);
 
 /* CONVERT: */
 
@@ -598,35 +595,25 @@ void make_conversion(int mod, int joint)
 
 static void make_joint_conversion(int mod, int joint)
 {
-
    int i;
    int order[4];
    double dofvalue[6];
    double x[4], y[4], z[4], ra1[4], ra2[4], ra3[4];
    
    /* calculate the values of the 6 dof variables for this joint */
-
    for (i=0; i<6; i++)
-   {
       dofvalue[i] = evaluate_dof(mod,&model[mod]->joint[joint].dofs[i]);
-#if 0
-      if (joint == 110)
-         fprintf(stderr, " %.1f", dofvalue[i]);
-#endif
-   }
 
    /* initialize the [parent] x, y, and z axes */
-
    COPY_1X4VECTOR(world_x,model[mod]->joint[joint].parentframe[XX]);
    COPY_1X4VECTOR(world_y,model[mod]->joint[joint].parentframe[YY]);
    COPY_1X4VECTOR(world_z,model[mod]->joint[joint].parentframe[ZZ]);
 
-   /* call makebftransf() to make the matrices */
+   /* call calc_joint_transform() to make the matrices */
 
    /***************** FORWARD **********************/
 
    /* set the order, copy the parent frame and parent axes to other vectors */
-
    order[TRANS] = model[mod]->joint[joint].order[TRANS]+1;
    order[ROT1] = model[mod]->joint[joint].order[ROT1]+1;
    order[ROT2] = model[mod]->joint[joint].order[ROT2]+1;
@@ -638,13 +625,12 @@ static void make_joint_conversion(int mod, int joint)
    COPY_1X4VECTOR(model[mod]->joint[joint].parentrotaxes[R2],ra2);
    COPY_1X4VECTOR(model[mod]->joint[joint].parentrotaxes[R3],ra3);
 
-   makebftransf(order,dofvalue,model[mod]->joint[joint].conversion.forward,
-                x,y,z,ra1,ra2,ra3,BF,FORWARD,&model[mod]->joint[joint]);
+   calc_joint_transform(order,dofvalue,model[mod]->joint[joint].conversion.forward,
+                        x,y,z,ra1,ra2,ra3,BF,FORWARD,&model[mod]->joint[joint]);
 
    /* When the axes come back, they are transformed into the child axes,
     * so store them in the child elements in the joint structure.
     */
-
    COPY_1X4VECTOR(x,model[mod]->joint[joint].childframe[XX]);
    COPY_1X4VECTOR(y,model[mod]->joint[joint].childframe[YY]);
    COPY_1X4VECTOR(z,model[mod]->joint[joint].childframe[ZZ]);
@@ -660,42 +646,33 @@ static void make_joint_conversion(int mod, int joint)
     * the child portion of the joint structure (so the partial velocity
     * routines can get them).
     */
-
    order[TRANS] = model[mod]->joint[joint].order[TRANS]-4;
    order[ROT1] = model[mod]->joint[joint].order[ROT1]-4;
    order[ROT2] = model[mod]->joint[joint].order[ROT2]-4;
    order[ROT3] = model[mod]->joint[joint].order[ROT3]-4;
 
-   makebftransf(order,dofvalue,model[mod]->joint[joint].conversion.inverse,
-                x,y,z,ra1,ra2,ra3,BF,INVERSE,&model[mod]->joint[joint]);
+   calc_joint_transform(order,dofvalue,model[mod]->joint[joint].conversion.inverse,
+                        x,y,z,ra1,ra2,ra3,BF,INVERSE,&model[mod]->joint[joint]);
 
    /* and now the condition of the conversion matrices is valid */
-
    model[mod]->joint[joint].conversion.condition = valid;
-
 }
 
 
 
-/* MAKEBFTRANSF (make body-fixed transformation): Makes a transformation
- * matrix by concatenating four body-fixed transformation matrices. Is used to
- * make the four conversion matrices which define an joint (joint).
+/* CALC_JOINT_TRANSFORM: Makes a joint transformation matrix by concatenating four transformation
+ * matrices, in either a body-fixed format or space-fixed.
  */
 
-static void makebftransf(int order[], double dofs[], double rmat[][4], double xaxis[],
-		  double yaxis[], double zaxis[], double axis1[], double axis2[],
-		  double axis3[], int mode, Direction dir, JointStruct* joint)
+void calc_joint_transform(int order[], double dofs[], double rmat[][4], double xaxis[],
+		                    double yaxis[], double zaxis[], double axis1[], double axis2[],
+		                    double axis3[], int mode, Direction dir, JointStruct* joint)
 {
-
    int i;
    int absorder[4], ordersigns[4];
    double cl, sl, omc, rvec[4];
    double axis[4];
    double mat[4][4], wmat[4][4], trans_mat[4][4];
-
-   /* Performance enhancements for See System 9/8/93:
-    * Loop unrolling and functions->macros.
-    */
 
    absorder[0] = ABS(order[0]) - 1;
    absorder[1] = ABS(order[1]) - 1;
@@ -713,7 +690,6 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
    /* We do this loop four times, once for each transformation (one translation,
     * three rotations).
     */
-
    for (i=0; i<4; i++)
    {
       MAKE_IDENTITY_MATRIX(mat);
@@ -760,8 +736,7 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
             axis[3] = 0.0;
          }
 
-	 /* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
-
+	      /* the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7 */
          omc = 1.0 - cl;
          mat[0][0] = cl + axis[0]*axis[0]*omc;
          mat[1][0] = -axis[2]*sl + axis[0]*axis[1]*omc;
@@ -772,7 +747,6 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
          mat[0][2] = -axis[1]*sl + axis[2]*axis[0]*omc;
          mat[1][2] = axis[0]*sl + axis[1]*axis[2]*omc;
          mat[2][2] = cl + axis[2]*axis[2]*omc;
-
       }
 
       /* If the transformation is the translation, do not multiply in into
@@ -785,16 +759,15 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
        * uses the "new" axes after any previous rotations. So compute it
        * in order, but add it onto the end of the transformation stack.
        */
-
       if (i != absorder[TRANS])
       {
-	 mult_4x4matrices(rmat,mat,wmat);
-	 copy_4x4matrix(wmat,rmat);
-	 /* save rmat in right rotation structure (e.g., parentinterrotmat) */
+         mult_4x4matrices(rmat,mat,wmat);
+         copy_4x4matrix(wmat,rmat);
+         /* save rmat in right rotation structure (e.g., parentinterrotmat) */
       }
       else
       {
-	 copy_4x4matrix(mat,trans_mat);
+         copy_4x4matrix(mat,trans_mat);
       }
 
       if (mode == NBF)
@@ -804,7 +777,6 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
        * lambda (rotation) axes so that the next transformation uses the new
        * transformed axes (so transformations are body-fixed).
        */
-
       mult_4x4matrix_by_vector(mat,xaxis,rvec);
       COPY_1X4VECTOR(rvec,xaxis);
       mult_4x4matrix_by_vector(mat,yaxis,rvec);
@@ -828,55 +800,46 @@ static void makebftransf(int order[], double dofs[], double rmat[][4], double xa
        * element in the joint structure. If an inverse matrix, save it in the
        * childinterrotaxes element.
        */
-
       if (dir == FORWARD)
       {
          if (i == absorder[TRANS])
          {
-	    COPY_1X4VECTOR(xaxis,joint->parentinterframe[0]);
-	    COPY_1X4VECTOR(yaxis,joint->parentinterframe[1]);
-	    COPY_1X4VECTOR(zaxis,joint->parentinterframe[2]);
+            COPY_1X4VECTOR(xaxis,joint->parentinterframe[0]);
+            COPY_1X4VECTOR(yaxis,joint->parentinterframe[1]);
+            COPY_1X4VECTOR(zaxis,joint->parentinterframe[2]);
          }
          else if (i == absorder[ROT1])
-	    COPY_1X4VECTOR(axis1,joint->parentinterrotaxes[0])
+            COPY_1X4VECTOR(axis1,joint->parentinterrotaxes[0])
          else if (i == absorder[ROT2])
-	    COPY_1X4VECTOR(axis2,joint->parentinterrotaxes[1])
+            COPY_1X4VECTOR(axis2,joint->parentinterrotaxes[1])
          else if (i == absorder[ROT3])
-	    COPY_1X4VECTOR(axis3,joint->parentinterrotaxes[2])
+            COPY_1X4VECTOR(axis3,joint->parentinterrotaxes[2])
 
       }
       else if (dir == INVERSE)
       {
          if (i == absorder[TRANS])
          {
-	    COPY_1X4VECTOR(xaxis,joint->childinterframe[0]);
-	    COPY_1X4VECTOR(yaxis,joint->childinterframe[1]);
-	    COPY_1X4VECTOR(zaxis,joint->childinterframe[2]);
+            COPY_1X4VECTOR(xaxis,joint->childinterframe[0]);
+            COPY_1X4VECTOR(yaxis,joint->childinterframe[1]);
+            COPY_1X4VECTOR(zaxis,joint->childinterframe[2]);
          } 
          else if (i == absorder[ROT1])
-	    COPY_1X4VECTOR(axis1,joint->childinterrotaxes[0])
+            COPY_1X4VECTOR(axis1,joint->childinterrotaxes[0])
          else if (i == absorder[ROT2])
-	    COPY_1X4VECTOR(axis2,joint->childinterrotaxes[1])
+            COPY_1X4VECTOR(axis2,joint->childinterrotaxes[1])
          else if (i == absorder[ROT3])
-	    COPY_1X4VECTOR(axis3,joint->childinterrotaxes[2])
+            COPY_1X4VECTOR(axis3,joint->childinterrotaxes[2])
       }
    }
 
-/* You can now add the translation matrix onto the end (or beginning if INVERSE) */
-
+   /* You can now add the translation matrix onto the end (or beginning if INVERSE) */
    if (dir == FORWARD)
       mult_4x4matrices(rmat,trans_mat,wmat);
    else
       mult_4x4matrices(trans_mat,rmat,wmat);
 
    copy_4x4matrix(wmat,rmat);
-
-/*   printf("mat= \n");
-   for (i=0; i<4; i++)
-   {
-      printf("%lf %lf %lf %lf\n", rmat[i][0], rmat[i][1], rmat[i][2], rmat[i][3]);
-   }
-*/
 }
 
 

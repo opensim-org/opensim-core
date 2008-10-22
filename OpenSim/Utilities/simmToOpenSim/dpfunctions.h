@@ -49,6 +49,5 @@ void pauseSimulation(ModelStruct* ms);
 void resumeSimulation(ModelStruct* ms);
 void resetSimulation(ModelStruct* ms);
 DWORD WINAPI simThreadMain(LPVOID lpParam);
-ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList[]);
 
 #endif /* DPFUNCTIONS_H */

@@ -6,7 +6,7 @@
       a division of Motion Analysis Corp.
 
   This version of the Solver header file is for use with Solver 1.3.2,
-  released June 24, 2008.
+  released June 25, 2008.
 
   Authors: Peter Loan, Krystyne Blaikie
 

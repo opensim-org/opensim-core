@@ -372,6 +372,9 @@ double interpolate_spline(double abscissa, SplineFunction* func, Derivative deri
    int i, j, k, n;
    double dx;
 
+   if (func->defined == no)
+      return ERROR_DOUBLE;
+
    n = func->numpoints;
 
    /* Check if the abscissa is out of range of the function. If it is,

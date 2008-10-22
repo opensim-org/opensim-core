@@ -250,6 +250,7 @@ ReturnCode makegencform(int mod)
       check->checkbox[i].box.x2 = check->checkbox[i].box.x1 + CHECKBOX_XSIZE*2/3;
       check->checkbox[i].box.y1 = form->option[i].box.y1;
       check->checkbox[i].box.y2 = check->checkbox[i].box.y1 + CHECKBOX_YSIZE*2/3;
+      check->checkbox[i].use_alternate_colors = no;
    }
 
    /* make the gencoord lock checkbox panel */

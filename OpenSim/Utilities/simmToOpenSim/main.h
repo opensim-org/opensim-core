@@ -43,7 +43,7 @@ char program_name[] = "SIMM Viewer";
 #else
 char program_name[] = "SIMM";
 #endif
-char program_version[] = "4.2.2a2";
+char program_version[] = "4.2.2a7";
 char program_with_version[20];
 
 SBoolean pipe_included = no;

@@ -881,9 +881,9 @@ void deform_segment (ModelStruct* ms, int segment)
    {
       MuscleStruct* msc = &ms->muscle[i];
       
-      for (j = 0; j < *msc->num_orig_points; j++)
+      for (j = 0; j < msc->musclepoints->num_orig_points; j++)
       {
-         MusclePoint* mp = &msc->mp_orig[j];
+         MusclePoint* mp = &msc->musclepoints->mp_orig[j];
          
          if (mp->segment == segment)
          {

@@ -22,7 +22,7 @@
       read_axis       : reads in a rotation axis for a joint
       read_refeq      : reads in a 'reference equation'
       read_order      : reads in the transformation order for a joint
-      readfunction    : reads in a set of x-y pairs that define a function
+      read_function    : reads in a set of x-y pairs that define a function
       malloc_function : mallocs space for a splined function
 
 *******************************************************************************/
@@ -308,7 +308,7 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginfunction"))
       {
-         if (readfunction(mod,&fp) == code_bad)
+         if (read_function(mod,&fp, no) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginworldobject"))
@@ -2126,7 +2126,7 @@ static ReturnCode read_order(FILE **fp, int order[])
 
 /* READFUNCTION: */
 
-ReturnCode readfunction(int mod, FILE **fp)
+ReturnCode read_function(int mod, FILE **fp, SBoolean muscle_function)
 {
    int userfuncnum;
    SplineFunction func;
@@ -2159,7 +2159,10 @@ ReturnCode readfunction(int mod, FILE **fp)
       return code_bad;
    }
 
-   (void)sprintf(fname,"f%d", userfuncnum);
+   if (muscle_function)
+      (void)sprintf(fname,"muscle function f%d", userfuncnum);
+   else
+      (void)sprintf(fname,"f%d", userfuncnum);
 
    /* get the array of x-y pairs which comprises the function */
    if (read_double_array(fp,"endfunction", fname, &func) == code_bad)
@@ -2178,6 +2181,9 @@ ReturnCode readfunction(int mod, FILE **fp)
     * the model's function list.
     */
    calc_spline_coefficients(&func);
+
+   if (muscle_function)
+      userfuncnum *= -1;
 
    if (load_function(mod,userfuncnum,&func) == code_bad)
       return code_bad;
@@ -2570,8 +2576,8 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
 {
    int segnum, count;
    SegmentStruct* seg;
+   ReturnCode frc;
    char str1[CHARBUFFER], str2[CHARBUFFER], str3[CHARBUFFER];
-   ReturnCode rc;
 
    count = fscanf(*fp, "%s", str1);
    count += _read_til_tokens(*fp, str2, "\t\r\n");
@@ -2611,8 +2617,14 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
       seg->springFloor->pointArraySize = 0;
 #ifndef ENGINE
       seg->springFloor->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
-      rc = lookup_polyhedron(seg->springFloor->poly, seg->springFloor->filename, ms);
-      if (rc == code_bad)
+      frc = lookup_polyhedron(seg->springFloor->poly, seg->springFloor->filename, ms);
+      if (frc == file_missing)
+      {
+         (void)sprintf(errorbuffer,"Unable to locate spring_floor file %s", seg->springFloor->filename);
+         error(none,errorbuffer);
+         FREE_IFNOTNULL(seg->springFloor->poly);
+      }
+      else if (frc == file_bad)
       {
          (void)sprintf(errorbuffer,"Unable to read spring_floor from file %s", seg->springFloor->filename);
          error(none,errorbuffer);
@@ -2627,10 +2639,11 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
 
 static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
 {
+   int segnum;
+   FileReturnCode frc;
    char str1[CHARBUFFER], str2[CHARBUFFER];
    int count;
    char bufs[3][CHARBUFFER];
-   ReturnCode rc;
 
    if (seg->forceMatte)
    {
@@ -2674,8 +2687,14 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
          
 #ifndef ENGINE
          seg->forceMatte->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
-         rc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
-         if (rc == code_bad)
+         frc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
+         if (frc == file_missing)
+         {
+            (void)sprintf(errorbuffer,"Unable to locate force_matte file %s", seg->forceMatte->filename);
+            error(none,errorbuffer);
+            FREE_IFNOTNULL(seg->forceMatte->poly);
+         }
+         else if (frc == file_bad)
          {
             (void)sprintf(errorbuffer,"Unable to read force_matte from file %s", seg->forceMatte->filename);
             error(none,errorbuffer);
@@ -2706,6 +2725,7 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
    char segname[CHARBUFFER], co_name[CHARBUFFER], co_file[CHARBUFFER];
    char bufs[3][CHARBUFFER];
    ReturnCode rc;
+   FileReturnCode frc;
 
    count = fscanf(*fp, "%s", co_name);
    count += _read_til_tokens(*fp, co_file, "\t\r\n");
@@ -2758,10 +2778,16 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
       mstrcpy(&co->filename, co_file);
 #ifndef ENGINE
       co->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
-      rc = lookup_polyhedron(co->poly, co->filename, ms);
-      if (rc == code_bad)
+      frc = lookup_polyhedron(co->poly, co->filename, ms);
+      if (frc == file_bad)
       {
          (void)sprintf(errorbuffer, "Unable to read contact object from file %s", co->filename);
+         error(none, errorbuffer);
+         FREE_IFNOTNULL(co->poly);
+      }
+      else if (frc == file_missing)
+      {
+         (void)sprintf(errorbuffer, "Unable to locate contact object file %s", co->filename);
          error(none, errorbuffer);
          FREE_IFNOTNULL(co->poly);
       }
@@ -2899,10 +2925,11 @@ static ReturnCode read_contact_group(ModelStruct* ms, FILE** fp)
    return code_fine;
 }
 
-
+// TODO: If the bone file is missing or bad, don't add an empty polyhedron to the array.
 static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char filename[])
 {
    ReturnCode rc;
+   FileReturnCode frc;
    PolyhedronStruct* ph = NULL;
 
    if (seg->numBones >= seg->boneArraySize)
@@ -2934,12 +2961,18 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
    mstrcpy(&ph->name,filename);
 
 #ifndef ENGINE
-   if (lookup_polyhedron(ph, filename, ms) == code_bad)
-	   simm_printf(yes, "Unable to find bone file %s\n", filename);
+   frc = lookup_polyhedron(ph, filename, ms);
+   if (frc == file_bad)
+	   simm_printf(yes, "Unable to read bone from file %s\n", filename);
+   else if (frc == file_missing)
+	   simm_printf(yes, "Unable to locate bone file %s\n", filename);
 #else
 #if OPENSIM_BUILD
-   if (lookup_polyhedron(ph, filename, ms) == code_bad)
-	   simm_printf(yes, "Unable to find bone file %s\n", filename);
+   frc = lookup_polyhedron(ph, filename, ms);
+   if (frc == file_bad)
+	   simm_printf(yes, "Unable to read bone from file %s\n", filename);
+   else if (frc == file_missing)
+	   simm_printf(yes, "Unable to locate bone file %s\n", filename);
 #endif
 #endif
 

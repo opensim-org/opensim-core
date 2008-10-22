@@ -18,8 +18,8 @@
 #define WE_WRAP_OBJECT     0
 #define WE_CHOOSE_SEGMENT  1
 #define WE_MUSCLEGROUPS    2
-#define WE_SAVE_WRAPOBJ    3
-#define WE_RESTORE_WRAPOBJ 4
+#define WE_SAVE_ALL    3
+#define WE_RESTORE_ALL 4
 #define WE_DELETE_OBJECT   5
 #define WE_APPLY_POS_XFORM 6
 #define WE_APPLY_NEG_XFORM 7

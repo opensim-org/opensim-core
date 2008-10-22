@@ -89,8 +89,8 @@
 #define DID_NOT_PLACE_MENU 0
 #define PLACED_MENU 1
 
-#define DELETEMPT 1
-#define ADDMPT 2
+#define SEL_MUSCPOINT_DELETE 1
+#define SEL_MUSCPOINT_ADD 2
 
 #define NOITEM -1
 #define TITLEBOX -2
@@ -131,6 +131,10 @@
 #define RTOD RAD_TO_DEG
 #define DOUBLE_NOT_DONE -99999.73
 #define MAX_MATRIX_SIZE 20
+
+#define UNDEFINED_USERFUNCNUM -9999
+#define INVALID_FUNCTION -1
+#define INVALID_GENCOORD -1
 
 #define STRING_DONE 0
 #define STRING_NOT_DONE 1
@@ -493,6 +497,7 @@ STRUCT {
    Justification just;               /* left or right justified text */
    SBoolean active;                  /* whether or not this checkbox is active */
    SBoolean visible;
+   SBoolean use_alternate_colors;//dkb
 } CheckBox;                          /* a checkbox */
 
 

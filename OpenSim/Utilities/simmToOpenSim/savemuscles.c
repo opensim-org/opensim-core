@@ -13,13 +13,19 @@
    Description:
 
    Routines:
-      save_muscles        : makes copies of all muscle structures for one model
-      restore_muscles     : copies saved muscle structures back to originals
-      copy_musc           : copies an individual muscle structure
-      copy_default_muscle : copies one default muscle structure to another
-      alloc_func          : allocates memory for a spline-interpolated function
-      nullify_muscle      : sets to NULL all pointer elements of muscle struct
-      printmuscle         : prints to stdout a muscle structure
+      save_all_muscles              : makes copies of all muscle structures for one model
+      save_current_muscle           : makes a copy of the specified muscle structure
+      save_default_muscle           : makes a copy of the default muscle structure
+      restore_all_muscles           : copies saved muscle structures back to originals
+      restore_current_muscle        : copies a saved muscle structure back to original
+      restore_default_muscle        : copies the saved default muscle into the original
+      save_all_musclepaths          : makes copies of all musclepath structures for one model
+      restore_all_musclepaths       : copies all saved musclepath structures back to originals
+      save_current_musclepath       : makes a copy of the muscle path of the current muscle
+      restore_current_musclepath    : copies a saved musclepath back to original
+      alloc_func                    : allocates memory for a spline-interpolated function
+      nullify_muscle                : sets to NULL all pointer elements of muscle struct
+      printmuscle                   : prints to stdout a muscle structure
 
 *******************************************************************************/
 
@@ -46,93 +52,273 @@ static char restore_error_msg3[] = "Free-up some memory and try to restore again
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* to,
-					     MuscleStruct* deffrom, MuscleStruct* defto);
-static ReturnCode copy_nonnull_dyn_params(MuscleStruct* from, MuscleStruct* to);
+static ReturnCode copy_muscle_from_saved(SaveMuscle* from, MuscleStruct* to, MuscleStruct* deffrom,
+		      MuscleStruct* defto);
+static ReturnCode copy_muscle_to_saved(MuscleStruct* from, SaveMuscle* to, MuscleStruct* current_dm,
+		      MuscleStruct* saved_dm);
+static ReturnCode copy_musclepath_to_saved(MusclePathStruct* from, SaveMusclePath* to, MuscleStruct *owner);
+static ReturnCode copy_musclepath_from_saved(SaveMusclePath* from, MusclePathStruct* to);
+static void nullify_savemusclepath(SaveMusclePath *mpa);
+static void nullify_musclepath(MusclePathStruct *mpa);
 
 
-
-/* SAVE_MUSCLES: */
-
-void save_muscles(int mod)
+/* SAVE_MUSCLES: copy all the muscles as well as the default muscle into the save structure.
+ */
+ReturnCode save_all_muscles(int mod)
 {
-
    int i, j;
 
-   if (model[mod]->nummuscles <= 0)
-      return;
-
    /* first free the memory used by the previously-saved muscles */
-   free_muscs(model[mod]->save.muscle,&model[mod]->save.default_muscle,
+   free_savedmuscles(model[mod]->save.muscle,&model[mod]->save.default_muscle,
               model[mod]->save.numsavedmuscs);
    model[mod]->save.muscle = NULL;
    free_defmusc(&model[mod]->save.default_muscle);
-   model[mod]->save.numsavedmuscs = model[mod]->nummuscles;
 
    /* copy the default muscle to the savemuscle structure */
-   if (copy_default_muscle(&model[mod]->default_muscle,
-			  &model[mod]->save.default_muscle) == code_bad)
+   if (copy_default_muscle(&model[mod]->default_muscle, &model[mod]->save.default_muscle) == code_bad)
    {
       error(none,save_error_msg1);
       error(none,save_error_msg2);
       error(none,save_error_msg3);
       model[mod]->save.numsavedmuscs = 0;
-      return;
+      return code_bad;
    }
 
    /* malloc memory for all the muscle structures to be saved */
-   model[mod]->save.muscle =
-         (MuscleStruct*)simm_malloc(model[mod]->save.numsavedmuscs*sizeof(MuscleStruct));
-
+   model[mod]->save.numsavedmuscs = model[mod]->nummuscles;
+   model[mod]->save.muscle = (SaveMuscle*)simm_malloc(model[mod]->save.numsavedmuscs*sizeof(SaveMuscle));
    if (model[mod]->save.muscle == NULL)
    {
       error(none,save_error_msg1);
       error(none,save_error_msg2);
       error(none,save_error_msg3);
       model[mod]->save.numsavedmuscs = 0;
-      return;
+      return code_bad;
    }
 
-   /* copy the muscle structures to the savemuscle structure */
+   /* copy the muscle structures to the savemuscle structure and store the location of the saved copy */
    for (i=0; i<model[mod]->nummuscles; i++)
    {
-      if (copy_musc(&model[mod]->muscle[i],&model[mod]->save.muscle[i],
-         &model[mod]->default_muscle,&model[mod]->save.default_muscle) == code_bad)
+      if (copy_muscle_to_saved(&model[mod]->muscle[i],&model[mod]->save.muscle[i],
+               &model[mod]->default_muscle, &model[mod]->save.default_muscle) == code_bad)
       {
          error(none,save_error_msg1);
          error(none,save_error_msg2);
          error(none,save_error_msg3);
          model[mod]->save.numsavedmuscs = 0;
-         return;
+         return code_bad;
       }
-
-   /* Set all the refpt variables back to their original indices. If the muscles
-    * are restored later, each muscle point in the model structure will point
-    * back to the saved copy so that the "netmove" distance can be computed
-    * correctly for each point. Points that the user added had a refpt of -1,
-    * meaning that there was no corresponding saved point to do a netmove from.
-    * But once the muscles are saved, that previously new point now has a copy
-    * of itself in the saved-muscle structure.
-    */
-      for (j=0; j<*(model[mod]->muscle[i].num_orig_points); j++)
-         model[mod]->muscle[i].mp_orig[j].refpt = j;
+      model[mod]->muscle[i].saved_copy = &model[mod]->save.muscle[i];
    }
+   return code_fine;
+}
+
+/* SAVE_CURRENT_MUSCLE: save a copy of the currently selected muscle into the list
+ * of saved muscles.  If the muscle is already in the list, copy the information.
+ * If the muscle is not already in the list, allocate space fot it and then copy it. 
+ * If the muscle inherits any parameters from the default muscle, when copied into
+ * the save structure, the inherited values come from the SAVED default muscle, not the
+ * current one.
+ */
+ReturnCode save_current_muscle(int mod, MuscleStruct *muscle)
+{
+   SaveMuscle *saved = NULL;
+   ReturnCode rc;
+
+   if (muscle->saved_copy != NULL)  // a saved copy already exists
+   {
+      saved = muscle->saved_copy;
+   }
+   else     // add an entry for this muscle
+   {
+      int index = model[mod]->save.numsavedmuscs;
+      model[mod]->save.numsavedmuscs++;
+      model[mod]->save.muscle = (SaveMuscle*)simm_realloc(model[mod]->save.muscle, 
+         model[mod]->save.numsavedmuscs*sizeof(SaveMuscle), &rc);
+      if (rc != code_fine)
+      {
+         char buffer[256];
+         sprintf(buffer, "Could not save %s", muscle->name);
+         error(none, buffer);
+         return code_bad;
+      }
+      saved = &model[mod]->save.muscle[index];
+   }
+   // freeing the saved muscle causes crash in copy_muscle_to_saved - dkb June 2008
+   //free_savedmuscle(saved, &model[mod]->save.default_muscle);
+
+   if (copy_muscle_to_saved(muscle, saved,
+               &model[mod]->default_muscle, &model[mod]->save.default_muscle) == code_bad)
+   {
+      error(none,save_error_msg1);
+      error(none,save_error_msg2);
+      error(none,save_error_msg3);
+      model[mod]->save.numsavedmuscs = 0;
+      return code_bad;
+   }
+
+   /* store the pointer to the saved copy */
+   muscle->saved_copy = saved;
+
+   return code_fine;
+}
+
+/* SAVE_DEFAULT_MUSCLE: copy the default muscle into the save structure.  Check all
+ * the muscles in the save structure.  If they inherit any parameters from the default,
+ * make them inherit from the new saved default.
+ */
+ReturnCode save_default_muscle(int mod)
+{
+   int i, j;
+   SBoolean *afl, *pfl, *tfl, *fv, *exc, *name, *Fmo, *pen, *ofl, *rtl, *mcv, *min_thick, *max_thick;
+   SBoolean *min_mat, *max_mat, *musc_model, *exc_format, **dp;
+   ReturnCode rc;
+   
+   afl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   pfl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   tfl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   fv = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   exc = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   name = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   Fmo = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   pen = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   ofl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   rtl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   mcv = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   min_thick = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   max_thick = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   min_mat = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   max_mat = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   musc_model = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   exc_format = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   dp = (SBoolean **)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean *));
+   for (i = 0; i < model[mod]->nummuscles; i++)
+      dp[i] = (SBoolean *)simm_malloc(model[mod]->muscle[i].num_dynamic_params * sizeof(SBoolean));
+
+   for (i = 0; i < model[mod]->save.numsavedmuscs; i++)
+   {
+      name[i] = Fmo[i] = pen[i] = ofl[i] = rtl[i] = mcv[i] = no;
+      min_thick[i] = max_thick[i] = min_mat[i] = max_mat[i] = musc_model[i] = exc_format[i] = no;
+
+      if (model[mod]->save.muscle[i].name == model[mod]->save.default_muscle.name)
+         name[i] = yes;
+      if (model[mod]->save.muscle[i].max_isometric_force == model[mod]->save.default_muscle.max_isometric_force)
+         Fmo[i] = yes;
+      if (model[mod]->save.muscle[i].pennation_angle == model[mod]->save.default_muscle.pennation_angle)
+         pen[i] = yes;
+      if (model[mod]->save.muscle[i].optimal_fiber_length == model[mod]->save.default_muscle.optimal_fiber_length)
+         ofl[i] = yes;
+      if (model[mod]->save.muscle[i].resting_tendon_length == model[mod]->save.default_muscle.resting_tendon_length)
+         rtl[i] = yes;
+      if (model[mod]->save.muscle[i].max_contraction_vel == model[mod]->save.default_muscle.max_contraction_vel)
+         mcv[i] = yes;
+      if (model[mod]->save.muscle[i].min_thickness == model[mod]->save.default_muscle.min_thickness)
+         min_thick[i] = yes;
+      if (model[mod]->save.muscle[i].max_thickness == model[mod]->save.default_muscle.max_thickness)
+         max_thick[i] = yes;
+      if (model[mod]->save.muscle[i].min_material == model[mod]->save.default_muscle.min_material)
+         min_mat[i] = yes;
+      if (model[mod]->save.muscle[i].max_material == model[mod]->save.default_muscle.max_material)
+         max_mat[i] = yes;
+
+      //dyn_params
+      for (j = 0; j < model[mod]->save.muscle[i].num_dynamic_params; j++)
+      {
+         dp[i][j] = no;
+         if (model[mod]->save.muscle[i].dynamic_params[j] == model[mod]->save.default_muscle.dynamic_params[j])
+            dp[i][j] = yes;
+      }
+      
+      // functions
+      afl[i] = pfl[i] = tfl[i] = fv[i] = exc[i] = no;
+      
+      if (model[mod]->save.muscle[i].active_force_len_curve == model[mod]->save.default_muscle.active_force_len_curve)
+         afl[i] = yes;
+      if (model[mod]->save.muscle[i].passive_force_len_curve == model[mod]->save.default_muscle.passive_force_len_curve)
+         pfl[i] = yes;
+      if (model[mod]->save.muscle[i].tendon_force_len_curve == model[mod]->save.default_muscle.tendon_force_len_curve)
+         tfl[i] = yes;
+      if (model[mod]->save.muscle[i].force_vel_curve == model[mod]->save.default_muscle.force_vel_curve)
+         fv[i] = yes;
+      if (model[mod]->save.muscle[i].excitation == model[mod]->save.default_muscle.excitation)
+         exc[i] = yes;
+      if (model[mod]->save.muscle[i].excitation_format == model[mod]->save.default_muscle.excitation_format)
+         exc_format[i] = yes;
+      if (model[mod]->save.muscle[i].muscle_model_index == model[mod]->save.default_muscle.muscle_model_index)
+         musc_model[i] = yes;
+
+   }
+
+   free_defmusc(&model[mod]->save.default_muscle);
+   rc =  copy_default_muscle(&model[mod]->default_muscle, &model[mod]->save.default_muscle);
+   if (rc == code_bad)
+      return rc;
+
+   for (i = 0; i < model[mod]->nummuscles; i++)
+   {
+      if (afl[i] == yes)
+      {
+         model[mod]->save.muscle[i].active_force_len_curve = NULL;
+         model[mod]->save.muscle[i].active_force_len_curve = model[mod]->save.default_muscle.active_force_len_curve;
+      }
+      if (pfl[i] == yes)
+      {
+         model[mod]->save.muscle[i].passive_force_len_curve = NULL;
+         model[mod]->save.muscle[i].passive_force_len_curve = model[mod]->save.default_muscle.passive_force_len_curve;
+      }
+      if (tfl[i] == yes)
+      {
+         model[mod]->save.muscle[i].tendon_force_len_curve = NULL;
+         model[mod]->save.muscle[i].tendon_force_len_curve = model[mod]->save.default_muscle.tendon_force_len_curve;         
+      }
+      if (fv[i] == yes)
+      {
+         model[mod]->save.muscle[i].force_vel_curve = NULL;
+         model[mod]->save.muscle[i].force_vel_curve = model[mod]->save.default_muscle.force_vel_curve;
+      }
+      if (exc[i] == yes)
+      {
+         model[mod]->save.muscle[i].excitation = NULL;
+         model[mod]->save.muscle[i].excitation = model[mod]->save.default_muscle.excitation;
+      }
+      if (name[i] == yes)
+         model[mod]->save.muscle[i].name = model[mod]->save.default_muscle.name;
+      if (Fmo[i] == yes)
+         model[mod]->save.muscle[i].max_isometric_force = model[mod]->save.default_muscle.max_isometric_force;
+      if (pen[i] == yes)
+         model[mod]->save.muscle[i].pennation_angle = model[mod]->save.default_muscle.pennation_angle;
+      if (ofl[i] == yes)
+         model[mod]->save.muscle[i].optimal_fiber_length =model[mod]->save.default_muscle.optimal_fiber_length;
+      if (rtl[i] == yes)
+         model[mod]->save.muscle[i].resting_tendon_length = model[mod]->save.default_muscle.resting_tendon_length;
+      if (mcv[i] == yes)
+         model[mod]->save.muscle[i].max_contraction_vel = model[mod]->save.default_muscle.max_contraction_vel;
+      if (min_thick[i] == yes)
+         model[mod]->save.muscle[i].min_thickness = model[mod]->save.default_muscle.min_thickness;
+      if (max_thick[i] == yes)
+         model[mod]->save.muscle[i].max_thickness = model[mod]->save.default_muscle.max_thickness;
+      if (min_mat[i] == yes)
+         model[mod]->save.muscle[i].min_material = model[mod]->save.default_muscle.min_material;
+      if (max_mat[i] == yes)
+         model[mod]->save.muscle[i].max_material = model[mod]->save.default_muscle.max_material;
+      
+      for (j = 0; j < model[mod]->save.muscle[i].num_dynamic_params; j++)
+         if (dp[i][j] == yes)
+            model[mod]->save.muscle[i].dynamic_params[j] = model[mod]->save.default_muscle.dynamic_params[j];
+      if (musc_model[i] == yes)
+         model[mod]->save.muscle[i].muscle_model_index = model[mod]->save.default_muscle.muscle_model_index;
+      if (exc_format[i] == yes)
+         model[mod]->save.muscle[i].excitation_format = model[mod]->save.default_muscle.excitation_format;
+   }
+   return code_fine;
 }
 
 
-
-/* RESTORE_MUSCLES: */
-
-ReturnCode restore_muscles(int mod)
+/* RESTORE_MUSCLES: copy all the muscles as well as the default muscle from the save structure.
+ */
+ReturnCode restore_all_muscles(int mod)
 {
-
-   int i;
-
-   if (model[mod]->nummuscles <= 0)
-      return code_bad;
-
-//   for (i=0; i<model[mod]->nummuscles; i++)
-//      printmuscle(&model[mod]->muscle[i]);
+   int i, j;
 
    if (model[mod]->save.muscle == NULL)
    {
@@ -141,17 +327,13 @@ ReturnCode restore_muscles(int mod)
    }
 
    /* first free the memory used by the current muscles */
-
-   free_muscs(model[mod]->muscle,&model[mod]->default_muscle,
+   free_muscles(model[mod]->muscle,&model[mod]->default_muscle,
               model[mod]->nummuscles);
    model[mod]->muscle = NULL;
    free_defmusc(&model[mod]->default_muscle);
-   model[mod]->nummuscles = model[mod]->save.numsavedmuscs;
 
    /* copy the saved default muscle to the current default muscle structure */
-
-   if (copy_default_muscle(&model[mod]->save.default_muscle,
-			  &model[mod]->default_muscle) == code_bad)
+   if (copy_default_muscle(&model[mod]->save.default_muscle, &model[mod]->default_muscle) == code_bad)
    {
       error(none,restore_error_msg1);
       error(none,restore_error_msg2);
@@ -161,10 +343,10 @@ ReturnCode restore_muscles(int mod)
    }
 
    /* malloc memory for the to-be-restored muscles */
-
-   model[mod]->muscle =
-         (MuscleStruct*)simm_malloc(model[mod]->nummuscles*sizeof(MuscleStruct));
-
+   model[mod]->nummuscles = model[mod]->save.numsavedmuscs;
+   while (model[mod]->nummuscles > model[mod]->muscle_array_size)
+      model[mod]->muscle_array_size += MUSCLE_ARRAY_INCREMENT;
+   model[mod]->muscle = (MuscleStruct*)simm_malloc(model[mod]->muscle_array_size*sizeof(MuscleStruct));
    if (model[mod]->muscle == NULL)
    {
       error(none,restore_error_msg1);
@@ -175,10 +357,9 @@ ReturnCode restore_muscles(int mod)
    }
 
    /* copy the saved muscles to the current muscle structure */
-
    for (i=0; i<model[mod]->save.numsavedmuscs; i++)
    {
-      if (copy_musc(&model[mod]->save.muscle[i],&model[mod]->muscle[i],
+      if (copy_muscle_from_saved(&model[mod]->save.muscle[i],&model[mod]->muscle[i],
          &model[mod]->save.default_muscle,&model[mod]->default_muscle) == code_bad)
       {
          error(none,restore_error_msg1);
@@ -189,71 +370,458 @@ ReturnCode restore_muscles(int mod)
       }
    }
 
-   /* Invalidate the wrapping calculations because a joint may have moved
-    * since the muscle was last saved.
-    */
+   return code_fine;
+}
 
+
+
+
+
+/* RESTORE_CURRENT_MUSCLE: restore the current muscle from its saved copy.
+ * If the muscle is already in the list, copy the information.
+ * If the saved muscle inherits any parameters from the saved default muscle, when copied into
+ * the model structure, the inherited values come from the MODEL default muscle, not the
+ * saved one.
+ */
+ReturnCode restore_current_muscle(int mod, MuscleStruct *muscle)
+{
+   int i, j;
+   SaveMuscle *saved = NULL;
+
+   if (model[mod]->nummuscles <= 0)
+      return code_bad;
+
+   if (model[mod]->save.muscle == NULL)
+   {
+      error(none,"There are no saved copies of this model\'s muscles.");
+      return code_bad;
+   }
+
+   if (muscle->saved_copy == NULL)
+   {
+      char buffer[256];
+      sprintf(buffer, "There is no saved copy of muscle %s.", muscle->name);
+      error(none, buffer);
+      return code_bad;
+   }
+   else
+   {
+      saved = muscle->saved_copy;
+   }
+   free_muscle(muscle, &model[mod]->default_muscle);
+
+   if (copy_muscle_from_saved(saved, muscle,
+      &model[mod]->save.default_muscle,&model[mod]->default_muscle) == code_bad)
+   {
+      error(none,"Could not restore current muscle");
+      return code_bad;
+   }
+
+   return code_fine;
+}
+
+
+/* RESTORE_DEFAULT_MUSCLE: copy the default muscle from the save structure into the model.  Check all
+ * the muscles in the model.  If they inherit any parameters from the default,
+ * make them inherit from the new default.
+ */
+ReturnCode restore_default_muscle(int mod)
+{
+   int i, j;
+   SBoolean *afl, *pfl, *tfl, *fv, *exc, *name, *Fmo, *pen, *ofl, *rtl, *mcv, *min_thick, *max_thick;
+   SBoolean *min_mat, *max_mat, *musc_model, *exc_format, **dp;
+   MuscleStruct *def, *saved;
+   ReturnCode rc;
+
+   def = &model[mod]->default_muscle;
+   saved = &model[mod]->save.default_muscle;
+
+   afl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   pfl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   tfl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   fv = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   exc = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   name = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   Fmo = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   pen = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   ofl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   rtl = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   mcv = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   min_thick = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   max_thick = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   min_mat = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   max_mat = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   musc_model = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   exc_format = (SBoolean *)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean));
+   dp = (SBoolean **)simm_malloc(model[mod]->nummuscles * sizeof(SBoolean *));
+   for (i = 0; i < model[mod]->nummuscles; i++)
+      dp[i] = (SBoolean *)simm_malloc(model[mod]->muscle[i].num_dynamic_params * sizeof(SBoolean));
+   for (i = 0; i < model[mod]->nummuscles; i++)
+   {
+      name[i] = Fmo[i] = pen[i] = ofl[i] = rtl[i] = mcv[i] = no;
+      min_thick[i] = max_thick[i] = min_mat[i] = max_mat[i] = musc_model[i] = exc_format[i] = no;
+
+      if (model[mod]->muscle[i].name == def->name)
+         name[i] = yes;
+      if (model[mod]->muscle[i].max_isometric_force == def->max_isometric_force)
+         Fmo[i] = yes;
+      if (model[mod]->muscle[i].pennation_angle == def->pennation_angle)
+         pen[i] = yes;
+      if (model[mod]->muscle[i].optimal_fiber_length == def->optimal_fiber_length)
+         ofl[i] = yes;
+      if (model[mod]->muscle[i].resting_tendon_length == def->resting_tendon_length)
+         rtl[i] = yes;
+      if (model[mod]->muscle[i].max_contraction_vel == def->max_contraction_vel)
+         mcv[i] = yes;
+      if (model[mod]->muscle[i].min_thickness == def->min_thickness)
+         min_thick[i] = yes;
+      if (model[mod]->muscle[i].max_thickness == def->max_thickness)
+         max_thick[i] = yes;
+      if (model[mod]->muscle[i].min_material == def->min_material)
+         min_mat[i] = yes;
+      if (model[mod]->muscle[i].max_material == def->max_material)
+         max_mat[i] = yes;
+
+      //dyn_params
+      for (j = 0; j < model[mod]->muscle[i].num_dynamic_params; j++)
+      {
+         dp[i][j] = no;
+         if (model[mod]->muscle[i].dynamic_params[j] == def->dynamic_params[j])
+            dp[i][j] = yes;
+      }
+      
+      // functions
+      afl[i] = pfl[i] = tfl[i] = fv[i] = exc[i] = no;
+      
+      if (model[mod]->muscle[i].active_force_len_curve == def->active_force_len_curve)
+         afl[i] = yes;
+      if (model[mod]->muscle[i].passive_force_len_curve == def->passive_force_len_curve)
+         pfl[i] = yes;
+      if (model[mod]->muscle[i].tendon_force_len_curve == def->tendon_force_len_curve)
+         tfl[i] = yes;
+      if (model[mod]->muscle[i].force_vel_curve == def->force_vel_curve)
+         fv[i] = yes;
+      if (model[mod]->muscle[i].excitation == def->excitation)
+         exc[i] = yes;
+      if (model[mod]->muscle[i].excitation_format == def->excitation_format)
+         exc_format[i] = yes;
+      if (model[mod]->muscle[i].muscle_model_index == def->muscle_model_index)
+         musc_model[i] = yes;
+
+   }
+
+   free_defmusc(&model[mod]->default_muscle);
+   rc =  copy_default_muscle(&model[mod]->save.default_muscle, &model[mod]->default_muscle);
+   if (rc == code_bad)
+      return rc;
+
+   for (i = 0; i < model[mod]->nummuscles; i++)
+   {
+      if (afl[i] == yes)
+      {
+         model[mod]->muscle[i].active_force_len_curve = NULL;
+         model[mod]->muscle[i].active_force_len_curve = model[mod]->default_muscle.active_force_len_curve;
+      }
+      if (pfl[i] == yes)
+      {
+         model[mod]->muscle[i].passive_force_len_curve = NULL;
+         model[mod]->muscle[i].passive_force_len_curve = model[mod]->default_muscle.passive_force_len_curve;
+      }
+      if (tfl[i] == yes)
+      {
+         model[mod]->muscle[i].tendon_force_len_curve = NULL;
+         model[mod]->muscle[i].tendon_force_len_curve = model[mod]->default_muscle.tendon_force_len_curve;         
+      }
+      if (fv[i] == yes)
+      {
+         model[mod]->muscle[i].force_vel_curve = NULL;
+         model[mod]->muscle[i].force_vel_curve = model[mod]->default_muscle.force_vel_curve;
+      }
+      if (exc[i] == yes)
+      {
+         model[mod]->muscle[i].excitation = NULL;
+         model[mod]->muscle[i].excitation = model[mod]->default_muscle.excitation;
+      }
+      if (name[i] == yes)
+         model[mod]->muscle[i].name = model[mod]->default_muscle.name;
+      if (Fmo[i] == yes)
+         model[mod]->muscle[i].max_isometric_force = model[mod]->default_muscle.max_isometric_force;
+      if (pen[i] == yes)
+         model[mod]->muscle[i].pennation_angle = model[mod]->default_muscle.pennation_angle;
+      if (ofl[i] == yes)
+         model[mod]->muscle[i].optimal_fiber_length =model[mod]->default_muscle.optimal_fiber_length;
+      if (rtl[i] == yes)
+         model[mod]->muscle[i].resting_tendon_length = model[mod]->default_muscle.resting_tendon_length;
+      if (mcv[i] == yes)
+         model[mod]->muscle[i].max_contraction_vel = model[mod]->default_muscle.max_contraction_vel;
+      if (min_thick[i] == yes)
+         model[mod]->muscle[i].min_thickness = model[mod]->default_muscle.min_thickness;
+      if (max_thick[i] == yes)
+         model[mod]->muscle[i].max_thickness = model[mod]->default_muscle.max_thickness;
+      if (min_mat[i] == yes)
+         model[mod]->muscle[i].min_material = model[mod]->default_muscle.min_material;
+      if (max_mat[i] == yes)
+         model[mod]->muscle[i].max_material = model[mod]->default_muscle.max_material;
+      //dyn_params
+      for (j = 0; j < model[mod]->muscle[i].num_dynamic_params; j++)
+         if (dp[i][j] == yes)
+            model[mod]->muscle[i].dynamic_params[j] = model[mod]->default_muscle.dynamic_params[j];
+      if (musc_model[i] == yes)
+         model[mod]->muscle[i].muscle_model_index = model[mod]->default_muscle.muscle_model_index;
+      if (exc_format[i] == yes)
+         model[mod]->muscle[i].excitation_format = model[mod]->default_muscle.excitation_format;
+   }
+   return code_fine;
+}
+
+
+// ---------------------------------  MUSCLE POINTS --------------------------------------------------------
+/* SAVE_ALL_MUSCLEPOINTS: */
+ReturnCode save_all_musclepaths(int mod)
+{
+   int i, j;
+
+   if (model[mod]->nummuscles <= 0)
+      return code_fine;
+
+   /* first free the memory used by the previously-saved musclepoints */
+   free_savedmusclepaths(model[mod]->save.musclepath, model[mod]->save.numsavedpaths);
+   model[mod]->save.musclepath = NULL;
+
+   /* malloc memory for all the muscle structures to be saved */
+   model[mod]->save.numsavedpaths = model[mod]->nummuscles;
+   model[mod]->save.musclepath =
+         (SaveMusclePath*)simm_malloc(model[mod]->save.numsavedpaths*sizeof(SaveMusclePath));
+
+   if (model[mod]->save.musclepath == NULL)
+   {
+      error(none,  "Could not save musclepoints.");
+      model[mod]->save.numsavedpaths = 0;
+      return code_bad;
+   }
+
+   /* copy the musclepoint arrays to the save structure */
    for (i=0; i<model[mod]->nummuscles; i++)
-      model[mod]->muscle[i].wrap_calced = no;
+   {
+      if (model[mod]->muscle[i].musclepoints->num_orig_points <= 0)
+         continue;
+      if (copy_musclepath_to_saved(model[mod]->muscle[i].musclepoints,&model[mod]->save.musclepath[i], &model[mod]->muscle[i]) == code_bad)
+      {
+         error(none,save_error_msg1);
+         error(none,save_error_msg2);
+         error(none,save_error_msg3);
+         model[mod]->save.numsavedpaths = 0;
+         return code_bad;
+      }
+      // save the pointer to the owner muscle
+      //model[mod]->save.musclepath[i].owner = &model[mod]->muscle[i];
+      //save the location of the stored copy
+      model[mod]->muscle[i].musclepoints->saved_copy = &model[mod]->save.musclepath[i];
 
-#if 0
-   sprintf(buffer,"Restored all muscles in %s.", model[mod]->name);
-   message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
-#endif
+   /* Set all the refpt variables back to their original indices. If the muscles
+    * are restored later, each muscle point in the model structure will point
+    * back to the saved copy so that the "netmove" distance can be computed
+    * correctly for each point. Points that the user added had a refpt of -1,
+    * meaning that there was no corresponding saved point to do a netmove from.
+    * But once the muscles are saved, that previously new point now has a copy
+    * of itself in the saved-muscle structure.
+    */
+//      for (j=0; j<*(model[mod]->muscle[i].num_orig_points); j++)
+//         model[mod]->muscle[i].musclepoints->mp_orig[j].refpt = j;
+   }
+
+   return code_fine;
+}
 
 
-//   for (i=0; i<model[mod]->nummuscles; i++)
-//      printmuscle(&model[mod]->muscle[i]);
 
+/* RESTORE_ALL_MUSCLEPOINTS: */
+
+ReturnCode restore_all_musclepaths(int mod)
+{
+   int i;
+   MuscleStruct *owner = NULL;
+
+   if (model[mod]->nummuscles <= 0)
+      return code_bad;
+
+   if (model[mod]->save.musclepath == NULL)
+   {
+      error(none,"There are no saved copies of this model\'s musclepoints.");
+      return code_bad;
+   }
+
+   // ?? first free the memory used by the current paths - how to do if not an array
+
+   /* copy the saved paths into the current muscles if they exist */
+   for (i=0; i<model[mod]->save.numsavedpaths; i++)
+   {
+      owner = model[mod]->save.musclepath[i].owner;
+      if (owner == NULL)
+      {
+        // error(none, "THe owner of the path you are trying to restore no longer exists.\n");
+         continue;
+//         return code_bad;
+      }
+      if (copy_musclepath_from_saved(&model[mod]->save.musclepath[i], owner->musclepoints) == code_bad)
+      {
+         error(none,restore_error_msg1);
+         error(none,restore_error_msg2);
+         error(none,restore_error_msg3);
+         return code_bad;
+      }
+      // allocate mp[] 
+      init_mparray(owner);
+      /* Invalidate the wrapping calculations because a joint may have moved
+      * since the muscle was last saved.
+      */
+      owner->wrap_calced = no;
+   }
+
+   return code_fine;
+}
+
+
+/* SAVE_CURRENT_MUSCLEPOINTS: save a copy of the currently selected muscle path into the list
+ * of saved paths.  If the muscle path is already in the list, copy the information.
+ * If the muscle is not already in the list, allocate space and then copy. */
+ReturnCode save_current_musclepath(int mod, MuscleStruct *muscle)
+{
+   int i, j;
+   SaveMusclePath *saved = NULL;
+   ReturnCode rc;
+
+   if (model[mod]->save.musclepath == NULL)
+      return code_bad;
+
+   // see if a saved copy already exists
+
+   if (muscle->musclepoints->saved_copy != NULL)  // a saved copy already exists
+   {
+      saved = muscle->musclepoints->saved_copy;
+   }
+   else     // add an entry for this muscle
+   {
+      int index = model[mod]->save.numsavedpaths;
+      model[mod]->save.numsavedpaths++;
+      model[mod]->save.musclepath = (SaveMusclePath*)simm_realloc(model[mod]->save.musclepath, 
+         model[mod]->save.numsavedpaths*sizeof(SaveMusclePath), &rc);
+      if (rc != code_fine)
+      {
+         char buffer[256];
+         sprintf(buffer, "Could not save path for %s.", muscle->name);
+         error(none, buffer);
+         return code_bad;
+      }
+      saved = &model[mod]->save.musclepath[index];
+   }
+
+   free_savedmusclepath(saved);
+
+   if (copy_musclepath_to_saved(muscle->musclepoints, saved, muscle) == code_bad)
+   {
+      error(none,save_error_msg1);
+      error(none,save_error_msg2);
+      error(none,save_error_msg3);
+      model[mod]->save.numsavedmuscs = 0;
+      return code_bad;
+   }
+
+   /* store the pointer to the saved copy */
+   muscle->musclepoints->saved_copy = saved;
+
+   return code_fine;
+
+   /* Set all the refpt variables back to their original indices. If the muscles
+    * are restored later, each muscle point in the model structure will point
+    * back to the saved copy so that the "netmove" distance can be computed
+    * correctly for each point. Points that the user added had a refpt of -1,
+    * meaning that there was no corresponding saved point to do a netmove from.
+    * But once the muscles are saved, that previously new point now has a copy
+    * of itself in the saved-muscle structure.
+    */
+//      for (j=0; j<*(model[mod]->muscle[i].num_orig_points); j++)
+//         model[mod]->muscle[i].musclepoints->mp_orig[j].refpt = j;
+   
+
+   return code_fine;
+}
+
+
+
+/* RESTORE_MUSCLES: */
+
+ReturnCode restore_current_musclepath(int mod, MuscleStruct *muscle)
+{
+   int i, j;
+   SaveMusclePath *saved = NULL;
+
+   if (model[mod]->nummuscles <= 0)
+      return code_bad;
+
+   if (model[mod]->save.musclepath == NULL)
+   {
+      error(none,"There are no saved copies of this model\'s musclepaths.");
+      return code_bad;
+   }
+
+   if (muscle->musclepoints->saved_copy == NULL)
+   {
+      char buffer[256];
+      sprintf(buffer, "There is no saved copy of the musclepath for %s.", muscle->name);
+      error(none, buffer);
+      return code_bad;
+   }
+   else
+   {
+      saved = muscle->musclepoints->saved_copy;
+   }
+
+   free_musclepath(muscle->musclepoints);
+
+   if (copy_musclepath_from_saved(saved, muscle->musclepoints) == code_bad)
+   {
+      error(none,"Could not restore musclepath for current muscle");
+      return code_bad;
+   }
+
+   init_mparray(muscle);
+      /* Invalidate the wrapping calculations because a joint may have moved
+      * since the muscle was last saved.
+      */
+   muscle->wrap_calced = no;
    return code_fine;
 
 }
 
 
 
-/* COPY_MUSC: */
 
-ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom,
-                            MuscleStruct* defto)
+
+
+/* COPY_MUSCLE FROM SAVED: copy a muscle from a saved muscle structure.  If the muscle inherits a 
+ * parameter from the saved default muscle, when restored, it inherits the value from the
+ * current default muscle.  The wrapping is invalidated so it can be recalculated later.
+ * Store the pointer to the saved copy.
+ * Musclepoints ???.  
+ */
+static ReturnCode copy_muscle_from_saved(SaveMuscle* from, MuscleStruct* to, MuscleStruct* saved_dm, MuscleStruct* current_dm)
 {
-
    int i, j, mem_size;
 
    nullify_muscle(to);
 
-   if (from->name == deffrom->name)
-      to->name = defto->name;
+   if (from->name == saved_dm->name)
+      to->name = current_dm->name;
    else if (mstrcpy(&to->name,from->name) == code_bad)
       return code_bad;
 
    to->display = from->display;
-   to->has_wrapping_points = from->has_wrapping_points;
-   to->has_force_points = from->has_force_points;
-   to->mp_orig_array_size = from->mp_orig_array_size;
-
-   if (from->num_orig_points == deffrom->num_orig_points)
-      to->num_orig_points = defto->num_orig_points;
-   else
-   {
-      if ((to->num_orig_points = (int*)simm_malloc(sizeof(int))) == NULL)
-         return code_bad;
-      *to->num_orig_points = *from->num_orig_points;
-   }
-
-   if (from->mp_orig == deffrom->mp_orig)
-      to->mp_orig = defto->mp_orig;
-   else
-   {
-      to->mp_orig = (MusclePoint*)simm_malloc((to->mp_orig_array_size)*sizeof(MusclePoint));
-      if (to->mp_orig == NULL)
-         return code_bad;
-      for (i=0; i<*to->num_orig_points; i++)
-         if (copy_mps(&from->mp_orig[i],&to->mp_orig[i]) == code_bad)
-            return code_bad;
-   }
+   to->wrap_calced = no;
+   to->output = from->output;
+   to->musclepoints = from->musclepoints;   
 
    to->numWrapStructs = from->numWrapStructs;
-
    if (to->numWrapStructs > 0)
    {
       if ((to->wrapStruct = (MuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(MuscleWrapStruct*))) == NULL)
@@ -277,29 +845,11 @@ ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom
                to->wrapStruct[i]->mp_wrap[j].num_wrap_pts = 0;
                to->wrapStruct[i]->mp_wrap[j].wrap_pts = NULL;
             }
-            if (from->wrapStruct[i]->mp_wrap[j].numranges > 0)
-            {
-               to->wrapStruct[i]->mp_wrap[j].numranges = from->wrapStruct[i]->mp_wrap[j].numranges;
-               mem_size = to->wrapStruct[i]->mp_wrap[j].numranges * sizeof(PointRange);
-               to->wrapStruct[i]->mp_wrap[j].ranges = (PointRange*)simm_malloc(mem_size);
-               memcpy(to->wrapStruct[i]->mp_wrap[j].wrap_pts, from->wrapStruct[i]->mp_wrap[j].wrap_pts, mem_size);
-            }
-            else
-            {
-               to->wrapStruct[i]->mp_wrap[j].numranges = 0;
-               to->wrapStruct[i]->mp_wrap[j].ranges = NULL;
-            }
+            to->wrapStruct[i]->mp_wrap[j].isVia = from->wrapStruct[i]->mp_wrap[j].isVia;
+            to->wrapStruct[i]->mp_wrap[j].viaRange = from->wrapStruct[i]->mp_wrap[j].viaRange;
          }
       }
    }
-
-   /* The mp[] array is not copied; rather, space is allocated for it,
-    * and the muscle's wrapping is invalidated so that mp[] will be set later.
-    */
-   to->wrap_calced = no;
-   to->mp_array_size = *(to->num_orig_points) + (to->numWrapStructs * 2);
-   to->mp = (MusclePoint**)simm_malloc(sizeof(MusclePoint*) * to->mp_array_size);
-   to->num_points = 0;
 
    to->numgroups = from->numgroups;
    if (to->numgroups == 0)
@@ -312,38 +862,52 @@ ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom
          to->group[i] = from->group[i];
    }
 
-   if (copy_nddouble(from->max_isometric_force,&to->max_isometric_force,deffrom->max_isometric_force,defto->max_isometric_force) == code_bad)
+   if (copy_nddouble(from->max_isometric_force,&to->max_isometric_force,saved_dm->max_isometric_force,current_dm->max_isometric_force) == code_bad)
       return code_bad;
-   if (copy_nddouble(from->pennation_angle,&to->pennation_angle,
-                deffrom->pennation_angle,defto->pennation_angle) == code_bad)
+   if (copy_nddouble(from->pennation_angle,&to->pennation_angle, saved_dm->pennation_angle,current_dm->pennation_angle) == code_bad)
       return code_bad;
-   if (copy_nddouble(from->min_thickness,&to->min_thickness,
-                deffrom->min_thickness,defto->min_thickness) == code_bad)
+   if (copy_nddouble(from->min_thickness,&to->min_thickness, saved_dm->min_thickness,current_dm->min_thickness) == code_bad)
       return code_bad;
-   if (copy_nddouble(from->max_thickness,&to->max_thickness,
-                deffrom->max_thickness,defto->max_thickness) == code_bad)
+   if (copy_nddouble(from->max_thickness,&to->max_thickness, saved_dm->max_thickness,current_dm->max_thickness) == code_bad)
       return code_bad;
-   if (copy_nddouble(from->optimal_fiber_length,&to->optimal_fiber_length,
-                deffrom->optimal_fiber_length,defto->optimal_fiber_length) == code_bad)
+   if (copy_nddouble(from->optimal_fiber_length,&to->optimal_fiber_length, saved_dm->optimal_fiber_length,current_dm->optimal_fiber_length) == code_bad)
       return code_bad;
-   if (copy_nddouble(from->resting_tendon_length,&to->resting_tendon_length,
-                deffrom->resting_tendon_length,defto->resting_tendon_length) == code_bad)
+   if (copy_nddouble(from->resting_tendon_length,&to->resting_tendon_length, saved_dm->resting_tendon_length,current_dm->resting_tendon_length) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->max_contraction_vel,&to->max_contraction_vel, saved_dm->max_contraction_vel,current_dm->max_contraction_vel) == code_bad)
       return code_bad;
 
-   if (copy_ndint(from->min_material, &to->min_material, deffrom->min_material, defto->min_material) == code_bad)
+   if (copy_ndint(from->min_material, &to->min_material, saved_dm->min_material, current_dm->min_material) == code_bad)
       return code_bad;
-
-   if (copy_ndint(from->max_material, &to->max_material, deffrom->max_material, defto->max_material) == code_bad)
+   if (copy_ndint(from->max_material, &to->max_material, saved_dm->max_material, current_dm->max_material) == code_bad)
+      return code_bad;
+   if (copy_ndint(from->muscle_model_index,&to->muscle_model_index, saved_dm->muscle_model_index,current_dm->muscle_model_index) == code_bad)
       return code_bad;
 
    to->activation = from->activation;
    to->initial_activation = from->initial_activation;
 
-   if (copy_nddouble(from->max_contraction_vel,&to->max_contraction_vel,
-                deffrom->max_contraction_vel,defto->max_contraction_vel) == code_bad)
-      return code_bad;
-   if (copy_nondefault_dyn_params(from,to,deffrom,defto) == code_bad)
-      return code_bad;
+   to->num_dynamic_params = from->num_dynamic_params;
+   if (to->num_dynamic_params > 0)
+   {
+      to->dynamic_param_names = from->dynamic_param_names;
+      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
+
+      if (to->dynamic_params == NULL)
+         return code_bad;
+
+      for (i = 0; i < to->num_dynamic_params; i++)
+      {
+         if (copy_nddouble(from->dynamic_params[i], &to->dynamic_params[i],
+            saved_dm->dynamic_params[i], current_dm->dynamic_params[i]) == code_bad)
+            return code_bad;
+      }
+   }
+   else
+   {
+      to->dynamic_param_names = NULL;
+      to->dynamic_params = NULL;
+   }
 
    to->nummomentarms = from->nummomentarms;
    if ((to->momentarms = (double*)simm_malloc(to->nummomentarms*sizeof(double))) == NULL)
@@ -351,58 +915,59 @@ ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom
    for (i=0; i<to->nummomentarms; i++)
       to->momentarms[i] = from->momentarms[i];
 
-   if (from->active_force_len_curve == deffrom->active_force_len_curve)
-      to->active_force_len_curve = defto->active_force_len_curve;
+   if (from->active_force_len_curve == saved_dm->active_force_len_curve)
+      to->active_force_len_curve = current_dm->active_force_len_curve;
    else
    {
-      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->numpoints) == code_bad)
+      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->active_force_len_curve,to->active_force_len_curve);
    }
 
-   if (from->passive_force_len_curve == deffrom->passive_force_len_curve)
-      to->passive_force_len_curve = defto->passive_force_len_curve;
+   if (from->passive_force_len_curve == saved_dm->passive_force_len_curve)
+      to->passive_force_len_curve = current_dm->passive_force_len_curve;
    else
    {
-      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->numpoints) == code_bad)
+      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->passive_force_len_curve,to->passive_force_len_curve);
    }
 
-   if (from->tendon_force_len_curve == deffrom->tendon_force_len_curve)
-      to->tendon_force_len_curve = defto->tendon_force_len_curve;
+   if (from->tendon_force_len_curve == saved_dm->tendon_force_len_curve)
+      to->tendon_force_len_curve = current_dm->tendon_force_len_curve;
    else
    {
-      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->numpoints) == code_bad)
+      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->tendon_force_len_curve,to->tendon_force_len_curve);
    }
-   if (from->force_vel_curve == deffrom->force_vel_curve)
-      to->force_vel_curve = defto->force_vel_curve;
+
+   if (from->force_vel_curve == saved_dm->force_vel_curve)
+      to->force_vel_curve = current_dm->force_vel_curve;
    else
    {
-      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->numpoints) == code_bad)
+      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->force_vel_curve,to->force_vel_curve);
    }
 
    to->excitation_index = from->excitation_index;
    to->excitation_abscissa = from->excitation_abscissa;
-   if (from->excitation == deffrom->excitation)
-      to->excitation = defto->excitation;
+   if (from->excitation == saved_dm->excitation)
+      to->excitation = current_dm->excitation;
    else
    {
       if (from->excitation == NULL)
          to->excitation = NULL;
       else
       {
-         if (alloc_func(&to->excitation,from->excitation->numpoints) == code_bad)
+         if (alloc_func(&to->excitation,from->excitation->coefficient_array_size) == code_bad)
             return code_bad;
          copy_function(from->excitation,to->excitation);
       }
    }
-   if (from->excitation_format == deffrom->excitation_format)
-      to->excitation_format = defto->excitation_format;
+   if (from->excitation_format == saved_dm->excitation_format)
+      to->excitation_format = current_dm->excitation_format;
    else
    {
       if (from->excitation_format == NULL)
@@ -415,190 +980,198 @@ ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom
       }
    }
 
-   if (copy_ndint(from->muscle_model_index,&to->muscle_model_index,
-		  deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
-      return code_bad;
-
-   to->output = from->output;
+   // store the location of the saved copy
+   to->saved_copy = from;
 
    return code_fine;
-
 }
 
-
-
-/* COPY_DEFAULT_MUSCLE: */
-
-ReturnCode copy_default_muscle(MuscleStruct* from, MuscleStruct* to)
+/* COPY_MUSCLE TO SAVED: copy a muscle into a saved muscle structure.  If the muscle inherits a 
+ * parameter from the current default muscle, when saved, it inherits the value from the
+ * saved default muscle.  The wrapping is invalidated so it can be recalculated later.
+ * Musclepoints ???.  
+ */
+static ReturnCode copy_muscle_to_saved(MuscleStruct* from, SaveMuscle* to, MuscleStruct* current_dm,
+                            MuscleStruct* saved_dm)
 {
+   int i, j, mem_size;
 
-   int i;
+   nullify_savemuscle(to);
 
-   if (from->name == NULL)
-      to->name = NULL;
-   else
-      mstrcpy(&to->name,from->name);
+   if (from->name == current_dm->name)
+      to->name = saved_dm->name;
+   else if (mstrcpy(&to->name,from->name) == code_bad)
+      return code_bad;
 
-   to->has_wrapping_points = from->has_wrapping_points;
-   to->has_force_points = from->has_force_points;
-   to->mp_orig_array_size = from->mp_orig_array_size;
+   to->display = from->display;
+   to->musclepoints = from->musclepoints;
+   to->wrap_calced = no;
+   to->output = from->output;
 
-   if (from->num_orig_points == NULL)
+   to->numWrapStructs = from->numWrapStructs;
+   if (to->numWrapStructs > 0)
    {
-      to->num_orig_points = NULL;
-      to->mp_orig = NULL;
-   }
-   else
-   {
-      if ((to->num_orig_points = (int*)simm_malloc(sizeof(int))) == NULL)
+      if ((to->wrapStruct = (MuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(MuscleWrapStruct*))) == NULL)
          return code_bad;
-      *to->num_orig_points = *from->num_orig_points;
-      to->mp_orig = (MusclePoint*)simm_malloc((to->mp_orig_array_size)*sizeof(MusclePoint));
-      if (to->mp_orig == NULL)
-         return code_bad;
-      for (i=0; i<*to->num_orig_points; i++)
-         if (copy_mps(&from->mp_orig[i],&to->mp_orig[i]) == code_bad)
+      for (i = 0; i < to->numWrapStructs; i++)
+      {
+         if ((to->wrapStruct[i] = (MuscleWrapStruct*)simm_malloc(sizeof(MuscleWrapStruct))) == NULL)
             return code_bad;
+         memcpy(to->wrapStruct[i], from->wrapStruct[i], sizeof(MuscleWrapStruct));
+         for (j = 0; j < 2; j++)
+         {
+            if (from->wrapStruct[i]->mp_wrap[j].num_wrap_pts > 0)
+            {
+               to->wrapStruct[i]->mp_wrap[j].num_wrap_pts = from->wrapStruct[i]->mp_wrap[j].num_wrap_pts;
+               mem_size = to->wrapStruct[i]->mp_wrap[j].num_wrap_pts * 3 * sizeof(double);
+               to->wrapStruct[i]->mp_wrap[j].wrap_pts = (double*)simm_malloc(mem_size);
+               memcpy(to->wrapStruct[i]->mp_wrap[j].wrap_pts, from->wrapStruct[i]->mp_wrap[j].wrap_pts, mem_size);
+            }
+            else
+            {
+               to->wrapStruct[i]->mp_wrap[j].num_wrap_pts = 0;
+               to->wrapStruct[i]->mp_wrap[j].wrap_pts = NULL;
+            }
+            to->wrapStruct[i]->mp_wrap[j].isVia = from->wrapStruct[i]->mp_wrap[j].isVia;
+            to->wrapStruct[i]->mp_wrap[j].viaRange = from->wrapStruct[i]->mp_wrap[j].viaRange;
+         }
+      }
    }
-
-   to->nummomentarms = 0;
-   to->momentarms = NULL;
 
    to->numgroups = from->numgroups;
    if (to->numgroups == 0)
       to->group = NULL;
    else
    {
-      if ((to->group = (int*)simm_malloc((to->numgroups)*sizeof(int))) == NULL)
+      if ((to->group = (int*)simm_malloc(to->numgroups*sizeof(int))) == NULL)
          return code_bad;
-      for (i=0; i<(to->numgroups); i++)
+      for (i=0; i<to->numgroups; i++)
          to->group[i] = from->group[i];
    }
 
-   if (copy_nndouble(from->max_isometric_force,&to->max_isometric_force) == code_bad)
+   if (copy_nddouble(from->max_isometric_force,&to->max_isometric_force, current_dm->max_isometric_force,saved_dm->max_isometric_force) == code_bad)
       return code_bad;
-   if (copy_nndouble(from->pennation_angle,&to->pennation_angle) == code_bad)
+   if (copy_nddouble(from->pennation_angle,&to->pennation_angle, current_dm->pennation_angle,saved_dm->pennation_angle) == code_bad)
       return code_bad;
-   if (copy_nndouble(from->min_thickness,&to->min_thickness) == code_bad)
+   if (copy_nddouble(from->min_thickness,&to->min_thickness, current_dm->min_thickness,saved_dm->min_thickness) == code_bad)
       return code_bad;
-   if (copy_nndouble(from->max_thickness,&to->max_thickness) == code_bad)
+   if (copy_nddouble(from->max_thickness,&to->max_thickness, current_dm->max_thickness,saved_dm->max_thickness) == code_bad)
       return code_bad;
-   if (copy_nndouble(from->max_contraction_vel,&to->max_contraction_vel) == code_bad)
+   if (copy_nddouble(from->optimal_fiber_length,&to->optimal_fiber_length, current_dm->optimal_fiber_length,saved_dm->optimal_fiber_length) == code_bad)
       return code_bad;
-   if (copy_nonnull_dyn_params(from,to) == code_bad)
+   if (copy_nddouble(from->resting_tendon_length,&to->resting_tendon_length, current_dm->resting_tendon_length,saved_dm->resting_tendon_length) == code_bad)
       return code_bad;
-
-   if (copy_nndouble(from->optimal_fiber_length,&to->optimal_fiber_length) == code_bad)
-      return code_bad;
-   if (copy_nndouble(from->resting_tendon_length,&to->resting_tendon_length) == code_bad)
+   if (copy_nddouble(from->max_contraction_vel,&to->max_contraction_vel, current_dm->max_contraction_vel,saved_dm->max_contraction_vel) == code_bad)
       return code_bad;
 
-   if (from->min_material == NULL)
-      to->min_material = NULL;
-   else
-   {
-      if ((to->min_material = (int*)simm_malloc(sizeof(int))) == NULL)
-         return code_bad;
-      *to->min_material = *from->min_material;
-   }
-
-   if (from->max_material == NULL)
-      to->max_material = NULL;
-   else
-   {
-      if ((to->max_material = (int*)simm_malloc(sizeof(int))) == NULL)
-         return code_bad;
-      *to->max_material = *from->max_material;
-   }
+   if (copy_ndint(from->min_material, &to->min_material, current_dm->min_material, saved_dm->min_material) == code_bad)
+      return code_bad;
+   if (copy_ndint(from->max_material, &to->max_material, current_dm->max_material, saved_dm->max_material) == code_bad)
+      return code_bad;
+   if (copy_ndint(from->muscle_model_index,&to->muscle_model_index, current_dm->muscle_model_index,saved_dm->muscle_model_index) == code_bad)
+      return code_bad;
 
    to->activation = from->activation;
    to->initial_activation = from->initial_activation;
 
-   if (from->active_force_len_curve == NULL)
-      to->active_force_len_curve = NULL;
+   to->num_dynamic_params = from->num_dynamic_params;
+   if (to->num_dynamic_params > 0)
+   {
+      to->dynamic_param_names = from->dynamic_param_names;
+      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
+      if (to->dynamic_params == NULL)
+         return code_bad;
+      for (i = 0; i < to->num_dynamic_params; i++)
+      {
+         if (copy_nddouble(from->dynamic_params[i], &to->dynamic_params[i],
+                           current_dm->dynamic_params[i], saved_dm->dynamic_params[i]) == code_bad)
+            return code_bad;
+      }
+   }
    else
    {
-      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->numpoints) == code_bad)
+      to->dynamic_param_names = NULL;
+      to->dynamic_params = NULL;
+   }
+
+   to->nummomentarms = from->nummomentarms;
+   if ((to->momentarms = (double*)simm_malloc(to->nummomentarms*sizeof(double))) == NULL)
+      return code_bad;
+   for (i=0; i<to->nummomentarms; i++)
+      to->momentarms[i] = from->momentarms[i];
+
+   if (from->active_force_len_curve == current_dm->active_force_len_curve)
+      to->active_force_len_curve = saved_dm->active_force_len_curve;
+   else
+   {
+      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->active_force_len_curve,to->active_force_len_curve);
    }
 
-   if (from->passive_force_len_curve == NULL)
-      to->passive_force_len_curve = NULL;
+   if (from->passive_force_len_curve == current_dm->passive_force_len_curve)
+      to->passive_force_len_curve = saved_dm->passive_force_len_curve;
    else
    {
-      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->numpoints) == code_bad)
+      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->passive_force_len_curve,to->passive_force_len_curve);
    }
 
-   if (from->tendon_force_len_curve == NULL)
-      to->tendon_force_len_curve = NULL;
+   if (from->tendon_force_len_curve == current_dm->tendon_force_len_curve)
+      to->tendon_force_len_curve = saved_dm->tendon_force_len_curve;
    else
    {
-      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->numpoints) == code_bad)
+      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->tendon_force_len_curve,to->tendon_force_len_curve);
    }
-   if (from->force_vel_curve == NULL)
-      to->force_vel_curve = NULL;
+
+   if (from->force_vel_curve == current_dm->force_vel_curve)
+      to->force_vel_curve = saved_dm->force_vel_curve;
    else
    {
-      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->numpoints) == code_bad)
+      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->coefficient_array_size) == code_bad)
          return code_bad;
       copy_function(from->force_vel_curve,to->force_vel_curve);
    }
 
    to->excitation_index = from->excitation_index;
    to->excitation_abscissa = from->excitation_abscissa;
-   if (from->excitation == NULL)
-      to->excitation = NULL;
+   if (from->excitation == current_dm->excitation)
+      to->excitation = saved_dm->excitation;
    else
    {
-      if (alloc_func(&to->excitation,from->excitation->numpoints) == code_bad)
-         return code_bad;
-      copy_function(from->excitation,to->excitation);
+      if (from->excitation == NULL)
+         to->excitation = NULL;
+      else
+      {
+         if (alloc_func(&to->excitation,from->excitation->coefficient_array_size) == code_bad)
+            return code_bad;
+         copy_function(from->excitation,to->excitation);
+      }
    }
-
-   if (from->excitation_format == NULL)
-      to->excitation_format = NULL;
+   if (from->excitation_format == current_dm->excitation_format)
+      to->excitation_format = saved_dm->excitation_format;
    else
    {
-      if ((to->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType))) == NULL)
-         return code_bad;
-      *(to->excitation_format) = *(from->excitation_format);
+      if (from->excitation_format == NULL)
+         to->excitation_format = NULL;
+      else
+      {
+         if ((to->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType))) == NULL)
+            return code_bad;
+         *(to->excitation_format) = *(from->excitation_format);
+      }
    }
-
-   if (copy_nnint(from->muscle_model_index,&to->muscle_model_index) == code_bad)
-      return code_bad;
 
    return code_fine;
-
 }
 
 
 
-/* ALLOC_FUNC: */
 
-ReturnCode alloc_func(SplineFunction** func, int pts)
-{
 
-   if ((*func = (SplineFunction*)simm_malloc(sizeof(SplineFunction))) == NULL)
-      return code_bad;
-   if (((*func)->x = (double*)simm_malloc(pts*sizeof(double))) == NULL)
-      return code_bad;
-   if (((*func)->y = (double*)simm_malloc(pts*sizeof(double))) == NULL)
-      return code_bad;
-   if (((*func)->b = (double*)simm_malloc(pts*sizeof(double))) == NULL)
-      return code_bad;
-   if (((*func)->c = (double*)simm_malloc(pts*sizeof(double))) == NULL)
-      return code_bad;
-   if (((*func)->d = (double*)simm_malloc(pts*sizeof(double))) == NULL)
-      return code_bad;
-
-   return code_fine;
-
-}
 
 
 /* SAVE_MUSCLE_GROUPS: */
@@ -625,7 +1198,7 @@ void save_muscle_groups(int mod)
 
    if (model[mod]->save.muscgroup == NULL)
    {
-      error(none,"could not save muscle groups");
+      error(none,"Could not save muscle groups.");
       model[mod]->save.numsavedmuscgroups = 0;
       return;
    }
@@ -706,20 +1279,14 @@ void printmuscle(MuscleStruct* musc)
       printf("name: %s\n", musc->name);
 
    printf("display: %d\n", musc->display);
-   printf("has_wrapping_points: %d\n", musc->has_wrapping_points);
 
-   if (musc->num_orig_points == NULL)
-      printf("numpoints: ptr is null\n");
-   else
-   {
-      printf("numpoints: %d\n", *musc->num_orig_points);
-      for (i=0; i<*musc->num_orig_points; i++)
-         printf("(%d) %lf %lf %lf segment %d\n", i,
-                musc->mp_orig[i].point[0],
-                musc->mp_orig[i].point[1],
-                musc->mp_orig[i].point[2],
-                musc->mp_orig[i].segment);
-   }
+   printf("numpoints: %d\n", musc->musclepoints->num_orig_points);
+   for (i=0; i<musc->musclepoints->num_orig_points; i++)
+      printf("(%d) %lf %lf %lf segment %d\n", i,
+      musc->musclepoints->mp_orig[i].point[0],
+      musc->musclepoints->mp_orig[i].point[1],
+      musc->musclepoints->mp_orig[i].point[2],
+      musc->musclepoints->mp_orig[i].segment);
 
    if (musc->max_isometric_force == NULL)
       printf("max_isometric_force: ptr is null\n");
@@ -732,64 +1299,85 @@ void printmuscle(MuscleStruct* musc)
 }
 
 
-static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* to,
-					                              MuscleStruct* deffrom, MuscleStruct* defto)
+
+/* COPY_MP_TO_SAVED: copy the muscle's mp_orig array to the save structure
+ * store a copy of the owner muscle in the save structure
+ */
+static ReturnCode copy_musclepath_to_saved(MusclePathStruct *from, SaveMusclePath* to, MuscleStruct *owner)
 {
    int i;
 
-   to->num_dynamic_params = from->num_dynamic_params;
+   nullify_savemusclepath(to);
 
-   if (to->num_dynamic_params > 0)
-   {
-      to->dynamic_param_names = from->dynamic_param_names;
-      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
+   // store the original array size
+   to->mp_orig_array_size = from->mp_orig_array_size;
 
-      if (to->dynamic_params == NULL)
+   // store the number of points
+   to->num_orig_points = from->num_orig_points;
+
+   // store the points
+   to->mp_orig = (MusclePoint*)simm_malloc(to->mp_orig_array_size*sizeof(MusclePoint));
+   if (to->mp_orig == NULL)
+      return code_bad;
+   for (i=0; i<to->num_orig_points; i++)
+      if (copy_musclepoint(&from->mp_orig[i],&to->mp_orig[i]) == code_bad)
          return code_bad;
 
-      for (i = 0; i < to->num_dynamic_params; i++)
-      {
-         if (copy_nddouble(from->dynamic_params[i], &to->dynamic_params[i],
-                           deffrom->dynamic_params[i], defto->dynamic_params[i]) == code_bad)
-            return code_bad;
-      }
-   }
-   else
-   {
-      to->dynamic_param_names = NULL;
-      to->dynamic_params = NULL;
-   }
+   to->owner = owner;
 
    return code_fine;
+
 }
 
-
-
-static ReturnCode copy_nonnull_dyn_params(MuscleStruct* from, MuscleStruct* to)
+/* COPY_MP_FROM_SAVED: copy the muscle's mp_orig array to the save structure
+ * store a copy of the owner muscle in the save structure
+ */
+static ReturnCode copy_musclepath_from_saved(SaveMusclePath* from, MusclePathStruct *to )
 {
    int i;
 
-   to->num_dynamic_params = from->num_dynamic_params;
+   nullify_musclepath(to);
 
-   if (to->num_dynamic_params > 0)
-   {
-      to->dynamic_param_names = from->dynamic_param_names;
-      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
+   // store the original array size
+   to->mp_orig_array_size = from->mp_orig_array_size;
 
-      if (to->dynamic_params == NULL)
+   // store the number of points
+   to->num_orig_points = from->num_orig_points;
+
+   // restore the points - 
+   to->mp_orig = (MusclePoint*)simm_malloc((to->mp_orig_array_size)*sizeof(MusclePoint));
+   if (to->mp_orig == NULL)
+      return code_bad;
+   for (i=0; i<to->num_orig_points; i++)
+      if (copy_musclepoint(&from->mp_orig[i],&to->mp_orig[i]) == code_bad)
          return code_bad;
 
-      for (i = 0; i < to->num_dynamic_params; i++)
-      {
-         if (copy_nndouble(from->dynamic_params[i], &to->dynamic_params[i]) == code_bad)
-            return code_bad;
-      }
-   }
-   else
-   {
-      to->dynamic_param_names = NULL;
-      to->dynamic_params = NULL;
-   }
+      // dkb apr 2008 - points no longer restored by muscle editor, use musclepoint editor
+  // to->mp_array_size = *(to->num_orig_points) + (to->numWrapStructs * 2);
+  // to->mp = (MusclePoint**)simm_malloc(sizeof(MusclePoint*) * to->mp_array_size);
+  // to->num_points = 0;
+   to->saved_copy = from;
 
    return code_fine;
+
+}
+
+static void nullify_savemusclepath(SaveMusclePath *mpa)
+{
+   mpa->mp_orig_array_size = 0;
+   mpa->num_orig_points = 0;
+   mpa->mp_orig = NULL;
+   mpa->owner = NULL;
+   mpa->temp_index = -1;
+}
+
+static void nullify_musclepath(MusclePathStruct *mpa)
+{
+   mpa->mp_orig_array_size = 0;
+   mpa->num_orig_points = 0;
+   mpa->mp_orig = NULL;
+   mpa->mp = NULL;
+   mpa->mp_array_size = 0;
+   mpa->num_points = 0;
+   mpa->saved_copy = NULL;
 }

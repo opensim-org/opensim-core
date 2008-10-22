@@ -51,6 +51,9 @@ int    best_fit_color(GLfloat red, GLfloat green, GLfloat blue);
 void   boundplot(PlotStruct* p);
 void   build_file_list_from_pattern(const char* pattern, char*** list, int* numFiles);
 void   build_full_path(const char* prefPath, const char* filePath, char* fullPath);
+void   calc_joint_transform(int order[], double dofs[], double rmat[][4], double xaxis[],
+		                      double yaxis[], double zaxis[], double axis1[], double axis2[],
+		                      double axis3[], int mode, Direction dir, JointStruct* joint);
 void   calc_camera_vector(ModelStruct* ms, GLfloat vector[]);
 void   calc_motion_derivatives(MotionSequence* motion);
 void   calc_muscle_moment_arms(int mod, int musc, int genc);
@@ -93,11 +96,9 @@ void   copy_dof(DofStruct* from, DofStruct* to);
 void   copy_function(SplineFunction* from, SplineFunction* to);
 void   copy_material(MaterialStruct* src, MaterialStruct* dst);
 ModelStruct* copy_model(ModelStruct* ms);
-MotionSequence* copy_motion(MotionSequence* from);
-MotionSequence** copy_motions(MotionSequence* from[], int num);
-ReturnCode copy_musc(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom,
-		      MuscleStruct* defto); //dkb
-ReturnCode copy_mps(MusclePoint* from, MusclePoint* to);
+ReturnCode copy_musclepath(MusclePathStruct *from, MusclePathStruct *to);
+ReturnCode copy_musclepoint(MusclePoint* from, MusclePoint* to);
+ReturnCode copy_muscle(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom, MuscleStruct *defto);
 ReturnCode copy_nddouble(double* from, double** to, double* deffrom, double* defto);
 ReturnCode copy_ndint(int* from, int** to, int* deffrom, int* defto);
 ReturnCode copy_nndouble(double* from, double** to);
@@ -221,7 +222,6 @@ int    find_next_active_field(Form* form, int current_field, TextFieldAction tfa
 ModelStruct* find_nth_model(int modcount);
 MotionSequence* find_nth_motion(ModelStruct* ms, int motcount);
 PlotStruct* find_nth_plot(int plotcount);
-DofStruct* find_nth_q_dof(int mod, int n);
 int    find_plot_ordinal(int plotnum);
 ReturnCode find_segment_drawing_order(ModelStruct* ms);
 void   find_world_coords(DisplayStruct* dis, IntBox* vp, int mx, int my,
@@ -239,8 +239,16 @@ void   free_model(int mod);
 void   free_motion(MotionSequence* motion);
 void   free_motion_object(MotionObject* mo, ModelStruct* ms);
 void   free_motion_object_instance(MotionObjectInstance*);
-void   free_muscs(MuscleStruct musc[], MuscleStruct* dm, int num);
+void   free_muscle(MuscleStruct *muscle, MuscleStruct* dm);
+void   free_muscles(MuscleStruct musc[], MuscleStruct* dm, int num);
+void   free_musclepoints(MusclePoint mp[], int num);
+void   free_musclepath(MusclePathStruct *path);
+void   free_musclepaths(MusclePathStruct path[], int num);
 void   free_plot(int plotnum);
+void   free_savedmuscle(SaveMuscle *saved, MuscleStruct* dm);
+void   free_savedmuscles(SaveMuscle musc[], MuscleStruct* dm, int num);
+void   free_savedmusclepath(SaveMusclePath *path);
+void   free_savedmusclepaths(SaveMusclePath path[], int num);
 SBoolean gencoord_in_path(int mod, int n1, int n2, int genc);
 ModelStruct* get_associated_model(int window);
 PlotStruct*  get_associated_plot(int window);
@@ -279,6 +287,7 @@ int get_wrap_object(ModelStruct* ms, char username[]);
 DMatrix* get_conversion(int mod, int joint, Direction dir);
 char*  getjointvarname(int num);
 int    getjointvarnum(char string[]);
+int getMusclePointSegment(MuscleStruct *muscle, int pointIndex);
 const char* getpref(const char* variable_name);
 void   hack_tool_updates(ModelStruct* ms);
 void   handle_combo_selection(WindowParams* win_parameters, ComboBoxPanel *panel, int item);
@@ -307,7 +316,10 @@ void   initwrapobject(WrapObject* wo);
 void   initconstraintobject(ConstraintObject *co);
 void initconstraintpoint(ConstraintPoint *pt);
 ReturnCode init_model_display(ModelStruct* ms);
-ReturnCode init_muscle(int mod, int musc);
+ReturnCode init_muscle(int mod, int muscleIndex);
+ReturnCode initMusclePath(MusclePathStruct *musclepoints);
+ReturnCode init_musclepoint(MusclePoint *mp);
+ReturnCode init_mparray(MuscleStruct* muscl);
 ReturnCode initplot(int plotnum);
 void   install_move_model_tracker(ModelStruct*, SimmEvent);
 void   invalidate_joint_matrix(ModelStruct* ms, int joint);
@@ -370,6 +382,7 @@ void   make_tools(void);
 void   make_wrap_cylinder(WrapObject* wo);
 void   make_wrap_torus(WrapObject* wo);
 void   make_conversion(int mod, int joint);
+int    makeDir(const char aDirName[]);
 #ifndef ENGINE
 void   make_specular_color(GLfloat old_color[], GLfloat new_color[]);
 ReturnCode makegencform(int mod);
@@ -402,7 +415,8 @@ int    name_is_muscle(ModelStruct* ms, char name[], char suffix[],
 void   new_motion_file(int mod, const char* fullpath);
 ReturnCode newplotwindow(PlotStruct* ps, char plot_name[]);
 void   nullify_function(SplineFunction* func, SBoolean freeTheFuncToo);
-void   nullify_muscle(MuscleStruct* musc);
+void   nullify_muscle(MuscleStruct* muscle);
+void   nullify_savemuscle(SaveMuscle* muscle);
 SBoolean onSameWrapObject(ModelStruct* ms, MuscleStruct* muscl, int pt1, int pt2);
 #ifndef ENGINE
 ReturnCode open_demo_arm_model();
@@ -418,7 +432,7 @@ void   open_demo_gcd();
 ReturnCode open_vicon_gcd_file(const char* gaitFile, int* modelIndex);
 #endif
 ReturnCode open_motion_analysis_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
-ReturnCode open_opensim_converter_gait(glutOpenSimConverterOptions* options);
+ReturnCode open_opensim_mocap_model(glutOpenSimConverterOptions* options);
 ReturnCode open_opensim_trb_file(glutOpenSimConverterOptions* options);
 ReturnCode open_mocap_model(SBoolean mac_demo, char staticFile[]);
 ReturnCode open_tracked_file(const char gaitFile[], int modelIndex, int numAnalogFiles, const char* analogFiles[]);
@@ -477,17 +491,14 @@ int    read_line(FILE** fp, char str_buffer[]);
 ReturnCode read_material(int mod, FILE** fp);
 ReturnCode read_model_file(int mod, char filename[], SBoolean showTopLevelMessages);
 ReturnCode read_motion_object(int mod, FILE**);
-MusclePoint* read_muscle_attachment_points(int mod, FILE** fp, int* numpoints,
-					   int* mp_orig_array_size,
-					   SBoolean* has_wrapping_points,
-					   SBoolean* has_force_points);
+ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscle);
 ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists, SBoolean showTopLevelMessages);
 int*   read_muscle_groups(int mod, FILE** fp, int* num_groups, int muscle_number);
 int    read_nonempty_line(FILE** fp, char str_buffer[]);
 CurveStruct* readplotfile(FILE** fp);
 int    read_string(FILE** fp, char str_buffer[]);
 ReturnCode read_world_object(int mod, FILE** fp);
-ReturnCode readfunction(int mod, FILE **fp);
+ReturnCode read_function(int mod, FILE **fp, SBoolean muscle_function);
 void   recalc_constraint_xforms(ConstraintObject *co);
 #ifndef ENGINE
 ToolStruct* register_tool(int struct_size, unsigned int event_mask,
@@ -500,10 +511,18 @@ void   reread_color_database(void);
 void   reshapewindow(void);
 void   resize_model_display(ModelStruct*);
 #endif
+ReturnCode restore_all_muscles(int mod);
+ReturnCode restore_all_musclepaths(int mod);
+ReturnCode restore_current_muscle(int mod, MuscleStruct *muscle);
+ReturnCode restore_current_musclepath(int mod, MuscleStruct *muscle);
+ReturnCode restore_default_muscle(int mod);
 void   restore_dofs(void);
-ReturnCode restore_muscles(int mod);
-void   save_muscles(int mod);
 ReturnCode restore_muscle_groups(int mod);
+ReturnCode   save_all_muscles(int mod);
+ReturnCode   save_all_musclepaths(int mod);
+ReturnCode   save_current_muscle(int mod, MuscleStruct *muscle);
+ReturnCode   save_current_musclepath(int mod, MuscleStruct *muscle);
+ReturnCode   save_default_muscle(int mod);
 void   save_muscle_groups(int mod);
 void   scale_model(ModelStruct*, const Coord3D* seg_scales, ScaleModelOptions* options);
 void   select_form_region(Form* form, int mx, SimmEvent se);
@@ -520,6 +539,7 @@ void   set_prefform(void);
 void   set_qs(int mod);
 void   set_us(int mod);
 void   set_viewport(int x1, int y1, int xsize, int ysize);
+void setMusclePointSegment(MuscleStruct *muscle, int pointIndex, int newSeg);
 void   setmvmenus(WindowParams* win_parameters, WinUnion* win_struct);
 ReturnCode setup_motion_derivatives(MotionSequence* motion);
 //dkb void   setup_muscle_wrapping(MuscleStruct* muscl);
@@ -584,26 +604,6 @@ void   write_motion_object(MotionObject*, FILE*);
 
 /******* Function Prototypes for About Box window *******/
 void   show_about_box();
-
-/******* Function Prototypes for SD/FAST code *******/
-char*  get_joint_type_name(dpJointType type, Direction dir);
-dpJointType identify_joint_type(int mod, int jointnum);
-int find_rotation_axis(JointStruct* jnt, double axis[]);
-int find_nth_rotation(JointStruct* jnt, int n);
-void name_dofs(int mod);
-int find_translation_axis(JointStruct* jnt, double axis[], DofType type, int num);
-ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int addQuestionMarks);
-ReturnCode write_sdheader_file(int mod, char filename[]);
-ReturnCode write_sdforward(int mod, char filename[]);
-ReturnCode write_sdinverse(int mod, char filename[]);
-SBoolean valid_sdfast_model(ModelStruct* ms);
-void write_dllparams(char filename[], ModelStruct* model);
-void write_forparams(char filename[], ModelStruct* model);
-void write_invparams(char filename[], ModelStruct* model);
-JointStruct* find_nth_q_joint(int mod, int n);
-DofStruct* find_unconstrained_sd_dof(int mod, int gc);
-int get_sd_seg_num(char simm_name[]);
-int countConstraints(ModelStruct* ms, int* nq);
 
 /******* Function Prototypes for JointEditor *******/
 void make_jointeditor(int rootWindowX, int rootWindowY, SBoolean iconified);
@@ -846,7 +846,6 @@ void dptool(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 void draw_dptool_help_window(WindowParams* win_parameters, WinUnion* win_struct);
 void dptool_help_input(WindowParams* win_parameters, WinUnion* win_struct, SimmEvent se);
 void move_dptool_help_text(int dummy_int, double slider_value, double delta);
-void check_dynamic_params(ModelStruct* ms);
 void do_dptool_help(void);
 //public void slide_dp(int arg1, double value, double delta);
 
