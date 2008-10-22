@@ -1,2 +1,0 @@
-update -I *.plg -I *.ncb -I *.ilk -I *.map -I *.pdb -I *.opt -I *.log -I Debug -I Release -I Data
-checkout -P
