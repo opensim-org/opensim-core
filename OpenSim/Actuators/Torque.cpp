@@ -196,6 +196,7 @@ operator=(const Torque &aForce)
 
 	// BODY A
 	setBodyA(aForce.getBodyA());
+	_bodyAName = aForce._bodyAName;
 
 	// DIRCTION A
 	aForce.getDirectionA(_uA);
@@ -205,7 +206,7 @@ operator=(const Torque &aForce)
 	
 	// DIRECTION B
 	aForce.getDirectionB(_uB);
-
+	_bodyBName = aForce._bodyBName;
 	return(*this);
 }
 

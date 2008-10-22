@@ -40,9 +40,10 @@
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
-#include "Model/BoneSet.h"
+#include "Model/ConstraintSet.h"
 #include "Model/CoordinateSet.h"
-#include "Model/DofSet.h"
+#include "Model/DofSet01_05.h"
+#include "Model/TransformAxisSet.h"
 #include "Model/GeneralizedForce.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
@@ -50,6 +51,7 @@
 #include "Model/MusclePoint.h"
 #include "Model/MuscleViaPoint.h"
 #include "Model/MovingMusclePoint.h"
+#include "Model/SpeedSet.h"
 #include "Model/SpeedSet.h"
 #include "Control/ControlSet.h"
 #include "Control/ControlConstant.h"
@@ -61,6 +63,9 @@
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
+#include "Wrap/WrapCylinderObst.h"
+#include "Wrap/WrapSphereObst.h"
+#include "Wrap/WrapDoubleCylinderObst.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -83,10 +88,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( BodyScale() );
 	Object::RegisterType( BodyScaleSet() );
 	Object::RegisterType( BodySet() );
-	Object::RegisterType( BoneSet() );
+	//Object::RegisterType( BoneSet() );
+	Object::RegisterType( ConstraintSet() );
 	Object::RegisterType( ContactForceSet() );
 	Object::RegisterType( CoordinateSet() );
-	Object::RegisterType( DofSet() );
+	Object::RegisterType( DofSet01_05() );
+	Object::RegisterType( TransformAxisSet() );
 	Object::RegisterType( GeneralizedForce() );
 	Object::RegisterType( JointSet() );
 	Object::RegisterType( Marker() );
@@ -108,6 +115,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( WrapSphere() );
 	Object::RegisterType( WrapTorus() );
 	Object::RegisterType( WrapObjectSet() );
+	Object::RegisterType( WrapCylinderObst() );
+	Object::RegisterType( WrapSphereObst() );
+   Object::RegisterType( WrapDoubleCylinderObst() );
 }
 
 osimSimulationInstantiator::osimSimulationInstantiator() 

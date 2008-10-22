@@ -19,8 +19,9 @@ public:
     virtual ~SwigDirector_SimtkAnimationCallback();
     virtual OpenSim::Object *copy() const;
     virtual OpenSim::Object *copy(DOMElement *aNode) const;
-    virtual void copy(OpenSim::Object const &aObject);
+    virtual void migrateFromPreviousVersion(OpenSim::Object const *aObject);
     virtual OpenSim::VisibleObject *getDisplayer() const;
+    virtual std::string const &getNewType() const;
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
     virtual void updateDefaultObjectsFromXMLNode();
@@ -36,10 +37,10 @@ public:
     virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
 public:
     bool swig_overrides(int n) {
-      return (n < 29 ? swig_override[n] : false);
+      return (n < 30 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[29];
+    bool swig_override[30];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {

@@ -275,12 +275,12 @@ public:
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *ControlSet);
 	void adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore);
-	void adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve);
+	void adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
 	void addNecessaryAnalyses();
 	void writeAdjustedModel();
 
-	static void computeAverageResiduals(const Storage &aForceStore,Array<double> &rFAve,Array<double> &rMAve);
-	static void computeAverageResiduals(Model &aModel, double aTi, double aTf, const Storage &aStatesStore, Array<double>& rFAve, Array<double>& rMAve);
+	static void computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve);
+	static void computeAverageResiduals(Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
 #endif
 //=============================================================================
 };	// END of class CMCTool

@@ -2,7 +2,7 @@
 #define __AbstractMuscle_h__
 
 // AbstractMuscle.h
-// Author: Peter Loan
+// Author: Peter Loan, Frank C. Anderson
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -58,11 +58,14 @@ class AbstractWrapObject;
 //=============================================================================
 //=============================================================================
 /**
- * A base class representing a SIMM muscle. It adds data and methods to
- * AbstractActuator, but does not implement all of the necessary methods,
- * so it is abstract too.
+ * A base class representing a muscle-tendon actuator. It adds data and methods
+ * to AbstractActuator, but does not implement all of the necessary methods,
+ * so it is abstract too. The path information for a muscle is contained
+ * in this class, and the force-generating behavior should be defined in
+ * the derived classes.
  *
  * @author Peter Loan
+ * @author Frank C. Anderson
  * @version 1.0
  */
 class OSIMSIMULATION_API AbstractMuscle : public AbstractActuator  
@@ -71,13 +74,15 @@ class OSIMSIMULATION_API AbstractMuscle : public AbstractActuator
 // DATA
 //=============================================================================
 protected:
+   // the set of attachment points defining the path of the muscle
 	PropertyObj _attachmentSetProp;
 	MusclePointSet &_attachmentSet;
 
-	// Support for Display
+	// used to display the muscle in the 3D window
 	PropertyObj _displayerProp;
 	VisibleObject &_displayer;
 
+   // the wrap objects that are associated with this muscle
 	PropertyObj _muscleWrapSetProp;
 	MuscleWrapSet &_muscleWrapSet;
 
@@ -143,32 +148,14 @@ public:
 	virtual double getFiberLength() = 0;
 	virtual double getNormalizedFiberLength() = 0;
 	virtual double getFiberLengthAlongTendon();
-	/*
-	virtual double getStrain();
-	virtual double getTendonStrain();
-	virtual double getFiberStrain();
-	virtual double getFiberStrainAlongTendon();
-	*/
 	virtual double getShorteningSpeed();
-	/*
-	virtual double getTendonShorteningSpeed();
-	virtual double getFiberShorteningSpeed();
-	virtual double getFiberShorteningSpeedAlongTendon();
-	*/
 	virtual double getFiberForce();
 	virtual double getActiveFiberForce();
 	virtual double getPassiveFiberForce() = 0;
 	virtual double getActiveFiberForceAlongTendon();
 	virtual double getPassiveFiberForceAlongTendon();
 	virtual double getMaxIsometricForce();
-	/*
-	virtual double getTendonPower();
-	virtual double getMusclePower();
-	virtual double getPassiveMusclePower();
-	virtual double getActiveMusclePower();
-	*/
 	virtual double getActivation() const = 0;
-
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -179,8 +166,7 @@ public:
 	virtual double computeMomentArm(AbstractCoordinate& aCoord);
 	virtual void computeMomentArms(Array<double> &rMomentArms);
 	virtual double
-		evaluateForceLengthVelocityCurve(double aActivation,double aNormalizedLength,double aNormalizedVelocity);
-	//virtual void computeMoments(Array<double> &rMoments);
+		evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity);
 	void computePath();
 	void applyWrapObjects();
 	double _calc_muscle_length_change(AbstractWrapObject& wo, WrapResult& wr);

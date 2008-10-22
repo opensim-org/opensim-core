@@ -205,3 +205,6 @@ void Constant::updateBoundingBox()
 	setMaxY(0.0);
 	setMaxZ(0.0);
 }
+const SimTK::Function<1>* Constant::createSimTKFunction() const {
+    return new FunctionAdapter(*this, 1);
+}

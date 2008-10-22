@@ -36,7 +36,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/SimmFileWriter.h>
 
 //=============================================================================
 // STATICS
@@ -396,14 +396,14 @@ double ModelScaler::computeMeasurementScaleFactor(const Model& aModel, const Mar
 {
 	double scaleFactor = 0;
 	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
-	if(aMeasurement.getNumMarkerPairs()==0) return rdMath::NAN;
+	if(aMeasurement.getNumMarkerPairs()==0) return rdMath::getNAN();
 	for(int i=0; i<aMeasurement.getNumMarkerPairs(); i++) {
 		const MarkerPair& pair = aMeasurement.getMarkerPair(i);
 		string name1, name2;
 		pair.getMarkerNames(name1, name2);
 		double modelLength = takeModelMeasurement(aModel, name1, name2, aMeasurement.getName());
 		double experimentalLength = takeExperimentalMarkerMeasurement(aMarkerData, name1, name2, aMeasurement.getName());
-		if(rdMath::isNAN(modelLength) || rdMath::isNAN(experimentalLength)) return rdMath::NAN;
+		if(rdMath::isNAN(modelLength) || rdMath::isNAN(experimentalLength)) return rdMath::getNAN();
 		cout << "\tpair " << i << " (" << name1 << ", " << name2 << "): model = " << modelLength << ", experimental = " << experimentalLength << endl;
 		scaleFactor += experimentalLength / modelLength;
 	}
@@ -431,7 +431,7 @@ double ModelScaler::takeModelMeasurement(const Model& aModel, const string& aNam
 			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
 		if (!marker2)
 			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
-		return rdMath::NAN;
+		return rdMath::getNAN();
 	}
 }
 
@@ -459,6 +459,6 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
 		if (marker2 < 0)
 			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
-		return rdMath::NAN;
+		return rdMath::getNAN();
 	}
 }

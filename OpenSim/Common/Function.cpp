@@ -116,30 +116,30 @@ setupProperties()
 {
 	// X
 	_propMinX.setName("min_x");
-	_propMinX.setValue(0.0);
+	_propMinX.setValue(rdMath::MINUS_INFINITY);
 	_propertySet.append( &_propMinX );
 
 	_propMaxX.setName("max_x");
-	_propMaxX.setValue(0.0);
+	_propMaxX.setValue(rdMath::PLUS_INFINITY);
 	_propertySet.append( &_propMaxX );
 
 	// Y
 	_propMinY.setName("min_y");
-	_propMinY.setValue(0.0);
+	_propMinY.setValue(rdMath::MINUS_INFINITY);
 	_propertySet.append( &_propMinY );
 
 	_propMaxY.setName("max_y");
-	_propMaxY.setValue(0.0);
+	_propMaxY.setValue(rdMath::PLUS_INFINITY);
 	_propertySet.append( &_propMaxY );
 
 
 	// Z
 	_propMinZ.setName("min_z");
-	_propMinZ.setValue(0.0);
+	_propMinZ.setValue(rdMath::MINUS_INFINITY);
 	_propertySet.append( &_propMinZ );
 
 	_propMaxZ.setName("max_z");
-	_propMaxZ.setValue(0.0);
+	_propMaxZ.setValue(rdMath::PLUS_INFINITY);
 	_propertySet.append( &_propMaxZ );
 
 }
@@ -381,7 +381,7 @@ void Function::isLinear(double aTol,
 	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
 		rMX = m2;
 	} else {
-		rMX = rdMath::NAN;
+		rMX = rdMath::getNAN();
 	}
 	// Y
 	m1 = evaluate(1,xmid,aMinY,zmid);
@@ -390,7 +390,7 @@ void Function::isLinear(double aTol,
 	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
 		rMY = m2;
 	} else {
-		rMY = rdMath::NAN;
+		rMY = rdMath::getNAN();
 	}
 	// Z
 	m1 = evaluate(1,xmid,ymid,aMinZ);
@@ -399,7 +399,7 @@ void Function::isLinear(double aTol,
 	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
 		rMZ = m2;
 	} else {
-		rMZ = rdMath::NAN;
+		rMZ = rdMath::getNAN();
 	}
 }
 

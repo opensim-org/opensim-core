@@ -101,6 +101,14 @@ public:
 		return *this;
 	}
 
+	virtual bool operator==(const Property &aProperty) const {
+		bool equal = Property::operator ==(aProperty);
+		if (equal){ 
+			if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
+			return ((*_value) == (*((PropertyObjPtr&) aProperty)._value));
+		}
+		return equal;
+	}
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------

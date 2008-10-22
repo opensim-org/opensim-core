@@ -502,7 +502,7 @@ divide(int aN,double aY[])
 	int i,n=aN;
 	if(n>_data.getSize()) n = _data.getSize();
 	for(i=0;i<n;i++) {  
-		if(aY[i]==0.0)	_data[i] = rdMath::NAN;
+		if(aY[i]==0.0)	_data[i] = rdMath::getNAN();
 		else	_data[i] /= aY[i];
 	}
 		
@@ -528,7 +528,7 @@ divide(StateVector *aStateVector)
 	// DIVIDE
 	int i;
 	for(i=0;i<n;i++) {  
-		if(data[i]==0.0)	_data[i] = rdMath::NAN;
+		if(data[i]==0.0)	_data[i] = rdMath::getNAN();
 		else	_data[i] /= data[i];
 	}
 }

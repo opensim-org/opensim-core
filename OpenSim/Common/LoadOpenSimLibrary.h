@@ -33,7 +33,7 @@
 #include <string>
 #include "osimCommonDLL.h"
 
-#ifdef __linux__
+#ifndef _WIN32
 #define OPENSIM_PORTABLE_HMODULE void *
 #define OPENSIM_PORTABLE_HINSTANCE void *
 #define WINAPI

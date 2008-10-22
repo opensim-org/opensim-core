@@ -32,12 +32,22 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimSimbodyEngine.h"
 #include "SimbodyEngine.h"
-#include "SimbodyBody.h"
-#include "SimbodyJoint.h"
-#include "SimbodyRotationDof.h"
-#include "SimbodyTranslationDof.h"
-#include "SimbodyCoordinate.h"
-#include "SimbodySpeed.h"
+#include "Body.h"
+#include "Constraint.h"
+#include "WeldConstraint.h"
+#include "CoordinateCouplerConstraint.h"
+#include "CustomJoint.h"
+#include "TransformAxis.h"
+#include "Coordinate.h"
+#include "Speed.h"
+#include "SimbodyEngine01_05.h"
+#include "SimbodyBody01_05.h"
+#include "SimbodyJoint01_05.h"
+#include "SimbodyRotationDof01_05.h"
+#include "SimbodyTranslationDof01_05.h"
+#include "SimbodyCoordinate01_05.h"
+#include "SimbodySpeed01_05.h"
+
 
 using namespace std;
 using namespace OpenSim;
@@ -53,13 +63,26 @@ OSIMSIMBODYENGINE_API void RegisterTypes_SimbodyEngine()
 {
 	cout<<"RegisterTypes_SimbodyEngine\n";
 
+	// CURRENT RELEASE
 	Object::RegisterType( SimbodyEngine() );
-	Object::RegisterType( SimbodyBody() );
-	Object::RegisterType( SimbodyJoint() );
-	Object::RegisterType( SimbodyRotationDof() );
-	Object::RegisterType( SimbodyTranslationDof() );
-	Object::RegisterType( SimbodyCoordinate() );
-	Object::RegisterType( SimbodySpeed() );
+	Object::RegisterType( Body() );
+	Object::RegisterType( Constraint() );
+	Object::RegisterType( WeldConstraint() );
+	Object::RegisterType( CoordinateCouplerConstraint() );
+	Object::RegisterType( CustomJoint() );
+	Object::RegisterType( TransformAxis() );
+	Object::RegisterType( Coordinate() );
+	Object::RegisterType( Speed() );
+
+	// RELEASE 1.5
+	Object::RegisterType( SimbodyEngine01_05() );
+	Object::RegisterType( SimbodyBody01_05() );
+	Object::RegisterType( SimbodyJoint01_05() );
+	Object::RegisterType( SimbodyCoordinate01_05() );
+	Object::RegisterType( SimbodySpeed01_05() );
+	Object::RegisterType( SimbodyRotationDof01_05() );
+	Object::RegisterType( SimbodyTranslationDof01_05() );
+
 }
 
 osimSimbodyEngineInstantiator::osimSimbodyEngineInstantiator() 

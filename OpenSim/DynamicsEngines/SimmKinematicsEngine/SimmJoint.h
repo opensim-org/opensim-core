@@ -42,7 +42,7 @@
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/DofSet01_05.h>
 
 namespace OpenSim {
 
@@ -68,7 +68,7 @@ protected:
 	Array<std::string>& _bodies;
 
 	PropertyObj _dofSetProp;
-	DofSet &_dofSet;
+	DofSet01_05 &_dofSet;
 
    AbstractBody *_childBody;
    AbstractBody *_parentBody;
@@ -97,15 +97,16 @@ public:
 #endif
    void copyData(const SimmJoint &aJoint);
 
-	virtual DofSet* getDofSet() const { return &_dofSet; }
-	virtual AbstractBody* getChildBody() const { return _childBody; }
+	DofSet01_05* getDofSet() const { return &_dofSet; }
+	virtual AbstractBody* getBody() const { return _childBody; }
 	virtual AbstractBody* getParentBody() const { return _parentBody; }
+	// NEED Implementation
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
-	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;
-	virtual void getLocationInParent(double rLocation[]) const;
-	virtual void setLocationInChild(const SimTK::Vec3& aLocation);
-	virtual void getLocationInChild(SimTK::Vec3& rLocation) const;
-	virtual void getLocationInChild(double rLocation[]) const;
+	virtual void getLocationInParent(SimTK::Vec3& rLocation) const ;
+	virtual void getLocationInParent(double rLocation[]) const ;
+	virtual void setLocationInChild(const SimTK::Vec3& aLocation) ;
+	virtual void getLocationInChild(SimTK::Vec3& rLocation) const ;
+	virtual void getLocationInChild(double rLocation[]) const ;
 	virtual const Transform& getForwardTransform();
 	virtual const Transform& getInverseTransform();
 	virtual void invalidate();

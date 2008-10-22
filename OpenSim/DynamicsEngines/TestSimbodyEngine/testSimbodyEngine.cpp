@@ -45,12 +45,51 @@
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
-
-//#include <OpenSim/Simulation/TestSuite/rdModelTestSuite.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/TransformAxis.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/WeldConstraint.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/NatCubicSpline.h>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+// Helper class to construct bounds functions, which returns non-zero values for values
+// outside the min and max range
+class RangeFunction : public SimTK::Function<1> {
+// returns q-qmax for q > qmax and q-qmin for q < qmin
+private:
+	const double _qmin;
+	const double _qmax;
+
+public:
+	
+	RangeFunction(const double qmin, const double qmax) : _qmin(qmin), _qmax(qmax){
+	}
+
+    Vec<1> calcValue(const Vector& x) const {
+		double q = x[0];
+		Vec1 val(((q-_qmin)-abs(q-_qmin))/2 + ((q-_qmax)+abs(q-_qmax))/2);
+		return val;
+    }
+    Vec<1> calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+		if (derivComponents.size() == 1){
+			return calcValue(x)/x.norm();
+		}
+        return Vec1(0);
+    }
+
+    int getArgumentSize() const {
+        return 1;
+    }
+    int getMaxDerivativeOrder() const {
+        return 2;
+    }
+};
+
+
 
 //______________________________________________________________________________
 /**
@@ -59,170 +98,160 @@ using namespace std;
  */
 int main()
 {
-	// STEP 1
+	//Make sure that the SimbodyEngine library is available
+	LoadOpenSimLibrary("osimSimbodyEngine");
+
 	// Set output precision
-	IO::SetPrecision(20);
-	//IO::SetDigitsPad(-1);
+	IO::SetPrecision(10);
 
-	// STEP 2
-	// Construct the actuator set, contact set, and control set.
-	//ActuatorSet actuatorSet("fallingBlock_actuators.xml");
-	//ContactForceSet contactSet("fallingBlock_contacts.xml");
-	//ControlSet controlSet("fallingBlock_controls.xml");
+	// Test Model reading with constraints
+	Model gaitModel("gait2354_simbody_patella_loop.osim");
+	gaitModel.setup();
+	gaitModel.printDetailedInfo(cout);
 
-	// STEP 3
-	// Construct the model and print out some information
-	// about the model.  The model is build as a dynamically linked library
-	// (rdBlock.dll on Windows).
-	SimbodyEngine *pendulum = new SimbodyEngine();
-	//Model *model = new Model;
-	//model->setDynamicsEngine(*pendulum);
-	Model *model;
-	try {
-		model = new Model("gait2354_simbody.osim");
-		model->setup();
-	} catch(OpenSim::Exception x) {
-		x.print(cerr);
-		return -1;
-	}
+	
+	// Add prescribed motion to the knees
+	double t_k[] = {0.0000, 0.1000, 0.2000, 0.3000, 0.4000, 0.5000, 0.6000, 0.7000, 0.8000, 0.9000, 1.0000};
+	double ang_k[] = {-1.5708, -0.6475, -0.0769, -0.0769, -0.6475, -1.5708, -2.4941, -3.0647, -3.0647, -2.4941, -1.5708};
+	NatCubicSpline *knee_func = new NatCubicSpline(10, t_k, ang_k);
+	//Coordinate *knee_r = dynamic_cast<Coordinate *>(gaitModel.getDynamicsEngine().getCoordinateSet()->get("knee_angle_r"));
+	//knee_r->setPrescribedFunction(knee_func);
+	
+	Coordinate *knee_l = dynamic_cast<Coordinate *>(gaitModel.getDynamicsEngine().getCoordinateSet()->get("knee_angle_l"));
+	knee_l->setPrescribedFunction(knee_func);
+	
+	//// Write to latest model file format
+	//gaitModel.copy()->print("gait2354_simbody_patella_out.osim");
 
-	/*
-	// ADD FORCE(S)
-	int index = 0;
-	// Gen. Force 1
-	GeneralizedForce *gf1 = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
-	gf1->setName("gf2");
-	gf1->setModel(model);
-	gf1->setOptimalForce(15);
-	// Gen. Force 2
-	GeneralizedForce *gf2 = new GeneralizedForce(model->getDynamicsEngine().getCoordinateSet()->get(index)->getName());
-	gf2->setName("gf2");
-	gf2->setModel(model);
-	gf2->setOptimalForce(20);
-	// Force 1
-	Force *f1 = new Force("Pendulum","ground");
-	OpenSim::Array<double> directionA(0.0,3);  directionA[0] = 1.0;
-	f1->setName("f1");
-	f1->setForceDirectionA(&directionA[0]);
-	OpenSim::Array<double> massCenter(0.0,3);
-	model->getDynamicsEngine().getBodySet()->get("Pendulum")->getMassCenter(&massCenter[0]);
-	cout<<"mass center = "<<massCenter<<endl;
-	f1->setPointB(&massCenter[0]);
-	f1->setOptimalForce(30.210);
-	f1->setModel(model);
-	// Add to model
-	//model->getActuatorSet()->append(gf1);
-	//model->getActuatorSet()->append(gf2);
-	//model->getActuatorSet()->append(f1);
-	*/
+	// First weld the pelvis so model is not flying through space
+	//Vec3 locInGround(0.0, 0.75, 0);
+	//Vec3 locInPelvis(0.0);
+	//WeldConstraint *aConstraint = new WeldConstraint();
+	//aConstraint->setBody1ByName("ground");
+	//aConstraint->setBody1WeldLocation(locInGround);
+	//aConstraint->setBody2ByName("pelvis");
+	//aConstraint->setBody2WeldLocation(locInPelvis);
+	//gaitModel.getDynamicsEngine().getConstraintSet()->append(aConstraint);
+	gaitModel.getDynamicsEngine().setup(&gaitModel);
 
-	// Setup model
-	model->setup();
-	Mat33 inertia(0.0);
-	model->getDynamicsEngine().getBodySet()->get("ground")->setInertia(inertia);
-	model->printDetailedInfo(cout);
+	//Now that model is setup we should be to change the state of things
+	//knee_r->setIsPrescribed(true);
+	knee_l->setIsPrescribed(true);
 
-	// STEP 4
+	bool isConstrained = gaitModel.getDynamicsEngine().getCoordinateSet()->get("pelvis_tx")->isConstrained();
+	cout<<"Pelvis_tx is constrained: "<< isConstrained <<endl;
+	isConstrained = gaitModel.getDynamicsEngine().getCoordinateSet()->get("tib_tx_r")->isConstrained();
+	cout<<"Tibia_tx is constrained: "<< isConstrained <<endl;
+	isConstrained = gaitModel.getDynamicsEngine().getCoordinateSet()->get("pat_angle_r")->isConstrained();
+	cout<<"Patella rotation is constrained: "<< isConstrained <<endl;
+
 	// Set the initial states
-	OpenSim::Array<double> yi(0.0,model->getNumStates());
-	model->getInitialStates(&yi[0]);
-	//yi[1] = 1.57;
-	model->setInitialStates(&yi[0]);
+	OpenSim::Array<double> yi(0.0,gaitModel.getNumStates());
+	gaitModel.getInitialStates(&yi[0]);
 
-	// STEP 5
-	// Set the acceleration due to gravity.
-	Vec3 g(0.0, -10.0, 0.0 );
-	model->setGravity(g);
+	int nq = gaitModel.getDynamicsEngine().getCoordinateSet()->getSize();
 
-	// STEP 6
+	// get right knee angle index 
+	int ind_r = gaitModel.getDynamicsEngine().getCoordinateSet()->getIndex("knee_angle_r"); 
+
+	yi[ind_r] = -2.09439510/2; // angle
+	// Provide initial states that satisfy the constraints
+	yi[1] = 0.93;
+	yi[nq+1] = 1;
+
+	//Left knee index
+	int ind_l = gaitModel.getDynamicsEngine().getCoordinateSet()->getIndex("knee_angle_l");
+	yi[ind_l]= yi[ind_r];
+
+	// initial knee angular velocities
+	yi[ind_l+nq]= yi[ind_r+nq] = -1.0;
+
+
+	//gaitModel.getDynamicsEngine().getCoordinateSet()->get("pelvis_ty")->setLocked(true);
+	//gaitModel.getDynamicsEngine().getCoordinateSet()->get("knee_angle_r")->setDefaultValue(-2.09439510);
+	//gaitModel.getDynamicsEngine().getCoordinateSet()->get("knee_angle_r")->setLocked(true);
+
+	bool isLocked = gaitModel.getDynamicsEngine().getCoordinateSet()->get("pelvis_tx")->getLocked();
+	cout<<"Pelvis_tx is locked: "<< isLocked <<endl;
+	isLocked = gaitModel.getDynamicsEngine().getCoordinateSet()->get("pelvis_ty")->getLocked();
+	cout<<"Pelvis_ty is locked: "<< isLocked <<endl;
+	isLocked = gaitModel.getDynamicsEngine().getCoordinateSet()->get("knee_angle_r")->getLocked();
+	cout<<"Knee_angle_r is locked: "<< isLocked <<endl;
+
+
 	// Add analyses to the model->
 	// These analyses will gather information during a simulation
 	// without altering the simulation.
 	// stepInterval specifies how frequently analyses will record info,
 	// every four integration steps in this case.
-	int stepInterval = 1;
-	// Kinematics
-	Kinematics *kin = new Kinematics(model);
-	kin->setStepInterval(stepInterval);
-	model->addAnalysis(kin);
+	int stepInterval = 4;
+
 	// Point Kinematics
 	Vec3 point(0.0);
-	BodySet *bodySet = model->getDynamicsEngine().getBodySet();
+	BodySet *bodySet = gaitModel.getDynamicsEngine().getBodySet();
 	int nb = bodySet->getSize();
-	for(int i=0;i<nb;i++) {
-		PointKinematics *pointKin = new PointKinematics(model);
-		AbstractBody *body = bodySet->get(i);
+
+	OpenSim::Array<std::string> tibias;
+	tibias.append("tibia_r");
+	tibias.append("tibia_l");
+
+	for(int i=0; i<tibias.getSize(); i++) {
+		PointKinematics *pointKin = new PointKinematics(&gaitModel);
+		AbstractBody *body = bodySet->get(tibias.get(i));
 		pointKin->setBodyPoint(body->getName(),point);
 		pointKin->setPointName(body->getName().c_str());
-		model->addAnalysis(pointKin);
+		gaitModel.addAnalysis(pointKin);
 	}
-	// Point Kinematics
-	//PointKinematics *pointKin2 = new PointKinematics(model);
-	//pointKin2->setBodyPoint("Pendulum2",&point[0]);
-	//pointKin2->setPointName("Pendulum2Frame");
-	//model->addAnalysis(pointKin2);
-	// Actuation
-	Actuation *actuation = new Actuation(model);
-	actuation->setStepInterval(stepInterval);
-	model->addAnalysis(actuation);
-	// Contact
-	//Contact *contact = new Contact(&model);
-	//contact->setStepInterval(stepInterval);
-	//model->addAnalysis(contact);
+	Kinematics *modelKin = new Kinematics(&gaitModel);
+	gaitModel.addAnalysis(modelKin);
 
+	//Use DynamicsEngine to find initial values for constrained coupled-coordindates
+	gaitModel.getDynamicsEngine().computeConstrainedCoordinates(&yi[0]);
+	cout<<"\nInitial conditions:\n "<<yi<<endl;
+	gaitModel.setInitialStates(&yi[0]);
 
-	// STEP 7
+	Vec3 grav; 
+	gaitModel.getDynamicsEngine().getGravity(grav);
+	cout << "gravity = " << grav << endl;
+
+	SimTK::Vector_<Vec3> rForces, rTorques;
+	rForces.resize(15);
+	rTorques.resize(15);
+	gaitModel.getDynamicsEngine().computeReactions(rForces, rTorques);
+
+	gaitModel.getDynamicsEngine().getConfiguration(&yi[0]);
+	cout<<"\nSimbody initial states:\n "<<yi<<endl;
+
 	// Construct the integrand and the manager.
-	// The model integrand is what is integrated during the simulation.
+	// The model2 integrand is what is integrated during the simulation.
 	// The manager takes care of a variety of low-level initializations.
-	ModelIntegrand *integrand = new ModelIntegrand(model);
-	//integrand->setControlSet(controlSet);
-	int nx = integrand->getControlSet()->getSize();
-	cout<<"NumControls = "<<nx<<endl;
-	for(int i=0;i<nx;i++) {
-		Control *x = integrand->getControlSet()->get(i);
-		if(x) x->setControlValue(0,1.0);
-	}
+	ModelIntegrand *integrand = new ModelIntegrand(&gaitModel);
 	Manager manager(integrand);
 
-	// STEP 8
 	// Specify the initial and final times of the simulation.
 	// In this case, the initial and final times are set based on
 	// the range of times over which the controls are available.
 	//Control *control;
-	double ti=0.0,tf=0.1;
-	//control = controlSet.get("ti");
-	//if(control!=NULL) ti = control->getControlValue();
-	//control = controlSet.get("tf");
-	//if(control!=NULL) tf = control->getControlValue();
+	double ti=0.0,tf=1.0;
 	manager.setInitialTime(ti);
 	manager.setFinalTime(tf);
 
-	// STEP 9
 	// Set up the numerical integrator.
-	int maxSteps = 20000;
+	int maxSteps = 50000;
 	IntegRKF *integ = manager.getIntegrator();
 	integ->setMaximumNumberOfSteps(maxSteps);
 	integ->setMaxDT(1.0e-1);
-	integ->setTolerance(1.0e-3);
-	integ->setFineTolerance(5.0e-5);
+	integ->setTolerance(1.0e-5);
+	integ->setFineTolerance(1.0e-8);
 
-	// STEP 10
 	// Integrate
 	cout<<"\n\nIntegrating from "<<ti<<" to "<<tf<<endl;
 	manager.integrate();
 
-	// STEP 11
 	// Print the analysis results.
-	model->getAnalysisSet()->printResults("SimbodyPendulum","./");
-	//model->print("pendulum.osim");
+	gaitModel.getAnalysisSet()->printResults("test","./Results");
 
-//	ModelTestSuite aModelTestSuite;
-//	aModelTestSuite.Test(model);
-
-
-	// DELETE MODEL
-//	delete model;
+	gaitModel.print("gait2354_simbody_patella_out.osim");
 
 	return 0;
 }

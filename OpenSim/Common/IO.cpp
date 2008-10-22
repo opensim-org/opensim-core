@@ -38,7 +38,7 @@
 #include <string>
 
 #include "IO.h"
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #elif defined(_MSC_VER)
@@ -477,7 +477,7 @@ int IO::
 makeDir(const string &aDirName)
 {
 
-#ifdef __linux__
+#if defined __linux__ || defined __APPLE__
 	return mkdir(aDirName.c_str(),S_IRWXU);
 #else
 	return _mkdir(aDirName.c_str());
@@ -492,7 +492,7 @@ int IO::
 chDir(const string &aDirName)
 {
 
-#ifdef __linux__
+#if defined __linux__ || defined __APPLE__
 	return chdir(aDirName.c_str()); 
 #else
 	return _chdir(aDirName.c_str());
@@ -508,7 +508,7 @@ string IO::
 getCwd()
 {
 	char buffer[PATH_MAX];
-#ifdef __linux__
+#if defined __linux__ || defined __APPLE__
 	getcwd(buffer, PATH_MAX); 
 #else
 	_getcwd(buffer, PATH_MAX);

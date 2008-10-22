@@ -35,7 +35,7 @@
 using namespace OpenSim;
 using namespace std;
 
-#ifdef __linux__
+#ifndef _WIN32
 // Current solution for linux compatibility is to remap LoadLibrary/GetProcAddress to dlopen/dlsym
 // using macros.  Also use macros for portable handles.
 //

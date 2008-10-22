@@ -1,29 +1,5 @@
 // PerturbationTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/* Copyright (c)  2006 Stanford University
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 //=============================================================================
 // INCLUDES
@@ -53,8 +29,13 @@
 
 
 
-using namespace OpenSim;
 using namespace std;
+using namespace OpenSim;
+using namespace SimTK;
+
+
+static bool Check = true;
+
 
 
 //=============================================================================
@@ -282,13 +263,37 @@ bool PerturbationTool::run()
 	// CHECK CONTROLS
 	checkControls(controlSet);
 
+	// Initial and final times
+	// If the times lie outside the range for which control values are
+	// available, the initial and final times are altered.
+	int first = 0;
+	ControlLinear *control = (ControlLinear*)controlSet->get(first);
+	if(control==NULL) {
+		cout<<"\n\nError- There are no controls.\n\n";
+		exit(-1);
+	}
+	double ti = control->getFirstTime();
+	double tf = control->getLastTime();
+	// Check initial time.
+	if(_ti<ti) {
+		cout<<"\n\nControls not available at "<<_ti<<".  ";
+		cout<<"Changing initial time to "<<ti<<".";
+		_ti = ti;
+	}
+	// Check final time.
+	if(tf<_tf) {
+		cout<<"\n\nControls not available at "<<_tf<<".  ";
+		cout<<"Changing final time to "<<tf<<".";
+		_tf = tf;
+	}
+	
 	// GROUND REACTION FORCES
 	ForceApplier *body1Force,*body2Force;
-	initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+	InitializeExternalLoads(_ti, _tf, _model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
 
 	// CORRECTIVE SPRINGS
-	addCorrectiveSprings(body1Force,body2Force);
+	addCorrectiveSprings(_yStore,body1Force,body2Force);
 
 
 	// Gather actuators to perturb
@@ -321,6 +326,7 @@ bool PerturbationTool::run()
 	// Actuation
 	Actuation *actuation = new Actuation(_model);
 	_model->addAnalysis(actuation);
+	actuation->setStepInterval(1);
 
 	Kinematics *kin=0;
 	BodyKinematics *bodyKin=0;
@@ -337,29 +343,7 @@ bool PerturbationTool::run()
 	integrand.setControlSet(*controlSet);
 	Manager manager(&integrand);
 	manager.setSessionName(getName());
-	// Initial and final times
-	// If the times lie outside the range for which control values are
-	// available, the initial and final times are altered.
-	int first = 0;
-	ControlLinear *control = (ControlLinear*)controlSet->get(first);
-	if(control==NULL) {
-		cout<<"\n\nError- There are no controls.\n\n";
-		exit(-1);
-	}
-	double ti = control->getFirstTime();
-	double tf = control->getLastTime();
-	// Check initial time.
-	if(_ti<ti) {
-		cout<<"\n\nControls not available at "<<_ti<<".  ";
-		cout<<"Changing initial time to "<<ti<<".";
-		_ti = ti;
-	}
-	// Check final time.
-	if(tf<_tf) {
-		cout<<"\n\nControls not available at "<<_tf<<".  ";
-		cout<<"Changing final time to "<<tf<<".";
-		_tf = tf;
-	}
+
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
 	cout<<"\n\nPerforming perturbations over the range ti=";
@@ -379,7 +363,7 @@ bool PerturbationTool::run()
 	_model->addDerivCallback(perturbation);
 
 	int gravity_axis = 1;
-	SimTK::Vec3 original_gravity;
+	Vec3 original_gravity;
 	int nperturb = actuators.getSize() + (_perturbGravity ? 1 : 0);
 
 	if(_perturbGravity) _model->getGravity(original_gravity);
@@ -466,9 +450,10 @@ bool PerturbationTool::run()
 	// From now on we'll only need the last state vectors recorded in these analyses, so we
 	// set their step interval to a large number to avoid them computing and writing their
 	// data at the (many) individual integration steps.
-	if(kin && !_outputDetailedResults) kin->setStepInterval(1000000);
-	if(bodyKin) bodyKin->setStepInterval(1000000);
-	actuation->setStepInterval(1000000);
+	int stepInterval = 1000000;
+	if(Check) stepInterval = 1;
+	if(kin && !_outputDetailedResults) kin->setStepInterval(stepInterval);
+	if(bodyKin) bodyKin->setStepInterval(stepInterval);
 
 	IO::makeDir(getResultsDir());
 
@@ -497,6 +482,7 @@ bool PerturbationTool::run()
 		_model->setInitialStates(&yi[0]);
 
 		// RESET ANALYSES
+		actuation->getForceStorage()->reset();
 		if(kin) {
 			kin->getPositionStorage()->reset();
 			kin->getVelocityStorage()->reset();
@@ -510,11 +496,49 @@ bool PerturbationTool::run()
 		actuation->getForceStorage()->reset();
 
 		// INTEGRATE (1)
+		// This integration is to record the actuator forces applied during
+		// the unperturbed simulation.
+		if(_body1Lin) _body1Lin->setOn(false);
+		if(_body1Tor) _body1Tor->setOn(false);
+		if(_body2Lin) _body2Lin->setOn(false);
+		if(_body2Tor) _body2Tor->setOn(false);
 		integ->setUseSpecifiedDT(false);
 		perturbation->setOn(false);
-		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert<<endl;
+		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert;
+		cout<<" to record the unperturbed kinematics and actuator forces."<<endl;
 		manager.integrate();
+
+		// SET THE UNPERTURBED ACTUATOR FORCES
+		perturbation->setUnperturbedForceSplineSet(actuation->getForceStorage());
+		if(Check) {
+			double dx = 1.0e-4;
+			GCVSplineSet *forceSplines = perturbation->getUnperturbedForceSplineSet();
+			Storage *forceStore = forceSplines->constructStorage(0,dx);
+			forceStore->print("unperturbedForcesFromSplines.sto");
+			delete forceStore;
+		}
+
+		// SET THE TARGET FUNCTIONS FOR THE CORRECTIVE SPRINGS
+		Storage qStore,uStore;
+		Storage *integStateStore = manager.getIntegrand()->getStateStorage();
+		//double dtUniform = 0.001;  // Period of ten times low-pass cutoff frequency of 6.0 Hz.
+		//integStateStore->resampleLinear(dtUniform);
+		_model->getDynamicsEngine().extractConfiguration(*integStateStore,qStore,uStore);
+		// Compute targets
+		if(_body1Lin) { _body1Lin->setOn(true); _body1Lin->computeTargetFunctions(qStore,uStore); }
+		if(_body1Tor) { _body1Tor->setOn(true); _body1Tor->computeTargetFunctions(qStore,uStore); }
+		if(_body2Lin) { _body2Lin->setOn(true); _body2Lin->computeTargetFunctions(qStore,uStore); }
+		if(_body2Tor) { _body2Tor->setOn(true); _body2Tor->computeTargetFunctions(qStore,uStore); }
 		
+		// INTEGRATE (2)
+		// This integration is to record the kinematics after the corrective
+		// springs have been added and the actuator forces are applied via the splines.
+		cout<<"\n\nUnperturbed integration (2) from "<<tiPert<<" to "<<tfPert;
+		cout<<" to record the unperturbed kinematics after coorective springs have been";
+		cout<<" added and the perturbation analysis has been turned on."<<endl;
+		perturbation->setOn(true);
+		manager.integrate();
+
 		// record unperturbed accelerations:
 		Array<double> unperturbedAccel(0.0, nvalues);
 		if(kin) {
@@ -523,6 +547,9 @@ bool PerturbationTool::run()
 			const Array<double> &posEnd = kin->getPositionStorage()->getLastStateVector()->getData();
 			double dt=kin->getPositionStorage()->getLastTime() - kin->getPositionStorage()->getFirstTime();
 			if(dt>1e-8) for(int i=0;i<ncoords;i++) unperturbedAccel[i] = 2*(posEnd[i]-posStart[i]-dt*velStart[i])/(dt*dt);
+			const Array<double> &unperturbedCoordinates = kin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
+			for(int i=0;i<ncoords;i++) values_unperturbed[i] = unperturbedCoordinates[i];
+			if(Check) kin->getPositionStorage()->print("unperturbedKinematics.sto");
 		}
 		if(bodyKin) {
 			const Array<double> &posStart = bodyKin->getPositionStorage()->getStateVector(0)->getData();
@@ -530,34 +557,19 @@ bool PerturbationTool::run()
 			const Array<double> &posEnd = bodyKin->getPositionStorage()->getLastStateVector()->getData();
 			double dt=bodyKin->getPositionStorage()->getLastTime() - bodyKin->getPositionStorage()->getFirstTime();
 			if(dt>1e-8) for(int i=0;i<nbodycoords;i++) unperturbedAccel[ncoords+i] = 2*(posEnd[i]-posStart[i]-dt*velStart[i])/(dt*dt);
+			const Array<double> &unperturbedBodyCoordinates = bodyKin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
+			for(int i=0;i<nbodycoords;i++) values_unperturbed[ncoords+i] = unperturbedBodyCoordinates[i];
+			if(Check) bodyKin->getPositionStorage()->print("unperturbedBodyKinematics.sto");
 		}
 		unperturbedAccelStorage.append(tiPert, nvalues, &unperturbedAccel[0]);
 		char fileName[Object::NAME_LENGTH];
 		sprintf(fileName,"%s/%s_unperturbedAccel_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),_pertWindow,_pertDF);
 		unperturbedAccelStorage.print(fileName);
+		//exit(0);
 
 		// If we are not perturbing any actuators/gravity, we must only be computing unperturbed accelerations...
 		// so can skip rest of this loop body.
 		if(nperturb==0) continue;
-
-		// INTEGRATE (2) - Record unperturbed muscle forces
-		integ->setUseSpecifiedDT(true);
-		perturbation->setOn(true);
-		perturbation->getUnperturbedForceStorage()->reset(); 
-		perturbation->setRecordUnperturbedForces(true);
-		cout<<"\nUnperturbed integration 2 to record forces and kinematics" << endl;
-		manager.integrate();
-		perturbation->setRecordUnperturbedForces(false);
-
-		// Get unperturbed values (concatenate generalized coordinates and body coordinates)
-		if(kin) {
-			const Array<double> &unperturbedCoordinates = kin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
-			for(int i=0;i<ncoords;i++) values_unperturbed[i] = unperturbedCoordinates[i];
-		}
-		if(bodyKin) {
-			const Array<double> &unperturbedBodyCoordinates = bodyKin->getPositionStorage()->getLastStateVector()->getData(); // at end of timestep
-			for(int i=0;i<nbodycoords;i++) values_unperturbed[ncoords+i] = unperturbedBodyCoordinates[i];
-		}
 
 		// Unperturbed forces
 		Array<double> &unperturbedForcesAll = actuation->getForceStorage()->getStateVector(0)->getData(); // at BEGINNING of timestep
@@ -583,8 +595,8 @@ bool PerturbationTool::run()
 				cout<<"\nGravity perturbation"<<endl;
 				actuatorName = "gravity";
 				perturbation->setActuator(0); 
-				SimTK::Vec3 grav;
-				for(int i=0;i<3;i++) grav[i]=original_gravity[i];
+				Vec3 grav;
+				grav = original_gravity;
 				grav[gravity_axis] += _pertDF;
 				_model->setGravity(grav);
 			}

@@ -38,6 +38,7 @@
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
 #include "Function.h"
+#include "FunctionAdapter.h"
 
 
 //=============================================================================
@@ -127,14 +128,15 @@ public:
 	// EVALUATION
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
-	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0);
-	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt);
-	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
+	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) const;
+	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
+	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
+    const SimTK::Function<1>* createSimTKFunction() const;
 
 	virtual void updateFromXMLNode();
 
 private:
-	double evaluate(double aX, double velocity, double acceleration, int aDerivOrder);
+	double evaluate(double aX, double velocity, double acceleration, int aDerivOrder) const;
 	void calcCoefficients();
 
 	OPENSIM_DECLARE_DERIVED(NatCubicSpline, Function)

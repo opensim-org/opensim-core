@@ -50,10 +50,8 @@ using SimTK::Mat33;
 const double rdMath::PI_2 = asin(1.0);
 const double rdMath::SMALL = 1.0e-8;
 const double rdMath::ZERO = 1.0e-14;
-const double rdMath::NAN = SimTK::CNT<SimTK::Real>::getNaN();
-const double rdMath::INFINITY = 1.0e30;
-const double rdMath::MINUS_INFINITY = -INFINITY;
-const double rdMath::PLUS_INFINITY = INFINITY;
+const double rdMath::MINUS_INFINITY = -1.0e30;
+const double rdMath::PLUS_INFINITY = 1.0e30;
 
 #define LINE_EPSILON 0.00001
 
@@ -392,7 +390,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
 	double denom = cross_prod.normSqr();
 
 	if (EQUAL_WITHIN_ERROR(denom,0.0)) {
-		s = t = rdMath::NAN;
+		s = t = rdMath::getNAN();
 		return false;
 	}
 

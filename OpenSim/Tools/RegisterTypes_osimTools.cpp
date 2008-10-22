@@ -54,7 +54,10 @@
 
 #include "rdCMC_Point.h"
 #include "rdCMC_Joint.h"
+#include "SMC_Joint.h"
 #include "rdCMC_TaskSet.h"
+
+#include "SimpleFeedbackController.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -93,6 +96,10 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( rdCMC_Joint() );
 	Object::RegisterType( rdCMC_Point() );
 	Object::RegisterType( rdCMC_TaskSet() );
+
+	Object::RegisterType( SMC_Joint() );
+
+	Object::RegisterType( SimpleFeedbackController() );
 }
 
 

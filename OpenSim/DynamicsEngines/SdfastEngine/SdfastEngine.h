@@ -53,7 +53,7 @@ class SdfastJoint;
 class SdfastSpeed;
 class CoordinateSet;
 class AbstractBody;
-class AbstractDof;
+class AbstractTransformAxis;
 class AbstractCoordinate;
 class Model;
 class Transform;
@@ -155,7 +155,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
-	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) { return NULL; }
+	virtual AbstractTransformAxis* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) { return NULL; }
 
 	//--------------------------------------------------------------------------
 	// SD/FAST FUNCTIONS

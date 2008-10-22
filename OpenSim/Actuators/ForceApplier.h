@@ -42,7 +42,6 @@
 #include <OpenSim/Common/VectorFunction.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Analyses/Contact.h>
 
 
 //=============================================================================
@@ -92,7 +91,8 @@ public:
 	ForceApplier(Model *aModel,AbstractBody *aBody);	
 	ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
 		Storage *forceData,int fxNum,int fyNum,int fzNum,
-		int pxNum,int pyNum,int pzNum,Storage *aQStore,Storage *aUStore);
+		int pxNum,int pyNum,int pzNum,Storage *aQStore,Storage *aUStore,
+		double firstTime=rdMath::MINUS_INFINITY, double lastTime=rdMath::PLUS_INFINITY);
 	virtual ~ForceApplier();
 private:
 	void setNull();

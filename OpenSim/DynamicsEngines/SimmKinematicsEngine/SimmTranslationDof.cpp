@@ -68,7 +68,7 @@ SimmTranslationDof::~SimmTranslationDof()
  * @param aDof SimmTranslationDof to be copied.
  */
 SimmTranslationDof::SimmTranslationDof(const SimmTranslationDof &aDof) :
-   AbstractDof(aDof)
+   AbstractDof01_05(aDof)
 {
 	setNull();
 	copyData(aDof);
@@ -97,7 +97,7 @@ Object* SimmTranslationDof::copy() const
  */
 void SimmTranslationDof::updateFromXMLNode()
 {
-	AbstractDof::updateFromXMLNode();
+	AbstractDof01_05::updateFromXMLNode();
 
 	if (_name == TX_NAME)
 	{
@@ -149,7 +149,7 @@ void SimmTranslationDof::setNull()
 SimmTranslationDof& SimmTranslationDof::operator=(const SimmTranslationDof &aDof)
 {
 	// BASE CLASS
-	AbstractDof::operator=(aDof);
+	AbstractDof01_05::operator=(aDof);
 
 	copyData(aDof);
 

@@ -51,7 +51,7 @@
  * Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::NAN
+ * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::getNAN()
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *

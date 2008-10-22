@@ -116,12 +116,15 @@ ForceApplier(Model *aModel, AbstractBody *aBody) :
  * @param aUStore Storage containing the time history of generalized
  * speeds for the model.  Note that all generalized speeds must
  * be specified and in radians.
+ * @param firstTime is the first time at which the applier will be evaluated.
+ * @param lastTime is the last time at which the applier will be evaluated.
  */
 ForceApplier::
 ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *forceData,
              int fxNum, int fyNum, int fzNum,
 			 int pxNum, int pyNum, int pzNum,
-			 Storage *aQStore, Storage *aUStore) :
+			 Storage *aQStore, Storage *aUStore,
+			 double firstTime, double lastTime) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -137,7 +140,9 @@ ForceApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,Storage *
 	constructDescription();
 	constructColumnLabels();
 
-	// COMPUTE POINT FUNCTION
+	_startTime = firstTime;
+	_endTime = lastTime;
+	// COMPUTE POINT FUNCTION this uses full storage rather than portion required
 	double *t=0,*x=0,*y=0,*z=0;
 	int forceSize = forceData->getSize();
 	forceData->getTimeColumn(t);
@@ -535,7 +540,15 @@ computePointFunction(const Storage &aQStore,const Storage &aUStore,VectorFunctio
 	Vec3 pLocal(0.0);
 	Vec3 vGlobal(0.0),vLocal(0.0);
 	Storage pStore,vStore;
-	for(i=0;i<size;i++) {
+	int startIndex=0;
+	int lastIndex=size;
+	if (_startTime!=rdMath::MINUS_INFINITY){	// Start time was actually specified.
+		startIndex = aQStore.findIndex(_startTime); 
+	}
+	if (_endTime!=rdMath::PLUS_INFINITY){	// Start time was actually specified.
+		lastIndex = aQStore.findIndex(_endTime);
+	}
+	for(i=startIndex;i<lastIndex;i++) {
 		// Set the model state
 		aQStore.getTime(i,*(&t[0]));
 		aQStore.getData(i,nq,&q[0]);
@@ -614,10 +627,10 @@ applyActuation(double aT,double *aX,double *aY)
 			setPoint(point);
 		}
 
-		if(_inputForcesInGlobalFrame == false){
-			_model->getDynamicsEngine().applyForceBodyLocal(*_body,_point,_force);
-		} else {
+		if(_inputForcesInGlobalFrame){
 			_model->getDynamicsEngine().applyForce(*_body,_point,_force);
+		} else {
+			_model->getDynamicsEngine().applyForceBodyLocal(*_body,_point,_force);
 		}
 		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,&_force[0]);
 	}

@@ -164,6 +164,8 @@ protected:
 	/** For non inlined objects their _node and _document refer to external file
 	 * _refNode contains the type and reference to file name -> rdSerializable interface */
 	DOMElement *_refNode;
+
+	bool _converting;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -179,9 +181,8 @@ public:
 	Object(const Object &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aNode) const;
-	virtual void copy(const Object& aObject);
+	virtual void migrateFromPreviousVersion(const Object* aObject) { };
 	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
-//	static Object* ConstructObject(DOMElement *aNode);
 	virtual VisibleObject *getDisplayer() const { return 0; };
 private:
 	void setNull();
@@ -209,6 +210,7 @@ public:
 public:
 	void setType(const std::string &aType);
 	const std::string& getType() const;
+	virtual const std::string& getNewType() const { return getType(); };
 	void setName(const std::string &aName);
 	const std::string& getName() const;
 	void setDescription(const std::string &aDescrip);

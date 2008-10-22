@@ -37,7 +37,7 @@
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractDof01_05.h>
 
 namespace OpenSim {
 
@@ -49,7 +49,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMMKINEMATICSENGINE_API SimmRotationDof : public AbstractDof  
+class OSIMSIMMKINEMATICSENGINE_API SimmRotationDof : public AbstractDof01_05  
 {
 
 //=============================================================================

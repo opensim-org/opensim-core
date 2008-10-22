@@ -131,7 +131,7 @@ static const XMLCh  gNotation[] = {
     chLatin_N, chLatin_D, chLatin_A, chLatin_T, chLatin_A,
     chSpace, chDoubleQuote, chNull };
 
-	 
+const int XMLDocument::LatestVersion = 10600;	// for 1.6.0 (always avoid leading 0!)
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -257,6 +257,9 @@ XMLDocument::XMLDocument(const string &aFileName)
 	// DOCUMENT
 	_document = _parser->getDocument();
 	_fileName = aFileName;
+
+	// Update document version based on parsing
+	updateDocumentVersion();
 }
 
 //_____________________________________________________________________________
@@ -293,6 +296,7 @@ setNull()
 {
 	_parser = NULL;
 	_document = NULL;
+	_documentVersion = 10500;	// unless otherwise specified
 }
 
 
@@ -659,6 +663,96 @@ operator<<(ostream& aOStream,const XMLCh *aString)
 }
 
 
+//--------------------------------------------------------------------------
+// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
+//--------------------------------------------------------------------------	
+//_____________________________________________________________________________
+/**
+ * Convert passed in version number to a string 
+ * The string is usually more compact e.g. 010100 -> 1_1 (rather than 11 which would confuse 110000 with 010100)
+ */
+void XMLDocument::
+getVersionAsString(const int aVersion, std::string& aString)
+{
+	char pad[3];
+	int ver = aVersion;
+	aString = "";
+	int div = 10000;
+	for(int i=0; i<3; i++)
+	{
+		int digits = ver / div;
+		sprintf(pad, "%02d",digits); 
+		ver -= div*(ver / div);
+		div /=100;
+		aString += string(pad);
+		if (ver ==0) break;
+		aString +=(i<2?"_":"");
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Update member variable  _documentVersion based on parsing
+ * Key assumption is that parsing has finished but no Object parsing is done yet
+ */
+void XMLDocument::
+updateDocumentVersion()
+{
+	if (_document==NULL) return;
+	// Check root node if it's OpenSimDocument
+	DOMElement*     root = _document->getDocumentElement();
+	const XMLCh *rootName=root->getNodeName();
+	char *buffer = XMLString::transcode(rootName);
+	if (strcmp(buffer, "OpenSimDocument")!=0){
+		_documentVersion=10500;
+		return;  // Old version pre 1.6
+	}
 
+	// Here we found a new root node of type OpenSimDocument
+	// Locate attribute "Version" and extract value
+	DOMNamedNodeMap* rootNodeAttributes=root->getAttributes();
+	DOMNode  *versionAttribute= rootNodeAttributes->getNamedItem(XMLString::transcode("Version"));
+	if (versionAttribute==NULL) {
+		_documentVersion=10500;
+		return; // Should assert here
+	}
+	const XMLCh*  versionString= versionAttribute->getNodeValue();
+	buffer = XMLString::transcode(versionString);
+	int readVersion;
+	sscanf(buffer, "%d", &readVersion);
+	// Validate >=  10600 and < latest as sanity check
+	assert(readVersion >= 10600 && readVersion <= LatestVersion);
+	_documentVersion = readVersion;
+}
+//_____________________________________________________________________________
+/**
+ * getRootDataElement returns a pointer to the real root node that contains objects 
+ * works as a wrapper to get around the new root node <OpenSimDocument introduced in 1.6
+ */
+DOMElement*  XMLDocument::
+getRootDataElement()
+{
+	if (_document==NULL) return NULL;
+	// Check root node if it's OpenSimDocument
+	DOMElement*     root = _document->getDocumentElement();
+	if (_documentVersion < 10600) return root;  // Old version pre 1.6
+	const XMLCh *rootName=root->getNodeName();
+	char *buffer = XMLString::transcode(rootName);
+	// Find first child with data and return it as new root should have exactly one
+	// if we add more to the OpenSimDocument element e.g. CreationDate we should exclude it here
+	DOMNodeList* immediateChildren = root->getChildNodes();
+	int nodeIndexForObject=-1;
+	for(int i=0; i<immediateChildren->getLength(); i++){
+		DOMNode* nextElement = immediateChildren->item(i);
+		const XMLCh *nodeName=nextElement->getNodeName();
+		char* nodeText=XMLString::transcode(nextElement->getTextContent());
+		if(nodeText) {
+			XMLString::trim(nodeText);
+			string str(nodeText);
+			delete[] nodeText;
+			if(str.length()>0)
+				nodeIndexForObject=i;
+		}
+	}
+	return (DOMElement*)immediateChildren->item(nodeIndexForObject);	
 
-
+}

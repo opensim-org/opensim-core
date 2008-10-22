@@ -31,11 +31,12 @@
  */
 
 #include <math.h>
+#include <iostream>
 #include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include "RKF.h"
-
-
 
 using namespace OpenSim;
 using namespace std;
@@ -220,6 +221,7 @@ setTolerance(double aTol,double aTolFine)
 		aTol = TOLMAX;
 	}
 	_tol = aTol;
+	_integrand->setConstraintTolerance(0.01*aTol);
 	
 	// FINE TOLERANCE
 	setFineTolerance(aTolFine);
@@ -342,7 +344,6 @@ step(double dt,double t,double *y)
 		_k6[i] = dt*_dy[i];
 	}
 
-
 	// GET MAX ERROR
 	offender = -1;
 	for(yemax=0.0,i=0;i<size;i++) {
@@ -350,7 +351,7 @@ step(double dt,double t,double *y)
 		_ye[i] = CE1*_k1[i] + CE2*_k3[i] + CE3*_k4[i] + CE4*_k5[i] + CE5*_k6[i];
 
 		// GOOD NUMBER
-		if((_ye[i]<0.0) || (_ye[i]>=0.0)) {  
+		if(!SimTK::isNaN(_ye[i])) {  
 			_ye[i] = fabs(_ye[i]);
 			if(_ye[i]>yemax) {
 				offender = i;
@@ -359,10 +360,15 @@ step(double dt,double t,double *y)
 
 		// NAN
 		} else {
-			printf("RKF.step: NAN in state %d at time %lf (dt=%lf).\n",
-				i,t,dt);
+			cout << "RKF.step: NAN in state " << i << " at time " << t << "  (dt = " << dt << ")" << endl;
 			return(RKF_NAN);
 		}
+	}
+
+
+	// UPDATE STATES
+	for(i=0;i<size;i++) {
+		y[i] = y[i] + CY1*_k1[i] + CY2*_k3[i] + CY3*_k4[i] + CY4*_k5[i];
 	}
 
 	// CHECK ERROR
@@ -371,10 +377,6 @@ step(double dt,double t,double *y)
 		return(RKF_POOR);
 	}
 
-	// UPDATE STATES
-	for(i=0;i<size;i++) {
-		y[i] = y[i] + CY1*_k1[i] + CY2*_k3[i] + CY3*_k4[i] + CY4*_k5[i];
-	}
 
 	// FINE ACCURACY
 	if(yemax < _tolFine) {
@@ -450,7 +452,7 @@ stepFixed(double dt,double t,double *y)
 		y[i] = y[i] + CY1*_k1[i] + CY2*_k3[i] + CY3*_k4[i] + CY4*_k5[i];
 
 		// CHECK FOR NAN
-		if(!((y[i]<0.0)||(y[i]>=0.0))) {
+		if(SimTK::isNaN(y[i])) {
 			printf("RKF_fixed.step: NAN in state %d\n",i);
 			return(RKF_NAN);
 		}

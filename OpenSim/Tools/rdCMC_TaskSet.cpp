@@ -41,6 +41,9 @@
 using namespace std;
 using namespace OpenSim;
 
+#ifndef SWIG
+template class OSIMTOOLS_API OpenSim::Set<OpenSim::rdCMC_Task>;
+#endif
 
 //=============================================================================
 // STATICS

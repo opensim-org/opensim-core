@@ -42,7 +42,7 @@
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
-#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
 
 namespace OpenSim {
 
@@ -127,7 +127,7 @@ protected:
 	Function *&_constraintFunction;
 
 	/** Type of motion of this coordinate (rotational or translationa). */
-	AbstractDof::DofType _motionType;
+	AbstractTransformAxis::MotionType _motionType;
 
 	/** Index of this coordinate in the SD/FAST code. */
 	PropertyInt _indexProp;
@@ -190,7 +190,7 @@ public:
 	virtual bool getLocked() const { return _locked; }
 	virtual bool setLocked(bool aLocked) { _locked = aLocked; return true; }
 	virtual bool getLockedUseDefault() const { return _lockedProp.getUseDefault(); }
-	virtual AbstractDof::DofType getMotionType() const { return _motionType; }
+	virtual AbstractTransformAxis::MotionType getMotionType() const { return _motionType; }
 
 	void getKeys(std::string rKeys[]) const;
 	const Array<std::string>& getKeys() const { return _keys; }
@@ -206,7 +206,7 @@ public:
 	Function* getConstraintFunction() const;
 	void setConstraintFunction(const Function *function);
 
-	bool getConstrained() const { return _constraintFunction!=0; }
+	bool isConstrained() const { return _constraintFunction!=0; }
 
 	void setSdfastType(SdfastQType aType) { _QType = aType; }
 	int getSdfastType() const { return _QType; }

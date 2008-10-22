@@ -30,10 +30,11 @@
 // INCLUDES
 //=============================================================================
 #include "SimmCoordinate.h"
-#include <OpenSim/Simulation/Model/AbstractDof.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
+#include <OpenSim/Simulation/Model/AbstractDof01_05.h>
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include "SimmKinematicsEngine.h"
+#include "SimmJoint.h"
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
@@ -70,7 +71,7 @@ SimmCoordinate::SimmCoordinate() :
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
-	_motionType(AbstractDof::Rotational)
+	_motionType(AbstractTransformAxis::Rotational)
 {
 	setNull();
 	setupProperties();
@@ -106,7 +107,7 @@ SimmCoordinate::SimmCoordinate(const SimmCoordinate &aCoordinate) :
 	_restraintActive(_restraintActiveProp.getValueBool()),
 	_jointList(0),
 	_pathList(0),
-	_motionType(AbstractDof::Rotational)
+	_motionType(AbstractTransformAxis::Rotational)
 {
 	setNull();
 	setupProperties();
@@ -327,29 +328,33 @@ SimmCoordinate& SimmCoordinate::operator=(const SimmCoordinate &aCoordinate)
  */
 void SimmCoordinate::determineType()
 {
-   AbstractDof* dof;
+   AbstractDof01_05* dof;
 	AbstractJoint* jnt;
 
-   if ((dof = _dynamicsEngine->findUnconstrainedDof(*this, jnt)))
+   if ((dof = (dynamic_cast<SimmKinematicsEngine*>(_dynamicsEngine))->findUnconstrainedSimmDof(*this, jnt)))
    {
-		_motionType = dof->getMotionType();
+		if (dof->getMotionType() == AbstractDof01_05::Rotational)
+		   _motionType = AbstractTransformAxis::Rotational;
+		else
+		   _motionType = AbstractTransformAxis::Translational;
    }
    else
    {
-		_motionType = AbstractDof::Translational;
+		_motionType = AbstractTransformAxis::Translational;
 
       for (int i = 0; i < _jointList.getSize(); i++)
       {
-			DofSet* dofs = _jointList[i]->getDofSet();
+			SimmJoint* joint = dynamic_cast<SimmJoint*>(_jointList[i]);
+			DofSet01_05* dofs = joint->getDofSet();
 
 			for (int j = 0; j < dofs->getSize(); j++)
          {
-				if (dofs->get(j)->getCoordinate() == this && dofs->get(j)->getMotionType() == AbstractDof::Rotational)
+				if (dofs->get(j)->getCoordinate() == this && dofs->get(j)->getMotionType() == AbstractDof01_05::Rotational)
             {
 					/* You've found one rotational DOF: set the coordinate's type
 					 * to rotational and you're done.
 					 */
-               _motionType = AbstractDof::Rotational;
+               _motionType = AbstractTransformAxis::Rotational;
                return;
             }
          }
@@ -441,11 +446,18 @@ void SimmCoordinate::updateFromCoordinate(const AbstractCoordinate &aCoordinate)
  */
 bool SimmCoordinate::setValue(double aValue)
 {
-	// pull value into range if it's off by tolerance due to roundoff
+	//// pull value into range if it's off by tolerance due to roundoff
+	//if (_clamped) {
+	//	if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+	//		aValue = _range[0];
+	//	else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+	//		aValue = _range[1];
+	//}
+	// pull value into range if it's clamped
 	if (_clamped) {
-		if (aValue < _range[0] && (_range[0]-aValue < _tolerance))
+		if (aValue < _range[0])
 			aValue = _range[0];
-		else if (aValue > _range[1] && (aValue-_range[1] < _tolerance))
+		else if (aValue > _range[1])
 			aValue = _range[1];
 	}
 

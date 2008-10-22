@@ -193,7 +193,7 @@ prepareToOptimize(double *x)
 	double rcond = 1e-10;
 	int rank;
 
-	dgelss_(Am, nf, nrhs, _lapackA, Am, _lapackB, Am, _lapackSingularValues, &rcond, &rank, _lapackWork, _lapackLWork, info);
+	dgelss_(Am, nf, nrhs, _lapackA, Am, _lapackB, Am, _lapackSingularValues, rcond, rank, _lapackWork, _lapackLWork, info);
 
 	// Assume it's valid to begin with
 	bool gotValidSolution = true;

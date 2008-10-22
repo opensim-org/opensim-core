@@ -39,6 +39,7 @@
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
 #include "Torque.h"
+#include "PassiveJointTorque.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -62,6 +63,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Schutte1993Muscle() );
 	Object::RegisterType( Torque() );
+	Object::RegisterType( PassiveJointTorque() );
 
 }
 

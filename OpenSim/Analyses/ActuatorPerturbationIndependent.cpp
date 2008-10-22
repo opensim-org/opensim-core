@@ -3,30 +3,6 @@
 //	AUTHOR: Frank C. Anderson, Saryn Goldberg, May Liu
 // 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/* Copyright (c)  2006 Stanford University
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 
 //=============================================================================
@@ -39,8 +15,6 @@
 #include <OpenSim/Simulation/Model/AbstractActuator.h>
 #include <OpenSim/Common/Object.h>
 #include "ActuatorPerturbationIndependent.h"
-
-
 
 
 using namespace OpenSim;
@@ -91,16 +65,15 @@ setNull()
 {
 	setType("ActuatorPerturbationIndependent");
 	_step = 0;
-	_unperturbedForceStorage = new Storage();
-	_unperturbedForceStorage->setName("UnperturbedForces");
+	_unperturbedForceSplines = NULL;
+	_unperturbedForceStorage = NULL;
 	_perturbedForceStorage = new Storage();
 	_perturbedForceStorage->setName("PerturbedForces");
 	constructDescription();
 	constructColumnLabels();
 	int na = _model->getNumActuators();
 	printf("ActuatorPerturbationIndependent.setNull: na = %d\n",na);
-	_forces = new double[na];
-	_recordUnperturbedForces = true;
+	_forces.setSize(na);
 	_allowNegForce = true;
 	_unperturbedForce = 0;
 }
@@ -115,11 +88,8 @@ void ActuatorPerturbationIndependent::
 constructDescription()
 {
 	char descrip[1024];
-
 	strcpy(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
 	strcat(descrip,"\n\n");
-
-	_unperturbedForceStorage->setDescription(descrip);
 	_perturbedForceStorage->setDescription(descrip);
 }
 //_____________________________________________________________________________
@@ -133,7 +103,6 @@ constructColumnLabels()
 	labels.append("time");
 	ActuatorSet *as = _model->getActuatorSet();
 	for(int i=0; i<as->getSize(); i++) labels.append(as->get(i)->getName());
-	_unperturbedForceStorage->setColumnLabels(labels);
 	_perturbedForceStorage->setColumnLabels(labels);
 }
 
@@ -148,8 +117,6 @@ constructColumnLabels()
 void ActuatorPerturbationIndependent::
 deleteStorage()
 {
-	delete[] _forces; _forces=NULL;
-	delete _unperturbedForceStorage; _unperturbedForceStorage=NULL;
 	delete _perturbedForceStorage; _perturbedForceStorage=NULL;
 }
 
@@ -159,53 +126,40 @@ deleteStorage()
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-//	RECORD UNPERTURBED FORCES OR APPLY PERTURBATION
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set whether to record unperturbed forces or to apply a force perturbation.
- * It is the user's responsibility to ensure that, during the first run of 
- * the simulation, this flag is set to "true" to record the forces that can 
- * be used during the second run when the this flag is set to "false" and the 
- * forces are perturbed.
- *
- * @param aTrueFalse Flag to indicate whether forces should be recorded (true) 
- * or perturbed (false). 
- */
-void ActuatorPerturbationIndependent::
-setRecordUnperturbedForces(bool aTrueFalse)
-{
-	_recordUnperturbedForces = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Get whether to record unperturbed forces or to apply a force perturbation.
- * It is the user's responsibility to ensure that, during the first run of 
- * the simulation, this flag is set to "true" to record the forces that can 
- * be used during the second run when the this flag is set to "false" and the 
- * forces are perturbed.
- *
- * @return True if set to record unperturbed forces; false otherwise. 
- */
-bool ActuatorPerturbationIndependent::
-getRecordUnperturbedForces()
-{
-	return(_recordUnperturbedForces);
-}
-
-//-----------------------------------------------------------------------------
 // FORCE STORAGE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get a pointer to the Storage containing the unperturbed forces.
+ * Set the Storage object containing the unperturbed forces. This storage
+ * object is not deleted; the caller is responsible for cleaning up the
+ * resources associated with the storage object.
  *
- * @return Pointer to the unperturbed force storage. 
+ * A cubic spline set is used to fit the forces contained in the object, and
+ * the splines are used to apply actuator forces throughout an integration.
+ *
+ * @param aStore Unperturbed force storage that is used to construct
+ * the spline set.
  */
-Storage* ActuatorPerturbationIndependent::
-getUnperturbedForceStorage()
+void ActuatorPerturbationIndependent::
+setUnperturbedForceSplineSet(Storage *aStore)
 {
-	return(_unperturbedForceStorage);
+	if(aStore==NULL) return;
+	_unperturbedForceStorage = aStore;
+	delete _unperturbedForceSplines;
+	_unperturbedForceSplines = new GCVSplineSet(3,_unperturbedForceStorage);
+}
+//_____________________________________________________________________________
+/**
+ * Get a pointer to the spline set used to fit the unperturbed actuator
+ * forces.
+ *
+ * @return Spline set containing the unperturbed actuator
+ * force curves.
+ */
+GCVSplineSet* ActuatorPerturbationIndependent::
+getUnperturbedForceSplineSet()
+{
+	return(_unperturbedForceSplines);
 }
 //_____________________________________________________________________________
 /**
@@ -270,7 +224,6 @@ getStep()
 void ActuatorPerturbationIndependent::
 computeActuation(double aT,double *aX,double *aY)
 {
-
 	//printf("ActuatorPerturbationIndependent.computeActuation: aT=%.16lf  aY[0]=%.16lf\n",aT,aY[0]);
 
 	if(_model==NULL) {
@@ -279,71 +232,47 @@ computeActuation(double aT,double *aX,double *aY)
 	}
 	if(!getOn()) return;
 
-	// RECORD OR SET UNPERTURBED FORCES
-	ActuatorSet *as = _model->getActuatorSet();
-
+	// SET UNPERTURBED FORCES
 	int actuatorIndex = -1;
-
-	// Set unperturbed forces
-	if(!_recordUnperturbedForces){
-		_unperturbedForceStorage->getData(_step,_model->getNumActuators(),_forces);
-		// sanity check
-		double checkTime;
-		if(!_unperturbedForceStorage->getTime(_step,checkTime) || checkTime!=aT*_model->getTimeNormConstant())
-			throw Exception("ActuatorPerturbationIndependent: ERR- time match error",__FILE__,__LINE__);
-
-		for (int i=0; i<as->getSize(); i++)
-		{
-			AbstractActuator *act=as->get(i);
-			if(act==_actuator) actuatorIndex = i;
-			act->setForce(_forces[i]);
-		}
-
-	// Record
-	} else {
-		for (int i=0; i<as->getSize(); i++)
-		{
-			AbstractActuator *act=as->get(i);
-			_forces[i] = act->getForce();
-		}
-		// Important to not check for duplicate time stamps in append (hence the "false" flag),
-		// to ensure that every state vector gets appended (which is assumed by this class)
-		_unperturbedForceStorage->append(
-			aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces,false);
-	}	
+	ActuatorSet *as = _model->getActuatorSet();
+	_unperturbedForceSplines->evaluate(_forces,0,aT);
+	for (int i=0; i<as->getSize(); i++) {
+		AbstractActuator *act=as->get(i);
+		if(act==_actuator) actuatorIndex = i;
+		act->setForce(_forces[i]);
+	}
 
 	// COMPUTE PERTURBED FORCE
-	if(!_recordUnperturbedForces && _actuator) {
-		_unperturbedForce = _actuator->getForce();
-		double force = _unperturbedForce;
-		if((aT>=getStartTime()) && (aT<=getEndTime())){
-			if( _perturbationType == SCALE) {
-				force = force + _perturbation*force;
-			}
-			else if( _perturbationType == DELTA) {
-				force = force + _perturbation;
-			}
-			else if( _perturbationType == CONSTANT) {
-				force = _perturbation;
-			}
-			else {
-				printf("ActuatorPerturbationIndependent.computeActuation:WARN - unrecognized perturbationType.\n");
-			}
+	if(!_actuator) return;
+	_unperturbedForce = _actuator->getForce();
+	double force = _unperturbedForce;
+	if((aT>=getStartTime()) && (aT<=getEndTime())){
+		if(_perturbationType==SCALE) {
+			force = force + _perturbation*force;
 		}
-
-		// MAKE CORRECTION IF PERTRUBED FORCE IS NEGATIVE AND NEG FORCE FLAG IS SET
-		if((_allowNegForce==false) && (force < 0.0))	{
-			force = 0.0;
+		else if(_perturbationType==DELTA) {
+			force = force + _perturbation;
 		}
-
-		// SET PERTURBED FORCE
-		//printf("\n%d: perturbed=%.16lf",_step+1,force);
-		_actuator->setForce(force);
-
-		// Update _forces array and add it to the perturbed force storage
-		if(actuatorIndex>=0) _forces[actuatorIndex] = force;
-		_perturbedForceStorage->append(aT*_model->getTimeNormConstant(),_model->getNumActuators(),_forces);
+		else if(_perturbationType==CONSTANT) {
+			force = _perturbation;
+		}
+		else {
+			printf("ActuatorPerturbationIndependent.computeActuation:WARN - unrecognized perturbationType.\n");
+		}
 	}
+
+	// MAKE CORRECTION IF PERTRUBED FORCE IS NEGATIVE AND NEG FORCE FLAG IS SET
+	if((_allowNegForce==false) && (force < 0.0))	{
+		force = 0.0;
+	}
+
+	// SET PERTURBED FORCE
+	//printf("\n%d: perturbed=%.16lf",_step+1,force);
+	_actuator->setForce(force);
+
+	// Update _forces array and add it to the perturbed force storage
+	if(actuatorIndex>=0) _forces[actuatorIndex] = force;
+	_perturbedForceStorage->append(aT*_model->getTimeNormConstant(),_model->getNumActuators(),&_forces[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -366,7 +295,7 @@ applyActuation(double aT,double *aX,double *aY)
 	// NOTE: We used to try to get unperturbed force from _unperturbedForceStorage, but instead I
 	// just record it in a special variable in computeActuation (to avoid having to figure out
 	// the actuator index corresponding to _actuator)
-	if(!_recordUnperturbedForces && _actuator) {
+	if(_actuator) {
 		_actuator->setForce(_unperturbedForce);
 		//printf("\t\t%d: unperturbed=%.16lf\n",_step+1,force);
 	}

@@ -346,7 +346,7 @@ bool OpenSim::readVectorFromString(string &aString, double *rVX, double *rVY, do
 /**
  * Read tab-delimited XYZ coordinate values from a string. If there are
  * 2 tabs in a row, this indicates a missing coordinate, so fill it in
- * with rdMath::NAN. The input string is modified by deleting the
+ * with rdMath::getNAN(). The input string is modified by deleting the
  * coordinates from it after they have been read.
  *
  * @param aString input string to read from.
@@ -380,7 +380,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3])
       /* if you have 3 TABS in a row, coordinate data is missing */
       if (numTabs == 3)
       {
-			rVec[0] = rVec[1] = rVec[2] = rdMath::NAN;
+			rVec[0] = rVec[1] = rVec[2] = rdMath::getNAN();
          numCoords = 3;
       }
       if (numCoords == 3)

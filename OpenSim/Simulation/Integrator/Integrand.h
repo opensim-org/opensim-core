@@ -90,11 +90,15 @@ class OSIMSIMULATION_API Integrand : public Object
 //=============================================================================
 // DATA
 //=============================================================================
-public:
+protected:
+	/** Tolerance on any constraint projections that should be performed after
+	    each integration time step */
+	double _constraintTol;
 
 //=============================================================================
 // METHODS
 //=============================================================================
+public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
@@ -131,6 +135,17 @@ public:
 	 * @param yi Array of initial states (size = getSize()).
 	 */
 	virtual void getInitialStates(double yi[]) const {};
+
+	//__________________________________________________________________________
+	/**
+	 * Set the constraint tolerance integration.
+	 *
+	 * @param cTol
+	 */
+	void setConstraintTolerance(double cTol) {_constraintTol = cTol;}
+
+	double getConstraintTolerance() {return _constraintTol;}
+	
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION

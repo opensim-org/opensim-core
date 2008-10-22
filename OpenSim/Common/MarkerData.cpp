@@ -586,7 +586,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 		maxZ = new double [_numMarkers];
 		for (int i = 0; i < _numMarkers; i++)
 		{
-			minX[i] = minY[i] = minZ[i] = rdMath::INFINITY;
+			minX[i] = minY[i] = minZ[i] = rdMath::PLUS_INFINITY;
 			maxX[i] = maxY[i] = maxZ[i] = rdMath::MINUS_INFINITY;
 		}
 	}
@@ -632,7 +632,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 		if (numFrames > 0)
 			avePt /= (double)numFrames;
 		else
-			avePt.set(rdMath::NAN, rdMath::NAN, rdMath::NAN);
+			avePt.set(rdMath::getNAN(), rdMath::getNAN(), rdMath::getNAN());
 	}
 
 	/* Store the indices from the file of the first frame and
@@ -738,7 +738,7 @@ void MarkerData::convertToUnits(const Units& aUnits)
 {
 	double scaleFactor = _units.convertTo(aUnits);
 
-	if (scaleFactor != rdMath::NAN)
+	if (!rdMath::isNAN(scaleFactor))
 	{
 		/* Scale all marker locations by the conversion factor. */
 		for (int i = 0; i < _frames.getSize(); i++)
@@ -747,6 +747,8 @@ void MarkerData::convertToUnits(const Units& aUnits)
 		/* Change the units for this object to the new ones. */
 		_units = aUnits;
 	}
+	else
+		throw Exception("MarkerData.convertToUnits: ERROR- Model has unspecified units",__FILE__,__LINE__);
 }
 
 //=============================================================================

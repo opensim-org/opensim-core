@@ -150,6 +150,20 @@ void WrapSphere::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 
 //_____________________________________________________________________________
 /**
+ * Scale the sphere by the average of the three scale factors. The base class
+ * scales the origin of the sphere in the body's reference frame.
+ *
+ * @param aScaleFactors The XYZ scale factors.
+ */
+void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
+{
+   AbstractWrapObject::scale(aScaleFactors);
+
+   _radius *= (aScaleFactors.sum() / 3.0);
+}
+
+//_____________________________________________________________________________
+/**
  * Copy data members from one WrapSphere to another.
  *
  * @param aWrapSphere WrapSphere to be copied.

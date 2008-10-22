@@ -135,7 +135,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 	}
 
 	// GET DOCUMENT ELEMENT
-	_node = doc->getDocumentElement();
+	_node = _document->getRootDataElement(); //either actual root or node after OpenSimDocument
 
 	// UPDATE OBJECT
 	if(aUpdateFromXMLNode) updateFromXMLNode();
@@ -269,19 +269,6 @@ copy(DOMElement *aElement) const
 
 	return(object);
 }
-//_____________________________________________________________________________
-/**
- * Replace the contents of this object with a copy of another object. This
- * function does not create a new object. Object::copy() should be overridden
- * by every concrete class that intends to copy itself this way.
- *
- * @param aObject The object to copy from.
- */
-void Object::
-copy(const Object& aObject)
-{
-	throw Exception("copy(const Object& aObject) not defined for object (name = "+getName()+", type = "+getType()+").");
-}
  //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -305,6 +292,7 @@ setNull()
 	_description = "";
 
 	_observable=0;
+	_converting=false;
 }
 //_____________________________________________________________________________
 /**
@@ -371,7 +359,68 @@ operator==(const Object &aObject) const
 {
 	if(getType() != aObject.getType()) return(false);
 	if(getName() != aObject.getName()) return(false);
-	return(true);
+	bool equal = true;
+	for (int i=0; i< _propertySet.getSize() && equal ; i++){
+		const Property& myProperty = *(_propertySet.get(i));
+		const Property& theirProperty = *(aObject.getPropertySet().get(i));
+		switch(myProperty.getType()){
+			case (Property::Bool): 
+				if (myProperty.getValueBool()!=theirProperty.getValueBool()) return false;
+				continue;
+			case Property::Int:
+				if (myProperty.getValueInt()!=theirProperty.getValueInt()) return false;
+				continue;
+			case Property::Dbl:
+				if (myProperty.getValueDbl()!=theirProperty.getValueDbl()) return false;
+				continue;
+			case Property::Str:
+				if (myProperty.getValueStr()!=theirProperty.getValueStr()) return false;
+				continue;
+			case Property::Obj:
+				if (!(myProperty.getValueObj()==theirProperty.getValueObj())) return false;
+				continue;
+			case Property::ObjPtr:
+				equal = (myProperty==theirProperty);
+				if (!equal) return false;
+				continue;
+			case Property::BoolArray:
+				for(int j=0; j < myProperty.getValueBoolArray().getSize() && equal; j++)
+					equal= (myProperty.getValueBoolArray().get(j)!=
+								theirProperty.getValueBoolArray().get(j));
+				if (!equal) return false;
+				continue;
+			case Property::IntArray:
+				for(int j=0; j < myProperty.getValueIntArray().getSize() && equal; j++)
+					equal= (myProperty.getValueIntArray().get(j) !=
+								theirProperty.getValueIntArray().get(j));
+				if (!equal) return false;
+				continue;
+			case Property::DblArray:
+				for(int j=0; j < myProperty.getValueDblArray().getSize() && equal; j++)
+					equal= (myProperty.getValueDblArray().get(j)!=
+								theirProperty.getValueDblArray().get(j));
+				if (!equal) return false;
+				continue;
+			case Property::StrArray:
+				for(int j=0; j < myProperty.getValueStrArray().getSize() && equal; j++)
+					equal= (myProperty.getValueStrArray().get(j)!=
+								theirProperty.getValueStrArray().get(j));
+				if (!equal) return false;
+				continue;
+			
+			case Property::ObjArray:
+				equal = (myProperty==theirProperty);
+				if (!equal) return false;
+				continue;
+			case Property::DblVec3:
+				equal = (((const PropertyDblVec3&)myProperty).getValueDblVec3() - 
+					((const PropertyDblVec3&)theirProperty).getValueDblVec3()).norm() < 1e-8;
+				if (!equal) return false;
+				continue;
+
+		}
+	}
+	return(equal);
 }
 
 //-----------------------------------------------------------------------------
@@ -632,7 +681,7 @@ template<class T> void UpdateFromXMLNodeArrayProperty(Property *aProperty, DOMEl
 	}
 }
 
-void Object::
+void Object::	// Populate Object from XML node corresponding to Obj property
 InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Object *aObject)
 {
 	// If object is from non-inlined, detect it and set attributes
@@ -708,9 +757,10 @@ updateFromXMLNode()
 {
 	if(_node==NULL) return;
 	if(_type=="Object") return;
+	/* This has been violated by the versioning mechanism and so commented out 06/08 -Ayman
 	if(_document && XMLNode::Transcode(_node->getTagName())!=getType()) 
-		throw XMLParsingException("XML file '"+_document->getFileName()+"' contains "+
-										  XMLNode::Transcode(_node->getTagName())+", expecting "+getType(),_node,__FILE__,__LINE__);
+		cout << "XML file '"+_document->getFileName()+"' contains "+
+										  XMLNode::Transcode(_node->getTagName())+", expecting "+getType() << endl;*/
 
 	// If this is a document, temporarily change current directory to the directory of the document, so that reading
 	// non-inlined properties (using the file= attribute) works with relative directories
@@ -718,6 +768,30 @@ updateFromXMLNode()
 	if(_document) {
 		savedCwd = IO::getCwd();
 		IO::chDir(IO::getParentDirectory(_document->getFileName()));
+	}
+	if (_document && _document->getDocumentVersion() < XMLDocument::getLatestVersion() && !_converting){
+		// An Object of an older type needs to be instantiated then copied into current object
+		// _type is new type but we need an instance of old type to serialize into
+		std::string oldType = _type;
+		std::string suffix="";
+		_document->getVersionAsString(_document->getDocumentVersion(), suffix);
+		oldType += suffix;
+		// Create an instance of this old type and populate it instead
+		Object*  oldTypeObject = Object::newInstanceOfType(oldType);
+		if (oldTypeObject != NULL){
+			oldTypeObject->_document = _document;
+			oldTypeObject->_node = _node;
+			oldTypeObject->_converting=true;
+			oldTypeObject->updateFromXMLNode();
+			oldTypeObject->_converting=false;
+			// Call the copy method on the new type
+			cout << "construct Object of type " << _type << " from object of type " << oldTypeObject->_type << endl;
+			migrateFromPreviousVersion(oldTypeObject);
+			// Remove old node from parent in DOM
+			XMLNode::RemoveElementFromParent(_node);
+			_node=NULL;	// So that it is recreated
+			return;
+		}
 	}
 
 	try {
@@ -739,7 +813,7 @@ updateFromXMLNode()
 		// NAME
 		string name = property->getName();
 		if(Object_DEBUG) {
-			cout << "Object.updateFromXMLNode: updating property " << name << endl;
+			cout << "Object.updateFromXMLNode: ("<<getType()<<":"<<getName()<<") updating property " << name << endl;
 		}
 
 		// VALUE
@@ -813,7 +887,8 @@ updateFromXMLNode()
 					}
 					break;
 				}
-
+				object._document=_document;
+				object._converting = _converting;
 				InitializeObjectFromXMLNode(property, elmt, &object);
 			}
 			break; }
@@ -859,9 +934,28 @@ updateFromXMLNode()
 				if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
 				DOMElement *objElmt = (DOMElement*) list->item(j);
 				string objectType = XMLNode::TranscodeAndTrim(objElmt->getTagName());
-
-				// Initialize to default object of corresponding type (returns 0 if type not recognized)
 				Object *object = newInstanceOfType(objectType);
+				/*
+				if (object && object->getNewType()!= object->getType()){	// assume renamed from older version??
+					if (_document && _document->getDocumentVersion() < XMLDocument::getLatestVersion()){
+						std::string oldType = objectType;
+						std::string suffix="";
+						_document->getVersionAsString(_document->getDocumentVersion(), suffix);
+						oldType += suffix;
+						// Create an instance of this old type and populate it instead
+						Object *oldTypeObject = object;
+						if (oldTypeObject != NULL){
+							oldTypeObject->_document = _document;
+							oldTypeObject->_node = objElmt;
+							oldTypeObject->_converting=true;
+							oldTypeObject->updateFromXMLNode();
+							oldTypeObject->_converting=false;	
+							object = Object::newInstanceOfType(object->getNewType()); 
+							object->migrateFromPreviousVersion(oldTypeObject);
+						}
+
+					}
+				}*/
 				if(!object) { std::cerr << "Object type " << objectType << " not recognized" << std::endl; continue; }
 				if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
 				objectsFound++;
@@ -869,11 +963,14 @@ updateFromXMLNode()
 				if(type==Property::ObjPtr) {
 					if(objectsFound > 1)
 						throw XMLParsingException("Found multiple objects under "+name+" tag, but expected only one.",objElmt,__FILE__,__LINE__);
-					else
+					else{
 						property->setValue(object);
+					}
 				} else {
 					property->appendValue(object);
 				}
+				object->_document = _document;	// Propagate _document ptr.
+				object->_converting = _converting;
 				InitializeObjectFromXMLNode(property, objElmt, object);
 			}
 				
@@ -912,7 +1009,8 @@ updateDefaultObjectsFromXMLNode()
 {
 	// MUST BE ROOT ELEMENT
 	if(_document==NULL) return;
-	if(_node!=_document->getDOMDocument()->getDocumentElement()) return;
+	if( _document->getDocumentVersion() < 10600 
+		&& _node!=_document->getDOMDocument()->getDocumentElement()) return;
 
 	// GET DEFAULTS ELEMENT
 	DOMElement *defaultsElmt = XMLNode::GetFirstChildElementByTagName(_node,"defaults");
@@ -1317,8 +1415,16 @@ generateXMLDocument()
 	// CREATE NEW DOCUMENT
 	if (_document==NULL)
 		_document = new XMLDocument();
+
+	char versionString[7];
+	sprintf(versionString, "%d", XMLDocument::getLatestVersion());
+
+	DOMElement* docNode = XMLNode::AppendNewElementWithComment(_document->getDOMDocument(),
+		"OpenSimDocument");
+
+	XMLNode::SetAttribute(docNode,"Version",versionString);
 	// NEW ROOT ELEMENT
-	_node = XMLNode::AppendNewElementWithComment(_document->getDOMDocument(),
+	_node = XMLNode::AppendNewElementWithComment(docNode,
 		getType(),getName(),"");
 
 }
@@ -1675,6 +1781,13 @@ makeObjectFromFile(const std::string &aFileName)
 		XMLDocument *doc = new XMLDocument(aFileName);
 		DOMElement* elt = doc->getDOMDocument()->getDocumentElement();
 		string rootName = XMLNode::Transcode(elt->getNodeName());
+		bool newFormat=false;
+		if (rootName == "OpenSimDocument"){	// New format, get child node instead
+			DOMElement* dataRoot = doc->getRootDataElement();
+			rootName = XMLNode::Transcode(dataRoot->getNodeName());
+			newFormat=true;
+			elt = dataRoot;
+		}
 		Object* newObject = newInstanceOfType(rootName);
 		if(!newObject) throw Exception("Unrecognized XML element '"+rootName+"' and root of file '"+aFileName+"'",__FILE__,__LINE__);
 		newObject->_document=doc;

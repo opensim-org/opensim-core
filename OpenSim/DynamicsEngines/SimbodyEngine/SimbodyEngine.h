@@ -40,11 +40,12 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/TransformAxisSet.h>
 #include <SimTKsimbody.h>
-#include "SimbodyBody.h"
-#include "SimbodyCoordinate.h"
-#include "SimbodyJoint.h"
-#include "SimbodySpeed.h"
+#include "Body.h"
+#include "Coordinate.h"
+#include "Joint.h"
+#include "Speed.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMBODYENGINE_API
@@ -55,16 +56,17 @@
 
 namespace OpenSim {
 
-class SimbodyBody;
-class SimbodyCoordinate;
-class SimbodyJoint;
-class SimbodySpeed;
+class Body;
+class Constraint;
+class Coordinate;
+class Joint;
 class CoordinateSet;
 class AbstractBody;
-class AbstractDof;
+class AbstractTransformAxis;
 class AbstractCoordinate;
 class Model;
 class Transform;
+class TransformAxis;
 
 //=============================================================================
 //=============================================================================
@@ -89,17 +91,17 @@ protected:
 	SimTK::MultibodySystem *_system;
 
 	/** Matter subsystem. */
-	SimTK::SimbodyMatterSubsystem *_matter;
+	//SimTK::SimbodyMatterSubsystem *_matter;
 
 	/** Uniform gravity subsystem. */
-	SimTK::UniformGravitySubsystem *_gravitySubsystem;
+	SimTK::Force::UniformGravity *_gravitySubsystem;
 
 	/** User-force subsystem. */
-	SimTK::GeneralForceElements *_userForceElements;
+	SimTK::GeneralForceSubsystem *_userForceElements;
 
 	/** States of the Simbody model.  At a minimum, it contains the
 	generalized coordinates (q) and generalized speeds (u). */
-	SimTK::State *_s;
+	SimTK::State _s;
 
 	/** Vector of spatial vectors containing the accumulated forces
 	and torques that are to be applied to each of the bodies in the
@@ -113,6 +115,8 @@ protected:
 	are called. */
 	SimTK::Vector _mobilityForces;
 
+	/** Boolean flag indicating if the engine needs to be recreated from scratch */
+	bool _invalid;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -125,6 +129,7 @@ public:
 	SimbodyEngine(const std::string &aFileName);
 	SimbodyEngine(const SimbodyEngine& aEngine);
 	virtual Object* copy() const;
+	virtual void migrateFromPreviousVersion(const Object *aPreviousVersion);
 #ifndef SWIG
 	SimbodyEngine& operator=(const SimbodyEngine &aEngine);
 #endif
@@ -138,15 +143,17 @@ private:
 	void deleteSimbodyVariables();
 	void constructPendulum();
 	void constructMultibodySystem();
-	void addRigidBodies(SimbodyBody *aBody);
-	int findIndexOfDofThatHasLastGeneralizedCoordinate(DofSet *aDofSet);
+	//void addRigidBodies(Body *aBody);
+	void connectBodies(Body *aBody);
+	int findIndexOfDofThatHasLastGeneralizedCoordinate(TransformAxisSet *aTransformAxisSet);
 	void createGroundBodyIfNecessary();
-	SimbodyJoint* getInboardTreeJoint(SimbodyBody *aBody) const;
-	SimbodyJoint* getOutboardTreeJoint(SimbodyBody *aBody,int &rIndex) const;	
+	Joint* getOutboardJoint(Body *aBody,int &rIndex,bool aUsed[]) const;	
 
 public:
-	void init(Model* aModel);
+	//virtual void init(Model* aModel);
 	virtual void setup(Model* aModel);
+	virtual void setInvalid();
+	virtual bool isInvalid() const {return _invalid; };
 
 	//--------------------------------------------------------------------------
 	// GRAVITY
@@ -157,23 +164,28 @@ public:
 	//--------------------------------------------------------------------------
    // ADDING COMPONENTS
 	//--------------------------------------------------------------------------
-	void addBody(SimbodyBody* aBody);
-	void addJoint(SimbodyJoint* aJoint);
-	void addCoordinate(SimbodyCoordinate* aCoord);
-	void addSpeed(SimbodySpeed* aSpeed);
+	void addBody(Body* aBody);
+	void addJoint(Joint* aJoint);
+	void addCoordinate(Coordinate* aCoord);
+	void addSpeed(Speed* aSpeed);
 
 	//--------------------------------------------------------------------------
 	// COORDINATES
 	//--------------------------------------------------------------------------
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
-	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
+	virtual AbstractTransformAxis* findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
 		AbstractJoint*& rJoint);
+
+	//--------------------------------------------------------------------------
+	// JOINTS
+	//--------------------------------------------------------------------------
+	virtual JointSet* getJointSet() ;
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
 	//--------------------------------------------------------------------------
-	virtual void setTime(const double aTime) {_s->setTime(aTime); };
+	virtual void setTime(const double aTime) {_s.setTime(aTime); };
 	virtual void setConfiguration(const double aY[]);
 	virtual void getConfiguration(double rY[]) const;
 	virtual void setConfiguration(const double aQ[], const double aU[]);
@@ -185,6 +197,10 @@ public:
 	virtual void applyDefaultConfiguration();
 	double* getConfiguration();
 	double* getDerivatives();
+	//--------------------------------------------------------------------------
+	// PROJECT to satisfy constaints
+	//--------------------------------------------------------------------------
+	virtual bool projectConfigurationToSatisfyConstraints(double uY[], const double cTol, double uYerr[]=0);
 
 	//--------------------------------------------------------------------------
 	// ASSEMBLING THE MODEL
@@ -203,7 +219,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual AbstractBody& getGroundBody() const;
 	virtual AbstractBody* getLeafBody(AbstractJoint* aJoint) const { return NULL; }
-	bool adjustJointVectorsForNewMassCenter(SimbodyBody* aBody);
+	bool adjustJointVectorsForNewMassCenter(Body* aBody);
 
 	//--------------------------------------------------------------------------
 	// INERTIA
@@ -212,6 +228,7 @@ public:
 	virtual void getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const;
 	virtual void getSystemInertia(double *rM, double *rCOM, double *rI) const;
 
+	void updateBodyInertia(const AbstractBody* aBody);
 	//--------------------------------------------------------------------------
 	// KINEMATICS
 	//--------------------------------------------------------------------------
@@ -259,12 +276,12 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const;
 	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const;
-	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const;
+	virtual void computeReactions(SimTK::Vector_<SimTK::Vec3>& rForces, SimTK::Vector_<SimTK::Vec3>& rTorques) const;
 
 	//--------------------------------------------------------------------------
 	// CONSTRAINTS
 	//--------------------------------------------------------------------------
-	virtual void computeConstrainedCoordinates(double rQ[]) const {};
+	virtual void computeConstrainedCoordinates(double rQ[]) const;
 
 	//--------------------------------------------------------------------------
 	// EQUATIONS OF MOTION
@@ -283,6 +300,7 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
+	void dumpState() { std::cout << _s.toString() << std::endl; }
 	virtual void transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const;
 	virtual void transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const;
@@ -316,11 +334,19 @@ public:
 	const SimTK::Vector_<SimTK::SpatialVec>& getBodyForces() { return _bodyForces; }
 	const SimTK::Vector& getMobilityForces() { return _mobilityForces; }
 
+   bool writeSIMMJointFile(const std::string& aFileName) const;
+
 private:
-	friend class SimbodyBody;
-	friend class SimbodyCoordinate;
-	friend class SimbodySpeed;
-	friend class SimbodyJoint;
+	friend class Body;
+	friend class Coordinate;
+	friend class Speed;
+	friend class Joint;
+	friend class Constraint;
+	friend class WeldConstraint;
+	friend class CoordinateCouplerConstraint;
+	void linkObjectsInHierarchy();
+	void updateDynamics(SimTK::Stage desiredStage);
+	void updateSimbodyModel();
 
 //=============================================================================
 };	// END of class SimbodyEngine

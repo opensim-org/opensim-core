@@ -27,7 +27,7 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+ * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  */
 
 
@@ -42,13 +42,11 @@
 // STATICS
 //=============================================================================
 
-
+// This command indicates that any identifier (class, variable, method, etc.)
+// defined within the OpenSim namespace can be used in this file without the
+// "OpenSim::" prefix.
 using namespace OpenSim;
 
-const int Controller::NAME_LENGTH = ControllerNAME_LENGTH;	
-// Remove _ before NAME_LENGTH to make SWIG happy since Controller::NAME_LENGTH gets
-// wrapped as Controller_NAME_LENGTH. -Ayman 8/08
-const int Controller::DESCRIP_LENGTH = ControllerDESCRIP_LENGTH;
 
 
 //=============================================================================
@@ -57,16 +55,41 @@ const int Controller::DESCRIP_LENGTH = ControllerDESCRIP_LENGTH;
 //_____________________________________________________________________________
 /**
  * Default constructor.
- *
- * @param aModel Model that is to be controlled.
  */
-Controller::Controller(Model *aModel)
+Controller::Controller() :
+	Object()
 {
-	// NULL
 	setNull();
-
-	// MODEL
+}
+//_____________________________________________________________________________
+/**
+ * Constructor.
+ */
+Controller::Controller(Model *aModel) :
+	Object()
+{
+	setNull();
 	_model = aModel;
+}
+//_____________________________________________________________________________
+/**
+ * Constructor from an XML Document
+ */
+Controller::Controller(const std::string &aFileName, bool aUpdateFromXMLNode) :
+	Object(aFileName, false)
+{
+	setNull();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
+}
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ */
+Controller::Controller(const Controller &aController) :
+	Object(aController)
+{
+	setNull();
+	copyData(aController);
 }
 //_____________________________________________________________________________
 /**
@@ -88,18 +111,57 @@ Controller::~Controller()
 void Controller::
 setNull()
 {
+	setupProperties();
+	setType("Controller");
+
 	// MODEL
 	_model = NULL;
 
 	// STATES
 	_on = true;
 
-	// NAME
-	setName("UNKOWN");
+}
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void Controller::
+setupProperties()
+{
 
-	// DESCRIPTION
-	setDescription("");
+}
+//_____________________________________________________________________________
+/**
+ * Copy the member variables of the specified controller.
+ */
+void Controller::
+copyData(const Controller &aController)
+{
+	_model = aController._model;
+	_on = aController._on;
+}
 
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ */
+Controller& Controller::
+operator=(const Controller &aController)
+{
+	// BASE CLASS
+	Object::operator=(aController);
+
+	// DATA
+	copyData(aController);
+
+	return(*this);
 }
 
 
@@ -111,102 +173,52 @@ setNull()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get a pointer to the model on which this analysis is being performed.
- *
- * @return Pointer to the model.
+ * Get a pointer to the model that is being controlled.
  */
 Model* Controller::
 getModel()
 {
 	return(_model);
 }
-
+/**
+ * Set this class's pointer to the model that is being controlled
+ * to point to the model passed into this method.
+ */
+void Controller::
+setModel(Model *aModel)
+{
+	_model = aModel;
+}
+/**
+ * Set this class's pointer to the storage object containing
+ * desired model states to point to the storage object passed into
+ * this method.
+ */
+void Controller::
+setDesiredStatesStorage(Storage *aYDesStore)
+{
+	
+}
 //-----------------------------------------------------------------------------
 // ON/OFF
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Turn this analysis on or off.
- *
- * @param aTureFalse Turns analysis on if "true" and off if "false".
- */
-void Controller::
-setOn(bool aTrueFalse)
-{
-	_on = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Get whether or not this analysis is on.
- *
- * @return True if on, false if off.
+ * Get whether or not this controller is on.
  */
 bool Controller::
 getOn()
 {
 	return(_on);
 }
-
-//-----------------------------------------------------------------------------
-// NAME
-//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the name of this controller.
- *
- * @param aName Name.
+ * Turn this controller on or off.
  */
 void Controller::
-setName(const char *aName)
+setOn(bool aTrueFalse)
 {
-	if(aName==NULL) {
-		strcpy(_name,"");
-	} else {
-		strncpy(_name,aName,NAME_LENGTH-2);
-	}
-	_name[NAME_LENGTH-1] = 0;
-}
-//_____________________________________________________________________________
-/**
- * Get the name of this controller.
- *
- * @return Name.
- */
-const char* Controller::
-getName()
-{
-	return(_name);
-}
-
-//-----------------------------------------------------------------------------
-// DESCRIPTION
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the description of this controller.
- *
- * @param aDescrip Description.
- */
-void Controller::
-setDescription(const char *aDescrip)
-{
-	if(aDescrip==NULL) {
-		strcpy(_descrip,"");
-	} else {
-		strncpy(_descrip,aDescrip,DESCRIP_LENGTH-2);
-	}
-	_descrip[DESCRIP_LENGTH-1] = 0;
-}
-//_____________________________________________________________________________
-/**
- * Get the description of this controller.
- *
- * @return Description.
- */
-const char* Controller::
-getDescription()
-{
-	return(_descrip);
+	_on = aTrueFalse;
 }
 
 

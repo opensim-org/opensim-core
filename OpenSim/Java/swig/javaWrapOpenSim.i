@@ -20,7 +20,6 @@
 #include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/MaterialSet.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Range.h>
@@ -87,6 +86,9 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrap.h>
 #include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
+#include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
+#include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/osimSimmKinematicsEngineDLL.h>
@@ -100,8 +102,8 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 
-#include <OpenSim/Simulation/Model/AbstractDof.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
+#include <OpenSim/Simulation/Model/TransformAxisSet.h>
 
 #include <OpenSim/Simulation/Model/AbstractJoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
@@ -116,8 +118,6 @@
 #include <OpenSim/Simulation/Model/MovingMusclePoint.h>
 
 #include <OpenSim/Common/SimmPoint.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
@@ -130,7 +130,7 @@
 #include <OpenSim/Tools/IKTrial.h>
 #include <OpenSim/Tools/IKTrialSet.h>
 
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/SimmFileWriter.h>
 #include <OpenSim/Tools/IKTask.h>
 #include <OpenSim/Tools/IKMarkerTask.h>
 #include <OpenSim/Tools/IKCoordinateTask.h>
@@ -253,11 +253,10 @@ using namespace SimTK;
   static {
       try{
         System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
-        System.loadLibrary("osimSdfastEngine");	//to load sdfast based models
-        System.loadLibrary("osimSimbodyEngine");	//to load sdfast based models
+        System.loadLibrary("osimSimbodyEngine");	//to load Simbody based models
       }
       catch(UnsatisfiedLinkError e){
-           TheApp.exitApp("Required library failed to load. Check that the dynamic libraries osimJavaJNI, osimSdfastEngine, and osimSimbodyEngine are in your PATH\n"+e);
+           TheApp.exitApp("Required library failed to load. Check that the dynamic libraries osimJavaJNI and osimSimbodyEngine are in your PATH\n"+e);
       }
   }
 %}
@@ -314,8 +313,8 @@ using namespace SimTK;
 }
 
 %extend OpenSim::AnalyticGeometry {
-    static AnalyticGeometry *dynamic_cast(Geometry *geometry) {
-        return dynamic_cast<AnalyticGeometry *>(geometry);
+    static OpenSim::AnalyticGeometry *dynamic_cast(OpenSim::Geometry *geometry) {
+        return dynamic_cast<OpenSim::AnalyticGeometry *>(geometry);
     }
 };
 
@@ -450,6 +449,9 @@ using namespace SimTK;
 %include <OpenSim/Simulation/Wrap/MuscleWrap.h>
 %template(SetMuscleWrap) OpenSim::Set<OpenSim::MuscleWrap>;
 %include <OpenSim/Simulation/Wrap/MuscleWrapSet.h>
+%include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
+%include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
+%include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 %include <OpenSim/Simulation/Model/AbstractBody.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/osimSimmKinematicsEngineDLL.h>
@@ -461,9 +463,9 @@ using namespace SimTK;
 %template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
-%include <OpenSim/Simulation/Model/AbstractDof.h>
-%template(SetDofs) OpenSim::Set<OpenSim::AbstractDof>;
-%include <OpenSim/Simulation/Model/DofSet.h>
+%include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
+%template(SetTransformAxis) OpenSim::Set<OpenSim::AbstractTransformAxis>;
+%include <OpenSim/Simulation/Model/TransformAxisSet.h>
 
 %include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
@@ -496,14 +498,11 @@ using namespace SimTK;
 %include <OpenSim/Actuators/Schutte1993Muscle.h>
 
 %include <OpenSim/Common/SimmPoint.h>
-%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmRotationDof.h>
-%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmTranslationDof.h>
-
 %include <OpenSim/Tools/IKTrial.h>
 %template(SetIKTrial) OpenSim::Set<OpenSim::IKTrial>;
 %include <OpenSim/Tools/IKTrialSet.h>
 
-%include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+%include <OpenSim/Simulation/Model/SimmFileWriter.h>
 %include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
 %include <OpenSim/Tools/IKMarkerTask.h>

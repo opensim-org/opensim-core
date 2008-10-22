@@ -42,7 +42,7 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AbstractBody.h>
-#include <OpenSim/Simulation/Model/BoneSet.h>
+//#include <OpenSim/Simulation/Model/BoneSet.h>
 
 //using SimTK::Mat33;
 namespace OpenSim {

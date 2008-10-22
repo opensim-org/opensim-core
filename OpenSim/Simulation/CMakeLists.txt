@@ -58,11 +58,9 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
 )
 
 ## install stuff
-INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 
 FOREACH(dir ${SIMULATION_SUBDIRS})
    FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
-	IF(INSTALL_HEADERS)
-		INSTALL_FILES(/include/OpenSim/Simulation/${dir} .h ${HEADERS})
-	ENDIF(INSTALL_HEADERS)
+   INSTALL_FILES(/sdk/include/OpenSim/Simulation/${dir} .h ${HEADERS})
 ENDFOREACH(dir)

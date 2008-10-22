@@ -63,7 +63,7 @@ class OSIMSIMULATION_API Callback : public Object
 protected:
 	/** Model. */
 	Model *_model;
-private:
+//private:
 	/** On, off flag. */
 	PropertyBool _onProp;
 	bool &_on;

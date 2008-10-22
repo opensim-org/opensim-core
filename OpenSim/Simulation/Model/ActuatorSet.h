@@ -40,10 +40,6 @@ namespace OpenSim {
 
 class Model;
 
-#ifndef SWIG
-template class OSIMSIMULATION_API Set<AbstractActuator>;
-#endif
-
 //=============================================================================
 //=============================================================================
 /**

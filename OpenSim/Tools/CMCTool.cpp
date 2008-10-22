@@ -1,31 +1,30 @@
 // CMCTool.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Copyright (c) 2006 Stanford University and Realistic Dynamics, Inc.
 // Contributors: Frank C. Anderson, Eran Guendelman, Chand T. John
-/* Copyright (c)  2006 Stanford University
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject
+// to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS,
+// CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+// THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// This software, originally developed by Realistic Dynamics, Inc., was
+// transferred to Stanford University on November 1, 2006.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //=============================================================================
@@ -60,8 +59,8 @@
 #include "rdActuatorForceTargetFast.h"
 
 using namespace std;
+using namespace SimTK;
 using namespace OpenSim;
-using SimTK::Vec3;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -261,7 +260,7 @@ setNull()
 	_lowpassCutoffFrequency = -1.0;
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 	_targetDT = 0.010;
-	_useCurvatureFilter = false;
+	_useCurvatureFilter = true;
 	_useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
 	_useReflexes = false;
@@ -680,7 +679,7 @@ bool CMCTool::run()
 	}
 
 	// GROUND REACTION FORCES
-	ForwardTool::initializeExternalLoads(_model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+	ForwardTool::InitializeExternalLoads(_ti, _tf, _model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
 		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
 
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
@@ -803,6 +802,10 @@ bool CMCTool::run()
 	string rraControlName;
 	ModelIntegrandForActuators cmcIntegrand(_model);
 	cmcIntegrand.setCoordinateTrajectories(qSet);
+
+	// Don't project constraints while inside the controller
+	cmcIntegrand.setConstraintTolerance(0);
+	
 	VectorFunctionForActuators *predictor =
 		new VectorFunctionForActuators(&cmcIntegrand);
 	controller.setActuatorForcePredictor(predictor);
@@ -1027,7 +1030,7 @@ writeAdjustedModel()
  * set to 3.
  */
 void CMCTool::
-computeAverageResiduals(const Storage &aForceStore,Array<double> &rFAve,Array<double> &rMAve)
+computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve)
 {
 	// COMPUTE AVERAGE
 	int size = aForceStore.getSmallestNumberOfStates();
@@ -1091,7 +1094,7 @@ adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore)
 
 // Uses an inverse dynamics analysis to compute average residuals
 void CMCTool::
-computeAverageResiduals(Model &aModel, double aTi, double aTf, const Storage &aStatesStore, Array<double>& rFAve, Array<double>& rMAve)
+computeAverageResiduals(Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve)
 {
 	// Turn off whatever's currently there (but remember whether it was on/off)
 	AnalysisSet *analysisSet = aModel.getAnalysisSet();
@@ -1131,13 +1134,13 @@ computeAverageResiduals(Model &aModel, double aTi, double aTf, const Storage &aS
  * be 3.
  */
 void CMCTool::
-adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve)
+adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve)
 {
 	// CHECK SIZE
 	assert(aFAve.getSize()==3 && aMAve.getSize()==3);
 
 	// GRAVITY
-	SimTK::Vec3 g;
+	Vec3 g;
 	_model->getGravity(g);
 
 	// COMPUTE SEGMENT WEIGHT
@@ -1164,7 +1167,7 @@ adjustCOMToReduceResiduals(const Array<double> &aFAve,const Array<double> &aMAve
 	cout<<"dx="<<dx<<", dz="<<dz<<endl;
 
 	// GET EXISTING COM
-	Vec3 com(0.0);
+	Vec3 com;
 	body->getMassCenter(com);
 
 	// COMPUTE ALTERED COM

@@ -72,19 +72,12 @@ protected:
 	Storage *_activationStorage;
 	Storage *_forceStorage;
 
-	Array<double> _dydt;
 	Array<int> _accelerationIndices;
 
 	SimTK::Vector _parameters;
 
 	bool _ownsActuatorSet;
 	ActuatorSet *_actuatorSet;
-
-	SimTK::Matrix _performanceMatrix;
-	SimTK::Vector _performanceVector;
-	SimTK::Matrix _constraintMatrix;
-	SimTK::Vector _constraintVector;
-	SimTK::Vector _lapackWork;
 
 	double _optimizerDX;
 	std::string _optimizerAlgorithm;

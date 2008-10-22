@@ -161,14 +161,14 @@ double Units::convertTo(UnitType aType) const
 		if (aType == simmDegrees)
 			return SimTK_RADIAN_TO_DEGREE;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmDegrees)
 	{
 		if (aType == simmRadians)
 			return SimTK_DEGREE_TO_RADIAN;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmMillimeters)
 	{
@@ -177,7 +177,7 @@ double Units::convertTo(UnitType aType) const
 		else if (aType == simmMeters)
 			return 0.001;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmCentimeters)
 	{
@@ -186,7 +186,7 @@ double Units::convertTo(UnitType aType) const
 		else if (aType == simmMeters)
 			return 0.01;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmMeters)
 	{
@@ -195,24 +195,24 @@ double Units::convertTo(UnitType aType) const
 		else if (aType == simmCentimeters)
 			return 100.0;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmSeconds)
 	{
 		if (aType == simmMilliseconds)
 			return 1000.0;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 	else if (_type == simmMilliseconds)
 	{
 		if (aType == simmSeconds)
 			return 0.001;
 		else
-			return rdMath::NAN;
+			return rdMath::getNAN();
 	}
 
-	return rdMath::NAN;
+	return rdMath::getNAN();
 }
 
 //_____________________________________________________________________________

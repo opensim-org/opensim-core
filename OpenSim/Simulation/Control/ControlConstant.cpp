@@ -237,16 +237,16 @@ getParameterMax(int aI) const
  * parameters are the cooefficients in the expansion, and each term in
  * the expansion corresponds not to a specific time but to a frequency.
  * Another example is a constant that has the same value for all times.
- * In these cases, this method returns rdMath::NAN.
+ * In these cases, this method returns rdMath::getNAN().
  *
  * @param aI Index of the parameter.
  * @return Time at which the control parameter occurs.  For ControlConstant
- * this value is not defined, and so rdMath::NAN is always returned.
+ * this value is not defined, and so rdMath::getNAN() is always returned.
  */
 double ControlConstant::
 getParameterTime(int aI) const
 {
-	return(rdMath::NAN);
+	return(rdMath::getNAN());
 }
 
 //-----------------------------------------------------------------------------

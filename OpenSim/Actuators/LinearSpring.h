@@ -41,7 +41,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/VectorFunction.h>
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Analyses/Contact.h>
 #include "ForceApplier.h"
 
 

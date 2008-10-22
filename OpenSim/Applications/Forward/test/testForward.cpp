@@ -31,6 +31,7 @@
 #include <iostream>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -47,55 +48,79 @@
 using namespace OpenSim;
 using namespace std;
 
+#define ASSERT(cond) {if (!(cond)) throw(exception());}
 
-string filesToCompare[] = {
-							"check.xml",
-							"test_Kinematics_u.sto",
-							"test_Kinematics_dudt.sto",
-							"test_Kinematics_q.sto",
-							"test_ActuatorGeneralizedForces.sto",
-							"test_BodyKinematics_vel.sto",
-							"test_BodyKinematics_acc.sto",
-							"test_BodyKinematics_pos.sto"
-};
+#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
-//_____________________________________________________________________________
-/**
- * Main routine for executing a forward integration and running a set of
- * analyses during the forward integration.
- */
-int main(int argc,char **argv)
-{
-	// PARSE COMMAND LINE
-	string option = "";
-	string setupFileName = "forward.xml";
-	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
-	ForwardTool forward(setupFileName);
-	forward.print("check.xml");
-
-	// PRINT MODEL INFORMATION
-	Model *model = forward.getModel();
-	if(model==NULL) {
-		cout<<"\nperturb:  ERROR- failed to load model.\n";
-		exit(-1);
-	}
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	model->printBasicInfo(cout);
-	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// RUN
+void testPendulum() {
+	ForwardTool forward("setup_pend.xml");
 	forward.run();
+	forward.print("check.xml");
+	Storage storage("Results/pendulum_states.sto");
+	ASSERT(storage.getFirstTime() == 0.0);
+	ASSERT(storage.getLastTime() == 1.0);
+	ASSERT(storage.getSize() > 10);
 
-	/* Compare results with standard*/
-	bool success = true;
-	for (int i=0; i < 8 && success; i++){
-		string command = "cmp "+filesToCompare[i]+" "+"std_"+filesToCompare[i];
-		success = success && (system(command.c_str())==0);
+	// Since the pendulum is only swinging through small angles, it should be very
+	// close to a simple harmonic oscillator.
+
+	double previousTime = -1.0;
+	double k = std::sqrt(9.80665000/0.5);
+	for (int i = 0; i < storage.getSize(); ++i) {
+		StateVector* state = storage.getStateVector(i);
+		double time = state->getTime();
+		ASSERT(time > previousTime);
+		previousTime = time;
+		ASSERT_EQUAL(0.1*std::cos(k*time), state->getData()[0], 1e-3);
+		ASSERT_EQUAL(0.0, state->getData()[1], 1e-5);
+		ASSERT_EQUAL(0.0, state->getData()[2], 1e-5);
+		ASSERT_EQUAL(-k*0.1*std::sin(k*time), state->getData()[3], 1e-3);
+		ASSERT_EQUAL(0.0, state->getData()[4], 1e-5);
+		ASSERT_EQUAL(0.0, state->getData()[5], 1e-5);
 	}
+	ASSERT(previousTime == 1.0);
+}
 
-	return (success?0:1);
 
+void testGait2354() {
+	ForwardTool forward("setup_gait2354.xml");
+	forward.run();
+	forward.print("check.xml");
+	Storage results("Results/gait2354_states.sto");
+	Storage standard("std_gait2354_states.sto");
+	ASSERT(results.getFirstTime() == standard.getFirstTime());
+	ASSERT(results.getLastTime() == standard.getLastTime());
+	ASSERT(results.getSize() > 100);
+
+	// For each state of the result file, make sure it is sufficiently
+	// close to the standard file at the same time.
+
+	double previousTime = -1.0;
+	Array<double> data;
+	for (int i = 0; i < results.getSize(); ++i) {
+		StateVector* state = results.getStateVector(i);
+		double time = state->getTime();
+		ASSERT(time > previousTime);
+		previousTime = time;
+		data.setSize(state->getSize());
+		standard.getDataAtTime(time, state->getSize(), data);
+		for (int j = 0; j < state->getSize(); ++j) {
+            ASSERT_EQUAL(data[j], state->getData()[j], 1e-3);
+		}
+	}
+	ASSERT(previousTime == 1.0);
+}
+
+int main() {
+    try {
+        LoadOpenSimLibrary("osimSimbodyEngine");
+        testPendulum();
+		testGait2354();
+    }
+    catch(const std::exception& e) {
+        cout << "exception: " << e.what() << endl;
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }

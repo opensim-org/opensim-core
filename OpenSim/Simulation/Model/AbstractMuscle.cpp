@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "Model.h"
 #include "AbstractBody.h"
-#include "AbstractDof.h"
+#include "AbstractTransformAxis.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/rdMath.h>
@@ -167,7 +167,7 @@ void AbstractMuscle::setupProperties()
 /**
  * Perform set up functions after model has been deserialized or copied.
  *
- * @param aModel model containing this muscle.
+ * @param aModel The model containing this muscle.
  */
 void AbstractMuscle::setup(Model* aModel)
 {
@@ -179,6 +179,9 @@ void AbstractMuscle::setup(Model* aModel)
 	if (aModel == NULL)
 		return;
 
+   // Name the attachment points based on the current path
+   // (i.e., the set of currectly active points is numbered
+   // 1, 2, 3, ...).
 	nameAttachmentPoints(0);
 
 	for (i = 0; i < _attachmentSet.getSize(); i++){
@@ -203,11 +206,11 @@ void AbstractMuscle::setup(Model* aModel)
  * Set the name of the muscle. This method overrides the one in Object
  * so that the attachment points can be [re]named accordingly.
  *
- * @param aName the new name of the muscle.
+ * @param aName The new name of the muscle.
  */
 void AbstractMuscle::setName(const string &aName)
 {
-	// BASE CLASS
+	// base class
 	AbstractActuator::setName(aName);
 
 	// Rename all of the attachment points.
@@ -216,9 +219,10 @@ void AbstractMuscle::setName(const string &aName)
 
 //_____________________________________________________________________________
 /**
- * Name the attachment points based on their position in the set.
+ * Name the attachment points based on their position in the set. To keep the
+ * names up to date, this method should be called every time the path changes.
  *
- * @param aStartingIndex the index of the first attachment point to name.
+ * @param aStartingIndex The index of the first attachment point to name.
  */
 void AbstractMuscle::nameAttachmentPoints(int aStartingIndex)
 {
@@ -230,6 +234,13 @@ void AbstractMuscle::nameAttachmentPoints(int aStartingIndex)
 	}
 }
 
+//_____________________________________________________________________________
+/**
+ * get the current path of the muscle
+ *
+ * @return The array of currently active attachment points.
+ * 
+ */
 const Array<MusclePoint*> AbstractMuscle::getCurrentPath()
 {
 	if (_pathValid == false)
@@ -241,7 +252,7 @@ const Array<MusclePoint*> AbstractMuscle::getCurrentPath()
 //_____________________________________________________________________________
 /**
  * updateGeometrySize updates the size of the array of geometry items to be of the
- * correct size based on muscle changes
+ * correct size based on changes to the muscle path.
  * 
  */
 void AbstractMuscle::updateGeometrySize()
@@ -277,7 +288,7 @@ void AbstractMuscle::updateGeometrySize()
 //_____________________________________________________________________________
 /**
  * updateGeometryLocations updates the locations of the array of geometry items 
- * to be in the right place based on muscle changes
+ * to be in the right place based changes to the muscle path.
  * 
  */
 void AbstractMuscle::updateGeometryLocations()
@@ -324,11 +335,12 @@ void AbstractMuscle::updateGeometry()
 /**
  * Assignment operator.
  *
+ * @param aMuscle The muscle from which to copy its data
  * @return Reference to this object.
  */
 AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
 {
-	// BASE CLASS
+	// base class
 	AbstractActuator::operator=(aMuscle);
 
 	copyData(aMuscle);
@@ -342,7 +354,7 @@ AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Evaluate the normalized force-length-velicity curve for muscle.
+ * Evaluate the normalized force-length-velocity curve for the muscle.
  * A simple generic implementation is used here.  Derived classes should
  * override this method for more precise evaluation of the
  * force-length-velocity curve.
@@ -359,17 +371,16 @@ AbstractMuscle& AbstractMuscle::operator=(const AbstractMuscle &aMuscle)
  * @return Force normalized by the optimal force.
  */
 double AbstractMuscle::
-evaluateForceLengthVelocityCurve(double aActivation,double aNormalizedLength,double aNormalizedVelocity)
+evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity)
 {
-	// FORCE-LENGTH
+	// force-length
 	double fLength = exp(-17.33 * fabs(pow(aNormalizedLength-1.0,3)));
 
-	// FORCE-VELOCITY
+	// force-velocity
 	double fVelocity = 1.8  -  1.8 / (1.0 + exp( (0.04 - aNormalizedVelocity)/0.18) );
 
 	return aActivation * fLength * fVelocity;
 }
-
 
 
 //=============================================================================
@@ -380,7 +391,7 @@ evaluateForceLengthVelocityCurve(double aActivation,double aNormalizedLength,dou
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Compute the total length of the muscle tendon complex.
+ * Compute the total length of the muscle-tendon actuator.
  *
  * @return Total length of the muscle and tendon.
  */
@@ -394,7 +405,7 @@ double AbstractMuscle::getLength()
 /**
  * Get the length of the tendon.
  *
- * @param Current length of the tendon.
+ * @return Current length of the tendon.
  */
 double AbstractMuscle::getTendonLength()
 {
@@ -402,10 +413,10 @@ double AbstractMuscle::getTendonLength()
 }
 //_____________________________________________________________________________
 /**
- * Get the length of the muscle fiber(s) along the tendon.  This method
+ * Get the length of the muscle fiber(s) along the tendon. This method
  * accounts for the pennation angle. 
  *
- * @param Current length of the muscle fiber(s) along the direction of
+ * @return Current length of the muscle fiber(s) along the direction of
  * the tendon.
  */
 double AbstractMuscle::getFiberLengthAlongTendon()
@@ -418,8 +429,8 @@ double AbstractMuscle::getFiberLengthAlongTendon()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Compute the force generated by the muscle fibers.  This accounts for
- * pennation angle.  That is, the fiber force is computed by dividing the
+ * Compute the force generated by the muscle fibers. This accounts for
+ * pennation angle. That is, the fiber force is computed by dividing the
  * actuator force by the cosine of the pennation angle.
  *
  * @return Force in the muscle fibers.
@@ -429,7 +440,7 @@ double AbstractMuscle::getFiberForce()
 	double force;
 	double cos_penang = cos(getPennationAngle());
 	if(fabs(cos_penang) < rdMath::ZERO) {
-		force = rdMath::NAN;
+		force = rdMath::getNAN();
 	} else {
 		force = getForce() / cos_penang;
 	}
@@ -440,7 +451,7 @@ double AbstractMuscle::getFiberForce()
 /**
  * Get the active force generated by the muscle fibers.
  *
- * @param Current active force of the muscle fiber(s).
+ * @return Current active force of the muscle fibers.
  */
 double AbstractMuscle::getActiveFiberForce()
 {
@@ -451,7 +462,7 @@ double AbstractMuscle::getActiveFiberForce()
  * Get the active force generated by the muscle fibers along the direction
  * of the tendon.
  *
- * @param Current active force of the muscle fiber(s) along tendon.
+ * @return Current active force of the muscle fibers along tendon.
  */
 double AbstractMuscle::getActiveFiberForceAlongTendon()
 {
@@ -462,7 +473,7 @@ double AbstractMuscle::getActiveFiberForceAlongTendon()
  * Get the passive force generated by the muscle fibers along the direction
  * of the tendon.
  *
- * @return Current passive force of the muscle fiber(s) along tendon.
+ * @return Current passive force of the muscle fibers along tendon.
  */
 double AbstractMuscle::getPassiveFiberForceAlongTendon()
 {
@@ -479,6 +490,7 @@ double AbstractMuscle::getPassiveFiberForceAlongTendon()
  *
  * @param aIndex The position in the attachmentSet to put the new point in.
  * @param aBody The body to attach the point to.
+ * @return Pointer to the newly created attachment point.
  */
 MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 {
@@ -489,7 +501,7 @@ MusclePoint* AbstractMuscle::addAttachmentPoint(int aIndex, AbstractBody& aBody)
 	newPoint->setup(getModel(), this);
 	_attachmentSet.insert(aIndex, newPoint);
 
-	// rename the attachment points starting at this new one
+	// Rename the attachment points starting at this new one.
 	nameAttachmentPoints(aIndex);
 
 	// Update start point and end point in the wrap instances so that they
@@ -564,10 +576,11 @@ void AbstractMuscle::placeNewAttachment(SimTK::Vec3& aOffset, int aIndex, Abstra
 
 //_____________________________________________________________________________
 /**
- * See if an attachment point can be deleted.
+ * See if an attachment point can be deleted. All muscles must have at least two
+ * active attachment points to define the path.
  *
- * @param aIndex The index of the point to delete
- * @return Whether or not the point can be deleted
+ * @param aIndex The index of the point to delete.
+ * @return Whether or not the point can be deleted.
  */
 bool AbstractMuscle::canDeleteAttachmentPoint(int aIndex)
 {
@@ -591,8 +604,8 @@ bool AbstractMuscle::canDeleteAttachmentPoint(int aIndex)
 /**
  * Delete an attachment point.
  *
- * @param aIndex The index of the point to delete
- * @return Whether or not the point was deleted
+ * @param aIndex The index of the point to delete.
+ * @return Whether or not the point was deleted.
  */
 bool AbstractMuscle::deleteAttachmentPoint(int aIndex)
 {
@@ -642,14 +655,15 @@ void AbstractMuscle::addMuscleWrap(AbstractWrapObject& aWrapObject)
 
 //_____________________________________________________________________________
 /**
- * Move a wrap instance up in the list.
+ * Move a wrap instance up in the list. Changing the order of wrap instances for
+ * a muscle may affect how the path wraps over the wrap objects.
  *
  * @param aIndex The index of the wrap instance to move up.
  */
 void AbstractMuscle::moveUpMuscleWrap(int aIndex)
 {
 	if (aIndex > 0) {
-	   _muscleWrapSet.setMemoryOwner(false); // so wrap is not deleted by remove()
+	   _muscleWrapSet.setMemoryOwner(false); // so the wrap object is not deleted by remove()
 	   MuscleWrap* wrap = _muscleWrapSet.get(aIndex);
 	   _muscleWrapSet.remove(aIndex);
 	   _muscleWrapSet.insert(aIndex - 1, wrap);
@@ -661,7 +675,8 @@ void AbstractMuscle::moveUpMuscleWrap(int aIndex)
 
 //_____________________________________________________________________________
 /**
- * Move a wrap instance down in the list.
+ * Move a wrap instance down in the list. Changing the order of wrap instances for
+ * a muscle may affect how the path wraps over the wrap objects.
  *
  * @param aIndex The index of the wrap instance to move down.
  */
@@ -697,7 +712,7 @@ void AbstractMuscle::deleteMuscleWrap(int aIndex)
 //_____________________________________________________________________________
 /**
  * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the musculotendon
+ * For this object, that entails calculating and storing the muscle-tendon
  * length in the current body position.
  *
  * @param aScaleSet XYZ scale factors for the bodies.
@@ -736,10 +751,9 @@ void AbstractMuscle::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 /**
  * Perform computations that need to happen after the muscle is scaled.
- * In most cases, these computations would be performed in the
- * classes descending from AbstractMuscle, where the force-generating
- * properties are stored (except for the recalculation of the path, which
- * is handled here).
+ * For this object, that entails updating the muscle path. Derived classes
+ * should probably also scale or update some of the force-generating
+ * properties.
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */
@@ -758,7 +772,7 @@ void AbstractMuscle::postScale(const ScaleSet& aScaleSet)
 /**
  * Compute values needed for calculating the muscle's actuation.
  * Right now this is only speed (contraction velocity; all other calculations
- * are handled by the derived classes.
+ * are handled by the derived classes).
  */
 void AbstractMuscle::computeActuation()
 {
@@ -801,7 +815,6 @@ void AbstractMuscle::computeActuation()
 
 		// Dot the relative velocity with the unit vector from start to end,
 		// and add this speed to the running total.
-		//
 		_speed += (velRelative[0] * posRelative[0] +
 			        velRelative[1] * posRelative[1] +
 			        velRelative[2] * posRelative[2]);
@@ -822,10 +835,10 @@ void AbstractMuscle::computePath()
 	if (_pathValid == true)
 		return;
 
-	// empty out the current path
+	// Clear the current path.
 	_currentPath.setSize(0);
 
-	// add the fixed and active via points to the path
+	// Add the fixed and active via points to the path.
 	int i;
    for (i = 0; i < _attachmentSet.getSize(); i++) {
 		_attachmentSet[i]->update();
@@ -833,9 +846,9 @@ void AbstractMuscle::computePath()
 			_currentPath.append(_attachmentSet[i]);
 	}
 
-   // use the current path so far to check for intersection
+   // Use the current path so far to check for intersection
 	// with wrap objects, which may add additional points to
-	// the path
+	// the path.
 	applyWrapObjects();
 
 	calcLengthAfterPathComputation();
@@ -868,15 +881,14 @@ void AbstractMuscle::applyWrapObjects()
 	result.setSize(_muscleWrapSet.getSize());
 	order.setSize(_muscleWrapSet.getSize());
 
-   /* Set the initial order to be the order they are listed in the muscle. */
+   // Set the initial order to be the order they are listed in the muscle.
    for (i = 0; i < _muscleWrapSet.getSize(); i++)
       order[i] = i;
 
-   /* If there is only one wrap object, calculate the wrapping only once.
-    * If there are two or more objects, perform up to 8 iterations where
-    * the result from one wrap object is used as the starting point for
-    * the next wrap.
-    */
+   // If there is only one wrap object, calculate the wrapping only once.
+   // If there are two or more objects, perform up to 8 iterations where
+   // the result from one wrap object is used as the starting point for
+   // the next wrap.
    if (_muscleWrapSet.getSize() < 2)
       maxIterations = 1;
    else
@@ -890,9 +902,9 @@ void AbstractMuscle::applyWrapObjects()
          ws = _muscleWrapSet.get(order[i]);
 			wo = ws->getWrapObject();
          best_wrap.wrap_pts.setSize(0);
-			min_length_change = rdMath::INFINITY;
+			min_length_change = rdMath::PLUS_INFINITY;
 
-         /* First remove this object's wrapping points from the current muscle path. */
+         // First remove this object's wrapping points from the current muscle path.
          for (j = 0; j < _currentPath.getSize(); j++)
          {
 				if (_currentPath.get(j) == &ws->getWrapPoint(0))
@@ -905,20 +917,18 @@ void AbstractMuscle::applyWrapObjects()
 
          if (wo->getActive())
          {
-            /* startPoint and endPoint in wrapStruct represent the user-defined
-             * starting and ending points in the array of muscle points that should
-             * be considered for wrapping. These indices take into account via points,
-             * whether or not they are active. Thus they are indices into mp_orig[],
-             * not mp[] (also, mp[] may contain wrapping points from previous wrap
-             * objects, which would mess up the starting and ending indices). But the
-             * goal is to find starting and ending indices in mp[] to consider for
-             * wrapping over this wrap object. Here is how that is done:
-             */
+            // startPoint and endPoint in wrapStruct represent the user-defined
+            // starting and ending points in the array of muscle points that should
+            // be considered for wrapping. These indices take into account via points,
+            // whether or not they are active. Thus they are indices into mp_orig[],
+            // not mp[] (also, mp[] may contain wrapping points from previous wrap
+            // objects, which would mess up the starting and ending indices). But the
+            // goal is to find starting and ending indices in mp[] to consider for
+            // wrapping over this wrap object. Here is how that is done:
 
-            /* 1. startPoint and endPoint are 1-based, so subtract 1 from them to get
-             * indices into _attachmentSet. -1 (or any value less than 1) means use the first
-             * (or last) point.
-             */
+            // 1. startPoint and endPoint are 1-based, so subtract 1 from them to get
+            // indices into _attachmentSet. -1 (or any value less than 1) means use the first
+            // (or last) point.
 				if (ws->getStartPoint() < 1)
                wrapStart = 0;
             else
@@ -929,9 +939,8 @@ void AbstractMuscle::applyWrapObjects()
             else
                wrapEnd = ws->getEndPoint() - 1;
 
-				/* 2. Scan forward from wrapStart in _attachmentSet to find the first point
-				 * that is active. Store a pointer to it (smp).
-				 */
+				// 2. Scan forward from wrapStart in _attachmentSet to find the first point
+				// that is active. Store a pointer to it (smp).
 				for (j = wrapStart; j <= wrapEnd; j++)
 					if (_attachmentSet.get(j)->isActive())
 						break;
@@ -939,9 +948,8 @@ void AbstractMuscle::applyWrapObjects()
 					return;
 				smp = _attachmentSet.get(j);
 
-				/* 3. Scan backwards from wrapEnd in _attachmentSet to find the last
-				 * point that is active. Store a pointer to it (emp).
-				 */
+				// 3. Scan backwards from wrapEnd in _attachmentSet to find the last
+				// point that is active. Store a pointer to it (emp).
 				for (j = wrapEnd; j >= wrapStart; j--)
 					if (_attachmentSet.get(j)->isActive())
 						break;
@@ -949,8 +957,7 @@ void AbstractMuscle::applyWrapObjects()
 					return;
 				emp = _attachmentSet.get(j);
 
-				/* 3. Now find the indices of smp and emp in _currentPath.
-				 */
+				// 4. Now find the indices of smp and emp in _currentPath.
 				for (j = 0, start = -1, end = -1; j < _currentPath.getSize(); j++)
 				{
 					if (_currentPath.get(j) == smp)
@@ -961,18 +968,16 @@ void AbstractMuscle::applyWrapObjects()
 				if (start == -1 || end == -1) // this should never happen
 					return;
 
-				/* You now have indices into _currentPath (which is a list of all currently active points,
-             * including wrap points) that represent the used-defined range of points to consider
-             * for wrapping over this wrap object. Check each muscle segment in this range, choosing
-             * the best wrap as the one that changes the muscle segment length the least:
-             */
+				// You now have indices into _currentPath (which is a list of all currently active points,
+            // including wrap points) that represent the used-defined range of points to consider
+            // for wrapping over this wrap object. Check each muscle segment in this range, choosing
+            // the best wrap as the one that changes the muscle segment length the least:
             for (pt1 = start; pt1 < end; pt1++)
             {
                pt2 = pt1 + 1;
 
-               /* As long as the two points are not auto wrap points on the
-                * same wrap object, check them for wrapping.
-                */
+               // As long as the two points are not auto wrap points on the
+               // same wrap object, check them for wrapping.
 					if (_currentPath.get(pt1)->getWrapObject() == NULL ||
 						 _currentPath.get(pt2)->getWrapObject() == NULL ||
 						 (_currentPath.get(pt1)->getWrapObject() != _currentPath.get(pt2)->getWrapObject()))
@@ -985,12 +990,11 @@ void AbstractMuscle::applyWrapObjects()
                   result[i] = wo->wrapMuscleSegment(*_currentPath.get(pt1), *_currentPath.get(pt2), *ws, wr);
                   if (result[i] == AbstractWrapObject::mandatoryWrap)
                   {
-                     /* mandatoryWrap means the muscle line actually intersected
-                      * the wrap object. In this case, you *must* choose this segment
-                      * as the "best" one for wrapping. If the muscle has more than
-                      * one segment that intersects the object, the first one is taken
-                      * as the mandatory wrap (this is considered an ill-conditioned case).
-                      */
+                     // mandatoryWrap means the muscle line actually intersected
+                     // the wrap object. In this case, you *must* choose this segment
+                     // as the "best" one for wrapping. If the muscle has more than
+                     // one segment that intersects the object, the first one is taken
+                     // as the mandatory wrap (this is considered an ill-conditioned case).
                      best_wrap = wr;
 							// store the best wrap in the muscleWrap for possible use next time
 							ws->setPreviousWrap(wr);
@@ -998,10 +1002,9 @@ void AbstractMuscle::applyWrapObjects()
                   }
                   else if (result[i] == AbstractWrapObject::wrapped)
                   {
-                     /* E_WRAPPED means the muscle segment was wrapped over the object,
-                      * but you should consider the other segments as well to see if one
-                      * wraps with a smaller length change.
-                      */
+                     // E_WRAPPED means the muscle segment was wrapped over the object,
+                     // but you should consider the other segments as well to see if one
+                     // wraps with a smaller length change.
                      double muscle_length_change = _calc_muscle_length_change(*wo, wr);
                      if (muscle_length_change < min_length_change)
                      {
@@ -1012,9 +1015,8 @@ void AbstractMuscle::applyWrapObjects()
                      }
                      else
                      {
-                        /* the wrap was not shorter than the current minimum,
-                         * so just free the wrap points that were allocated.
-                         */
+                        // the wrap was not shorter than the current minimum,
+                        // so just free the wrap points that were allocated.
 								wr.wrap_pts.setSize(0);
                      }
                   }
@@ -1024,7 +1026,7 @@ void AbstractMuscle::applyWrapObjects()
                }
             }
 
-            /* deallocate previous wrapping points if necessary: */
+            // Deallocate previous wrapping points if necessary.
 				ws->getWrapPoint(1).getWrapPath().setSize(0);
 
 				if (best_wrap.wrap_pts.getSize() == 0)
@@ -1036,7 +1038,7 @@ void AbstractMuscle::applyWrapObjects()
             }
             else
             {
-               /* if wrapping did occur, copy wrap information into the MuscleStruct */
+               // If wrapping did occur, copy wrap information into the MuscleStruct.
                ws->getWrapPoint(0).getWrapPath().setSize(0);
 
 					Array<SimmPoint>& wrapPath = ws->getWrapPoint(1).getWrapPath();
@@ -1079,10 +1081,9 @@ void AbstractMuscle::applyWrapObjects()
 
       if (kk == 0 && _muscleWrapSet.getSize() > 1)
       {
-         /* If the first wrap was a no wrap, and the second was a no wrap
-          * because a point was inside the object, switch the order of
-          * the first two objects and try again.
-          */
+         // If the first wrap was a no wrap, and the second was a no wrap
+         // because a point was inside the object, switch the order of
+         // the first two objects and try again.
 			if (result[0] == AbstractWrapObject::noWrap && result[1] == AbstractWrapObject::insideRadius)
          {
             order[0] = 1;
@@ -1145,30 +1146,18 @@ void AbstractMuscle::calcLengthAfterPathComputation()
 		MusclePoint* p1 = _currentPath[i];
 		MusclePoint* p2 = _currentPath[i+1];
 
-      /* If both points are wrap points on the same wrap object, then this muscle
-       * segment wraps over the surface of a wrap object, so just add in the
-       * pre-calculated length.
-       */
+      // If both points are wrap points on the same wrap object, then this muscle
+      // segment wraps over the surface of a wrap object, so just add in the
+      // pre-calculated length.
       if (p1->getWrapObject() && p2->getWrapObject() && p1->getWrapObject() == p2->getWrapObject()) {
 			MuscleWrapPoint* smwp = dynamic_cast<MuscleWrapPoint*>(p2);
 			if (smwp) {
 				_length += smwp->getWrapLength();
-				//printf("%d to %d (w)= %.6lf\n", i, i+1, smwp->getWrapLength());
 			}
       } else {
          _length += engine.calcDistance(*p1->getBody(), p1->getAttachment(), *p2->getBody(), p2->getAttachment());
-#if 0
-			printf("%d to %d (-)= %.6lf (%.6lf %.6lf %.6lf) (%.6lf %.6lf %.6lf)\n", i, i+1, engine.calcDistance(*p1->getBody(), p1->getAttachment(), *p2->getBody(), p2->getAttachment()),
-				p1->getAttachment()[0],
-				p1->getAttachment()[1],
-				p1->getAttachment()[2],
-				p2->getAttachment()[0],
-				p2->getAttachment()[1],
-				p2->getAttachment()[2]);
-#endif
       }
    }
-	//printf("total length = %.12lf\n", _length);
 }
 //_____________________________________________________________________________
 /**
@@ -1209,10 +1198,10 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 	computePath();
 
 	// This code assumes that coordinate angles are in radians.
-	if (aCoord.getMotionType() == AbstractDof::Rotational)
-		delta = 0.000873; /* 0.05 degrees * DEG_TO_RAD */
+	if (aCoord.getMotionType() == AbstractTransformAxis::Rotational)
+		delta = 0.000873; // 0.05 degrees * DEG_TO_RAD
 	else
-		delta = 0.00005; /* model units, assume meters (TODO) */
+		delta = 0.00005; // model units, assume meters (TODO)
 
 	// Unlock the gencoord so you can change it by +/- delta
 	lockedSave = aCoord.getLocked();
@@ -1244,29 +1233,29 @@ double AbstractMuscle::computeMomentArm(AbstractCoordinate& aCoord)
 		max = originalValue + delta;
 	}
 
-	aCoord.setValue(min);
+	aCoord.setValue(min, false);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[0] = aCoord.getValue();
 	y[0] = getLength();
 
-	aCoord.setValue(mid);
+	aCoord.setValue(mid, false);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[1] = aCoord.getValue();
 	y[1] = getLength();
 
-	aCoord.setValue(max);
+	aCoord.setValue(max, false);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
 	x[2] = aCoord.getValue();
 	y[2] = getLength();
 
-	/* Put the coordinate back to its original value. */
-	aCoord.setValue(originalValue);
+	// Put the coordinate back to its original value.
+	aCoord.setValue(originalValue, false);
 	_model->getDynamicsEngine().getConfiguration(&config[0]);
 	_model->getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
 	_model->getDynamicsEngine().setConfiguration(&config[0]);
@@ -1299,7 +1288,7 @@ double AbstractMuscle::getShorteningSpeed()
  * @return Current pennation angle (in radians).
  */
 double AbstractMuscle::calcPennation(double aFiberLength, double aOptimalFiberLength,
-													  double aInitialPennationAngle) const
+											    double aInitialPennationAngle) const
 {
    double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
 
@@ -1342,23 +1331,23 @@ void AbstractMuscle::apply()
 		{
 			Vec3 posStart, posEnd, forceVector, bodyForce;
 
-			/* Find the positions of start and end in the inertial frame. */
+			// Find the positions of start and end in the inertial frame.
 			engine.getPosition(*(start->getBody()), start->getAttachment(), posStart);
 			engine.getPosition(*(end->getBody()), end->getAttachment(), posEnd);
 
-			/* Form a vector from start to end, in the inertial frame. */
+			// Form a vector from start to end, in the inertial frame.
 			forceVector = posEnd - posStart;
 
-			/* Normalize the vector from start to end. */
+			// Normalize the vector from start to end.
 			Mtx::Normalize(3, forceVector, forceVector);
 
 			double muscleForce = getForce();
 
-			/* The force on the start body is in the direction of forceVector. */
+			// The force on the start body is in the direction of forceVector.
 			bodyForce = muscleForce * forceVector;
 			engine.applyForce(*(start->getBody()), start->getAttachment(), bodyForce);
 
-			/* The force on the end body is in the opposite direction of forceVector. */
+			// The force on the end body is in the opposite direction of forceVector.
 			bodyForce = -muscleForce * forceVector;
 			engine.applyForce(*(end->getBody()), end->getAttachment(), bodyForce);
 		}

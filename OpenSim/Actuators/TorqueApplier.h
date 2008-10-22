@@ -41,8 +41,6 @@
 #include <OpenSim/Common/VectorFunction.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Analyses/Contact.h>
-
 
 //=============================================================================
 //=============================================================================
@@ -86,7 +84,8 @@ protected:
 public:
 	TorqueApplier(Model *aModel,AbstractBody *aBody);
 	TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo,
-		Storage *torqueData,int txNum, int tyNum, int tzNum);
+		Storage *torqueData,int txNum, int tyNum, int tzNum,
+		double firstTime, double lastTime);
 	virtual ~TorqueApplier();
 private:
 	void setNull();

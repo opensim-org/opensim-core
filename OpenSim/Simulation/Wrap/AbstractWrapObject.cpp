@@ -168,6 +168,22 @@ void AbstractWrapObject::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aB
 	_displayer.setTransform( _pose);
 	_displayer.setOwner(this);
 }
+
+//_____________________________________________________________________________
+/**
+ * Scale the wrap object by aScaleFactors. This base class method scales
+ * only the _translation property, which is a local member. The derived classes
+ * are expected to scale the object itself, because they contain the object's
+ * dimensions.
+ *
+ * @param aScaleFactors The XYZ scale factors.
+ */
+void AbstractWrapObject::scale(const SimTK::Vec3& aScaleFactors)
+{
+   for (int i=0; i<3; i++)
+      _translation[i] *= aScaleFactors[i];
+}
+
 //_____________________________________________________________________________
 /**
  * set quadrants for the geometric object representing the wrap object

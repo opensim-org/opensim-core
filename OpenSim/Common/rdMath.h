@@ -55,8 +55,6 @@ public:
 	static const double PI_2;
 	static const double SMALL;
 	static const double ZERO;
-	static const double NAN; // TODO: eventually want to use std::numeric_limits<double>::quiet_NaN()
-	static const double INFINITY;
 	static const double MINUS_INFINITY;
 	static const double PLUS_INFINITY;
 
@@ -70,9 +68,10 @@ public:
 	// TODO: eventually we should stop using our own NAN and use C++'s own NaN or something better
 	// Problem with our NAN is that we're using a small number close to zero so some code might
 	// incorrectly round it off to zero (e.g. if comparing it to zero using IsEqual)
-	// Should use isNAN instead of hcecking rdMath::NAN because once we switch to a real NaN value the
+	// Should use isNAN instead of hcecking rdMath::getNAN() because once we switch to a real NaN value the
 	// == check will fail even if it is set to NaN!
 	static bool isNAN(double val) { return !(val ==val); }
+	static double getNAN() {return SimTK::CNT<SimTK::Real>::getNaN();}
 
 	//--------------------------------------------------------------------------
 	// MIN / MAX

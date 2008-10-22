@@ -42,6 +42,10 @@
 using namespace std;
 using namespace OpenSim;
 
+#ifndef SWIG
+template class OSIMSIMULATION_API Set<AbstractActuator>;
+#endif
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -722,7 +726,7 @@ getControl(int aIndex) const
 	int localIndex;
 	AbstractActuator *act = mapControlToActuator(aIndex,localIndex);
 	if(act) return act->getControl(localIndex);
-	else return rdMath::NAN;
+	else return rdMath::getNAN();
 }
 //_____________________________________________________________________________
 /**
@@ -981,7 +985,7 @@ getState(int aIndex) const
 	int localIndex;
 	AbstractActuator *act = mapStateToActuator(aIndex,localIndex);
 	if(act) return act->getState(localIndex);
-	else return rdMath::NAN;
+	else return rdMath::getNAN();
 }
 //_____________________________________________________________________________
 /**
@@ -1228,7 +1232,7 @@ getPseudoState(int aIndex) const
 	int localIndex;
 	AbstractActuator *act = mapPseudoStateToActuator(aIndex,localIndex);
 	if(act) return act->getPseudoState(localIndex);
-	else return rdMath::NAN;
+	else return rdMath::getNAN();
 }
 //_____________________________________________________________________________
 /**

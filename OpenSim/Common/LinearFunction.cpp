@@ -276,7 +276,7 @@ int LinearFunction::getSize() const
  */
 double LinearFunction::getMinX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.get(0));
 }
 //_____________________________________________________________________________
@@ -287,7 +287,7 @@ double LinearFunction::getMinX() const
  */
 double LinearFunction::getMaxX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.getLast());
 }
 
@@ -406,7 +406,7 @@ void LinearFunction::calcCoefficients()
 /**
  * Evaluates function or its (partial) derivatives
  */
-double LinearFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ)
+double LinearFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ) const
 {
 	// pass 0 for acceleration so that if we're computing the second derivative we get the proper partial derivative
 	return evaluate(aX, 1.0, 0.0, aDerivOrder); 
@@ -416,7 +416,7 @@ double LinearFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ
  * Evaluates total first derivative
  */
 double LinearFunction::
-evaluateTotalFirstDerivative(double aX,double aDxdt)
+evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
 	return evaluate(aX, aDxdt, 0.0, 1);
 }
@@ -425,7 +425,7 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
  * Evaluates total second derivative
  */
 double LinearFunction::
-evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
+evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
 	return 0.0;
 }
@@ -438,10 +438,10 @@ evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
  *
  */
 double LinearFunction::evaluate(double aX, double velocity,
-										double acceleration, int aDerivOrder)
+										double acceleration, int aDerivOrder) const
 {
 	if (aDerivOrder < 0)
-		return rdMath::NAN;
+		return rdMath::getNAN();
 	if (aDerivOrder > 1)
 		return 0.0;
 
@@ -616,4 +616,8 @@ Array<XYPoint>* LinearFunction::renderAsLineSegments(int aIndex)
 	xyPts->append(XYPoint(_x[aIndex+1], _y[aIndex+1]));
 
 	return xyPts;
+}
+
+const SimTK::Function<1>* LinearFunction::createSimTKFunction() const {
+    return new FunctionAdapter(*this, 1);
 }

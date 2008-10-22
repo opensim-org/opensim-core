@@ -307,9 +307,9 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 	int c,i,I;
 	for(c=0;c<nc;c++) {
 		I = Mtx::ComputeIndex(c,3,0);
-		_at[I+0] = rdMath::NAN;
-		_at[I+1] = rdMath::NAN;
-		_at[I+2] = rdMath::NAN;
+		_at[I+0] = rdMath::getNAN();
+		_at[I+1] = rdMath::getNAN();
+		_at[I+2] = rdMath::getNAN();
 	}
 	for(c=0;c<nc;c++) {
 		for(i=0;i<nu;i++) {

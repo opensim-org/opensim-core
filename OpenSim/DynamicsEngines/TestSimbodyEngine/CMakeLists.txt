@@ -9,7 +9,7 @@ ADD_EXECUTABLE(testSimbodyEngine testSimbodyEngine.cpp)
 
 SET_TARGET_PROPERTIES(testSimbodyEngine PROPERTIES PROJECT_LABEL "Tests - testSimbodyEngine")
         
-#INSTALL_TARGETS(/bin/ testSimbodyEngine)
+# INSTALL_TARGETS(/bin/ testSimbodyEngine)
 #
 # Testing
 #
@@ -19,7 +19,7 @@ SET_TARGET_PROPERTIES(testSimbodyEngine PROPERTIES PROJECT_LABEL "Tests - testSi
 #  LINK_LIBRARIES(gcov)
 #ENDIF (UNIX)
 
-ENABLE_TESTING()
+#ENABLE_TESTING()
 
 IF (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})

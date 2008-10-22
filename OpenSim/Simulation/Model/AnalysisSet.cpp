@@ -65,6 +65,7 @@ AnalysisSet::AnalysisSet(Model *aModel)
 {
 	setType("AnalysisSet");
 	setNull();
+	_model = aModel;
 }
 //_____________________________________________________________________________
 /**
@@ -303,5 +304,5 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 void AnalysisSet::
 getAvailableAnalyses(AnalysisSet& as)
 {
-	Object::template getRegisteredObjectsOfGivenType<Analysis>(as._objects);
+	Object::getRegisteredObjectsOfGivenType<Analysis>(as._objects);
 }

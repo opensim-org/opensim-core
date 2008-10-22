@@ -128,7 +128,7 @@ public:
 #endif
    void copyData(const AbstractWrapObject& aWrapObject);
 
-	virtual void scale(const SimTK::Vec3& aScaleFactors) = 0;
+	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
 
 	AbstractBody* getBody() const { return _body; }

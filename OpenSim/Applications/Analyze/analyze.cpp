@@ -57,7 +57,7 @@ int main(int argc,char **argv)
 	//----------------------
 
 	//TODO: put these options on the command line
-	LoadOpenSimLibrary("osimSdfastEngine");
+	//LoadOpenSimLibrary("osimSdfastEngine");
 	LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE
@@ -68,6 +68,9 @@ int main(int argc,char **argv)
 		PrintUsage(argv[0], cout);
 		return(-1);
 	}
+	// Load libraries first
+	LoadOpenSimLibraries(argc,argv);
+
 	for(i=1;i<argc;i++) {
 		option = argv[i];
 

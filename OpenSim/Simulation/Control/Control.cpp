@@ -116,7 +116,7 @@ setupProperties()
 	_propertySet.append(&_propExtrapolate);
 
 	_propDefaultMin.setName("default_min");
-	_propDefaultMin.setValue(0.0);
+	_propDefaultMin.setValue(0.02);
 	_propertySet.append(&_propDefaultMin);
 
 	_propDefaultMax.setName("default_max");

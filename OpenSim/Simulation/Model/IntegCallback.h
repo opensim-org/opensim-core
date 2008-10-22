@@ -71,6 +71,7 @@ protected:
 	/** Step interval. */
 	PropertyInt _stepIntervalProp;
 	int &_stepInterval;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -78,11 +79,10 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
+	virtual ~IntegCallback();
 	IntegCallback(Model *aModel=0);
-	// Support for Object behavior
 	IntegCallback(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	IntegCallback(const IntegCallback &aIntegCallback);
-	virtual ~IntegCallback();
 	virtual Object* copy() const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -118,8 +118,7 @@ public:
 		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 
 //=============================================================================
-};	// END of class IntegCallback
-
+};// END of class IntegCallback
 }; //namespace
 //=============================================================================
 //=============================================================================

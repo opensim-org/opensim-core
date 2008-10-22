@@ -433,7 +433,7 @@ virtual int getSize() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get the index of an object by specifying its name.
+ * Get the index of an object.
  *
  * @param aObject Address of the object whose index is sought.
  * @param aStartIndex Index at which to start searching.  If the object is

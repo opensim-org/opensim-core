@@ -42,7 +42,6 @@
 using namespace OpenSim;
 using namespace std;
 
-const std::string PropertyStr::DefaultValue = "Unassigned";
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -64,7 +63,7 @@ PropertyStr::
 PropertyStr() :
 	Property(Property::Str,"StringPropertyName")
 {
-	_value = PropertyStr::DefaultValue;
+	_value = PropertyStr::getDefaultStr();
 }
 //_____________________________________________________________________________
 /**
@@ -179,4 +178,8 @@ const string &PropertyStr::
 toString()
 {
 	return (_value);
+}
+const std::string& PropertyStr::getDefaultStr() {
+    static const std::string defaultValue = "Unassigned";
+    return defaultValue;
 }

@@ -42,6 +42,8 @@
 #include <OpenSim/Common/NatCubicSpline.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "SimmPathMatrix.h"
 #include "SimTKcommon.h"
 
@@ -55,12 +57,9 @@
 namespace OpenSim {
 
 class AbstractBody;
-class BodyIterator;
-class CoordinateSet;
-class CoordinateIterator;
-class JointIterator;
-class AbstractDof;
 class AbstractCoordinate;
+class AbstractTransformAxis;
+class AbstractDof01_05;
 class MarkerSet;
 class MarkerData;
 
@@ -87,7 +86,15 @@ class OSIMSIMMKINEMATICSENGINE_API SimmKinematicsEngine  : public AbstractDynami
 //=============================================================================
 protected:
 
-	/* I don't know what this is? */
+	/** Set containing the joints in this model. */
+	PropertyObj _simmJointSetProp;
+	JointSet &_simmJointSet;
+
+	/** Set containing the coordinates in this model. */
+	PropertyObj _simmCoordinateSetProp;
+	CoordinateSet &_simmCoordinateSet;
+
+	/* Matrix of paths (how to get from any body to any other body) */
 	SimmPathMatrix _path;
 
 	/** Ground body. */
@@ -132,11 +139,30 @@ public:
 #endif
 
 	//--------------------------------------------------------------------------
+	// NUMBERS
+	//--------------------------------------------------------------------------
+	virtual int getNumJoints() const;
+	virtual int getNumCoordinates() const;
+
+	//--------------------------------------------------------------------------
+	// JOINTS
+	//--------------------------------------------------------------------------
+	virtual JointSet* getJointSet() { return &_simmJointSet; }
+#ifndef SWIG
+	virtual const JointSet* getJointSet() const { return &_simmJointSet; }
+#endif
+	
+	//--------------------------------------------------------------------------
 	// COORDINATES
 	//--------------------------------------------------------------------------
+	virtual CoordinateSet* getCoordinateSet() { return &_simmCoordinateSet; }
+#ifndef SWIG
+	virtual const CoordinateSet* getCoordinateSet() const { return &_simmCoordinateSet; }
+#endif
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
-	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint);
+	virtual AbstractTransformAxis* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) { return NULL; }
+	AbstractDof01_05* findUnconstrainedSimmDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint);
 
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
@@ -152,6 +178,10 @@ public:
 	virtual double getAcceleration(const std::string &aSpeedName) const;
 	virtual void extractConfiguration(const double aY[], double rQ[], double rU[]) const;
 	virtual void applyDefaultConfiguration();
+	//--------------------------------------------------------------------------
+	// PROJECT to satisfy constaints
+	//--------------------------------------------------------------------------
+	virtual bool projectConfigurationToSatisfyConstraints(double uY[], const double cTol, double uYerr[]) {return false;}
 
 	//--------------------------------------------------------------------------
 	// ASSEMBLING THE MODEL
@@ -224,6 +254,7 @@ public:
 	virtual double getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const;
 	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const;
 	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const;
+	virtual void computeReactions(SimTK::Vector_<SimTK::Vec3>& rForces, SimTK::Vector_<SimTK::Vec3>& rTorques) const;
 
 	//--------------------------------------------------------------------------
 	// EQUATIONS OF MOTION
@@ -270,6 +301,15 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
 	virtual void computeConstrainedCoordinates(double rQ[]) const;
+
+   virtual bool writeSIMMJointFile(const std::string& aFileName) const;
+
+private:
+   const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
+   bool writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet, std::ofstream& aStream) const;
+   void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
+   bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
+   bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
 
 //=============================================================================
 };	// END of class SimmKinematicsEngine

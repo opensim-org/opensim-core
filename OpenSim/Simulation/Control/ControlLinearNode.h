@@ -96,13 +96,14 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	ControlLinearNode& operator=(const ControlLinearNode &aControl);
 	bool operator==(const ControlLinearNode &aControl) const;
 	bool operator<(const ControlLinearNode &aControl) const;
 
 	friend std::ostream& operator<<(std::ostream &aOut,
 		const ControlLinearNode &aControlLinearNode);
-
+#endif
 	//--------------------------------------------------------------------------
 	// SET AND GET
 	//--------------------------------------------------------------------------

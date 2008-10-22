@@ -272,7 +272,7 @@ void IKSolverImpl::appendUserData(Array<double>& outputRow, Array<int>& indices,
 {
 	int i;
 	for(i=0; i< indices.getSize(); i++){
-		double userValue=rdMath::NAN;
+		double userValue=rdMath::getNAN();
 		int index = indices[i]-1;
 		inputRow->getDataValue(index, userValue);
 		outputRow.append(userValue);
@@ -303,7 +303,7 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);
 	}
 
-	SimTK::Optimizer *optimizer = NULL();
+	SimTK::Optimizer *optimizer = NULL;
 
 	if(algorithm != SimTK::BestAvailiable) {
 	

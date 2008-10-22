@@ -152,6 +152,21 @@ AbstractBody& AbstractBody::operator=(const AbstractBody &aBody)
 
 //_____________________________________________________________________________
 /**
+ * Scale the body. This base class method scales only the wrap objects,
+ * which are local members. The derived classes are expected to scale
+ * all other properties of a body.
+ *
+ * @param aScaleFactors The XYZ scale factors.
+ * @param aScaleMass Whether or not to scale the inertial properties.
+ */
+void AbstractBody::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+{
+	for (int i=0; i<_wrapObjectSet.getSize(); i++)
+		_wrapObjectSet.get(i)->scale(aScaleFactors);
+}
+
+//_____________________________________________________________________________
+/**
  * Get the named wrap object, if it exists.
  *
  * @param aName Name of the wrap object.
@@ -173,7 +188,7 @@ AbstractWrapObject* AbstractBody::getWrapObject(const string& aName) const
 /**
  * Computes scaled inertia tensor (assuming mass stays fixed -- i.e. the density changes!)
  */
-void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, double rInertia[3][3])
+void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, Mat33& rInertia)
 {
 	/* If the mass is zero, then make the inertia tensor zero as well.
 	 * If the X, Y, Z scale factors are equal, then you can scale the
@@ -195,14 +210,12 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, d
 				rInertia[i][j] *= (aScaleFactors[0] * aScaleFactors[0]);
 
 	} else {
-		/* If the scale factors are not equal, then assume that the segment
-		 * is a cylinder and the rInertia is calculated about one end of it.
-		 */
+		// If the scale factors are not equal, then assume that the segment
+		// is a cylinder and the rInertia is calculated about one end of it.
 		int axis;
 
-		/* 1. Find the smallest diagonal component. This dimension is the axis
-		 *    of the cylinder.
-		 */
+		// 1. Find the smallest diagonal component. This dimension is the axis
+		//    of the cylinder.
 		if (rInertia[0][0] <= rInertia[1][1]){
 			if (rInertia[0][0] <= rInertia[2][2])
 				axis = 0;
@@ -216,9 +229,8 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, d
 			axis = 2;
 		}
 
-		/* 2. The smallest rInertial component is equal to 0.5 * mass * radius * radius,
-		 *    so you can rearrange and solve for the radius.
-		 */
+		// 2. The smallest rInertial component is equal to 0.5 * mass * radius * radius,
+		//    so you can rearrange and solve for the radius.
 		int oa;
 		double radius, rad_sqr, length;
 		double term = 2.0 * rInertia[axis][axis] / aMass;
@@ -227,10 +239,9 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, d
 		else
 			radius = sqrt(term);
 
-		/* 3. Choose either of the other diagonal components and use it to solve for the
-		*    length of the cylinder. This component is equal to:
-		*    0.333 * aMass * length * length  +  0.25 * aMass * radius * radius
-		*/
+		// 3. Choose either of the other diagonal components and use it to solve for the
+		//   length of the cylinder. This component is equal to:
+		//   0.333 * aMass * length * length  +  0.25 * aMass * radius * radius
 		if (axis == 0)
 			oa = 1;
 		else
@@ -241,7 +252,7 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, d
 		else
 			length = sqrt(term);
 
-		/* 4. Scale the radius, and length, and recalculate the diagonal rInertial terms. */
+		// 4. Scale the radius, and length, and recalculate the diagonal rInertial terms.
 		length *= DABS(aScaleFactors[axis]);
 
 		if (axis == 0) {
@@ -263,7 +274,7 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, d
 			rInertia[2][2] = 0.5 * aMass * rad_sqr;
 		}
 
-		/* 5. Scale the cross terms, in case some are non-zero. */
+		// 5. Scale the cross terms, in case some are non-zero.
 		rInertia[0][1] *= DABS((aScaleFactors[0] * aScaleFactors[1]));
 		rInertia[0][2] *= DABS((aScaleFactors[0] * aScaleFactors[2]));
 		rInertia[1][0] *= DABS((aScaleFactors[1] * aScaleFactors[0]));

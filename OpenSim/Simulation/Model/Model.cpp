@@ -138,7 +138,7 @@ Model::Model(const Model &aModel) :
  */
 Model::~Model()
 {
-	cout << "Deleted model " <<  getName() << endl;
+	//cout << "Deleted model " <<  getName() << endl;
 	if (_analysisSet) {
 		delete _analysisSet;
 		_analysisSet = NULL;
@@ -187,7 +187,8 @@ void Model::copyData(const Model &aModel)
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
-	_dynamicsEngine = (AbstractDynamicsEngine*)Object::SafeCopy(aModel._dynamicsEngine);
+	_dynamicsEngine = (AbstractDynamicsEngine*)Object::SafeCopy(aModel._dynamicsEngine); //DEEP
+	if (_dynamicsEngine) _dynamicsEngine->setModel(this);
 	_actuatorSet = aModel._actuatorSet;
 	_contactSet = aModel._contactSet;
 	_integCallbackSet = aModel._integCallbackSet;
@@ -307,13 +308,12 @@ void Model::setup()
 	_actuatorSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()]);
 	_contactSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()]);
 
-	/* The following code should be replaced by a more robust
-	 * check for problems while creating the model.
-	 */
-	if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0)
-	{
+	// The following code should be replaced by a more robust
+	// check for problems while creating the model.
+	if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0) {
 		_builtOK = true;
 	}
+
 
 	// Restore the current directory.
 	if(!origDirPath.empty())
@@ -795,7 +795,14 @@ void Model::getStateNames(Array<string> &rStateNames) const
  */
 void Model::setInitialStates(const double aYI[])
 {
+	// Make a copy of what is being set which model owns
 	memcpy(&_yi[0],aYI,getNumStates()*sizeof(double));
+
+	// We cannot assume the initial states users assign are valid
+	getDynamicsEngine().setConfiguration(&_yi[0]);
+
+	// Project to satisfy constraints
+	getDynamicsEngine().projectConfigurationToSatisfyConstraints(&_yi[0], 1e-8);
 }
 //_____________________________________________________________________________
 /**
@@ -975,7 +982,7 @@ void Model::addIntegCallback(IntegCallback *aCallback)
 {
 	// CHECK FOR NULL
 	if(aCallback==NULL) {
-		printf("Model.addIntegCallback:  ERROR- NULL callback.\n");
+		cout << "Model.addIntegCallback:  ERROR- NULL callback." << endl;
 	}
 
 	// ADD
@@ -1332,7 +1339,8 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 	aOStream << "numSpeeds = " << getNumSpeeds() << std::endl;
 	aOStream << "numActuators = " << getNumActuators() << std::endl;
 	aOStream << "numBodies = " << getNumBodies() << std::endl;
-
+	aOStream << "numConstraints = " << getDynamicsEngine().getConstraintSet()->getSize() << std::endl;
+	;
 	int n;
 
 	/*

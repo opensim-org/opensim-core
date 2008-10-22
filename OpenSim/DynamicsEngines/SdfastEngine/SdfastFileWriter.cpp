@@ -40,8 +40,7 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
-#include <OpenSim/Simulation/Model/DofSet.h>
+#include <OpenSim/Simulation/Model/TransformAxisSet.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/SimmMacros.h>
@@ -114,7 +113,7 @@ SdfastFileWriter::DofInfo* SdfastFileWriter::findNthSdfastQ(int n, SdfastFileWri
 	const JointSet* jointSet = _model->getDynamicsEngine().getJointSet();
 	for(int index=0; index<jointSet->getSize(); index++) 
 	{
-		DofSet* dofs = jointSet->get(index)->getDofSet();
+		TransformAxisSet* dofs = jointSet->get(index)->getTransformAxisSet();
 		for (int i = 0; i < dofs->getSize(); i++)
 		{
 			if ((dofs->get(i)->getCoordinate() != NULL || _joints[index].dofs[i].fixed) &&
@@ -134,7 +133,7 @@ SdfastFileWriter::DofInfo* SdfastFileWriter::findUnconstrainedSdfastDof(const Ab
 	const JointSet* jointSet = _model->getDynamicsEngine().getJointSet();
 	for(int index=0; index<jointSet->getSize(); index++) 
 	{
-		DofSet* dofs = jointSet->get(index)->getDofSet();
+		TransformAxisSet* dofs = jointSet->get(index)->getTransformAxisSet();
 		for (int i = 0; i < dofs->getSize(); i++)
 		{
 			if (!_joints[index].dofs[i].constrained && dofs->get(i)->getCoordinate() == aCoord)
@@ -155,7 +154,7 @@ void SdfastFileWriter::countSdfastQsAndConstraints(void)
 	const JointSet* jointSet = _model->getDynamicsEngine().getJointSet();
 	for(int index=0; index<jointSet->getSize(); index++) 
 	{
-		DofSet* dofs = jointSet->get(index)->getDofSet();
+		TransformAxisSet* dofs = jointSet->get(index)->getTransformAxisSet();
 		for (int i = 0; i < dofs->getSize(); i++)
 		{
 			if ((dofs->get(i)->getCoordinate() != NULL || _joints[index].dofs[i].fixed))
@@ -220,7 +219,7 @@ void SdfastFileWriter::initInfoStructs(void)
 		_joints[index].closesLoop = false;
 		_joints[index].modelJoint = joint;
 		_joints[index].parentBodyIndex = getBodyIndex(joint->getParentBody());
-		_joints[index].childBodyIndex = getBodyIndex(joint->getChildBody());
+		_joints[index].childBodyIndex = getBodyIndex(joint->getBody());
 		_joints[index].prescribedString.erase(_joints[index].prescribedString.begin(), _joints[index].prescribedString.end());
 		_joints[index].pinString.erase(_joints[index].pinString.begin(), _joints[index].pinString.end());
 	}
@@ -261,7 +260,7 @@ void SdfastFileWriter::initInfoStructs(void)
 	 */
 	for(int index=0; index<jointSet->getSize(); index++)
 	{
-		DofSet* dofs = jointSet->get(index)->getDofSet();
+		TransformAxisSet* dofs = jointSet->get(index)->getTransformAxisSet();
 		_joints[index].numDofs = dofs->getSize();
 		_joints[index].dofs = new DofInfo[_joints[index].numDofs];
 
@@ -320,7 +319,7 @@ bool SdfastFileWriter::isValidSdfastModel()
 		if (coord->isUsedInModel())
 		{
 			AbstractJoint* jnt = NULL;
-			AbstractDof* dof = engine.findUnconstrainedDof(*coord, jnt);
+			AbstractTransformAxis* dof = engine.findUnconstrainedDof(*coord, jnt);
 			if (dof && jnt)
 			{
 				/* Find the DofInfo structure that corresponds to the
@@ -367,7 +366,7 @@ void SdfastFileWriter::makeDofSdfastNames()
 	for(int index=0; index<jointSet->getSize(); index++)
 	{
 		AbstractJoint* joint = jointSet->get(index);
-		DofSet* dofs = joint->getDofSet();
+		TransformAxisSet* dofs = joint->getTransformAxisSet();
 
 		for (int i = 0; i < dofs->getSize(); i++)
 		{
@@ -421,10 +420,10 @@ void SdfastFileWriter::makeSdfastJointOrder()
 			_joints[i].used = true;
 			_joints[i].direction = SimmStep::forward;
 			_joints[i].inbname = sdfastGroundName;
-			_joints[i].outbname = _joints[i].modelJoint->getChildBody()->getName();
+			_joints[i].outbname = _joints[i].modelJoint->getBody()->getName();
 			_joints[i].closesLoop = false;
 		}
-		else if (_joints[i].modelJoint->getChildBody() == _groundBody)
+		else if (_joints[i].modelJoint->getBody() == _groundBody)
 		{
 			_jointOrder.append(i);
 			_joints[i].index = jointsDone++;
@@ -445,7 +444,7 @@ void SdfastFileWriter::makeSdfastJointOrder()
 			if (_joints[i].used) continue;
 
 			AbstractBody* parentBody = _joints[i].modelJoint->getParentBody();
-			AbstractBody* childBody = _joints[i].modelJoint->getChildBody();
+			AbstractBody* childBody = _joints[i].modelJoint->getBody();
 
 			if (!_modelBodies[_joints[i].parentBodyIndex].used && !_modelBodies[_joints[i].childBodyIndex].used)
 			{
@@ -596,16 +595,16 @@ void SdfastFileWriter::makeSdfastModel()
 	countSdfastQsAndConstraints();
 }
 
-AbstractDof* SdfastFileWriter::getTranslationDof(int aAxis, DofSet* aDofSet) const
+AbstractTransformAxis* SdfastFileWriter::getTranslationDof(int aAxis, TransformAxisSet* aTransformAxisSet) const
 {
-	for (int i = 0; i < aDofSet->getSize(); i++)
+	for (int i = 0; i < aTransformAxisSet->getSize(); i++)
 	{
-		if (aDofSet->get(i)->getMotionType() == AbstractDof::Translational)
+		if (aTransformAxisSet->get(i)->getMotionType() == AbstractTransformAxis::Translational)
 		{
 			SimTK::Vec3 vec;
-			aDofSet->get(i)->getAxis(vec);
+			aTransformAxisSet->get(i)->getAxis(vec);
 			if (EQUAL_WITHIN_ERROR(vec[aAxis], 1.0))
-				return aDofSet->get(i);
+				return aTransformAxisSet->get(i);
 		}
 	}
 
@@ -616,19 +615,19 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 {
 	int i, body2Index;
 	SimTK::Vec3 body1MassCenter, body2MassCenter;
-	AbstractDof* transDof;
+	AbstractTransformAxis* transDof;
 	AbstractBody *body1, *body2;
 	ModelBodyInfo* body2Info;
 
 	if (_joints[aJointIndex].direction == SimmStep::forward)
 	{
 		body1 = _joints[aJointIndex].modelJoint->getParentBody();
-		body2 = _joints[aJointIndex].modelJoint->getChildBody();
+		body2 = _joints[aJointIndex].modelJoint->getBody();
 		body2Index = _joints[aJointIndex].childBodyIndex;
 	}
 	else
 	{
-		body1 = _joints[aJointIndex].modelJoint->getChildBody();
+		body1 = _joints[aJointIndex].modelJoint->getBody();
 		body2 = _joints[aJointIndex].modelJoint->getParentBody();
 		body2Index = _joints[aJointIndex].parentBodyIndex;
 	}
@@ -670,7 +669,7 @@ void SdfastFileWriter::makeSdfastJoint(int aJointIndex, int& rDofCount, int& rCo
 			sdfastBody->inertia[i][j] = inertia[i][j] / body2Info->massFactor;
 	body2->getMassCenter(Vec3::updAs(sdfastBody->massCenter));
 
-	DofSet* dofs = _joints[aJointIndex].modelJoint->getDofSet();
+	TransformAxisSet* dofs = _joints[aJointIndex].modelJoint->getTransformAxisSet();
 
 	/* The bodytojoint vector (inbtojoint vector for INVERSE joints) is always
     * defined by the negative of the mass center vector. The inbtojoint vector
@@ -1184,8 +1183,8 @@ void SdfastFileWriter::writeSdfastConstraintData(ofstream& out)
       {
 			if (jointInfo->dofs[j].modelDof->getCoordinate() != NULL && jointInfo->dofs[j].constrained)
 			{
-				double scaleX = (jointInfo->dofs[j].modelDof->getCoordinate()->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
-				double scaleY = (jointInfo->dofs[j].modelDof->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
+				double scaleX = (jointInfo->dofs[j].modelDof->getCoordinate()->getMotionType() == AbstractTransformAxis::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
+				double scaleY = (jointInfo->dofs[j].modelDof->getMotionType() == AbstractTransformAxis::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
 				Function* func = jointInfo->dofs[j].modelDof->getFunction();
 				NatCubicSpline* cubicSpline = dynamic_cast<NatCubicSpline*>(func);
 				if (cubicSpline)
@@ -1346,7 +1345,7 @@ void SdfastFileWriter::writeSdfastQInitCode(ofstream& out)
 		{
 			const AbstractCoordinate* coord = dof->modelDof->getCoordinate();
 			CoordinateInfo* coordInfo = getCoordinateInfo(coord);
-			double conversion = dof->modelDof->getMotionType() == AbstractDof::Rotational ? SimTK_RADIAN_TO_DEGREE : 1;
+			double conversion = dof->modelDof->getMotionType() == AbstractTransformAxis::Rotational ? SimTK_RADIAN_TO_DEGREE : 1;
 
 			out << "   mstrcpy(&sdm->q[" << dof->name << "].name,\"" << dof->name << "\");" << endl;
 			if (dof->fixed)
@@ -1910,7 +1909,7 @@ void SdfastFileWriter::writeSimulationParametersFile(const string& aFileName, co
 		JointInfo* joint;
 		DofInfo* dof = findNthSdfastQ(i, joint);
 		if (dof) {
-			double scale = (dof->modelDof->getMotionType() == AbstractDof::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
+			double scale = (dof->modelDof->getMotionType() == AbstractTransformAxis::Rotational) ? SimTK_RADIAN_TO_DEGREE : 1;
 			out << "#" << dof->name << " " << dof->initialValue * scale << " 0.0" << endl;
 		}
 	}
@@ -2076,7 +2075,7 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 	aInfo.name = aJoint.getName();
    convertString(aInfo.name, true);
 
-	DofSet* dofs = aJoint.getDofSet();
+	TransformAxisSet* dofs = aJoint.getTransformAxisSet();
 
 	/* If the joint has no DOFs it cannot be converted to an SD/FAST joint
 	 * (even a weld joint needs a dof to hold gencoord information because
@@ -2107,7 +2106,7 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
     */
 	for (i = 0; i < dofs->getSize(); i++)
 	{
-		if (dofs->get(i)->getMotionType() == AbstractDof::Translational)
+		if (dofs->get(i)->getMotionType() == AbstractTransformAxis::Translational)
 		{
 			if (dofs->get(i)->getCoordinate() == NULL)
 				numConstantTranslations++;
@@ -2189,7 +2188,7 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 				// joint, and set it to skippable.
 				if (aJoint.getParentBody() == leafBody)
 					_modelBodies[aInfo.parentBodyIndex].skippable = true;
-				else if (aJoint.getChildBody() == leafBody)
+				else if (aJoint.getBody() == leafBody)
 					_modelBodies[aInfo.childBodyIndex].skippable = true;
 				return;
 			}
@@ -2212,9 +2211,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
        */
       if (!aJoint.hasXYZAxes())
          aInfo.type = dpUnknownJoint;
-      else if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+      else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
          aInfo.type = dpBushing;
-      else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+      else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
          aInfo.type = dpReverseBushing;
       else
          aInfo.type = dpUnknownJoint;
@@ -2230,12 +2229,12 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
        */
 		for (i = 0; i < dofs->getSize(); i++)
 		{
-			if (dofs->get(i)->getMotionType() == AbstractDof::Rotational &&
+			if (dofs->get(i)->getMotionType() == AbstractTransformAxis::Rotational &&
 				 (dofs->get(i)->getCoordinate() != NULL || NOT_EQUAL_WITHIN_ERROR(dofs->get(i)->getValue(), 0.0)))
 			{
-				if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+				if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
 					aInfo.type = dpPin;
-				else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+				else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
 					aInfo.type = dpReversePin;
 				else
 					aInfo.type = dpUnknownJoint;
@@ -2256,9 +2255,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 
    if (numFunctionRotations == 3 && numFunctionTranslations == 0)
    {
-      if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+      if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
          aInfo.type = dpGimbal;
-      else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+      else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
          aInfo.type = dpReverseGimbal;
       else
          aInfo.type = dpUnknownJoint;
@@ -2267,9 +2266,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 
    if (numFunctionRotations == 2 && numFunctionTranslations == 0)
    {
-      if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+      if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
          aInfo.type = dpUniversal;
-      else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+      else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
          aInfo.type = dpReverseUniversal;
       else
          aInfo.type = dpUnknownJoint;
@@ -2279,8 +2278,8 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
    if (numFunctionRotations == 1 && numFunctionTranslations == 1)
    {
 		int rdIndex = -1, tdIndex = -1;
-		AbstractDof* rd = findNthFunctionRotation(aInfo, 0, rdIndex);
-		AbstractDof* td = findNthFunctionTranslation(aInfo, 0, tdIndex);
+		AbstractTransformAxis* rd = findNthFunctionRotation(aInfo, 0, rdIndex);
+		AbstractTransformAxis* td = findNthFunctionTranslation(aInfo, 0, tdIndex);
 
 		if (rd && td)
 		{
@@ -2294,9 +2293,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 				 * before, then this is a reverse cylinder joint, and the
 				 * translations have to be added to the other body segment.
 				 */
-				if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+				if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
 					aInfo.type = dpCylindrical;
-				else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+				else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
 					aInfo.type = dpReverseCylindrical;
 				else
 					aInfo.type = dpUnknownJoint;
@@ -2311,9 +2310,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
    if (numFunctionRotations == 1 && numFunctionTranslations == 2)
    {
 		int rdIndex = -1, td1Index = -1, td2Index = -1;
-		AbstractDof* rd = findNthFunctionRotation(aInfo, 0, rdIndex);
-		AbstractDof* td1 = findNthFunctionTranslation(aInfo, 0, td1Index);
-		AbstractDof* td2 = findNthFunctionTranslation(aInfo, 1, td2Index);
+		AbstractTransformAxis* rd = findNthFunctionRotation(aInfo, 0, rdIndex);
+		AbstractTransformAxis* td1 = findNthFunctionTranslation(aInfo, 0, td1Index);
+		AbstractTransformAxis* td2 = findNthFunctionTranslation(aInfo, 1, td2Index);
 
 		if (rd && td1 && td2)
 		{
@@ -2332,9 +2331,9 @@ void SdfastFileWriter::identifySdfastType(AbstractJoint& aJoint, JointInfo& aInf
 			}
 			else
 			{
-				if (dofs->get(zero)->getMotionType() == AbstractDof::Translational) // translation first
+				if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Translational) // translation first
 					aInfo.type = dpPlanar;
-				else if (dofs->get(zero)->getMotionType() == AbstractDof::Rotational) // rotation first
+				else if (dofs->get(zero)->getMotionType() == AbstractTransformAxis::Rotational) // rotation first
 					aInfo.type = dpReversePlanar;
 				else
 					aInfo.type = dpUnknownJoint;
@@ -2380,7 +2379,7 @@ void SdfastFileWriter::makeSdfastPin(int aJointIndex, int& rDofCount, int& rCons
 	char buffer[200];
 	int rdIndex;
 	SimTK::Vec3 axis;
-	AbstractDof* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
+	AbstractTransformAxis* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
 	const AbstractCoordinate* coord = rotDof->getCoordinate();
 
 	rotDof->getAxis(axis);
@@ -2438,7 +2437,7 @@ void SdfastFileWriter::makeSdfastSlider(int aJointIndex, int& rDofCount, int& rC
 	char buffer[200];
 	int tdIndex = -1;
 	SimTK::Vec3 axis;
-	AbstractDof* transDof = findNthFunctionTranslation(_joints[aJointIndex], 0, tdIndex);
+	AbstractTransformAxis* transDof = findNthFunctionTranslation(_joints[aJointIndex], 0, tdIndex);
 	const AbstractCoordinate* coord = transDof->getCoordinate();
 
 	transDof->getAxis(axis);
@@ -2493,7 +2492,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 		 */
 		for (i = 0; i < _joints[aJointIndex].numDofs; i++)
 		{
-			if (_joints[aJointIndex].dofs[i].modelDof->getMotionType() == AbstractDof::Translational &&
+			if (_joints[aJointIndex].dofs[i].modelDof->getMotionType() == AbstractTransformAxis::Translational &&
 				 _joints[aJointIndex].dofs[i].modelDof->getCoordinate() != NULL)
 			{
 				_joints[aJointIndex].dofs[i].modelDof->getAxis(axis);
@@ -2529,7 +2528,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 		 * correctly, exactly one of them should be a function or non-zero constant.
 		 */
 		int rdIndex;
-		AbstractDof* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
+		AbstractTransformAxis* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
 		const AbstractCoordinate* coord = rotDof->getCoordinate();
 		rotDof->getAxis(axis);
 
@@ -2580,7 +2579,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 		 * correctly, exactly one of them should be a function or non-zero constant.
 		 */
 		int rdIndex;
-		AbstractDof* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
+		AbstractTransformAxis* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
 		const AbstractCoordinate* coord = rotDof->getCoordinate();
 		rotDof->getAxis(axis);
 
@@ -2631,7 +2630,7 @@ void SdfastFileWriter::makeSdfastPlanar(int aJointIndex, int& rDofCount, int& rC
 		 */
 		for (i = _joints[aJointIndex].numDofs - 1; i >= 0; i--)
 		{
-			if (_joints[aJointIndex].dofs[i].modelDof->getMotionType() == AbstractDof::Translational &&
+			if (_joints[aJointIndex].dofs[i].modelDof->getMotionType() == AbstractTransformAxis::Translational &&
 				 _joints[aJointIndex].dofs[i].modelDof->getCoordinate() != NULL)
 			{
 				_joints[aJointIndex].dofs[i].modelDof->getAxis(axis);
@@ -2669,7 +2668,7 @@ void SdfastFileWriter::makeSdfastUniversal(int aJointIndex, int& rDofCount, int&
 {
 	int axisCount = 0;
 	SimTK::Vec3 axis;
-	AbstractDof* dof;
+	AbstractTransformAxis* dof;
 	DofInfo* dofInfo;
 	char buffer[200];
 	AbstractCoordinate *newCoord;
@@ -2688,7 +2687,7 @@ void SdfastFileWriter::makeSdfastUniversal(int aJointIndex, int& rDofCount, int&
 
 		const AbstractCoordinate* coord = dof->getCoordinate();
 
-		if (dof->getMotionType() == AbstractDof::Rotational &&
+		if (dof->getMotionType() == AbstractTransformAxis::Rotational &&
 			(coord != NULL || NOT_EQUAL_WITHIN_ERROR(dof->getValue(), 0.0)))
 		{
 			dof->getAxis(axis);
@@ -2749,7 +2748,7 @@ void SdfastFileWriter::makeSdfastCylindrical(int aJointIndex, int& rDofCount, in
 	 * function.
 	 */
 	int tdIndex = -1;
-	AbstractDof* transDof = findNthFunctionTranslation(_joints[aJointIndex], 0, tdIndex);
+	AbstractTransformAxis* transDof = findNthFunctionTranslation(_joints[aJointIndex], 0, tdIndex);
 
 	_joints[aJointIndex].dofs[tdIndex].stateNumber = rDofCount++;
 	_joints[aJointIndex].dofs[tdIndex].fixed = false;
@@ -2776,7 +2775,7 @@ void SdfastFileWriter::makeSdfastCylindrical(int aJointIndex, int& rDofCount, in
 	 * there should be exactly one rotationDof that is a function.
 	 */
 	int rdIndex;
-	AbstractDof* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
+	AbstractTransformAxis* rotDof = findNthFunctionRotation(_joints[aJointIndex], 0, rdIndex);
 	const AbstractCoordinate* coord = rotDof->getCoordinate();
 
 	rotDof->getAxis(axis);
@@ -2828,7 +2827,7 @@ void SdfastFileWriter::makeSdfastGimbal(int aJointIndex, int& rDofCount, int& rC
 	SimTK::Vec3 axis;
 	char buffer[200];
 	int axisCount = 0;
-	AbstractDof* dof;
+	AbstractTransformAxis* dof;
 	DofInfo* dofInfo;
 	AbstractCoordinate *newCoord;
 	string speedName;
@@ -2846,7 +2845,7 @@ void SdfastFileWriter::makeSdfastGimbal(int aJointIndex, int& rDofCount, int& rC
 
 		const AbstractCoordinate* coord = dof->getCoordinate();
 
-		if (dof->getMotionType() == AbstractDof::Rotational &&
+		if (dof->getMotionType() == AbstractTransformAxis::Rotational &&
 			(coord != NULL || NOT_EQUAL_WITHIN_ERROR(dof->getValue(), 0.0)))
 		{
 			dof->getAxis(axis);
@@ -2900,9 +2899,9 @@ void SdfastFileWriter::makeSdfastBushing(int aJointIndex, int& rDofCount, int& r
 	int i, axisNum = 0;
 	SimTK::Vec3 axis;
 	char buffer[200];
-	AbstractDof* rotDofs[3];
+	AbstractTransformAxis* rotDofs[3];
 	int rdIndices[3];
-	AbstractDof* transDofs[3];
+	AbstractTransformAxis* transDofs[3];
 	int tdIndices[3];
 	AbstractCoordinate *newCoord;
 	string speedName;
@@ -3095,12 +3094,12 @@ void SdfastFileWriter::makeSdfastBushing(int aJointIndex, int& rDofCount, int& r
  * Non-zero constants are counted as functions for the purposes
  * of mapping the joint to an SD/FAST joint. N is zero-based.
  */
-AbstractDof* SdfastFileWriter::findNthFunctionRotation(JointInfo& aJointInfo, int aN, int& rIndex) const
+AbstractTransformAxis* SdfastFileWriter::findNthFunctionRotation(JointInfo& aJointInfo, int aN, int& rIndex) const
 {
 	int i, count = 0;
 	for (i = 0; i < aJointInfo.numDofs; i++)
 	{
-		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Rotational &&
+		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractTransformAxis::Rotational &&
 			(aJointInfo.dofs[i].modelDof->getCoordinate() != NULL ||
 			 NOT_EQUAL_WITHIN_ERROR(aJointInfo.dofs[i].modelDof->getValue(), 0.0)))
 		{
@@ -3124,12 +3123,12 @@ AbstractDof* SdfastFileWriter::findNthFunctionRotation(JointInfo& aJointInfo, in
 /* This function finds the Nth translation dof in the joint which
  * is a function of a coordinate. N is zero-based.
  */
-AbstractDof* SdfastFileWriter::findNthFunctionTranslation(JointInfo& aJointInfo, int aN, int& rIndex) const
+AbstractTransformAxis* SdfastFileWriter::findNthFunctionTranslation(JointInfo& aJointInfo, int aN, int& rIndex) const
 {
 	int i, count = 0;
 	for (i = 0; i < aJointInfo.numDofs; i++)
 	{
-		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Translational &&
+		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractTransformAxis::Translational &&
 			 aJointInfo.dofs[i].modelDof->getCoordinate() != NULL)
 		{
 			if (count++ == aN)
@@ -3152,7 +3151,7 @@ AbstractDof* SdfastFileWriter::findNthFunctionTranslation(JointInfo& aJointInfo,
 /* Given a rotationDof, this functions finds the translationDof which uses
  * the same axis.
  */
-AbstractDof* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo, AbstractDof* aRotDof, int& rIndex) const
+AbstractTransformAxis* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo, AbstractTransformAxis* aRotDof, int& rIndex) const
 {
 	SimTK::Vec3 rotAxis, transAxis;
 
@@ -3160,7 +3159,7 @@ AbstractDof* SdfastFileWriter::findMatchingTranslationDof(JointInfo& aJointInfo,
 
 	for (int i = 0; i < aJointInfo.numDofs; i++)
 	{
-		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractDof::Translational)
+		if (aJointInfo.dofs[i].modelDof->getMotionType() == AbstractTransformAxis::Translational)
 		{
 			aJointInfo.dofs[i].modelDof->getAxis(transAxis);
 			if (axesAreParallel(&rotAxis[0], &transAxis[0], false))
@@ -3187,11 +3186,11 @@ bool SdfastFileWriter::isJointSdfastCompatible(const AbstractJoint* aJoint) cons
 	int numTx = 0, numTy = 0, numTz = 0;
 	int lastDof = -1;
 
-	DofSet* dofs = aJoint->getDofSet();
+	TransformAxisSet* dofs = aJoint->getTransformAxisSet();
 
 	for (int i = 0; i < dofs->getSize(); i++)
 	{
-		if (dofs->get(i)->getMotionType() == AbstractDof::Translational)
+		if (dofs->get(i)->getMotionType() == AbstractTransformAxis::Translational)
 		{
 			if (dofs->get(i)->getName() == "tx") //TODO: these names are defined in SimmTranslationDof
 				numTx++;
@@ -3199,13 +3198,13 @@ bool SdfastFileWriter::isJointSdfastCompatible(const AbstractJoint* aJoint) cons
 				numTy++;
 			else //if (dofs->get(i)->getName() == "tz")
 				numTz++;
-			if (lastDof == AbstractDof::Rotational)
+			if (lastDof == AbstractTransformAxis::Rotational)
 				numChanges++;
 		}
 		else
 		{
 			numRotations++;
-			if (lastDof == AbstractDof::Translational)
+			if (lastDof == AbstractTransformAxis::Translational)
 				numChanges++;
 		}
 	}

@@ -34,6 +34,7 @@
 #include <string>
 #include "Function.h"
 #include "PropertyDbl.h"
+#include "FunctionAdapter.h"
 
 namespace OpenSim {
 
@@ -56,8 +57,6 @@ class OSIMCOMMON_API Constant : public Function
 protected:
 	PropertyDbl _valueProp;
 	double &_value;
-
-private:
 
 //=============================================================================
 // METHODS
@@ -103,9 +102,10 @@ public:
 	// EVALUATION
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
-	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) { return _value; }
+	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) const { return _value; }
 	double evaluate() { return _value; }
 	virtual void scaleY(double aScaleFactor) { _value *= aScaleFactor; }
+    const SimTK::Function<1>* createSimTKFunction() const;
 
 	OPENSIM_DECLARE_DERIVED(Constant, Function);
 

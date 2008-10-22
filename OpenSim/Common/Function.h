@@ -41,6 +41,7 @@
 #include "Object.h"
 #include "PropertyDbl.h"
 #include "SimmPoint.h"
+#include "SimTKmath.h"
 
 
 //=============================================================================
@@ -53,7 +54,7 @@
  * only one unique dependent value.  Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::NAN
+ * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::getNAN()
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -176,12 +177,13 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox() = 0;
 	virtual double
-		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) = 0;
+		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) const = 0;
 	virtual double
 		evaluateTotalFirstDerivative(double aX,double aDxdt);
 	virtual double
 		evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
 	virtual void scaleY(double aScaleFactor) = 0;
+    virtual const SimTK::Function<1>* createSimTKFunction() const = 0;
 
 	OPENSIM_DECLARE_DERIVED(Function, Object);
 

@@ -98,8 +98,6 @@ protected:
 	PropertyDblArray _propWeights;
 	/** Spline coefficients. */
 	PropertyDblArray _propCoefficients;
-	/** Work array for construction of the spline. */
-	PropertyDblArray _propWk;
 
 	// REFERENCES
 	/** Reference to the value of the HalfOrder property. */
@@ -112,20 +110,17 @@ protected:
 	Array<double> &_weights;
 	/** Reference to the value of the Coefficients property. */
 	Array<double> &_coefficients;
-	/** Reference to the value of the Wk property. */
-	Array<double> &_wk;
-
-
-	/** Work array for evaluating the spline. */
-	Array<double> _workEval;
-	/** Knot index used to fascilitate finding the appropriate knot during
-	an evaluation. */
-	int _knotIndex;
 
 	/** Y (dependent) values of the function. These are called aF in the
 	constructor and are stored here so that the function can be scaled
 	later on. */
 	Array<double> _y;
+	/** The object storing the spline coefficients. */
+	SimTK::Spline<1> _spline;
+	/** A workspace used when evaluating the spline. */
+	mutable SimTK::Vector _workX;
+	/** A workspace used when calculating derivatives of the spline. */
+	mutable std::vector<int> _workDeriv;
 
 //=============================================================================
 // METHODS
@@ -145,6 +140,7 @@ private:
 	void setupProperties();
 	void setEqual(const GCVSpline &aSpline);
 	virtual void init(Function* aFunction);
+	void buildSpline();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -178,13 +174,14 @@ public:
 	virtual bool deletePoints(const Array<int>& indices);
 	virtual int addPoint(double aX, double aY);
 	virtual Array<XYPoint>* renderAsLineSegments(int aIndex);
+	const SimTK::Function<1>* createSimTKFunction() const;
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
 	virtual double
-		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0);
+		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) const;
 
 	OPENSIM_DECLARE_DERIVED(GCVSpline, Function);
 

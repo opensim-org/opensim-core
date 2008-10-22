@@ -1,0 +1,6 @@
+tug_of_war_states						
+nRows=1						
+nColumns=7						
+endheader						
+time	block_tz	block_tz_u	muscle_1.activation	muscle_1.fiber_length	muscle_2.activation	muscle_2.fiber_length
+0	0	0	0.01	0.098	0.01	0.098

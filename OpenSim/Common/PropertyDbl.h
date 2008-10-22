@@ -87,7 +87,9 @@ public:
 	virtual const char* getTypeAsString() const;
 	// VALUE
 	virtual void setValue(double aValue);
+#ifndef SWIG
 	virtual double& getValueDbl();
+#endif
 	virtual const double& getValueDbl() const;
 	// VALUE as String
 	virtual const std::string &toString();

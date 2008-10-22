@@ -376,11 +376,11 @@ getParameterMax(int aI) const
  * parameters are the cooefficients in the expansion, and each term in
  * the expansion corresponds not to a specific time but to a frequency.
  * Another example is a constant that has the same value for all times.
- * In these cases, this method returns rdMath::NAN.
+ * In these cases, this method returns rdMath::getNAN().
  *
  * @param aI Index of the parameter.
  * @return Time at which the control parameter occurs.  For ControlLinear
- * this value is not defined, and so rdMath::NAN is always returned.
+ * this value is not defined, and so rdMath::getNAN() is always returned.
  * @throws Exception if aI is invalid.
  */
 double ControlLinear::
@@ -407,18 +407,18 @@ getParameterTime(int aI) const
  * @param rTLower Time below which the curve is not affected by the specified
  * parameter.  For ControlLinear, aTLower is the time of parameter aI-1 or of
  * aI if there is no parameter aI-1.  If there are no nodes at all or if
- * aI is invalid, aTLower is given the value rdMath::NAN.
+ * aI is invalid, aTLower is given the value rdMath::getNAN().
  * @param rTUpper Time above which the curve is not affected by the specified
  * parameter.  For ControlLinear, aTUpper is the time of parameter aI+1 or of
  * aI if there is no parameter aI+1.  If there are no nodes at all or if
- * aI is invalid, aTUpper is given the value rdMath::NAN.
+ * aI is invalid, aTUpper is given the value rdMath::getNAN().
  * @throws Exception if aI is invalid.
  */
 void ControlLinear::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
-	rTLower = rdMath::NAN;
-	rTUpper = rdMath::NAN;
+	rTLower = rdMath::getNAN();
+	rTUpper = rdMath::getNAN();
 
 	// CHECK THAT THE NODE EXISTS
 	// An exception is thrown if aI is out of bounds. 
@@ -646,7 +646,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 {
 	// CHECK SIZE
 	int size = aNodes.getSize();
-	if(size<=0) return(rdMath::NAN);
+	if(size<=0) return(rdMath::getNAN());
 
 	// GET NODE
 	_searchNode.setTime(aT);
@@ -704,7 +704,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 double ControlLinear::
 extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
-	if(aNodes.getSize()<=0) return(rdMath::NAN);
+	if(aNodes.getSize()<=0) return(rdMath::getNAN());
 	if(aNodes.getSize()==1) return(aNodes[0]->getValue());
 
 	double t1,v1,t2,v2;
@@ -721,7 +721,7 @@ double ControlLinear::
 extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
 	int size = aNodes.getSize();
-	if(size<=0) return(rdMath::NAN);
+	if(size<=0) return(rdMath::getNAN());
 	if(size==1) return(aNodes[0]->getValue());
 
 	int n1 = size - 2;
@@ -761,7 +761,7 @@ setControlValue(double aT,double aX)
  *
  * @param aT Time at which to get the control.
  * @return Control value.  If the value of the curve is not defined,
- * rdMath::NAN is returned.  If the control is set to extrapolate,
+ * rdMath::getNAN() is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -828,7 +828,7 @@ setControlValueMin(double aT,double aMin)
  *
  * @param aT Time at which to get the control.
  * @return Minimum allowed control value.  If the value of the curve is not defined,
- * rdMath::NAN is returned.  If the control is set to extrapolate,
+ * rdMath::getNAN() is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -896,7 +896,7 @@ setControlValueMax(double aT,double aMax)
  *
  * @param aT Time at which to get the control.
  * @return Maximum allowed control value.  If the value of the curve is not defined,
- * rdMath::NAN is returned.  If the control is set to extrapolate,
+ * rdMath::getNAN() is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the

@@ -5,8 +5,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 						  ${XERCES_INCLUDE_DIR})
 
 # cmake should automatically figure out what other libraries are needed
-LINK_LIBRARIES(osimSimmKinematicsEngine)
+LINK_LIBRARIES(osimSimmKinematicsEngine osimSimbodyEngine)
 
 ADD_EXECUTABLE(${UTILNAME} ${UTILNAME}.cpp)
-#INSTALL_TARGETS(/bin/ ${UTILNAME})
+INSTALL_TARGETS(/bin/ ${UTILNAME})
 SET_TARGET_PROPERTIES(${UTILNAME} PROPERTIES PROJECT_LABEL "Utilities - ${UTILNAME}")

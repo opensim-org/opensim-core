@@ -293,6 +293,9 @@ void SimmBody::addBone(VisibleObject* aBone)
  */
 void SimmBody::scale(const Vec3& aScaleFactors, bool aScaleMass)
 {
+   // Base class, to scale wrap objects
+   AbstractBody::scale(aScaleFactors, aScaleMass);
+
 	SimTK::Vec3 displayerScaleFactors;
 	getDisplayer()->getScaleFactors(displayerScaleFactors);
 
@@ -319,7 +322,7 @@ void SimmBody::scale(const Vec3& aScaleFactors, bool aScaleMass)
  */
 void SimmBody::scaleInertialProperties(const Vec3& aScaleFactors, bool aScaleMass)
 {
-	double inertia[3][3];
+	Mat33 inertia;
 	for(int i=0;i<3;i++)
 		for(int j=0;j<3;j++)
 			inertia[i][j] = _inertia[3*i+j];

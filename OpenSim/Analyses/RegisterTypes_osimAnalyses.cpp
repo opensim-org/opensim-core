@@ -38,8 +38,8 @@
 #include "GeneralizedForces.h"
 #include "MuscleAnalysis.h"
 #include "InverseDynamics.h"
+#include "JointReaction.h"
 #include "StaticOptimization.h"
-
 
 
 using namespace OpenSim;
@@ -60,10 +60,11 @@ OSIMANALYSES_API void RegisterTypes_suAnalyses()
 	Object::RegisterType( BodyKinematics() );
 	Object::RegisterType( MuscleAnalysis() );
 	Object::RegisterType( InverseDynamics() );
+	//Object::RegisterType( JointReaction() );
 	Object::RegisterType( StaticOptimization() );
 	// unregistering until we verify that these work
 	//Object::RegisterType( ActuatorGeneralizedForces() );
-   //Object::RegisterType( GeneralizedForces() );
+    //Object::RegisterType( GeneralizedForces() );
 }
 
 suAnalysesInstantiator::suAnalysesInstantiator() 

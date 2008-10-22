@@ -365,14 +365,14 @@ setDTArray(int aN,const double aDT[],double aTI)
  * step aStep to step aStep+1.
  *
  * @param aStep Index of the desired step.
- * @return Delta.  rdMath::NAN is returned on error.
+ * @return Delta.  rdMath::getNAN() is returned on error.
  */
 double IntegRKF::
 getDTArrayDT(int aStep)
 {
 	if((aStep<0) || (aStep>=_dtArray.getSize())) {
 		printf("IntegRKF.getDTArrayDT: ERR- invalid step.\n");
-		return(rdMath::NAN);
+		return(rdMath::getNAN());
 	}
 
 	return(_dtArray[aStep]);
@@ -443,14 +443,14 @@ getTimeArrayStep(double aTime)
  * Get the time of a specified integration step.
  *
  * @param aStep Index of the desired step.
- * @return Time of integration step aStep.  rdMath::NAN is returned on error.
+ * @return Time of integration step aStep.  rdMath::getNAN() is returned on error.
  */
 double IntegRKF::
 getTimeArrayTime(int aStep)
 {
 	if((aStep<0) || (aStep>=_tArray.getSize())) {
 		printf("IntegRKF.getTimeArrayTime: ERR- invalid step.\n");
-		return(rdMath::NAN);
+		return(rdMath::getNAN());
 	}
 
 	return(_tArray[aStep]);

@@ -39,11 +39,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include "rdCMC_Task.h"
 
-
-#ifndef SWIG
-template class OSIMTOOLS_API OpenSim::Set<OpenSim::rdCMC_Task>;
-#endif
-
 namespace OpenSim {
 
 //=============================================================================

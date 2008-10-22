@@ -48,7 +48,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/SpeedSet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
-#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
@@ -1066,7 +1066,7 @@ SdfastJoint *SdfastEngine::getInboardTreeJoint(SdfastBody* aBody) const
 {
 	for(int i=0; i<_jointSet.getSize(); i++) {
 		SdfastJoint *joint = dynamic_cast<SdfastJoint*>(_jointSet[i]);
-		SdfastBody *child = joint->getChildBody();
+		SdfastBody *child = joint->getBody();
 		if((child==aBody) && joint->isTreeJoint())
 			return joint;
 	}

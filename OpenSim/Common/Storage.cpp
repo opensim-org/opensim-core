@@ -581,13 +581,13 @@ getStateVector(int aTimeIndex) const
  * Get the time of the first stored states.
  *
  * @return Time of the first stored states.  If there is no stored state,
- * the constant rdMath::NAN (not a number) is returned.
+ * the constant rdMath::getNAN() (not a number) is returned.
  */
 double Storage::
 getFirstTime() const
 {
 	if(_storage.getSize()<=0) {
-		return(rdMath::NAN);
+		return(rdMath::getNAN());
 	}
 	return(_storage[0].getTime());
 }
@@ -596,13 +596,13 @@ getFirstTime() const
  * Get the time of the last states.
  *
  * @return Time of the first stored states.  If there is no stored state,
- * the constant rdMath::NAN (not a number) is returned.
+ * the constant rdMath::getNAN() (not a number) is returned.
  */
 double Storage::
 getLastTime() const
 {
 	if(_storage.getSize()<=0) {
-		return(rdMath::NAN);
+		return(rdMath::getNAN());
 	}
 	return(_storage.getLast().getTime());
 }

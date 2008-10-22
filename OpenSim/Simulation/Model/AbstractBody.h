@@ -84,6 +84,9 @@ public:
    void copyData(const AbstractBody &aBody);
 
 	virtual AbstractDynamicsEngine* getDynamicsEngine() { return _dynamicsEngine; }
+#ifndef SWIG
+	virtual const AbstractDynamicsEngine* getDynamicsEngine() const { return _dynamicsEngine; }
+#endif
    virtual void setup(AbstractDynamicsEngine* aEngine);
 
 	virtual double getMass() const = 0;
@@ -92,7 +95,7 @@ public:
 	virtual bool setMassCenter(const SimTK::Vec3& aVec) = 0;
 	virtual void getInertia(SimTK::Mat33& rInertia) const = 0;
 	virtual bool setInertia(const SimTK::Mat33& aInertia) = 0;
-	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false) = 0;
+	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
 	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true) = 0;
 	virtual void scaleMass(double aScaleFactor) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
@@ -106,7 +109,7 @@ private:
 	void setupProperties();
 
 protected:
-	static void scaleInertiaTensor(double aMass, const SimTK::Vec3& aScaleFactors, double rInertia[3][3]);
+	static void scaleInertiaTensor(double aMass, const SimTK::Vec3& aScaleFactors, SimTK::Mat33& rInertia);
 //=============================================================================
 };	// END of class AbstractBody
 //=============================================================================

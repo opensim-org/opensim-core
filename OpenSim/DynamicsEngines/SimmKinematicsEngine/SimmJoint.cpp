@@ -59,8 +59,8 @@ using SimTK::Vec3;
 SimmJoint::SimmJoint() :
 	AbstractJoint(),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_dofSetProp(PropertyObj("", DofSet())),
-	_dofSet((DofSet&)_dofSetProp.getValueObj()),
+	_dofSetProp(PropertyObj("", DofSet01_05())),
+	_dofSet((DofSet01_05&)_dofSetProp.getValueObj()),
 	_childBody(NULL),
 	_parentBody(NULL),
 	_pathList(0)
@@ -86,8 +86,8 @@ SimmJoint::~SimmJoint()
 SimmJoint::SimmJoint(const SimmJoint &aJoint) :
    AbstractJoint(aJoint),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_dofSetProp(PropertyObj("", DofSet())),
-	_dofSet((DofSet&)_dofSetProp.getValueObj()),
+	_dofSetProp(PropertyObj("", DofSet01_05())),
+	_dofSet((DofSet01_05&)_dofSetProp.getValueObj()),
 	_childBody(NULL),
 	_parentBody(NULL),
 	_pathList(0)
@@ -241,7 +241,7 @@ void SimmJoint::getLocationInParent(SimTK::Vec3& rLocation) const
 	rLocation[0] = rLocation[1] = rLocation[2] = 0.0;
 	for (int i = 0; i < _dofSet.getSize(); i++) {
 		if (_dofSet.get(i)->getFunction() == NULL &&
-			_dofSet.get(i)->getMotionType() == AbstractDof::Translational) {
+			_dofSet.get(i)->getMotionType() == AbstractDof01_05::Translational) {
 				SimTK::Vec3 vec;
 				_dofSet.get(i)->getAxis(vec);
 				vec *= _dofSet.get(i)->getValue();
@@ -348,14 +348,14 @@ void SimmJoint::calcTransforms()
 
    for (i = 0; i < _dofSet.getSize(); i++)
    {
-		if (_dofSet.get(i)->getMotionType() == AbstractDof::Translational)
+		if (_dofSet.get(i)->getMotionType() == AbstractDof01_05::Translational)
 		{
 			SimmTranslationDof* td = dynamic_cast<SimmTranslationDof*>(_dofSet.get(i));
 			td->getTranslation(t);
 			Mtx::Multiply(1, 4, 4, t, mat.getMatrix(), t);
 			Mtx::Add(4, 1, translation, t, translation);
 		}
-		else if (_dofSet.get(i)->getMotionType() == AbstractDof::Rotational)
+		else if (_dofSet.get(i)->getMotionType() == AbstractDof01_05::Rotational)
 		{
 			SimmRotationDof* rd = dynamic_cast<SimmRotationDof*>(_dofSet.get(i));
 			Transform m;
@@ -426,7 +426,7 @@ bool SimmJoint::hasXYZAxes() const
 
    for (i = 0; i < _dofSet.getSize(); i++)
    {
-		if (_dofSet.get(i)->getMotionType() == AbstractDof::Rotational)
+		if (_dofSet.get(i)->getMotionType() == AbstractDof01_05::Rotational)
 		{
 			const double* axis = _dofSet.get(i)->getAxisPtr();
 
@@ -508,7 +508,7 @@ void SimmJoint::scale(const Vec3& aScaleFactors)
 	 */
    for (int i = 0; i < _dofSet.getSize(); i++)
    {
-		if (_dofSet.get(i)->getMotionType() == AbstractDof::Translational)
+		if (_dofSet.get(i)->getMotionType() == AbstractDof01_05::Translational)
 		{
 			SimmTranslationDof* transDof = dynamic_cast<SimmTranslationDof*>(_dofSet.get(i));
 			Function* function = transDof->getFunction();

@@ -45,8 +45,8 @@ class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
 class AbstractSpeed;
-class AbstractDof;
-class DofSet;
+class AbstractTransformAxis;
+class TransformAxisSet;
 
 //=============================================================================
 //=============================================================================
@@ -101,7 +101,7 @@ public:
 		int errorNumber;            /* if constrained, index into error array */
 		int joint;                  /* SD/FAST joint which contains this dof */
 		int axis;                   /* axis in SD/FAST joint which corresponds to dof */
-		AbstractDof* modelDof;      /* pointer to model Dof that this info is for */
+		AbstractTransformAxis* modelDof;      /* pointer to model Dof that this info is for */
 	} DofInfo;
 
 	typedef struct
@@ -238,7 +238,7 @@ private:
 	void makeDofSdfastNames();
 	std::string makeSdfastBodyName(const std::string& bodyName, int timesSplit) const;
 	void makeSdfastJointOrder();
-	AbstractDof* getTranslationDof(int aAxis, DofSet* aDofSet) const;
+	AbstractTransformAxis* getTranslationDof(int aAxis, TransformAxisSet* aTransformAxisSet) const;
 	void makeSdfastJoint(int aJointIndex, int& rDofCount, int& rConstrainedCount);
 	void writeJoint(JointInfo& aJointInfo, SdfastBodyInfo& aSdfastBody, std::ofstream& aStream);
 	void writeSdfastConstraintData(std::ofstream& out);
@@ -257,9 +257,9 @@ private:
 	void makeSdfastCylindrical(int aJointIndex, int& rDofCount, int& rConstrainedCount);
 	void makeSdfastGimbal(int aJointIndex, int& rDofCount, int& rConstrainedCount);
 	void makeSdfastBushing(int aJointIndex, int& rDofCount, int& rConstrainedCount);
-	AbstractDof* findNthFunctionRotation(JointInfo& aJointInfo, int aN, int& rIndex) const;
-	AbstractDof* findNthFunctionTranslation(JointInfo& aJointInfo, int aN, int& rIndex) const;
-	AbstractDof* findMatchingTranslationDof(JointInfo& aJointInfo, AbstractDof* aRotDof, int& rIndex) const;
+	AbstractTransformAxis* findNthFunctionRotation(JointInfo& aJointInfo, int aN, int& rIndex) const;
+	AbstractTransformAxis* findNthFunctionTranslation(JointInfo& aJointInfo, int aN, int& rIndex) const;
+	AbstractTransformAxis* findMatchingTranslationDof(JointInfo& aJointInfo, AbstractTransformAxis* aRotDof, int& rIndex) const;
 	bool isJointSdfastCompatible(const AbstractJoint* aJoint) const;
 	bool axesAreParallel(const double* aAxis1, const double* aAxis2, bool aOppositeDirAllowed) const;
 	char* getDpJointName(dpJointType type, SimmStep::Direction direction);

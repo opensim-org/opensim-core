@@ -36,7 +36,7 @@
 #include <math.h>
 #include "osimSimmKinematicsEngineDLL.h"
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/AbstractDof.h>
+#include <OpenSim/Simulation/Model/AbstractDof01_05.h>
 
 namespace OpenSim {
 
@@ -52,7 +52,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMMKINEMATICSENGINE_API SimmTranslationDof : public AbstractDof  
+class OSIMSIMMKINEMATICSENGINE_API SimmTranslationDof : public AbstractDof01_05  
 {
 public:
 	enum AxisIndex

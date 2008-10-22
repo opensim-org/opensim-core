@@ -300,7 +300,7 @@ computeErrors(double aT)
 void rdCMC_Joint::
 computeDesiredAccelerations(double aT)
 {
-	_aDes=rdMath::NAN;
+	_aDes=rdMath::getNAN();
 
 	// CHECK
 	if(_model==NULL) return;
@@ -338,7 +338,7 @@ computeDesiredAccelerations(double aT)
 void rdCMC_Joint::
 computeDesiredAccelerations(double aTI,double aTF)
 {
-	_aDes=rdMath::NAN;
+	_aDes=rdMath::getNAN();
 
 	// CHECK
 	if(_model==NULL) return;
@@ -379,7 +379,7 @@ computeDesiredAccelerations(double aTI,double aTF)
 void rdCMC_Joint::
 computeAccelerations()
 {
-	_a=rdMath::NAN;
+	_a=rdMath::getNAN();
 
 	// CHECK
 	if(_model==NULL) return;

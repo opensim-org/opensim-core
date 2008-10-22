@@ -65,6 +65,11 @@ protected:
 	PropertyStrArray _bodiesProp;
 	Array<std::string> &_bodies;
 
+	/** Flag indicating whether or not to express the results
+	in the global or body-local frame. */
+	PropertyBool _expressInLocalFrameProp;
+	bool &_expressInLocalFrame;
+
 	Array<int> _bodyIndices;
 	bool _recordCenterOfMass;
 	Array<double> _kin;
@@ -73,9 +78,6 @@ protected:
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;
-	/** Whether or not to write output of angles in degrees. */
-	PropertyBool _angVelInLocalFrameProp;
-	bool &_angVelInLocalFrame;
 
 //=============================================================================
 // METHODS
@@ -111,8 +113,8 @@ public:
 	Storage* getAccelerationStorage();
 	Storage* getVelocityStorage();
 	Storage* getPositionStorage();
-	void setAngVelInLocalFrame(bool aTrueFalse);
-	bool getAngVelInLocalFrame();
+	void setExpressResultsInLocalFrame(bool aTrueFalse);
+	bool getExpressResultsInLocalFrame();
 
 	virtual void setModel(Model *aModel);
 	//--------------------------------------------------------------------------

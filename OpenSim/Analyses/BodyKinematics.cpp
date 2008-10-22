@@ -74,7 +74,7 @@ BodyKinematics::~BodyKinematics()
 BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
 	Analysis(aModel),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
+	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
 	 setNull();
 
@@ -105,7 +105,7 @@ BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
 BodyKinematics::BodyKinematics(const std::string &aFileName):
 	Analysis(aFileName, false),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
+	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
 	setNull();
 
@@ -132,7 +132,7 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 BodyKinematics::BodyKinematics(const BodyKinematics &aBodyKinematics):
 	Analysis(aBodyKinematics),
 	_bodies(_bodiesProp.getValueStrArray()),
-	_angVelInLocalFrame(_angVelInLocalFrameProp.getValueBool())
+	_expressInLocalFrame(_expressInLocalFrameProp.getValueBool())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -167,7 +167,7 @@ operator=(const BodyKinematics &aBodyKinematics)
 	// BASE CLASS
 	Analysis::operator=(aBodyKinematics);
 	_bodies = aBodyKinematics._bodies;
-	_angVelInLocalFrame = aBodyKinematics._angVelInLocalFrame;
+	_expressInLocalFrame = aBodyKinematics._expressInLocalFrame;
 	return(*this);
 }
 
@@ -202,14 +202,18 @@ setNull()
 void BodyKinematics::
 setupProperties()
 {
+	_bodiesProp.setName("bodies");
 	_bodiesProp.setComment("Names of bodies to record kinematics for.  Use 'all' to record all bodies."
 								  "  The special name '"+CENTER_OF_MASS_NAME+"' refers to the combined center of mass.");
-	_bodiesProp.setName("bodies");
 	_propertySet.append( &_bodiesProp );
 
-	_angVelInLocalFrameProp.setName("angular_velocity_local");
-	_angVelInLocalFrameProp.setValue(true);
-	_propertySet.append(&_angVelInLocalFrameProp);
+	_expressInLocalFrameProp.setName("express_results_in_body_local_frame");
+	_expressInLocalFrameProp.setComment("Flag (true or false) indicating whether"
+		" to express results in the global frame or local-frames of the bodies. "
+		"Body positions and center of mass results are always given in the global frame. "
+		"This flag is set to false by default.");
+	_expressInLocalFrameProp.setValue(false);
+	_propertySet.append(&_expressInLocalFrameProp);
 }
 
 //=============================================================================
@@ -453,9 +457,9 @@ setStorageCapacityIncrements(int aIncrement)
  *		in the global reference frame
  */
 void BodyKinematics::
-setAngVelInLocalFrame(bool aTrueFalse)
+setExpressResultsInLocalFrame(bool aTrueFalse)
 {
-	_angVelInLocalFrame = aTrueFalse;
+	_expressInLocalFrame = aTrueFalse;
 }
 
 /**
@@ -466,9 +470,9 @@ setAngVelInLocalFrame(bool aTrueFalse)
  *		in the global reference frame
  */
 bool BodyKinematics::
-getAngVelInLocalFrame()
+getExpressResultsInLocalFrame()
 {
-	return(_angVelInLocalFrame);
+	return(_expressInLocalFrame);
 }
 
 
@@ -510,6 +514,9 @@ record(double aT,double *aX,double *aY)
 	double dirCos[3][3];
 	SimTK::Vec3 vec,angVec;
 	double Mass = 0.0;
+
+	// GROUND BODY
+	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
 
 	// POSITION
 	BodySet *bs = _model->getDynamicsEngine().getBodySet();
@@ -568,7 +575,8 @@ record(double aT,double *aX,double *aY)
 		body->getMassCenter(com);
 		// GET VELOCITIES AND ANGULAR VELOCITIES
 		_model->getDynamicsEngine().getVelocity(*body,com,vec);
-		if(_angVelInLocalFrame){
+		if(_expressInLocalFrame) {
+			_model->getDynamicsEngine().transform(ground,vec,*body,vec);
 			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,angVec);
 		} else {
 			_model->getDynamicsEngine().getAngularVelocity(*body,angVec);
@@ -614,9 +622,15 @@ record(double aT,double *aX,double *aY)
 		AbstractBody *body = bs->get(_bodyIndices[i]);
 		SimTK::Vec3 com;
 		body->getMassCenter(com);
+
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
 		_model->getDynamicsEngine().getAcceleration(*body,com,vec);
-		_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angVec);
+		if(_expressInLocalFrame) {
+			_model->getDynamicsEngine().transform(ground,vec,*body,vec);
+			_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angVec);
+		} else {
+			_model->getDynamicsEngine().getAngularAcceleration(*body,angVec);
+		}
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
@@ -796,17 +810,21 @@ int BodyKinematics::
 printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
+	string suffix;
+	if(_expressInLocalFrame) suffix = "_bodyLocal";
+	else suffix = "_global";
+
 	// ACCELERATIONS
 	_aStore->scaleTime(_model->getTimeNormConstant());
-	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc",aDir,aDT,aExtension);
+	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
 
 	// VELOCITIES
 	_vStore->scaleTime(_model->getTimeNormConstant());
-	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel",aDir,aDT,aExtension);
+	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel"+suffix,aDir,aDT,aExtension);
 
 	// POSITIONS
 	_pStore->scaleTime(_model->getTimeNormConstant());
-	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos",aDir,aDT,aExtension);
+	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos_global",aDir,aDT,aExtension);
 
 	return(0);
 }

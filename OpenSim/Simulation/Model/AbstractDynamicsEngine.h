@@ -37,20 +37,22 @@
 #include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 namespace OpenSim {
 
 class ScaleSet;
 class BodySet;
-class JointSet;
+class ConstraintSet;
 class Model;
 class AbstractBody;
 class AbstractJoint;
 class AbstractCoordinate;
-class CoordinateSet;
 class AbstractSpeed;
-class SpeedSet;
-class AbstractDof;
+class AbstractTransformAxis;
 class AbstractMarker;
 class MarkerSet;
 class Transform;
@@ -99,21 +101,40 @@ protected:
 	PropertyObj _bodySetProp;
 	BodySet &_bodySet;
 
-	/** Set containing the joints in this model. */
-	PropertyObj _jointSetProp;
-	JointSet &_jointSet;
-
-	/** Set containing the generalized coordinates in this model. */
-	PropertyObj _coordinateSetProp;
-	CoordinateSet &_coordinateSet;
-
-	/** Set containing the generalized speeds in this model. */
-	PropertyObj _speedSetProp;
-	SpeedSet &_speedSet;
+	/** Set containing the constraints in this model. */
+	PropertyObj _constraintSetProp;
+	ConstraintSet &_constraintSet;
 
 	/** Set of markers for this model. */
 	PropertyObj _markerSetProp;
 	MarkerSet &_markerSet;
+
+	/** Set containing the joints in this model. */
+	// 2008_06_06: No longer a property because the joints are kept
+	// local to the bodies in the Simbody Dynamics Engine.
+	// For the SIMM and SDFast engines to continue to work, the properties
+	// must be moved local to those classes.
+	// The strategy now is to get OpenSim working with the Simbody engine
+	// as quickly as possible.
+	JointSet _jointSet;
+
+	/** Set containing the generalized coordinates in this model. */
+	// 2008_06_06: No longer a property because the coordinates are kept
+	// local to the joints in the Simbody Dynamics Engine.
+	// For the SIMM and SDFast engines to continue to work, the properties
+	// must be moved local to those classes.
+	// The strategy now is to get OpenSim working with the Simbody engine
+	// as quickly as possible.
+	CoordinateSet _coordinateSet;
+
+	/** Set containing the generalized speeds in this model. */
+	// 2008_06_06: No longer a property because the speeds are generated
+	// from the coordinates, which are kept local to the joints.
+	// For the SIMM and SDFast engines to continue to work, the properties
+	// must be moved local to those classes.
+	// The strategy now is to get OpenSim working with the Simbody engine
+	// as quickly as possible.
+	SpeedSet _speedSet;
 
 //=============================================================================
 // METHODS
@@ -126,6 +147,13 @@ public:
 	AbstractDynamicsEngine(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	virtual ~AbstractDynamicsEngine();
 	virtual Object* copy() const = 0;
+
+	//_____________________________________________________________________________
+	/**
+	 * Perform set up functions after model has been read from file or copied.
+	 *
+	 * @param aModel model containing this dynamics engine.
+	 */
 	virtual void setup(Model* aModel);
 
 protected:
@@ -134,7 +162,16 @@ protected:
 	AbstractDynamicsEngine& operator=(const AbstractDynamicsEngine &aDE);
 #endif
 	void setNull();
+
+	/**
+	 * Connect properties to local pointers.
+	 */
 	void setupProperties();
+
+	/**
+	 * Copy data members from one AbstractDynamicsEngine to another.
+	 * @param aEngine AbstractDynamicsEngine to be copied.
+	 */
 	void copyData(const AbstractDynamicsEngine& aEngine);
 
 public:
@@ -144,6 +181,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual int getNumBodies() const;
 	virtual int getNumJoints() const;
+	virtual int getNumConstraints() const;
 	virtual int getNumCoordinates() const;
 	virtual int getNumSpeeds() const;
 	virtual int getNumMarkers() const;
@@ -151,8 +189,9 @@ public:
 	//--------------------------------------------------------------------------
 	// MODEL
 	//--------------------------------------------------------------------------
-	Model* getModel() const { return _model; }
-
+	const Model* getModel() const { return _model; }
+	Model* getModel() { return _model; }
+	void setModel(Model* aModel) { _model = aModel; }
 	//--------------------------------------------------------------------------
 	// GRAVITY
 	//--------------------------------------------------------------------------
@@ -187,7 +226,15 @@ public:
 #endif
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet) = 0;
 	virtual void getUnlockedCoordinates(CoordinateSet& aUnlockedCoordinates) const = 0;
-	virtual AbstractDof* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) = 0;
+	virtual AbstractTransformAxis* findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint) = 0;
+
+	//--------------------------------------------------------------------------
+	// CONSTRAINTS
+	//--------------------------------------------------------------------------
+	virtual ConstraintSet* getConstraintSet() { return &_constraintSet; }
+#ifndef SWIG
+	virtual const ConstraintSet* getConstraintSet() const { return &_constraintSet; }
+#endif
 
 	//--------------------------------------------------------------------------
 	// SPEEDS
@@ -212,14 +259,56 @@ public:
 	//--------------------------------------------------------------------------
 	// CONFIGURATION
 	//--------------------------------------------------------------------------
+	/**
+	 * Set the configuration (cooridnates and speeds) of the model.
+	 * @param aY Array of coordinates followed by the speeds.
+	 */
 	virtual void setConfiguration(const double aY[]) = 0;
 	virtual void getConfiguration(double rY[]) const = 0;
+
+	/**
+	 * Set the configuration (cooridnates and speeds) of the model.
+	 * @param aQ Array of generalized coordinates.
+	 * @param aU Array of generalized speeds.
+	 */
 	virtual void setConfiguration(const double aQ[],const double aU[]) = 0;
 	virtual void getConfiguration(double rQ[],double rU[]) const = 0;
 	virtual void getCoordinates(double rQ[]) const = 0;
 	virtual void getSpeeds(double rU[]) const = 0;
+
+	/**
+	* PROJECT configuration to satisfy constaints and return the projected configuration
+	*/
+	virtual bool projectConfigurationToSatisfyConstraints(double uY[], const double cTol, double uYerr[]=0) =0;
+
+	/**
+	 * Get the last-computed values of the accelerations of the generalized
+	 * coordinates.  For the values to be valid, the method
+	 * computeDerivatives() must have been called.
+	 *
+	 * @param rDUDT Array to be filled with values of the accelerations of the
+	 * generalized coordinates.  The length of rDUDT should be at least as large
+	 * as the value returned by getNumSpeeds().
+	 * @see computeDerivatives()
+	 */
 	virtual void getAccelerations(double rDUDT[]) const = 0;
+
+	/**
+	 * Extract the generalized coordinates and speeds from a combined array of
+	 * the coordinates and speeds.  This is only a utility method.  The
+	 * configuration of the model is not changed.
+	 * @param aY Array of coordinates followed by the speeds.
+	 * @param rQ Array of coordinates taken from aY. 
+	 * @param rU Array of speeds taken from aY.
+	 */
 	virtual void extractConfiguration(const double aY[],double rQ[],double rU[]) const = 0;
+
+	/**
+	 * Extract the configuration (coordinates and speeds) of a model from the states.
+	 * @param aYStore Storage object containing a complete set of model states.
+	 * @param rQStore Storage object containing the coordinates held in aYStore.
+	 * @param rUStore Storage object containing the speeds held in aYStore.
+	 */
 	virtual void extractConfiguration(const Storage &aYStore,Storage &rQStore,Storage &rUStore);
 	virtual void applyDefaultConfiguration() = 0;
 
@@ -230,6 +319,8 @@ public:
 		assemble(double aTime,double *rState,int *aLock,double aTol,
 		int aMaxevals,int *rFcnt,int *rErr) = 0;
 
+	//virtual	void init(Model* aModel) = 0;
+ 
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
@@ -239,19 +330,79 @@ public:
 	// INERTIA
 	//--------------------------------------------------------------------------
 	virtual double getMass() const = 0;
+
+	/**
+	 * Return the total system inertial properties
+	 * @param rM, total system mass
+	 * @param rCOM, location of the system center of mass in ground
+	 * @param rI, the effective total system intertia tensor 
+	 */
 	virtual void getSystemInertia(double *rM, SimTK::Vec3& rCOM, double rI[3][3]) const = 0;
 	virtual void getSystemInertia(double *rM, double *rCOM, double *rI) const = 0;
 
 	//--------------------------------------------------------------------------
 	// KINEMATICS
 	//--------------------------------------------------------------------------
+	/**
+	 * Get the inertial position of a point on a body.
+	 * Note that the configuration of the model must be set before calling this
+	 * method.
+	 * @param aBody Pointer to body.
+	 * @param aPoint Point on the body expressed in the body-local frame.
+	 * @param rPos Position of the point in the inertial frame.
+	 * @see setConfiguration()
+	 */	
 	virtual void getPosition(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const = 0;
+
+	/**
+	 * Get the inertial velocity of a point on a body.
+	 * Note that the configuration of the model must be set before calling this
+	 * method.
+	 * @param aBody Pointer to body.
+	 * @param aPoint Point on the body expressed in the body-local frame.
+	 * @param rVel Velocity of the point in the inertial frame.
+	 * @see setConfiguration()
+	 */
 	virtual void getVelocity(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const = 0;
+
+	/**
+	* Get the inertial acceleration of a point on a body.
+	* Note that the configuration of the model must be set and accelerations of
+	* the generalized coordinates must be computed before calling this method.
+	* @param aBody Pointer to body.
+	* @param aPoint Point on the body expressed in the body-local frame.
+	* @param rAcc Acceleration of the point in the inertial frame.
+	*
+	* @see setConfiguration()
+	* @see computeDerivatives()
+	*/
 	virtual void getAcceleration(const AbstractBody &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const = 0;
+
+	/**
+	 * Get the body orientation (rotation matrix) with respect to the ground.
+	 * @param aBody Pointer to body.
+	 * @param rDirCos Orientation (matrix) of the body with respect to the ground frame.
+	 */
 	virtual void getDirectionCosines(const AbstractBody &aBody, double rDirCos[3][3]) const = 0;
 	virtual void getDirectionCosines(const AbstractBody &aBody, double *rDirCos) const = 0;
+
+	/**
+	 * Get the inertial angular velocity of a body in the ground reference frame.
+	 * @param aBody Pointer to body.
+	 * @param rAngVel Angular velocity of the body.
+	 */
 	virtual void getAngularVelocity(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const = 0;
 	virtual void getAngularVelocityBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngVel) const = 0;
+
+	/**
+	 * Get the inertial angular acceleration of a body in the ground reference 
+	 * frame. Note that the system acceleration must be realized by calling
+	 * computeDerivatives() first.
+	 *
+	 * @param aBody Pointer to body.
+	 * @param rAngAcc Angular acceleration of the body.
+	 * @see computeDerivatives()
+	 */
 	virtual void getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const = 0;
 	virtual void getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const = 0;
 	virtual Transform getTransform(const AbstractBody &aBody) = 0;
@@ -289,7 +440,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double getNetAppliedGeneralizedForce(const AbstractCoordinate &aU) const = 0;
 	virtual void computeGeneralizedForces(double aDUDT[], double rF[]) const = 0;
-	virtual void computeReactions(double rForces[][3], double rTorques[][3]) const = 0;
+	virtual void computeReactions(SimTK::Vector_<SimTK::Vec3>& rForces, SimTK::Vector_<SimTK::Vec3>& rTorques) const = 0;
 
 	//--------------------------------------------------------------------------
 	// CONSTRAINTS
@@ -308,15 +459,22 @@ public:
 	virtual void formJacobianEuler(const AbstractBody &aBody, double *rJE, const AbstractBody *aRefBody=NULL) const = 0;
 
 	//--------------------------------------------------------------------------
-	// DERIVATIVES
+	// DERIVATIVES/ACCELERATIONS
 	//--------------------------------------------------------------------------
+	/**
+	 * Compute the derivatives of the generalized coordinates and speeds.
+	 * The configuration must be set and all all forces applied for this
+	 * method to return valid accelerations.
+	 * @param dqdt Derivatives of generalized coordinates.
+	 * @param dudt Derivatives of generalized speeds (accelerations).
+	 */
 	virtual void computeDerivatives(double *dqdt, double *dudt) = 0;
 
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	virtual void transform(const AbstractBody &aBodyFrom, const double aVec[3], const AbstractBody &aBodyTo, double rVec[3]) const = 0;
-	virtual void transform(const AbstractBody &aBodyFrom, const SimTK::Vec3& aVec, const AbstractBody &aBodyTo, SimTK::Vec3& rVec) const = 0;
+	virtual void transform(const AbstractBody &aBodyFrom,const double aVec[3],const AbstractBody &aBodyTo,double rVec[3]) const = 0;
+	virtual void transform(const AbstractBody &aBodyFrom,const SimTK::Vec3& aVec,const AbstractBody &aBodyTo,SimTK::Vec3& rVec) const = 0;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], const AbstractBody &aBodyTo, double rPos[3]) const = 0;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const SimTK::Vec3& aPos, const AbstractBody &aBodyTo, SimTK::Vec3& rPos) const = 0;
 	virtual void transformPosition(const AbstractBody &aBodyFrom, const double aPos[3], double rPos[3]) const = 0;
@@ -338,6 +496,13 @@ public:
 	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const = 0;
 	virtual void convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const = 0;
 
+	/**
+	 * Convert direction cosines to angles.
+	 * @param aDirCos Vector of direction cosines.
+	 * @param rE1 1st Euler angle.
+	 * @param rE2 2nd Euler angle.
+	 * @param rE3 3rd Euler angle.
+	 */
 	virtual void convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const = 0;
 	virtual void convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const = 0;
 
@@ -346,6 +511,8 @@ public:
 
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const = 0;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const = 0;
+
+   virtual bool writeSIMMJointFile(const std::string& aFileName) const { return false; }
 
 private:
 	void scaleRotationalDofColumns(Storage &rStorage, double factor) const;

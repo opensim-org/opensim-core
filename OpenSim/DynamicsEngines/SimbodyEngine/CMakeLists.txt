@@ -24,13 +24,12 @@ ADD_DEFINITIONS(-DOPENSIM_SIMBODYENGINE_LIBRARY_NAME=${OPENSIM_SIMBODYENGINE_LIB
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h )
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
-		    ${OpenSim_SOURCE_DIR}/Vendors
-			 ${XERCES_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES(debug osimCommon_d      optimized osimCommon
+LINK_LIBRARIES(debug SimTKCommon_d     optimized SimTKCommon
+			   debug osimCommon_d      optimized osimCommon
                debug osimSimulation_d  optimized osimSimulation
                debug SimTKsimbody_d    optimized SimTKsimbody 
                debug SimTKcommon_d	   optimized SimTKcommon)
@@ -43,4 +42,5 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    PROJECT_LABEL "Libraries - osim${KIT}"
 )
 
-INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+INSTALL_FILES(/sdk/include/OpenSim/${KIT} .h ${INCLUDE_FILES})

@@ -175,18 +175,18 @@ void Thelen2003Muscle::setNull()
 void Thelen2003Muscle::setupProperties()
 {
 	_maxIsometricForceProp.setName("max_isometric_force");
-   _maxIsometricForceProp.setComment("maximum isometric force of the muscle fibers");
 	_maxIsometricForceProp.setValue(546.0);
+   _maxIsometricForceProp.setComment("maximum isometric force of the muscle fibers");
 	_propertySet.append(&_maxIsometricForceProp, "Parameters");
 
 	_optimalFiberLengthProp.setName("optimal_fiber_length");
-	_optimalFiberLengthProp.setComment("optimal length of the muscle fibers");
 	_optimalFiberLengthProp.setValue(0.0535);
+	_optimalFiberLengthProp.setComment("optimal length of the muscle fibers");
 	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
 
 	_tendonSlackLengthProp.setName("tendon_slack_length");
-	_tendonSlackLengthProp.setComment("resting length of the tendon");
 	_tendonSlackLengthProp.setValue(0.078);
+	_tendonSlackLengthProp.setComment("resting length of the tendon");
 	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
 
 	_pennationAngleProp.setName("pennation_angle");
@@ -195,58 +195,58 @@ void Thelen2003Muscle::setupProperties()
 	_propertySet.append(&_pennationAngleProp, "Parameters");
 
 	_activationTimeConstantProp.setName("activation_time_constant");
-	_activationTimeConstantProp.setComment("time constant for ramping up of muscle activation");
 	_activationTimeConstantProp.setValue(0.01);
+	_activationTimeConstantProp.setComment("time constant for ramping up of muscle activation");
 	_propertySet.append(&_activationTimeConstantProp, "Parameters");
 
 	_deactivationTimeConstantProp.setName("deactivation_time_constant");
-	_deactivationTimeConstantProp.setComment("time constant for ramping down of muscle activation");
 	_deactivationTimeConstantProp.setValue(0.04);
+	_deactivationTimeConstantProp.setComment("time constant for ramping down of muscle activation");
 	_propertySet.append(&_deactivationTimeConstantProp, "Parameters");
 
 	_vmaxProp.setName("Vmax");
-	_vmaxProp.setComment("maximum contraction velocity at full activation in fiber lengths per second");
 	_vmaxProp.setValue(10.0);
+	_vmaxProp.setComment("maximum contraction velocity at full activation in fiber lengths per second");
 	_propertySet.append(&_vmaxProp, "Parameters");
 
 	_vmax0Prop.setName("Vmax0");
-	_vmax0Prop.setComment("maximum contraction velocity at low activation in fiber lengths per second");
 	_vmax0Prop.setValue(5.0);
+	_vmax0Prop.setComment("maximum contraction velocity at low activation in fiber lengths per second");
 	_propertySet.append(&_vmax0Prop, "Parameters");
 
 	_fmaxTendonStrainProp.setName("FmaxTendonStrain");
-	_fmaxTendonStrainProp.setComment("tendon strain due to maximum isometric muscle force");
 	_fmaxTendonStrainProp.setValue(0.033);
+	_fmaxTendonStrainProp.setComment("tendon strain due to maximum isometric muscle force");
 	_propertySet.append(&_fmaxTendonStrainProp, "Parameters");
 
 	_fmaxMuscleStrainProp.setName("FmaxMuscleStrain");
-	_fmaxMuscleStrainProp.setComment("passive muscle strain due to maximum isometric muscle force");
 	_fmaxMuscleStrainProp.setValue(0.6);
+	_fmaxMuscleStrainProp.setComment("passive muscle strain due to maximum isometric muscle force");
 	_propertySet.append(&_fmaxMuscleStrainProp, "Parameters");
 
 	_kShapeActiveProp.setName("KshapeActive");
-	_kShapeActiveProp.setComment("shape factor for Gaussian active muscle force-length relationship");
 	_kShapeActiveProp.setValue(0.5);
+	_kShapeActiveProp.setComment("shape factor for Gaussian active muscle force-length relationship");
 	_propertySet.append(&_kShapeActiveProp, "Parameters");
 
 	_kShapePassiveProp.setName("KshapePassive");
-	_kShapePassiveProp.setComment("exponential shape factor for passive force-length relationship");
 	_kShapePassiveProp.setValue(4.0);
+	_kShapePassiveProp.setComment("exponential shape factor for passive force-length relationship");
 	_propertySet.append(&_kShapePassiveProp, "Parameters");
 
 	_dampingProp.setName("damping");
-	_dampingProp.setComment("passive damping in the force-velocity relationship");
 	_dampingProp.setValue(0.05);
+	_dampingProp.setComment("passive damping in the force-velocity relationship");
 	_propertySet.append(&_dampingProp, "Parameters");
 
 	_afProp.setName("Af");
-	_afProp.setComment("force-velocity shape factor");
 	_afProp.setValue(0.3);
+	_afProp.setComment("force-velocity shape factor");
 	_propertySet.append(&_afProp, "Parameters");
 
 	_flenProp.setName("Flen");
-	_flenProp.setComment("maximum normalized lengthening force");
 	_flenProp.setValue(1.8);
+	_flenProp.setComment("maximum normalized lengthening force");
 	_propertySet.append(&_flenProp, "Parameters");
 }
 

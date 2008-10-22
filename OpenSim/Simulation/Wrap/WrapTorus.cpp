@@ -135,6 +135,41 @@ void WrapTorus::setupProperties()
 
 //_____________________________________________________________________________
 /**
+ * Scale the torus's dimensions. The base class scales the origin
+ * of the torus in the body's reference frame.
+ *
+ * @param aScaleFactors The XYZ scale factors.
+ */
+void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
+{
+   // Base class, to scale origin in body frame
+   AbstractWrapObject::scale(aScaleFactors);
+
+   double orientation[3][3];
+   _pose.getOrientation(orientation);
+
+   SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
+
+   // orientation[0][*] holds the torus's X axis expressed in the
+   // body's reference frame. orientation[1][*] holds the Y, and
+   // orientation[2][*] holds the Z. Multiplying these vectors by
+   // the scale factor vector gives localScaleVector[]. The magnitudes
+   // of the localScaleVectors gives the amount to scale the torus
+   // in the XYZ dimensions. The wrap torus is oriented along
+   // the Z axis, so the inner and outer radii are scaled by the
+   // average of the X and Y scale factors.
+   for (int i=0; i<2; i++) {
+      localScaleVector[i][0] = orientation[i][0] * aScaleFactors[0];
+      localScaleVector[i][1] = orientation[i][1] * aScaleFactors[1];
+      localScaleVector[i][2] = orientation[i][2] * aScaleFactors[2];
+   }
+   double averageXYScale = (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
+   _innerRadius *= averageXYScale;
+   _outerRadius *= averageXYScale;
+}
+
+//_____________________________________________________________________________
+/**
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *

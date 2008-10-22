@@ -269,7 +269,7 @@ int StepFunction::getSize() const
  */
 double StepFunction::getMinX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.get(0));
 }
 //_____________________________________________________________________________
@@ -280,7 +280,7 @@ double StepFunction::getMinX() const
  */
 double StepFunction::getMaxX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.getLast());
 }
 
@@ -382,10 +382,10 @@ void StepFunction::updateBoundingBox()
 /**
  * Evaluates function or its (partial) derivatives
  */
-double StepFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ)
+double StepFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ) const
 {
 	if (aDerivOrder < 0)
-		return rdMath::NAN;
+		return rdMath::getNAN();
 	if (aDerivOrder > 0)
 		return 0.0;
 
@@ -417,7 +417,7 @@ double StepFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ)
  * Evaluates total first derivative
  */
 double StepFunction::
-evaluateTotalFirstDerivative(double aX,double aDxdt)
+evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
 	return 0.0;
 }
@@ -426,7 +426,7 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
  * Evaluates total second derivative
  */
 double StepFunction::
-evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
+evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
 	return 0.0;
 }
@@ -539,4 +539,8 @@ Array<XYPoint>* StepFunction::renderAsLineSegments(int aIndex)
 	xyPts->append(XYPoint(_x[aIndex+1], _y[aIndex+1]));
 
 	return xyPts;
+}
+
+const SimTK::Function<1>* StepFunction::createSimTKFunction() const {
+    return new FunctionAdapter(*this, 1);
 }

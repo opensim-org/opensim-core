@@ -113,8 +113,8 @@ public:
 	SdfastJoint& operator=(const SdfastJoint &aJoint);
 	void copyData(const SdfastJoint &aJoint);
 
-	virtual DofSet* getDofSet() const { return NULL; }
-	virtual SdfastBody* getChildBody() const { return _childBody; }
+	virtual TransformAxisSet* getTransformAxisSet() const { return NULL; }
+	virtual SdfastBody* getBody() const { return _childBody; }
 	virtual SdfastBody* getParentBody() const { return _parentBody; }
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
 	virtual void getLocationInParent(SimTK::Vec3& rLocation) const;

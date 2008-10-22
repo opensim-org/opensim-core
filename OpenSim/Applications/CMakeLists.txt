@@ -1,1 +1,2 @@
-SUBDIRS(Analyze Forward Perturb Scale IK MakeSDFastModel testSdfast CMC Gui)
+SUBDIRS(Analyze Forward Perturb Scale IK CMC Gui) #Remove MakeSDFastModel testSdfast 
+

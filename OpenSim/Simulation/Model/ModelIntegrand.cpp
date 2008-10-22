@@ -421,6 +421,47 @@ compute(double t,double y[],double dydt[])
 	for(int i=0;i<ny;i++) dydt[i] *= tnorm;
 }
 
+//____________________________________________________________________________
+/**
+ * Compute the state derivatives for an Model (dydt).
+ *
+ * @param t Current time.
+ * @param y State vector (size = getSize()).
+ * @param dydt ModelIntegrand-- the time derivative of the
+ * state vector (size = getSize()).
+ */
+void ModelIntegrand::
+computeDirectControl(double x[],double t,double y[],double dydt[])
+{
+	// GET CONTROLS
+	int nx = _model->getNumControls();
+	for (int i=0;i<nx;i++) _x[i]=x[i];
+	
+	// TIME, CONTROLS, STATES
+	_model->set(t,&_x[0],y);
+	_model->getDerivCallbackSet()->set(t,&_x[0],y);
+
+	// ACTUATION
+	_model->getActuatorSet()->computeActuation();
+	_model->getDerivCallbackSet()->computeActuation(t,&_x[0],y);
+	_model->getActuatorSet()->apply();
+	_model->getDerivCallbackSet()->applyActuation(t,&_x[0],y);
+
+	// CONTACT
+	_model->getContactSet()->computeContact();
+	_model->getDerivCallbackSet()->computeContact(t,&_x[0],y);
+	_model->getContactSet()->apply();
+	_model->getDerivCallbackSet()->applyContact(t,&_x[0],y);
+
+	// DERIVATIVES
+	_model->computeDerivatives(dydt);
+	_model->getDerivCallbackSet()->computeDerivatives(t,&_x[0],y,dydt);
+
+	// NORMALIZE
+	double tnorm = _model->getTimeNormConstant();
+	int ny = _model->getNumStates();
+	for(int i=0;i<ny;i++) dydt[i] *= tnorm;
+}
 
 //=============================================================================
 // HOOKS
@@ -447,10 +488,10 @@ initialize(int step,double &dt,double ti,double tf,double y[])
 	int ny = _model->getNumStates();
 	int nyp = _model->getNumPseudoStates();
 
-		// SET
+	// SET
 	_model->setTime(_ti);
 	_model->setStates(y);
-
+	
 	// INITIAL CONTROLS
 	if(_controller!=NULL) {
 		_controller->computeControls(dt,_ti,y,*_controlSet);

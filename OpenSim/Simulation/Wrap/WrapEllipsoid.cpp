@@ -160,6 +160,35 @@ void WrapEllipsoid::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 
 //_____________________________________________________________________________
 /**
+ * Scale the ellipsoid's dimensions. The base class scales the origin
+ * of the ellipsoid in the body's reference frame.
+ *
+ * @param aScaleFactors The XYZ scale factors.
+ */
+void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
+{
+   // Base class, to scale origin in body frame
+   AbstractWrapObject::scale(aScaleFactors);
+
+   double orientation[3][3];
+   _pose.getOrientation(orientation);
+
+   SimTK::Vec3 localScaleVector;
+
+   // orientation[0][*] holds the ellipsoid's X axis expressed in the
+   // body's reference frame. The magnitude of this-vector-multiplied-
+   // by-the-XYZ-scale-factors gives the amount that you need to
+   // scale the X dimension of the ellipsoid. Similarly for Y and Z...
+   for (int i=0; i<3; i++) {
+      localScaleVector[0] = orientation[i][0] * aScaleFactors[0];
+      localScaleVector[1] = orientation[i][1] * aScaleFactors[1];
+      localScaleVector[2] = orientation[i][2] * aScaleFactors[2];
+      _dimensions[i] *= localScaleVector.norm();
+   }
+}
+
+//_____________________________________________________________________________
+/**
 * Copy data members from one WrapEllipsoid to another.
 *
 * @param aWrapEllipsoid WrapEllipsoid to be copied.

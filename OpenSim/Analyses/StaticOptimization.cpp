@@ -272,34 +272,16 @@ setModel(Model *aModel)
 		SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
 		for(int i=0; i<speedSet->getSize(); i++) {
 			AbstractCoordinate *coord = speedSet->get(i)->getCoordinate();
-			if(!coord->getLocked() && !coord->getConstrained()) {
+			if(!coord->getLocked() && !coord->isConstrained()) {
 				_accelerationIndices.append(i);
 			}
 		}
-
-		_dydt.setSize(_model->getNumCoordinates() + _model->getNumSpeeds());
 
 		int na = _actuatorSet->getSize();
 		int nacc = _accelerationIndices.getSize();
 
 		if(na < nacc) 
 			throw(Exception("StaticOptimization: ERROR- overconstrained system -- need at least as many actuators as there are degrees of freedom.\n"));
-
-		_constraintMatrix.resize(nacc,na);
-		_constraintVector.resize(nacc);
-
-		_performanceMatrix.resize(na,na);
-		_performanceMatrix = 0;
-		for(int i=0; i<na; i++) {
-			_actuatorSet->get(i)->setForce(1);
-			_performanceMatrix(i,i) = _actuatorSet->get(i)->getStress();
-		}
-
-		_performanceVector.resize(na);
-		_performanceVector = 0;
-
-		int lwork = na + na + nacc;
-		_lapackWork.resize(lwork);
 
 		_parameters.resize(na);
 		_parameters = 0;
@@ -411,37 +393,6 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 
 	// Parameter bounds
 	SimTK::Vector lowerBounds(na), upperBounds(na);
-	//for(int i=0; i<na; i++) {
-	//	if(_actuatorSet->get(i)->getType()=="Thelen2003Muscle") {
-	//		// Note:  Using Thelen2003Muscle here, but getMaxIsometricForce() could be in AbstractMuscle??
-	//		Thelen2003Muscle *aMuscle = dynamic_cast<Thelen2003Muscle*>(_actuatorSet->get(i));
-	//		lowerBounds(i) = 0;
-	//		upperBounds(i) = aMuscle->getMaxIsometricForce();
-	//	} else if(_actuatorSet->get(i)->getType()=="Schutte1993Muscle") {
-	//		// Note:  Using Schutte1993Muscle here, but getMaxIsometricForce() could be in AbstractMuscle??
-	//		Schutte1993Muscle *aMuscle = dynamic_cast<Schutte1993Muscle*>(_actuatorSet->get(i));
-	//		lowerBounds(i) = 0;
-	//		upperBounds(i) = aMuscle->getMaxIsometricForce();
-	//	} else if(_actuatorSet->get(i)->getType()=="GeneralizedForce") { 
-	//		// Note:  Using GeneralizedForce here, but getMinForce() and getMaxForce() could be in AbstractActuator??
-	//		GeneralizedForce *aGeneralizedForce = dynamic_cast<GeneralizedForce*>(_actuatorSet->get(i));
-	//		lowerBounds(i) = aGeneralizedForce->getMinForce();
-	//		upperBounds(i) = aGeneralizedForce->getMaxForce();
-	//	} else if(_actuatorSet->get(i)->getType()=="Force") { 
-	//		// Note:  Using Force here, but getMinForce() and getMaxForce() could be in AbstractActuator??
-	//		Force *aForce = dynamic_cast<Force*>(_actuatorSet->get(i));
-	//		lowerBounds(i) = aForce->getMinForce();
-	//		upperBounds(i) = aForce->getMaxForce();
-	//	//} else if(_actuatorSet->get(i)->getType()=="Torque") { 
-	//	//	// Note:  Using Torque here, but getMinForce() and getMaxForce() could be in AbstractActuator??
-	//	//	OpenSim::Torque *aTorque = dynamic_cast<OpenSim::Torque*>(_actuatorSet->get(i));
-	//	//	lowerBounds(i) = aTorque->getMinForce();
-	//	//	upperBounds(i) = aTorque->getMaxForce();
-	//	} else {
-	//		lowerBounds(i) = -10000;
-	//		upperBounds(i) = 10000;
-	//	}
-	//}
 	AbstractActuator *act;
 	AbstractMuscle *mus;
 	for(int a=0;a<na;a++) {
@@ -476,26 +427,74 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 		cout << ex.getMessage() << endl;
 		cout << "OPTIMIZATION FAILED..." << endl;
 		cout << endl;
-		cout << "StaticOptimization.record:  WARN- The optimizer could not find " << "a solution at time = " << aT << endl;
-		cout << "Starting at a slightly different initial time may help." << endl;
-		cout << "Try increasing the strength of the following actuator(s):" << endl;
+		cout << "StaticOptimization.record:  WARN- The optimizer could not find a solution at time = " << aT << endl;
+		cout << endl;
+
 		AbstractActuator *act;
 		AbstractMuscle *mus;
-		double tol = 1e-6;
+		double tolBounds = 1e-1;
+		bool weakModel = false;
+		string msgWeak = "The model appears too weak for static optimization.\nTry increasing the strength and/or range of the following actuator(s):\n";
 		for(int a=0;a<na;a++) {
 			act = _actuatorSet->get(a);
 			mus = dynamic_cast<AbstractMuscle*>(act);
 			if(mus==NULL) {
-				if(_parameters(a) < (lowerBounds(a)+tol) || _parameters(a) > (upperBounds(a)-tol)) {
-					cout << act->getName() << endl;
-				}
+				if(_parameters(a) < (lowerBounds(a)+tolBounds)) {
+					msgWeak += "   ";
+					msgWeak += act->getName();
+					msgWeak += " approaching lower bound of ";
+					ostringstream oLower;
+					oLower << lowerBounds(a);
+					msgWeak += oLower.str();
+					msgWeak += "\n";
+					weakModel = true;
+				} else if(_parameters(a) > (upperBounds(a)-tolBounds)) {
+					msgWeak += "   ";
+					msgWeak += act->getName();
+					msgWeak += " approaching upper bound of ";
+					ostringstream oUpper;
+					oUpper << upperBounds(a);
+					msgWeak += oUpper.str();
+					msgWeak += "\n";
+					weakModel = true;
+				} 
 			} else {
-				if(_parameters(a) > (upperBounds(a)-tol)) {
-					cout << mus->getName() << endl;
+				if(_parameters(a) > (upperBounds(a)-tolBounds)) {
+					msgWeak += "   ";
+					msgWeak += mus->getName();
+					msgWeak += " approaching upper bound of ";
+					ostringstream o;
+					o << upperBounds(a);
+					msgWeak += o.str();
+					msgWeak += "\n";
+					weakModel = true;
 				}
 			}
 		}
-		cout << endl;
+		if(weakModel) cout << msgWeak << endl;
+
+		if(!weakModel) {
+			double tolConstraints = 1e-6;
+			bool incompleteModel = false;
+			string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional actuator(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
+			SimTK::Vector constraints;
+			target.constraintFunc(_parameters,true,constraints);
+			SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
+			for(int acc=0;acc<nacc;acc++) {
+				if(fabs(constraints(acc)) > tolConstraints) {
+					AbstractCoordinate *coord = speedSet->get(_accelerationIndices[acc])->getCoordinate();
+					msgIncomplete += "   ";
+					msgIncomplete += coord->getName();
+					msgIncomplete += ": constraint violation = ";
+					ostringstream o;
+					o << constraints(acc);
+					msgIncomplete += o.str();
+					msgIncomplete += "\n";
+					incompleteModel = true;
+				}
+			}
+			if(incompleteModel) cout << msgIncomplete << endl;
+		}
 	}
 
 	//QueryPerformanceCounter(&stop);

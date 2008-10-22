@@ -568,11 +568,11 @@ record(double aT,double *aX,double *aY)
 		}
 		if(fabs(totContactForce[1])>rdMath::ZERO) {
 			resultantForcePoint[0] = totContactTorque[2]/totContactForce[1];
-			resultantForcePoint[1] = rdMath::NAN;
+			resultantForcePoint[1] = rdMath::getNAN();
 			resultantForcePoint[2] = -totContactTorque[0]/totContactForce[1];
 		} else {
 			for(j=0;j<3;j++){
-				resultantForcePoint[j] = rdMath::NAN;
+				resultantForcePoint[j] = rdMath::getNAN();
 			}
 		}
 		for(j=0;j<3;j++){

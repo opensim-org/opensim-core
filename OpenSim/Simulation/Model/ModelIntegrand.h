@@ -151,6 +151,7 @@ public:
 	// COMPUTATION
 	//--------------------------------------------------------------------------
 	virtual void compute(double t,double y[],double dydt[]);
+	virtual void computeDirectControl(double x[],double t,double y[],double dydt[]);
 
 	//--------------------------------------------------------------------------
 	// HOOKS

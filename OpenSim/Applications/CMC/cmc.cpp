@@ -52,7 +52,7 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 	
-	LoadOpenSimLibrary("osimSdfastEngine");
+	//LoadOpenSimLibrary("osimSdfastEngine");
 	LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE

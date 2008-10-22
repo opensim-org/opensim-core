@@ -96,7 +96,7 @@ StaticOptimizationTarget(Model *aModel,int aNP,int aNC,double aT,double *aX,doub
 	SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
 	for(int i=0; i<speedSet->getSize(); i++) {
 		AbstractCoordinate *coord = speedSet->get(i)->getCoordinate();
-		if(!coord->getLocked() && !coord->getConstrained()) {
+		if(!coord->getLocked() && !coord->isConstrained()) {
 			_accelerationIndices.append(i);
 		}
 	}

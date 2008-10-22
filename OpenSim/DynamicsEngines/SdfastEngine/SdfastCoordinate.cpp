@@ -67,7 +67,7 @@ SdfastCoordinate::SdfastCoordinate() :
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
+	_motionType(AbstractTransformAxis::Rotational),
 	_index(_indexProp.getValueInt()),
 	_joint(_jointProp.getValueInt()),
 	_axis(_axisProp.getValueInt()),
@@ -109,7 +109,7 @@ SdfastCoordinate::SdfastCoordinate(const SdfastCoordinate &aCoordinate) :
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
+	_motionType(AbstractTransformAxis::Rotational),
 	_index(_indexProp.getValueInt()),
 	_joint(_jointProp.getValueInt()),
 	_axis(_axisProp.getValueInt()),
@@ -144,7 +144,7 @@ SdfastCoordinate::SdfastCoordinate(const AbstractCoordinate &aCoordinate) :
 	_constraintIndependentCoordinateName(_constraintIndependentCoordinateNameProp.getValueStr()),
 	_constraintNumber(_constraintNumberProp.getValueInt()),
 	_constraintFunction(_constraintFunctionProp.getValueObjPtrRef()),
-	_motionType(AbstractDof::Rotational),
+	_motionType(AbstractTransformAxis::Rotational),
 	_index(_indexProp.getValueInt()),
 	_joint(_jointProp.getValueInt()),
 	_axis(_axisProp.getValueInt()),
@@ -423,9 +423,9 @@ void SdfastCoordinate::determineType()
 	_SdfastEngine->_sdjnt(getJointIndex(), info, slider);
 
 	if (slider[getAxisIndex()] == 0)
-		_motionType = AbstractDof::Rotational;
+		_motionType = AbstractTransformAxis::Rotational;
 	else
-		_motionType = AbstractDof::Translational;
+		_motionType = AbstractTransformAxis::Translational;
 }
 
 //_____________________________________________________________________________

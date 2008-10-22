@@ -34,7 +34,7 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractDof.h"
+#include "AbstractTransformAxis.h"
 
 namespace OpenSim {
 
@@ -76,13 +76,13 @@ public:
 #endif
    void copyData(const AbstractCoordinate &aCoordinate);
 
-	virtual AbstractDynamicsEngine* getDynamicsEngine() { return _dynamicsEngine; }
-   virtual void setup(AbstractDynamicsEngine* aEngine);
+	virtual AbstractDynamicsEngine* getDynamicsEngine() const { return _dynamicsEngine; }
+	virtual void setup(AbstractDynamicsEngine* aEngine);
 
 	virtual void updateFromCoordinate(const AbstractCoordinate &aCoordinate) = 0;
 	virtual double getValue() const  = 0;
 	virtual bool setValue(double aValue) = 0;
-	virtual bool setValue(double aValue, bool aRealize) { return setValue(aValue); }
+	virtual bool setValue(double aValue, bool enforceConstraints) { return setValue(aValue); }
 	virtual bool getValueUseDefault() const = 0;
 	virtual void getRange(double rRange[2]) const = 0;
 	virtual bool setRange(double aRange[2]) = 0;
@@ -113,9 +113,15 @@ public:
 	virtual Function* getRestraintFunction() const { return NULL; }
 	virtual Function* getMinRestraintFunction() const { return NULL; }
 	virtual Function* getMaxRestraintFunction() const { return NULL; }
-	virtual AbstractDof::DofType getMotionType() const = 0;
+	virtual Function* getPrescribedFunction() const { return NULL; }
+	virtual AbstractTransformAxis::MotionType getMotionType() const = 0;
 	virtual void determineType() = 0;
-	virtual bool getConstrained() const { return false; }
+	virtual bool isConstrained() const { return false; }
+	virtual bool isPrescribed() const {return false;}
+	virtual void getKeys(std::string rKeys[]) const = 0;
+	virtual const Array<std::string>& getKeys() const = 0;
+
+	OPENSIM_DECLARE_DERIVED(AbstractCoordinate, Object);
 
 private:
 	void setNull(void);

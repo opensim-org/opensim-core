@@ -278,7 +278,7 @@ int NatCubicSpline::getSize() const
  */
 double NatCubicSpline::getMinX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.get(0));
 }
 //_____________________________________________________________________________
@@ -289,7 +289,7 @@ double NatCubicSpline::getMinX() const
  */
 double NatCubicSpline::getMaxX() const
 {
-	if(getSize()<=0) return(rdMath::NAN);
+	if(getSize()<=0) return(rdMath::getNAN());
 	return(_x.getLast());
 }
 
@@ -489,7 +489,7 @@ void NatCubicSpline::calcCoefficients()
 /**
  * Evaluates function or its (partial) derivatives
  */
-double NatCubicSpline::evaluate(int aDerivOrder, double aX, double aY, double aZ)
+double NatCubicSpline::evaluate(int aDerivOrder, double aX, double aY, double aZ) const
 {
 	// pass 0 for acceleration so that if we're computing the second derivative we get the proper partial derivative
 	return evaluate(aX, 1.0, 0.0, aDerivOrder); 
@@ -499,7 +499,7 @@ double NatCubicSpline::evaluate(int aDerivOrder, double aX, double aY, double aZ
  * Evaluates total first derivative
  */
 double NatCubicSpline::
-evaluateTotalFirstDerivative(double aX,double aDxdt)
+evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
 	return evaluate(aX, aDxdt, 0.0, 1);
 }
@@ -508,7 +508,7 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
  * Evaluates total second derivative
  */
 double NatCubicSpline::
-evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
+evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
 	return evaluate(aX, aDxdt, aD2xdt2, 2);
 }
@@ -521,14 +521,14 @@ evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
  *
  */
 double NatCubicSpline::evaluate(double aX, double velocity,
-												double acceleration, int aDerivOrder)
+												double acceleration, int aDerivOrder) const
 {
 	// NOT A NUMBER
-	if(!_y.getSize()) return(rdMath::NAN);
-	if(!_b.getSize()) return(rdMath::NAN);
-	if(!_c.getSize()) return(rdMath::NAN);
-	if(!_d.getSize()) return(rdMath::NAN);
-	if(aDerivOrder<0) return(rdMath::NAN);
+	if(!_y.getSize()) return(rdMath::getNAN());
+	if(!_b.getSize()) return(rdMath::getNAN());
+	if(!_c.getSize()) return(rdMath::getNAN());
+	if(!_d.getSize()) return(rdMath::getNAN());
+	if(aDerivOrder<0) return(rdMath::getNAN());
 
    int i, j, k;
    double dx;
@@ -624,7 +624,7 @@ double NatCubicSpline::evaluate(double aX, double velocity,
       return (_b[k] + dx*(2.0*_c[k] + 3.0*dx*_d[k]))*acceleration +
 	      (2.0*_c[k] + 6.0*dx*_d[k])*velocity*velocity;
 
-   return rdMath::NAN;
+   return rdMath::getNAN();
 
 }
 
@@ -747,4 +747,8 @@ Array<XYPoint>* NatCubicSpline::renderAsLineSegments(int aIndex)
 	xyPts->append(XYPoint(_x[aIndex + 1], evaluate(0, _x[aIndex + 1], 0.0, 0.0)));
 
 	return xyPts;
+}
+
+const SimTK::Function<1>* NatCubicSpline::createSimTKFunction() const {
+    return new FunctionAdapter(*this, 1);
 }

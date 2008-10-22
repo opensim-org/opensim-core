@@ -28,7 +28,11 @@
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/SimmFileWriter.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace std;
@@ -41,19 +45,20 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  * Program to read an xml file for an openSim Model and generate
  * SDFast corresponding code.
  *
- * @param argc Number of command line arguments (should be 2 or more).
- * @param argv Command line arguments:  mkModel -IM inFile and at least one of [-SD SdfastFile] [-OM SimulationModelFile] [-D OutputDirectory]
+ * @param argc Number of command line arguments (should be 4 or more).
+ * @param argv Command line arguments:  openSimToSimm -x xml_in -j joints_out [ -m muscles_out ]
  */
 int main(int argc,char **argv)
 {
 	std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
-	LoadOpenSimLibrary("osimActuators");
 
-		Model model("SeparateLegs.osim");
-		model.setup();
+   Object::RegisterType(SimbodyEngine());
+	SimbodyEngine::registerTypes();
+   Object::RegisterType(SimmKinematicsEngine());
+	SimmKinematicsEngine::registerTypes();
+	Object::RegisterType(Schutte1993Muscle());
+	Object::RegisterType(Thelen2003Muscle());
 
-		model.clearXMLStructures();
-		model.print("New_SeparateLegs.osim");
 	// PARSE COMMAND LINE
 	string inName = "";
 	string jntName = "";
@@ -79,11 +84,9 @@ int main(int argc,char **argv)
 	}
 
 	try {
-		Model model("SeparateLegs.osim");
+		Model model(inName);
 		model.setup();
 
-		model.clearXMLStructures();
-		model.print("New_"+inName);
 		SimmFileWriter sfw(&model);
 		if(jntName!="") sfw.writeJointFile(jntName);
 		if(mslName!="") sfw.writeMuscleFile(mslName);

@@ -40,7 +40,7 @@
 
 namespace OpenSim {
 
-class DofSet;
+class TransformAxisSet;
 class AbstractBody;
 class AbstractCoordinate;
 class AbstractDynamicsEngine;
@@ -86,8 +86,8 @@ public:
 
 	virtual void invalidate() { _transformsValid = false; }
 
-	virtual DofSet* getDofSet() const { return NULL; }
-	virtual AbstractBody* getChildBody() const = 0;
+	virtual TransformAxisSet* getTransformAxisSet() const { return NULL; }
+	virtual AbstractBody* getBody() const = 0;
 	virtual AbstractBody* getParentBody() const = 0;
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation) = 0;
 	virtual void getLocationInParent(SimTK::Vec3& rLocation) const = 0;

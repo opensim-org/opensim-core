@@ -31,7 +31,7 @@
 //=============================================================================
 #include "MarkerPlacer.h"
 #include "IKTrial.h"
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/SimmFileWriter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Common/MarkerData.h>
@@ -321,7 +321,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
 		if (!_outputModelFileNameProp.getUseDefault())
 		{
-			aModel->print(aPathToSubject + _outputModelFileName);
+			aModel->copy()->print(aPathToSubject + _outputModelFileName);
 			cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 		}
 

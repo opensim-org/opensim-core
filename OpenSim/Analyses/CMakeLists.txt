@@ -31,11 +31,11 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
+LINK_LIBRARIES( SimTKlapack
+				debug osimCommon_d optimized osimCommon
 				debug osimSimulation_d optimized osimSimulation
 				debug SimTKcommon_d optimized SimTKcommon
-				debug SimTKmath_d optimized SimTKmath
-				debug SimTKlapack optimized SimTKlapack)
+				debug SimTKmath_d optimized SimTKmath)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
@@ -44,7 +44,5 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    PROJECT_LABEL "Libraries - osim${KIT}"
 )
 
-INSTALL_TARGETS(/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
-IF(INSTALL_HEADERS)
-INSTALL_FILES(/include/OpenSim/${KIT} .h ${INCLUDE_FILES})
-ENDIF(INSTALL_HEADERS)
+INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+INSTALL_FILES(/sdk/include/OpenSim/${KIT} .h ${INCLUDE_FILES})

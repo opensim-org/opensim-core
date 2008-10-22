@@ -588,7 +588,7 @@ void SdfastJoint::scale(const ScaleSet& aScaleSet)
 
 
 	// SCALING TO DO WITH THE CHILD BODY -----
-	const string& childName = getChildBody()->getName();
+	const string& childName = getBody()->getName();
 	// Get scale factors
 	for (int i=0; i<aScaleSet.getSize(); i++) {
 		Scale *scale = aScaleSet.get(i);

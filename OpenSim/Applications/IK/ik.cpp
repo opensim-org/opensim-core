@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 
 	//TODO: put these options on the command line
 	LoadOpenSimLibrary("osimSimbodyEngine");
-	LoadOpenSimLibrary("osimSimmKinematicsEngine");
+	//LoadOpenSimLibrary("osimSimmKinematicsEngine");
 
 	// REGISTER TYPES
 	IKTool::registerTypes();
@@ -143,7 +143,6 @@ int main(int argc,char **argv)
 		exit(-1);
 	}
 	model->printBasicInfo(cout);
-
 	// RUN
 	ik.run();
 

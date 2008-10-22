@@ -43,6 +43,7 @@
 using namespace OpenSim;
 using namespace std;
 
+template class OSIMCOMMON_API OpenSim::Set<OpenSim::Function>;
 
 //=============================================================================
 // STATICS
@@ -390,14 +391,14 @@ updateSetBoundingBox()
  * @param aY Value of the y independent variable.
  * @param aZ Value of the z independent variable.
  * @return Value of the function.  If the function is NULL or undefined,
- * rdMath::NAN is returned.
+ * rdMath::getNAN() is returned.
  * @see Function
  */
 double FunctionSet::
 evaluate(int aIndex,int aDerivOrder,double aX,double aY,double aZ) const
 {
 	Function *func = get(aIndex);
-	if(func==NULL) return(rdMath::NAN);
+	if(func==NULL) return(rdMath::getNAN());
 
 	return( func->evaluate(aDerivOrder,aX,aY,aZ) );
 }
@@ -412,7 +413,7 @@ evaluate(int aIndex,int aDerivOrder,double aX,double aY,double aZ) const
  * @param aY Value of the y independent variable.
  * @param aZ Value of the z independent variable.
  * @return Value of the function.  If the function is NULL or undefined,
- * rdMath::NAN is returned.
+ * rdMath::getNAN() is returned.
  * @see Function
  */
 void FunctionSet::
@@ -426,7 +427,7 @@ evaluate(Array<double> &rValues,int aDerivOrder,double aX,double aY,double aZ) c
 	for(i=0;i<size;i++) {
 		func = get(i);
 		if(func==NULL) {
-			rValues[i] = rdMath::NAN;
+			rValues[i] = rdMath::getNAN();
 		} else {
 			rValues[i] = func->evaluate(aDerivOrder,aX,aY,aZ);
 		}

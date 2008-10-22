@@ -629,7 +629,7 @@ double SimmMotionData::getValue(const string& aName, int aFrameIndex)
 			return _rows[aFrameIndex][i];
 	}
 
-	return rdMath::NAN;
+	return rdMath::getNAN();
 }
 //_____________________________________________________________________________
 /**

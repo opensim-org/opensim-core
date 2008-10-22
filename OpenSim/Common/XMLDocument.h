@@ -68,7 +68,8 @@ class OSIMCOMMON_API XMLDocument {
 public:
 	static const XMLCh UTF8[];
 	static const XMLCh VERSION[];
-
+	/** Latest version of the code encoded as an int xxyyzz where x: major release, y: minor, z: patch */
+	static const int LatestVersion;
 private:
 	/** XML parser. */
 	XercesDOMParser *_parser;
@@ -76,6 +77,8 @@ private:
 	DOMDocument *_document;
 	/** Name of the XML Document */
 	std::string _fileName;
+	/** Document Version as written to the file */
+	int _documentVersion;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -87,7 +90,15 @@ public:
 	XMLDocument();
 	XMLDocument(const std::string &aFileName);
 	XMLDocument(const XMLDocument &aDocument);
+	//--------------------------------------------------------------------------
+	// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
+	//--------------------------------------------------------------------------	
+	static const int& getLatestVersion() { return LatestVersion; };
+	const int& getDocumentVersion() const { return _documentVersion; };
+	static void getVersionAsString(const int aVersion, std::string& aString); 
+	DOMElement* getRootDataElement();
 private:
+	void updateDocumentVersion();
 	void setNull();
 
 public:
@@ -101,6 +112,7 @@ public:
 	// IO
 	//--------------------------------------------------------------------------
 	bool print(const std::string &aFileName=NULL);
+
 private:
 	static void CreateFormatter(std::ostream *aOstream=&std::cout);
 	void printDeclaration();

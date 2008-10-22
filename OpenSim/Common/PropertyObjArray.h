@@ -109,6 +109,26 @@ public:
 	ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
 	const ArrayPtrs<T>& getValueObjArray() const { return _array; }
+	virtual bool operator==(const Property &aProperty) const {
+		// base class
+		bool equal=(Property::operator ==(aProperty));
+		if (equal) {
+			PropertyObjArray& other = ((PropertyObjArray&)aProperty);
+			if (_array.getSize()>0 && other._array.getSize()>0){	
+				if (_array.getSize()==other._array.getSize()){
+					for(int i=0; i<_array.getSize() && equal; i++){
+						equal = (*(_array.get(i)))==(*(other._array.get(i)));
+					}
+					return equal;
+				}
+				else
+					return false;
+			}
+			else 
+				return ((_array.getSize()==0) && (other._array.getSize()==0));
+		}
+		return equal;
+	}
 #endif
 
 //=============================================================================

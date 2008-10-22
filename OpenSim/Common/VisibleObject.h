@@ -68,7 +68,6 @@ class OSIMCOMMON_API VisibleObject: public Object
 //=============================================================================
 // DATA
 //=============================================================================
-public:
 private:
 	// PROPERTIES
 	/** Name of geometry file name(s) */

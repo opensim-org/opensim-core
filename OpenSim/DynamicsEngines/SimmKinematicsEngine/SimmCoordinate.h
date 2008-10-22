@@ -44,10 +44,10 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
 
 namespace OpenSim {
 
-class AbstractDof;
 class AbstractJoint;
 class SimmPath;
 class AbstractDynamicsEngine;
@@ -105,7 +105,7 @@ protected:
 	Array<AbstractJoint*> _jointList; // list of joints that use this coordinate
 	Array<SimmPath*> _pathList; // list of paths that use this coordinate
 
-	AbstractDof::DofType _motionType; // rotational or translational (based on the DOFs it's used in)
+	AbstractTransformAxis::MotionType _motionType; // rotational or translational (based on the DOFs it's used in)
 
 //=============================================================================
 // METHODS
@@ -159,10 +159,10 @@ public:
 	virtual Function* getRestraintFunction() const;
 	virtual Function* getMinRestraintFunction() const;
 	virtual Function* getMaxRestraintFunction() const;
-	virtual AbstractDof::DofType getMotionType() const { return _motionType; }
+	virtual AbstractTransformAxis::MotionType getMotionType() const { return _motionType; }
 
-	void getKeys(std::string rKeys[]) const;
-	const Array<std::string>& getKeys() const { return _keys; }
+	virtual void getKeys(std::string rKeys[]) const;
+	virtual const Array<std::string>& getKeys() const { return _keys; }
 	const Array<AbstractJoint*>& getJointList() const { return _jointList; }
 	void clearJointList() { _jointList.setSize(0); }
 	const Array<SimmPath*>& getPathList() const { return _pathList; }

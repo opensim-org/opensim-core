@@ -52,8 +52,6 @@ namespace OpenSim {
 
 class OSIMCOMMON_API PropertyStr : public Property
 {
-	static const std::string DefaultValue;
-
 //=============================================================================
 // DATA
 //=============================================================================
@@ -99,10 +97,10 @@ public:
 	virtual const std::string &toString();
 
 	// Special method to reset the value
-	void clearValue() { _value = DefaultValue; setUseDefault(true); }
-	static const std::string& getDefaultStr() { return DefaultValue; }
+	void clearValue() { _value = getDefaultStr(); setUseDefault(true); }
+	static const std::string& getDefaultStr();
 
-	bool isValidFileName() { return _value!="" && _value!=DefaultValue; }
+	bool isValidFileName() { return _value!="" && _value!=getDefaultStr(); }
 
 //=============================================================================
 };	// END of class PropertyStr

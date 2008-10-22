@@ -979,13 +979,13 @@ getVelocityError(int aWhich) const
  * values returned by this method to be valid.
  *
  * @param aWhich Specifies which track goal (0, 1, or 2).
- * @return Desired acceleration.  rdMath::NAN is returned on an error.
+ * @return Desired acceleration.  rdMath::getNAN() is returned on an error.
  */
 double rdCMC_Task::
 getDesiredAcceleration(int aWhich) const
 {
-	if(aWhich<0) return(rdMath::NAN);
-	if(aWhich>2) return(rdMath::NAN);
+	if(aWhich<0) return(rdMath::getNAN());
+	if(aWhich>2) return(rdMath::getNAN());
 	return(_aDes[aWhich]);
 }
 
@@ -1004,13 +1004,13 @@ getDesiredAcceleration(int aWhich) const
  * computeAccelerations() must be called first.
  *
  * @param aWhich Specifies which track goal (0, 1, or 2).
- * @return Acceleration.  rdMath::NAN is returned on an error.
+ * @return Acceleration.  rdMath::getNAN() is returned on an error.
  */
 double rdCMC_Task::
 getAcceleration(int aWhich) const
 {
-	if(aWhich<0) return(rdMath::NAN);
-	if(aWhich>2) return(rdMath::NAN);
+	if(aWhich<0) return(rdMath::getNAN());
+	if(aWhich>2) return(rdMath::getNAN());
 	return(_a[aWhich]);
 }
 

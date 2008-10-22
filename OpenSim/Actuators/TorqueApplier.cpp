@@ -100,10 +100,13 @@ TorqueApplier(Model *aModel,AbstractBody *aBody) :
  * @param txNum Column index of applied torque's x coordinate in storage object.
  * @param tyNum Column index of applied torque's y coordinate in storage object.
  * @param tzNum Column index of applied torque's z coordinate in storage object.
+ * @param firstTime is the first time at which the applier will be evaluated.
+ * @param lastTime is the last time at which the applier will be evaluated.
  */
 TorqueApplier::
 TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage *torqueData,
-              int txNum, int tyNum, int tzNum) :
+              int txNum, int tyNum, int tzNum,
+			  double firstTime, double lastTime) :
 	DerivCallback(aModel)
 {
 	setNull();
@@ -118,6 +121,8 @@ TorqueApplier(Model *aModel,AbstractBody *bodyFrom,AbstractBody *bodyTo, Storage
 	constructDescription();
 	constructColumnLabels();
 
+	_startTime = firstTime;
+	_endTime = lastTime;
 	// COMPUTE TORQUE FUNCTION
 	double *t=0,*x=0,*y=0,*z=0;
 	int torqueSize = torqueData->getSize();
@@ -433,10 +438,10 @@ applyActuation(double aT,double *aX,double *aY)
 			setTorque(torque);
 		}
 	
-		if(_inputTorquesInGlobalFrame == false){
-			_model->getDynamicsEngine().applyTorqueBodyLocal(*_body,_torque);
-		} else {
+		if(_inputTorquesInGlobalFrame){
 			_model->getDynamicsEngine().applyTorque(*_body,_torque);
+		} else {
+			_model->getDynamicsEngine().applyTorqueBodyLocal(*_body,_torque);
 		}
 
 		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);

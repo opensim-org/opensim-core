@@ -39,6 +39,7 @@
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
 #include "Function.h"
+#include "FunctionAdapter.h"
 
 
 //=============================================================================
@@ -69,8 +70,6 @@ protected:
 	/** Y values. */
 	PropertyDblArray _propY;
 	Array<double> &_y;
-
-private:
 
 //=============================================================================
 // METHODS
@@ -127,9 +126,10 @@ public:
 	// EVALUATION
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
-	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0);
-	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt);
-	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
+	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) const;
+	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
+	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
+    const SimTK::Function<1>* createSimTKFunction() const;
 
 	virtual void updateFromXMLNode();
 

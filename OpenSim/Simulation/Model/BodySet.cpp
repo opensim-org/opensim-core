@@ -89,6 +89,14 @@ void BodySet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
 		get(i)->setup(aAbstractDynamicsEngine);
 
 }
+BodySet& BodySet::copyFrom(const BodySet& aBodySet, AbstractDynamicsEngine* aAbstractDynamicsEngine)
+{
+	Set<AbstractBody>::operator=(aBodySet);
+	for(int i=0; i<getSize(); i++)
+		get(i)->setup(aAbstractDynamicsEngine);
+	return (*this);
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

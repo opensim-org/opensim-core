@@ -1,5 +1,3 @@
-#ifndef _Controller_h_
-#define _Controller_h_
 // Controller.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -29,79 +27,277 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+ * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  */
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// The entire definition of the Controller class is contained inside this
+// #ifndef-#define-#endif _Controller_h_ block.  This is done to ensure that,
+// if someone were to include Controller.h more than once into a single file
+// (such as including Controller.h as well as including another file that also
+// includes Controller.h), then the Controller class will not be defined more
+// than once.  "#ifndef" means "if not defined."
+#ifndef _Controller_h_
+#define _Controller_h_
+
 //============================================================================
-
-
+// INCLUDE
+//============================================================================
+// These files contain declarations and definitions of variables and methods
+// that will be used by the Controller class.
+#include <OpenSim/Common/Object.h>
 #include "ControlSet.h"
-
-
-const int ControllerNAME_LENGTH = 64;
-const int ControllerDESCRIP_LENGTH = 8192;
-
 
 //=============================================================================
 //=============================================================================
 /**
- * An abstract class for specifying the interface for controlling an
- * Model.
+ * Controller is a class that specifies the interface (i.e., the minimal set
+ * of variables and methods that should be defined by any class used to
+ * control a Model.  Any class used to control a Model should be a subclass
+ * (child) of Controller.  In C++ jargon, Controller is an abstract class,
+ * which means that you cannot create an instance of it (i.e. you cannot write
+ * code that contains a statement like "Controller controller;" or
+ * "Controller controller(&model,&yDesStore);".  However, you can create a
+ * subclass of Controller (such as SimpleFeedbackController) that is not
+ * abstract, which means you can create an instance of it.  Controller is
+ * abstract because it has a method, computeControls, that is "pure virtual."
+ * This means that computeControls must be implemented by any subclass of
+ * Controller, because Controller itself does not implement computeControls.
  *
- * @author Frank C. Anderson
+ * @author Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  * @version 1.0
  */
+
+// The definition of the Controller class is wrapped inside this
+// namespace OpenSim {} block, which makes the class a part of the
+// OpenSim namespace, i.e., the Controller class and all its variables
+// and methods can only be used by a file that contains the command
+// "using namespace OpenSim;" or prefixes any call to a Controller class
+// public method or variable with "OpenSim::", e.g., the Controller
+// class would be referred to as OpenSim::Controller.  The advantage of
+// this design is that if someone defined another namespace also contained
+// a Controller class that is completely different from OpenSim's
+// Controller class, you could refer to these two Controller classes
+// separately even though both Controller classes have the same name.
 namespace OpenSim { 
 
+// This empty declaration of the Model class is necessary because we
+// haven't included a definition of the Model class (e.g., Model.h)
+// in this file, but we do use the Model class in the code below.
+// This way, C++ knows that Model is a class defined elsewhere and
+// won't throw compiler errors when it sees the identifier "Model"
+// used in the code below.
 class Model;
 
-class OSIMSIMULATION_API Controller  
+// The entire definition of the Controller class is contained inside
+// this code block.  The identifier OSIMSIMULATION_API tells C++ that
+// the Controller class will be part of the library files exported by
+// the osimSimulation project.  The terms "public Object" tell C++
+// that the Controller class is a subclass (child) of the Object class
+// in OpenSim.
+class OSIMSIMULATION_API Controller : public Object
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	static const int NAME_LENGTH;
-	static const int DESCRIP_LENGTH;
+// These are the member variables of the Controller class.  The "protected"
+// keyword indicates that these member variables can be accessed not only by
+// methods of the Controller class, but also by any subclass of the Controller
+// class.
 protected:
-	/** Model. */
+	/** 
+	 * This variable represents the model to be controlled.
+	 */
 	Model *_model;
-	/** Flag to indicate on or off state. */
+	/**
+	 * This variable is a flag indicating whether or not the controller is
+	 * "on", i.e., an integrator will use this flag to determine whether or
+	 * not to use this Controller's computeControls method when running a
+	 * simulation.  If _on == true, the controller is "on", whereas if
+	 * _on == false, the controller is "off".
+	 */
 	bool _on;
-	/** Name. */
-	char _name[ControllerNAME_LENGTH];
-	/** Description. */
-	char _descrip[ControllerDESCRIP_LENGTH];
 
 //=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
-	// CONSTRUCTION
+	// CONSTRUCTION AND DESTRUCTION
 	//--------------------------------------------------------------------------
 public:
+	// These methods can be called to initialize or destroy an object that is
+	// an instance of Controller (or really, an instance of a subclass of
+	// Controller, since Controller itself cannot be instantiated since it is
+	// an abstract class (see above)).  These methods are all "public," which
+	// means any code that includes a definition of the Controller class (e.g.,
+	// by including Controller.h) can call these methods.
+
+	/**
+	 * Default constructor.
+	 */
+	Controller();
+
+	/**
+	 * Another constructor.
+	 *
+	 * @param aModel The model that is to be controlled by this Controller.
+	 */
 	Controller(Model *aModel);
+
+	/**
+	 * Constructor from an XML Document.
+	 *
+	 * @param aFileName The name of the XML file in which this Controller is
+	 * defined.
+	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
+	 * updateFromXMLNode() from this constructor.  If true, the method will
+	 * be called from this class.  Typically, the flag should be true for this
+	 * class, but in the member initializer list for this constructor, this
+	 * class's parent class's constructor with the same parameters will be
+	 * called, but with aUpdateFromXMLNode set to false.
+	 */
+	Controller(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+
+	/**
+	 * Copy constructor.  This constructor is called by any code that contains
+	 * a command of the form "Controller newController(oldController);".
+	 *
+	 * @param aController The controller to be copied.
+	 */
+	Controller(const Controller &aController);
+
+	/**
+	 * Destructor.  This method should be a member of any subclass of the
+	 * Controller class.  It will be called automatically whenever an
+	 * instance of the subclass is deleted from memory.
+	 */
 	virtual ~Controller();
+	
+private:
+	// A "private" method is one that can be called only by this class,
+	// and not even by subclasses of this class.
+
+	/**
+	 * This method sets all member variables to default (e.g., NULL) values.
+	 */
 	void setNull();
+
+protected:
+
+	/**
+	 * Connect properties to local pointers.  Currently, the Controller class
+	 * has no properties, so this method does nothing.  However, a subclass
+	 * of Controller (e.g., SimpleFeedbackController) can contain member
+	 * variables that are properties, which should be defined in the
+	 * setupProperties() method of the subclass.
+	 */
+	virtual void setupProperties();
+
+	/**
+	 * Copy the member variables of the specified controller.  This method is
+	 * called by the copy constructor of the Controller class.
+	 *
+	 * @param aController The controller whose data is to be copied.
+	 */
+	void copyData(const Controller &aController);
+
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+
+#ifndef SWIG
+
+	/**
+	 * Assignment operator.  This method is called automatically whenever a
+	 * command of the form "controller1 = controller2;" is made, where both
+	 * controller1 and controller2 are both of type Controller.  Although
+	 * Controller cannot be instantiated directly, a subclass of Controller
+	 * could implement its own operator= method that calls Controller's
+	 * operator= method.  If the subclass does not implement its own operator=
+	 * method, then when a command of the form "controller1 = controller2" is
+	 * made, where both controller1 and controller2 are instants of the
+	 * subclass, the Controller class's operator= method will be called
+	 * automatically.
+	 *
+	 * @param aController The controller to be copied.
+	 * @return Reference to the altered object.
+	 */
+	Controller& operator=(const Controller &aController);
+
+#endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+
 	// MODEL
+
+	/**
+	 * Get a pointer to the model that is being controlled.
+	 *
+	 * @return Pointer to the model.
+	 */
 	Model* getModel();
+
+	/**
+	 * Set this class's pointer to the model that is being controlled
+	 * to point to the model passed into this method.
+	 *
+	 * @param aModel Pointer to be set to point to the model that
+	 * is being controlled.
+	 */
+	void setModel(Model *aModel);
+
+	// DESIRED STATES STORAGE OBJECT
+	
+	/**
+	 * Set this class's pointer to the storage object containing
+	 * desired model states to point to the storage object passed into
+	 * this method.  This method is currently implemented only by the
+	 * SimpleFeedbackController class, which is a subclass of Controller.
+	 *
+	 * @param aYDesStore Pointer to a Storage object containing the
+	 * desired states of the model for the controller to achieve during
+	 * simulation.
+	 */
+	virtual void setDesiredStatesStorage(Storage *aYDesStore);
+
 	// ON/OFF
-	void setOn(bool aTrueFalse);
+
+	/**
+	 * Get whether or not this controller is on.
+	 *
+	 * @return true if on, false if off.
+	 */
 	bool getOn();
-	// NAME
-	void setName(const char *aName);
-	const char* getName();
-	// DESCRIPTION
-	void setDescription(const char *aDescrip);
-	const char* getDescription();
+
+	/**
+	 * Turn this controller on or off.
+	 *
+	 * @param aTrueFalse Turns controller on if "true" and off if "false".
+	 */
+	void setOn(bool aTrueFalse);
 
 	//--------------------------------------------------------------------------
 	// CONTROL
 	//--------------------------------------------------------------------------
+
+	/**
+	 * Compute the controls for a simulation.
+	 *
+	 * The caller should send in an initial guess.
+	 *
+	 * Note that this method is "pure virtual", which means that the Controller
+	 * class does not implement it, and that subclasses must implement it.
+	 *
+	 * @param rDT Integration time step in normalized time that is to be taken
+	 * next.  Note that the controller can change the value of rDT.
+	 * @param aT Current time in normalized time.
+	 * @param aY Current states of the model.
+	 * @param rControlSet Control set used for the simulation.  This method
+	 * alters the control set in order to control the simulation.
+	 */
 	virtual void
 		computeControls(double &rDT,double aT,const double *aY,
 		ControlSet &rX) = 0;

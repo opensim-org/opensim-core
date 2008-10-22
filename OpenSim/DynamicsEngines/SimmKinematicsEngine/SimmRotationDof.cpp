@@ -68,7 +68,7 @@ SimmRotationDof::~SimmRotationDof()
  * @param aDof SimmRotationDof to be copied.
  */
 SimmRotationDof::SimmRotationDof(const SimmRotationDof &aDof) :
-   AbstractDof(aDof),
+   AbstractDof01_05(aDof),
    _axis(_axisProp.getValueDblVec3())
 {
 	setNull();
@@ -137,7 +137,7 @@ void SimmRotationDof::setupProperties()
 SimmRotationDof& SimmRotationDof::operator=(const SimmRotationDof &aDof)
 {
 	// BASE CLASS
-	AbstractDof::operator=(aDof);
+	AbstractDof01_05::operator=(aDof);
 
 	copyData(aDof);
 

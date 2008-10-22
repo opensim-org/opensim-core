@@ -28,15 +28,22 @@
 
 // INCLUDES
 #include <string>
+#include <OpenSim/version.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Actuators/LinearSetPoint.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
-#include <OpenSim/Common/SimmMotionData.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Tools/IKSolverImpl.h>
 #include <OpenSim/Tools/IKTarget.h>
+
 
 using namespace std;
 using namespace OpenSim;
@@ -57,43 +64,82 @@ string filesToCompare[] = {
  */
 int main(int argc,char **argv)
 {
-	// Construct model and read parameters file
-	//Object::RegisterType(VisibleObject());
+	//TODO: put these options on the command line
+	LoadOpenSimLibrary("osimSimbodyEngine");
+
+	// SET OUTPUT FORMATTING
+	IO::SetDigitsPad(4);
+
+	// REGISTER TYPES
+	Object::RegisterType(VisibleObject());
 	Object::RegisterType(ScaleTool());
 	ScaleTool::registerTypes();
-	ScaleTool* subject = new ScaleTool("CrouchGait.xml");
-	Model* model = subject->createModel();
-	if (!subject->isDefaultModelScaler())
-	{
-		ModelScaler& scaler = subject->getModelScaler();
-		scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass());
+
+	std::string setupFilePath;
+	ScaleTool* subject;
+	Model* model;
+
+   if (argc != 3)
+   {
+	   cout << "Not enough arguments passed to testScale" << endl;
+      exit(1);
+   }
+	try {
+		// Construct model and read parameters file
+		subject = new ScaleTool(argv[2]);
+
+		// Keep track of the folder containing setup file, wil be used to locate results to comapre against
+		setupFilePath=subject->getPathToSubject();
+
+		model = subject->createModel();
+
+		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+
+		if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
+		{
+			ModelScaler& scaler = subject->getModelScaler();
+			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
+		}
+		else
+		{
+			cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
+		}
+
+		if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply())
+		{
+			MarkerPlacer& placer = subject->getMarkerPlacer();
+			if(!placer.processModel(model, subject->getPathToSubject())) return 1;
+		}
+		else
+		{
+			cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
+			return 1;
+		}
+
 	}
-	else
-	{
-		cout << "Scaling parameters not set. Model is not scaled." << endl;
+	catch(Exception &x) {
+		x.print(cout);
+		return 1;
 	}
 
-	if (!subject->isDefaultMarkerPlacer())
-	{
-		MarkerPlacer& placer = subject->getMarkerPlacer();
-		placer.processModel(model, subject->getPathToSubject());
-	}
-	else
-	{
-		cout << "Marker placement parameters not set. No markers have been moved." << endl;
-	}
+	Model* stdModel= new Model(setupFilePath+"subject01_simbody.osim");
+	stdModel->setup();
+
+	// Check models are equal
+	if (!(*model==*stdModel))
+		return 1;
+	// Compare ScaleSet
+	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"subject01_Scale_ScaleSet.xml");
+	ScaleSet& computedScaleSet = subject->getModelScaler().getScaleSet();
+
+	if (!(computedScaleSet==stdScaleSet))
+		return 1;
+
+	cout << "Path used = " << getenv("PATH") << endl;
 
 	delete model;
 	delete subject;
 
-	/* Compare results with standard*/
-	bool success = true;
-	for (int i=0; i < 4 && success; i++){
-		string command = "cmp "+filesToCompare[i]+" "+"std_"+filesToCompare[i];
-		success = success && (system(command.c_str())==0);
-	}
-	cout << "Path used = " << getenv("PATH") << endl;
-
-	return (success?0:1);
+	return (0);
 }
-	
+

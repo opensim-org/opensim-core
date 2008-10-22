@@ -50,6 +50,7 @@
 #include "CoordinateSet.h"
 #include "JointSet.h"
 #include "BodySet.h"
+#include "ConstraintSet.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -71,17 +72,16 @@ AbstractDynamicsEngine::~AbstractDynamicsEngine()
  */
 AbstractDynamicsEngine::AbstractDynamicsEngine() :
 	Object(),
-   _gravity(_gravityProp.getValueDblVec3()),
+    _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
-	_jointSetProp(PropertyObj("", JointSet())),
-	_jointSet((JointSet&)_jointSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_speedSetProp(PropertyObj("", SpeedSet())),
-	_speedSet((SpeedSet&)_speedSetProp.getValueObj()),
+	_constraintSetProp(PropertyObj("", ConstraintSet())),
+	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_markerSetProp(PropertyObj("", MarkerSet())),
-	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
+	_markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+	_jointSet(JointSet()),
+	_coordinateSet(CoordinateSet()),
+	_speedSet(SpeedSet())
 {
 	setNull();
 	setupProperties();
@@ -96,12 +96,8 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const string &aFileName, bool aUp
    _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
-	_jointSetProp(PropertyObj("", JointSet())),
-	_jointSet((JointSet&)_jointSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_speedSetProp(PropertyObj("", SpeedSet())),
-	_speedSet((SpeedSet&)_speedSetProp.getValueObj()),
+	_constraintSetProp(PropertyObj("", ConstraintSet())),
+	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
 {
@@ -118,12 +114,8 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE
    _gravity(_gravityProp.getValueDblVec3()),
 	_bodySetProp(PropertyObj("", BodySet())),
 	_bodySet((BodySet&)_bodySetProp.getValueObj()),
-	_jointSetProp(PropertyObj("", JointSet())),
-	_jointSet((JointSet&)_jointSetProp.getValueObj()),
-	_coordinateSetProp(PropertyObj("", CoordinateSet())),
-	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
-	_speedSetProp(PropertyObj("", SpeedSet())),
-	_speedSet((SpeedSet&)_speedSetProp.getValueObj()),
+	_constraintSetProp(PropertyObj("", ConstraintSet())),
+	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_markerSetProp(PropertyObj("", MarkerSet())),
 	_markerSet((MarkerSet&)_markerSetProp.getValueObj())
 {
@@ -136,7 +128,7 @@ AbstractDynamicsEngine::AbstractDynamicsEngine(const AbstractDynamicsEngine& aDE
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Copy data members from one AbstractDynamicsEngine to another.
  *
  * @param aEngine AbstractDynamicsEngine to be copied.
@@ -145,11 +137,14 @@ void AbstractDynamicsEngine::copyData(const AbstractDynamicsEngine& aEngine)
 {
 	_gravity = aEngine._gravity;
 	_model = aEngine._model;
-	_bodySet = aEngine._bodySet;
-	_coordinateSet = aEngine._coordinateSet;
-	_speedSet = aEngine._speedSet;
-	_jointSet = aEngine._jointSet;
+	_bodySet=aEngine._bodySet;
+	_constraintSet=aEngine._constraintSet;
 	_markerSet = aEngine._markerSet;
+	//_jointSet = aEngine._jointSet;
+	//_coordinateSet = aEngine._coordinateSet;
+	//_speedSet = aEngine._speedSet;
+	// Need to fix back pointers so that bodies, constraints, joints, coordinates and speeds 
+
 }
 
 //_____________________________________________________________________________
@@ -164,7 +159,7 @@ void AbstractDynamicsEngine::setNull()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Perform set up functions after model has been deserialized or copied.
  *
  * @param aModel model containing this dynamics engine.
@@ -174,12 +169,18 @@ void AbstractDynamicsEngine::setNull()
 void AbstractDynamicsEngine::setup(Model* aModel)
 {
 	_model = aModel;
-
 	_bodySet.setup(this);
 	_coordinateSet.setup(this);
-	_speedSet.setup(this);
-	_jointSet.setup(this);
+	_constraintSet.setup(this);
 	_markerSet.setup(this);
+
+	//_speedSet->setup(this);
+   // TODO: we need to figure out whether the AbstractDynamicsEngine
+   // should contain _jointSet or not (in a SimbodyEngine each body
+   // contains a joint, but in a SimmKinematicsEngine there is a
+   // separate joint set). As long as the base class has _jointSet,
+   // the set's setup() method should be called here.
+	getJointSet()->setup(this);
 }
 //_____________________________________________________________________________
 /**
@@ -200,14 +201,8 @@ void AbstractDynamicsEngine::setupProperties()
 	_bodySetProp.setComment("Bodies in the model.");
 	_propertySet.append(&_bodySetProp);
 
-	_jointSetProp.setComment("Joints in the model.");
-	_propertySet.append(&_jointSetProp);
-
-	_coordinateSetProp.setComment("Generalized coordinates in the model.");
-	_propertySet.append(&_coordinateSetProp);
-
-	_speedSetProp.setComment("Generalized speeds in the model.");
-	_propertySet.append(&_speedSetProp);
+	_constraintSetProp.setComment("Constraints in the model.");
+	_propertySet.append(&_constraintSetProp);
 
 	_markerSetProp.setComment("Markers in the model.");
 	_propertySet.append(&_markerSetProp);
@@ -265,9 +260,12 @@ bool AbstractDynamicsEngine::scale(const ScaleSet& aScaleSet, double aFinalMass,
 				_bodySet.get(i)->scaleMass(factor);
 		}
 	}
-
+	
 	// Now scale the joints.
-	_jointSet.scale(aScaleSet);
+   getJointSet()->scale(aScaleSet);
+
+   	// Now scale translational coupled coordinate constraints.
+   getConstraintSet()->scale(aScaleSet);
 
 	// Now scale the markers.
 	_markerSet.scale(aScaleSet);
@@ -280,6 +278,7 @@ bool AbstractDynamicsEngine::scale(const ScaleSet& aScaleSet, double aFinalMass,
 //=============================================================================
 int AbstractDynamicsEngine::getNumBodies() const { return _bodySet.getSize(); }
 int AbstractDynamicsEngine::getNumJoints() const { return _jointSet.getSize(); }
+int AbstractDynamicsEngine::getNumConstraints() const { return _constraintSet.getSize(); }
 int AbstractDynamicsEngine::getNumCoordinates() const { return _coordinateSet.getSize(); }
 int AbstractDynamicsEngine::getNumSpeeds() const { return _speedSet.getSize(); }
 int AbstractDynamicsEngine::getNumMarkers() const { return _markerSet.getSize(); }
@@ -473,7 +472,7 @@ int AbstractDynamicsEngine::deleteUnusedMarkers(const Array<string>& aMarkerName
 // CONFIGURATION
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Extract the configuration (coordinates and speeds) of a model from the states.
  *
  * @param aYStore Storage object containing a complete set of model states.
@@ -647,7 +646,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rStorage, double
 	// column by the given scaling factor.
 	const CoordinateSet* coordinateSet = _model->getDynamicsEngine().getCoordinateSet();
 	for (int i = 0; i < coordinateSet->getSize(); i++) {
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational) {
+		if (coordinateSet->get(i)->getMotionType() == AbstractTransformAxis::Rotational) {
 			std::string name = coordinateSet->get(i)->getName();
 			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
 				if(columnLabels[j] == name) rStorage.multiplyColumn(j-1, factor);
@@ -657,7 +656,7 @@ void AbstractDynamicsEngine::scaleRotationalDofColumns(Storage &rStorage, double
 	// Now do speeds
 	const SpeedSet* speedSet = _model->getDynamicsEngine().getSpeedSet();
 	for (int i = 0; i < speedSet->getSize(); i++) {
-		if (speedSet->get(i)->getCoordinate() && speedSet->get(i)->getCoordinate()->getMotionType() == AbstractDof::Rotational) {
+		if (speedSet->get(i)->getCoordinate() && speedSet->get(i)->getCoordinate()->getMotionType() == AbstractTransformAxis::Rotational) {
 			std::string name = speedSet->get(i)->getName();
 			assert(name != speedSet->get(i)->getCoordinate()->getName()); // speed should have different name than coordinate (else we'll end up scaling twice)
 			for(int j=1; j<columnLabels.getSize(); j++) // skip time column (and adjust for time column when calling multiplyColumn)
@@ -706,7 +705,7 @@ void AbstractDynamicsEngine::convertDegreesToRadians(double *aQDeg, double *rQRa
 	// in the model, whether those N values are coordinates or speeds.
 	for (int i = 0; i < getNumSpeeds(); i++)
 	{
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational)
+		if (coordinateSet->get(i)->getMotionType() == AbstractTransformAxis::Rotational)
 			rQRad[i] = aQDeg[i] * SimTK_DEGREE_TO_RADIAN;
 		else
 			rQRad[i] = aQDeg[i];
@@ -729,7 +728,7 @@ void AbstractDynamicsEngine::convertRadiansToDegrees(double *aQRad, double *rQDe
 	// in the model, whether those N values are coordinates or speeds.
 	for (int i = 0; i < getNumSpeeds(); i++)
 	{
-		if (coordinateSet->get(i)->getMotionType() == AbstractDof::Rotational)
+		if (coordinateSet->get(i)->getMotionType() == AbstractTransformAxis::Rotational)
 			rQDeg[i] = aQRad[i] * SimTK_RADIAN_TO_DEGREE;
 		else
 			rQDeg[i] = aQRad[i];

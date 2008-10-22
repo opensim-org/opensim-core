@@ -1,5 +1,3 @@
-#ifndef __ForwardTool_h__
-#define __ForwardTool_h__
 // ForwardTool.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,14 +26,22 @@
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifndef __ForwardTool_h__
+#define __ForwardTool_h__
 
+//============================================================================
+// INCLUDE
+//============================================================================
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include "osimToolsDLL.h"
@@ -55,13 +61,14 @@ class TorqueApplier;
 class LinearSpring;
 class TorsionalSpring;
 class ModelIntegrand;
+class Controller;
 
 //=============================================================================
 //=============================================================================
 /**
  * An abstract class for specifying the interface for an investigation.
  *
- * @author Frank C. Anderson
+ * @author Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  * @version 1.0
  */
 class OSIMTOOLS_API ForwardTool: public AbstractTool
@@ -120,16 +127,16 @@ protected:
 	bool &_outputDetailedResults;
 
 	// FOOT CONTACT EVENT TIMES
-	/** Flag indicating wether or not to turn on a linear corrective spring for the right foot. */
+	/** Flag indicating whether or not to turn on a linear corrective spring for the right foot. */
 	OpenSim::PropertyBool _body1LinSpringActiveProp;
 	bool &_body1LinSpringActive;
-	/** Flag indicating wether or not to turn on a torsional corrective spring for the right foot. */
+	/** Flag indicating whether or not to turn on a torsional corrective spring for the right foot. */
 	OpenSim::PropertyBool _body1TorSpringActiveProp;
 	bool &_body1TorSpringActive;
-	/** Flag indicating wether or not to turn on a linear corrective spring for the left foot. */
+	/** Flag indicating whether or not to turn on a linear corrective spring for the left foot. */
 	OpenSim::PropertyBool _body2LinSpringActiveProp;
 	bool &_body2LinSpringActive;
-	/** Flag indicating wether or not to turn on a torsional corrective spring for the left foot. */
+	/** Flag indicating whether or not to turn on a torsional corrective spring for the left foot. */
 	OpenSim::PropertyBool _body2TorSpringActiveProp;
 	bool &_body2TorSpringActive;
 	/** Time at which the torsional spring comes on for body1 (if the spring is active). */
@@ -187,8 +194,11 @@ protected:
 	/** Damping for torsional corrective springs. */
 	PropertyDblVec3 _bTorProp;
 	SimTK::Vec3 &_bTor;
+	/** Controller for running this ForwardTool with feedback. */
+	PropertyObjPtr<Controller> _controllerProp;
+	Controller *&_controller;
 
-	// INTERNAL WORK ARRAYS
+	// INTERNAL WORK VARIABLES
 	/** Model integrand.  Make it a pointer so we can print results from a separate function. */
 	ModelIntegrand *_integrand;
 	/** Storage for the input states. */
@@ -259,6 +269,8 @@ public:
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
+	Controller& getController() { return *_controller; }
+
 	Storage *getStateStorage();
 
 	//--------------------------------------------------------------------------
@@ -270,7 +282,8 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	static void initializeExternalLoads(Model *aModel, 
+	static void InitializeExternalLoads(const double& analysisStartTime, const double& analysisFinalTime,
+		Model *aModel, 
 		const std::string &aExternalLoadsFileName,
 		const std::string &aExternalLoadsModelKinematicsFileName,
 		const std::string &aExternalLoadsBody1,
@@ -280,12 +293,13 @@ public:
 		ForceApplier **rLeftForceApp=0,
 		TorqueApplier **rRightTorqueApp=0,
 		TorqueApplier **rLeftTorqueApp=0);
+	static void InitializeSpecifiedTimeStepping(Storage *aYStore,OpenSim::IntegRKF *aIntegrator);
 protected:
 	void inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,Storage*& rYPStore);
 	int determineInitialTimeFromStatesStorage(double &rTI);
 	int determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates);
 	void checkControls(const ControlSet *aControlSet);
-	void addCorrectiveSprings(const ForceApplier *aBody1Force,const ForceApplier *aBody2Force);
+	void addCorrectiveSprings(const Storage *aYStore,const ForceApplier *aBody1Force,const ForceApplier *aBody2Force);
 
 //=============================================================================
 };	// END of class ForwardTool

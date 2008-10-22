@@ -9,11 +9,7 @@ LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 
 ADD_EXECUTABLE(testForward testForward.cpp)
 
-SET(TEST_FILES forward.xml block_actuators.xml block_contacts.xml block_controls.xml block_states.sto
-	std_check.xml std_test_Kinematics_u.sto std_test_Kinematics_dudt.sto std_test_Kinematics_q.sto
-	std_test_ActuatorGeneralizedForces.sto std_test_BodyKinematics_vel.sto 
-	std_test_BodyKinematics_acc.sto std_test_BodyKinematics_pos.sto
-)
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
 # Copy files to run dir
@@ -23,7 +19,7 @@ FOREACH (dataFile ${TEST_FILES})
     TARGET testForward
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
-    ${OpenSim_SOURCE_DIR}/OpenSim/Applications/Forward/test/${dataFile}
+    ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Applications/Forward/test)
  ENDFOREACH (dataFile) 
 
@@ -36,7 +32,7 @@ FOREACH (dataFile ${TEST_FILES})
 #  LINK_LIBRARIES(gcov)
 #ENDIF (UNIX)
 
-ENABLE_TESTING()
+#ENABLE_TESTING()
 
 IF (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})

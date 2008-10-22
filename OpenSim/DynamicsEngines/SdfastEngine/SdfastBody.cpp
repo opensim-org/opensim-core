@@ -344,25 +344,6 @@ bool SdfastBody::setMassCenter(const SimTK::Vec3& aVec)
 	else
 		return false;
 }
-
-//_____________________________________________________________________________
-/**
- * Get the inertia matrix of the body.
- *
- * @param 3x3 inertia matrix.
- */
-void SdfastBody::getInertia(double rInertia[3][3]) const
-{
-	if(_index<0) {
-		for(int i=0; i<3; i++) {
-			for(int j=0; j<3; j++) {
-				rInertia[i][j] = 0;
-			}
-		}
-	} else {
-		_SdfastEngine->_sdgetiner(_index,rInertia);
-	}
-}
 //_____________________________________________________________________________
 /**
  * Get the inertia matrix of the body.
@@ -371,10 +352,23 @@ void SdfastBody::getInertia(double rInertia[3][3]) const
  */
 void SdfastBody::getInertia(Mat33 &rInertia) const
 {
-	double inertia[3][3];
-	getInertia(inertia);
-	memcpy(&rInertia[0],&inertia[0][0],9*sizeof(double));
+	memcpy(&rInertia[0],&_inertia[0],9*sizeof(double));
 }
+//_____________________________________________________________________________
+/**
+ * Set the inertia matrix of the body.
+ *
+ * @param aInertia 9-element inertia matrix.
+ * @return Whether inertia matrix was successfully changed.
+bool SdfastBody::setInertia(const Mat33& aInertia)
+{
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		_inertia[i*3 + j] = aInertia[i][j];
+
+	return true;
+}
+ */
 //_____________________________________________________________________________
 /**
  * Set the inertia matrix of the body.
@@ -384,26 +378,11 @@ void SdfastBody::getInertia(Mat33 &rInertia) const
  */
 bool SdfastBody::setInertia(const Mat33& aInertia)
 {
-	for (int i = 0; i < 3; i++)
-		for (int j = 0; j < 3; j++)
-		_inertia[i*3 + j] = aInertia[i][j];
-
-	return true;
-}
-//_____________________________________________________________________________
-/**
- * Set the inertia matrix of the body.
- *
- * @param aInertia 9-element inertia matrix.
- * @return Whether inertia matrix was successfully changed.
- */
-bool SdfastBody::setInertia(const double aInertia[3][3])
-{
 	if(_index<0) return false;
 
 	// Check to see if the inertia is different from what SDFast already has
 	bool same = true;
-	double inertia[3][3];
+	Mat33 inertia;
 	getInertia(inertia);
 	for(int i=0; i<3; i++)
 		for(int j=0; j<3; j++)
@@ -419,7 +398,13 @@ bool SdfastBody::setInertia(const double aInertia[3][3])
 		}
 	}
 
-	_SdfastEngine->_sdiner(_index,inertia);
+	// SET IN SDFAST
+	double sdInertia[3][3];
+	for(int i=0; i<3; i++)
+		for(int j=0; j<3; j++)
+			sdInertia[i][j] = aInertia[i][j];
+
+	_SdfastEngine->_sdiner(_index,sdInertia);
 	_SdfastEngine->_sdinit();
 
 	return true;
@@ -479,20 +464,11 @@ void SdfastBody::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
  */
 void SdfastBody::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 {
-	double mass;
-	double inertia[3][3];
-
-	_SdfastEngine->_sdgetmass(_index, &mass);
-	_SdfastEngine->_sdgetiner(_index, inertia);
-
-	for(int i=0; i<3; i++) for (int j=0; j<3; j++) 
-	// Scales assuming mass stays the same
-	scaleInertiaTensor(mass, aScaleFactors, inertia);
-
-	// Update properties and SDFast
+	double mass = getMass();
+	Mat33 inertia;
+	getInertia(inertia);
+	scaleInertiaTensor(mass,aScaleFactors,inertia);
 	setInertia(inertia);
-
-	// Scales mass
 	if(aScaleMass)
 		scaleMass(DABS(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]));
 }
@@ -506,12 +482,13 @@ void SdfastBody::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool 
  */
 void SdfastBody::scaleMass(double aScaleFactor)
 {
-	double mass, inertia[3][3];
-
-	_SdfastEngine->_sdgetmass(_index, &mass);
-	_SdfastEngine->_sdgetiner(_index, inertia);
-
+	// Mass
+	double mass = getMass();
 	mass *= aScaleFactor;
+
+	// Inertia
+	Mat33 inertia;
+	getInertia(inertia);
 	for (int i=0;i<3;i++)
 	  for(int j=0;j<3;j++)
 		inertia[i][j] *= aScaleFactor;

@@ -314,8 +314,13 @@ int IKTarget::iterativeOptimization(SimTK::Vector &results)
 		performanceMatrixCopy = J;
 		performanceVectorCopy = dError.col(0);
 		for(int i=0; i<n; i++) { jpvt[i] = 0; }
-		dgelsy_(m, n, nrhs, &performanceMatrixCopy(0,0), m, &performanceVectorCopy[0], m, &jpvt[0], &rcond, &rank, &lapackWork[0], lapackWork.size(), info);
+		dgelsy_(m, n, nrhs, &performanceMatrixCopy(0,0), m, &performanceVectorCopy[0], m, &jpvt[0], rcond, rank, &lapackWork[0], lapackWork.size(), info);
 		dQ.updCol(0) = performanceVectorCopy(0, getNumParameters());
+
+		if(rank < n){
+			cout << "\nIKTarget.iterativeOptimization: WARN- Jacobian is rank deficient, rank = " << rank << ", rcond = " << rcond << "." << endl;
+			cout << "Results may be inaccurate.  Try using IPOPT optimizer algorithm.\n" << endl;
+		}
 
 		// Compute temporary change in marker error
 		for (int i = 0; i < getNumParameters(); i++)
@@ -659,6 +664,7 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 		coordinateInfo *info = new coordinateInfo;
 		info->coord = coord;
 		info->prescribed = coord->getLocked();
+		info->prescribed = coord->isConstrained();
 
 		// Initialize as if it has no task
 		info->experimentalColumn = -1;
