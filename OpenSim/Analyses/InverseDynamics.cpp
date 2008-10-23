@@ -240,7 +240,7 @@ setModel(Model *aModel)
 		SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
 		for(int i=0; i<speedSet->getSize(); i++) {
 			AbstractCoordinate *coord = speedSet->get(i)->getCoordinate();
-			if(!coord->getLocked() && !coord->getConstrained()) {
+			if(!coord->getLocked() && !coord->isConstrained()) {
 				_accelerationIndices.append(i);
 			}
 		}
@@ -378,7 +378,7 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	int info;
 	SimTK::Matrix performanceMatrixCopy = _performanceMatrix;
 	SimTK::Vector performanceVectorCopy = _performanceVector;
-	dgglse_(nf, nf, &nacc, &performanceMatrixCopy(0,0), nf, &_constraintMatrix(0,0), nacc, &performanceVectorCopy[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
+	dgglse_(nf, nf, nacc, &performanceMatrixCopy(0,0), nf, &_constraintMatrix(0,0), nacc, &performanceVectorCopy[0], &_constraintVector[0], &f[0], &_lapackWork[0], _lapackWork.size(), info);
 
 	_storage->append(aT,nf,&f[0]);
 
