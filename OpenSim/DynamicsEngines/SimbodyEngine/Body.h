@@ -137,6 +137,7 @@ public:
 	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
 	virtual void scaleMass(double aScaleFactor);
 	virtual VisibleObject* getDisplayer() const { return &_displayer; }
+	virtual void setDisplayer(VisibleObject& aVisibleObject);
 	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
 	OPENSIM_DECLARE_DERIVED(Body, AbstractBody);

@@ -214,6 +214,30 @@ SimmJoint& SimmJoint::operator=(const SimmJoint &aJoint)
 //=============================================================================
 // GET AND SET
 //=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the name of the joint's child body.
+ *
+ * @return Name of the child body.
+ */
+string SimmJoint::getBodyName()
+{
+	if(_bodies.getSize()<2) return "";
+	return _bodies[1];
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the name of the joint's parent body.
+ *
+ * @return Name of the parent body.
+ */
+string SimmJoint::getParentBodyName()
+{
+	if(_bodies.getSize()<1) return "";
+	return _bodies[0];
+}
+
 //-----------------------------------------------------------------------------
 // LOCATION IN PARENT
 //-----------------------------------------------------------------------------

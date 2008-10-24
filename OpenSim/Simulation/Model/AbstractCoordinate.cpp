@@ -124,3 +124,9 @@ AbstractCoordinate& AbstractCoordinate::operator=(const AbstractCoordinate &aCoo
 
 	return(*this);
 }
+
+void AbstractCoordinate::setDynamicsEngine(AbstractDynamicsEngine* aEngine)
+{
+	_dynamicsEngine = aEngine;
+}
+

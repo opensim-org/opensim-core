@@ -53,7 +53,7 @@ private:
 
 public:
 	
-	CompoundFunction(const Function<1> *cf) : f1(cf){
+	CompoundFunction(const SimTK::Function<1> *cf) : f1(cf){
 	}
 
     SimTK::Vec<1> calcValue(const SimTK::Vector& x) const {
@@ -94,7 +94,7 @@ public:
         return 2;
     }
 
-	void setFunction(const Function<1> *cf) {
+	void setFunction(const SimTK::Function<1> *cf) {
 		f1 = cf;
 	}
 };
@@ -164,6 +164,7 @@ public:
 	void setDependentCoordinateName(const std::string &aCoordName) { _dependentCoordName = aCoordName; }
 	const std::string& getDependentCoordinateName() const { return _dependentCoordName; }
 	Function* getFunction() const {return _function; }
+	void setFunction(Function* aFunction);
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);

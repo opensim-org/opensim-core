@@ -205,6 +205,8 @@ public:
 	 */
 	virtual void setup() SWIG_DECLARE_EXCEPTION;
 
+   void replaceEngine(AbstractDynamicsEngine* aEngine);
+
 	/**
 	 * Perform some clean up functions that are normally done 
 	 * from the destructor however this gives the GUI a way to 

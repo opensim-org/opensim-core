@@ -519,6 +519,13 @@ void SimbodyCoordinate01_05::getKeys(string rKeys[]) const
 		rKeys[i] = _keys[i];
 }
 
+void SimbodyCoordinate01_05::setKeys(const OpenSim::Array<std::string>& aKeys)
+{
+	_keys.setSize(0);
+	for (int i = 0; i < aKeys.getSize(); i++)
+		_keys.append(aKeys[i]);
+}
+
 //_____________________________________________________________________________
 /**
  * Get the restraint function used to keep this coordinate inside its range.

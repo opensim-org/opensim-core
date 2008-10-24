@@ -714,6 +714,18 @@ void Coordinate::getKeys(string rKeys[]) const
 		rKeys[i] = _keys[i];
 }
 
+void Coordinate::setKeys(const OpenSim::Array<std::string>& aKeys)
+{
+	_keys.setSize(0);
+	for (int i = 0; i < aKeys.getSize(); i++)
+		_keys.append(aKeys[i]);
+}
+
+void Coordinate::setRestraintActive(bool aActive)
+{
+	_restraintActive = aActive;
+}
+
 //_____________________________________________________________________________
 /**
  * Get the restraint function used to keep this coordinate inside its range.
@@ -817,8 +829,9 @@ bool Coordinate::setLocked(bool aLocked, State& theState)
 		lock = &getEngine()->_system->updMatterSubsystem().updConstraint(_lockedConstraintIndex);
 	}
 	else{
-		string msg = "Lock constraint for coordinate could not be found.";
-		throw Exception(msg,__FILE__,__LINE__);
+		return false;
+		//string msg = "Lock constraint for coordinate could not be found.";
+		//throw Exception(msg,__FILE__,__LINE__);
 	}
 
 	// Now enable if locked otherwise disable

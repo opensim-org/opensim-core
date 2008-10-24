@@ -175,6 +175,7 @@ public:
 
 	void getKeys(std::string rKeys[]) const;
 	const Array<std::string>& getKeys() const { return _keys; }
+   void setKeys(const OpenSim::Array<std::string>& aKeys);
 	virtual bool isUsedInModel() const { return true; }
 	bool isRestraintActive() const { return _restraintActive; }
 	Function* getRestraintFunction() const;

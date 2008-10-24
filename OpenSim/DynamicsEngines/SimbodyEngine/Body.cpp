@@ -321,7 +321,8 @@ bool Body::setMass(double aMass)
 		return false;
 	}
 	_mass = aMass;
-	getEngine()->updateBodyInertia(this);
+	if (getEngine() != NULL)
+	   getEngine()->updateBodyInertia(this);
 	return true;
 }
 
@@ -345,7 +346,8 @@ void Body::getMassCenter(SimTK::Vec3& rVec) const
 bool Body::setMassCenter(const SimTK::Vec3& aVec)
 {
 	_massCenter=aVec;
-	getEngine()->updateBodyInertia(this);
+	if (getEngine() != NULL)
+	   getEngine()->updateBodyInertia(this);
 	return true;
 }
 
@@ -382,7 +384,8 @@ bool Body::setInertia(const SimTK::Mat33& aInertia)
 	_inertiaYY = aInertia[1][1];
 	_inertiaYZ = aInertia[1][2];
 	_inertiaZZ = aInertia[2][2];
-	getEngine()->updateBodyInertia(this);
+	if (getEngine() != NULL)
+	   getEngine()->updateBodyInertia(this);
 	return true;
 }
 
@@ -398,7 +401,11 @@ setJoint(const Joint *aJoint)
 	_joint = (Joint *) aJoint->copy();
 }
 	
-
+void Body::
+setDisplayer(VisibleObject& aVisibleObject)
+{
+	_displayer = aVisibleObject;
+}
 
 
 //=============================================================================

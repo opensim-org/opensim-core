@@ -111,11 +111,13 @@ public:
 	virtual void setAxis(const SimTK::Vec3& axis) = 0;
 	virtual void getAxis(SimTK::Vec3& axis) const = 0;
 	virtual void getAxis(double rAxis[]) const = 0;
+	virtual const double* getAxisPtr(void) const = 0;
 	virtual double getValue() = 0;
 	virtual const AbstractCoordinate* getCoordinate() const { return _coordinate; }
 	virtual Function* getFunction() const;
 	virtual void setFunction(Function* aFunction);
 	AbstractJoint* getJoint() { return _joint; }
+	virtual void setIsRotation(bool aIsRotation) { }
 
 	OPENSIM_DECLARE_DERIVED(AbstractTransformAxis, Object);
 

@@ -387,7 +387,7 @@ appendAxisCoordinateIndicesFunctionsForFunctionBasedMobilizer(CoordinateSet *coo
 		// which is why the index is done as a vector<int>.
 		string coordName = transform->getCoordinateName();
 		std::vector<int> index(1);
-		index[0] = coordinateSet->getIndex(coordName);				
+		index[0] = coordinateSet->getIndex(coordName);
 		coordinateIndices.push_back(index);
 
 		// FUNCTION

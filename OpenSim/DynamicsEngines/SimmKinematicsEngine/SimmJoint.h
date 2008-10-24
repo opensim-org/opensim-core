@@ -99,7 +99,9 @@ public:
 
 	DofSet01_05* getDofSet() const { return &_dofSet; }
 	virtual AbstractBody* getBody() const { return _childBody; }
+	std::string getBodyName();
 	virtual AbstractBody* getParentBody() const { return _parentBody; }
+	std::string getParentBodyName();
 	// NEED Implementation
 	virtual void setLocationInParent(const SimTK::Vec3& aLocation);
 	virtual void getLocationInParent(SimTK::Vec3& rLocation) const ;

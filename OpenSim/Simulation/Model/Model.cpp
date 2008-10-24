@@ -322,6 +322,29 @@ void Model::setup()
 	//cout << "Model " << getName() << " setup completed" << endl;
 }
 
+void Model::replaceEngine(AbstractDynamicsEngine* aEngine)
+{
+	if (aEngine != NULL) {
+		delete _dynamicsEngine;
+		_dynamicsEngine = aEngine;
+
+		// Stuff from setup()
+		_actuatorSet.setup(this);
+		_contactSet.setup(this);
+		_yi.setSize(getNumStates());
+		_ypi.setSize(getNumPseudoStates());
+		// Get reasonable initial state values for actuators by querying them for their current
+		// states (it is assumed that by this point an actuator has initialized with reasonable
+		// default state values.
+		_actuatorSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()]);
+		_contactSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()]);
+		// The following code should be replaced by a more robust
+		// check for problems while creating the model.
+		if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0) {
+			_builtOK = true;
+		}
+	}
+}
 
 //_____________________________________________________________________________
 /**

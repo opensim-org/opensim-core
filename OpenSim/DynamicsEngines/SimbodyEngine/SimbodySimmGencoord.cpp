@@ -100,7 +100,7 @@ void SimbodySimmGencoord::write(ofstream& aStream)
       << _coordinate->getRangeMax() * conversion << endl;
    aStream << "default_value " << _coordinate->getDefaultValue() * conversion << endl;
    aStream << "tolerance " << _coordinate->getTolerance() * conversion << endl;
-   aStream << "PD_stiffness " << _coordinate->getStiffness() << endl;
+   aStream << "pd_stiffness " << _coordinate->getStiffness() << endl;
 	aStream << "clamped " << (_coordinate->getClamped() ? "yes" : "no") << endl;
 	aStream << "locked " << (_coordinate->getLocked() ? "yes" : "no") << endl;
 	const Array<std::string>& keys = _coordinate->getKeys();

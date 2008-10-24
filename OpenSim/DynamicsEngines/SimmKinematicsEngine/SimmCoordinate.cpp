@@ -618,6 +618,18 @@ void SimmCoordinate::getKeys(string rKeys[]) const
 		rKeys[i] = _keys[i];
 }
 
+void SimmCoordinate::setKeys(const OpenSim::Array<std::string>& aKeys)
+{
+	_keys.setSize(0);
+	for (int i = 0; i < aKeys.getSize(); i++)
+		_keys.append(aKeys[i]);
+}
+
+void SimmCoordinate::setRestraintActive(bool aActive)
+{
+	_restraintActive = aActive;
+}
+
 //_____________________________________________________________________________
 /**
  * Get the restraint function used to keep this coordinate inside its range.

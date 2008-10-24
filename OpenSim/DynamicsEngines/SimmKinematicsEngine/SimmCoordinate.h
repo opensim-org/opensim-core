@@ -156,6 +156,7 @@ public:
    virtual void addPathToList(SimmPath* aPath) { _pathList.append(aPath); }
 	virtual bool isUsedInModel() const { if (getJointList().getSize() > 0) return true; else return false; }
 	virtual bool isRestraintActive() const { return _restraintActive; }
+	virtual void setRestraintActive(bool aActive);
 	virtual Function* getRestraintFunction() const;
 	virtual Function* getMinRestraintFunction() const;
 	virtual Function* getMaxRestraintFunction() const;
@@ -163,6 +164,7 @@ public:
 
 	virtual void getKeys(std::string rKeys[]) const;
 	virtual const Array<std::string>& getKeys() const { return _keys; }
+   virtual void setKeys(const OpenSim::Array<std::string>& aKeys);
 	const Array<AbstractJoint*>& getJointList() const { return _jointList; }
 	void clearJointList() { _jointList.setSize(0); }
 	const Array<SimmPath*>& getPathList() const { return _pathList; }

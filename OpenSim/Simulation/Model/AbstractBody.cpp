@@ -283,3 +283,8 @@ void AbstractBody::scaleInertiaTensor(double aMass, const Vec3& aScaleFactors, M
 		rInertia[2][1] *= DABS((aScaleFactors[2] * aScaleFactors[1]));
 	}
 }
+
+void AbstractBody::setDynamicsEngine(AbstractDynamicsEngine* aEngine)
+{
+	_dynamicsEngine = aEngine;
+}

@@ -105,8 +105,7 @@ bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const s
                                       int aFunctionNumber)
 {
    if (aDof.getMotionType() == AbstractTransformAxis::Translational) {
-      double axis[3];
-	  aDof.getAxis(axis);
+      const double* axis = aDof.getAxisPtr();
       int component = -1;
       if (EQUAL_WITHIN_ERROR(axis[0], 1.0))
          component = 0;
@@ -126,10 +125,8 @@ bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const s
    } else {
       if (_rotationsUsed == 3)
          return false;
-      double axis[3];
-	 aDof.getAxis(axis);
-     _dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aDof.getMotionType(), aFunctionNumber,
-                                       aCoordinateName, axis);
+      _dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aDof.getMotionType(), aFunctionNumber,
+                                       aCoordinateName, aDof.getAxisPtr());
       updateOrder(_rotationNames[_rotationsUsed]);
       _rotationsUsed++;
    }

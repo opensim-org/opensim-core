@@ -99,8 +99,10 @@ public:
 	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true) = 0;
 	virtual void scaleMass(double aScaleFactor) = 0;
 	virtual VisibleObject* getDisplayer() const = 0;
+	virtual void setDisplayer(VisibleObject& aVisibleObject) = 0;
 	AbstractWrapObject* getWrapObject(const std::string& aName) const;
 	WrapObjectSet& getWrapObjectSet() { return _wrapObjectSet; }
+	void setDynamicsEngine(AbstractDynamicsEngine* aEngine);
 
 	OPENSIM_DECLARE_DERIVED(AbstractBody, Object);
 

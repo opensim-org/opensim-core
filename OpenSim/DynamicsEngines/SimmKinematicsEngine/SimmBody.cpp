@@ -264,6 +264,11 @@ bool SimmBody::setInertia(const Mat33& aInertia)
 	return true;
 }
 
+void SimmBody::setDisplayer(VisibleObject& aVisibleObject)
+{
+	_displayer = aVisibleObject;
+}
+
 //=============================================================================
 // BONES
 //=============================================================================

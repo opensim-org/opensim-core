@@ -383,6 +383,11 @@ bool SimbodyBody01_05::setInertia(const double aInertia[3][3])
 	return true;
 }
 
+void SimbodyBody01_05::setDisplayer(VisibleObject& aVisibleObject)
+{
+	_displayer = aVisibleObject;
+}
+
 //=============================================================================
 // BONES
 //=============================================================================

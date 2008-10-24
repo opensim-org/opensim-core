@@ -226,8 +226,10 @@ public:
 
 	virtual void getKeys(std::string rKeys[]) const;
 	virtual const Array<std::string>& getKeys() const { return _keys; }
+	virtual void setKeys(const Array<std::string>& aKeys);
 	virtual bool isUsedInModel() const { return true; }
 	bool isRestraintActive() const { return _restraintActive; }
+	virtual void setRestraintActive(bool aActive);
 	OpenSim::Function* getRestraintFunction() const;
 	OpenSim::Function* getMinRestraintFunction() const;
 	OpenSim::Function* getMaxRestraintFunction() const;

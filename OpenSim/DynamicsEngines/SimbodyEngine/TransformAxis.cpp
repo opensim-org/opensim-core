@@ -222,3 +222,7 @@ double TransformAxis::getValue()
 		return _function->evaluate(0, 0.0, 0.0, 0.0);
 }
 
+void TransformAxis::setIsRotation(bool aIsRotation)
+{
+	_isRotation = aIsRotation;
+}

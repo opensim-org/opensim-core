@@ -91,6 +91,8 @@ public:
 	virtual void getAxis(SimTK::Vec3& rAxis) const;
 	virtual void getAxis(double rAxis[]) const { _axis.getAs(rAxis); }
 	const SimTK::Vec3& getAxis() const { return _axis; }
+	virtual const double* getAxisPtr() const { return &_axis[0]; }
+   virtual void setIsRotation(bool aIsRotation);
 
 	OPENSIM_DECLARE_DERIVED(TransformAxis, AbstractTransformAxis);
 

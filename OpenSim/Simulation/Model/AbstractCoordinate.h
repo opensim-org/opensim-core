@@ -110,6 +110,7 @@ public:
    virtual void addPathToList(SimmPath* aJoint) { }
 	virtual bool isUsedInModel() const { return true; }
 	virtual bool isRestraintActive() const { return false; }
+	virtual void setRestraintActive(bool aActive) { }
 	virtual Function* getRestraintFunction() const { return NULL; }
 	virtual Function* getMinRestraintFunction() const { return NULL; }
 	virtual Function* getMaxRestraintFunction() const { return NULL; }
@@ -120,6 +121,8 @@ public:
 	virtual bool isPrescribed() const {return false;}
 	virtual void getKeys(std::string rKeys[]) const = 0;
 	virtual const Array<std::string>& getKeys() const = 0;
+	virtual void setKeys(const Array<std::string>& aKeys) = 0;
+	void setDynamicsEngine(AbstractDynamicsEngine* aEngine);
 
 	OPENSIM_DECLARE_DERIVED(AbstractCoordinate, Object);
 

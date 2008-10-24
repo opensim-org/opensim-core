@@ -217,6 +217,14 @@ void CoordinateCouplerConstraint::setup(AbstractDynamicsEngine* aEngine)
 }
 
 //=============================================================================
+// GET AND SET
+//=============================================================================
+void CoordinateCouplerConstraint::setFunction(OpenSim::Function* aFunction)
+{
+	_function = aFunction;
+}
+
+//=============================================================================
 // SCALE
 //=============================================================================
 /**

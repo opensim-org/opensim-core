@@ -127,3 +127,8 @@ AbstractJoint& AbstractJoint::operator=(const AbstractJoint &aJoint)
 
 	return(*this);
 }
+
+void AbstractJoint::setDynamicsEngine(AbstractDynamicsEngine* aEngine)
+{
+	_dynamicsEngine = aEngine;
+}

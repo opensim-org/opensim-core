@@ -100,6 +100,7 @@ public:
 	virtual bool isCoordinateUsed(AbstractCoordinate* aCoordinate) const = 0;
 	virtual bool hasXYZAxes() const = 0;
 	virtual void scale(const ScaleSet& aScaleSet) = 0;
+	void setDynamicsEngine(AbstractDynamicsEngine* aEngine);
 
 	OPENSIM_DECLARE_DERIVED(AbstractJoint, Object);
 
