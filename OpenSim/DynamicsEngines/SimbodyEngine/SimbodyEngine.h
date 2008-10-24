@@ -175,7 +175,7 @@ public:
 	virtual void updateCoordinateSet(CoordinateSet& aCoordinateSet);
 	virtual void getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) const;
 	virtual AbstractTransformAxis* findUnconstrainedDof(const AbstractCoordinate& aCoordinate,
-		AbstractJoint*& rJoint);
+		AbstractJoint*& rJoint) { return NULL; }
 
 	//--------------------------------------------------------------------------
 	// JOINTS

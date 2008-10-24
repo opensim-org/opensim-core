@@ -52,7 +52,6 @@
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <SimTKsimbody.h>
 
-#include <OpenSim/Common/SimmMacros.h>
 #include "SimbodyEngine.h"
 #include "OpenSimUserForces.h"
 #include "CustomJoint.h"
@@ -307,6 +306,8 @@ migrateFromPreviousVersion(const Object *aPreviousVersion)
 					constrainedCoord->setName(constrainedCoordName);
 					constrainedCoord->_joint = newJoint;
 					newJoint->getCoordinateSet()->append(constrainedCoord);
+					// Set the name of the coordinate in the transform axis to the new coordinate.
+					newAxis->setCoordinateName(constrainedCoordName);
 
 					// New CoordinateCouplerConstraint
 					CoordinateCouplerConstraint *constraint = new CoordinateCouplerConstraint();
@@ -314,9 +315,8 @@ migrateFromPreviousVersion(const Object *aPreviousVersion)
 					indepCoordNames.append(coordinateName);
 					constraint->setIndependentCoordinateNames(indepCoordNames);
 					constraint->setDependentCoordinateName(constrainedCoordName);
-					// NEED TO...
-					//constraint->setFunction((Function*)function->copy());
-					//_constraintSet.append(constraint);
+					constraint->setFunction((Function*)function->copy());
+					_constraintSet.append(constraint);
 
 				} else {
 
@@ -750,61 +750,6 @@ void SimbodyEngine::getUnlockedCoordinates(CoordinateSet& rUnlockedCoordinates) 
 	for (int i = 0; i < _coordinateSet.getSize(); i++)
 		if (!_coordinateSet.get(i)->getLocked())
 			rUnlockedCoordinates.append(_coordinateSet.get(i));
-}
-
-//_____________________________________________________________________________
-/**
- * This function looks through all the dofs in all the joints which are a
- * function of the specified gencoord, and tries to find one which should
- * be treated as the unconstrained dof. If the dof has a function with two
- * points, and the slope of the function is 1.0 or -1.0, and the function
- * passes through zero, then it is a good match. If no such dof is found, the
- * function returns an error. If there are multiple dofs which meet these
- * criteria, the first one is treated as the unconstrained one, and the
- * others will end up constrained.
- *
- * @param aCoordinate coordinate you want to find the unconstrained DOF for
- * @param rJoint the joint that the unconstrained DOF is found in
- * @return The unconstrained DOF
- */
-AbstractTransformAxis* SimbodyEngine::findUnconstrainedDof(const AbstractCoordinate& aCoordinate, AbstractJoint*& rJoint)
-{
-	rJoint = NULL;
-
-   for (int i = 0; i < _jointSet.getSize(); i++)
-   {
-		TransformAxisSet* dofs = _jointSet.get(i)->getTransformAxisSet();
-
-      for (int j = 0; j < dofs->getSize(); j++)
-      {
-			if (dofs->get(j)->getCoordinate() == &aCoordinate)
-	      {
-				Function* func = dofs->get(j)->getFunction();
-
-				if (func->getNumberOfPoints() == 2)
-				{
-					double valueAtZero = func->evaluate(0, 0.0, 0.0, 0.0);
-					double slopeAtZero = func->evaluate(1, 0.0, 0.0, 0.0);
-
-					if (EQUAL_WITHIN_ERROR(valueAtZero, 0.0))
-					{
-						if (EQUAL_WITHIN_ERROR(slopeAtZero, 1.0))
-						{
-							rJoint = _jointSet.get(i);
-							return dofs->get(j);
-						}
-						else if (EQUAL_WITHIN_ERROR(slopeAtZero, -1.0))
-						{
-							rJoint = _jointSet.get(i);
-							return dofs->get(j);
-						}
-					}
-				}
-	      }
-      }
-   }
-
-   return NULL;
 }
 
 //--------------------------------------------------------------------------
