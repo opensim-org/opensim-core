@@ -106,6 +106,7 @@ int main(int argc,char **argv)
 		}
 		Model* hack = (Model*)model.copy();
 		hack->print(outName);
+		cout << "Model " << hack->getName() << " converted to a Simbody engine and written to " << outName << endl;
 	}
 	catch(Exception &x) {
 		x.print(cout);
@@ -131,6 +132,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
  */
 SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSimmEngine)
 {
+	bool dynamicsReady = true;
 	SimbodyEngine* sbe = new SimbodyEngine();
 
 	// LOOP THROUGH BODIES
@@ -155,7 +157,12 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 
 		// INERTIAL PROPERTIES
 		// mass
-		newBody->setMass(oldBody->getMass());
+		double mass = oldBody->getMass();
+		newBody->setMass(mass);
+		if (newBody->getName() != "ground" && mass <= 0.0) {
+			cerr << "Mass of " << newBody->getName() << " is <= 0.0." << endl;
+			dynamicsReady = false;
+		}
 		// mass center
 		SimTK::Vec3 massCenter;
 		oldBody->getMassCenter(massCenter);
@@ -164,6 +171,11 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 		SimTK::Mat33 inertia;
 		oldBody->getInertia(inertia);
 		newBody->setInertia(inertia);
+		if (newBody->getName() != "ground" &&
+			(inertia[0][0] <= 0.0 || inertia[1][1] <= 0.0 || inertia[2][2] <= 0.0)) {
+			cerr << "Inertia of " << newBody->getName() << " is <= 0.0." << endl;
+			dynamicsReady = false;
+		}
 
 		// display stuff
 		newBody->setDisplayer(*oldBody->getDisplayer());
@@ -329,6 +341,11 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 
 	// Copy marker set as well.
 	sbe->replaceMarkerSet(*((MarkerSet*)aSimmEngine->getMarkerSet()));
+
+	if (dynamicsReady == false) {
+		cerr << "WARNING: You will not be able to use " << aModel->getName() << " for dynamic simulations" << endl;
+		cerr << "         because one or more inertial properties are less than or equal to zero." << endl;
+	}
 
 	return sbe;
 }
