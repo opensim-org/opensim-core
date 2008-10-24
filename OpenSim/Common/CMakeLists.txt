@@ -34,6 +34,26 @@ LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
+#-----------------------------------------------------------------------------
+# Copy Libraries that we depend on to the output path so that exes and libs find them
+#
+
+FILE(GLOB LIB_FILES ${SIMTK_DIR}/core/lib/*.dll  ${SIMTK_DIR}/core/lib/*.lib 
+					${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src_2_7_0/lib/Win32/${VCVERSION}/*.lib
+					${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src_2_7_0/lib/Win32/${VCVERSION}/*.dll
+					)
+
+FOREACH (libFile ${LIB_FILES})
+GET_FILENAME_COMPONENT(localName ${libFile} NAME)
+ ADD_CUSTOM_COMMAND(
+    TARGET osim${KIT}
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy
+    ${libFile}
+    ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/${localName})
+ENDFOREACH (libFile) 
+#-----------------------------------------------------------------------------
+
 SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Libraries - osim${KIT}"
