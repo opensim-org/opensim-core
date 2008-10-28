@@ -304,6 +304,8 @@ public:
 
    virtual bool writeSIMMJointFile(const std::string& aFileName) const;
 
+	OPENSIM_DECLARE_DERIVED(SimmKinematicsEngine, AbstractDynamicsEngine);
+
 private:
    const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
    bool writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet, std::ofstream& aStream) const;

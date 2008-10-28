@@ -156,6 +156,9 @@
 
 #include <OpenSim/Tools/AnalyzeTool.h>
 
+#include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
+#include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
+
 using namespace OpenSim;
 using namespace SimTK;
 %}
@@ -525,3 +528,5 @@ using namespace SimTK;
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/ScaleTool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
+%include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
+%include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>

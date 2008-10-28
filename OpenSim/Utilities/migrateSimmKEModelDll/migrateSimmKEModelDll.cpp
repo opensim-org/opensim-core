@@ -1,4 +1,4 @@
-/* Copyright (c)  2008, Stanford University and Peter Loan.
+/* Copyright (c)  2008, Stanford University, Ajay Seth, and Peter Loan.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,6 +29,7 @@
 #include <OpenSim/Common/IO.h>
 #include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/rdMath.h>
+#include "migrateSimmKEModelDll.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
@@ -44,93 +45,17 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
+#ifdef SWIG
+	#ifdef OSIMMIGRATESIMMKEMODEL_API
+		#undef OSIMMIGRATESIMMKEMODEL_API
+		#define OSIMMIGRATESIMMKEMODEL_API
+	#endif
+#endif
+
 using namespace std;
 using namespace OpenSim;
 
-static void PrintUsage(const char *aProgName, ostream &aOStream);
-static SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSimmEngine);
-
-//______________________________________________________________________________
-/**
- * Program to read an xml file for an openSim Model and generate
- * SDFast corresponding code.
- *
- * @param argc Number of command line arguments (should be 2).
- * @param argv Command line arguments:  migrateSimmKEModel model_in model_out
- */
-int main(int argc,char **argv)
-{
-	std::cout << "migrateSimmKEModel, " << OpenSim::GetVersionAndDate() << std::endl;
-
-   Object::RegisterType(SimbodyEngine());
-	SimbodyEngine::registerTypes();
-   Object::RegisterType(SimmKinematicsEngine());
-	SimmKinematicsEngine::registerTypes();
-	Object::RegisterType(Schutte1993Muscle());
-	Object::RegisterType(Thelen2003Muscle());
-
-	// PARSE COMMAND LINE
-	string inName = "";
-	string outName = "";
-
-	for(int i=1; i<argc; i++) {
-		string option = argv[i];
-
-		// PRINT THE USAGE OPTIONS
-		if((option=="-help")||(option=="-h")||(option=="-Help")||(option=="-H")||
-			(option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
-			PrintUsage(argv[0], cout);
-			return(0);
-		}
-	}
-
-	if (argc != 3) {
-		PrintUsage(argv[0], cout);
-		return(-1);
-	}
-
-	inName = argv[1];
-	outName = argv[2];
-
-	try {
-		Model model(inName);
-		model.setup();
-
-		SimmKinematicsEngine* ske = dynamic_cast<SimmKinematicsEngine*>(&model.getDynamicsEngine());
-		if (ske != NULL) {
-			SimbodyEngine* sbe = makeSimbodyEngine(&model, ske);
-			model.replaceEngine(sbe);
-		} else {
-			cout << inName << " does not use a SimmKinematicsEngine. Migration cancelled." << endl;
-			return -1;
-		}
-		Model* hack = (Model*)model.copy();
-		hack->print(outName);
-		cout << "Model " << hack->getName() << " converted to a Simbody engine and written to " << outName << endl;
-	}
-	catch(Exception &x) {
-		x.print(cout);
-	}
-}
-//_____________________________________________________________________________
-/**
- * Print the usage for this application
- */
-void PrintUsage(const char *aProgName, ostream &aOStream)
-{
-	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream << "Usage: " << progName << " model_in model_out" << std::endl;
-}
-
-//_____________________________________________________________________________
-/**
- * This version of the copy method is used for version migration.
- * The idea is to make a copy of the current object except do so using
- * the properties of the pervious version of the same class.
- *
- * @aPreviousVersion 
- */
-SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSimmEngine)
+OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Model& aModel, const SimmKinematicsEngine& aSimmEngine)
 {
 	bool dynamicsReady = true;
 	SimbodyEngine* sbe = new SimbodyEngine();
@@ -139,7 +64,7 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 	CoordinateSet tmpGlobalCoordSet;
 	tmpGlobalCoordSet.setMemoryOwner(false);
 	BodySet *newBodySet = sbe->getBodySet();
-	const BodySet *oldBodySet = aSimmEngine->getBodySet();
+	const BodySet *oldBodySet = aSimmEngine.getBodySet();
 	int nb = oldBodySet->getSize();
 	for(int i=0;i<nb;i++) {
 
@@ -185,7 +110,7 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 		newBodySet->append(newBody);
 
 		// FIND THE OLD JOINT FOR THIS BODY
-		const JointSet *oldJointSet = aSimmEngine->getJointSet();
+		const JointSet *oldJointSet = aSimmEngine.getJointSet();
 		int nj = oldJointSet->getSize();
 		SimmJoint *oldJoint = NULL;
 		for(int j=0;j<nj;j++) {
@@ -267,7 +192,7 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 				// Coordinates
 				string coordinateName = oldDof->getCoordinateName();
 				newAxis->setCoordinateName(coordinateName);
-				const CoordinateSet *oldCoordSet = aSimmEngine->getCoordinateSet();
+				const CoordinateSet *oldCoordSet = aSimmEngine.getCoordinateSet();
 				const SimmCoordinate *oldCoord = (const SimmCoordinate*)oldCoordSet->get(newAxis->getCoordinateName());
 
 				// Does the coordinate alread exist?
@@ -337,13 +262,13 @@ SimbodyEngine* makeSimbodyEngine(Model* aModel, const SimmKinematicsEngine* aSim
 		}
 	}
 
-	sbe->setup(aModel);
+	sbe->setup(&aModel);
 
 	// Copy marker set as well.
-	sbe->replaceMarkerSet(*((MarkerSet*)aSimmEngine->getMarkerSet()));
+	sbe->replaceMarkerSet(*((MarkerSet*)aSimmEngine.getMarkerSet()));
 
 	if (dynamicsReady == false) {
-		cerr << "WARNING: You will not be able to use " << aModel->getName() << " for dynamic simulations" << endl;
+		cerr << "WARNING: You will not be able to use " << aModel.getName() << " for dynamic simulations" << endl;
 		cerr << "         because one or more inertial properties are less than or equal to zero." << endl;
 	}
 

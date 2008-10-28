@@ -1,8 +1,8 @@
 SET(TARGETS convertControls convertStorageToControls simplifyControls perturbStorage 
-				storageAdd storageIntegrate storageInterpolate storageSubtract storageFilter)
+				storageAdd storageIntegrate storageInterpolate storageSubtract storageFilter migrateSimmKEModel)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
-LINK_LIBRARIES(debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation)
+LINK_LIBRARIES(debug xerces-c_2D optimized xerces-c_2 osimCommon osimSimulation osimMigrateSimmKEModel)
 
 FOREACH(TARGET ${TARGETS})
 	ADD_EXECUTABLE(${TARGET} ${TARGET}.cpp)
@@ -12,4 +12,4 @@ ENDFOREACH(TARGET)
 INSTALL_TARGETS(/sdk/bin/ ${TARGETS})
 SET_TARGET_PROPERTIES(${TARGETS} PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD})
 
-SUBDIRS(simmToOpenSim openSimToSimm addComments convertFiles migrateSimmKEModel)
+SUBDIRS(simmToOpenSim openSimToSimm addComments convertFiles migrateSimmKEModelDll)
