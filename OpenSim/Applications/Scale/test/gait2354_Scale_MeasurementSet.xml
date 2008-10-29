@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Body segments are scaled by calculating the average distance between
+specified marker pairs.  The ratio between the averaged distance to the
+distance in the generic model is then used to scale each specified segment
+in the specified axis directions (e.g., X Y Z).-->
+<MeasurementSet name="gait2354">
+	<objects>
+		<Measurement name="torso">
+			<!--Flag to turn on and off scaling for this measurement.-->
+			<apply> true </apply>
+			<!--Set of marker pairs used to determine the scale factors.-->
+			<MarkerPairSet name="">
+				<objects>
+					<MarkerPair name="">
+						<!--Names of two markers, the distance between which is used to compute a
+						    body scale factor.-->
+						<markers> V.Sacral Top.Head </markers>
+					</MarkerPair>
+				</objects>
+			</MarkerPairSet>
+			<!--Set of bodies to be scaled by this measurement.-->
+			<BodyScaleSet name="">
+				<objects>
+					<BodyScale name="torso">
+						<!--Axes (X Y Z) along which to scale a body. For example, 'X Y Z' scales
+						    along all three axes, and 'Y' scales just along the Y axis.-->
+						<axes> X Y Z </axes>
+					</BodyScale>
+				</objects>
+			</BodyScaleSet>
+		</Measurement>
+		
+		<Measurement name="pelvis">
+			<!--Flag to turn on and off scaling for this measurement.-->
+			<apply> true </apply>
+			<!--Set of marker pairs used to determine the scale factors.-->
+			<MarkerPairSet>
+				<objects>
+					<MarkerPair>
+						<markers> R.ASIS L.ASIS </markers>
+					</MarkerPair>
+				</objects>
+			</MarkerPairSet>
+			<!--Set of bodies to be scaled by this measurement.-->
+			<BodyScaleSet>
+				<objects>
+					<BodyScale name="pelvis">
+						<axes> X Y Z </axes>
+					</BodyScale>
+				</objects>
+			</BodyScaleSet>
+		</Measurement>
+		
+		<Measurement name="thigh">
+			<!--Flag to turn on and off scaling for this measurement.-->
+			<apply> true </apply>
+			<!--Set of marker pairs used to determine the scale factors.-->
+			<MarkerPairSet>
+				<objects>
+					<MarkerPair>
+						<markers> R.ASIS R.Knee.Lat </markers>
+					</MarkerPair>
+					<MarkerPair>
+						<markers>L.ASIS L.Knee.Lat</markers>
+					</MarkerPair>
+				</objects>
+			</MarkerPairSet>
+			<!--Set of bodies to be scaled by this measurement.-->
+			<BodyScaleSet>
+				<objects>
+					<BodyScale name="femur_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="femur_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="patella_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="patella_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+				</objects>
+			</BodyScaleSet>
+		</Measurement>
+		
+		<Measurement name="shank">
+			<!--Flag to turn on and off scaling for this measurement.-->
+			<apply> true </apply>
+			<!--Set of marker pairs used to determine the scale factors.-->
+			<MarkerPairSet>
+				<objects>
+					<MarkerPair>
+						<markers> R.Knee.Lat R.Ankle.Lat </markers>
+					</MarkerPair>
+					<MarkerPair>
+						<markers>L.Knee.Lat L.Ankle.Lat</markers>
+					</MarkerPair>
+				</objects>
+			</MarkerPairSet>
+			<!--Set of bodies to be scaled by this measurement.-->
+			<BodyScaleSet>
+				<objects>
+					<BodyScale name="tibia_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="tibia_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="talus_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="talus_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+				</objects>
+			</BodyScaleSet>
+		</Measurement>
+		
+		<Measurement name="foot">
+			<!--Flag to turn on and off scaling for this measurement.-->
+			<apply> true </apply>
+			<!--Set of marker pairs used to determine the scale factors.-->
+			<MarkerPairSet>
+				<objects>
+					<MarkerPair>
+						<markers> R.Heel R.Toe.Tip </markers>
+					</MarkerPair>
+					<MarkerPair>
+						<markers>L.Heel L.Toe.Tip</markers>
+					</MarkerPair>
+				</objects>
+			</MarkerPairSet>
+			<!--Set of bodies to be scaled by this measurement.-->
+			<BodyScaleSet>
+				<objects>
+					<BodyScale name="calcn_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="calcn_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="toes_r">
+						<axes> X Y Z </axes>
+					</BodyScale>
+					<BodyScale name="toes_l">
+						<axes> X Y Z </axes>
+					</BodyScale>
+				</objects>
+			</BodyScaleSet>
+		</Measurement>
+	</objects>
+</MeasurementSet>

@@ -25,22 +25,21 @@
 */
 
 #include "OpenSim/Common/Storage.h"
+#include <fstream>
 
 using namespace OpenSim;
 using namespace std;
 
 #define ASSERT(cond) {if (!(cond)) throw exception();}
 
-int main(int argc, char* argv[]) {
+int main() {
 	// Create a storge from a std file "std_storage.sto"
-   if (argc !=2)
-   {
-		cout << "incorrect number of parameters passed in to testStorage. Usage testStorage std_file" << endl;
-      exit(1);
-   }
+		//ofstream checkRunDirFile("rundir.txt");
+		//checkRunDirFile << "Run from here:\n\n";
+		//checkRunDirFile.close();
    std::string stdLabels[] = {"time", "v1", "v2"};
     try {
-		Storage* st = new Storage(argv[1]);
+		Storage* st = new Storage("test.sto");
 		// time[\t]v1[\t]v2
 		// 1.[\t]	10.0[Space]20
 		// 2.[\t\t] 20.0[\t]40
@@ -61,6 +60,16 @@ int main(int argc, char* argv[]) {
 			ASSERT(row.getData()[0]==row.getTime()*10.0);
 			ASSERT(row.getData()[1]==row.getTime()*20.0);
 		}
+		int ncol = st->getSmallestNumberOfStates();
+		ASSERT(ncol==2);
+		Array<double> col(SimTK::CNT<SimTK::Real>::getNaN(),4);
+		st->getDataColumn(1, col);
+		ASSERT(col[0]==20.);
+		ASSERT(col[1]==40.0);
+	
+		ASSERT(st->getStateIndex("v2")==1);
+
+		// Test Operations: Add, ...
 
 		delete st;
     }

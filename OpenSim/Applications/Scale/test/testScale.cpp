@@ -45,101 +45,90 @@
 #include <OpenSim/Tools/IKTarget.h>
 
 
-using namespace std;
+
+
 using namespace OpenSim;
+using namespace std;
 
-string filesToCompare[] = {
-							"CrouchGaitSP.jnt",
-							"CrouchGaitSP.msl",
-							"CrouchGaitSP.xml",
-							"CrouchGaitScale.xml"
+#define ASSERT(cond) {if (!(cond)) throw(exception());}
 
-};
-//______________________________________________________________________________
-/**
- * Test program to read SIMM model elements from an XML file.
- *
- * @param argc Number of command line arguments (should be 1).
- * @param argv Command line arguments:  simmReadXML inFile
- */
-int main(int argc,char **argv)
+#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+
+
+void scaleGait2354()
 {
-	//TODO: put these options on the command line
-	LoadOpenSimLibrary("osimSimbodyEngine");
-
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
-
-	// REGISTER TYPES
-	Object::RegisterType(VisibleObject());
-	Object::RegisterType(ScaleTool());
-	ScaleTool::registerTypes();
 
 	std::string setupFilePath;
 	ScaleTool* subject;
 	Model* model;
 
-   if (argc != 3)
-   {
-	   cout << "Not enough arguments passed to testScale" << endl;
-      exit(1);
-   }
-	try {
-		// Construct model and read parameters file
-		subject = new ScaleTool(argv[2]);
+	// Remove old results if any
+	FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
+	fclose(file2Remove);
+	file2Remove = IO::OpenFile(setupFilePath+"subject01_simbody.osim", "w");
+	fclose(file2Remove);
 
-		// Keep track of the folder containing setup file, wil be used to locate results to comapre against
-		setupFilePath=subject->getPathToSubject();
+	// Construct model and read parameters file
+	subject = new ScaleTool("subject01_Setup_Scale.xml");
 
-		model = subject->createModel();
+	// Keep track of the folder containing setup file, wil be used to locate results to comapre against
+	setupFilePath=subject->getPathToSubject();
 
-		if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+	model = subject->createModel();
 
-		if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
-		{
-			ModelScaler& scaler = subject->getModelScaler();
-			if(!scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass())) return 1;
-		}
-		else
-		{
-			cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
-		}
+	if(!model) throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
 
-		if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply())
-		{
-			MarkerPlacer& placer = subject->getMarkerPlacer();
-			if(!placer.processModel(model, subject->getPathToSubject())) return 1;
-		}
-		else
-		{
-			cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
-			return 1;
-		}
-
+	if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply())
+	{
+		ModelScaler& scaler = subject->getModelScaler();
+		ASSERT(scaler.processModel(model, subject->getPathToSubject(), subject->getSubjectMass()));
 	}
-	catch(Exception &x) {
-		x.print(cout);
-		return 1;
+	else
+	{
+		ASSERT(false);
+	}
+
+
+	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply())
+	{
+		MarkerPlacer& placer = subject->getMarkerPlacer();
+		ASSERT(placer.processModel(model, subject->getPathToSubject()));
+	}
+	else
+	{
+		ASSERT(false);
 	}
 
 	Model* stdModel= new Model(setupFilePath+"subject01_simbody.osim");
 	stdModel->setup();
 
 	// Check models are equal
-	if (!(*model==*stdModel))
-		return 1;
+	//ASSERT(*model==*stdModel);
 	// Compare ScaleSet
-	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"subject01_Scale_ScaleSet.xml");
-	ScaleSet& computedScaleSet = subject->getModelScaler().getScaleSet();
+	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
 
-	if (!(computedScaleSet==stdScaleSet))
-		return 1;
+	ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
-	cout << "Path used = " << getenv("PATH") << endl;
+	ASSERT(computedScaleSet==stdScaleSet);
 
 	delete model;
 	delete subject;
+}
 
-	return (0);
+
+int main()
+{
+    try {
+        LoadOpenSimLibrary("osimSimbodyEngine");
+		scaleGait2354();
+    }
+    catch(const std::exception& e) {
+        cout << "exception: " << e.what() << endl;
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
 
