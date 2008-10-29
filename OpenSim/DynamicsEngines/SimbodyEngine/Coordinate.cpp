@@ -556,7 +556,7 @@ bool Coordinate::setValue(double aValue, State& theState, bool aRealize)
 			if (aRealize) {
 				getEngine()->_system->realize(theState, Stage::Position);
 
-				if (isConstrained()){
+				if (getEngine()->getNumConstraints()>0){ // Should write hasDependents() instead 
 					double* coordinatesAndSpeeds = new double[getEngine()->getNumCoordinates() + getEngine()->getNumSpeeds()];
 					getEngine()->getConfiguration(coordinatesAndSpeeds);
 
