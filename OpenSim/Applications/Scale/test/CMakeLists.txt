@@ -9,7 +9,7 @@ LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 
 ADD_EXECUTABLE(testScale testScale.cpp)
 
-FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
 
 #
 # Copy files to run dir
