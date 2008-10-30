@@ -1,4 +1,6 @@
-// osimMigrateSimmKEModelDLL.cpp
+#ifndef _osimSimmFileWriterDll_h_
+#define _osimSimmFileWriterDll_h_
+// osimSimmFileWriterDll.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2008, Stanford University. All rights reserved. 
@@ -26,69 +28,24 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "osimMigrateSimmKEModelDLL.h"
-#include <iostream>
+// UNIX PLATFORM
+#ifndef WIN32
 
+#define OSIMSIMMFILEWRITER_API
 
-using namespace std;
+// WINDOWS PLATFORM
+#else
 
-//
-// Define Plugin_Attach and Plugin_Detach below to be called by both windows and linux
-//
-static void Plugin_Attach()
-{
-	//cout<<"\n-------------------------------------------------------\n";
-	//cout<<"Library osimMigrateSimmKEModel...\n";
-	//cout<<"-------------------------------------------------------\n\n";
-}
-
-static void Plugin_Detach()
-{
-}
-
-//
-// The code below handles both windows and linux library entrypoints
-//
-#if defined(WIN32)
-//=============================================================================
-// DLL Main Entry Point
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * This routine is called when the dll is loaded I believe.
- */
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-                )
-{
-   switch (ul_reason_for_call)
-   {
-      case DLL_PROCESS_ATTACH:
-         Plugin_Attach();
-         break;
-
-      case DLL_PROCESS_DETACH:
-         Plugin_Detach();
-         break;
-
-      case DLL_THREAD_ATTACH:
-      case DLL_THREAD_DETACH:
-			break;
-    }
-
-    return TRUE;
-}
-#elif defined(__linux__)
-static void __attribute__((constructor)) Shared_Object_Constructor()
-{
-   Plugin_Attach();
-}
-static void __attribute__((destructor)) Shared_Object_Destructor()
-{
-   Plugin_Detach();
-}
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#ifdef OSIMSIMMFILEWRITER_EXPORTS
+#define OSIMSIMMFILEWRITER_API __declspec(dllexport)
+#else
+#define OSIMSIMMFILEWRITER_API __declspec(dllimport)
 #endif
+
+#endif // PLATFORM
+
+
+#endif // __osimSimmFileWriterDll_h__

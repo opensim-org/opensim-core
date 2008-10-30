@@ -302,16 +302,7 @@ public:
 
 	virtual void computeConstrainedCoordinates(double rQ[]) const;
 
-   virtual bool writeSIMMJointFile(const std::string& aFileName) const;
-
 	OPENSIM_DECLARE_DERIVED(SimmKinematicsEngine, AbstractDynamicsEngine);
-
-private:
-   const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
-   bool writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet, std::ofstream& aStream) const;
-   void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
-   bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
-   bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
 
 //=============================================================================
 };	// END of class SimmKinematicsEngine

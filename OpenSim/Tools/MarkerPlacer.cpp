@@ -31,7 +31,7 @@
 //=============================================================================
 #include "MarkerPlacer.h"
 #include "IKTrial.h"
-#include <OpenSim/Simulation/Model/SimmFileWriter.h>
+#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Common/MarkerData.h>

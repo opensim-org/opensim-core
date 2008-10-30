@@ -1,10 +1,9 @@
-#ifndef __SimmFileWriter_h__
-#define __SimmFileWriter_h__
-
-// SimmFileWriter.h
-// Author: Peter Loan
+#ifndef __SimbodySimmGencoord_h__
+#define __SimbodySimmGencoord_h__
+// SimbodySimmGencoord.h
+// Authors: Peter Loan
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,66 +28,62 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// INCLUDE
+// INCLUDES
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKcommon.h"
-
-#ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
-#endif
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Function.h>
 
 namespace OpenSim {
 
-class Model;
-class AbstractMuscle;
-class ActuatorSet;
+class AbstractCoordinate;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class for writing SIMM joint and muscle files for any Model.
+ * A class to hold a gencoord in a SimbodySimmModel.
  *
- * @author Peter Loan
+ * @authors Peter Loan
  * @version 1.0
  */
-class  OSIMSIMULATION_API SimmFileWriter
+class SimbodySimmGencoord
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	Model *_model;
+	/** Pointer to the coordinate that this gencoord was created from. */
+	const AbstractCoordinate* _coordinate;
+
+	/** User-defined function numbers for the three restraint functions */
+	int _restraintFuncUserNumber;
+	int _minRestraintFuncUserNumber;
+	int _maxRestraintFuncUserNumber;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
-	// CONSTRUCTION
+	// CONSTRUCTION AND DESTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	SimmFileWriter();
-	SimmFileWriter(Model *aModel);
-	virtual ~SimmFileWriter();
+	virtual ~SimbodySimmGencoord();
+	SimbodySimmGencoord();
+	SimbodySimmGencoord(const AbstractCoordinate* aCoordinate,
+		int aRestraintFuncUserNumber,
+		int aMinRestraintFuncUserNumber,
+		int aMaxRestraintFuncUserNumber);
+   void write(std::ofstream& aStream);
 
-	bool writeJointFile(const std::string& aFileName) const;
-	bool writeMuscleFile(const std::string& aFileName) const;
-
-private:
-	bool writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aActuatorSet, std::ofstream& aStream) const;
 //=============================================================================
-};	// END of class SimmFileWriter
+};	// END of class SimbodySimmGencoord
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SimmFileWriter_h__
+#endif // __SimbodySimmGencoord_h__
 
 

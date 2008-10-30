@@ -130,7 +130,6 @@
 #include <OpenSim/Tools/IKTrial.h>
 #include <OpenSim/Tools/IKTrialSet.h>
 
-#include <OpenSim/Simulation/Model/SimmFileWriter.h>
 #include <OpenSim/Tools/IKTask.h>
 #include <OpenSim/Tools/IKMarkerTask.h>
 #include <OpenSim/Tools/IKCoordinateTask.h>
@@ -158,6 +157,9 @@
 
 #include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
 #include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
+
+#include <OpenSim/Utilities/simmFileWriterDll/osimSimmFileWriterDLL.h>
+#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -505,7 +507,6 @@ using namespace SimTK;
 %template(SetIKTrial) OpenSim::Set<OpenSim::IKTrial>;
 %include <OpenSim/Tools/IKTrialSet.h>
 
-%include <OpenSim/Simulation/Model/SimmFileWriter.h>
 %include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
 %include <OpenSim/Tools/IKMarkerTask.h>
@@ -530,3 +531,5 @@ using namespace SimTK;
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
 %include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
+%include <OpenSim/Utilities/simmFileWriterDll/osimSimmFileWriterDLL.h>
+%include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>

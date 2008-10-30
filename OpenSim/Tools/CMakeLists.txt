@@ -28,14 +28,13 @@ INCLUDE_DIRECTORIES(
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-# SimmKinematicsEngine library only needed for SimmFileWriter...
 LINK_LIBRARIES(
 	debug osimCommon_d optimized osimCommon
 	debug osimSimulation_d optimized osimSimulation
 	debug osimAnalyses_d optimized osimAnalyses
 	debug osimActuators_d optimized osimActuators
 	debug osimAnalyses_d optimized osimAnalyses
-	debug osimSimmKinematicsEngine_d optimized osimSimmKinematicsEngine
+	debug osimSimmFileWriter_d optimized osimSimmFileWriter
 	${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB})
 				
 LINK_DIRECTORIES( ${OpenSim_LIBS_DIR}/${RDI_ARCH} )

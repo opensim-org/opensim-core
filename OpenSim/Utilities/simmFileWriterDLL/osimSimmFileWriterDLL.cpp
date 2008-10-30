@@ -1,4 +1,4 @@
-// osimMigrateSimmKEModelDLL.cpp
+// osimSimmFileWriterDLL.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2008, Stanford University. All rights reserved. 
@@ -29,7 +29,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimMigrateSimmKEModelDLL.h"
+#include "osimSimmFileWriterDLL.h"
 #include <iostream>
 
 
@@ -41,7 +41,7 @@ using namespace std;
 static void Plugin_Attach()
 {
 	//cout<<"\n-------------------------------------------------------\n";
-	//cout<<"Library osimMigrateSimmKEModel...\n";
+	//cout<<"Library osimSimmFileWriterDLL...\n";
 	//cout<<"-------------------------------------------------------\n\n";
 }
 

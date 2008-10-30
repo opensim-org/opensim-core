@@ -334,7 +334,7 @@ public:
 	const SimTK::Vector_<SimTK::SpatialVec>& getBodyForces() { return _bodyForces; }
 	const SimTK::Vector& getMobilityForces() { return _mobilityForces; }
 
-   bool writeSIMMJointFile(const std::string& aFileName) const;
+	OPENSIM_DECLARE_DERIVED(SimbodyEngine, AbstractDynamicsEngine);
 
 private:
 	friend class Body;

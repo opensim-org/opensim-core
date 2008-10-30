@@ -1,7 +1,9 @@
-// osimMigrateSimmKEModelDLL.cpp
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifndef __SimbodySimmBody_h__
+#define __SimbodySimmBody_h__
+// SimbodySimmBody.h
+// Authors: Peter Loan
 /*
-* Copyright (c)  2008, Stanford University. All rights reserved. 
+ * Copyright (c)  2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -24,71 +26,57 @@
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "osimMigrateSimmKEModelDLL.h"
-#include <iostream>
-
-
-using namespace std;
-
-//
-// Define Plugin_Attach and Plugin_Detach below to be called by both windows and linux
-//
-static void Plugin_Attach()
-{
-	//cout<<"\n-------------------------------------------------------\n";
-	//cout<<"Library osimMigrateSimmKEModel...\n";
-	//cout<<"-------------------------------------------------------\n\n";
-}
-
-static void Plugin_Detach()
-{
-}
-
-//
-// The code below handles both windows and linux library entrypoints
-//
-#if defined(WIN32)
-//=============================================================================
-// DLL Main Entry Point
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * This routine is called when the dll is loaded I believe.
  */
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-                )
-{
-   switch (ul_reason_for_call)
-   {
-      case DLL_PROCESS_ATTACH:
-         Plugin_Attach();
-         break;
 
-      case DLL_PROCESS_DETACH:
-         Plugin_Detach();
-         break;
+// INCLUDES
+#include <iostream>
+#include <string>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Function.h>
 
-      case DLL_THREAD_ATTACH:
-      case DLL_THREAD_DETACH:
-			break;
-    }
+namespace OpenSim {
 
-    return TRUE;
-}
-#elif defined(__linux__)
-static void __attribute__((constructor)) Shared_Object_Constructor()
+class Body;
+
+//=============================================================================
+//=============================================================================
+/**
+ * A class to hold a body in a SimbodySimmModel.
+ *
+ * @authors Peter Loan
+ * @version 1.0
+ */
+class SimbodySimmBody
 {
-   Plugin_Attach();
-}
-static void __attribute__((destructor)) Shared_Object_Destructor()
-{
-   Plugin_Detach();
-}
-#endif
+
+//=============================================================================
+// DATA
+//=============================================================================
+protected:
+   std::string _name;
+	/** Pointer to the Body that this object was created from (can be NULL). */
+	const Body* _body;
+
+//=============================================================================
+// METHODS
+//=============================================================================
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION AND DESTRUCTION
+	//--------------------------------------------------------------------------
+public:
+	virtual ~SimbodySimmBody();
+	SimbodySimmBody();
+   SimbodySimmBody(const Body* aBody, const std::string& aName);
+   void write(std::ofstream& aStream);
+
+//=============================================================================
+};	// END of class SimbodySimmBody
+//=============================================================================
+//=============================================================================
+
+} // end of namespace OpenSim
+
+#endif // __SimbodySimmBody_h__
+
+

@@ -60,7 +60,6 @@
 #include "SimbodyEngine01_05.h"
 #include "SimbodyTranslationDof01_05.h"
 #include "SimbodyRotationDof01_05.h"
-#include "SimbodySimmModel.h"
 
 
 //=============================================================================
@@ -2399,19 +2398,4 @@ JointSet* SimbodyEngine::getJointSet()
 			_jointSet.append(nextJoint);
 	}
 	return &_jointSet; 
-}
-
-//_____________________________________________________________________________
-/**
- * Write a SIMM joint file that represents this engine.
- * 
- */
-bool SimbodyEngine::writeSIMMJointFile(const std::string& aFileName) const
-{
-   //TODO: try, catch to deal with any failures in making the model
-   SimbodySimmModel ssm(*this);
-
-   ssm.writeJointFile(aFileName);
-
-   return true;
 }

@@ -36,7 +36,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/SimmFileWriter.h>
+#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
 
 //=============================================================================
 // STATICS
