@@ -34,7 +34,7 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
+#include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
 
 using namespace std;
 using namespace OpenSim;

@@ -12,4 +12,4 @@ ENDFOREACH(TARGET)
 INSTALL_TARGETS(/sdk/bin/ ${TARGETS})
 SET_TARGET_PROPERTIES(${TARGETS} PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD})
 
-SUBDIRS(simmToOpenSim addComments convertFiles simmFileWriterDLL migrateSimmKEModelDll)
+SUBDIRS(simmToOpenSim addComments convertFiles simmFileWriterDLL migrateSimmKEModelDLL)

@@ -29,7 +29,7 @@
 #include <OpenSim/Common/IO.h>
 #include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/rdMath.h>
-#include "migrateSimmKEModelDll.h"
+#include "migrateSimmKEModelDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>

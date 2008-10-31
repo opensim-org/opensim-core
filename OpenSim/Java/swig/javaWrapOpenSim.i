@@ -155,11 +155,11 @@
 
 #include <OpenSim/Tools/AnalyzeTool.h>
 
-#include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
-#include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
+#include <OpenSim/Utilities/migrateSimmKEModelDLL/osimMigrateSimmKEModelDLL.h>
+#include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
 
-#include <OpenSim/Utilities/simmFileWriterDll/osimSimmFileWriterDLL.h>
-#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
+#include <OpenSim/Utilities/simmFileWriterDLL/osimSimmFileWriterDLL.h>
+#include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -529,7 +529,7 @@ using namespace SimTK;
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/ScaleTool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
-%include <OpenSim/Utilities/migrateSimmKEModelDll/osimMigrateSimmKEModelDLL.h>
-%include <OpenSim/Utilities/migrateSimmKEModelDll/migrateSimmKEModelDll.h>
-%include <OpenSim/Utilities/simmFileWriterDll/osimSimmFileWriterDLL.h>
-%include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
+%include <OpenSim/Utilities/migrateSimmKEModelDLL/osimMigrateSimmKEModelDLL.h>
+%include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
+%include <OpenSim/Utilities/simmFileWriterDLL/osimSimmFileWriterDLL.h>
+%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>

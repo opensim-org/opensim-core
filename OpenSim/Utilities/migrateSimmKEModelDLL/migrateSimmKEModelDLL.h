@@ -1,7 +1,7 @@
-#ifndef __migrateSimmKEModelDll_h__
-#define __migrateSimmKEModelDll_h__
+#ifndef __migrateSimmKEModelDLL_h__
+#define __migrateSimmKEModelDLL_h__
 
-// migrateSimmKEModelDll.h
+// migrateSimmKEModelDLL.h
 // Authors: Peter Loan
 /*
  * Copyright (c)  2008, Stanford University and Peter Loan. All rights reserved. 
@@ -30,7 +30,7 @@
  */
 
 // INCLUDES
-#include "osimmigrateSimmKEModelDll.h"
+#include "osimmigrateSimmKEModelDLL.h"
 
 #ifdef SWIG
 	#ifdef OSIMMIGRATESIMMKEMODEL_API
@@ -49,6 +49,6 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* makeSimbodyEngine(Model& aMod
 
 } // end of namespace OpenSim
 
-#endif // __migrateSimmKEModelDll_h__
+#endif // __migrateSimmKEModelDLL_h__
 
 
