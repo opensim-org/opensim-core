@@ -29,7 +29,8 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES( osimCommon osimSimulation osimAnalyses osimTools osimMigrateSimmKEModel
-		debug xerces-c_2D optimized  xerces-c_2)
+		debug xerces-c_2D optimized  xerces-c_2
+		debug osimSimmKinematicsEngine_D optimized osimSimmKinematicsEngine)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
