@@ -79,8 +79,6 @@ public:
         return 2;
     }
 };
-
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -259,6 +257,9 @@ void Coordinate::setNull(void)
 	// This occurs in SimbodyEngine::connectBodies() as each joint and
 	// body are added to the Simbody matter subsystem.
 	_motionType = AbstractTransformAxis::Translational;
+	// On initialization there's no _lockFunction. 
+	// _lockFunction should not be copied .
+	_lockFunction=NULL;
 }
 
 //_____________________________________________________________________________
@@ -320,12 +321,12 @@ void Coordinate::createConstraintsForLockClampPrescribed()
 {
 	//create lock constraint automatically
 	// Define the locked value for the constraint as a function
-	SimTK::Function<1>::Constant *lockFunction = new SimTK::Function<1>::Constant(Vec1(getValue()), 1); 
+	_lockFunction = new SettableConstantFunction(getValue()); 
 	// The underlying SimTK constraint
 	SimTK::Constraint *lock;
 	lock = new SimTK::Constraint::PrescribedMotion( 
 			getEngine()->_system->updMatterSubsystem(), 
-			lockFunction, 
+			_lockFunction, 
 			_bodyIndex, 
 			SimTK::MobilizerQIndex(_mobilityIndex));
 	_lockedConstraintIndex = lock->getConstraintIndex();
@@ -840,6 +841,11 @@ bool Coordinate::setLocked(bool aLocked, State& theState)
 		//Cannot be locked and have prescribed motion and/or clamping
 		setIsPrescribed(false, theState);
 		setClamped(false, theState);
+		// Update the value of the function to current value of coordinate
+		//assert(_lockFunction);
+		_lockFunction->setTheValue(getValue());
+		// need to update default value as well so that the default value is valid
+		_defaultValue = getValue();
 	}
 	else
 		lock->disable(theState);

@@ -50,6 +50,39 @@ namespace OpenSim {
 
 class Joint;
 class SimbodyEngine;
+using SimTK::Vec;
+
+// Helper class to construct constant function with settable value
+class SettableConstantFunction : public SimTK::Function<1> {
+private:
+    const int _argumentSize;
+    Vec<1>	_value;
+public:
+	SettableConstantFunction(double aValue):
+	_argumentSize(1)
+	{
+		_value=SimTK::Vec<1>(aValue);
+	}
+	void setTheValue(const double aNewValue) {
+		_value = Vec<1>(aNewValue);
+	}
+	SimTK::Vec<1> calcValue(const SimTK::Vector& x) const {
+        assert(x.size() == _argumentSize);
+        return _value;
+    }
+    SimTK::Vec<1> calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
+        return SimTK::Vec<1>(0.0);
+    }
+    virtual int getArgumentSize() const {
+        return _argumentSize;
+    }
+    int getMaxDerivativeOrder() const {
+        return std::numeric_limits<int>::max();
+    }
+
+};
+
+
 //=============================================================================
 //=============================================================================
 /**
@@ -148,6 +181,7 @@ protected:
 	/** Simbody joint that owns this coordinate. */
 	Joint *_joint;
 
+	SettableConstantFunction* _lockFunction;
 //=============================================================================
 // METHODS
 //=============================================================================
