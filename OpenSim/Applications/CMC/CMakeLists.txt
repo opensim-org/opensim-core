@@ -19,3 +19,5 @@ SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPN
 #  ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
 #  LINK_LIBRARIES(gcov)
 #ENDIF (UNIX)
+
+SUBDIRS(test)

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ControlSet name="gait2354_CMC">
+	<defaults>
+		<ControlLinear name="default">
+			<is_model_control> true </is_model_control>
+			<extrapolate> true </extrapolate>
+			<default_min> 0.02 </default_min>
+			<default_max> 1.00 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+	</defaults>
+	<objects>
+		<ControlLinear name="FX.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		<ControlLinear name="FY.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		<ControlLinear name="FZ.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		<ControlLinear name="MX.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		<ControlLinear name="MY.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		<ControlLinear name="MZ.excitation">
+			<default_min> -1.0 </default_min>
+			<default_max>  1.0 </default_max>
+			<use_steps> false </use_steps>
+		</ControlLinear>
+		
+		<!-- right -->
+		<ControlLinear name="hip_flexion_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="hip_adduction_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="hip_rotation_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="knee_angle_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="ankle_angle_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="subtalar_angle_r_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="mtp_angle_r_reserve.excitation">
+			<default_min> -1 </default_min>
+			<default_max>  1 </default_max>
+		</ControlLinear>
+		
+		<!-- left -->
+		<ControlLinear name="hip_flexion_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="hip_adduction_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="hip_rotation_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="knee_angle_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="ankle_angle_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="subtalar_angle_l_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="mtp_angle_l_reserve.excitation">
+			<default_min> -1 </default_min>
+			<default_max>  1 </default_max>
+		</ControlLinear>
+		
+		<!-- back -->
+		<ControlLinear name="lumbar_extension_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="lumbar_bending_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+		<ControlLinear name="lumbar_rotation_reserve.excitation">
+			<default_min> -1000 </default_min>
+			<default_max>  1000 </default_max>
+		</ControlLinear>
+
+		<!-- muscles -->
+		<ControlLinear name="glut_med1_r.excitation" />
+		<ControlLinear name="glut_med2_r.excitation" />
+		<ControlLinear name="glut_med3_r.excitation" />
+		<ControlLinear name="bifemlh_r.excitation" />
+		<ControlLinear name="bifemsh_r.excitation" />
+		<ControlLinear name="sar_r.excitation" />
+		<ControlLinear name="add_mag2_r.excitation" />
+		<ControlLinear name="tfl_r.excitation" />
+		<ControlLinear name="pect_r.excitation" />
+		<ControlLinear name="grac_r.excitation" />
+		<ControlLinear name="glut_max1_r.excitation" />
+		<ControlLinear name="glut_max2_r.excitation" />
+		<ControlLinear name="glut_max3_r.excitation" />
+		<ControlLinear name="iliacus_r.excitation" />
+		<ControlLinear name="psoas_r.excitation" />
+		<ControlLinear name="quad_fem_r.excitation" />
+		<ControlLinear name="gem_r.excitation" />
+		<ControlLinear name="peri_r.excitation" />
+		<ControlLinear name="rect_fem_r.excitation" />
+		<ControlLinear name="vas_int_r.excitation" />
+		<ControlLinear name="med_gas_r.excitation" />
+		<ControlLinear name="soleus_r.excitation" />
+		<ControlLinear name="tib_post_r.excitation" />
+		<ControlLinear name="tib_ant_r.excitation" />
+		<ControlLinear name="glut_med1_l.excitation" />
+		<ControlLinear name="glut_med2_l.excitation" />
+		<ControlLinear name="glut_med3_l.excitation" />
+		<ControlLinear name="bifemlh_l.excitation" />
+		<ControlLinear name="bifemsh_l.excitation" />
+		<ControlLinear name="sar_l.excitation" />
+		<ControlLinear name="add_mag2_l.excitation" />
+		<ControlLinear name="tfl_l.excitation" />
+		<ControlLinear name="pect_l.excitation" />
+		<ControlLinear name="grac_l.excitation" />
+		<ControlLinear name="glut_max1_l.excitation" />
+		<ControlLinear name="glut_max2_l.excitation" />
+		<ControlLinear name="glut_max3_l.excitation" />
+		<ControlLinear name="iliacus_l.excitation" />
+		<ControlLinear name="psoas_l.excitation" />
+		<ControlLinear name="quad_fem_l.excitation" />
+		<ControlLinear name="gem_l.excitation" />
+		<ControlLinear name="peri_l.excitation" />
+		<ControlLinear name="rect_fem_l.excitation" />
+		<ControlLinear name="vas_int_l.excitation" />
+		<ControlLinear name="med_gas_l.excitation" />
+		<ControlLinear name="soleus_l.excitation" />
+		<ControlLinear name="tib_post_l.excitation" />
+		<ControlLinear name="tib_ant_l.excitation" />
+		<ControlLinear name="ercspn_r.excitation" />
+		<ControlLinear name="ercspn_l.excitation" />
+		<ControlLinear name="intobl_r.excitation" />
+		<ControlLinear name="intobl_l.excitation" />
+		<ControlLinear name="extobl_r.excitation" />
+		<ControlLinear name="extobl_l.excitation" />
+
+	</objects>
+</ControlSet>
+
