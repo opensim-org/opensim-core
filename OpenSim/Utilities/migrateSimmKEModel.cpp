@@ -32,9 +32,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
-#include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -53,12 +52,9 @@ int main(int argc,char **argv)
 {
 	std::cout << "migrateSimmKEModel, " << OpenSim::GetVersionAndDate() << std::endl;
 
-   Object::RegisterType(SimbodyEngine());
-	SimbodyEngine::registerTypes();
-   Object::RegisterType(SimmKinematicsEngine());
-	SimmKinematicsEngine::registerTypes();
-	Object::RegisterType(Schutte1993Muscle());
-	Object::RegisterType(Thelen2003Muscle());
+	LoadOpenSimLibrary("osimActuators");
+	LoadOpenSimLibrary("osimSimbodyEngine");
+	LoadOpenSimLibrary("osimSimmKinematicsEngine");
 
 	// PARSE COMMAND LINE
 	string inName = "";

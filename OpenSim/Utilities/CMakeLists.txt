@@ -12,7 +12,7 @@ FOREACH(TARGET ${TARGETS})
 ENDFOREACH(TARGET)
 
 TARGET_LINK_LIBRARIES(openSimToSimm osimSimmFileWriter)
-
+TARGET_LINK_LIBRARIES(migrateSimmKEModel osimActuators osimSimbodyEngine osimSimmKinematicsEngine osimMigrateSimmKEModel)
 
 INSTALL_TARGETS(/sdk/bin/ ${TARGETS})
 SET_TARGET_PROPERTIES(${TARGETS} PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD})
