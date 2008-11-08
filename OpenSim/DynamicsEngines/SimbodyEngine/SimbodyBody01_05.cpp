@@ -354,6 +354,16 @@ void SimbodyBody01_05::getInertia(Mat33 &rInertia) const
 }
 //_____________________________________________________________________________
 /**
+ * Get the inertia matrix of the body.
+ *
+ * @param 1x9 inertia matrix.
+ */
+void SimbodyBody01_05::getInertia(double rInertia[]) const
+{
+	memcpy(&rInertia[0], &_inertia[0], 9*sizeof(double));
+}
+//_____________________________________________________________________________
+/**
  * Set the inertia matrix of the body.
  *
  * @param aInertia 9-element inertia matrix.

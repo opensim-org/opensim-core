@@ -156,7 +156,8 @@ Object* SimmKinematicsEngine::copy() const
  */
 void SimmKinematicsEngine::copyData(const SimmKinematicsEngine &aEngine)
 {
-	// TODO- Should we copy _path and _groundBody ?
+	_simmJointSet = aEngine._simmJointSet;
+	_simmCoordinateSet = aEngine._simmCoordinateSet;
 }
 
 //_____________________________________________________________________________

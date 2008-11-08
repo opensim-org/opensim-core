@@ -369,6 +369,26 @@ void Body::getInertia(SimTK::Mat33 &rInertia) const
 	rInertia[2][1] = _inertiaYZ;
 	rInertia[2][2] = _inertiaZZ;
 }
+
+//_____________________________________________________________________________
+/**
+ * Get the inertia matrix of the body.
+ *
+ * @param 3x3 inertia matrix.
+ */
+void Body::getInertia(double rInertia[]) const
+{
+	rInertia[0] = _inertiaXX;
+	rInertia[1] = _inertiaXY;
+	rInertia[2] = _inertiaXZ;
+	rInertia[3] = _inertiaXY;
+	rInertia[4] = _inertiaYY;
+	rInertia[5] = _inertiaYZ;
+	rInertia[6] = _inertiaXZ;
+	rInertia[7] = _inertiaYZ;
+	rInertia[8] = _inertiaZZ;
+}
+
 //_____________________________________________________________________________
 /**
  * Set the inertia matrix of the body.

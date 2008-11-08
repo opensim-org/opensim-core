@@ -94,6 +94,7 @@ public:
 	virtual void getMassCenter(SimTK::Vec3& rVec) const = 0;
 	virtual bool setMassCenter(const SimTK::Vec3& aVec) = 0;
 	virtual void getInertia(SimTK::Mat33& rInertia) const = 0;
+	virtual void getInertia(double rInertia[]) const = 0;
 	virtual bool setInertia(const SimTK::Mat33& aInertia) = 0;
 	virtual void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
 	virtual void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true) = 0;
