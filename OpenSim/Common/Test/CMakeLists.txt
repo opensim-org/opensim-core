@@ -18,6 +18,9 @@ ADD_TEST(testFunctionAdapter ${TEST_PATH}/testFunctionAdapter)
 ADD_EXECUTABLE(testGCVSpline testGCVSpline.cpp)
 ADD_TEST(testGCVSpline ${TEST_PATH}/testGCVSpline)
 
+ADD_EXECUTABLE(testRegistration testRegistration.cpp)
+ADD_TEST(testRegistration ${TEST_PATH}/testRegistration)
+
 
 ADD_EXECUTABLE(testStorage testStorage.cpp)
 ADD_TEST(testStorage ${TEST_PATH}/testStorage)
@@ -33,3 +36,4 @@ SET_TARGET_PROPERTIES(testSerialization PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} P
 SET_TARGET_PROPERTIES(testFunctionAdapter PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testFunctionAdapter")
 SET_TARGET_PROPERTIES(testGCVSpline PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testGCVSpline")
 SET_TARGET_PROPERTIES(testStorage PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testStorage")
+SET_TARGET_PROPERTIES(testRegistration PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testRegistration")

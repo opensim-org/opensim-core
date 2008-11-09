@@ -566,13 +566,17 @@ getDescription() const
  * @see isValidDefault()
  */
 void Object::
-RegisterType(const Object &aObject)
+RegisterType(const Object &aObject, bool allowOverwrite)
 {
 	// GET TYPE
 	const string &type = aObject.getType();
 	if(type.empty()) {
 		printf("Object.RegisterType: ERR- no type name has been set.\n");
 		return;
+	}
+	// Throw an exception if overwrite was not intentional
+	if (!allowOverwrite &&  _mapTypesToDefaultObjects.find(type)!= _mapTypesToDefaultObjects.end()){
+		throw( XMLParsingException("Object type "+aObject.getType()+" already in use. Use ReplaceType instead."));
 	}
 	// Keep track if the object being registered originated from a file vs. programmatically
 	// for future use in the deserialization code.
@@ -1037,7 +1041,7 @@ updateDefaultObjectsFromXMLNode()
 		object->setXMLNode(elmt);
 		object->updateFromXMLNode();
 		object->setName(DEFAULT_NAME);
-		RegisterType(*object);
+		ReplaceType(*object);
 		delete object;
 	}
 }

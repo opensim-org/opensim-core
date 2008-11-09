@@ -224,8 +224,16 @@ public:
 	//--------------------------------------------------------------------------
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
 	//--------------------------------------------------------------------------
-	static void RegisterType(const Object &aObject);
-
+	static void RegisterType(const Object &aObject, bool allowOverwrite=false);
+	/*
+	 * An alternte to RegisterType that explicitly indicate we're replacing a class defn.
+	 * This is used when registering "default" objects with those read from a file
+	 * or by plugin writers to change the behavior of a built in class.  
+	 * Do not use this method from a plugin unless you know what you're doing!
+	 */
+	static void ReplaceType(const Object &aObject) {
+		RegisterType(aObject, true);
+	}
 	/*=============================================================================
 	 * makeObjectFromFile creates an OpenSim object based on the tag at the root
 	 * node of the XML file passed in. This is useful since the constructor of Object 
