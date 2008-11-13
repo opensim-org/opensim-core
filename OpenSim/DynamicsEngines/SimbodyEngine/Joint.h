@@ -173,6 +173,16 @@ public:
 	virtual bool hasXYZAxes() const { return true; }
 
 	// SCALE
+	/**
+	* Scale a joint based on XYZ scale factors for the bodies.
+	* Generic behavior is to scale the locations on parent and on the body 
+	* according to scale factors of the bodies upon which they are located.
+	*
+	* Joint subclasses should invoke this method before scaling joint specific 
+	* properties
+	* 
+	* @param aScaleSet Set of XYZ scale factors for the bodies.
+	*/
 	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:

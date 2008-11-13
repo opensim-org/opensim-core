@@ -237,6 +237,9 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 {
 	Vec3 scaleFactors(1.0);
 
+	// Joint knows how to scale locations of the joint in parent and on the body
+	Joint::scale(aScaleSet);
+
 	// SCALING TO DO WITH THE PARENT BODY -----
 	// Joint kinematics are scaled by the scale factors for the
 	// parent body, so get those body's factors
@@ -249,14 +252,7 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 		}
 	}
 
-	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
-		EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0)) return;
-
-	for(int i=0; i<3; i++)
-		_locationInParent[i]*= scaleFactors[i];
-	// Scale
+	// Scale transform functions
 	for (int i = 0; i < _transformAxisSet.getSize(); i++) {
 		if (_transformAxisSet.get(i)->getMotionType() == AbstractTransformAxis::Translational) {
 			TransformAxis* transform = (TransformAxis*)_transformAxisSet.get(i);
@@ -269,7 +265,6 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
          }
 		}
 	}
-	getEngine()->setInvalid();
 }
 
 //=============================================================================

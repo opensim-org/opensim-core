@@ -37,6 +37,8 @@
 #include "WeldConstraint.h"
 #include "CoordinateCouplerConstraint.h"
 #include "CustomJoint.h"
+//#include "EllipsoidJoint.h"
+#include "WeldJoint.h"
 #include "TransformAxis.h"
 #include "Coordinate.h"
 #include "Speed.h"
@@ -70,6 +72,8 @@ OSIMSIMBODYENGINE_API void RegisterTypes_SimbodyEngine()
 	Object::RegisterType( WeldConstraint() );
 	Object::RegisterType( CoordinateCouplerConstraint() );
 	Object::RegisterType( CustomJoint() );
+	Object::RegisterType( WeldJoint() );
+	//Object::RegisterType( EllipsoidJoint() );
 	Object::RegisterType( TransformAxis() );
 	Object::RegisterType( Coordinate() );
 	Object::RegisterType( Speed() );

@@ -471,33 +471,41 @@ isCoordinateUsed(AbstractCoordinate* aCoordinate) const
 // SCALING
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- */
+
 void Joint::scale(const ScaleSet& aScaleSet)
 {
-	SimTK::Vec3 scaleFactors(1.0);
+	SimTK::Vec3 parentFactors(1.0);
+	SimTK::Vec3 bodyFactors(1.0);
 
 	// SCALING TO DO WITH THE PARENT BODY -----
 	// Joint kinematics are scaled by the scale factors for the
 	// parent body, so get those body's factors
 	const string& parentName = getParentBody()->getName();
+	const string& bodyName = getBody()->getName();
 	// Get scale factors
+	bool found_p = false;
+	bool found_b = false; 
 	for (int i=0; i<aScaleSet.getSize(); i++) {
 		Scale *scale = aScaleSet.get(i);
-		if (scale->getSegmentName() == parentName) {
-			scale->getScaleFactors(scaleFactors);
-			break;
+		if (!found_p & scale->getSegmentName() == parentName) {
+			scale->getScaleFactors(parentFactors);
+			found_p = true;
 		}
+		if (!found_b & scale->getSegmentName() == bodyName) {
+			scale->getScaleFactors(bodyFactors);
+			found_b = true;
+		}
+		if(found_p & found_b)
+			break;
 	}
 
-	// If all three factors are equal to 1.0, do nothing.
-	if (EQUAL_WITHIN_ERROR(scaleFactors[0], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[1], 1.0) &&
-		 EQUAL_WITHIN_ERROR(scaleFactors[2], 1.0))
-		 return;
+	for(int i=0; i<3; i++){
+		_locationInParent[i]*= parentFactors[i];
+		_location[i]*= bodyFactors[i];
+	}
+
+	// Notify the engine that underlying Simbody model needs to be updated
+	getEngine()->setInvalid();
 }
 
 //=============================================================================
