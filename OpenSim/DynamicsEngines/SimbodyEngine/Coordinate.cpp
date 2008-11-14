@@ -548,7 +548,9 @@ bool Coordinate::setValue(double aValue, State& theState, bool aRealize)
 			if (_locked) {
 				cout<<"Coordinate.setValue: WARN- coordinate "<<getName();
 				cout<<" is locked. Unable to change its value." << endl;
-				return false;
+				// In case aRealize is true we still need to execute the rest of the function
+				// so that other coordinates are realized even if current coordinate is locked
+				if (!aRealize) return false;	
 			}
 			getEngine()->resetBodyAndMobilityForceVectors();
 			getEngine()->_system->getMatterSubsystem().getMobilizedBody(_bodyIndex).setOneQ(theState,_mobilityIndex,aValue);
