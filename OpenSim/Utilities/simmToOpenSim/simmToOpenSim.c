@@ -1033,7 +1033,7 @@ void extract_joint_locations_and_orientations(ModelStruct* ms,
                                               double locationInChild[],
                                               double orientationInChild[])
 {
-   int i, first_function, last_function, order[4];
+   int i, first_function=6, last_function=6, order[4];
    double parentTransform[4][4], childTransform[4][4], childInverse[4][4];
    double dof_value[6], x[4], y[4], z[4], ra1[4], ra2[4], ra3[4];
 

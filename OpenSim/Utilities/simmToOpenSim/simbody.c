@@ -180,7 +180,7 @@ ReturnCode make_simbody_model(FILE* fp, ModelStruct* ms, char geometryDirectory[
 
    num_SD_segs = 1;
 
-   convert_fixed_joints(ms, gcInfo);
+   //convert_fixed_joints(ms, gcInfo);
 
    // Bodies (with joints and wrap objects)
    fprintf(fp, "\t\t\t<BodySet>\n");
@@ -348,61 +348,77 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
       locationInChild, orientationInChild);
 
    fprintf(fp, "\t\t\t\t\t<Joint>\n");
-   fprintf(fp, "\t\t\t\t\t\t<CustomJoint name=\"%s\">\n", joint->name);
-   fprintf(fp, "\t\t\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
-   fprintf(fp, "\t\t\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
-      locationInParent[0], locationInParent[1], locationInParent[2]);
-   fprintf(fp, "\t\t\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
-      orientationInParent[0], orientationInParent[1], orientationInParent[2]);
-   fprintf(fp, "\t\t\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
-      locationInChild[0], locationInChild[1], locationInChild[2]);
-   fprintf(fp, "\t\t\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
-      orientationInChild[0], orientationInChild[1], orientationInChild[2]);
 
-   fprintf(fp, "\t\t\t\t\t\t\t<!--Generalized coordinates parameterizing this joint.-->\n");
+	if (joint_is_fixed(joint))
+	{
+		fprintf(fp, "\t\t\t\t\t\t<WeldJoint name=\"%s\">\n", joint->name);
+		fprintf(fp, "\t\t\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
+		fprintf(fp, "\t\t\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
+			locationInParent[0], locationInParent[1], locationInParent[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
+			orientationInParent[0], orientationInParent[1], orientationInParent[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
+			locationInChild[0], locationInChild[1], locationInChild[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
+			orientationInChild[0], orientationInChild[1], orientationInChild[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<CoordinateSet/>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<TransformAxisSet/>\n");
+		fprintf(fp, "\t\t\t\t\t\t</WeldJoint>\n");
+	} else {
+		fprintf(fp, "\t\t\t\t\t\t<CustomJoint name=\"%s\">\n", joint->name);
+		fprintf(fp, "\t\t\t\t\t\t\t<parent_body> %s </parent_body>\n", jntsdf->inbname);
+		fprintf(fp, "\t\t\t\t\t\t\t<location_in_parent> %.12lf %.12lf %.12lf </location_in_parent>\n",
+			locationInParent[0], locationInParent[1], locationInParent[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<orientation_in_parent> %.12lf %.12lf %.12lf </orientation_in_parent>\n",
+			orientationInParent[0], orientationInParent[1], orientationInParent[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<location> %.12lf %.12lf %.12lf </location>\n",
+			locationInChild[0], locationInChild[1], locationInChild[2]);
+		fprintf(fp, "\t\t\t\t\t\t\t<orientation> %.12lf %.12lf %.12lf </orientation>\n",
+			orientationInChild[0], orientationInChild[1], orientationInChild[2]);
 
-   fprintf(fp, "\t\t\t\t\t\t\t<CoordinateSet>\n");
-   fprintf(fp, "\t\t\t\t\t\t\t<objects>\n");
-   for (i=0; i<6; i++)
-   {
-      DofStruct* dof = &joint->dofs[dof_order[i]];
-      // This DOF shows up in the coordinate list if it represents an unconstrained coordinate,
-      // or if it's constrained to a coordinate that is used in another joint. Or if it is one
-      // of the newly created gencoords.
-      if (dof->type == function_dof)
-      {
-         if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i]) ||
-              gcInfo[dof->gencoord].jointnum != jointnum ||
-              ms->gencoord[dof->gencoord].defined == no)
-            write_opensim20_coordinate(fp, ms, joint, dof_order[i]);
-      }
-   }
-   fprintf(fp, "\t\t\t\t\t\t\t</objects>\n");
-   fprintf(fp, "\t\t\t\t\t\t\t</CoordinateSet>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<!--Generalized coordinates parameterizing this joint.-->\n");
 
-   fprintf(fp, "\t\t\t\t\t\t\t<TransformAxisSet>\n");
-   fprintf(fp, "\t\t\t\t\t\t\t<objects>\n");
-   for (i=0; i<6; i++)
-   {
-      DofStruct* dof = &joint->dofs[dof_order[i]];
-      // DOFs that are functions always show up in the transform axis list. If the DOF represents
-      // an unconstrained coordinate or if it's constrained to a coordinate in another joint,
-      // then it shows up without a function. If the DOF is constrained to a coordinate in this
-      // joint, it shows up with a function (i.e., it's a function-based mobilizer).
-      if (dof->type == function_dof)
-      {
-         if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i]) ||
-              gcInfo[dof->gencoord].jointnum != jointnum)
-            write_opensim20_transformAxis(fp, ms, joint, dof_order[i], jntsdf->dir, no);
-         else
-            write_opensim20_transformAxis(fp, ms, joint, dof_order[i], jntsdf->dir, yes);
-      }
-   }
-   fprintf(fp, "\t\t\t\t\t\t\t</objects>\n");
-   fprintf(fp, "\t\t\t\t\t\t\t</TransformAxisSet>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<CoordinateSet>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<objects>\n");
+		for (i=0; i<6; i++)
+		{
+			DofStruct* dof = &joint->dofs[dof_order[i]];
+			// This DOF shows up in the coordinate list if it represents an unconstrained coordinate,
+			// or if it's constrained to a coordinate that is used in another joint. Or if it is one
+			// of the newly created gencoords.
+			if (dof->type == function_dof)
+			{
+				if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i]) ||
+					gcInfo[dof->gencoord].jointnum != jointnum || ms->gencoord[dof->gencoord].defined == no)
+					write_opensim20_coordinate(fp, ms, joint, dof_order[i]);
+			}
+		}
+		fprintf(fp, "\t\t\t\t\t\t\t</objects>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t</CoordinateSet>\n");
 
-   fprintf(fp, "\t\t\t\t\t\t</CustomJoint>\n");
-   fprintf(fp, "\t\t\t\t\t</Joint>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<TransformAxisSet>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t<objects>\n");
+		for (i=0; i<6; i++)
+		{
+			DofStruct* dof = &joint->dofs[dof_order[i]];
+			// DOFs that are functions always show up in the transform axis list. If the DOF represents
+			// an unconstrained coordinate or if it's constrained to a coordinate in another joint,
+			// then it shows up without a function. If the DOF is constrained to a coordinate in this
+			// joint, it shows up with a function (i.e., it's a function-based mobilizer).
+			if (dof->type == function_dof)
+			{
+				if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i]) ||
+					gcInfo[dof->gencoord].jointnum != jointnum)
+					write_opensim20_transformAxis(fp, ms, joint, dof_order[i], jntsdf->dir, no);
+				else
+					write_opensim20_transformAxis(fp, ms, joint, dof_order[i], jntsdf->dir, yes);
+			}
+		}
+		fprintf(fp, "\t\t\t\t\t\t\t</objects>\n");
+		fprintf(fp, "\t\t\t\t\t\t\t</TransformAxisSet>\n");
+		fprintf(fp, "\t\t\t\t\t\t</CustomJoint>\n");
+	}
+	fprintf(fp, "\t\t\t\t\t</Joint>\n");
 
    num_SD_segs++;
 
