@@ -88,6 +88,8 @@ public:
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
 
+	OPENSIM_DECLARE_DERIVED(WeldJoint, Joint);
+
 private:
 	void setNull();
 	void setupProperties();

@@ -394,7 +394,10 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 
    SimbodySimmJoint* ssj = new SimbodySimmJoint(joint->getName(), parentName, childName);
 
-   if (joint->isA("CustomJoint")) {
+	if (joint->isA("WeldJoint")) {
+      ssj->finalize();
+      _simmJoint.append(ssj);
+	} else if (joint->isA("CustomJoint")) {
       const CustomJoint* cj = (CustomJoint*)(joint);
 
       // Create the primary joint
@@ -467,9 +470,9 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
    ssj->addConstantDof("tx", NULL, aLocation[0]);
    ssj->addConstantDof("ty", NULL, aLocation[1]);
    ssj->addConstantDof("tz", NULL, aLocation[2]);
-   ssj->addConstantDof("r1", NULL, aOrientation[0]);
-   ssj->addConstantDof("r2", NULL, aOrientation[1]);
-   ssj->addConstantDof("r3", NULL, aOrientation[2]);
+   ssj->addConstantDof("r1", NULL, aOrientation[0] * 180.0 / SimTK::Pi);
+   ssj->addConstantDof("r2", NULL, aOrientation[1] * 180.0 / SimTK::Pi);
+   ssj->addConstantDof("r3", NULL, aOrientation[2] * 180.0 / SimTK::Pi);
    ssj->finalize();
    _simmJoint.append(ssj);
 }
