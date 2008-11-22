@@ -47,6 +47,7 @@
 #define DABS(a) ((a)>(double)0.0?(a):(-(a)))
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
+static const double defaultAxes[][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
 
 #include "SimbodySimmModel.h"
 
@@ -375,7 +376,19 @@ OpenSim::Function* SimbodySimmModel::isDependent(const AbstractCoordinate* aCoor
 
 //_____________________________________________________________________________
 /**
- * Convert a Simbody Body into one or more SIMM bodies and joints.
+ * Convert a Simbody Body into one or more SIMM bodies and joints. In the general
+ * case, the Simbody joint has a non-zero position and orientation in the parent
+ * body, a non-zero position and orientation in the child body, and up to six
+ * degrees of freedom. It is not always possible to convert this joint into a
+ * single SIMM joint. In SIMM, the position and orientation of a joint in the
+ * child body is always zero. Thus, the Simbody joint is converted using this
+ * procedure:
+ *   1. If the position and orientation in the child body is non-zero, an
+ *      auxiliary SIMM joint is created just to hold this transform.
+ *   2. If the position and orientation in the parent body plus the joint's
+ *      degrees of freedom can be put into a single SIMM joint, it is done so.
+ *      If not, an auxiliary joint is created just to hold the transform for
+ *      the position and orientation in the parent body.
  *
  * @param aBody The body to convert.
  * @param aMarkerSet The marker set for the model.
@@ -390,9 +403,32 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 
    string parentName;
    string childName;
-   addExtraJoints(*joint, parentName, childName);
+	bool parentJointAdded = false;
+   addExtraJoints(*joint, parentName, childName, parentJointAdded);
 
    SimbodySimmJoint* ssj = new SimbodySimmJoint(joint->getName(), parentName, childName);
+
+	// If parentJointAdded is false, that means the position and orientation in the
+	// parent can be merged with the primary joint. So begin making the joint by
+	// adding the non-zero components to the SimbodySimmJoint.
+	if (parentJointAdded == false) {
+		SimTK::Vec3 location;
+		SimTK::Vec3 orientation;
+		joint->getLocationInParent(location);
+		joint->getOrientationInParent(orientation);
+		if (NOT_EQUAL_WITHIN_ERROR(location[0], 0.0))
+			ssj->addConstantDof("tx", NULL, location[0]);
+		if (NOT_EQUAL_WITHIN_ERROR(location[1], 0.0))
+			ssj->addConstantDof("ty", NULL, location[1]);
+		if (NOT_EQUAL_WITHIN_ERROR(location[2], 0.0))
+			ssj->addConstantDof("tz", NULL, location[2]);
+		if (NOT_EQUAL_WITHIN_ERROR(orientation[0], 0.0))
+			ssj->addConstantDof("r1", defaultAxes[0], orientation[0] * 180.0 / SimTK::Pi);
+		if (NOT_EQUAL_WITHIN_ERROR(orientation[1], 0.0))
+			ssj->addConstantDof("r2", defaultAxes[1], orientation[1] * 180.0 / SimTK::Pi);
+		if (NOT_EQUAL_WITHIN_ERROR(orientation[2], 0.0))
+			ssj->addConstantDof("r3", defaultAxes[2], orientation[2] * 180.0 / SimTK::Pi);
+	}
 
 	if (joint->isA("WeldJoint")) {
       ssj->finalize();
@@ -400,7 +436,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 	} else if (joint->isA("CustomJoint")) {
       const CustomJoint* cj = (CustomJoint*)(joint);
 
-      // Create the primary joint
+		// Add the joint's transform axes to the SimbodySimmJoint.
       TransformAxisSet* dofs = cj->getTransformAxisSet();
       for (int i=0; i<dofs->getSize(); i++) {
          AbstractTransformAxis* ta = dofs->get(i);
@@ -418,7 +454,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
          ta->getAxis(axis);
       }
 
-      // Create gencoords from the coordinates
+      // Create gencoords from the coordinates.
       CoordinateSet* coordinates = cj->getCoordinateSet();
       for (int i=0; i<coordinates->getSize(); i++) {
          AbstractCoordinate* coord = coordinates->get(i);
@@ -434,21 +470,96 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 
 //_____________________________________________________________________________
 /**
- * Check to see if a translation and XYZ Euler rotation are all zeros.
+ * Check to see if a location (in child) and orientation (in child) are all zeros.
+ * If they are not, then a separate SIMM joint is needed to hold this transform.
  *
- * @param aLocation The translation vector.
- * @param aOrientation The XYZ Euler rotation.
- * @return Whether or not a joint is needed to represent the translation and rotation.
+ * @param aJoint The Simbody joint to check.
+ * @return Whether or not a separate SIMM joint is needed to represent the location
+ *         and orientation in child.
  */
-bool SimbodySimmModel::isJointNeeded(SimTK::Vec3& aLocation, SimTK::Vec3& aOrientation)
+bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 {
-   double sum = aLocation.scalarNormSqr();
+	SimTK::Vec3 location;
+	SimTK::Vec3 orientation;
+
+	aJoint.getLocation(location);
+	aJoint.getOrientation(orientation);
+
+	double sum = location.scalarNormSqr();
    if (NOT_EQUAL_WITHIN_ERROR(sum, 0.0))
       return true;
 
-   sum = aOrientation.scalarNormSqr();
+   sum = orientation.scalarNormSqr();
    if (NOT_EQUAL_WITHIN_ERROR(sum, 0.0))
       return true;
+
+   return false;
+}
+
+//_____________________________________________________________________________
+/**
+ * Check to see if the location (in parent) and orientation (in parent) of a
+ * Simbody joint can be merged with the joint's "real" DOFs and still be
+ * represented with a single SIMM joint.
+ *
+ * @param aJoint The Simbody joint to check.
+ * @return Whether or not a separate SIMM joint is needed to represent the location
+ *         and orientation in parent.
+ */
+bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
+{
+	// If the joint has no "real" DOFs (e.g., WeldJoints), then the parent joint is not needed.
+	TransformAxisSet* dofs = aJoint.getTransformAxisSet();
+	if (dofs == NULL)
+		return false;
+
+	SimTK::Vec3 location;
+	SimTK::Vec3 orientation;
+
+	aJoint.getLocationInParent(location);
+	aJoint.getOrientationInParent(orientation);
+
+	bool translationsUsed[] = {false, false, false}, translationsDone = false;
+	int numTranslations = 0, numRotations = 0;
+
+	// First see which components are needed for the location and orientation.
+	for (int i=0; i<3; i++) {
+		if (NOT_EQUAL_WITHIN_ERROR(location[i], 0.0)) {
+			translationsUsed[i] = true;
+			numTranslations++;
+		}
+	}
+	for (int i=0; i<3; i++) {
+		if (NOT_EQUAL_WITHIN_ERROR(orientation[i], 0.0)) {
+			numRotations++;
+			if (numTranslations > 0)
+				translationsDone = true;
+		}
+	}
+
+	// Now see if the joint's "real" DOFs can be added.
+	for (int i=0; i<dofs->getSize(); i++) {
+		AbstractTransformAxis* ta = dofs->get(i);
+		if (ta->getMotionType() == AbstractTransformAxis::Translational) {
+			const double* axis = ta->getAxisPtr();
+			for (int j=0; j<3; j++) {
+				if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
+					if (translationsUsed[i]) // this translation component already defined
+						return true;
+					if (translationsDone) // have already defined translations then rotation (can't add more translations)
+						return true;
+					translationsUsed[i] = true;
+					numTranslations++;
+				}
+			}
+		} else {
+			if (numRotations >= 3) // have already defined three rotations (can't add more)
+				return true;
+			numRotations++;
+			if (numTranslations > 0)
+				translationsDone = true;
+		}
+	}
 
    return false;
 }
@@ -470,9 +581,9 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
    ssj->addConstantDof("tx", NULL, aLocation[0]);
    ssj->addConstantDof("ty", NULL, aLocation[1]);
    ssj->addConstantDof("tz", NULL, aLocation[2]);
-   ssj->addConstantDof("r1", NULL, aOrientation[0] * 180.0 / SimTK::Pi);
-   ssj->addConstantDof("r2", NULL, aOrientation[1] * 180.0 / SimTK::Pi);
-   ssj->addConstantDof("r3", NULL, aOrientation[2] * 180.0 / SimTK::Pi);
+   ssj->addConstantDof("r1", defaultAxes[0], aOrientation[0] * 180.0 / SimTK::Pi);
+   ssj->addConstantDof("r2", defaultAxes[1], aOrientation[1] * 180.0 / SimTK::Pi);
+   ssj->addConstantDof("r3", defaultAxes[2], aOrientation[2] * 180.0 / SimTK::Pi);
    ssj->finalize();
    _simmJoint.append(ssj);
 }
@@ -486,34 +597,34 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
  * @param rParentName The name of the parent body for the "real" joint.
  * @param rChildName The name of the child body for the "real" joint.
  */
-void SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName, string& rChildName)
+void SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName,
+												  string& rChildName, bool rParentJointAdded)
 {
    SimTK::Vec3 location;
    SimTK::Vec3 orientation;
 
-   aJoint.getLocationInParent(location);
-   aJoint.getOrientationInParent(orientation);
-   bool needJoint = isJointNeeded(location, orientation);
-
-   if (needJoint) {
+   if (isParentJointNeeded(aJoint)) {
+		aJoint.getLocationInParent(location);
+		aJoint.getOrientationInParent(orientation);
       string bodyName = aJoint.getBody()->getName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentName(), bodyName, location, orientation);
       rParentName = bodyName;
+		rParentJointAdded = true;
    } else {
       rParentName = aJoint.getParentName();
+		rParentJointAdded = false;
    }
 
-   aJoint.getLocation(location);
-   aJoint.getOrientation(orientation);
-   needJoint = isJointNeeded(location, orientation);
-   if (needJoint) {
-      string bodyName = aJoint.getBody()->getName() + "_jcc";
+   if (isChildJointNeeded(aJoint)) {
+		aJoint.getLocation(location);
+		aJoint.getOrientation(orientation);
+		string bodyName = aJoint.getBody()->getName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
-      // TODO: does this joint need to be reversed?
-      makeSimmJoint(aJoint.getName() + "_jcc", bodyName, aJoint.getBody()->getName(), location, orientation);
+      // This joint is specified in the reverse direction.
+      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getBody()->getName(), bodyName, location, orientation);
       rChildName = bodyName;
    } else {
       rChildName = aJoint.getBody()->getName();

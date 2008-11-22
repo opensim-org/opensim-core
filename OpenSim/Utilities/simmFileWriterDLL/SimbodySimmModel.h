@@ -116,10 +116,11 @@ public:
    const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
    Function* isDependent(const AbstractCoordinate* aCoordinate, const AbstractCoordinate** rIndependentCoordinate) const;
    void convertBody(const OpenSim::Body& aBody, const MarkerSet* aMarkerSet);
-   bool isJointNeeded(SimTK::Vec3& aLocation, SimTK::Vec3& aOrientation);
+	bool isChildJointNeeded(const OpenSim::Joint& aJoint);
+	bool isParentJointNeeded(const OpenSim::Joint& aJoint);
    void makeSimmJoint(const std::string& aName, const std::string& aParentName, const std::string& aChildName,
                       SimTK::Vec3& aLocation, SimTK::Vec3& aOrientation);
-   void addExtraJoints(const OpenSim::Joint& aJoint, std::string& rParentName, std::string& rChildName);
+   void addExtraJoints(const OpenSim::Joint& aJoint, std::string& rParentName, std::string& rChildName, bool rParentJointAdded);
    void addBody(const OpenSim::Body& aBody);
    void addGencoord(const AbstractCoordinate* aCoordinate);
    int addFunction(const Function* aFunction, AbstractTransformAxis::MotionType aXType,

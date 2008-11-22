@@ -145,6 +145,8 @@ bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const s
  */
 bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, double aValue)
 {
+	// See if the name matches one of the translation names. This code
+	// currently does not check to see if the translation component was already defined.
    for (int i=0; i<3; i++) {
       if (aName == _translationNames[i]) {
          _dof[i+3].setConstant(aName, AbstractTransformAxis::Translational, NULL, aValue);
@@ -156,14 +158,14 @@ bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, 
       }
    }
 
-   //TODO get this to work when constant dofs are mixed with function dofs
-   for (int i=0; i<3; i++) {
-      if (aName == _rotationNames[i]) {
-         _dof[i].setConstant(aName, AbstractTransformAxis::Rotational, defaultAxes[i], aValue);
-         updateOrder(aName);
-         _rotationsUsed++;
-      }
-   }
+	// If you make it to here, then the DOF is a rotation. Ignore aName and
+	// name the DOF according to its place in the transform order (e.g., the
+	// first rotation is always named "r1").
+	if (_rotationsUsed == 3 || aAxis == NULL)
+		return false;
+	_dof[_rotationsUsed].setConstant(_rotationNames[_rotationsUsed], AbstractTransformAxis::Rotational, aAxis, aValue);
+	updateOrder(_rotationNames[_rotationsUsed]);
+	_rotationsUsed++;
 
    return false;
 }
@@ -227,7 +229,9 @@ void SimbodySimmJoint::write(ofstream& aStream)
    aStream << "beginjoint " << _name << endl;
    aStream << "segments " << _parentBodyName << " " << _childBodyName << endl;
    aStream << "order" << _order << endl;
-   for (int i=0; i<6; i++)
+   for (int i=3; i<6; i++)
+      _dof[i].write(aStream);
+   for (int i=0; i<3; i++)
       _dof[i].write(aStream);
    aStream << "endjoint" << endl << endl;
 }
