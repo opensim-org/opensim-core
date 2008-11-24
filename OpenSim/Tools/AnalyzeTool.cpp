@@ -503,8 +503,8 @@ loadStatesFromFile()
 
 		if(_lowpassCutoffFrequency>=0) {
 			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
-			coordinatesStore.pad(60);
-			coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
+			coordinatesStore.pad(coordinatesStore.getSize()/2);
+			coordinatesStore.lowpassIIR(_lowpassCutoffFrequency);
 		}
 
 		Storage *qStore=NULL, *uStore=NULL;
@@ -541,8 +541,8 @@ setStatesFromMotion(const Storage &aMotion, bool aInDegrees)
 
 	if(_lowpassCutoffFrequency>=0) {
 		cout<<"\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl;
-		motionCopy.pad(60);
-		motionCopy.lowpassFIR(50,_lowpassCutoffFrequency);
+		motionCopy.pad(motionCopy.getSize()/2);
+		motionCopy.lowpassIIR(_lowpassCutoffFrequency);
 	}
 
 	Storage *qStore=NULL, *uStore=NULL;

@@ -1253,12 +1253,12 @@ InitializeExternalLoads(const double& analysisStartTime, const double& analysisF
 	aModel->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
 	aModel->getDynamicsEngine().convertDegreesToRadians(*qStore);
 	// Filter
-	qStore->pad(60); 
+	qStore->pad(qStore->getSize()/2); 
 	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
-		int order = 50;
+		//int order = 50;
 		cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
 		    <<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
-		qStore->lowpassFIR(order,aLowpassCutoffFrequencyForLoadKinematics);
+		qStore->lowpassIIR(aLowpassCutoffFrequencyForLoadKinematics);
 	} else {
 		cout<<"Note- not filtering the external loads model kinematics."<<endl;
 	}

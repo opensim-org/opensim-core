@@ -61,6 +61,7 @@ int main(int argc,char **argv)
 	string storeName;
 	string outName="filtered.sto";
 	double lowpassFIR = -1.0;
+	double lowpassIIR = -1.0;
 	for(i=1;i<argc;i++) {
 
 		option = argv[i];
@@ -91,6 +92,13 @@ int main(int argc,char **argv)
 				++i;
 			}
 
+		// LOWPASS IIR
+		} else if((option=="-LowpassIIR")||(option=="-LIIR")) {
+			if(argc>(i+1)) {
+				sscanf(argv[i+1],"%lf",&lowpassIIR);
+				++i;
+			}
+
 		// UNRECOGNIZED
 		} else {
 			cout<<"Unrecognized option: "<<argv[i]<<endl;
@@ -115,6 +123,12 @@ int main(int argc,char **argv)
 		store->lowpassFIR(50,lowpassFIR);
 	}
 
+	if(lowpassIIR>=0.0) {
+		cout<<"\nLowpass IIR filtering using a cutoff frequency of "<<lowpassIIR<<".\n";
+		store->pad(store->getSize()/2);
+		store->lowpassIIR(lowpassIIR);
+	}
+
 	// OUTPUT
 	store->print(outName.c_str(),"w");
 
@@ -137,6 +151,8 @@ void PrintUsage(ostream &aOStream)
 	aOStream<<"-File, -F           StorageFile      Specifies the name of the storage file to filter.\n";
 	aOStream<<"-Out, -O            OutputFile       Specifies the name of the file to which to write the filtered data.\n";
 	aOStream<<"-LowpassFIR, -LFIR  Cutoff           Specifiy the lowpass cutoff frequency for an FIR filter.\n";
+	aOStream<<"-LowpassIIR, -LIIR  Cutoff           Specifiy the lowpass cutoff frequency for an IIR/Butterworth filter.\n";
+	aOStream<<"The options IIR and FIR are mutually exclusive.\n";
 	aOStream<<"\n\n";
 }
 

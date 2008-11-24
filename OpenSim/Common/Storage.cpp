@@ -2049,6 +2049,45 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 	delete[] signal;
 }
 
+//_____________________________________________________________________________
+/**
+ * Lowpass filter each of the columns in the storage.  Note that as a part
+ * of this operation, the storage is resampled so that the statevectors are
+ * at equal spacing. This is same as 3rd order Butterworth Filter
+ *
+ * @param aCutoffFrequency Cutoff frequency.
+ */
+void Storage::
+lowpassIIR(double aCutoffFrequency)
+{
+	double dtmin = getMinTimeStep();
+
+	if(dtmin<rdMath::ZERO) {
+		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
+		return;
+	}
+
+	// RESAMPLE
+	dtmin = resample(dtmin,5);
+	int size = getSize();
+	if(size<(10)) {
+		cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
+		return;
+	}
+
+	// LOOP OVER COLUMNS
+	int nc = getSmallestNumberOfStates();
+	double *signal=NULL;
+	Array<double> filt(0.0,size);
+	for(int i=0;i<nc;i++) {
+		getDataColumn(i,signal);
+		Signal::LowpassIIR(dtmin,aCutoffFrequency,size,signal,&filt[0]);
+		setDataColumn(i,filt);
+	}
+
+	// CLEANUP
+	delete[] signal;
+}
 
 //=============================================================================
 // UTILITY

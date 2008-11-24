@@ -229,6 +229,8 @@ public:
 	int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
 	void pad(int aPadSize);
 	void lowpassFIR(int aOrder,double aCutoffFequency);
+	void lowpassIIR(double aCutoffFrequency);	// Filter using 3rd order Butterworth
+
 	// Append rows of two storages at matched time
 	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	//--------------------------------------------------------------------------

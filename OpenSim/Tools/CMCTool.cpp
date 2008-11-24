@@ -642,26 +642,26 @@ bool CMCTool::run()
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
 	if(desiredPointsFlag) {
-		desiredPointsStore->pad(60);
+		desiredPointsStore->pad(desiredPointsStore->getSize()/2);
 		desiredPointsStore->print("desiredPoints_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
-			int order = 50;
+			//int order = 50;
 			cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
 			cout<<_lowpassCutoffFrequency<<"...";
-			desiredPointsStore->lowpassFIR(order,_lowpassCutoffFrequency);
+			desiredPointsStore->lowpassIIR(_lowpassCutoffFrequency);
 		} else {
 			cout<<"\n\nNote- not filtering the desired points.\n\n";
 		}
 	}
 
 	if(desiredKinFlag) {
-		desiredKinStore->pad(60);
+		desiredKinStore->pad(desiredKinStore->getSize()/2);
 		desiredKinStore->print("desiredKinematics_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
-			int order = 50;
+			//int order = 50;
 			cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
 			cout<<_lowpassCutoffFrequency<<"...\n\n";
-			desiredKinStore->lowpassFIR(order,_lowpassCutoffFrequency);
+			desiredKinStore->lowpassIIR(_lowpassCutoffFrequency);
 		} else {
 			cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
 		}
