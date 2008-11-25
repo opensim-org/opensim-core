@@ -342,6 +342,9 @@ operator=(const Object &aObject)
 {
 	setType(aObject.getType());
 	setName(aObject.getName());
+	if (!aObject._inlined){
+		setInlined(false, aObject._document->getFileName());
+	}
 	return(*this);
 }
 
@@ -1477,7 +1480,7 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rC
 		// Change _node to refer to the root of the external file
 		rRefNode = aElement;
 		rChildDocument = new XMLDocument(fileAttrib);
-		rChildDocumentElement = rChildDocument->getDOMDocument()->getDocumentElement();
+		rChildDocumentElement = rChildDocument->getRootDataElement();
 		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
 			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
 								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + 
@@ -1545,7 +1548,7 @@ clearXMLStructures()
 		}
 	}
 
-	delete _document;
+	//delete _document; we should do this only for the top-level if _document is owned by object
 	_document = NULL;
 }
 
