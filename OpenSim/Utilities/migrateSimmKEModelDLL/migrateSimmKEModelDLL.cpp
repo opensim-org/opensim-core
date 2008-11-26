@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/TransformAxis.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/CoordinateCouplerConstraint.h>
@@ -54,6 +55,8 @@
 
 using namespace std;
 using namespace OpenSim;
+
+bool isJointFixed(SimmJoint& aJoint);
 
 OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Model& aModel, const SimmKinematicsEngine& aSimmEngine)
 {
@@ -124,9 +127,12 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Mo
 		if(oldJoint==NULL) continue;
 
 		// CREATE A NEW JOINT
-		// All joints in version 1.5 are treated as custom joints.
 		JointSet* jointSet = sbe->getJointSet();
-		CustomJoint *newJoint = new CustomJoint();
+		Joint* newJoint;
+		if (isJointFixed(*oldJoint) == true)
+			newJoint = new WeldJoint();
+		else
+			newJoint = new CustomJoint();
 		newBody->setJoint(newJoint);  delete newJoint;  // A copy is made, so must delete original.
 		newJoint = (CustomJoint*)newBody->getJoint();
 		if (newJoint!=NULL)
@@ -273,4 +279,20 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Mo
 	}
 
 	return sbe;
+}
+
+bool isJointFixed(SimmJoint& aJoint)
+{
+	const DofSet01_05 *dofSet = aJoint.getDofSet();
+	for (int i=0; i<dofSet->getSize(); i++) {
+		AbstractDof01_05 *dof = dofSet->get(i);
+		if (dof == NULL)
+			continue;
+		Function *function = dof->getFunction();
+		if (function == NULL)
+			continue;
+		if (function->getType() != "Constant")
+			return false;
+	}
+	return true;
 }
