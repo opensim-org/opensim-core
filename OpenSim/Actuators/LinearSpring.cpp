@@ -334,6 +334,7 @@ computeTargetFunctions(const Storage &aQStoreForTarget,const Storage &aUStoreFor
 	for(int i=0;i<size;i++) {
 		// Set the model state
 		aQStoreForTarget.getTime(i,*(&t[0]));
+		if (t[0]> getEndTime()) break;
 		aQStoreForTarget.getData(i,nq,&q[0]);
 		aUStoreForTarget.getData(i,nu,&u[0]);
 		_model->getDynamicsEngine().setConfiguration(&q[0],&u[0]);

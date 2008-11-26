@@ -668,6 +668,8 @@ addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const Fo
 
 	// Create scale function
 	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
+		if (tScale > aAppliedForce.getEndTime())
+			break;
 		timeScale.append(tScale);
 		Vec3 force;
 		aAppliedForce.getForceFunction()->evaluate(&tScale,&force[0]);
@@ -678,6 +680,8 @@ addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const Fo
 
 	// Create linear spring
 	LinearSpring *spring = new LinearSpring(_model,aAppliedForce.getBody());
+	spring->setStartTime(aAppliedForce.getStartTime());
+	spring->setEndTime(aAppliedForce.getEndTime());
 	spring->setPointFunction((VectorFunction*)aAppliedForce.getPointFunction()->copy());
 	spring->computeTargetFunctions(aQStore,aUStore);
 	spring->setKValue(_kLin);
