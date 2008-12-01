@@ -253,6 +253,11 @@ void Model::setupProperties()
  */
 void Model::setup()
 {
+	if (_dynamicsEngine->getNumBodies() == 0){	
+		// Something wrong with the file parsing don't do any more work
+		_builtOK = false;
+		throw Exception("DynamicsEngine for model has no Bodies, check file "+_fileName+" for errors.");
+	}
 	// Set the current directory to the directory containing the model
 	// file.  This is allow files (i.e. bone files) to be specified using
 	// relative paths in the model file.  KMS 4/26/06
