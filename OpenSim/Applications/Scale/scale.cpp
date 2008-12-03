@@ -64,11 +64,6 @@ int main(int argc,char **argv)
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
 
-	// REGISTER TYPES
-	Object::RegisterType(VisibleObject());
-	Object::RegisterType(ScaleTool());
-	ScaleTool::registerTypes();
-
 	// PARSE COMMAND LINE
 	string inName;
 	string option = "";

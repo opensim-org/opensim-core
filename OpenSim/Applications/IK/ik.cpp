@@ -64,9 +64,6 @@ int main(int argc,char **argv)
 	LoadOpenSimLibrary("osimSimbodyEngine");
 	//LoadOpenSimLibrary("osimSimmKinematicsEngine");
 
-	// REGISTER TYPES
-	IKTool::registerTypes();
-
 	// PARSE COMMAND LINE
 	string option = "";
 	string setupFileName;

@@ -132,14 +132,6 @@ void GenericModelMaker::setupProperties()
 	_propertySet.append(&_markerSetFileNameProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
- */
-void GenericModelMaker::registerTypes()
-{
-	//Object::RegisterType(Marker());
-}
 
 //=============================================================================
 // OPERATORS

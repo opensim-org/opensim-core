@@ -199,19 +199,6 @@ void ScaleTool::setupProperties()
 	_propertySet.append(&_markerPlacerProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
- */
-void ScaleTool::registerTypes()
-{
-	Object::RegisterType(GenericModelMaker());
-	Object::RegisterType(ModelScaler());
-	Object::RegisterType(MarkerPlacer());
-	GenericModelMaker::registerTypes();
-	ModelScaler::registerTypes();
-}
-
 //=============================================================================
 // OPERATORS
 //=============================================================================

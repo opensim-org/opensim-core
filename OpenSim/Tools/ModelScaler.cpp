@@ -218,16 +218,6 @@ void ModelScaler::setupProperties()
 	_propertySet.append(&_outputScaleFileNameProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Register the types used by this class.
- */
-void ModelScaler::registerTypes()
-{
-	Object::RegisterType(Measurement());
-	//Object::RegisterType(Scale());
-	Measurement::registerTypes();
-}
 
 //=============================================================================
 // OPERATORS

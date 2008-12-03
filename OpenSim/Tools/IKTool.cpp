@@ -191,15 +191,6 @@ void IKTool::setupProperties()
 	_optimizerAlgorithmProp.setName("optimizer_algorithm");
 	_propertySet.append( &_optimizerAlgorithmProp );
 }
-//_____________________________________________________________________________
-/**
- * Register IKTrial type.
- */
-void IKTool::registerTypes()
-{
-	Object::RegisterType(IKTool());
-	Object::RegisterType(IKTrial());
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================

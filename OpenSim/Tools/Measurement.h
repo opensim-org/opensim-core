@@ -109,9 +109,6 @@ public:
 
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
 
-	/* Register types to be used when reading a Measurement object from xml file. */
-	static void registerTypes();
-
 private:
 	void setNull();
 	void setupProperties();

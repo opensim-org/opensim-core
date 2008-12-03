@@ -663,8 +663,7 @@ void IKTarget::buildCoordinateMap(const Array<string>& aNameArray)
 
 		coordinateInfo *info = new coordinateInfo;
 		info->coord = coord;
-		info->prescribed = coord->getLocked();
-		info->prescribed = coord->isConstrained();
+		info->prescribed = coord->getLocked() || coord->isConstrained();
 
 		// Initialize as if it has no task
 		info->experimentalColumn = -1;

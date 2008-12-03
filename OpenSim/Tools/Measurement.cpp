@@ -140,16 +140,6 @@ void Measurement::setupProperties()
 	_propertySet.append(&_bodyScaleSetProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Register the types used by Measurement.
- */
-void Measurement::registerTypes()
-{
-	Object::RegisterType(MarkerPair());
-	Object::RegisterType(BodyScale());
-}
-
 //=============================================================================
 // OPERATORS
 //=============================================================================

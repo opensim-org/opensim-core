@@ -93,9 +93,6 @@ public:
 
 	Model* processModel(const std::string& aPathToSubject="");
 
-	/* Register types to be used when reading a GenericModelMaker object from xml file. */
-	static void registerTypes();
-
 	/**
 	 * Get file name for generic model
 	 */

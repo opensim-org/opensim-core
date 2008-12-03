@@ -89,9 +89,6 @@ public:
 	IKTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
-
-	/* Register types to be used when reading an IKTool object from xml file. */
-	static void registerTypes();
 private:
 	void setNull();
 	void setupProperties();
