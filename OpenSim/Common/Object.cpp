@@ -792,7 +792,7 @@ updateFromXMLNode()
 			oldTypeObject->updateFromXMLNode();
 			oldTypeObject->_converting=false;
 			// Call the copy method on the new type
-			cout << "construct Object of type " << _type << " from object of type " << oldTypeObject->_type << endl;
+			cout << "Version migrating an object of type " << _type << " to latest version." << endl;
 			migrateFromPreviousVersion(oldTypeObject);
 			// Remove old node from parent in DOM
 			XMLNode::RemoveElementFromParent(_node);
