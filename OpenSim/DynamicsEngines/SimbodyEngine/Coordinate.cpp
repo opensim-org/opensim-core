@@ -386,7 +386,8 @@ void Coordinate::initializeState(State& completeState)
 	// current value to the default value
 
 	// Cannot enforce the constraint, since state of constraints may still be undefined
-	setValue(_defaultValue, completeState, false);
+	if (!_locked)
+		setValue(_defaultValue, completeState, false);
 	setIsPrescribed(_isPrescribed, completeState);
 	setClamped(_clamped, completeState);
 	// Locking takes precedence if all joint constraints are ON
