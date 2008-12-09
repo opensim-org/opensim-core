@@ -1114,6 +1114,23 @@ reset(double aTime)
 }
 
 
+//_____________________________________________________________________________
+/**
+ * Crop the storage object to the specified start and final time
+ */
+void Storage::
+crop(const double newStartTime, const double newFinalTime)
+{
+	int startindex = findIndex(newStartTime); 
+	int finalindex = findIndex(newFinalTime); 
+	// Since underlying Array is packed we'll just move what we need up then 
+	// delete remaining rows in reverse order.
+	int numRowsToKeep=finalindex-startindex+1;
+	for(int i=0; i<finalindex-startindex+1; i++)
+		_storage[i]=_storage[startindex+i];
+	_storage.setSize(numRowsToKeep);
+}
+
 //=============================================================================
 // STORAGE
 //=============================================================================
@@ -2251,7 +2268,39 @@ resampleLinear(double aDT)
 
 	return aDT;
 }
+//_____________________________________________________________________________
+/**
+ * interpolateAt passed in list of time values. Tries to check if there is a data
+ * row at the specified times to avoid introducing duplicates.
+ */
+void Storage::interpolateAt(const Array<double> &targetTimes)
+{
+	for(int i=0; i<targetTimes.getSize();i++){
+		double t = targetTimes[i];
+		// get index for t
+		int tIndex = findIndex(t);
+		// If within small number from t then pass
+		double actualTime=0.0;
+		if (tIndex < getSize()-1){
+			getTime(tIndex+1, actualTime);
+			if (fabs(actualTime - t)<1e-6) 
+					continue;
+		}
+		// or could be the following one too
+		getTime(tIndex, actualTime);
+		if (fabs(actualTime - t)<1e-6) 
+				continue;
+		// create a StateVector and add it
+		double *y=NULL;
+		int ny=0;
+		StateVector vec;
+		// INTERPOLATE THE STATES
+		ny = getDataAtTime(t,ny,&y);
+		vec.setStates(t,ny,y);
 
+		_storage.insert(tIndex+1, vec);
+	}
+}
 //=============================================================================
 // IO
 //=============================================================================

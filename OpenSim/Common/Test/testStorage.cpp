@@ -68,8 +68,31 @@ int main() {
 		ASSERT(col[1]==40.0);
 	
 		ASSERT(st->getStateIndex("v2")==1);
-
-		// Test Operations: Add, ...
+		for(int i=3; i<100; i++){
+			StateVector vec;
+			vec.getData().append(1.0);
+			vec.getData().append(2.0);
+			vec.setTime((double)i);
+			st->append(vec);
+		}
+		// Interpolation
+		Array<double> midpoints;
+		midpoints.append(1.5);
+		midpoints.append(2.2);
+		st->interpolateAt(midpoints);
+		double data[2];
+		st->getDataAtTime(1.5, 2, data);
+		ASSERT(data[0]==15.0);
+		// CROPPING
+		st->crop(.5, 4.5); 
+		ASSERT(st->getSize()==6); 
+		ASSERT(st->getFirstTime()==1.0);
+		st->crop(1.0, 3.0); 
+		ASSERT(st->getSize()==5); 
+		ASSERT(st->getLastTime()==3.0);
+		st->crop(2.0, 2.0); 
+		ASSERT(st->getSize()==1); 
+		ASSERT(st->getLastTime()==2.0);
 
 		delete st;
     }

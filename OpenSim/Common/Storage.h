@@ -166,6 +166,7 @@ public:
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
 	void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
+	void interpolateAt(const Array<double> &targetTimes);
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;
@@ -186,6 +187,7 @@ public:
 	//--------------------------------------------------------------------------
 	int reset(int aIndex=0);
 	int reset(double aTime);
+	void crop(const double newStartTime, const double newFinalTime);
 	void purge() { _storage.setSize(0); };	// Similar to reset but doesn't try to keep history
 	//--------------------------------------------------------------------------
 	// STORAGE
