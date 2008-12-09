@@ -1421,14 +1421,20 @@ InitializeExternalLoads(const double& analysisStartTime, const double& analysisF
 	int startIndex = qStore->findIndex(analysisStartTime);
 	double qStartTime, qFinalTime;
 	qStore->getTime(startIndex, qStartTime);
-	if (qStartTime < analysisStartTime && startIndex >=1){
-		qStore->getTime(startIndex-1, qStartTime); 
-	}
 	int finalIndex = qStore->findIndex(analysisFinalTime);
 	qStore->getTime(finalIndex, qFinalTime);
-	if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
-		qStore->getTime(finalIndex+1, qFinalTime); 
+	Array<double> analysisBoundTimes;
+	if (qStartTime < analysisStartTime && startIndex >=1){
+		analysisBoundTimes.append(analysisStartTime);
+		//qStore->getTime(startIndex-1, qStartTime); 
+		qStartTime = analysisStartTime;
 	}
+	if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
+		analysisBoundTimes.append(analysisFinalTime);
+		//qStore->getTime(finalIndex+1, qFinalTime); 
+		qFinalTime = analysisFinalTime;
+	}
+	qStore->interpolateAt(analysisBoundTimes);
 
 	// CREATE FORCE AND TORQUE APPLIERS
 	ForceApplier *rightForceApp, *leftForceApp;
