@@ -1126,6 +1126,10 @@ crop(const double newStartTime, const double newFinalTime)
 	// Since underlying Array is packed we'll just move what we need up then 
 	// delete remaining rows in reverse order.
 	int numRowsToKeep=finalindex-startindex+1;
+	if (numRowsToKeep <=0){
+		cout<<"Storage.crop: WARNING: No rows will be left." << endl;
+		numRowsToKeep=0;
+	}
 	for(int i=0; i<finalindex-startindex+1; i++)
 		_storage[i]=_storage[startindex+i];
 	_storage.setSize(numRowsToKeep);
