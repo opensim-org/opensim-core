@@ -547,8 +547,8 @@ bool Coordinate::setValue(double aValue, State& theState, bool aRealize)
 		if (1)
 		{
 			if (_locked) {
-				cout<<"Coordinate.setValue: WARN- coordinate "<<getName();
-				cout<<" is locked. Unable to change its value." << endl;
+				//cout<<"Coordinate.setValue: WARN- coordinate "<<getName();
+				//cout<<" is locked. Unable to change its value." << endl;
 				// In case aRealize is true we still need to execute the rest of the function
 				// so that other coordinates are realized even if current coordinate is locked
 				if (!aRealize) return false;	
@@ -585,8 +585,8 @@ bool Coordinate::setValue(double aValue, State& theState, bool aRealize)
 			}
 		}
 	} else {
-		cout << "Coordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
-			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
+		//cout << "Coordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
+		//	aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
 		return false;
 	}
 

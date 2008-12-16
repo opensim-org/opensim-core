@@ -467,7 +467,7 @@ bool SimmCoordinate::setValue(double aValue)
 		if (1)
 		{
 			if (_locked) {
-				cout << "SimmCoordinate.setValue: WARN- Coordinate " << getName() << " is locked. Unable to change its value." << endl;
+				//cout << "SimmCoordinate.setValue: WARN- Coordinate " << getName() << " is locked. Unable to change its value." << endl;
 				return false;
 			}
 
@@ -489,8 +489,8 @@ bool SimmCoordinate::setValue(double aValue)
 			//}
 		}
 	} else {
-		cout << "SimmCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
-			aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
+		//cout << "SimmCoordinate.setValue: WARN- Attempting to set coordinate " << getName() << " to a value (" <<
+		//	aValue << ") outside its range (" << _range[0] << " to " << _range[1] << ")" << endl;
 		return false;
 	}
 
