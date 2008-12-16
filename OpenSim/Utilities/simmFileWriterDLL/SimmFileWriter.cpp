@@ -52,6 +52,7 @@
 #include <OpenSim/Simulation/Model/DofSet01_05.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Delp1990Muscle.h>
 #include <OpenSim/Common/NatCubicSpline.h>
 #include "SimbodySimmModel.h"
 
@@ -278,17 +279,6 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			}
 		}
 
-		if (szh->getForceVelocityCurve())
-		{
-			NatCubicSpline* ncs;
-			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getForceVelocityCurve())))
-			{
-				aStream << "beginforcevelocitycurve" << endl;
-				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
-					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
-				aStream << "endforcevelocitycurve" << endl;
-			}
-		}
 	}
 	else if (dynamic_cast<Thelen2003Muscle*>(&aMuscle))
 	{
@@ -312,6 +302,68 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 		if (!sdm->getMuscleModelIndexUseDefault())
 			aStream << "muscle_model " << sdm->getMuscleModelIndex() << endl;
 	}
+	else if (dynamic_cast<Delp1990Muscle*>(&aMuscle))
+	{
+		Delp1990Muscle *szh = dynamic_cast<Delp1990Muscle*>(&aMuscle);
+
+		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
+		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
+		aStream << "tendon_slack_length " << szh->getTendonSlackLength() << endl;
+		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
+		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
+		aStream << "timescale " << szh->getTimeScale() << endl;
+		if (!szh->getMuscleModelIndexUseDefault())
+			aStream << "muscle_model " << szh->getMuscleModelIndex() << endl;
+
+		if (szh->getActiveForceLengthCurve())
+		{
+			NatCubicSpline* ncs;
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getActiveForceLengthCurve())))
+			{
+				aStream << "beginactiveforcelengthcurve" << endl;
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
+					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
+				aStream << "endactiveforcelengthcurve" << endl;
+			}
+		}
+
+		if (szh->getPassiveForceLengthCurve())
+		{
+			NatCubicSpline* ncs;
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getPassiveForceLengthCurve())))
+			{
+				aStream << "beginpassiveforcelengthcurve" << endl;
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
+					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
+				aStream << "endpassiveforcelengthcurve" << endl;
+			}
+		}
+
+		if (szh->getTendonForceLengthCurve())
+		{
+			NatCubicSpline* ncs;
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getTendonForceLengthCurve())))
+			{
+				aStream << "begintendonforcelengthcurve" << endl;
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
+					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
+				aStream << "endtendonforcelengthcurve" << endl;
+			}
+		}
+
+		if (szh->getForceVelocityCurve())
+		{
+			NatCubicSpline* ncs;
+			if ((ncs = dynamic_cast<NatCubicSpline*>(szh->getForceVelocityCurve())))
+			{
+				aStream << "beginforcevelocitycurve" << endl;
+				for (int i = 0; i < ncs->getNumberOfPoints(); i++)
+					aStream << "(" << ncs->getX()[i] << ", " << ncs->getY()[i] << ")" << endl;
+				aStream << "endforcevelocitycurve" << endl;
+			}
+		}
+	}
+
 
 	aStream << "endmuscle" << endl << endl;
 	return true;

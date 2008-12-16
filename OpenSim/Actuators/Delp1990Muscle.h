@@ -1,10 +1,10 @@
-#ifndef __Schutte1993Muscle_h__
-#define __Schutte1993Muscle_h__
+#ifndef __Delp1990Muscle_h__
+#define __Delp1990Muscle_h__
 
-// Schutte1993Muscle.h
+// Delp1990Muscle.h
 // Author: Peter Loan
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -54,12 +54,15 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing muscle model 4 in the Dynamics Pipeline.
+ * A class implementing a SIMM muscle. This implementation is based on muscle
+ * model 2 from the Dynamics Pipeline, but is modified slightly so that when
+ * fiber_velocity = 0.0, this model calculates lengths and forces that match
+ * SIMM's isometric calculations.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Schutte1993Muscle : public AbstractMuscle  
+class OSIMACTUATORS_API Delp1990Muscle : public AbstractMuscle  
 {
 
 //=============================================================================
@@ -77,6 +80,10 @@ protected:
 	/** Parameter used in time constant of ramping up and ramping down of muscle force */
 	PropertyDbl _activation2Prop;
 	double &_activation2;
+
+	/** Mass between the tendon and muscle fibers */
+	PropertyDbl _massProp;
+	double &_mass;
 
 	/** Maximum isometric force that the fibers can generate */
 	PropertyDbl _maxIsometricForceProp;
@@ -98,10 +105,6 @@ protected:
 	PropertyDbl _maxContractionVelocityProp;
 	double &_maxContractionVelocity;
 
-	/** Damping factor related to maximum contraction velocity */
-	PropertyDbl _dampingProp;
-	double &_damping;
-
 	/* Function representing force-length behavior of tendon */
 	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
 	Function *&_tendonForceLengthCurve;
@@ -114,6 +117,10 @@ protected:
 	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
 	Function *&_passiveForceLengthCurve;
 
+	/* Function representing force-velocity behavior of muscle fibers */
+	PropertyObjPtr<Function> _forceVelocityCurveProp;
+	Function *&_forceVelocityCurve;
+
 	// Muscle controls
 	double _excitation;
 
@@ -122,6 +129,8 @@ protected:
 	double _activationDeriv;
 	double _fiberLength;
 	double _fiberLengthDeriv;
+	double _fiberVelocity;
+	double _fiberVelocityDeriv;
 
 	// Forces in various components
 	double _tendonForce;
@@ -131,6 +140,7 @@ protected:
 private:
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
+	static const int STATE_FIBER_VELOCITY;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -138,15 +148,15 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Schutte1993Muscle();
-	Schutte1993Muscle(const Schutte1993Muscle &aMuscle);
-	virtual ~Schutte1993Muscle();
+	Delp1990Muscle();
+	Delp1990Muscle(const Delp1990Muscle &aMuscle);
+	virtual ~Delp1990Muscle();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	Schutte1993Muscle& operator=(const Schutte1993Muscle &aMuscle);
+	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
 #endif
-   void copyData(const Schutte1993Muscle &aMuscle);
+   void copyData(const Delp1990Muscle &aMuscle);
 	virtual void copyPropertyValues(AbstractActuator& aActuator);
 
 	//--------------------------------------------------------------------------
@@ -159,11 +169,11 @@ public:
 	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
 	virtual double getMaxContractionVelocity() { return _maxContractionVelocity; }
 	virtual double getTimeScale() { return _timeScale; }
-	virtual double getDamping() { return _damping; }
 	// Computed quantities
 	virtual double getPennationAngle();
 	virtual double getFiberLength();
 	virtual double getNormalizedFiberLength();
+	virtual double getFiberVelocity();
 	virtual double getPassiveFiberForce();
 	double getStress() const;
 
@@ -183,25 +193,25 @@ public:
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual Function* getPassiveForceLengthCurve() const;
 	virtual Function* getTendonForceLengthCurve() const;
+	virtual Function* getForceVelocityCurve() const;
 
-	double calcNonzeroPassiveForce(double aNormFiberLength, double aNormFiberVelocity) const;
-	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	double calcTendonForce(double aNormTendonLength) const;
+	double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
 
 	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
 
-	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, AbstractActuator);
+	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, AbstractActuator);
 
 private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class Schutte1993Muscle
+};	// END of class Delp1990Muscle
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Schutte1993Muscle_h__
+#endif // __Delp1990Muscle_h__
 
 

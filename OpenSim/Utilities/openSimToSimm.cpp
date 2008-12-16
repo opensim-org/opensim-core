@@ -33,6 +33,7 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Delp1990Muscle.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace std;
@@ -58,6 +59,7 @@ int main(int argc,char **argv)
 	SimmKinematicsEngine::registerTypes();
 	Object::RegisterType(Schutte1993Muscle());
 	Object::RegisterType(Thelen2003Muscle());
+	Object::RegisterType(Delp1990Muscle());
 
 	// PARSE COMMAND LINE
 	string inName = "";

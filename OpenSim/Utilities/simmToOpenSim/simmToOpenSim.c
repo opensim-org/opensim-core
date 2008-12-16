@@ -469,6 +469,8 @@ void write_xml_muscles(FILE* fp, ModelStruct* ms)
 			strcpy(muscleClassName, "Schutte1993Muscle");
 		else if (*m->muscle_model_index == 9)
 			strcpy(muscleClassName, "Thelen2003Muscle");
+		else if (*m->muscle_model_index == 1 || *m->muscle_model_index == 2)
+			strcpy(muscleClassName, "Delp1990Muscle");
 		else{	// Warn about unsupported but use Schutte1993Muscle
 			strcpy(muscleClassName, "Schutte1993Muscle");
 		    printf("Warning: muscle %s has unsupported muscle model %d.\n", m->name, *m->muscle_model_index);
@@ -1013,6 +1015,7 @@ void write_xml_defaults(FILE* fp, ModelStruct* ms)
 	// the default mechanism works by matching class names)
 	write_xml_muscle(fp, ms, &ms->default_muscle, "Schutte1993Muscle", 1);
 	write_xml_muscle(fp, ms, &ms->default_muscle, "Thelen2003Muscle", 1);
+	write_xml_muscle(fp, ms, &ms->default_muscle, "Delp1990Muscle", 1);
 	fprintf(fp, "\t</defaults>\n");
 }
 

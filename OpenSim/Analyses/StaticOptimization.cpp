@@ -44,8 +44,7 @@
 #include <OpenSim/Simulation/Model/ActuatorSet.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
+#include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Actuators/Torque.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <SimTKmath.h>

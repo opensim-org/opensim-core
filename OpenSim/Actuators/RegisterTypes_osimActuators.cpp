@@ -38,6 +38,7 @@
 #include "PolynomialSetPoint.h"
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
+#include "Delp1990Muscle.h"
 #include "Torque.h"
 #include "PassiveJointTorque.h"
 
@@ -62,6 +63,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( PolynomialSetPoint() );
 	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Schutte1993Muscle() );
+	Object::RegisterType( Delp1990Muscle() );
 	Object::RegisterType( Torque() );
 	Object::RegisterType( PassiveJointTorque() );
 
