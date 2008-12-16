@@ -223,6 +223,8 @@ migrateFromPreviousVersion(const Object *aPreviousVersion)
 		// FIND THE OLD DOFs FOR THIS JOINT
 		TransformAxisSet *newTransformAxisSet = newJoint->getTransformAxisSet();
 		const DofSet01_05 *oldDofSet = oldJoint->getDofSet();
+		int nrots = 0;
+
 		int na = oldDofSet->getSize();
 		for(int a=0;a<na;a++) {
 
@@ -262,6 +264,7 @@ migrateFromPreviousVersion(const Object *aPreviousVersion)
 					newAxis->_isRotation = false;
 				} else if(type == "SimbodyRotationDof") {
 					newAxis->_isRotation = true;
+                    nrots++;
 				}
 
 				// Coordinates
@@ -288,7 +291,11 @@ migrateFromPreviousVersion(const Object *aPreviousVersion)
 					newCoord->_locked = oldCoord->_locked;
 					newCoord->_restraintActive = false;
 					newCoord->_dynamicsEngine = this;
-					newJoint->getCoordinateSet()->append(newCoord);
+					if(newAxis->_isRotation) {
+						newJoint->getCoordinateSet()->insert(nrots-1, newCoord);
+					}
+					else
+						newJoint->getCoordinateSet()->append(newCoord);
 					tmpGlobalCoordSet.append(newCoord);
 				}
 
