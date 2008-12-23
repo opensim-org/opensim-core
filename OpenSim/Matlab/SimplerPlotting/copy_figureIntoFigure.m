@@ -1,7 +1,9 @@
-function copy_figureIntoFigure( oldFigureNumber, newFigureNumber, ...
+function newAxes = copy_figureIntoFigure( oldFigureNumber, newFigureNumber, ...
     oldAxes, temporaryNewAxes )
-
+%
 % Compute affine transformation from old axes to temporary new axes.
+%
+% This function returns the two new axes within the destination figure.
 %
 % NOTE: the transformation is actually not a general affine transformation:
 % it is M(x) = Dx + T, where D is a 2 x 2 diagonal matrix, x is a 2 x 1
@@ -23,6 +25,7 @@ function copy_figureIntoFigure( oldFigureNumber, newFigureNumber, ...
 %   y2 + (h2/h1)( y3 - y1 )
 %   (w2/w1)w3
 %   (h2/h1)h3               ].
+% 
 oldPos = get(          oldAxes, 'Position' );
 x1 = oldPos(1);
 y1 = oldPos(2);
@@ -36,6 +39,7 @@ h2 = newPos(4);
 
 % Copy and transform each child from old figure to new figure.
 originalChildren = get( oldFigureNumber, 'Children' );
+newAxes = originalChildren;
 for j = 1 : length( originalChildren )
     oldChild = originalChildren(j);
     pos = get( oldChild, 'Position' );
@@ -50,4 +54,5 @@ for j = 1 : length( originalChildren )
         (w2/w1)*w3 ...
         (h2/h1)*h3 ];
     set( newChild, 'Position', newChildPosition );
+    newAxes(j) = newChild;
 end

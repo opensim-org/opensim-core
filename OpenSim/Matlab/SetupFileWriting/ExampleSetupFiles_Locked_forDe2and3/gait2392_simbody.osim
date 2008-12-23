@@ -1,0 +1,3838 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model name="3DGaitModel2392">
+	<credits>Delp S.L., Loan J.P., Hoy M.G., Zajac F.E., Topp E.L., Rosen J.M., Thelen D.G., Anderson F.C., Seth A.</credits>
+	<publications>
+	Notes:  3D, 23 DOF gait model created by D.G. Thelen, Univ. of Wisconsin-Madison, and Ajay Seth, Frank C. Anderson, and Scott L. Delp, Stanford University.  Lower extremity joint defintions based on Delp et al. (1990).  Low back joint and anthropometry based on Anderson and Pandy (1999, 2001). Planar knee model of Yamaguchi and Zajac (1989).  Seth removed the patella to avoid kinematic constraints; insertions of the quadrucepts are handled with moving points in the tibia frame.
+
+Delp, S.L., Loan, J.P., Hoy, M.G., Zajac, F.E., Topp E.L., Rosen, J.M.: An interactive graphics-based model of the lower extremity to study orthopaedic surgical procedures,  IEEE Transactions on Biomedical Engineering, vol. 37, pp. 757-767, 1990.
+
+Yamaguchi G.T., Zajac F.E.: A planar model of the knee joint to characterize the knee extensor mechanism." J . Biomecl7. vol. 21. pp. 1-10. 1989.
+
+Anderson F.C., Pandy M.G.: A dynamic optimization solution for vertical jumping in three dimensions. Computer Methods in Biomechanics and Biomedical Engineering 2:201-231, 1999.
+
+Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Biomechanical Engineering 123:381-390, 2001.	
+
+	</publications>
+	<defaults>
+		<Schutte1993Muscle name="defaultmuscle">
+			<pennation_angle>0.000000000000</pennation_angle>
+			<max_contraction_velocity>10.000000000000</max_contraction_velocity>
+			<muscle_model>9</muscle_model>
+			<time_scale>0.100000000000</time_scale>
+			<damping>0.050000000000</damping>
+			<activation_time_constant>0.010000000000</activation_time_constant>
+			<deactivation_time_constant>0.040000000000</deactivation_time_constant>
+			<Af>0.300000000000</Af>
+			<Flen>1.800000000000</Flen>
+			<Vmax>10.000000000000</Vmax>
+			<Vmax0>5.000000000000</Vmax0>
+			<FmaxTendonStrain>0.033000000000</FmaxTendonStrain>
+			<FmaxMuscleStrain>0.600000000000</FmaxMuscleStrain>
+			<KshapeActive>0.500000000000</KshapeActive>
+			<KshapePassive>4.000000000000</KshapePassive>
+			<muscle_density>1056.000000000000</muscle_density>
+			<max_isometric_stress>350000.000000000000</max_isometric_stress>
+			<tendon_force_length_curve>
+				<natCubicSpline>
+					<x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.010800000000 0.025700000000 0.043500000000 0.065200000000 0.091500000000 0.123000000000 0.161000000000 0.208000000000 0.227000000000 345.000000000000 345.000000000000 345.000000000000 345.000000000000 </y>
+				</natCubicSpline>
+			</tendon_force_length_curve>
+			<active_force_length_curve>
+				<natCubicSpline>
+					<x>-5.307692000000 -4.307692000000 -1.923077000000 -0.884615000000 -0.269231000000 0.230769000000 0.461538000000 0.527250000000 0.628750000000 0.718750000000 0.861250000000 1.045000000000 1.217500000000 1.438750000000 1.500000000000 1.615385000000 2.000000000000 2.961538000000 3.692308000000 5.461538000000 9.901902000000 </x>
+					<y>0.012188000000 0.021899000000 0.036466000000 0.052493000000 0.075312000000 0.114158000000 0.157859000000 0.226667000000 0.636667000000 0.856667000000 0.950000000000 0.993333000000 0.770000000000 0.246667000000 0.193821000000 0.133252000000 0.072683000000 0.044417000000 0.036341000000 0.021899000000 0.007332000000 </y>
+				</natCubicSpline>
+			</active_force_length_curve>
+			<passive_force_length_curve>
+				<natCubicSpline>
+					<x>-5.000000000000 0.998000000000 0.999000000000 1.000000000000 1.100000000000 1.200000000000 1.300000000000 1.400000000000 1.500000000000 1.600000000000 1.601000000000 1.602000000000 5.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
+				</natCubicSpline>
+			</passive_force_length_curve>
+			<force_velocity_curve>
+				<natCubicSpline>
+					<x>-1.000000000000 -0.950000000000 -0.900000000000 -0.850000000000 -0.800000000000 -0.750000000000 -0.700000000000 -0.650000000000 -0.600000000000 -0.550000000000 -0.500000000000 -0.450000000000 -0.400000000000 -0.350000000000 -0.300000000000 -0.250000000000 -0.200000000000 -0.150000000000 -0.100000000000 -0.050000000000 0.000000000000 0.050000000000 0.100000000000 0.150000000000 0.200000000000 0.250000000000 0.300000000000 0.350000000000 0.400000000000 0.450000000000 0.500000000000 0.550000000000 0.600000000000 0.650000000000 0.700000000000 0.750000000000 0.800000000000 0.850000000000 0.900000000000 0.950000000000 1.000000000000 </x>
+					<y>0.000000000000 0.010417000000 0.021739000000 0.034091000000 0.047619000000 0.062500000000 0.078947000000 0.097222000000 0.117647000000 0.140625000000 0.166667000000 0.196429000000 0.230769000000 0.270833000000 0.318182000000 0.375000000000 0.444444000000 0.531250000000 0.642857000000 0.791667000000 1.000000000000 1.482014000000 1.601571000000 1.655791000000 1.686739000000 1.706751000000 1.720753000000 1.731099000000 1.739055000000 1.745365000000 1.750490000000 1.754736000000 1.758312000000 1.761364000000 1.763999000000 1.766298000000 1.768321000000 1.770115000000 1.771717000000 1.773155000000 1.774455000000 </y>
+				</natCubicSpline>
+			</force_velocity_curve>
+		</Schutte1993Muscle>
+		<Thelen2003Muscle name="defaultmuscle">
+			<pennation_angle>0.000000000000</pennation_angle>
+			<max_contraction_velocity>10.000000000000</max_contraction_velocity>
+			<muscle_model>9</muscle_model>
+			<time_scale>0.100000000000</time_scale>
+			<damping>0.050000000000</damping>
+			<activation_time_constant>0.010000000000</activation_time_constant>
+			<deactivation_time_constant>0.040000000000</deactivation_time_constant>
+			<Af>0.300000000000</Af>
+			<Flen>1.800000000000</Flen>
+			<Vmax>10.000000000000</Vmax>
+			<Vmax0>5.000000000000</Vmax0>
+			<FmaxTendonStrain>0.033000000000</FmaxTendonStrain>
+			<FmaxMuscleStrain>0.600000000000</FmaxMuscleStrain>
+			<KshapeActive>0.500000000000</KshapeActive>
+			<KshapePassive>4.000000000000</KshapePassive>
+			<muscle_density>1056.000000000000</muscle_density>
+			<max_isometric_stress>350000.000000000000</max_isometric_stress>
+			<tendon_force_length_curve>
+				<natCubicSpline>
+					<x>-10.000000000000 -0.002000000000 -0.001000000000 0.000000000000 0.001310000000 0.002810000000 0.004310000000 0.005810000000 0.007310000000 0.008810000000 0.010300000000 0.011800000000 0.012300000000 9.200000000000 9.201000000000 9.202000000000 20.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.010800000000 0.025700000000 0.043500000000 0.065200000000 0.091500000000 0.123000000000 0.161000000000 0.208000000000 0.227000000000 345.000000000000 345.000000000000 345.000000000000 345.000000000000 </y>
+				</natCubicSpline>
+			</tendon_force_length_curve>
+			<active_force_length_curve>
+				<natCubicSpline>
+					<x>-5.307692000000 -4.307692000000 -1.923077000000 -0.884615000000 -0.269231000000 0.230769000000 0.461538000000 0.527250000000 0.628750000000 0.718750000000 0.861250000000 1.045000000000 1.217500000000 1.438750000000 1.500000000000 1.615385000000 2.000000000000 2.961538000000 3.692308000000 5.461538000000 9.901902000000 </x>
+					<y>0.012188000000 0.021899000000 0.036466000000 0.052493000000 0.075312000000 0.114158000000 0.157859000000 0.226667000000 0.636667000000 0.856667000000 0.950000000000 0.993333000000 0.770000000000 0.246667000000 0.193821000000 0.133252000000 0.072683000000 0.044417000000 0.036341000000 0.021899000000 0.007332000000 </y>
+				</natCubicSpline>
+			</active_force_length_curve>
+			<passive_force_length_curve>
+				<natCubicSpline>
+					<x>-5.000000000000 0.998000000000 0.999000000000 1.000000000000 1.100000000000 1.200000000000 1.300000000000 1.400000000000 1.500000000000 1.600000000000 1.601000000000 1.602000000000 5.000000000000 </x>
+					<y>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.035000000000 0.120000000000 0.260000000000 0.550000000000 1.170000000000 2.000000000000 2.000000000000 2.000000000000 2.000000000000 </y>
+				</natCubicSpline>
+			</passive_force_length_curve>
+			<force_velocity_curve>
+				<natCubicSpline>
+					<x>-1.000000000000 -0.950000000000 -0.900000000000 -0.850000000000 -0.800000000000 -0.750000000000 -0.700000000000 -0.650000000000 -0.600000000000 -0.550000000000 -0.500000000000 -0.450000000000 -0.400000000000 -0.350000000000 -0.300000000000 -0.250000000000 -0.200000000000 -0.150000000000 -0.100000000000 -0.050000000000 0.000000000000 0.050000000000 0.100000000000 0.150000000000 0.200000000000 0.250000000000 0.300000000000 0.350000000000 0.400000000000 0.450000000000 0.500000000000 0.550000000000 0.600000000000 0.650000000000 0.700000000000 0.750000000000 0.800000000000 0.850000000000 0.900000000000 0.950000000000 1.000000000000 </x>
+					<y>0.000000000000 0.010417000000 0.021739000000 0.034091000000 0.047619000000 0.062500000000 0.078947000000 0.097222000000 0.117647000000 0.140625000000 0.166667000000 0.196429000000 0.230769000000 0.270833000000 0.318182000000 0.375000000000 0.444444000000 0.531250000000 0.642857000000 0.791667000000 1.000000000000 1.482014000000 1.601571000000 1.655791000000 1.686739000000 1.706751000000 1.720753000000 1.731099000000 1.739055000000 1.745365000000 1.750490000000 1.754736000000 1.758312000000 1.761364000000 1.763999000000 1.766298000000 1.768321000000 1.770115000000 1.771717000000 1.773155000000 1.774455000000 </y>
+				</natCubicSpline>
+			</force_velocity_curve>
+		</Thelen2003Muscle>
+	</defaults>
+	<angle_units> radians </angle_units>
+	<ActuatorSet>
+	<groups>
+		<ObjectGroup name="R_hip_abd">
+			<members>glut_max1_r glut_med1_r glut_med2_r glut_med3_r glut_min1_r glut_min2_r glut_min3_r peri_r sar_r tfl_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_hip_flex">
+			<members>add_brev_r add_long_r glut_med1_r glut_min1_r grac_r iliacus_r pect_r psoas_r rect_fem_r sar_r tfl_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_hip_inrot">
+			<members>glut_med1_r glut_min1_r iliacus_r psoas_r tfl_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_hip_exrot">
+			<members>gem_r glut_med3_r glut_min3_r peri_r quad_fem_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_hip_ext">
+			<members>add_long_r add_mag1_r add_mag2_r add_mag3_r bifemlh_r glut_max1_r glut_max2_r glut_max3_r glut_med3_r glut_min3_r semimem_r semiten_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_hip_add">
+			<members>add_brev_r add_long_r add_mag1_r add_mag2_r add_mag3_r bifemlh_r grac_r pect_r semimem_r semiten_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_knee_bend">
+			<members>bifemlh_r bifemsh_r grac_r lat_gas_r med_gas_r sar_r semimem_r semiten_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_knee_ext">
+			<members>rect_fem_r vas_int_r vas_lat_r vas_med_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_ankle_pf">
+			<members>flex_dig_r flex_hal_r lat_gas_r med_gas_r per_brev_r per_long_r soleus_r tib_post_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_inverter">
+			<members>ext_hal_r flex_dig_r flex_hal_r tib_ant_r tib_post_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_ankle_df">
+			<members>ext_dig_r ext_hal_r per_tert_r tib_ant_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="R_everter">
+			<members>ext_dig_r per_brev_r per_long_r per_tert_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_abd">
+			<members>glut_max1_l glut_med1_l glut_med2_l glut_med3_l glut_min1_l glut_min2_l glut_min3_l peri_l sar_l tfl_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_flex">
+			<members>add_brev_l add_long_l glut_med1_l glut_min1_l grac_l iliacus_l pect_l psoas_l rect_fem_l sar_l tfl_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_inrot">
+			<members>glut_med1_l glut_min1_l iliacus_l psoas_l tfl_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_exrot">
+			<members>gem_l glut_med3_l glut_min3_l peri_l quad_fem_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_ext">
+			<members>add_long_l add_mag1_l add_mag2_l add_mag3_l bifemlh_l glut_max1_l glut_max2_l glut_max3_l glut_med3_l glut_min3_l semimem_l semiten_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_hip_add">
+			<members>add_brev_l add_long_l add_mag1_l add_mag2_l add_mag3_l bifemlh_l grac_l pect_l semimem_l semiten_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_knee_bend">
+			<members>bifemlh_l bifemsh_l grac_l lat_gas_l med_gas_l sar_l semimem_l semiten_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_knee_ext">
+			<members>rect_fem_l vas_int_l vas_lat_l vas_med_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_ankle_pf">
+			<members>flex_dig_l flex_hal_l lat_gas_l med_gas_l per_brev_l per_long_l soleus_l tib_post_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_inverter">
+			<members>ext_hal_l flex_dig_l flex_hal_l tib_ant_l tib_post_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_ankle_df">
+			<members>ext_dig_l ext_hal_l per_tert_l tib_ant_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="L_everter">
+			<members>ext_dig_l per_brev_l per_long_l per_tert_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_ext">
+			<members>ercspn_l ercspn_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_rlb">
+			<members>ercspn_r extobl_r intobl_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_introt">
+			<members>ercspn_r extobl_l intobl_r </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_llb">
+			<members>ercspn_l extobl_l intobl_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_extrot">
+			<members>ercspn_l extobl_r intobl_l </members>
+		</ObjectGroup>
+		<ObjectGroup name="back_flex">
+			<members>extobl_l extobl_r intobl_l intobl_r </members>
+		</ObjectGroup>
+	</groups>
+	<objects>
+		<Thelen2003Muscle name="glut_med1_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040800000000 0.030400000000 0.120900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.011700000000 0.055500000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>819.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
+			<tendon_slack_length>0.078000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_med2_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.085500000000 0.044500000000 0.076600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.005800000000 0.052700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>573.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084500000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_med3_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.122300000000 0.010500000000 0.064800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030900000000 -0.004700000000 0.051800000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>653.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064600000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.331612557879</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min1_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.046700000000 -0.008000000000 0.105600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.007200000000 -0.010400000000 0.056000000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.068000000000</optimal_fiber_length>
+			<tendon_slack_length>0.016000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min2_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.063300000000 -0.006500000000 0.099100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.009600000000 -0.010400000000 0.056000000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>285.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.056000000000</optimal_fiber_length>
+			<tendon_slack_length>0.026000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min3_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083400000000 -0.006300000000 0.085600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.013500000000 -0.008300000000 0.055000000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>323.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.038000000000</optimal_fiber_length>
+			<tendon_slack_length>0.051000000000</tendon_slack_length>
+			<pennation_angle>0.017453292520</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="semimem_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119200000000 -0.097470000000 0.071510000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.034800000000 -0.035190000000 -0.018910000000</location>
+					<body>tibia_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-0.558505360638 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.027000000000 -0.047710000000 -0.019570000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1288.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.080000000000</optimal_fiber_length>
+			<tendon_slack_length>0.359000000000</tendon_slack_length>
+			<pennation_angle>0.261799387799</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="semiten_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.126350000000 -0.109880000000 0.060390000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.042030000000 -0.028590000000 -0.022770000000</location>
+					<body>tibia_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-0.331612557879 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.033220000000 -0.052820000000 -0.022880000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.011300000000 -0.074600000000 -0.024500000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002700000000 -0.095600000000 -0.019300000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>410.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.201000000000</optimal_fiber_length>
+			<tendon_slack_length>0.255500000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="bifemlh_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.125960000000 -0.102570000000 0.069440000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030100000000 -0.036000000000 0.029430000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023400000000 -0.056300000000 0.034300000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>896.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.109000000000</optimal_fiber_length>
+			<tendon_slack_length>0.326000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="bifemsh_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 0.023400000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030100000000 -0.036000000000 0.029430000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023400000000 -0.056300000000 0.034300000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>804.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.173000000000</optimal_fiber_length>
+			<tendon_slack_length>0.089000000000</tendon_slack_length>
+			<pennation_angle>0.401425727959</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="sar_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015300000000 -0.001300000000 0.124200000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.003000000000 -0.356800000000 -0.042100000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.005600000000 -0.041900000000 -0.039900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.058900000000 -0.038300000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.024300000000 -0.084000000000 -0.025200000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>156.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.520000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_long_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031600000000 -0.083600000000 0.016900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 0.023400000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>627.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.138000000000</optimal_fiber_length>
+			<tendon_slack_length>0.110000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_brev_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.058700000000 -0.091500000000 0.016400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000900000000 -0.119600000000 0.029400000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>429.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.020000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag1_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.073200000000 -0.117400000000 0.025500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.004500000000 -0.121100000000 0.033900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>381.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.060000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag2_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083100000000 -0.119200000000 0.030800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.228500000000 0.022700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>343.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.121000000000</optimal_fiber_length>
+			<tendon_slack_length>0.120000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag3_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.111080000000 -0.114130000000 0.048820000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.007000000000 -0.383700000000 -0.026600000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>488.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.131000000000</optimal_fiber_length>
+			<tendon_slack_length>0.249000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tfl_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031100000000 0.021400000000 0.124100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029400000000 -0.099500000000 0.059700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.404900000000 0.035700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.048700000000 0.029700000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>233.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.095000000000</optimal_fiber_length>
+			<tendon_slack_length>0.425000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="pect_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.043100000000 -0.076800000000 0.045100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.012200000000 -0.082200000000 0.025300000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>266.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.033000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="grac_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.074010000000 -0.118700000000 0.027940000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.026570000000 -0.031900000000 -0.037740000000</location>
+					<body>tibia_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-0.436332312999 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.019430000000 -0.051530000000 -0.035800000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.083600000000 -0.022800000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>162.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.352000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max1_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119500000000 0.061200000000 0.070000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.129100000000 0.001200000000 0.088600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.045700000000 -0.024800000000 0.039200000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.027700000000 -0.056600000000 0.047000000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>573.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.142000000000</optimal_fiber_length>
+			<tendon_slack_length>0.125000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max2_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.134900000000 0.017600000000 0.056300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.137600000000 -0.052000000000 0.091400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.042600000000 -0.053000000000 0.029300000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015600000000 -0.101600000000 0.041900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>819.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.147000000000</optimal_fiber_length>
+			<tendon_slack_length>0.127000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max3_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.155600000000 -0.031400000000 0.005800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.152900000000 -0.105200000000 0.040300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.029900000000 -0.104100000000 0.013500000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.006000000000 -0.141900000000 0.041100000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>552.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.144000000000</optimal_fiber_length>
+			<tendon_slack_length>0.145000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="iliacus_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.067400000000 0.036500000000 0.085400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.055000000000 0.081100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.028800000000 -0.080500000000 0.081600000000</location>
+					<body>pelvis</body>
+					<coordinate>hip_flexion_r</coordinate>
+					<range>-1.570796326795 0.785398163397</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.001700000000 -0.054300000000 0.005700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019300000000 -0.062100000000 0.012900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1073.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="psoas_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.064700000000 0.088700000000 0.028900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023800000000 -0.057000000000 0.075900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.028800000000 -0.080500000000 0.081600000000</location>
+					<body>pelvis</body>
+					<coordinate>hip_flexion_r</coordinate>
+					<range>-1.570796326795 0.785398163397</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.001600000000 -0.050700000000 0.003800000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018800000000 -0.059700000000 0.010400000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1113.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.160000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="quad_fem_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.114300000000 -0.115100000000 0.052000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.038100000000 -0.035900000000 0.036600000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>381.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
+			<tendon_slack_length>0.024000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="gem_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.113300000000 -0.082000000000 0.071400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014200000000 -0.003300000000 0.044300000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>164.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.024000000000</optimal_fiber_length>
+			<tendon_slack_length>0.039000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="peri_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.139600000000 0.000300000000 0.023500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.119300000000 -0.027600000000 0.065700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014800000000 -0.003600000000 0.043700000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>444.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.026000000000</optimal_fiber_length>
+			<tendon_slack_length>0.115000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="rect_fem_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.029500000000 -0.031100000000 0.096800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.033400000000 -0.403000000000 0.001900000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.459967919293</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_r </body>
+          <x_coordinate> knee_angle_r </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.015580500352875   0.017993822657730   0.027508101727816   0.029656351493623   0.030761548312555   0.036569529707744  0.042207423663460   0.045090176332593   0.048391001292316   0.053429925256678   0.061757547556865   0.061766872075238  0.061776201210305   0.063308309341402   0.066993958774783   0.073303461308304   0.057348074130255 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_r </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.023411624567693   0.023761309782820   0.025114131060366   0.025279477771884   0.025314627617006   0.024918403112693  0.024237311595978   0.023844728323637   0.023419718833487   0.022764396721938   0.020984024967974   0.020981428821695  0.020978829243538   0.020522473350111   0.019175412811591   0.015955438096181  -0.067377369520509 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_r </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.0944      0.1745 </x>
+              <y>      0.0014      0.0014 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+      </objects>
+			</MusclePointSet>
+			<max_isometric_force>1169.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.114000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_med_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.014000000000 -0.209900000000 0.018800000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.035600000000 -0.276900000000 0.000900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.037000000000 -0.404800000000 -0.012500000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.210036770408</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.027400000000 -0.425500000000 -0.013100000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.780061304109</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_r </body>
+          <x_coordinate> knee_angle_r </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.009810965743094   0.012224288047948   0.021737092289384   0.023885086926217   0.024990241059645   0.030795889597156  0.036418723875127   0.039287057407055   0.042565436446560   0.047576416516368   0.055958606282109   0.055968103331193  0.055977605357102   0.057541873229100   0.061336786771821   0.067950307631946   0.062933170110391 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_r </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.022415396488116   0.022765081703243   0.024126482306236   0.024293320942061   0.024328720627217   0.023946250926353  0.023359271300463   0.023067675728210   0.022834232516063   0.022636195992156   0.021791663557897   0.021790305235672  0.021788944131200   0.021536482503293   0.020684188782007   0.018326881900553  -0.065620468017105 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_r </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.094395102393195   2.094395102393195 </x>
+              <y>     -0.014600000000000  -0.014600000000000 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1294.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.089000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_int_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.029000000000 -0.192400000000 0.031000000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.033500000000 -0.208400000000 0.028500000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.034300000000 -0.403000000000 0.005500000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.419999879423</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_r </body>
+          <x_coordinate> knee_angle_r </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.008273296954899   0.010686619259753   0.020204158683602   0.022352976980252   0.023458269051524   0.029271514534772  0.034946477939472   0.037871038605289   0.041256892183504   0.046528686226332   0.055463216628473   0.055473460939042  0.055483710663439   0.057171689340775   0.061271989846337   0.068436852432173   0.064881751995004 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_r </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.025599038223269   0.025948723438396   0.027312406749826   0.027479641565206   0.027515107572698   0.027136279244281  0.026573690673374   0.026307257607565   0.026118697755889   0.026012919439426   0.025292319080949   0.025291066424883   0.025289810885530   0.025052583168636   0.024219128860487   0.021828777695316  -0.068570557615569 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_r </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.0944      2.0944 </x>
+              <y>      0.0018      0.0018 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1365.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.136000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_lat_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.004800000000 -0.185400000000 0.034900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.026900000000 -0.259100000000 0.040900000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.036100000000 -0.403000000000 0.020500000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.210036770408</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.025300000000 -0.424300000000 0.018400000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-2.617993877991 -1.920036710119</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_r </body>
+          <x_coordinate> knee_angle_r </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.014289714993412   0.016703037298266   0.026214522793256   0.028362287127371   0.029467402665684   0.035270913869667   0.040878467514039   0.043729136496720   0.046970434922191   0.051874233819018   0.059955705153119   0.059964731374768   0.059973762129853   0.061457751813074   0.065035127346989   0.071186705327164   0.058376578102318 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_r </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.021531764691054   0.021881449906182   0.023236192419179   0.023401873602737   0.023437079469904   0.023043944016021   0.022384239672679   0.022015091593254   0.021635905169432   0.021097116256392   0.019586396994561   0.019584185501543   0.019581970853701   0.019190018159739   0.018007945708206   0.015107296529984  -0.065342134993618 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_r </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.094395102393195      2.094395102393195 </x>
+              <y>      0.016500000000000      0.016500000000000 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1871.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.157000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="med_gas_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.019000000000 -0.392900000000 -0.023500000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.030000000000 -0.402200000000 -0.025800000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-0.785398163397 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 -0.005300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1558.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.060000000000</optimal_fiber_length>
+			<tendon_slack_length>0.390000000000</tendon_slack_length>
+			<pennation_angle>0.296705972839</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="lat_gas_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.022000000000 -0.394600000000 0.027200000000</location>
+					<body>femur_r</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.030000000000 -0.401800000000 0.027400000000</location>
+					<body>femur_r</body>
+					<coordinate>knee_angle_r</coordinate>
+					<range>-0.785398163397 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 -0.005300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>683.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="soleus_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 0.007100000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 -0.005300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>3549.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.250000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tib_post_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 0.001900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.405100000000 -0.022900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.041700000000 0.033400000000 -0.028600000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.077200000000 0.015900000000 -0.028100000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1588.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="flex_dig_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.008300000000 -0.204600000000 -0.001800000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.405100000000 -0.019600000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043600000000 0.031500000000 -0.028000000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070800000000 0.017600000000 -0.026300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.165800000000 -0.008100000000 0.011600000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.001900000000 -0.007800000000 0.014700000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028500000000 -0.007100000000 0.021500000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044100000000 -0.006000000000 0.024200000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>310.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.034000000000</optimal_fiber_length>
+			<tendon_slack_length>0.400000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="flex_hal_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007900000000 -0.233400000000 0.024400000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018600000000 -0.407900000000 -0.017400000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.037400000000 0.027600000000 -0.024100000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.103800000000 0.006800000000 -0.025600000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.172600000000 -0.005300000000 -0.026900000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.015500000000 -0.006400000000 -0.026500000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056200000000 -0.010200000000 -0.018100000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>322.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.043000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tib_ant_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.017900000000 -0.162400000000 0.011500000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032900000000 -0.395100000000 -0.017700000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.116600000000 0.017800000000 -0.030500000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>905.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.098000000000</optimal_fiber_length>
+			<tendon_slack_length>0.223000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_brev_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007000000000 -0.264600000000 0.032500000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019800000000 -0.418400000000 0.028300000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.429500000000 0.028900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.047100000000 0.027000000000 0.023300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.067700000000 0.021900000000 0.034300000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>435.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.161000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_long_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.000500000000 -0.156800000000 0.036200000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.020700000000 -0.420500000000 0.028600000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.016200000000 -0.431900000000 0.028900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043800000000 0.023000000000 0.022100000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.068100000000 0.010600000000 0.028400000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085200000000 0.006900000000 0.011800000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.120300000000 0.008500000000 -0.018400000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>943.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.049000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_tert_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001000000000 -0.280400000000 0.023100000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.022900000000 -0.406900000000 0.015900000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085700000000 0.022800000000 0.029900000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>180.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.079000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.226892802759</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ext_dig_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.003200000000 -0.138100000000 0.027600000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028900000000 -0.400700000000 0.007200000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.092200000000 0.038800000000 -0.000100000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.161600000000 0.005500000000 0.013000000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000300000000 0.004700000000 0.015300000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044300000000 -0.000400000000 0.025000000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>512.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.102000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ext_hal_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001200000000 -0.176700000000 0.022800000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032600000000 -0.398500000000 -0.008500000000</location>
+					<body>tibia_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.097000000000 0.038900000000 -0.021100000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.129300000000 0.030900000000 -0.025700000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.173400000000 0.013900000000 -0.028000000000</location>
+					<body>calcn_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029800000000 0.004100000000 -0.024500000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056300000000 0.003400000000 -0.018600000000</location>
+					<body>toes_r</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>162.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.111000000000</optimal_fiber_length>
+			<tendon_slack_length>0.305000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_med1_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040800000000 0.030400000000 -0.120900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.021800000000 -0.011700000000 -0.055500000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>819.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.053500000000</optimal_fiber_length>
+			<tendon_slack_length>0.078000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_med2_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.085500000000 0.044500000000 -0.076600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.005800000000 -0.052700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>573.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084500000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_med3_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.122300000000 0.010500000000 -0.064800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030900000000 -0.004700000000 -0.051800000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>653.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064600000000</optimal_fiber_length>
+			<tendon_slack_length>0.053000000000</tendon_slack_length>
+			<pennation_angle>0.331612557879</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min1_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.046700000000 -0.008000000000 -0.105600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.007200000000 -0.010400000000 -0.056000000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>270.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.068000000000</optimal_fiber_length>
+			<tendon_slack_length>0.016000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min2_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.063300000000 -0.006500000000 -0.099100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.009600000000 -0.010400000000 -0.056000000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>285.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.056000000000</optimal_fiber_length>
+			<tendon_slack_length>0.026000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_min3_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083400000000 -0.006300000000 -0.085600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.013500000000 -0.008300000000 -0.055000000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>323.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.038000000000</optimal_fiber_length>
+			<tendon_slack_length>0.051000000000</tendon_slack_length>
+			<pennation_angle>0.017453292520</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="semimem_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119200000000 -0.097470000000 -0.071510000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.034800000000 -0.035190000000 0.018910000000</location>
+					<body>tibia_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-0.558505360638 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.027000000000 -0.047710000000 0.019570000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1288.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.080000000000</optimal_fiber_length>
+			<tendon_slack_length>0.359000000000</tendon_slack_length>
+			<pennation_angle>0.261799387799</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="semiten_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.126350000000 -0.109880000000 -0.060390000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.042030000000 -0.028590000000 0.022770000000</location>
+					<body>tibia_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-0.331612557879 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.033220000000 -0.052820000000 0.022880000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.011300000000 -0.074600000000 0.024500000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.002700000000 -0.095600000000 0.019300000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>410.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.201000000000</optimal_fiber_length>
+			<tendon_slack_length>0.255500000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="bifemlh_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.125960000000 -0.102570000000 -0.069440000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030100000000 -0.036000000000 -0.029430000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023400000000 -0.056300000000 -0.034300000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>896.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.109000000000</optimal_fiber_length>
+			<tendon_slack_length>0.326000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="bifemsh_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 -0.023400000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.030100000000 -0.036000000000 -0.029430000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023400000000 -0.056300000000 -0.034300000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>804.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.173000000000</optimal_fiber_length>
+			<tendon_slack_length>0.089000000000</tendon_slack_length>
+			<pennation_angle>0.401425727959</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="sar_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.015300000000 -0.001300000000 -0.124200000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.003000000000 -0.356800000000 0.042100000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.005600000000 -0.041900000000 0.039900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.058900000000 0.038300000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.024300000000 -0.084000000000 0.025200000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>156.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.520000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_long_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031600000000 -0.083600000000 -0.016900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005000000000 -0.211100000000 -0.023400000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>627.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.138000000000</optimal_fiber_length>
+			<tendon_slack_length>0.110000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_brev_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.058700000000 -0.091500000000 -0.016400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000900000000 -0.119600000000 -0.029400000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>429.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.133000000000</optimal_fiber_length>
+			<tendon_slack_length>0.020000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag1_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.073200000000 -0.117400000000 -0.025500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.004500000000 -0.121100000000 -0.033900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>381.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.060000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag2_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.083100000000 -0.119200000000 -0.030800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.228500000000 -0.022700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>343.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.121000000000</optimal_fiber_length>
+			<tendon_slack_length>0.120000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="add_mag3_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.111080000000 -0.114130000000 -0.048820000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.007000000000 -0.383700000000 0.026600000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>488.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.131000000000</optimal_fiber_length>
+			<tendon_slack_length>0.249000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tfl_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.031100000000 0.021400000000 -0.124100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029400000000 -0.099500000000 -0.059700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.005400000000 -0.404900000000 -0.035700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.048700000000 -0.029700000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>233.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.095000000000</optimal_fiber_length>
+			<tendon_slack_length>0.425000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="pect_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.043100000000 -0.076800000000 -0.045100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.012200000000 -0.082200000000 -0.025300000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>266.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.033000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="grac_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.074010000000 -0.118700000000 -0.027940000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.026570000000 -0.031900000000 0.037740000000</location>
+					<body>tibia_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-0.436332312999 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>-0.019430000000 -0.051530000000 0.035800000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.006000000000 -0.083600000000 0.022800000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>162.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.352000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max1_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.119500000000 0.061200000000 -0.070000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.129100000000 0.001200000000 -0.088600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.045700000000 -0.024800000000 -0.039200000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.027700000000 -0.056600000000 -0.047000000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>573.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.142000000000</optimal_fiber_length>
+			<tendon_slack_length>0.125000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max2_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.134900000000 0.017600000000 -0.056300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.137600000000 -0.052000000000 -0.091400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.042600000000 -0.053000000000 -0.029300000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015600000000 -0.101600000000 -0.041900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>819.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.147000000000</optimal_fiber_length>
+			<tendon_slack_length>0.127000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="glut_max3_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.155600000000 -0.031400000000 -0.005800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.152900000000 -0.105200000000 -0.040300000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.029900000000 -0.104100000000 -0.013500000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.006000000000 -0.141900000000 -0.041100000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>552.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.144000000000</optimal_fiber_length>
+			<tendon_slack_length>0.145000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="iliacus_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.067400000000 0.036500000000 -0.085400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.025800000000 -0.055000000000 -0.081100000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.028800000000 -0.080500000000 -0.081600000000</location>
+					<body>pelvis</body>
+					<coordinate>hip_flexion_l</coordinate>
+					<range>-1.570796326795 0.785398163397</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.001700000000 -0.054300000000 -0.005700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019300000000 -0.062100000000 -0.012900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1073.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="psoas_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.064700000000 0.088700000000 -0.028900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.023800000000 -0.057000000000 -0.075900000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.028800000000 -0.080500000000 -0.081600000000</location>
+					<body>pelvis</body>
+					<coordinate>hip_flexion_l</coordinate>
+					<range>-1.570796326795 0.785398163397</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.001600000000 -0.050700000000 -0.003800000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018800000000 -0.059700000000 -0.010400000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1113.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.160000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="quad_fem_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.114300000000 -0.115100000000 -0.052000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.038100000000 -0.035900000000 -0.036600000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>381.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.054000000000</optimal_fiber_length>
+			<tendon_slack_length>0.024000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="gem_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.113300000000 -0.082000000000 -0.071400000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014200000000 -0.003300000000 -0.044300000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>164.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.024000000000</optimal_fiber_length>
+			<tendon_slack_length>0.039000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="peri_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.139600000000 0.000300000000 -0.023500000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.119300000000 -0.027600000000 -0.065700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014800000000 -0.003600000000 -0.043700000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>444.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.026000000000</optimal_fiber_length>
+			<tendon_slack_length>0.115000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="rect_fem_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.029500000000 -0.031100000000 -0.096800000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.033400000000 -0.403000000000 -0.001900000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.459967919293</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_l </body>
+          <x_coordinate> knee_angle_l </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.015580500352875   0.017993822657730   0.027508101727816   0.029656351493623   0.030761548312555   0.036569529707744  0.042207423663460   0.045090176332593   0.048391001292316   0.053429925256678   0.061757547556865   0.061766872075238  0.061776201210305   0.063308309341402   0.066993958774783   0.073303461308304   0.057348074130255 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_l </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.023411624567693   0.023761309782820   0.025114131060366   0.025279477771884   0.025314627617006   0.024918403112693  0.024237311595978   0.023844728323637   0.023419718833487   0.022764396721938   0.020984024967974   0.020981428821695  0.020978829243538   0.020522473350111   0.019175412811591   0.015955438096181  -0.067377369520509 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_l </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.0944      0.1745 </x>
+              <y>     -0.0014     -0.0014 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1169.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.114000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_med_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.014000000000 -0.209900000000 -0.018800000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.035600000000 -0.276900000000 -0.000900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.037000000000 -0.404800000000 0.012500000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.210036770408</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.027400000000 -0.425500000000 0.013100000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.780061304109</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_l </body>
+          <x_coordinate> knee_angle_l </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.009810965743094   0.012224288047948   0.021737092289384   0.023885086926217   0.024990241059645   0.030795889597156  0.036418723875127   0.039287057407055   0.042565436446560   0.047576416516368   0.055958606282109   0.055968103331193  0.055977605357102   0.057541873229100   0.061336786771821   0.067950307631946   0.062933170110391 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_l </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.022415396488116   0.022765081703243   0.024126482306236   0.024293320942061   0.024328720627217   0.023946250926353  0.023359271300463   0.023067675728210   0.022834232516063   0.022636195992156   0.021791663557897   0.021790305235672  0.021788944131200   0.021536482503293   0.020684188782007   0.018326881900553  -0.065620468017105 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_l </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.094395102393195   2.094395102393195 </x>
+              <y>      0.014600000000000   0.014600000000000 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1294.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.089000000000</optimal_fiber_length>
+			<tendon_slack_length>0.126000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_int_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.029000000000 -0.192400000000 -0.031000000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.033500000000 -0.208400000000 -0.028500000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.034300000000 -0.403000000000 -0.005500000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.419999879423</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_l </body>
+          <x_coordinate> knee_angle_l </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.015580500352875   0.017993822657730   0.027508101727816   0.029656351493623   0.030761548312555   0.036569529707744  0.042207423663460   0.045090176332593   0.048391001292316   0.053429925256678   0.061757547556865   0.061766872075238  0.061776201210305   0.063308309341402   0.066993958774783   0.073303461308304   0.057348074130255 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_l </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.023411624567693   0.023761309782820   0.025114131060366   0.025279477771884   0.025314627617006   0.024918403112693  0.024237311595978   0.023844728323637   0.023419718833487   0.022764396721938   0.020984024967974   0.020981428821695  0.020978829243538   0.020522473350111   0.019175412811591   0.015955438096181  -0.067377369520509 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_l </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.0944      0.1745 </x>
+              <y>     -0.0014     -0.0014 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1365.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.087000000000</optimal_fiber_length>
+			<tendon_slack_length>0.136000000000</tendon_slack_length>
+			<pennation_angle>0.052359877560</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="vas_lat_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.004800000000 -0.185400000000 -0.034900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.026900000000 -0.259100000000 -0.040900000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>0.036100000000 -0.403000000000 -0.020500000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.210036770408</range>
+				</MuscleViaPoint>
+				<MuscleViaPoint>
+					<location>0.025300000000 -0.424300000000 -0.018400000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-2.617993877991 -1.920036710119</range>
+				</MuscleViaPoint>
+        <MovingMusclePoint>
+          <body> tibia_l </body>
+          <x_coordinate> knee_angle_l </x_coordinate>
+          <XAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.014289714993412   0.016703037298266   0.026214522793256   0.028362287127371   0.029467402665684   0.035270913869667   0.040878467514039   0.043729136496720   0.046970434922191   0.051874233819018   0.059955705153119   0.059964731374768   0.059973762129853   0.061457751813074   0.065035127346989   0.071186705327164   0.058376578102318 </y>
+            </natCubicSpline>
+          </XAttachment>
+          <y_coordinate> knee_angle_l </y_coordinate>
+          <YAttachment>
+            <natCubicSpline name="">
+              <x> -2.094395102393195  -1.999972789860302  -1.570796326794897  -1.457524458340465  -1.396263401595464  -1.047197551196598 -0.698131700797732  -0.526391302401490  -0.349065850398866  -0.174532925199433                   0   0.000174532925199  0.000349065850399   0.027925268031909   0.087266462599716   0.174532925199433   2.094395102393195 </x>
+              <y>  0.021531764691054   0.021881449906182   0.023236192419179   0.023401873602737   0.023437079469904   0.023043944016021   0.022384239672679   0.022015091593254   0.021635905169432   0.021097116256392   0.019586396994561   0.019584185501543   0.019581970853701   0.019190018159739   0.018007945708206   0.015107296529984  -0.065342134993618 </y>
+            </natCubicSpline>
+          </YAttachment>
+          <z_coordinate> knee_angle_l </z_coordinate>
+          <ZAttachment>
+            <natCubicSpline name="">
+              <x>     -2.094395102393195      2.094395102393195 </x>
+              <y>     -0.016500000000000     -0.016500000000000 </y>
+            </natCubicSpline>
+          </ZAttachment>
+        </MovingMusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1871.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.084000000000</optimal_fiber_length>
+			<tendon_slack_length>0.157000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="med_gas_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.019000000000 -0.392900000000 0.023500000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.030000000000 -0.402200000000 0.025800000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-0.785398163397 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 0.005300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1558.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.060000000000</optimal_fiber_length>
+			<tendon_slack_length>0.390000000000</tendon_slack_length>
+			<pennation_angle>0.296705972839</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="lat_gas_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.022000000000 -0.394600000000 -0.027200000000</location>
+					<body>femur_l</body>
+				</MusclePoint>
+				<MuscleViaPoint>
+					<location>-0.030000000000 -0.401800000000 -0.027400000000</location>
+					<body>femur_l</body>
+					<coordinate>knee_angle_l</coordinate>
+					<range>-0.785398163397 0.174532925199</range>
+				</MuscleViaPoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 0.005300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>683.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.064000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="soleus_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.002400000000 -0.153300000000 -0.007100000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000000000000 0.031000000000 0.005300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>3549.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.250000000000</tendon_slack_length>
+			<pennation_angle>0.436332312999</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tib_post_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.009400000000 -0.134800000000 -0.001900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.405100000000 0.022900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.041700000000 0.033400000000 0.028600000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.077200000000 0.015900000000 0.028100000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>1588.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.031000000000</optimal_fiber_length>
+			<tendon_slack_length>0.310000000000</tendon_slack_length>
+			<pennation_angle>0.209439510239</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="flex_dig_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.008300000000 -0.204600000000 0.001800000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.015400000000 -0.405100000000 0.019600000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043600000000 0.031500000000 0.028000000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070800000000 0.017600000000 0.026300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.165800000000 -0.008100000000 -0.011600000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.001900000000 -0.007800000000 -0.014700000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028500000000 -0.007100000000 -0.021500000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044100000000 -0.006000000000 -0.024200000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>310.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.034000000000</optimal_fiber_length>
+			<tendon_slack_length>0.400000000000</tendon_slack_length>
+			<pennation_angle>0.122173047640</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="flex_hal_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007900000000 -0.233400000000 -0.024400000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.018600000000 -0.407900000000 0.017400000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.037400000000 0.027600000000 0.024100000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.103800000000 0.006800000000 0.025600000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.172600000000 -0.005300000000 0.026900000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.015500000000 -0.006400000000 0.026500000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056200000000 -0.010200000000 0.018100000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>322.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.043000000000</optimal_fiber_length>
+			<tendon_slack_length>0.380000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="tib_ant_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.017900000000 -0.162400000000 -0.011500000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032900000000 -0.395100000000 0.017700000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.116600000000 0.017800000000 0.030500000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>905.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.098000000000</optimal_fiber_length>
+			<tendon_slack_length>0.223000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_brev_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.007000000000 -0.264600000000 -0.032500000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.019800000000 -0.418400000000 -0.028300000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.014400000000 -0.429500000000 -0.028900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.047100000000 0.027000000000 -0.023300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.067700000000 0.021900000000 -0.034300000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>435.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.050000000000</optimal_fiber_length>
+			<tendon_slack_length>0.161000000000</tendon_slack_length>
+			<pennation_angle>0.087266462600</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_long_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.000500000000 -0.156800000000 -0.036200000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.020700000000 -0.420500000000 -0.028600000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.016200000000 -0.431900000000 -0.028900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.043800000000 0.023000000000 -0.022100000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.068100000000 0.010600000000 -0.028400000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085200000000 0.006900000000 -0.011800000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.120300000000 0.008500000000 0.018400000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>943.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.049000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.174532925199</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="per_tert_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001000000000 -0.280400000000 -0.023100000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.022900000000 -0.406900000000 -0.015900000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.085700000000 0.022800000000 -0.029900000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>180.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.079000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.226892802759</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ext_dig_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.003200000000 -0.138100000000 -0.027600000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.028900000000 -0.400700000000 -0.007200000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.092200000000 0.038800000000 0.000100000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.161600000000 0.005500000000 -0.013000000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.000300000000 0.004700000000 -0.015300000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.044300000000 -0.000400000000 -0.025000000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>512.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.102000000000</optimal_fiber_length>
+			<tendon_slack_length>0.345000000000</tendon_slack_length>
+			<pennation_angle>0.139626340160</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ext_hal_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>0.001200000000 -0.176700000000 -0.022800000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.032600000000 -0.398500000000 0.008500000000</location>
+					<body>tibia_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.097000000000 0.038900000000 0.021100000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.129300000000 0.030900000000 0.025700000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.173400000000 0.013900000000 0.028000000000</location>
+					<body>calcn_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.029800000000 0.004100000000 0.024500000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.056300000000 0.003400000000 0.018600000000</location>
+					<body>toes_l</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>162.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.111000000000</optimal_fiber_length>
+			<tendon_slack_length>0.305000000000</tendon_slack_length>
+			<pennation_angle>0.104719755120</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ercspn_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.140000000000 0.043900000000 0.043600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.055000000000 0.110000000000 0.024100000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2500.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.120000000000</optimal_fiber_length>
+			<tendon_slack_length>0.030000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="ercspn_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.140000000000 0.043900000000 -0.043600000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>-0.055000000000 0.110000000000 -0.024100000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>2500.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.120000000000</optimal_fiber_length>
+			<tendon_slack_length>0.030000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="intobl_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040000000000 0.070000000000 0.115700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070000000000 0.160000000000 0.015000000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>900.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="intobl_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.040000000000 0.070000000000 -0.115700000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.070000000000 0.160000000000 -0.015000000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>900.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.100000000000</optimal_fiber_length>
+			<tendon_slack_length>0.100000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="extobl_r">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.030000000000 -0.063600000000 0.010000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.065000000000 0.110000000000 0.110000000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>900.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.120000000000</optimal_fiber_length>
+			<tendon_slack_length>0.140000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+		<Thelen2003Muscle name="extobl_l">
+			<MusclePointSet>
+			<objects>
+				<MusclePoint>
+					<location>-0.030000000000 -0.063600000000 -0.010000000000</location>
+					<body>pelvis</body>
+				</MusclePoint>
+				<MusclePoint>
+					<location>0.065000000000 0.110000000000 -0.110000000000</location>
+					<body>torso</body>
+				</MusclePoint>
+			</objects>
+			</MusclePointSet>
+			<max_isometric_force>900.000000000000</max_isometric_force>
+			<optimal_fiber_length>0.120000000000</optimal_fiber_length>
+			<tendon_slack_length>0.140000000000</tendon_slack_length>
+			<pennation_angle>0.000000000000</pennation_angle>
+			<muscle_model>9</muscle_model>
+		</Thelen2003Muscle>
+	</objects>
+	</ActuatorSet>
+  <DynamicsEngine>
+    <SimbodyEngine>
+      <gravity>0.0 -9.80665 0.0</gravity>
+      <BodySet>
+        <objects>
+          <SimbodyBody name="ground">
+            <mass>0.000000000000</mass>
+            <mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+            <inertia>0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000 0.000000000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> treadmill.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="pelvis">
+            <mass>11.777000000000</mass>
+            <mass_center>-0.070700000000 0.000000000000 0.000000000000</mass_center>
+            <inertia>0.102800000000 0.000000000000 0.000000000000 0.000000000000 0.087100000000 0.000000000000 0.000000000000 0.000000000000 0.057900000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> sacrum.vtp pelvis.vtp l_pelvis.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="femur_r">
+            <mass>9.301400000000</mass>
+            <mass_center>0.000000000000 -0.170000000000 0.000000000000</mass_center>
+            <inertia>0.133900000000 0.000000000000 0.000000000000 0.000000000000 0.035100000000 0.000000000000 0.000000000000 0.000000000000 0.141200000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> femur.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="tibia_r">
+            <mass>3.707500000000</mass>
+            <mass_center>0.000000000000 -0.186700000000 0.000000000000</mass_center>
+            <inertia>0.050400000000 0.000000000000 0.000000000000 0.000000000000 0.005100000000 0.000000000000 0.000000000000 0.000000000000 0.051100000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> tibia.vtp fibula.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="talus_r">
+            <mass>0.100000000000</mass>
+            <mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+            <inertia>0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> talus.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="calcn_r">
+            <mass>1.250000000000</mass>
+            <mass_center>0.100000000000 0.030000000000 0.000000000000</mass_center>
+            <inertia>0.001400000000 0.000000000000 0.000000000000 0.000000000000 0.003900000000 0.000000000000 0.000000000000 0.000000000000 0.004100000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> foot.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="toes_r">
+            <mass>0.216600000000</mass>
+            <mass_center>0.034600000000 0.006000000000 -0.017500000000</mass_center>
+            <inertia>0.000100000000 0.000000000000 0.000000000000 0.000000000000 0.000200000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> bofoot.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="femur_l">
+            <mass>9.301400000000</mass>
+            <mass_center>0.000000000000 -0.170000000000 0.000000000000</mass_center>
+            <inertia>0.133900000000 0.000000000000 0.000000000000 0.000000000000 0.035100000000 0.000000000000 0.000000000000 0.000000000000 0.141200000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> l_femur.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="tibia_l">
+            <mass>3.707500000000</mass>
+            <mass_center>0.000000000000 -0.186700000000 0.000000000000</mass_center>
+            <inertia>0.050400000000 0.000000000000 0.000000000000 0.000000000000 0.005100000000 0.000000000000 0.000000000000 0.000000000000 0.051100000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> l_tibia.vtp l_fibula.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="talus_l">
+            <mass>0.100000000000</mass>
+            <mass_center>0.000000000000 0.000000000000 0.000000000000</mass_center>
+            <inertia>0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> l_talus.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="calcn_l">
+            <mass>1.250000000000</mass>
+            <mass_center>0.100000000000 0.030000000000 0.000000000000</mass_center>
+            <inertia>0.001400000000 0.000000000000 0.000000000000 0.000000000000 0.003900000000 0.000000000000 0.000000000000 0.000000000000 0.004100000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> l_foot.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="toes_l">
+            <mass>0.216600000000</mass>
+            <mass_center>0.034600000000 0.006000000000 0.017500000000</mass_center>
+            <inertia>0.000100000000 0.000000000000 0.000000000000 0.000000000000 0.000200000000 0.000000000000 0.000000000000 0.000000000000 0.001000000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> l_bofoot.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+          <SimbodyBody name="torso">
+            <mass>34.236600000000</mass>
+            <mass_center>-0.030000000000 0.320000000000 0.000000000000</mass_center>
+            <inertia>1.474500000000 0.000000000000 0.000000000000 0.000000000000 0.755500000000 0.000000000000 0.000000000000 0.000000000000 1.431400000000</inertia>
+            <VisibleObject name="">
+              <geometry_files> hat_spine.vtp hat_jaw.vtp hat_skull.vtp hat_ribs.vtp </geometry_files>
+            </VisibleObject>
+          </SimbodyBody>
+        </objects>
+      </BodySet>
+      <CoordinateSet>
+        <objects>
+          <SimbodyCoordinate name="pelvis_tx">
+            <range>-5.000000000000 5.000000000000</range>
+            <default_value>0.0</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>p_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="pelvis_ty">
+            <range>-1.000000000000 2.000000000000</range>
+            <default_value>0.930000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="pelvis_tz">
+            <range>-3.000000000000 3.000000000000</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="pelvis_tilt">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="pelvis_list">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="pelvis_rotation">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_flexion_r">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_adduction_r">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_rotation_r">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="knee_angle_r">
+            <range>-2.094395102393 0.174532925199</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>k_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="ankle_angle_r">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>a_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="subtalar_angle_r">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>a_key</keys>
+            <clamped>true</clamped>
+            <locked>true</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="mtp_angle_r">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>t_key</keys>
+            <clamped>true</clamped>
+            <locked>true</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_flexion_l">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_adduction_l">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="hip_rotation_l">
+            <range>-2.094395102393 2.094395102393</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>h_key leftmouse_button</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="knee_angle_l">
+            <range>-2.094395102393 0.174532925199</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>k_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="ankle_angle_l">
+            <range>-1.047197551197 1.047197551197</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>a_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="subtalar_angle_l">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>a_key</keys>
+            <clamped>true</clamped>
+            <locked>true</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="mtp_angle_l">
+            <range>-1.047197551197 1.047197551197</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>t_key</keys>
+            <clamped>true</clamped>
+            <locked>true</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="lumbar_extension">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="lumbar_bending">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+          <SimbodyCoordinate name="lumbar_rotation">
+            <range>-1.570796326795 1.570796326795</range>
+            <default_value>0.000000000000</default_value>
+            <tolerance>0.000000000000</tolerance>
+            <stiffness>0.000000000000</stiffness>
+            <keys>q_key</keys>
+            <clamped>true</clamped>
+            <locked>false</locked>
+            <restraint_active>false</restraint_active>
+          </SimbodyCoordinate>
+        </objects>
+      </CoordinateSet>
+      <SpeedSet name="">
+        <objects>
+          <SimbodySpeed name="pelvis_tx_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_tx </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="pelvis_ty_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_ty </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="pelvis_tz_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_tz </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="pelvis_tilt_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_tilt </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="pelvis_list_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_list </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="pelvis_rotation_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> pelvis_rotation </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_flexion_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_flexion_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_adduction_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_adduction_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_rotation_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_rotation_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="knee_angle_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> knee_angle_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="ankle_angle_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> ankle_angle_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="subtalar_angle_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> subtalar_angle_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="mtp_angle_r_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> mtp_angle_r </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_flexion_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_flexion_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_adduction_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_adduction_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="hip_rotation_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> hip_rotation_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="knee_angle_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> knee_angle_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="ankle_angle_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> ankle_angle_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="subtalar_angle_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> subtalar_angle_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="mtp_angle_l_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> mtp_angle_l </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="lumbar_extension_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> lumbar_extension </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="lumbar_bending_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> lumbar_bending </coordinate>
+          </SimbodySpeed>
+          <SimbodySpeed name="lumbar_rotation_u">
+            <default_value>       0.00000000 </default_value>
+            <coordinate> lumbar_rotation </coordinate>
+          </SimbodySpeed>
+        </objects>
+      </SpeedSet>
+      <JointSet>
+        <objects>
+          <SimbodyJoint name="ground_pelvis">
+            <bodies>ground pelvis</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <coordinate>pelvis_tx</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-360.000000000000 360.000000000000 </x>
+                      <y>-360.000000000000 360.000000000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <coordinate>pelvis_ty</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-360.000000000000 360.000000000000 </x>
+                      <y>-360.000000000000 360.000000000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <coordinate>pelvis_tz</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-360.000000000000 360.000000000000 </x>
+                      <y>-360.000000000000 360.000000000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>pelvis_tilt</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <coordinate>pelvis_list</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <coordinate>pelvis_rotation</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="hip_r">
+            <bodies>pelvis femur_r</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>-0.070700000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.066100000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.083500000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>hip_flexion_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <coordinate>hip_adduction_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <coordinate>hip_rotation_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="knee_r">
+            <bodies>femur_r tibia_r</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <coordinate>knee_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-2.094395102393 -1.745329251994 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.197344221443 0.337394955864 0.490177570472 1.521460267071 2.094395102393 </x>
+                      <y>-0.003200000000 0.001790000000 0.004110000000 0.004100000000 0.002120000000 -0.001000000000 -0.003100000000 -0.005227000000 -0.005435000000 -0.005574000000 -0.005435000000 -0.005250000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <coordinate>knee_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-2.094395102393 -1.221730476396 -0.523598775598 -0.349065850399 -0.174532925199 0.159148563428 2.094395102393 </x>
+                      <y>-0.422600000000 -0.408200000000 -0.399000000000 -0.397600000000 -0.396600000000 -0.395264000000 -0.396000000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>knee_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="ankle_r">
+            <bodies>tibia_r talus_r</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.430000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>-0.105013547622 -0.174022450344 0.979126315443</axis>
+                  <coordinate>ankle_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="subtalar_r">
+            <bodies>talus_r calcn_r</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>-0.048770000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.041950000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.007920000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.787179606862 0.604747457256 -0.120949491451</axis>
+                  <coordinate>subtalar_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="mtp_r">
+            <bodies>calcn_r toes_r</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>0.178800000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.002000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.001080000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>-0.580954396870 0.000000000000 0.813936108523</axis>
+                  <coordinate>mtp_angle_r</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="hip_l">
+            <bodies>pelvis femur_l</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>-0.070700000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.066100000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>-0.083500000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>hip_flexion_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>-1.000000000000 0.000000000000 0.000000000000</axis>
+                  <coordinate>hip_adduction_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 -1.000000000000 0.000000000000</axis>
+                  <coordinate>hip_rotation_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="knee_l">
+            <bodies>femur_l tibia_l</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <coordinate>knee_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-2.094395102393 -1.745329251994 -1.396263401595 -1.047197551197 -0.698131700798 -0.349065850399 -0.174532925199 0.197344221443 0.337394955864 0.490177570472 1.521460267071 2.094395102393 </x>
+                      <y>-0.003200000000 0.001790000000 0.004110000000 0.004100000000 0.002120000000 -0.001000000000 -0.003100000000 -0.005227000000 -0.005435000000 -0.005574000000 -0.005435000000 -0.005250000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <coordinate>knee_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-2.094395102393 -1.221730476396 -0.523598775598 -0.349065850399 -0.174532925199 0.159148563428 2.094395102393 </x>
+                      <y>-0.422600000000 -0.408200000000 -0.399000000000 -0.397600000000 -0.396600000000 -0.395264000000 -0.396000000000 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>knee_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="ankle_l">
+            <bodies>tibia_l talus_l</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.430000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.105013547622 -0.174022450344 0.979126315443</axis>
+                  <coordinate>ankle_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="subtalar_l">
+            <bodies>talus_l calcn_l</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>-0.048770000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.041950000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>-0.007920000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>-0.787179606862 -0.604747457256 -0.120949491451</axis>
+                  <coordinate>subtalar_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="mtp_l">
+            <bodies>calcn_l toes_l</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>0.178800000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>-0.002000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>-0.001080000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.580954396870 0.000000000000 0.813936108523</axis>
+                  <coordinate>mtp_angle_l</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+          <SimbodyJoint name="back">
+            <bodies>pelvis torso</bodies>
+            <DofSet>
+              <objects>
+                <SimbodyTranslationDof name="tx">
+                  <Value>
+                    <Constant>
+                      <value>-0.100700000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="ty">
+                  <Value>
+                    <Constant>
+                      <value>0.081500000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyTranslationDof name="tz">
+                  <Value>
+                    <Constant>
+                      <value>0.000000000000</value>
+                    </Constant>
+                  </Value>
+                </SimbodyTranslationDof>
+                <SimbodyRotationDof name="r1">
+                  <axis>0.000000000000 0.000000000000 1.000000000000</axis>
+                  <coordinate>lumbar_extension</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r2">
+                  <axis>1.000000000000 0.000000000000 0.000000000000</axis>
+                  <coordinate>lumbar_bending</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+                <SimbodyRotationDof name="r3">
+                  <axis>0.000000000000 1.000000000000 0.000000000000</axis>
+                  <coordinate>lumbar_rotation</coordinate>
+                  <Value>
+                    <natCubicSpline>
+                      <x>-6.283185307179 6.283185307179 </x>
+                      <y>-6.283185307179 6.283185307179 </y>
+                    </natCubicSpline>
+                  </Value>
+                </SimbodyRotationDof>
+              </objects>
+            </DofSet>
+          </SimbodyJoint>
+        </objects>
+      </JointSet>
+    </SimbodyEngine>
+  </DynamicsEngine>
+</Model>

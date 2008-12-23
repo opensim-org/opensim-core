@@ -14,7 +14,7 @@ in the specified axis directions (e.g., X Y Z).-->
 					<MarkerPair name="">
 						<!--Names of two markers, the distance between which is used to compute a
 						    body scale factor.-->
-						<markers> V.Sacral R.Offset </markers>
+						<markers> V.Sacral Top.Head </markers>
 					</MarkerPair>
 				</objects>
 			</MarkerPairSet>
@@ -58,10 +58,10 @@ in the specified axis directions (e.g., X Y Z).-->
 			<MarkerPairSet>
 				<objects>
 					<MarkerPair>
-						<markers> R.ASIS R.Knee </markers>
+						<markers> R.ASIS R.Knee.Lat </markers>
 					</MarkerPair>
 					<MarkerPair>
-						<markers>L.ASIS L.Knee</markers>
+						<markers>L.ASIS L.Knee.Lat</markers>
 					</MarkerPair>
 				</objects>
 			</MarkerPairSet>
@@ -91,10 +91,10 @@ in the specified axis directions (e.g., X Y Z).-->
 			<MarkerPairSet>
 				<objects>
 					<MarkerPair>
-						<markers> R.Knee R.Ankle </markers>
+						<markers> R.Knee.Lat R.Ankle.Lat </markers>
 					</MarkerPair>
 					<MarkerPair>
-						<markers>L.Knee L.Ankle</markers>
+						<markers>L.Knee.Lat L.Ankle.Lat</markers>
 					</MarkerPair>
 				</objects>
 			</MarkerPairSet>
@@ -124,10 +124,10 @@ in the specified axis directions (e.g., X Y Z).-->
 			<MarkerPairSet>
 				<objects>
 					<MarkerPair>
-						<markers> R.Heel R.Toe </markers>
+						<markers> R.Heel R.Toe.Tip </markers>
 					</MarkerPair>
 					<MarkerPair>
-						<markers>L.Heel L.Toe</markers>
+						<markers>L.Heel L.Toe.Tip</markers>
 					</MarkerPair>
 				</objects>
 			</MarkerPairSet>
@@ -144,12 +144,6 @@ in the specified axis directions (e.g., X Y Z).-->
 						<axes> X Y Z </axes>
 					</BodyScale>
 					<BodyScale name="toes_l">
-						<axes> X Y Z </axes>
-					</BodyScale>
-					<BodyScale name="calcn_rp">
-						<axes> X Y Z </axes>
-					</BodyScale>
-					<BodyScale name="calcn_lp">
 						<axes> X Y Z </axes>
 					</BodyScale>
 				</objects>
