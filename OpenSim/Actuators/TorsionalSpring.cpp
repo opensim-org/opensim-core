@@ -447,7 +447,7 @@ applyActuation(double aT,double *aX,double *aY)
 		if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
 			//cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
 			_model->getDynamicsEngine().applyTorque(*_body,_torque);
-			if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
+			//if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
 		}
 
 	}	

@@ -431,7 +431,7 @@ applyActuation(double aT,double *aX,double *aY)
 	}
 	if(!getOn()) return;
 
-	if((aT>=getStartTime()) && (aT<getEndTime())){
+	if((aT>=getStartTime()) && (aT<getEndTime())) {
 
 		if(_torqueFunction!=NULL) {
 			_torqueFunction->evaluate(&treal,&torque[0]);

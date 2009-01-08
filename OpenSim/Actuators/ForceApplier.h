@@ -136,6 +136,9 @@ public:
 	virtual void
 		applyActuation(double aT,double *aX,double *aY);
 
+	virtual int
+		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

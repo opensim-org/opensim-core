@@ -252,3 +252,34 @@ resetCallbacks()
 		if(callback) callback->reset();
 	}
 }
+
+//_____________________________________________________________________________
+/**
+ * Call the step method for all deriv callbacks.  This method is called
+ * after each successful integration time step and is intended to be used for
+ * conducting analyses, driving animations, etc.
+ *
+ * @param aXPrev Control values at the previous time step.
+ * @param aYPrev State values at the previous time step.
+ * @param aYPPrev Pseudo state values at the previous time step.
+ * @param aStep Number of integrations steps that have been completed.
+ * @param aDT Size of the time step that WAS just completed.
+ * @param aT Current time in the integration.
+ * @param aX Current control values.
+ * @param aY Current states.
+ * @param aYP Current pseudo states.
+ * @param aDYDT Current state derivatives.
+ * @param aClientData General use pointer for sending in client data.
+ */
+void DerivCallbackSet::
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+{
+	int i;
+	DerivCallback *callback;
+	for(i=0;i<getSize();i++) {
+		callback = getDerivCallback(i);
+		if(callback == NULL) continue;
+		callback->step(aXPrev,aYPrev,aYPPrev,aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
+	}
+}

@@ -226,3 +226,11 @@ computeDerivatives(double aT,double *aX,double *aY,double *aDY)
 {
 	//printf("DerivCallback.computeDerivatives: %s.\n",getName());
 }
+
+int DerivCallback::
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+{
+	//printf("IntegCallback.step: %s.\n",getName());
+	return (0);
+}

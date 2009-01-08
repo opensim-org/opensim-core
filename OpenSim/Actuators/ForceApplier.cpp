@@ -616,7 +616,7 @@ applyActuation(double aT,double *aX,double *aY)
 	}
 	if(!getOn()) return;
 
-	if((aT>=getStartTime()) && (aT<getEndTime())){
+	if((aT>=getStartTime()) && (aT<getEndTime())) {
 
 		if(_forceFunction!=NULL) {
 			_forceFunction->evaluate(&treal,&force[0]);
@@ -632,10 +632,17 @@ applyActuation(double aT,double *aX,double *aY)
 		} else {
 			_model->getDynamicsEngine().applyForceBodyLocal(*_body,_point,_force);
 		}
-		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,&_force[0]);
+		//if(_recordAppliedLoads) _appliedForceStore->append(aT,3,&_force[0]);
 	}
 }
 	
+int ForceApplier::
+step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+{
+		if(_recordAppliedLoads) _appliedForceStore->append(aT,3,&_force[0]);
+		return (0);
+}
 
 //=============================================================================
 // IO

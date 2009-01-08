@@ -92,6 +92,10 @@ public:
 	virtual void
 		computeDerivatives(double aT,double *aX,double *aY,
 		double *aDY);
+	// Handle successful integration step
+	virtual void
+		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
 
 	void resetCallbacks();
 

@@ -470,7 +470,7 @@ applyActuation(double aT,double *aX,double *aY)
 		if(fabs(Mtx::Magnitude(3,force)) >= _threshold) {
 			//cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
 			_model->getDynamicsEngine().applyForce(*_body,pLocal,force);
-			if(_recordAppliedLoads) _appliedForceStore->append(aT,_force);
+			//if(_recordAppliedLoads) _appliedForceStore->append(aT,_force);
 		}
 
 	}	

@@ -591,6 +591,11 @@ processAfterStep(int step,double &dt,double t,double y[])
 	if(analysisSet!=NULL)
 		analysisSet->step(&_xPrev[0],&_yPrev[0],NULL,step,_dtPrev,t,&_x[0],y);
 
+	// Deriv CALLBACKS
+	DerivCallbackSet *derivCallbackSet = _model->getDerivCallbackSet();
+	if(derivCallbackSet!=NULL)
+		derivCallbackSet->step(&_xPrev[0],&_yPrev[0],NULL,step,_dtPrev,t,&_x[0],y);
+
 	// STORE PSEUDOSTATES
 	int nyp = _model->getNumPseudoStates();
 	if(_pseudoStore!=NULL) {

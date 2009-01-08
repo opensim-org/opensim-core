@@ -122,6 +122,13 @@ public:
 	virtual void
 		applyActuation(double aT,double *aX,double *aY);
 
+	virtual int step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
+		double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+	{
+		if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
+		return (0);
+	}
+
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
