@@ -770,7 +770,14 @@ setControlValue(double aT,double aX)
 double ControlLinear::
 getControlValue(double aT)
 {
-	return getControlValue(_xNodes,aT);
+	double value= getControlValue(_xNodes,aT);
+	if (rdMath::isNAN(value)){
+		char pad[10];
+		sprintf(pad, "%f", aT);
+		string msg = "ControlLinear.getControlValue(). Control value at "+ string(pad)+" is undefined!";
+				throw(Exception(msg,__FILE__,__LINE__));
+	}
+	return value;
 }
 //_____________________________________________________________________________
 /**
