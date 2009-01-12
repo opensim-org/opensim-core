@@ -133,7 +133,7 @@ setNull()
 	_vErrStore = NULL;
 	_stressTermWeightStore = NULL;
 	_controlSet = NULL;
-	_useCurvatureFilter = false;
+	_useCurvatureFilter = true;
 	_useReflexes = false;
 	_verbose = false;
 	_controlConstraintsFromReflexes = NULL;
@@ -720,21 +720,21 @@ computeControls(double &rDT,double aT,const double *aY,
 	int nu = _model->getNumSpeeds();
 	ModelIntegrand *predictorIntegrand = _predictor->getIntegrand();
 	//if(predictorIntegrand->getType()=="rdModelInegrandForActuators") {
-		ModelIntegrandForActuators *actuatorIntegrand = (ModelIntegrandForActuators*) predictorIntegrand;
-		FunctionSet *qSet = actuatorIntegrand->getCoordinateTrajectories();
-		FunctionSet *uSet = actuatorIntegrand->getSpeedTrajectories();
-		Array<double> qDesired(0.0,nq),uDesired(0.0,nu);
-		qSet->evaluate(qDesired,0,tiReal);
-		if(uSet!=NULL) {
-			uSet->evaluate(uDesired,0,tiReal);
-		} else {
-			qSet->evaluate(uDesired,1,tiReal);
-		}
-		Array<double> qCorrection(0.0,nq),uCorrection(0.0,nu);
-		for(i=0;i<nq;i++) qCorrection[i] = aY[i] - qDesired[i];
-		for(i=0;i<nu;i++) uCorrection[i] = aY[i+nq] - uDesired[i];
-		actuatorIntegrand->setCoordinateCorrections(&qCorrection[0]);
-		actuatorIntegrand->setSpeedCorrections(&uCorrection[0]);
+	ModelIntegrandForActuators *actuatorIntegrand = (ModelIntegrandForActuators*) predictorIntegrand;
+	FunctionSet *qSet = actuatorIntegrand->getCoordinateTrajectories();
+	FunctionSet *uSet = actuatorIntegrand->getSpeedTrajectories();
+	Array<double> qDesired(0.0,nq),uDesired(0.0,nu);
+	qSet->evaluate(qDesired,0,tiReal);
+	if(uSet!=NULL) {
+		uSet->evaluate(uDesired,0,tiReal);
+	} else {
+		qSet->evaluate(uDesired,1,tiReal);
+	}
+	Array<double> qCorrection(0.0,nq),uCorrection(0.0,nu);
+	for(i=0;i<nq;i++) qCorrection[i] = aY[i] - qDesired[i];
+	for(i=0;i<nu;i++) uCorrection[i] = aY[i+nq] - uDesired[i];
+	actuatorIntegrand->setCoordinateCorrections(&qCorrection[0]);
+	actuatorIntegrand->setSpeedCorrections(&uCorrection[0]);
 		//cout<<"\nQCorrections:\n"<<qCorrection;
 		//cout<<"\nUCorrections:\n"<<uCorrection;
 
