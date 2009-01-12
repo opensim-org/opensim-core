@@ -365,18 +365,16 @@ step(double dt,double t,double *y)
 		}
 	}
 
-
-	// UPDATE STATES
-	for(i=0;i<size;i++) {
-		y[i] = y[i] + CY1*_k1[i] + CY2*_k3[i] + CY3*_k4[i] + CY4*_k5[i];
-	}
-
 	// CHECK ERROR
 	if(yemax > _tol) {
 		//printf("rkf: error exceeded tolerance. offender = %d\n",offender);
 		return(RKF_POOR);
 	}
 
+	// UPDATE STATES
+	for(i=0;i<size;i++) {
+		y[i] = y[i] + CY1*_k1[i] + CY2*_k3[i] + CY3*_k4[i] + CY4*_k5[i];
+	}
 
 	// FINE ACCURACY
 	if(yemax < _tolFine) {
