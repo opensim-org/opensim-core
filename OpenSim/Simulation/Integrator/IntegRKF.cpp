@@ -609,6 +609,7 @@ integrate(double ti,double tf,double *y,double dtFirst)
 		if(_tArray.getSize()<=0) {
 			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
 			strcat(tmp,"possible-- empty time array.");
+			cout << string(tmp) << endl;
 			throw( Exception((const char*)tmp) );
 		}
 		double first = _tArray[0];
@@ -617,6 +618,7 @@ integrate(double ti,double tf,double *y,double dtFirst)
 			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
 			strcat(tmp,"possible-- time array does not cover the requested");
 			strcat(tmp," integration interval.");
+			cout << string(tmp) << endl;
 			throw(Exception((const char*)tmp));
 		}
 	}
