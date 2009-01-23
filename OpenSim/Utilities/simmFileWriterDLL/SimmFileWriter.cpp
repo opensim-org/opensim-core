@@ -50,6 +50,7 @@
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
 #include <OpenSim/Simulation/Model/DofSet01_05.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/Delp1990Muscle.h>
@@ -229,6 +230,12 @@ bool SimmFileWriter::writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aAc
 			aStream << " " << groupNames[i];
 		aStream << endl << "endgroups" << endl;
 	}
+
+	const MuscleWrapSet& wrapObjects = aMuscle.getWrapSet();
+	for (int i=0; i<wrapObjects.getSize(); i++)
+		aStream << "wrapobject " << wrapObjects.get(i)->getWrapObjectName() << " " <<
+		(dynamic_cast<WrapEllipsoid*>(wrapObjects.get(i)) ? (wrapObjects.get(i)->getMethodName()+" ") : "") <<
+		"range " << wrapObjects.get(i)->getStartPoint() << " " << wrapObjects.get(i)->getEndPoint() << endl;
 
 	if (dynamic_cast<Schutte1993Muscle*>(&aMuscle))
 	{
