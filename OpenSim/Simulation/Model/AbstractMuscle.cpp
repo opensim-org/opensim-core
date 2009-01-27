@@ -68,7 +68,8 @@ AbstractMuscle::AbstractMuscle() :
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
    _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
-	_currentPath(NULL)
+	_currentPath(NULL),
+	_currentDisplayPath(NULL)
 {
 	setNull();
 	setupProperties();
@@ -80,6 +81,16 @@ AbstractMuscle::AbstractMuscle() :
  */
 AbstractMuscle::~AbstractMuscle()
 {
+	// Clear the current display path. Delete all muscle points
+	// that have a NULL muscle pointer. This means that they were
+	// created by a call to updateDisplayPath() and are not part
+	// of the _currentPath.
+	for (int i=0; i<_currentDisplayPath.getSize(); i++) {
+		MusclePoint* mp = _currentDisplayPath.get(i);
+		if (!mp->getMuscle())
+			delete mp;
+	}
+
 	VisibleObject* disp;
 	if ((disp = getDisplayer())){
 		 // Free up allocated geometry objects
@@ -102,7 +113,8 @@ AbstractMuscle::AbstractMuscle(const AbstractMuscle &aMuscle) :
 	_muscleWrapSetProp(PropertyObj("", MuscleWrapSet())),
 	_muscleWrapSet((MuscleWrapSet&)_muscleWrapSetProp.getValueObj()),
    _muscleModelIndex(_muscleModelIndexProp.getValueInt()),
-	_currentPath(NULL)
+	_currentPath(NULL),
+	_currentDisplayPath(NULL)
 {
 	setNull();
 	setupProperties();
@@ -140,6 +152,7 @@ void AbstractMuscle::setNull()
 	_preScaleLength = 0.0;
 
 	_currentPath.setSize(0);
+	_currentDisplayPath.setSize(0);
 	_pathValid = false;
 }
 
@@ -251,6 +264,22 @@ const Array<MusclePoint*> AbstractMuscle::getCurrentPath()
 
 //_____________________________________________________________________________
 /**
+ * get the current display path of the muscle
+ *
+ * @return The array of currently active attachment points, plus points along the
+ * surfaces of the wrap objects (if any).
+ * 
+ */
+const Array<MusclePoint*> AbstractMuscle::getCurrentDisplayPath()
+{
+	if (_pathValid == false)
+		computePath();
+
+	return _currentDisplayPath;
+}
+
+//_____________________________________________________________________________
+/**
  * updateGeometrySize updates the size of the array of geometry items to be of the
  * correct size based on changes to the muscle path.
  * 
@@ -262,7 +291,7 @@ void AbstractMuscle::updateGeometrySize()
 	// Track whether we're creating geometry from scratch or
 	// just updating
 	bool update = (numberOfSegements!=0);  
-	int newNumberOfSegments=_currentPath.getSize()-1;
+	int newNumberOfSegments=_currentDisplayPath.getSize()-1;
 	if (newNumberOfSegments <= 0)
 		return;
 	// update geom array to have correct number of entries
@@ -296,8 +325,8 @@ void AbstractMuscle::updateGeometryLocations()
 	SimTK::Vec3 globalLocation;
 	SimTK::Vec3 previousPointGlobalLocation;
 
-	for (int i = 0; i < _currentPath.getSize(); i++){
-		MusclePoint* nextPoint = _currentPath.get(i);
+	for (int i = 0; i < _currentDisplayPath.getSize(); i++){
+		MusclePoint* nextPoint = _currentDisplayPath.get(i);
 		// xform point to global frame
 		const Vec3& location=nextPoint->getAttachment();
 		const AbstractBody* body = nextPoint->getBody();
@@ -324,6 +353,7 @@ void AbstractMuscle::updateGeometryLocations()
  */
 void AbstractMuscle::updateGeometry()
 {
+	updateDisplayPath();
 	updateGeometrySize();
 	updateGeometryLocations();
 }
@@ -857,6 +887,41 @@ void AbstractMuscle::computePath()
 	updateGeometry();
 
 	_pathValid = true;
+}
+
+void AbstractMuscle::updateDisplayPath()
+{
+	// Clear the current display path. Delete all muscle points
+	// that have a NULL muscle pointer. This means that they were
+	// created by an earlier call to updateDisplayPath() and are
+	// not part of the _currentPath.
+	for (int i=0; i<_currentDisplayPath.getSize(); i++) {
+		MusclePoint* mp = _currentDisplayPath.get(i);
+		if (!mp->getMuscle())
+			delete mp;
+	}
+	_currentDisplayPath.setSize(0);
+
+	for (int i=0; i<_currentPath.getSize(); i++) {
+		MusclePoint* mp = _currentPath.get(i);
+		MuscleWrapPoint* mwp = dynamic_cast<MuscleWrapPoint*>(mp);
+		if (mwp) {
+			// If the point is a MuscleWrapPoint and has surfacePoints,
+			// then this is the second of two tangent points for the
+			// wrap instance. So add the surface points to the display
+			// path before adding the second tangent point.
+			// Note: the first surface point is coincident with the
+			// first tangent point, so don't add it to the path.
+		   Array<SimmPoint>& surfacePoints = mwp->getWrapPath();
+			for (int j=1; j<surfacePoints.getSize(); j++) {
+				MuscleWrapPoint* p = new MuscleWrapPoint();
+				p->setAttachment(surfacePoints.get(j).get());
+				p->setBody(*mwp->getBody());
+				_currentDisplayPath.append(p);
+			}
+		}
+		_currentDisplayPath.append(mp);
+	}
 }
 
 //_____________________________________________________________________________

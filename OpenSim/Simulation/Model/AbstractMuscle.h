@@ -101,6 +101,10 @@ protected:
 	// current path = ordered array of currently active attachment points (fixed + via + wrap)
 	Array<MusclePoint*> _currentPath;
 
+	// current display path = ordered array of currently active attachment points (fixed + via + wrap),
+	// including points along the surfaces of wrap objects, spaced about every 2 mm.
+	Array<MusclePoint*> _currentDisplayPath;
+
 	// is current path valid?
 	bool _pathValid;
 
@@ -123,6 +127,7 @@ public:
    void copyData(const AbstractMuscle &aMuscle);
 	const MusclePointSet& getAttachmentSet() const { return _attachmentSet; }
 	const Array<MusclePoint*> getCurrentPath();
+	const Array<MusclePoint*> getCurrentDisplayPath();
 	int getMuscleModelIndex() const { return _muscleModelIndex; }
 	bool getMuscleModelIndexUseDefault() const { return _muscleModelIndexProp.getUseDefault(); }
 	MuscleWrapSet& getWrapSet() { return _muscleWrapSet; }
@@ -198,6 +203,7 @@ public:
 private:
 	void setNull();
 	void setupProperties();
+	void updateDisplayPath();
 	void updateGeometrySize();
 	void updateGeometryLocations();
 	void nameAttachmentPoints(int aStartingIndex);

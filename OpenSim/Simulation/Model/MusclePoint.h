@@ -121,7 +121,7 @@ public:
 	void setAttachment(double pt[]){ // A variant that uses basic types for use by GUI
 		setAttachment(SimTK::Vec3::updAs(pt));
 	}
-	const AbstractBody* getBody() const { return _body; }
+	AbstractBody* getBody() const { return _body; }
 	void setBody(AbstractBody& aBody, bool preserveLocation = false);
 	const std::string& getBodyName() const { return _bodyName; }
 	AbstractMuscle* getMuscle() const { return _muscle; }

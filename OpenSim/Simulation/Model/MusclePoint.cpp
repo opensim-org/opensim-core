@@ -252,7 +252,7 @@ void MusclePoint::setBody(AbstractBody& aBody, bool preserveLocation)
 
 	// Invalidate the path if the point and muscle have already
 	// been set up.
-	if (_muscle != NULL)
+	if (_muscle)
 		_muscle->invalidatePath();
 }
 
@@ -267,7 +267,8 @@ void MusclePoint::setAttachment(SimTK::Vec3& aAttachment)
 	_attachment = aAttachment;
 
 	// Invalidate the path
-	_muscle->invalidatePath();
+	if (_muscle)
+	   _muscle->invalidatePath();
 }
 
 //_____________________________________________________________________________
@@ -283,7 +284,8 @@ void MusclePoint::setAttachment(int aCoordIndex, double aAttachment)
 		_attachment[aCoordIndex] = aAttachment;
 
 		// Invalidate the path
-		_muscle->invalidatePath();
+		if (_muscle)
+			_muscle->invalidatePath();
 	}
 }
 
