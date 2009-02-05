@@ -1142,7 +1142,7 @@ void determine_gencoord_type(ModelStruct* ms, int gc)
    int j, k, dofnum, jointnum;
    GencoordType gencoord_type;
 
-   if (mark_unconstrained_dof(ms, gc, &jointnum, &dofnum))
+   if (mark_unconstrained_dof(ms, gc, &jointnum, &dofnum, NULL))
    {
       if (dofnum == R1 || dofnum == R2 || dofnum == R3)
          ms->gencoord[gc].type = rotation_gencoord;
@@ -1171,7 +1171,7 @@ void determine_gencoord_type(ModelStruct* ms, int gc)
 }
 
 
-int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
+int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean* constrained)
 {
    int i, j, fnum;
    double slope;
@@ -1214,6 +1214,8 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
 		            ms->joint[i].dofs[j].sd.conversion_sign = 1.0;
                   *jnt = i;
                   *dof = j;
+						if (constrained)
+							*constrained = no;
                   return 1;
                }
                else if (EQUAL_WITHIN_ERROR(slope,-1.0))
@@ -1226,6 +1228,8 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
 		            ms->joint[i].dofs[j].sd.conversion_sign = -1.0;
                   *jnt = i;
                   *dof = j;
+						if (constrained)
+							*constrained = no;
                   return 1;
                }
 	         }
@@ -1233,7 +1237,33 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof)
       }
    }
 
-   return 0;
+	// This code is specifically for conversion to Simbody-based models, which do
+	// not have the restriction that every gencoord must map to a DOF with a "simple"
+	// function. If there is such a gencoord, its "primary" DOF is set to the first
+	// one that uses it, but it's marked as constrained so that the OpenSim export
+	// code knows to add the coordinate to the joint and the kinematic function to
+	// the corresponding transform axis.
+	if (constrained)
+	{
+		for (i = 0; i < ms->numjoints; i++)
+		{
+			for (j = 0; j < 6; j++)
+			{
+				if (ms->joint[i].dofs[j].type == function_dof &&
+					ms->joint[i].dofs[j].gencoord == gc)
+				{
+					ms->joint[i].dofs[j].sd.constrained = no;       // so other code will not create a new coordinate
+					ms->joint[i].dofs[j].sd.conversion_sign = 1.0;  // and constrain it to this gencoord
+					*jnt = i;
+					*dof = j;
+					*constrained = yes;
+					return 1;
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
 

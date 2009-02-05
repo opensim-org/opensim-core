@@ -102,7 +102,7 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
    {
       if (model[mod]->gencoord[i].used_in_model == yes)
       {
-	      if (!mark_unconstrained_dof(model[mod], i, &jointnum, &dofnum))
+	      if (!mark_unconstrained_dof(model[mod], i, &jointnum, &dofnum, NULL))
          {
 	         sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
                model[mod]->gencoord[i].name);
@@ -1692,7 +1692,7 @@ SBoolean valid_sdfast_model(ModelStruct* ms)
    {
       if (ms->gencoord[i].used_in_model == yes)
       {
-	      if (!mark_unconstrained_dof(ms, i, &jointnum, &dofnum))
+	      if (!mark_unconstrained_dof(ms, i, &jointnum, &dofnum, NULL))
          {
 	         sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
                ms->gencoord[i].name);

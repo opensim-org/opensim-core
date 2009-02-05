@@ -391,7 +391,7 @@ void   makelabels(PlotStruct* ps);
 #endif
 ReturnCode makepaths(int mod);
 ReturnCode malloc_function(SplineFunction* func, int size);
-int    mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof);
+int    mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean* constrained);
 void*  memalloc(MEMORYBLOCK* block, int mem_size, SBoolean* moved_block);
 void   message(char message_str[], int format, int xoffset);
 SBoolean modelHasMuscles(ModelStruct* ms);

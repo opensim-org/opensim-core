@@ -28,6 +28,7 @@
 typedef struct {
    int jointnum;
    int dofnum;
+	SBoolean constrained;
 } GencoordInfo;
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
@@ -135,12 +136,14 @@ ReturnCode make_simbody_model(FILE* fp, ModelStruct* ms, char geometryDirectory[
    {
       if (ms->gencoord[i].used_in_model == yes)
       {
-         if (!mark_unconstrained_dof(ms, i, &gcInfo[i].jointnum, &gcInfo[i].dofnum))
+			if (!mark_unconstrained_dof(ms, i, &gcInfo[i].jointnum, &gcInfo[i].dofnum, &gcInfo[i].constrained))
          {
+#if 0
             sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
                ms->gencoord[i].name);
             error(none,errorbuffer);
             return code_bad;
+#endif
          }
       }
    }
@@ -407,7 +410,7 @@ static void make_simbody_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int 
 			// joint, it shows up with a function (i.e., it's a function-based mobilizer).
 			if (dof->type == function_dof)
 			{
-				if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i]) ||
+				if ((gcInfo[dof->gencoord].jointnum == jointnum && gcInfo[dof->gencoord].dofnum == dof_order[i] && gcInfo[dof->gencoord].constrained == no) ||
 					gcInfo[dof->gencoord].jointnum != jointnum)
 					write_opensim20_transformAxis(fp, ms, joint, dof_order[i], jntsdf->dir, no);
 				else
