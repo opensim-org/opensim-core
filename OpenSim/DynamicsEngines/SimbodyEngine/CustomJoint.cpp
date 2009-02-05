@@ -389,29 +389,26 @@ appendAxisCoordinateIndicesFunctionsForFunctionBasedMobilizer(CoordinateSet *coo
 		OpenSim::Function *func = transform->getFunction();
 		if(func!=NULL) {
 			functions.push_back(func->createSimTKFunction());
-
-		// NO FUNCTION - LINEAR FUNCTION ASSUMED
-		} else {
-
+		} else { // NO FUNCTION - LINEAR FUNCTION ASSUMED
 			// slope = 1.0, intercept = 0.0.
 			Vector_<Vec1> coefficients(2);
 			coefficients[0] = 1.0;
 			coefficients[1] = 0.0;
 			functions.push_back(new SimTK::Function<1>::Linear(coefficients));
-	
-			// SET MOTION TYPE ON COORDINATE
-			// By default, the motion type of coordinates is translational
-			// If the coordinate drives a rotation, the motion type
-			// is set to Rotational.  The first three axes specified
-			// are for rotations; the second three are for translations.
-			Coordinate *q = (Coordinate*)coordinateSet->get(index[0]);
-			if(axes.size()<=3) q->setMotionType(AbstractTransformAxis::Rotational); // Allowed axes.size()==3 since axes are appended before the test!
-			}
+		}
+
+		// SET MOTION TYPE ON COORDINATE
+		// By default, the motion type of coordinates is translational
+		// If the coordinate drives a rotation, the motion type
+		// is set to Rotational.  The first three axes specified
+		// are for rotations; the second three are for translations.
+		Coordinate *q = (Coordinate*)coordinateSet->get(index[0]);
+		if(axes.size()<=3) q->setMotionType(AbstractTransformAxis::Rotational); // Allowed axes.size()==3 since axes are appended before the test!
 
 	// NO TRANSFORM - CONSTANT FUNCTION ASSUMED
 	// These transforms are constant and do nothing. They just have to be done because
 	// the FunctionBased mobilizer always assumes 6 degrees of freedom.
-			} else {
+	} else {
 		// The axis direction is not important because there is no movement; however, all
 		// the axes do need to be different (i.e., no two axes can be parallel).
 		Vec3 axis(1,0,0);
@@ -431,16 +428,16 @@ appendAxisCoordinateIndicesFunctionsForFunctionBasedMobilizer(CoordinateSet *coo
 				if(axis0[i] < min) {
 					imin = i;
 					min = axis0[i];
-			}
+				}
 				if(axis0[i] >= max) {
 					imax = i;
 					max = axis0[i];
-			}
 				}
+			}
 			axis[imin] = 1.0;
 			axis[imax] = 0.0;
 
-		// Use cross product of first two for the third axis
+			// Use cross product of first two for the third axis
 		} else if((size==2)||(size==5)) {
 			axis = axes[size-2] % axes[size-1];
 		}
