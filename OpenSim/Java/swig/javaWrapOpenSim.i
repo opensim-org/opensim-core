@@ -112,6 +112,10 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 
+#include <OpenSim/DynamicsEngines/SimbodyEngine/osimSimbodyEngineDLL.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/Body.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
+
 #include <OpenSim/Simulation/Model/MusclePoint.h>
 #include <OpenSim/Simulation/Model/MusclePointSet.h>
 #include <OpenSim/Simulation/Model/MuscleViaPoint.h>
@@ -123,6 +127,7 @@
 #include <OpenSim/Simulation/Model/AbstractMuscle.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/GeneralizedForce.h>
+
 #include <OpenSim/Actuators/Torque.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
@@ -484,6 +489,10 @@ using namespace SimTK;
 
 %include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 %include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
+
+%include <OpenSim/DynamicsEngines/SimbodyEngine/osimSimbodyEngineDLL.h>
+%include <OpenSim/DynamicsEngines/SimbodyEngine/Body.h>
+%include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 
 %include <OpenSim/Simulation/Model/MusclePoint.h>
 %include <OpenSim/Simulation/Wrap/MuscleWrapPoint.h>
