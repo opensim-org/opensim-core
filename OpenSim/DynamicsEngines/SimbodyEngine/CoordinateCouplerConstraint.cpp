@@ -107,13 +107,17 @@ Object* CoordinateCouplerConstraint::copy() const
 //_____________________________________________________________________________
 /**
  * Copy data members from one CoordinateCouplerConstraint to another.
- *
+ * 
  * @param aConstraint CoordinateCouplerConstraint to be copied.
  */
 void CoordinateCouplerConstraint::copyData(const CoordinateCouplerConstraint &aConstraint)
 {
 	Constraint::copyData(aConstraint);
-	_function = aConstraint._function;
+	// Create a fresh copy (deep copy)
+	if (aConstraint._function!=NULL){
+		_function = (Function*)(aConstraint._function->copy());
+		_simtkCouplerFunction = new CompoundFunction(_function->createSimTKFunction());
+	}
 	_independentCoordNames = aConstraint._independentCoordNames;
 	_dependentCoordName = aConstraint._dependentCoordName;
 }

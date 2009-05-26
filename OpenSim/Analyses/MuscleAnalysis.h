@@ -85,6 +85,9 @@ private:
 	/** List of generalized coordinates for which to compute moment arms. */
 	PropertyStrArray _coordinateListProp;
 
+	/** Compute moments and moment arms. */
+	PropertyBool _computeMomentsProp;
+
 	/** Pennation angle storage. */
 	Storage *_pennationAngleStore;
 	/** Muscle-tendon length storage. */
@@ -114,6 +117,8 @@ private:
 
 	/** Work array for holding the list of coordinates. */
 	Array<std::string> _coordinateList;
+
+	bool _computeMoments;
 #ifndef SWIG
 	/** Array of active storage and coordinate pairs. */
 	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
@@ -165,6 +170,12 @@ public:
 	void setMuscles(Array<std::string>& aMuscles);
 	void setCoordinates(Array<std::string>& aCoordinates);
 
+	void setComputeMoments(bool aTrueFalse) {
+		_computeMoments = aTrueFalse;
+	}
+	bool getComputeMoments() const {
+		return _computeMoments;
+	}
 	//const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }
 
 	//--------------------------------------------------------------------------

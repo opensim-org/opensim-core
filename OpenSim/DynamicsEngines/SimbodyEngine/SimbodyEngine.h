@@ -195,8 +195,6 @@ public:
 	virtual void getAccelerations(double rDUDT[]) const;
 	virtual void extractConfiguration(const double aY[], double rQ[], double rU[]) const;
 	virtual void applyDefaultConfiguration();
-	double* getConfiguration();
-	double* getDerivatives();
 	//--------------------------------------------------------------------------
 	// PROJECT to satisfy constaints
 	//--------------------------------------------------------------------------
@@ -242,6 +240,7 @@ public:
 	virtual void getAngularAcceleration(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const;
 	virtual void getAngularAccelerationBodyLocal(const AbstractBody &aBody, SimTK::Vec3& rAngAcc) const;
 	virtual OpenSim::Transform getTransform(const AbstractBody &aBody);
+	virtual SimTK::Vec3 getSystemCenterOfMassAcceleration();
 
 	//--------------------------------------------------------------------------
 	// LOAD APPLICATION
@@ -328,6 +327,11 @@ public:
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
 	virtual void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
+
+	// BACKDOOR ACCESS TO THE UNDERLYING MULTIBODY SYSTEM IN SIMBODY
+	SimTK::MultibodySystem* getMultibodySystem() {return _system; }
+	SimTK::State* getSimbodyState() { return &_s; }
+
 	// INTERFACE TO THE SIMBODY FORCE SUBSYSTEM
 	void resizeBodyAndMobilityForceVectors();
 	void resetBodyAndMobilityForceVectors();
@@ -345,7 +349,6 @@ private:
 	friend class WeldConstraint;
 	friend class CoordinateCouplerConstraint;
 	void linkObjectsInHierarchy();
-	void updateDynamics(SimTK::Stage desiredStage);
 	void updateSimbodyModel();
 
 //=============================================================================
@@ -354,14 +357,6 @@ private:
 //=============================================================================
 
 } // end of namespace OpenSim
-
-//=============================================================================
-// STATIC METHOD FOR CREATING THIS MODEL
-//=============================================================================
-extern "C" {
-OSIMSIMBODYENGINE_API OpenSim::Model* CreateModel();
-OSIMSIMBODYENGINE_API OpenSim::Model* CreateModel_File(const std::string &aModelFile);
-}
 
 #endif // __SimbodyEngine_h__
 

@@ -1130,8 +1130,10 @@ crop(const double newStartTime, const double newFinalTime)
 		cout<<"Storage.crop: WARNING: No rows will be left." << endl;
 		numRowsToKeep=0;
 	}
-	for(int i=0; i<finalindex-startindex+1; i++)
-		_storage[i]=_storage[startindex+i];
+	if (startindex!=0){
+		for(int i=0; i<finalindex-startindex+1; i++)
+			_storage[i]=_storage[startindex+i];
+	}
 	_storage.setSize(numRowsToKeep);
 }
 

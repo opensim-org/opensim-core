@@ -150,6 +150,8 @@ public:
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry() {};
 
+	OPENSIM_DECLARE_DERIVED(AbstractWrapObject, Object);
+
 protected:
 	void setupProperties();
 	void setupQuadrant();

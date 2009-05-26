@@ -112,7 +112,7 @@ Object* Constraint::copy() const
  */
 void Constraint::copyData(const Constraint &aConstraint)
 {
-	//_isDisabled = aConstraint._isDisabled;
+	_isDisabledProp = aConstraint._isDisabledProp;
 	_dynamicsEngine = aConstraint._dynamicsEngine;
 	_index = aConstraint._index;
 }

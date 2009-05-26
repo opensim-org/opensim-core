@@ -35,7 +35,10 @@ LINK_LIBRARIES( SimTKlapack
 				debug osimCommon_d optimized osimCommon
 				debug osimSimulation_d optimized osimSimulation
 				debug SimTKcommon_d optimized SimTKcommon
-				debug SimTKmath_d optimized SimTKmath)
+				debug SimTKmath_d optimized SimTKmath
+				debug osimSimbodyEngine_d optimized osimSimbodyEngine
+				debug osimActuators_d optimized osimActuators
+				debug SimTKsimbody_d optimized SimTKsimbody)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

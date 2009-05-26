@@ -73,8 +73,8 @@ int main(int argc,char **argv)
 	IO::SetDigitsPad(-1);
 
 	// REGISTER TYPES
-	Object::RegisterType(ControlLinear());
-	Object::RegisterType(ControlLinearNode());
+	//Object::RegisterType(ControlLinear());
+	//Object::RegisterType(ControlLinearNode());
 
 	// CREATE AN EMPTY CONTROL SET
 	ControlSet controlSet;

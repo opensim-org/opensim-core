@@ -153,6 +153,7 @@ setNull()
 	_muscleListProp.getValueStrArray().get(0) = "all";
 	_coordinateListProp.getValueStrArray().setSize(1);
 	_coordinateListProp.getValueStrArray().get(0) = "all";
+	_computeMoments = true;
 }
 //_____________________________________________________________________________
 /**
@@ -170,6 +171,11 @@ setupProperties()
 		"compute moment arms. Use 'all' to compute for all coordinates.");
 	_coordinateListProp.setName("moment_arm_coordinate_list");
 	_propertySet.append( &_coordinateListProp );
+
+	_computeMomentsProp.setComment("Flag indicating whether moments should be computed.");
+	_computeMomentsProp.setName("compute_moments");
+	_propertySet.append( &_computeMomentsProp );
+
 }
 //-----------------------------------------------------------------------------
 // DESCRIPTION
@@ -390,6 +396,7 @@ MuscleAnalysis& MuscleAnalysis::operator=(const MuscleAnalysis &aAnalysis)
 	// MEMBER VARIABLES
 	_muscleListProp = aAnalysis._muscleListProp;
 	_coordinateListProp = aAnalysis._coordinateListProp;
+	_computeMoments = aAnalysis._computeMoments;
 	allocateStorageObjects();
 
 	return (*this);
@@ -530,26 +537,27 @@ record(double aT,double *aX,double *aY)
 	_activeFiberForceAlongTendonStore->append(tReal,actfibforcealongten.getSize(),&actfibforcealongten[0]);
 	_passiveFiberForceAlongTendonStore->append(tReal,passfibforcealongten.getSize(),&passfibforcealongten[0]);
 
-	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
-	AbstractCoordinate *q = NULL;
-	Storage *maStore=NULL, *mStore=NULL;
-	int nq = _momentArmStorageArray.getSize();
-	Array<double> ma(0.0,nm),m(0.0,nm);
-	for(int i=0; i<nq; i++) {
+	if (_computeMoments){
+		// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
+		AbstractCoordinate *q = NULL;
+		Storage *maStore=NULL, *mStore=NULL;
+		int nq = _momentArmStorageArray.getSize();
+		Array<double> ma(0.0,nm),m(0.0,nm);
+		for(int i=0; i<nq; i++) {
 
-		q = _momentArmStorageArray[i]->q;
-		maStore = _momentArmStorageArray[i]->momentArmStore;
-		mStore = _momentArmStorageArray[i]->momentStore;
+			q = _momentArmStorageArray[i]->q;
+			maStore = _momentArmStorageArray[i]->momentArmStore;
+			mStore = _momentArmStorageArray[i]->momentStore;
 
-		// LOOP OVER MUSCLES
-		for(int j=0; j<nm; j++) {
-			ma[j] = _muscleArray[j]->computeMomentArm(*q);
-			m[j] = ma[j] * force[j];
+			// LOOP OVER MUSCLES
+			for(int j=0; j<nm; j++) {
+				ma[j] = _muscleArray[j]->computeMomentArm(*q);
+				m[j] = ma[j] * force[j];
+			}
+			maStore->append(aT,nm,&ma[0]);
+			mStore->append(aT,nm,&m[0]);
 		}
-		maStore->append(aT,nm,&ma[0]);
-		mStore->append(aT,nm,&m[0]);
 	}
-
 	return(0);
 }
 //_____________________________________________________________________________

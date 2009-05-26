@@ -43,11 +43,12 @@
 #include <OpenSim/Simulation/Model/AbstractBody.h>
 #include <SimTKsimbody.h>
 
+class SimTK::MassProperties;
+
 namespace OpenSim {
 
 class SimbodyEngine;
 class Joint;
-class SimTK::MassProperties;
 
 //=============================================================================
 //=============================================================================
@@ -146,6 +147,8 @@ public:
 	/** Assemble body interial properties: mass, center of mass location, moment of inertia
 	    about the origin of the body and return as a SimTK::MassProperties */
 	SimTK::MassProperties getMassProperties();
+
+	SimTK::MobilizedBodyIndex getIndex() {return _index;}
 
 private:
 	void setNull();

@@ -795,7 +795,11 @@ void SimbodyEngine::getConfiguration(double rY[]) const
 void SimbodyEngine::setConfiguration(const double aQ[],const double aU[])
 {
 	// RESET ACCUMULATED FORCES
-	resetBodyAndMobilityForceVectors();
+	if(_invalid)
+		updateSimbodyModel();
+	else
+		resetBodyAndMobilityForceVectors();
+	
 
 	// SET Qs
 	int nq = getNumCoordinates();
@@ -1326,6 +1330,12 @@ OpenSim::Transform SimbodyEngine::getTransform(const AbstractBody &aBody)
 	return Transform(aMat);
 }
 
+
+Vec3 SimbodyEngine::getSystemCenterOfMassAcceleration()
+{
+	return _system->getMatterSubsystem().calcSystemMassCenterAccelerationInGround(_s);
+}
+
 //--------------------------------------------------------------------------
 // LOAD APPLICATION
 //--------------------------------------------------------------------------
@@ -1736,11 +1746,6 @@ void SimbodyEngine::computeConstrainedCoordinates(double y[]) const
  */
 void SimbodyEngine::computeDerivatives(double *dqdt,double *dudt)
 {
-	//_s.updTime() = t;
-
-	Vec3 grav;
-	getGravity(grav);
-
 	// COMPUTE ACCELERATIONS
 	try {
 		_system->realize(_s,Stage::Acceleration);
@@ -2314,19 +2319,7 @@ void SimbodyEngine::setInvalid()
 {
 	_invalid = true;
 }
-//_____________________________________________________________________________
-/**
- * A high level interface to bring SimTK::Simbody engine in sync. with SimbodyEngine
- * The SimbodyEngine knows based on the _invalid and desired stage what needs to be done.
- */
-void SimbodyEngine::updateDynamics(SimTK::Stage desiredStage)
-{
-	if (_invalid){
-		//constructMultibodySystem();
-		_system->realize(_s, desiredStage); 
-		_invalid = false;
-	}
-}
+
 
 /**
  * A high level interface to bring SimTK::Simbody engine in sync. with model parameters
@@ -2366,6 +2359,8 @@ void SimbodyEngine::updateSimbodyModel()
 		Constraint *aConstraint = dynamic_cast<Constraint *>(_constraintSet.get(i));
 		aConstraint->initializeState(_s);
 	}
+
+	_invalid = false;
 }
 
 //_____________________________________________________________________________

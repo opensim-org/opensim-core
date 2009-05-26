@@ -1,10 +1,10 @@
-#ifndef __WeldConstraint_h__
-#define __WeldConstraint_h__
+#ifndef __UnilateralConstraint_h__
+#define __UnilateralConstraint_h__
 
-// WeldConstraint.h
+// Constraint.h
 // Author: Ajay Seth
 /*
- * Copyright (c) 2008, Stanford University. All rights reserved. 
+ * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -31,104 +31,87 @@
 
 
 // INCLUDE
+#include <iostream>
 #include <string>
+#include <math.h>
+#include "Constraint.h"
 #include "osimSimbodyEngineDLL.h"
+#include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyInt.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
-#include <OpenSim/Common/Transform.h>
-#include "Constraint.h"
-#include "Body.h"
+#include <OpenSim/Common/PropertyObjPtr.h>
+#include <SimTKsimbody.h>
 
 namespace OpenSim {
+
+class SimbodyEngine;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Weld Constraint.  The underlying Constraint in Simbody
- * is a Constraint::Weld
+ * A parent class for implementing an OpenSim UnilateralConstraint.
+ * Specific UnilateralConstraints should be derived from this class. 
+ *
+ * It is expeced that constraints used to model contact will be unilateral.
+ * Furthermore, complex contact constraints can themselves employ several
+ * SimTK::Constraints. In this case, disabling methods on Constraint should be
+ * overriden and the appropriate logic applied to enabling/disabling individual
+ * underlying constraints.  In most cases, the unilateral conditions should be
+ * sufficient to determine the states of the internal (underlying) constraints
+ * based on the global disabled condition.
  *
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMBODYENGINE_API WeldConstraint : public Constraint  
+class OSIMSIMBODYENGINE_API UnilateralConstraint : public Constraint  
 {
-
 //=============================================================================
 // DATA
 //=============================================================================
+
 protected:
-	/** Specify first of two bodies welded together by the constraint. */
-	PropertyStr _body1NameProp;
-	std::string& _body1Name;
-
-	/** Specify second of two bodies welded by the constraint. */
-	PropertyStr _body2NameProp;
-	std::string& _body2Name;
-
-	/** Location of the weld in first body specified in body1 reference frame. */
-	PropertyDblVec3 _locationInBody1Prop;
-	SimTK::Vec3& _locationInBody1;
-
-	/** Orientation of the weld axes on body1 specified in body1's
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationInBody1Prop;
-	SimTK::Vec3& _orientationInBody1;
-
-	/** Location of the weld in second body specified in body2 reference frame. */
-	PropertyDblVec3 _locationInBody2Prop;
-	SimTK::Vec3& _locationInBody2;
-
-	/** Orientation of the weld axes on body2 specified in body2's
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationInBody2Prop;
-	SimTK::Vec3& _orientationInBody2;
-
-	/** First body weld constraint joins. */
-	Body *_body1;
-
-	/** Second body weld constraint joins. */
-	Body *_body2;
+	/** number of constraint equations and thus unilateral conditions to be satisfied */
+	int _numConstraintEquations;
 
 //=============================================================================
 // METHODS
 //=============================================================================
+//--------------------------------------------------------------------------
+// CONSTRUCTION
+//--------------------------------------------------------------------------
 public:
-	// CONSTRUCTION
-	WeldConstraint();
-	WeldConstraint(const WeldConstraint &aConstraint);
-	virtual ~WeldConstraint();
+	UnilateralConstraint();
+	UnilateralConstraint(const UnilateralConstraint &aUnilateralConstraint);
+	virtual ~UnilateralConstraint();
 	virtual Object* copy() const;
-	WeldConstraint& operator=(const WeldConstraint &aConstraint);
-	void copyData(const WeldConstraint &aConstraint);
-	void setup(AbstractDynamicsEngine* aEngine);
 
-	//SET 
-	void setBody1ByName(std::string aBodyName);
-	void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-	void setBody2ByName(std::string aBodyName);
-	void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
-	void setBody1Transform(SimTK::Transform aTransform);
-	void setBody2Transform(SimTK::Transform aTransform);
+	UnilateralConstraint& operator=(const UnilateralConstraint &aUnilateralConstraint);
+	void copyData(const UnilateralConstraint &aUnilateralConstraint);
+
+	OPENSIM_DECLARE_DERIVED(UnilateralConstraint, Constraint);
+
+	virtual void setup(AbstractDynamicsEngine* aEngine);
+
+	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
+
+	// The unilateral conditions for this constraint.
+	virtual std::vector<bool> unilateralConditionsSatisfied() { return std::vector<bool>(_numConstraintEquations, false); };
 
 
 private:
-	SimTK::Transform _body1Transform;
-	SimTK::Transform _body2Transform;
-
 	void setNull();
-	void setupProperties();
 	friend class SimbodyEngine;
 
 //=============================================================================
-};	// END of class WeldConstraint
+};	// END of class Constraint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __WeldConstraint_h__
+#endif // __Constraint_h__
 
 

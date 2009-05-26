@@ -72,7 +72,9 @@ WeldConstraint::WeldConstraint() :
 {
 	setNull();
 	setupProperties();
-	updateSimbody();
+	// Build the transforms
+	setBody1WeldLocation(_locationInBody1, _orientationInBody1);
+	setBody2WeldLocation(_locationInBody2, _orientationInBody2);
 }
 //_____________________________________________________________________________
 /**
@@ -92,6 +94,9 @@ WeldConstraint::WeldConstraint(const WeldConstraint &aConstraint) :
 	setNull();
 	setupProperties();
 	copyData(aConstraint);
+	// Build the transforms
+	setBody1WeldLocation(_locationInBody1, _orientationInBody1);
+	setBody2WeldLocation(_locationInBody2, _orientationInBody2);
 }
 
 //=============================================================================
@@ -171,19 +176,7 @@ void WeldConstraint::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Update the underlying SDFast parameters, such as the inboard to Constraint and
- * body to Constraint vectors.
- *
- * @return True if the new inboard to Constraint was set; false otherwise.
- */
-void WeldConstraint::updateSimbody()
-{
-
-}
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
+ * Perform some setup functions that happen after the
  * object has been deserialized or copied.
  *
  * @param aEngine dynamics engine containing this WeldConstraint.
@@ -213,17 +206,15 @@ void WeldConstraint::setup(AbstractDynamicsEngine* aEngine)
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = getEngine()->_system->updMatterSubsystem().getMobilizedBody(_body1->_index);
 	SimTK::MobilizedBody b2 = getEngine()->_system->updMatterSubsystem().getMobilizedBody(_body2->_index);
-	// Build the transforms
-	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
-	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
-	SimTK::Transform inb1(r1, _locationInBody1);
-	SimTK::Transform inb2(r2, _locationInBody2);
 
 	// Now create a Simbody Constraint::Weld
-	SimTK::Constraint::Weld simtkWeld(b1, inb1, b2, inb2);
+	SimTK::Constraint::Weld simtkWeld(b1, _body1Transform, b2, _body2Transform);
 
 	// Get the index so we can access the SimTK::Constraint later 
 	_index = simtkWeld.getConstraintIndex();
+
+	// Engine is not valid for realizing dynamics
+	getEngine()->setInvalid();
 }
 
 //=============================================================================
@@ -263,6 +254,12 @@ void WeldConstraint::setBody1WeldLocation(Vec3 location, Vec3 orientation)
 {
 	_locationInBody1 = location;
 	_orientationInBody1 = orientation;
+
+	// Build the underlying transform
+	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
+	SimTK::Transform inb1(r1, _locationInBody1);
+	setBody1Transform(inb1);
+	
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
@@ -270,4 +267,27 @@ void WeldConstraint::setBody2WeldLocation(Vec3 location, Vec3 orientation)
 {
 	_locationInBody2 = location;
 	_orientationInBody2 = orientation;
+	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
+	// Build the underlying transform
+	SimTK::Transform inb2(r2, _locationInBody2);
+	setBody1Transform(inb2);
+}
+
+void WeldConstraint::setBody1Transform(SimTK::Transform aTransform)
+{
+	if(_index.isValid()){
+		SimTK::Constraint& weld = getEngine()->_system->updMatterSubsystem().updConstraint(_index);
+		//weld.setDefaultFrameOnBody1(aTransform);
+	}
+	_body1Transform = aTransform;
+}
+
+
+void WeldConstraint::setBody2Transform(SimTK::Transform aTransform)
+{
+	if(_index.isValid()){
+		SimTK::Constraint& weld = getEngine()->_system->updMatterSubsystem().updConstraint(_index);
+		//weld.setDefaultFrameOnBody2(aTransform);
+	}
+	_body2Transform = aTransform;
 }

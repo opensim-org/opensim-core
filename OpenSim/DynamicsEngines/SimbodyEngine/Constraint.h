@@ -73,9 +73,6 @@ protected:
 	/** ID for the constraint in Simbody. */
 	SimTK::ConstraintIndex _index;
 
-	/** Simbody dynamics engine that contains this Constraint. */
-	//SimbodyEngine* _engine;
-
 //=============================================================================
 // METHODS
 //=============================================================================

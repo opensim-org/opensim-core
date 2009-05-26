@@ -110,6 +110,8 @@ void Joint::copyData(const Joint &aJoint)
 	_parentName = aJoint._parentName;
 	setLocationInParent(aJoint._locationInParent);
 	setLocation(aJoint._location);
+	setOrientationInParent(aJoint._orientationInParent);
+	setOrientation(aJoint._orientation);
 	_body = aJoint._body;
 	_parentBody = aJoint._parentBody;
 	_coordinateSet = aJoint._coordinateSet;
