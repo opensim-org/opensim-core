@@ -567,7 +567,11 @@ bool CMCTool::run()
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
 	int na = _model->getNumActuators();
-
+	int nc = 0; // number of actuators with one or more controls
+	ActuatorSet *actuatorSet = _model->getActuatorSet();
+	for (i=0; i<actuatorSet->getSize(); i++)
+		if (actuatorSet->get(i)->getNumControls() >= 1)
+			nc++;
 
 	// ---- INPUT ----
 	// DESIRED POINTS AND KINEMATICS
@@ -813,9 +817,9 @@ bool CMCTool::run()
 	// Optimization target
 	rdOptimizationTarget *target = NULL;
 	if(_useFastTarget) {
-		target = new rdActuatorForceTargetFast(na,&controller);
+		target = new rdActuatorForceTargetFast(nc,&controller);
 	} else {
-		target = new rdActuatorForceTarget(na,&controller);
+		target = new rdActuatorForceTarget(nc,&controller);
 	}
 	target->setDX(_optimizerDX);
 

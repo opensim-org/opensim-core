@@ -53,7 +53,7 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(ModelIntegrand *aIntegrand) :
-	VectorFunctionUncoupledNxN(aIntegrand->getModel()->getNumActuators()),
+	VectorFunctionUncoupledNxN(aIntegrand->getModel()->getNumControls()),
 	_f(0.0)
 {
 	setNull();

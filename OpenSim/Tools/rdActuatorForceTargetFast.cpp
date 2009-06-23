@@ -94,14 +94,20 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	int nq = model->getNumCoordinates();
 	int nu = model->getNumSpeeds();
 	int na = model->getNumActuators();
+	int nc = 0; // number of actuators with one or more controls
+	ActuatorSet *actuatorSet = model->getActuatorSet();
+	for (int i=0; i<actuatorSet->getSize(); i++)
+		if (actuatorSet->get(i)->getNumControls() > 0)
+			nc++;
+
 	_modelControls.setSize(nx);
 	_y.setSize(ny);
 	_dydt.setSize(ny);
 	_dqdt.setSize(nq);
 	_dudt.setSize(nu);
-	_recipAreaSquared.setSize(na);
-	_recipOptForceSquared.setSize(na);
-	_recipAvgActForceRangeSquared.setSize(na);
+	_recipAreaSquared.setSize(nc);
+	_recipOptForceSquared.setSize(nc);
+	_recipAvgActForceRangeSquared.setSize(nc);
 
 	
 	int nConstraints = _controller->getTaskSet()->getNumActiveTaskFunctions();
@@ -115,12 +121,14 @@ rdActuatorForceTargetFast(int aNX,rdCMC *aController):
 	setDX(1.0e-6);
 
 	// COMPUTE ACTUATOR AREAS
-	Array<double> f(1.0,na);
-	ActuatorSet *actuatorSet = model->getActuatorSet();
-	for(int i=0;i<na;i++) {
-		actuatorSet->get(i)->setForce(f[i]);
-		_recipAreaSquared[i] = actuatorSet->get(i)->getStress();
-		_recipAreaSquared[i] *= _recipAreaSquared[i];
+	Array<double> f(1.0,nc);
+	for(int i=0,index=0;i<na;i++) {
+		if (actuatorSet->get(i)->getNumControls() > 0) {
+			actuatorSet->get(i)->setForce(f[index]);
+			_recipAreaSquared[index] = actuatorSet->get(i)->getStress();
+			_recipAreaSquared[index] *= _recipAreaSquared[index];
+			index++;
+		}
 	}
 }
 
@@ -162,17 +170,19 @@ prepareToOptimize(double *x)
 	AbstractMuscle *mus;
 	double fOpt;
 	int na = model->getNumActuators();
-	for(int i=0;i<na;i++) {
+	for(int i=0,index=0;i<na;i++) {
 		act = actSet->get(i);
-		mus = dynamic_cast<AbstractMuscle*>(act);
-		if(mus==NULL) {
-			fOpt = 1.0e-4;
-		} else {
-			double activation = 1.0;
-			fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(activation);
-			if(rdMath::IsZero(fOpt)) fOpt = 1.0e-4;
+		if (act->getNumControls() > 0) {
+			mus = dynamic_cast<AbstractMuscle*>(act);
+			if(mus==NULL) {
+				fOpt = 1.0e-4;
+			} else {
+				double activation = 1.0;
+				fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(activation);
+				if(rdMath::IsZero(fOpt)) fOpt = 1.0e-4;
+			}
+			_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);
 		}
-		_recipOptForceSquared[i] = 1.0 / (fOpt*fOpt);
 	}
 	model->setStates(&y[0]);
 
@@ -209,13 +219,16 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 	AbstractMuscle *mus;
 	int na = model->getNumActuators();
 	double p = 0.0;
-	for(int i=0;i<na;i++) {
+	for(int i=0,index=0;i<na;i++) {
 		act = actSet->get(i);
-		mus = dynamic_cast<AbstractMuscle*>(act);
-		if(mus==NULL) {
-			p +=  aF[i] * aF[i] *  _recipAreaSquared[i];
-		} else {
-			p +=  aF[i] * aF[i] * _recipOptForceSquared[i];
+		if (act->getNumControls() > 0) {
+			mus = dynamic_cast<AbstractMuscle*>(act);
+			if(mus==NULL) {
+				p +=  aF[index] * aF[index] *  _recipAreaSquared[index];
+			} else {
+				p +=  aF[index] * aF[index] * _recipOptForceSquared[index];
+			}
+			index++;
 		}
 	}
 	rP = p;
@@ -238,13 +251,16 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
 	AbstractActuator *act;
 	AbstractMuscle *mus;
 	int na = model->getNumActuators();
-	for(int i=0;i<na;i++) {
+	for(int i=0,index=0;i<na;i++) {
 		act = actSet->get(i);
-		mus = dynamic_cast<AbstractMuscle*>(act);
-		if(mus==NULL) {
-			gradient[i] =  2.0 * x[i] * _recipAreaSquared[i];
-		} else {
-			gradient[i] =  2.0 * x[i] * _recipOptForceSquared[i];
+		if (act->getNumControls() > 0) {
+			mus = dynamic_cast<AbstractMuscle*>(act);
+			if(mus==NULL) {
+				gradient[index] =  2.0 * x[index] * _recipAreaSquared[index];
+			} else {
+				gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
+			}
+			index++;
 		}
 	}
 

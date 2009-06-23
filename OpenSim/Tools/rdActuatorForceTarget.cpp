@@ -136,7 +136,7 @@ prepareToOptimize(double *x)
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 	Model *model = _controller->getModel();
 	int nu = model->getNumSpeeds();
-	int nf = model->getNumActuators();
+	int nf = model->getNumControls();
 	int ny = model->getNumStates();
 	int nacc = _controller->getTaskSet()->getDesiredAccelerations().getSize();
 
@@ -263,7 +263,10 @@ computePerformanceVectors(const Vector &aF, Vector &rAccelPerformanceVector, Vec
 	model->getDerivCallbackSet()->computeActuation(t,&_x[0],&_y[0]);
 	ActuatorSet *actuatorSet = model->getActuatorSet();
 	int nf = actuatorSet->getSize();
-	for(int i=0;i<nf;i++) actuatorSet->get(i)->setForce(aF[i]);
+	for(int i=0,index=0;i<nf;i++) {
+		if (actuatorSet->get(i)->getNumControls() > 0)
+			actuatorSet->get(i)->setForce(aF[index++]);
+	}
 	model->getActuatorSet()->apply();
 	model->getDerivCallbackSet()->applyActuation(t,&_x[0],&_y[0]);
 
@@ -285,7 +288,10 @@ computePerformanceVectors(const Vector &aF, Vector &rAccelPerformanceVector, Vec
 
 	// PERFORMANCE
 	double sqrtStressTermWeight = sqrt(_stressTermWeight);
-	for(int i=0;i<nf;i++) rForcePerformanceVector[i] = sqrtStressTermWeight * actuatorSet->get(i)->getStress();
+	for(int i=0,index=0;i<nf;i++) {
+		if (actuatorSet->get(i)->getNumControls() >= 1)
+			rForcePerformanceVector[index++] = sqrtStressTermWeight * actuatorSet->get(i)->getStress();
+	}
 
 	int nacc = aDes.getSize();
 	for(int i=0;i<nacc;i++) rAccelPerformanceVector[i] = sqrt(w[i]) * (a[i] - aDes[i]);
@@ -306,7 +312,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 
 	// Explicit computation of performance (use this if it's not actually linear)
 	Model *model = _controller->getModel();
-	int nf = model->getNumActuators();
+	int nf = model->getNumControls();
 	int nacc = _controller->getTaskSet()->getDesiredAccelerations().getSize();
 	Vector pacc(nacc), pf(nf);
 	computePerformanceVectors(aF,pacc,pf);
