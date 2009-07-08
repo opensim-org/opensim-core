@@ -80,3 +80,12 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( ObjectGroup() );
 }
 
+osimCommonInstantiator::osimCommonInstantiator() 
+{ 
+        registerDllClasses(); 
+} 
+    
+void osimCommonInstantiator::registerDllClasses() 
+{ 
+        RegisterTypes_osimCommon(); 
+}

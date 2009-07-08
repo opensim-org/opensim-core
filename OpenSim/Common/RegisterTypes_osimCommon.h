@@ -39,6 +39,20 @@ OSIMCOMMON_API void RegisterTypes_osimCommon();
 
 }
 
+/** 
+    * The following code accounts for an object made up to call 
+    * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
+    * 
+    * @todo Figure out if there're scenarios due to static initialization order that breaks this. 
+    * -Ayman May 06 
+    */ 
+     
+class osimCommonInstantiator 
+{ 
+public: 
+        osimCommonInstantiator(); 
+private: 
+        void registerDllClasses(); 
+}; 
+    
 #endif // __RegisterTypes_osimCommon_h__
-
-

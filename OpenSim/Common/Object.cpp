@@ -1843,29 +1843,3 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
 		rTypeNames.append(find_Iter->first);
 	}
 }
-/** 
-    * The following code accounts for an object made up to call 
-    * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
-    * 
-    * @todo Figure out if there're scenarios due to static initialization order that breaks this. 
-    * -Ayman May 06 
-    */ 
-     
-class osimCommonInstantiator 
-{ 
-public: 
-        osimCommonInstantiator(); 
-private: 
-        void registerDllClasses(); 
-}; 
-    
-osimCommonInstantiator::osimCommonInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-    
-extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon(); 
-void osimCommonInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimCommon(); 
-} 
