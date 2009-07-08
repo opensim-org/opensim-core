@@ -25,7 +25,6 @@
 
 // INCLUDES
 #include <string>
-#include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/rdMath.h>
@@ -42,7 +41,6 @@
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmBody.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmJoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #ifdef SWIG
 	#ifdef OSIMMIGRATESIMMKEMODEL_API

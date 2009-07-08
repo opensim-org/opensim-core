@@ -98,8 +98,10 @@ public:
  */
 int main()
 {
+#ifndef STATIC_OSIM_LIBS
 	//Make sure that the SimbodyEngine library is available
 	LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
 
 	// Set output precision
 	IO::SetPrecision(10);

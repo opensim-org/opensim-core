@@ -32,7 +32,16 @@ SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
 					${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB})
 
-ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+IF (BUILD_STATIC_OSIM_LIBS)
+	ADD_LIBRARY(osim${KIT} STATIC ${SOURCE_FILES} ${INCLUDE_FILES}) 
+	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
+ELSE(BUILD_STATIC_OSIM_LIBS)
+	ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+	SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+		DEFINE_SYMBOL ${EXPORT_MACRO}
+		PROJECT_LABEL "Libraries - osim${KIT}"
+	)
+ENDIF(BUILD_STATIC_OSIM_LIBS)
 
 #-----------------------------------------------------------------------------
 # Copy Libraries that we depend on to the output path so that exes and libs find them
@@ -53,11 +62,6 @@ GET_FILENAME_COMPONENT(localName ${libFile} NAME)
     ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/${localName})
 ENDFOREACH (libFile) 
 #-----------------------------------------------------------------------------
-
-SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Libraries - osim${KIT}"
-)
 
 INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 INSTALL_FILES(/sdk/include/OpenSim/Common .h ${INCLUDE_FILES})

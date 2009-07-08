@@ -60,9 +60,11 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
+#ifndef STATIC_OSIM_LIBS
 	//TODO: put these options on the command line
 	LoadOpenSimLibrary("osimSimbodyEngine");
 	//LoadOpenSimLibrary("osimSimmKinematicsEngine");
+#endif
 
 	// PARSE COMMAND LINE
 	string option = "";

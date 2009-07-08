@@ -45,8 +45,9 @@
 using namespace OpenSim;
 using namespace std;
 
+#ifndef STATIC_OSIM_LIBS
 static osimActuatorsInstantiator instantiator;
-
+#endif
 
 //_____________________________________________________________________________
 /**

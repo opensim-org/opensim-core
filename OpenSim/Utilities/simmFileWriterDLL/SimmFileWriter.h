@@ -33,7 +33,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "osimSimmFileWriterDll.h"
+#include "osimSimmFileWriterDLL.h"
 #include "SimTKcommon.h"
 
 #ifdef SWIG

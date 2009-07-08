@@ -58,8 +58,10 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 */
 int main(int argc,char **argv)
 {
+#ifndef STATIC_OSIM_LIBS
 	//TODO: put these options on the command line
 	LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
 
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);

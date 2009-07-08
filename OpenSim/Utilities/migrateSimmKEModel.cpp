@@ -33,7 +33,16 @@
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
 #include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
+
+#ifdef STATIC_OSIM_LIBS
+#include <OpenSim/Common/RegisterTypes_osimCommon.h>
+#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/RegisterTypes_osimSimbodyEngine.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/RegisterTypes_osimSimmKinematicsEngine.h>
+#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
+#else
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#endif
 
 using namespace std;
 using namespace OpenSim;
@@ -52,9 +61,17 @@ int main(int argc,char **argv)
 {
 	std::cout << "migrateSimmKEModel, " << OpenSim::GetVersionAndDate() << std::endl;
 
+#ifdef STATIC_OSIM_LIBS
+	RegisterTypes_osimCommon();
+	RegisterTypes_osimSimulation();
+	RegisterTypes_SimbodyEngine();
+	RegisterTypes_osimSimmKinematicsEngine();
+	RegisterTypes_osimActuators();
+#else
 	LoadOpenSimLibrary("osimActuators");
 	LoadOpenSimLibrary("osimSimbodyEngine");
 	LoadOpenSimLibrary("osimSimmKinematicsEngine");
+#endif
 
 	// PARSE COMMAND LINE
 	string inName = "";

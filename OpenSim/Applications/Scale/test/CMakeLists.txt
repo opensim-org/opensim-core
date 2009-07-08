@@ -3,6 +3,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${XERCES_INCLUDE_DIR})
 
 
+IF (BUILD_STATIC_OSIM_LIBS)
+	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
+ENDIF(BUILD_STATIC_OSIM_LIBS)
+
 LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation
 		debug osimAnalyses_d optimized osimAnalyses)

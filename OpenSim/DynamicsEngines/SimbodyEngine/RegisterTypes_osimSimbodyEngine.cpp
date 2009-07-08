@@ -52,11 +52,12 @@
 #include "SimbodyCoordinate01_05.h"
 #include "SimbodySpeed01_05.h"
 
-
 using namespace std;
 using namespace OpenSim;
 
+#ifndef STATIC_OSIM_LIBS
 static osimSimbodyEngineInstantiator instantiator; 
+#endif
 
 //_____________________________________________________________________________
 /**
@@ -65,7 +66,7 @@ static osimSimbodyEngineInstantiator instantiator;
  */
 OSIMSIMBODYENGINE_API void RegisterTypes_SimbodyEngine()
 {
-	cout<<"RegisterTypes_SimbodyEngine\n";
+	//cout<<"RegisterTypes_SimbodyEngine\n";
 
 	// CURRENT RELEASE
 	Object::RegisterType( SimbodyEngine() );

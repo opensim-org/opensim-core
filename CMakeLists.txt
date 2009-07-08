@@ -68,6 +68,7 @@ ELSE(WIN32)
 	SET(SIMTK_DIR "/usr/local/SimTK" CACHE PATH "Top-level directory of SimTK install")
 ENDIF(WIN32)
 
+SET(BUILD_STATIC_OSIM_LIBS OFF CACHE BOOL "Use static libs")
 # If using prebuilt libraries reset SIMTK_DIR to relative path in source tree
 IF(USE_LIBRARIES_FROM_REPOSITORY)
 	SET(SIMTK_DIR ${OpenSim_SOURCE_DIR}/Vendors/)
@@ -113,9 +114,11 @@ IF(USE_STATIC_SIMTK_LIBRARIES)
 	ADD_DEFINITIONS(-DSimTK_USE_STATIC_LIBRARIES)
 	SET(SIMTK_COMMON_LIB debug SimTKcommon_static_d optimized SimTKcommon_static)
 	SET(SIMTK_MATH_LIB debug SimTKmath_static_d optimized SimTKmath_static SimTKlapack)
+	SET(SIMTK_SIMBODY_LIB debug SimTKsimbody_static_d optimized SimTKsimbody_static)
 ELSE(USE_STATIC_SIMTK_LIBRARIES)
 	SET(SIMTK_COMMON_LIB debug SimTKcommon_d optimized SimTKcommon)
 	SET(SIMTK_MATH_LIB debug SimTKmath_d optimized SimTKmath SimTKlapack)
+	SET(SIMTK_SIMBODY_LIB debug SimTKsimbody_d optimized SimTKsimbody)
 ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
 

@@ -119,9 +119,11 @@ void testSingleMuscle() {
 
 int main() {
     try {
-        LoadOpenSimLibrary("osimSimbodyEngine");
-		testGait2354();
-		testSingleMuscle();
+#ifndef STATIC_OSIM_LIBS
+		 LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
+		 testGait2354();
+		 testSingleMuscle();
     }
     catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;

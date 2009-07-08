@@ -40,9 +40,13 @@
 #define NOMINMAX
 #include <windows.h>
 #ifdef OSIMMIGRATESIMMKEMODEL_EXPORTS
-#define OSIMMIGRATESIMMKEMODEL_API __declspec(dllexport)
+	#define OSIMMIGRATESIMMKEMODEL_API __declspec(dllexport)
 #else
-#define OSIMMIGRATESIMMKEMODEL_API __declspec(dllimport)
+	#ifdef STATIC_OSIM_LIBS
+		#define OSIMMIGRATESIMMKEMODEL_API
+	#else
+		#define OSIMMIGRATESIMMKEMODEL_API __declspec(dllimport)
+	#endif
 #endif
 
 #endif // PLATFORM

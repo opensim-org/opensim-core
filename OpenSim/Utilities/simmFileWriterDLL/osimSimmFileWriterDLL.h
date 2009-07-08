@@ -40,12 +40,15 @@
 #define NOMINMAX
 #include <windows.h>
 #ifdef OSIMSIMMFILEWRITER_EXPORTS
-#define OSIMSIMMFILEWRITER_API __declspec(dllexport)
+	#define OSIMSIMMFILEWRITER_API __declspec(dllexport)
 #else
-#define OSIMSIMMFILEWRITER_API __declspec(dllimport)
+	#ifdef STATIC_OSIM_LIBS
+		#define OSIMSIMMFILEWRITER_API
+	#else
+		#define OSIMSIMMFILEWRITER_API __declspec(dllimport)
+	#endif
 #endif
 
 #endif // PLATFORM
-
 
 #endif // __osimSimmFileWriterDll_h__

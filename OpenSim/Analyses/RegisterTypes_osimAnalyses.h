@@ -35,14 +35,14 @@
 
 extern "C" {
 
-OSIMANALYSES_API void RegisterTypes_Analyses(); 
+OSIMANALYSES_API void RegisterTypes_osimAnalyses(); 
 
 }
 
-class suAnalysesInstantiator 
+class osimAnalysesInstantiator 
 { 
 public: 
-        suAnalysesInstantiator(); 
+        osimAnalysesInstantiator(); 
 private: 
         void registerDllClasses(); 
 }; 

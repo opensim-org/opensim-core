@@ -51,9 +51,11 @@ int main(int argc,char **argv)
 	//----------------------
 	try {
 	//----------------------
-	
+
+#ifndef STATIC_OSIM_LIBS
 	//LoadOpenSimLibrary("osimSdfastEngine");
 	LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
 
 	// PARSE COMMAND LINE
 	int i;

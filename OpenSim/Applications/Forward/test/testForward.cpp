@@ -113,9 +113,11 @@ void testGait2354() {
 
 int main() {
     try {
-        LoadOpenSimLibrary("osimSimbodyEngine");
-        testPendulum();
-		testGait2354();
+#ifndef STATIC_OSIM_LIBS
+		 LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
+		 testPendulum();
+		 testGait2354();
     }
     catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;

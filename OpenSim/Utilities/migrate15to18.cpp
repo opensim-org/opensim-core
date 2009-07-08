@@ -1,4 +1,4 @@
-/* Copyright (c)  2007, Stanford University and Eran Guendelman.
+/* Copyright (c)  2009, Stanford University and Peter Loan.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -27,13 +27,22 @@
 #include <string>
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
+#include <SimTKcommon/internal/Exception.h>
+#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Utilities/SimmFileWriterDLL/SimmFileWriter.h>
 #include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
-#include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Actuators/Delp1990Muscle.h>
+#include <OpenSim/Utilities/migrateSimmKEModelDLL/migrateSimmKEModelDLL.h>
+
+#ifdef STATIC_OSIM_LIBS
+#include <OpenSim/Common/RegisterTypes_osimCommon.h>
+#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/RegisterTypes_osimSimbodyEngine.h>
+#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/RegisterTypes_osimSimmKinematicsEngine.h>
+#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
+#else
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#endif
 
 using namespace std;
 using namespace OpenSim;
@@ -42,28 +51,31 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //______________________________________________________________________________
 /**
- * Program to read an xml file for an openSim Model and generate
- * SDFast corresponding code.
+ * Program to read an xml file for an OpenSim model of version 1.5 to 1.8,
+ * and output a version 1.8 model.
  *
- * @param argc Number of command line arguments (should be 4 or more).
- * @param argv Command line arguments:  openSimToSimm -x xml_in -j joints_out [ -m muscles_out ]
+ * @param argc Number of command line arguments (should be 2).
+ * @param argv Command line arguments: migrate15to18 model_in model_out
  */
 int main(int argc,char **argv)
 {
-	std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
+	std::cout << "migrate15to18, " << OpenSim::GetVersionAndDate() << std::endl;
 
- //  Object::RegisterType(SimbodyEngine());
-	//SimbodyEngine::registerTypes();
- //  Object::RegisterType(SimmKinematicsEngine());
-	//SimmKinematicsEngine::registerTypes();
-	//Object::RegisterType(Schutte1993Muscle());
-	//Object::RegisterType(Thelen2003Muscle());
-	//Object::RegisterType(Delp1990Muscle());
+#ifdef STATIC_OSIM_LIBS
+	RegisterTypes_osimCommon();
+	RegisterTypes_osimSimulation();
+	RegisterTypes_SimbodyEngine();
+	RegisterTypes_osimSimmKinematicsEngine();
+	RegisterTypes_osimActuators();
+#else
+	LoadOpenSimLibrary("osimActuators");
+	LoadOpenSimLibrary("osimSimbodyEngine");
+	LoadOpenSimLibrary("osimSimmKinematicsEngine");
+#endif
 
 	// PARSE COMMAND LINE
 	string inName = "";
-	string jntName = "";
-	string mslName = "";
+	string outName = "";
 
 	for(int i=1; i<argc; i++) {
 		string option = argv[i];
@@ -74,23 +86,28 @@ int main(int argc,char **argv)
 			PrintUsage(argv[0], cout);
 			return(0);
 		}
-		else if(option=="-x" || option=="-X") inName = argv[++i];
-		else if(option=="-j" || option=="-J") jntName = argv[++i];
-		else if(option=="-m" || option=="-M") mslName = argv[++i];
 	}
 
-	if(inName=="" || jntName == "") {
+	if (argc != 3) {
 		PrintUsage(argv[0], cout);
 		return(-1);
 	}
 
+	inName = argv[1];
+	outName = argv[2];
+
 	try {
 		Model model(inName);
 		model.setup();
-
-		SimmFileWriter sfw(&model);
-		if(jntName!="") sfw.writeJointFile(jntName);
-		if(mslName!="") sfw.writeMuscleFile(mslName);
+		SimmKinematicsEngine* oldEngine = dynamic_cast<SimmKinematicsEngine*>(&model.getDynamicsEngine());
+		if (oldEngine != NULL) {
+			AbstractDynamicsEngine* newEngine = makeSimbodyEngine(model, *oldEngine);
+			model.replaceEngine(newEngine);
+			cout << "SimmKinematicsEngine converted to SimbodyEngine." << endl;
+		}
+		Model* hack = (Model*)model.copy();
+		hack->print(outName);
+		cout << "Model " << hack->getName() << " migrated to version 1.8 and written to file " << outName << endl;
 	}
 	catch(Exception &x) {
 		x.print(cout);
@@ -103,5 +120,6 @@ int main(int argc,char **argv)
 void PrintUsage(const char *aProgName, ostream &aOStream)
 {
 	string progName=IO::GetFileNameFromURI(aProgName);
-	aOStream << "Usage: " << progName << " -x xml_in -j joints_out [ -m muscles_out ]" << std::endl;
+	aOStream << "Usage: " << progName << " model_in model_out" << std::endl;
 }
+

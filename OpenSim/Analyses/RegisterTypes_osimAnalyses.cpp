@@ -45,14 +45,16 @@
 using namespace OpenSim;
 using namespace std;
 
-static suAnalysesInstantiator instantiator; 
-     
+#ifndef STATIC_OSIM_LIBS
+static osimAnalysesInstantiator instantiator; 
+#endif
+
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
  * the Analyses library.
  */
-OSIMANALYSES_API void RegisterTypes_suAnalyses()
+OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 {
 	Object::RegisterType( Kinematics() );
 	Object::RegisterType( Actuation() );
@@ -67,12 +69,12 @@ OSIMANALYSES_API void RegisterTypes_suAnalyses()
     //Object::RegisterType( GeneralizedForces() );
 }
 
-suAnalysesInstantiator::suAnalysesInstantiator() 
+osimAnalysesInstantiator::osimAnalysesInstantiator() 
 { 
         registerDllClasses(); 
 } 
     
-void suAnalysesInstantiator::registerDllClasses() 
+void osimAnalysesInstantiator::registerDllClasses() 
 { 
-        RegisterTypes_suAnalyses(); 
+        RegisterTypes_osimAnalyses(); 
 } 

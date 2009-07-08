@@ -50,7 +50,11 @@
 	#ifdef OSIMCOMMON_EXPORTS
 		#define OSIMCOMMON_API __declspec(dllexport)
 	#else
-		#define OSIMCOMMON_API __declspec(dllimport)
+		#ifdef STATIC_OSIM_LIBS
+			#define OSIMCOMMON_API
+		#else
+			#define OSIMCOMMON_API __declspec(dllimport)
+		#endif
 	#endif
 
 #endif

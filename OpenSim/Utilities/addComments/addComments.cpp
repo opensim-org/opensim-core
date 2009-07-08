@@ -33,11 +33,13 @@ using namespace std;
 
 int main(int argc,char **argv)
 {
+#ifndef STATIC_OSIM_LIBS
 	LoadOpenSimLibrary("osimTools");
 	LoadOpenSimLibrary("osimActuators");
 	LoadOpenSimLibrary("osimAnalyses");
 	LoadOpenSimLibrary("osimSimulation");
 	LoadOpenSimLibrary("osimSimmKinematicsEngine");
+#endif
 
 	int offset=0;
 	if(argc>1 && string(argv[1])=="-offline") offset++;

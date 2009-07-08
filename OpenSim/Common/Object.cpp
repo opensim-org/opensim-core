@@ -1869,5 +1869,3 @@ void osimCommonInstantiator::registerDllClasses()
 { 
         RegisterTypes_osimCommon(); 
 } 
-    
-static osimCommonInstantiator instantiator; 

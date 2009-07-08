@@ -47,11 +47,12 @@
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
 
-
-
 using namespace OpenSim;
 using namespace std;
 
+#ifndef STATIC_OSIM_LIBS
+static osimCommonInstantiator instantiator; 
+#endif
 
 //_____________________________________________________________________________
 /**

@@ -32,20 +32,22 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 LINK_LIBRARIES( SimTKlapack
+				${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${SIMTK_SIMBODY_LIB}
 				debug osimCommon_d optimized osimCommon
 				debug osimSimulation_d optimized osimSimulation
-				debug SimTKcommon_d optimized SimTKcommon
-				debug SimTKmath_d optimized SimTKmath
 				debug osimSimbodyEngine_d optimized osimSimbodyEngine
-				debug osimActuators_d optimized osimActuators
-				debug SimTKsimbody_d optimized SimTKsimbody)
+				debug osimActuators_d optimized osimActuators)
 
-ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
-
-SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-   DEFINE_SYMBOL ${EXPORT_MACRO}
-   PROJECT_LABEL "Libraries - osim${KIT}"
-)
+IF (BUILD_STATIC_OSIM_LIBS)
+	ADD_LIBRARY(osim${KIT} STATIC ${SOURCE_FILES} ${INCLUDE_FILES}) 
+	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
+ELSE(BUILD_STATIC_OSIM_LIBS)
+	ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+	SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+		DEFINE_SYMBOL ${EXPORT_MACRO}
+		PROJECT_LABEL "Libraries - osim${KIT}"
+	)
+ENDIF(BUILD_STATIC_OSIM_LIBS)
 
 INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 INSTALL_FILES(/sdk/include/OpenSim/${KIT} .h ${INCLUDE_FILES})

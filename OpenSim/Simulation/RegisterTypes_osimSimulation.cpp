@@ -70,7 +70,9 @@
 using namespace std;
 using namespace OpenSim;
 
+#ifndef STATIC_OSIM_LIBS
 static osimSimulationInstantiator instantiator; 
+#endif
 
 //_____________________________________________________________________________
 /**

@@ -35,7 +35,7 @@
 
 extern "C" {
 
-OSIMACTUATORS_API void RegisterTypes_Actuators(); 
+OSIMACTUATORS_API void RegisterTypes_osimActuators(); 
 
 }
 

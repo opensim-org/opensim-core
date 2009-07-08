@@ -5,6 +5,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 FILE(GLOB SOURCE_FILES ../Simm*.cpp  ../../../Subject/Simm*.cpp testIK.cpp)
 FILE(GLOB INCLUDE_FILES ../Simm*.h ../../../Subject/Simm*.h)
 
+IF (BUILD_STATIC_OSIM_LIBS)
+	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
+ENDIF(BUILD_STATIC_OSIM_LIBS)
+
 LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
 		debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation)

@@ -121,8 +121,10 @@ void scaleGait2354()
 int main()
 {
     try {
-        LoadOpenSimLibrary("osimSimbodyEngine");
-		scaleGait2354();
+#ifndef STATIC_OSIM_LIBS
+		 LoadOpenSimLibrary("osimSimbodyEngine");
+#endif
+		 scaleGait2354();
     }
     catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;
