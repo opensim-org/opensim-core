@@ -38,6 +38,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/SimbodyEngine/SimbodyEngine.h>
 #include "JointReaction.h"
 
 
@@ -357,13 +358,13 @@ void JointReaction::setupReactionList()
 			}
 		}
 		if(validJointFlag == 0) {
-			cout << "\nWARNING: " << currentJoint.jointName << " is not a valid joint.  Ignoring this entry.\n";
+			cout << "\nWARNING: " << _jointNames.get(i) << " is not a valid joint.  Ignoring this entry.\n";
 		}
 		
 	}
 	if(listNotEmptyFlag ==0) {
-		cout << "\nWARNING: No joint valid joint names were found.\n"
-			<< "Setting up _reactionList to include all joints in the model";
+		cout << "\nWARNING: No valid joint names were found.\n"
+			<< "Setting up _reactionList to include all joints in the model.\n";
 		_jointNames.setSize(1);
 		_jointNames[0] = "ALL";
 		setupReactionList();
@@ -539,7 +540,7 @@ record(double aT,double *aX,double *aY)
 	int groundIndex = bodySet->getIndex(ground.getName());
 
 	/* Calculate All joint reaction forces and moments.
-	 * force and moments on child bodies, expressed in the ground frame*/ 
+	*  Applied to child bodies, expressed in ground frame*/ 
 	_model->getDynamicsEngine().computeReactions( allForcesVec, allMomentsVec);
 
 	/* retrieved desired joint reactions, convert to desired bodies, and convert
@@ -548,7 +549,8 @@ record(double aT,double *aX,double *aY)
 	Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints);
 	for(int i=0; i<numOutputJoints; i++) {
 		JointReactionKey currentKey = _reactionList[i];
-		AbstractJoint* joint = jointSet->get(currentKey.jointName);
+		Joint* joint = dynamic_cast<Joint*>(jointSet->get(currentKey.jointName));
+		//AbstractJoint* joint = jointSet->get(currentKey.jointName);
 		Vec3 force = allForcesVec[currentKey.reactionIndex];
 		Vec3 moment = allMomentsVec[currentKey.reactionIndex];
 		AbstractBody* reactionBody = bodySet->get(currentKey.reactionIndex);
@@ -560,6 +562,16 @@ record(double aT,double *aX,double *aY)
 			/*Take reaction load from child and apply on parent*/
 			force = -force;
 			moment = -moment;
+			Vec3 childLocation(0,0,0), parentLocation(0,0,0);
+			joint->getLocation(childLocation);
+			joint->getLocationInParent(parentLocation);
+			Vec3 childLocationInGlobal(0,0,0), parentLocationInGlobal(0,0,0);
+			_model->getDynamicsEngine().getPosition(*(joint->getBody()), childLocation, childLocationInGlobal);
+			_model->getDynamicsEngine().getPosition(*(joint->getParentBody()), parentLocation, parentLocationInGlobal);
+			// define vector from the mobilizer location on the child to the location on the parent
+			Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
+			// find equivalent moment if the load is shifted to the parent loaction
+			moment -= translation % force;
 		}
 		/* express loads in the desired reference frame*/
 		_model->getDynamicsEngine().transform(ground,force,*expressedInBody,force);

@@ -64,6 +64,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::RegisterType( InverseDynamics() );
 	Object::RegisterType( InducedAccelerations() );
 	Object::RegisterType( StaticOptimization() );
+	Object::RegisterType( JointReaction() );
 	// unregistering until we verify that these work
 	//Object::RegisterType( ActuatorGeneralizedForces() );
     //Object::RegisterType( GeneralizedForces() );
