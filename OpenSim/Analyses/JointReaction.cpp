@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
 #include "JointReaction.h"
 
 
@@ -75,6 +75,7 @@ JointReaction::~JointReaction()
  */
 JointReaction::JointReaction(Model *aModel) :
 	Analysis(aModel),
+	_forcesFileName(_forcesFileNameProp.getValueStr()),
 	_jointNames(_jointNamesProp.getValueStrArray()),
 	_onBody(_onBodyProp.getValueStrArray()),
 	_inFrame(_inFrameProp.getValueStrArray())
@@ -99,6 +100,7 @@ JointReaction::JointReaction(Model *aModel) :
  */
 JointReaction::JointReaction(const std::string &aFileName):
 	Analysis(aFileName, false),
+	_forcesFileName(_forcesFileNameProp.getValueStr()),
 	_jointNames(_jointNamesProp.getValueStrArray()),
 	_onBody(_onBodyProp.getValueStrArray()),
 	_inFrame(_inFrameProp.getValueStrArray())
@@ -127,6 +129,7 @@ JointReaction::JointReaction(const std::string &aFileName):
  */
 JointReaction::JointReaction(const JointReaction &aJointReaction):
 	Analysis(aJointReaction),
+	_forcesFileName(_forcesFileNameProp.getValueStr()),
 	_jointNames(_jointNamesProp.getValueStrArray()),
 	_onBody(_onBodyProp.getValueStrArray()),
 	_inFrame(_inFrameProp.getValueStrArray())
@@ -165,6 +168,7 @@ operator=(const JointReaction &aJointReaction)
 	Analysis::operator=(aJointReaction);
 
 	// Member Variables
+	_forcesFileName = aJointReaction._forcesFileName;
 	_jointNames = aJointReaction._jointNames;
 	_onBody = aJointReaction._onBody;
 	_inFrame = aJointReaction._inFrame;
@@ -184,12 +188,16 @@ setNull()
 
 	// Property Default Values that are set if the associated fields are
 	// omitted from the setup file.
+	_forcesFileName = "";
+	_useForceStorage = false;
 	_jointNames.setSize(1);
 	_jointNames[0] = "ALL";
 	_onBody.setSize(1);
 	_onBody[0]= "child";
 	_inFrame.setSize(1);
 	_inFrame[0] = "ground";
+
+	_storeActuation = NULL;
 
 
 }
@@ -207,6 +215,13 @@ setNull()
 void JointReaction::
 setupProperties()
 {
+
+	_forcesFileNameProp.setName("forces_file");
+	_forcesFileNameProp.setComment("The name of a file containing forces storage."
+		"If a file name is provided, the applied forces for all actuators will be constructed "
+		"from the actuation_file instead of from the states.  This option should be used "
+		"to calculated joint loads from static optimization results.");
+	_propertySet.append(&_forcesFileNameProp);
 
 	_jointNamesProp.setName("joint_names");
 	_jointNamesProp.setComment("Names of the joints on which to perform the analysis."
@@ -387,6 +402,8 @@ constructDescription()
 	descrip += "applied to the specified body of a joint pair and expressed  ";
 	descrip += "in the specified reference frame.\n";
 	descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
+
+	setDescription(descrip);
 	
 }
 
@@ -433,6 +450,65 @@ constructColumnLabels()
 
 //_____________________________________________________________________________
 /**
+ * Load actuation storage from file.
+ *
+ * If called, this method sets _storeActuation to the
+ * forces data in _forcesFileName
+ */
+void JointReaction::
+loadForcesFromFile()
+{
+	delete _storeActuation; _storeActuation = NULL;
+	// check if the forces storage file name is valid and, if so, load the file into storage
+	if(_forcesFileNameProp.isValidFileName()) {
+		
+		cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
+		_storeActuation = new Storage(_forcesFileName);
+		int storeSize = _storeActuation->getSmallestNumberOfStates();
+		
+		cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
+			<< _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
+
+		// check if actuator set and forces file have the same actuators
+		bool _containsAllActuators = true;
+		int actuatorSetSize = _model->getActuatorSet()->getSize();
+		if(actuatorSetSize > storeSize){
+			cout << "The forces file does not contain enough actuators." << endl;
+			_containsAllActuators = false;
+		}
+		else {
+			for(int actuatorIndex=0;actuatorIndex<actuatorSetSize;actuatorIndex++)
+			{
+				std::string actuatorName = _model->getActuatorSet()->get(actuatorIndex)->getName();
+				int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
+				if(storageIndex == -1) {
+					cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
+					_containsAllActuators = false;
+				}
+			}
+		}
+
+		if(_containsAllActuators) {
+			if(storeSize> actuatorSetSize) cout << "\nWARNING:  The forces file contains actuators that are not in the model's actuator set." << endl;
+			_useForceStorage = true;
+			cout << "WARNING:  Ignoring fiber lengths and activations from the states since " << _forcesFileNameProp.getName() << " is also set." << endl;
+			cout << "Actuator forces will be constructed from " << _forcesFileName << "." << endl;
+		}
+		else {
+			_useForceStorage = false;
+			cout << "Actuator forces will be constructed from the states." << endl;
+		}
+	}
+
+	else {
+		cout << "WARNING:  " << _forcesFileNameProp.getName() << " is not a valid file name." << endl;
+		cout << "Actuator forces will be constructed from the states." << endl;
+		_useForceStorage = false;
+	}
+}
+
+//_____________________________________________________________________________
+/**
  * Set up storage objects.
  *
  * The storage objects in the analysis are used to record
@@ -446,6 +522,9 @@ setupStorage()
 	_storeReactionLoads.setName("Joint Reaction Loads");
 	_storeReactionLoads.setDescription(getDescription());
 	_storeReactionLoads.setColumnLabels(getColumnLabels());
+
+	// Actuator forces - if a forces file is specified, load the forces storage data to _storeActuation
+	if(!(_forcesFileName == "")) loadForcesFromFile();
 
 }
 
@@ -509,6 +588,28 @@ record(double aT,double *aX,double *aY)
 	// Comput and apply all actuator forces.
 	_model->getActuatorSet()->computeActuation();
 	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
+
+	/** If a forces file is specified, replace the computed actuation
+	 *	with the forces from storage.*/
+	if(_useForceStorage) {
+		int nF = _model->getActuatorSet()->getSize();
+		Array<double> forces(0,nF);
+		_storeActuation->getDataAtTime(aT,nF,forces);
+		int storageIndex = -1;
+		for(int actuatorIndex=0;actuatorIndex<nF;actuatorIndex++)
+		{
+			std::string actuatorName = _model->getActuatorSet()->get(actuatorIndex)->getName();
+			storageIndex = _storeActuation->getStateIndex(actuatorName,0);
+			if(storageIndex == -1) {
+				cout << "The actuator " << actuatorName << " was not found in the forces file.";
+				break;
+			}
+			_model->getActuatorSet()->get(actuatorIndex)->setForce(forces[storageIndex]);
+		}
+
+	}
+
+	// Apply forces
 	_model->getActuatorSet()->apply();
 	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
 

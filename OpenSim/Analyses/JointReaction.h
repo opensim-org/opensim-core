@@ -98,6 +98,10 @@ protected:
 	// file 
 	//--------------------------------------------------------------------
 
+	/** String containing the name of the optional forces storage file*/
+	PropertyStr _forcesFileNameProp;
+	std::string &_forcesFileName;
+
 	/** String Array containting the names of the joints to be analysed*/
 	PropertyStrArray _jointNamesProp;
 	Array<std::string> &_jointNames;
@@ -115,6 +119,9 @@ protected:
 	//-----------------------------------------------------------------------
 	// STORAGE
 	//-----------------------------------------------------------------------
+
+	/** Storage for holding actuator forces IF SPECIFIED by user.*/
+	Storage *_storeActuation;
 
 	/** Storage for recording joint Reaction loads.*/
 	Storage _storeReactionLoads;
@@ -138,6 +145,8 @@ protected:
 	/** Internal work array for holding the JointReactionKeys to identify the 
 	*   desired joints, onBody, and inFrame to be output*/
 	Array<JointReactionKey> _reactionList;
+
+	bool _useForceStorage;
 
 //=============================================================================
 // METHODS
@@ -197,6 +206,7 @@ protected:
 	void constructDescription();
 	void constructColumnLabels();
 	void setupStorage();
+	void loadForcesFromFile();
 
 //=============================================================================
 }; // END of class JointReaction
