@@ -190,6 +190,16 @@ setModel(Model *aModel)
 	_model = aModel;
 }
 /**
+ * Set this class's pointer to the object containing
+ * input controls to point to the object passed into
+ * this method.
+ */
+void Controller::
+setControlSet(const ControlSet &aControlSet)
+{
+	
+}
+/**
  * Set this class's pointer to the storage object containing
  * desired model states to point to the storage object passed into
  * this method.

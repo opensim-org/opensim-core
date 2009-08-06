@@ -77,6 +77,8 @@ protected:
 	PropertyDbl _kvProp;
 	double &_kv;
 
+	/** Input controls for the simulation. */
+	ControlSet *_controlSet;
 	/** States for the simulation. */
 	Storage *_yDesStore;
 
@@ -89,7 +91,7 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimpleFeedbackController();
-	SimpleFeedbackController(Model *aModel, Storage *aYDesStore);
+	SimpleFeedbackController(Model *aModel, ControlSet *aControlSet, Storage *aYDesStore);
 	SimpleFeedbackController(const std::string &aFileName);
 	SimpleFeedbackController(const SimpleFeedbackController &aController);
 	virtual ~SimpleFeedbackController();
@@ -108,6 +110,8 @@ public:
 	void setKp(double aKp);
 	double getKv() const;
 	void setKv(double aKv);
+	ControlSet* getControlSet() const;
+	virtual void setControlSet(const ControlSet &aControlSet);
 	Storage* getDesiredStatesStorage() const;
 	virtual void setDesiredStatesStorage(Storage *aYDesStore);
 

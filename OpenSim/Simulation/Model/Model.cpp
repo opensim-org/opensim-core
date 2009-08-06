@@ -1452,4 +1452,46 @@ void Model::kinTest()
 		}
 	}
 }
+/**
+ * Model::formStateStorage is intended to take any storage and populate stateStorage.
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by calling 
+ * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the 
+ * output statesStorage. Entries not found are populated with 0s.
+ */
+void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
+{
+	Array<string> rStateNames;
+	getStateNames(rStateNames);
+	// make sure same size, otherwise warn
+	if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize()){
+		cout << "Number of columns does not match in formStateStorage. Found "
+			<< originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
+	}
+	// Create a list with entry for each desiredName telling which column in originalStorage has the data
+	int* mapColumns = new int[rStateNames.getSize()];
+	for(int i=0; i< rStateNames.getSize(); i++){
+		// the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
+		mapColumns[i] = originalStorage.getColumnLabels().findIndex(rStateNames[i]); 
+		if (mapColumns[i]==-1)
+			cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
+	}
+	// Now cycle thru and shuffle each 
 
+	for (int row =0; row< originalStorage.getSize(); row++){
+		StateVector* originalVec = originalStorage.getStateVector(row);
+		StateVector* stateVec = new StateVector(originalVec->getTime());
+		stateVec->getData().setSize(getNumStates());  // default value 0f 0.
+		for(int column=0; column< getNumStates(); column++){
+			double valueInOriginalStorage=0.0;
+			if (mapColumns[column]!=-1)
+				originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
+
+			stateVec->setDataValue(column, valueInOriginalStorage);
+			
+		}
+		statesStorage.append(*stateVec);
+	}
+	rStateNames.insert(0, "time");
+	statesStorage.setColumnLabels(rStateNames);
+
+}

@@ -81,13 +81,15 @@ SimpleFeedbackController::SimpleFeedbackController() :
  * @param aModel Model that is to be controlled.
  * @param aYDesStore Storage object containing desired states.
  */
-SimpleFeedbackController::SimpleFeedbackController(Model *aModel, Storage *aYDesStore) :
+SimpleFeedbackController::SimpleFeedbackController(Model *aModel, ControlSet *aControlSet, Storage *aYDesStore) :
 	Controller(aModel), _kp(_kpProp.getValueDbl()), _kv(_kvProp.getValueDbl())
 {
 	// NULL
 	setNull();
 	setupProperties();
 
+	// INPUT CONTROLS
+	_controlSet = aControlSet;
 	// DESIRED STATES
 	_yDesStore = aYDesStore;
 }
@@ -146,6 +148,7 @@ setNull()
 	
 	_kp = 100;
 	_kv = 20;
+	_controlSet = NULL;
 	_yDesStore = NULL;
 }
 //_____________________________________________________________________________
@@ -178,6 +181,7 @@ copyData(const SimpleFeedbackController &aController)
 	_kp = aController._kp;
 	_kvProp = aController._kvProp;
 	_kv = aController._kv;
+	_controlSet = aController._controlSet;
 	_yDesStore = aController._yDesStore;
 }
 
@@ -231,6 +235,31 @@ void SimpleFeedbackController::
 setKv(double aKv)
 {
 	_kv = aKv;
+}
+
+//-----------------------------------------------------------------------------
+// INPUT CONTROLS
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the object containing the input controls of the simulation.
+ *
+ * @return Input controls object.
+ */
+ControlSet* SimpleFeedbackController::
+getControlSet() const
+{
+	return(_controlSet);
+}
+/**
+ * Set the object containing the input controls of the simulation.
+ * 
+ * @param aControlSet Input controls object.
+ */
+void SimpleFeedbackController::
+setControlSet(const ControlSet &aControlSet)
+{
+	_controlSet = (ControlSet*)aControlSet.copy();
 }
 
 //-----------------------------------------------------------------------------
@@ -300,16 +329,21 @@ computeControls(double &rDT,double aT,const double *aY,
 	Array<double> yDesired(0.0,nq+nu);
 	_yDesStore->getDataAtTime(tiReal,nq+nu,yDesired);
 
+	// GET INPUT CONTROL VALUES
+	Array<double> currentControlValues(0.0,N);
+	_controlSet->getControlValues(tf,currentControlValues);
+
 	// COMPUTE EXCITATIONS
 	Array<double> newControls(0.0,N);
 	for(int i=0;i<N;i++) {
 		AbstractActuator *actuator = _model->getActuatorSet()->get(i);
+		double currentControlValue = currentControlValues[i];
 		double oneOverFmax = 1.0 / actuator->getOptimalForce();
 		double pErr = aY[i] - yDesired[i];
 		double vErr = aY[i+nq] - yDesired[i+nq];
 		double pErrTerm = _kp*oneOverFmax*pErr;
 		double vErrTerm = _kv*oneOverFmax*vErr;
-		newControls[i] = -vErrTerm - pErrTerm;
+		newControls[i] = currentControlValue - vErrTerm - pErrTerm;
 	}
 
 	// SET EXCITATIONS

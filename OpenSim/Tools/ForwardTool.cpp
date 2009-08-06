@@ -838,6 +838,7 @@ bool ForwardTool::run()
 	if(_controller!=NULL) {
 		_controller->setOn(true);
 		_controller->setModel(_model);
+		_controller->setControlSet(*controlSet);
 		_controller->setDesiredStatesStorage(_yStore);
 	}
 
@@ -1201,7 +1202,9 @@ inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,St
 	rYStore = NULL;
 	if(_statesFileName!="") {
 		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
-		rYStore = new Storage(_statesFileName);
+		Storage temp(_statesFileName);
+		rYStore = new Storage();
+		_model->formStateStorage(temp, *rYStore);
 		cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
 		cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
 	}

@@ -663,6 +663,13 @@ public:
 	//virtual void setInitialPseudoState(const std::string &aName,double aYPI);
 	//virtual double getInitialPseudoState(const std::string &aName) const;
 
+	/**
+	 * create a storage (statesStorage) that has same label order as model's states
+	 * with values populated from originalStorage, 0.0 for those states unspecified
+	 * in the originalStorage.
+	 */
+	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
+
 	//--------------------------------------------------------------------------
 	// ACTUATORS
 	//--------------------------------------------------------------------------

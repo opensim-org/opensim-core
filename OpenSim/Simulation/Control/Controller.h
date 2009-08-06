@@ -249,6 +249,20 @@ public:
 	 */
 	void setModel(Model *aModel);
 
+	// INPUT CONTROL SET OBJECT
+	
+	/**
+	 * Set this class's pointer to the object containing
+	 * input controls to point to the ControlSet object passed into
+	 * this method.  This method is currently implemented only by the
+	 * SimpleFeedbackController class, which is a subclass of Controller.
+	 *
+	 * @param aControlSet A ControlSet object containing the
+	 * input controls of the model for the applied during the input
+	 * simulation.
+	 */
+	virtual void setControlSet(const ControlSet &aControlSet);
+
 	// DESIRED STATES STORAGE OBJECT
 	
 	/**
