@@ -129,7 +129,9 @@ INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.dll
 						${SIMTK_DIR}/core/lib/SimTKcpodes.dll 
 						${SIMTK_DIR}/core/lib/SimTKsimbody.dll 
 						${SIMTK_DIR}/core/lib/pthreadVC2.dll
-						${SIMTK_DIR}/core/lib/SimTKlapack.dll)
+						${SIMTK_DIR}/core/lib/SimTKlapack.dll
+						${OpenSim_SOURCE_DIR}/Vendors/vcredist_x86.exe
+						)
 INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_DIR}/core/lib/SimTKcommon.lib 
 						${SIMTK_DIR}/core/lib/SimTKmath.lib 
 						${SIMTK_DIR}/core/lib/SimTKcpodes.lib 
@@ -172,6 +174,9 @@ IF(WIN32 AND NOT UNIX)
    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.simtk.org/home/opensim")
    SET(CPACK_NSIS_CONTACT "aymanh@simtk.org")
    SET(CPACK_NSIS_MODIFY_PATH ON)
+   SET (CPACK_NSIS_EXTRA_INSTALL_COMMANDS
+     "ExecWait '\\\"$INSTDIR\\\\bin\\\\vcredist_x86.exe\\\"'"
+   )
 ELSE(WIN32 AND NOT UNIX)
    SET(CPACK_STRIP_FILES "bin/MyExecutable")
    SET(CPACK_SOURCE_STRIP_FILES "")
