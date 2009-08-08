@@ -123,6 +123,14 @@ Object* WeldConstraint::copy() const
 void WeldConstraint::copyData(const WeldConstraint &aConstraint)
 {
 	Constraint::copyData(aConstraint);
+	_body1Name = aConstraint._body1Name;
+	_body2Name = aConstraint._body2Name;
+	_locationInBody1 = aConstraint._locationInBody1;
+	_orientationInBody1 = aConstraint._orientationInBody1;
+	_locationInBody2 = aConstraint._locationInBody2;
+	_orientationInBody2 = aConstraint._orientationInBody2;
+	_body1 = aConstraint._body1;
+	_body2 = aConstraint._body2;
 }
 
 //_____________________________________________________________________________
