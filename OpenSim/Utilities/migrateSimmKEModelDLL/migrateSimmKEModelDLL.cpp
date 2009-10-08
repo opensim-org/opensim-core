@@ -28,6 +28,7 @@
 #include <OpenSim/Common/IO.h>
 #include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/rdMath.h>
+#include <OpenSim/Common/Transform.h>
 #include "migrateSimmKEModelDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -52,7 +53,19 @@
 using namespace std;
 using namespace OpenSim;
 
+#define ROUNDOFF_ERROR 0.000000001
+#define DABS(a) ((a)>(double)0.0?(a):(-(a)))
+#define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
+
 bool isJointFixed(SimmJoint& aJoint);
+void convert_dof_to_function(AbstractDof01_05* dof, string coordinateName);
+void extract_xyz_rot_bodyfixed(double m[], double xyz_rot[3]);
+void extract_joint_locations_and_orientations(SimmJoint* joint,
+                                              double locationInParent[],
+                                              double orientationInParent[],
+                                              double locationInChild[],
+                                              double orientationInChild[]);
+
 
 OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Model& aModel, const SimmKinematicsEngine& aSimmEngine)
 {
@@ -129,19 +142,30 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Mo
 			newJoint = new WeldJoint();
 		else
 			newJoint = new CustomJoint();
-		newBody->setJoint(newJoint);  delete newJoint;  // A copy is made, so must delete original.
-		newJoint = (CustomJoint*)newBody->getJoint();
+		newBody->setJoint(newJoint);
+		delete newJoint;  // A copy is made, so must delete original.
+		newJoint = newBody->getJoint();
 		if (newJoint!=NULL)
 			jointSet->append(newJoint);
 		// Name
 		newJoint->setName(oldJoint->getName());
 		// Parent Body Name
 		newJoint->setParentName(oldJoint->getParentBodyName());
-		// Location in Parent
-		SimTK::Vec3 zeroVec(0.0, 0.0, 0.0);
-		newJoint->setLocationInParent(zeroVec);
-		// Location in Child
-		newJoint->setLocation(zeroVec);
+
+		double locationInParent[3], orientationInParent[3], locationInChild[3], orientationInChild[3];
+		extract_joint_locations_and_orientations(oldJoint,
+			locationInParent, orientationInParent,
+			locationInChild, orientationInChild);
+
+		SimTK::Vec3 lp(locationInParent[0], locationInParent[1], locationInParent[2]);
+		newJoint->setLocationInParent(lp);
+		SimTK::Vec3 op(orientationInParent[0], orientationInParent[1], orientationInParent[2]);
+		newJoint->setOrientationInParent(op);
+		SimTK::Vec3 lc(locationInChild[0], locationInChild[1], locationInChild[2]);
+		newJoint->setLocation(lc);
+		SimTK::Vec3 oc(orientationInChild[0], orientationInChild[1], orientationInChild[2]);
+		newJoint->setOrientation(oc);
+
 		newJoint->setDynamicsEngine(sbe);
 
 		// FIND THE OLD DOFs FOR THIS JOINT
@@ -155,27 +179,7 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Mo
 			Function *function = oldDof->getFunction();
 			if(function==NULL) continue;
 
-			// Constant
-			if(function->getType() == "Constant") {
-
-				// Add constant translations to the location_in_parent;
-				double c = function->evaluate(0,0.0);
-				SimTK::Vec3 shift(0,0,0);
-				if(oldDof->getName()=="tx") {
-					shift[0] = c;
-				} else if(oldDof->getName()=="ty") {
-					shift[1] = c;
-				} else if(oldDof->getName()=="tz") {
-					shift[2] = c;
-				}
-				SimTK::Vec3 location;
-				newJoint->getLocationInParent(location);
-				location += shift;
-				newJoint->setLocationInParent(location);
-
-			// Not constant
-			} else {
-
+			if(function->getType() != "Constant") {
 				// Axis
 				TransformAxis *newAxis = new TransformAxis();
 				newAxis->setName(oldDof->getName());
@@ -197,7 +201,7 @@ OSIMMIGRATESIMMKEMODEL_API AbstractDynamicsEngine* OpenSim::makeSimbodyEngine(Mo
 				const CoordinateSet *oldCoordSet = aSimmEngine.getCoordinateSet();
 				const SimmCoordinate *oldCoord = (const SimmCoordinate*)oldCoordSet->get(newAxis->getCoordinateName());
 
-				// Does the coordinate alread exist?
+				// Does the coordinate already exist?
 				Coordinate *newCoord = (Coordinate*)tmpGlobalCoordSet.get(coordinateName);
 
 				// Add a New Coordinate
@@ -291,4 +295,132 @@ bool isJointFixed(SimmJoint& aJoint)
 			return false;
 	}
 	return true;
+}
+
+// This function deals with the constant translations and rotations that are in a joint.
+// Simbody does not allow them in DOFs, so they are handled as follows:
+//   1. The string of constants at the beginning of the DOF list are converted into
+//      locationInParent and orientationInParent.
+//   2. The string of constants at the end of the DOF list are converted into
+//      locationInChild and orientationInChild.
+//   3. The constants in between functions are turned into functions that are
+//      constrained to remain at the proper value.
+void extract_joint_locations_and_orientations(SimmJoint* joint,
+                                              double locationInParent[],
+                                              double orientationInParent[],
+                                              double locationInChild[],
+                                              double orientationInChild[])
+{
+	const DofSet01_05 *dofSet = joint->getDofSet();
+	int na = dofSet->getSize();
+   int i, first_function = na, last_function = na;
+   double *dof_value;
+
+	dof_value = new double [na];
+
+   for (i=0; i<na; i++) {
+		AbstractDof01_05* dof = dofSet->get(i);
+		if (dof && dof->getFunction()) {
+			if (dof->getFunction()->getType() != "Constant") {
+				first_function = i;
+				break;
+			}
+		}
+	}
+
+   for (i=na-1; i>=0; i--) {
+		AbstractDof01_05* dof = dofSet->get(i);
+		if (dof && dof->getFunction()) {
+			if (dof->getFunction()->getType() != "Constant") {
+				last_function = i;
+				break;
+			}
+		}
+	}
+
+   // Constants that are in between functions are converted to functions.
+   // The gencoord used for these converted constants is the
+   // 'first_function' gencoord.
+   for (i=first_function+1; i<last_function; i++)
+   {
+		AbstractDof01_05* dof = dofSet->get(i);
+		if (dof && dof->getFunction() && dof->getFunction()->getType() == "Constant" && NOT_EQUAL_WITHIN_ERROR(dof->getValue(), 0.0))
+         convert_dof_to_function(dof, dofSet->get(first_function)->getCoordinateName());
+   }
+
+	// Make a temporary joint that consists of just the constant
+	// dofs at the beginning of the joint 'joint.' This is done
+	// by copying 'joint' and then setting the dofs at the end
+	// to have functions of constant=0.0.
+	SimmJoint parentSide(*joint);
+	//Constant zero;
+	for (i=first_function; i<na; i++) {
+		Constant* zero = new Constant();
+		parentSide.getDofSet()->get(i)->setFunction(zero);
+	}
+
+	// Now get the forward transform, which contains the matrix equivalent
+	// of locationInParent and orientationInParent.
+	Transform parentTransform = parentSide.getForwardTransform();
+
+	// Make a temporary joint that consists of just the constant
+	// dofs at the end of the joint 'joint.' This is done
+	// by copying 'joint' and then setting the dofs at the beginning
+	// to have functions of constant=0.0.
+	SimmJoint childSide(*joint);
+	if (last_function == na) // to handle case where all DOFs are constant
+		last_function--;
+	for (i=0; i<=last_function; i++) {
+		Constant* zero = new Constant();
+		childSide.getDofSet()->get(i)->setFunction(zero);
+	}
+
+	// Now get the inverse transform, which contains the matrix equivalent
+	// of locationInChild and orientationInChild.
+	Transform childTransform = childSide.getInverseTransform();
+
+   // Extract the translations from the matrices.
+	parentTransform.getPosition(locationInParent);
+	childTransform.getPosition(locationInChild);
+
+   // Extract the rotations from the matrices.
+   extract_xyz_rot_bodyfixed(parentTransform.getMatrix(), orientationInParent);
+   extract_xyz_rot_bodyfixed(childTransform.getMatrix(), orientationInChild);
+}
+
+void convert_dof_to_function(AbstractDof01_05* dof, string coordinateName)
+{
+	double x[] = {0.0, 1.0};
+	double y[2];
+
+	y[0] = y[1] = dof->getValue();
+
+	NatCubicSpline* func = new NatCubicSpline(2, x, y);
+
+	dof->setCoordinateName(coordinateName);
+	dof->setFunction(func);
+}
+
+void extract_xyz_rot_bodyfixed(double m[], double xyz_rot[3])
+{
+   /* NOTE: extracts BODY-FIXED rotations in x,y,z order, which
+    *  is the same as space-fixed rotations in z,y,x order.
+    */
+   xyz_rot[1] = asin(m[8]);
+   
+   if (NOT_EQUAL_WITHIN_ERROR(0.0, cos(xyz_rot[1])))
+   {
+      xyz_rot[0] = atan2(-m[9], m[10]);
+      xyz_rot[2] = atan2(-m[4], m[0]);
+   }
+   else
+   {
+      xyz_rot[0] = atan2(m[1], m[5]);
+      xyz_rot[2] = 0.0;
+   } 
+   /* NOTE: a body-fixed sequence of rotations is equivalent to
+    *  the same sequence of space-fixed rotation in the *opposite*
+    *  order!!  (see: "Introduction to Robotics, 2nd Ed. by J. Craig,
+    *  page 49)  -- KMS 2/17/99
+    */
 }
