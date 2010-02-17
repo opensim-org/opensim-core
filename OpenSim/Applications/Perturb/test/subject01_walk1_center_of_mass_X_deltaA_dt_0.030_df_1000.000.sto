@@ -1,0 +1,6 @@
+center_of_mass_X_deltaA
+nRows=1
+nColumns=5
+endheader
+time	glut_med1_l	glut_max1_r	psoas_r	gravity
+      0.839827670000	     -0.006741152248	      0.002196777453	      0.000117219667	     -0.000000000000

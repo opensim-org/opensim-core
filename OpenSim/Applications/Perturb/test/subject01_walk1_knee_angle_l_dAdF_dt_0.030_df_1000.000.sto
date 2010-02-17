@@ -1,0 +1,6 @@
+knee_angle_l_dAdF
+nRows=1
+nColumns=5
+endheader
+time	glut_med1_l	glut_max1_r	psoas_r	gravity
+      0.839827670000	     -1.458076712756	      6.103763726125	     -4.564122998162	      0.000000000000

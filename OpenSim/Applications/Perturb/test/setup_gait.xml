@@ -115,7 +115,7 @@
 	<perturbation_time_window> 0.03 </perturbation_time_window>
 	<!--Time increment between perturbation windows.  This can be smaller than
 	    the perturbation time window size (e.g., 0.010 sec).-->
-	<perturbation_time_increment> 0.03 </perturbation_time_increment>
+	<perturbation_time_increment> 0.01 </perturbation_time_increment>
 	<!--Magnitude of perturbation. Perturbation results should be fairly
 	    insensitive to the perturbation size.  Values between 0.10N and 10N
 	    shoudl be fine.-->

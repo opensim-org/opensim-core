@@ -300,9 +300,8 @@ updCurrentPath(const SimTK::State& s) const {
  */
 const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) 
 {
-	// Get the current path, to make sure it is up to date.
-	// If it is not, the path and display path are both updated.
-	getCurrentPath(s);
+	// update the geometry to make sure the current display path is up to date.
+    updateGeometry(s);
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.getCacheEntry( _subsystemIndex, _currentDisplayPathIndex)).get() );
 }

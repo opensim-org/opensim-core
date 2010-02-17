@@ -267,7 +267,8 @@ bool PerturbationTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	// INPUT
+	// Modify _ti to match time of closest initial state vector 
+// determineInitialTimeFromStatesStorage(_ti);
 
 	// Initial and final times
 	// If the times lie outside the range for which control values are

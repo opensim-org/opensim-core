@@ -1051,7 +1051,7 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
 	return candidateName;
 }
 
-std::string AbstractTool::parseStringProperty(std::string& propertyName)
+std::string AbstractTool::parseStringProperty(const std::string& propertyName)
 {
 	std::string propValue="";
 	DOMElement* pNode = XMLNode::GetFirstChildElementByTagName(_node,propertyName);

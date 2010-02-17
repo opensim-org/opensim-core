@@ -53,6 +53,29 @@ using namespace std;
 
 #define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
+bool compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
+{
+	bool ret=true;// Load std model and realize it to Velocity just in case
+	Model* refModel = new Model(stdFileName);
+	SimTK::State& sStd = refModel->initSystem();
+
+	SimTK::State& s = resultModel.getSystem().updDefaultState();
+	resultModel.getSystem().realize(s, SimTK::Stage::Velocity);
+
+	ASSERT(sStd.getNQ()==s.getNQ());	
+	// put them in same configuration
+	sStd.updQ() = s.getQ();
+	refModel->getSystem().realize(sStd, SimTK::Stage::Velocity);
+
+	ASSERT(sStd.getNU()==s.getNU());	
+	ASSERT(sStd.getNZ()==s.getNZ());	
+
+	// Now cycle thru ModelComponents recursively
+
+	delete refModel;
+
+	return ret;
+}
 
 bool scaleGait2354()
 {
@@ -96,10 +119,7 @@ bool scaleGait2354()
 	else {
         return(false);
 	}
-
-/* Since we compare only scale factors the following block is unsed. Need to update when ScaleTool
-	really works and performs marker placement.
-
+	/*
 	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
 		MarkerPlacer& placer = subject->getMarkerPlacer();
 	    if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
@@ -116,10 +136,12 @@ bool scaleGait2354()
 	if(!(computedScaleSet == stdScaleSet)) 
 		return(false);
     
+	//bool success=compareModel(*model, std::string("stdScaled.osim"), 1e-5);
+
+	// 
 
 	delete model;
 	delete subject;
-
     return(true);
 }
 

@@ -47,26 +47,67 @@
 using namespace OpenSim;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+const static int NUM_VALUES = 4; // check results from perturbing 3 muscles plus  gravity
 
+int checkValues( const string &filename,  double epsilon) {
+    // check results
+    double diff;
+    int failed = 0;
+    std::string  label;
 
+    Storage results("Results/"+filename);
+    Storage standard(filename);
 
-void testGait2354() {
+    // check the last state vector
+    StateVector* resultsValues = results.getStateVector(results.getSize()-1);
+    StateVector* standardValues = standard.getStateVector(standard.getSize()-1);
+
+    for(int i=0;i<NUM_VALUES;i++ ) {
+        diff = resultsValues->getData()[i] - standardValues->getData()[i];
+        label = results.getColumnLabels()[i+1];
+//        cout << label << "  diff= " << diff << endl;
+        if(  diff >  epsilon)  {
+           cout << "\n" << filename << " : " << label << " FAILED standard= " << standardValues->getData()[i] << " result=" << resultsValues->getData()[i] << endl << endl;
+           failed = 1;
+        }
+    }
+    return(failed);
+}
+
+int testGait2354() {
 	PerturbationTool perturb("setup_gait.xml");
 	perturb.run();
+    int failed = 0;
 
-//  TBD need to check results  
+    failed += checkValues( "subject01_walk1_center_of_mass_X_deltaA_dt_0.030_df_1000.000.sto", 0.05 );
+    failed += checkValues( "subject01_walk1_center_of_mass_Y_deltaA_dt_0.030_df_1000.000.sto", 0.05 );
+    failed += checkValues( "subject01_walk1_center_of_mass_Z_deltaA_dt_0.030_df_1000.000.sto", 0.05 );
 
+    failed += checkValues( "subject01_walk1_center_of_mass_X_dAdF_dt_0.030_df_1000.000.sto", 0.05 );
+    failed += checkValues( "subject01_walk1_center_of_mass_Y_dAdF_dt_0.030_df_1000.000.sto", 0.05 );
+    failed += checkValues( "subject01_walk1_center_of_mass_Z_dAdF_dt_0.030_df_1000.000.sto", 0.05 );
+
+    failed += checkValues( "subject01_walk1_knee_angle_l_deltaA_dt_0.030_df_1000.000.sto", 5.0 );
+    failed += checkValues( "subject01_walk1_knee_angle_l_deltaA_dt_0.030_df_1000.000.sto", 5.0 );
+    failed += checkValues( "subject01_walk1_knee_angle_l_deltaA_dt_0.030_df_1000.000.sto", 5.0 );
+
+    failed += checkValues( "subject01_walk1_knee_angle_r_dAdF_dt_0.030_df_1000.000.sto", 5.0 );
+    failed += checkValues( "subject01_walk1_knee_angle_r_dAdF_dt_0.030_df_1000.000.sto", 5.0 );
+    failed += checkValues( "subject01_walk1_knee_angle_r_dAdF_dt_0.030_df_1000.000.sto", 5.0 );
+
+    failed += checkValues( "subject01_walk1_unperturbedAccel_dt_0.030_df_1000.000.sto", 1000 );
+
+    return(failed); 
 
 }
 
 int main() {
+    int status;
     try {
 
 
-		testGait2354();    //finally include applied ground reactions forces 
-std::cout << "gait2354 test PASSED " << std::endl;
+		status  = testGait2354();    //finally include applied ground reactions forces 
+        if( status == 0 ) std::cout << "gait2354 test PASSED " << std::endl;
     }
 //    catch(const std::exception& e) {
     catch(Exception& e) {
@@ -75,6 +116,6 @@ std::cout << "gait2354 test PASSED " << std::endl;
         return 1;
     }
     cout << "Done" << endl;
-    return 0;
+    return status;
 }
 

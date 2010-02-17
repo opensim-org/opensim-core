@@ -223,7 +223,7 @@ private:
 	* Verify that column labels are unique.
 	*/
 	bool verifyUniqueComulnLabels(const Storage& aStorage) const;
-	std::string parseStringProperty(std::string& propertyName);
+	std::string parseStringProperty(const std::string& propertyName);
 	std::string createExternalLoadsFile(const std::string& oldFile, 
 										  const std::string& body1, 
 										  const std::string& body2);
